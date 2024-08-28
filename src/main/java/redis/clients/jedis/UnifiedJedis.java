@@ -99,14 +99,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
-    this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(),
-        cache);
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
+    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig));
   }
 
   @Experimental
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
-    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig));
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
+    this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(), cache);
   }
 
   public UnifiedJedis(ConnectionProvider provider) {
@@ -153,8 +152,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new CommandObjects();
     RedisProtocol proto = connection.getRedisProtocol();
-    if (proto != null)
+    if (proto != null) {
       this.commandObjects.setProtocol(proto);
+    }
     this.graphCommandObjects = new GraphCommandObjects(this);
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -257,8 +257,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       try (Connection conn = this.provider.getConnection()) {
         if (conn != null) {
           RedisProtocol proto = conn.getRedisProtocol();
-          if (proto != null)
+          if (proto != null) {
             this.commandObjects.setProtocol(proto);
+          }
         }
       } catch (JedisException je) {
       }
@@ -283,8 +284,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.executor = executor;
 
     this.commandObjects = commandObjects;
-    if (protocol != null)
+    if (protocol != null) {
       this.commandObjects.setProtocol(protocol);
+    }
 
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));

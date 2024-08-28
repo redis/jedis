@@ -222,22 +222,21 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
+  public JedisCluster(Set<HostAndPort> hnp, JedisClientConfig jedisClientConfig, CacheConfig cacheConfig) {
+    this(hnp, jedisClientConfig, new CacheProvider().getCache(cacheConfig));
+  }
+
+  @Experimental
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache) {
     this(clusterNodes, clientConfig, clientSideCache, DEFAULT_MAX_ATTEMPTS,
         Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()));
   }
 
   @Experimental
-  public JedisCluster(Set<HostAndPort> hnp, JedisClientConfig jedisClientConfig, CacheConfig cacheConfig) {
-    this(hnp, jedisClientConfig, new CacheProvider().getCache(cacheConfig));
-  }
-
-  @Experimental
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
       int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache), maxAttempts,
-        maxTotalRetriesDuration,
-        clientConfig.getRedisProtocol(), clientSideCache);
+        maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);
   }
 
   @Experimental

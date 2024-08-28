@@ -17,17 +17,17 @@ public class JedisSentineled extends UnifiedJedis {
   }
 
   @Experimental
-  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
-      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache,
-        sentinels, sentinelClientConfig), masterClientConfig.getRedisProtocol(), clientSideCache);
-  }
-
-  @Experimental
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, CacheConfig cacheConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, new CacheProvider().getCache(cacheConfig),
         sentinels, sentinelClientConfig);
+  }
+
+  @Experimental
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
+      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache,
+        sentinels, sentinelClientConfig), masterClientConfig.getRedisProtocol(), clientSideCache);
   }
 
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,

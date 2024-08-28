@@ -236,7 +236,7 @@ public final class Protocol {
           processPush(is, cache);
         }
       } catch (IOException e) {
-        throw new JedisConnectionException("Failed to read pending buffer for push messages !", e);
+        throw new JedisConnectionException("Failed to read pending buffer for push messages!", e);
       }
     } else {
       while (is.peek(GREATER_THAN_BYTE)) {

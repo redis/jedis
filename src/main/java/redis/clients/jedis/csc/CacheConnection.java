@@ -82,7 +82,7 @@ public class CacheConnection extends Connection {
     cache.getStats().miss();
     T value = super.executeCommand(commandObject);
     cacheEntry = new CacheEntry<>(cacheKey, value, this);
-    clientSideCache.set(cacheKey, cacheEntry);
+    cache.set(cacheKey, cacheEntry);
     // this line actually provides a deep copy of cached object instance 
     value = cacheEntry.getValue();
     return value;

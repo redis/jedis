@@ -1,19 +1,14 @@
 package redis.clients.jedis.csc;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.UnifiedJedis;
 
 public abstract class UnifiedJedisClientSideCacheTestBase {
@@ -25,6 +20,10 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
   protected abstract UnifiedJedis createCachedJedis(Cache cache);
 
   protected abstract UnifiedJedis createCachedJedis(CacheConfig cacheConfig);
+
+  protected UnifiedJedis createCachedJedis() {
+    return createCachedJedis(CacheConfig.builder().build());
+  }
 
   @Before
   public void setUp() throws Exception {
@@ -50,18 +49,17 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void simpleWithSimpleMap() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache(map))) {
+    try (UnifiedJedis jedis = createCachedJedis()) {
       control.set("foo", "bar");
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertEquals(0, jedis.getCache().getSize());
       assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
       control.del("foo");
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
     }
   }
 
@@ -78,36 +76,33 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void flushAllWithSimpleMap() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache(map))) {
+    try (UnifiedJedis jedis = createCachedJedis()) {
       control.set("foo", "bar");
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertEquals(0, jedis.getCache().getSize());
       assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
       control.flushAll();
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
     }
   }
 
   @Test
   public void cacheNotEmptyTest() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache(map))) {
+    try (UnifiedJedis jedis = createCachedJedis()) {
       control.set("foo", "bar");
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertEquals(0, jedis.getCache().getSize());
       assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, jedis.getCache().getSize());
     }
   }
 
   @Test
   public void cacheUsedTest() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    Cache cache = new TestCache(map);
+    Cache cache = new TestCache();
     try (UnifiedJedis jedis = createCachedJedis(cache)) {
       control.set("foo", "bar");
 
@@ -126,7 +121,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void immutableCacheEntriesTest() {
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache())) {
+    try (UnifiedJedis jedis = createCachedJedis()) {
       jedis.set("{csc}a", "AA");
       jedis.set("{csc}b", "BB");
       jedis.set("{csc}c", "CC");

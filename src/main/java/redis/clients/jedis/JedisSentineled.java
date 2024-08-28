@@ -5,7 +5,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
-import redis.clients.jedis.csc.CacheProvider;
+import redis.clients.jedis.csc.DefaultCache;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
 public class JedisSentineled extends UnifiedJedis {
@@ -19,7 +19,7 @@ public class JedisSentineled extends UnifiedJedis {
   @Experimental
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, CacheConfig cacheConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    this(masterName, masterClientConfig, new CacheProvider().getCache(cacheConfig),
+    this(masterName, masterClientConfig, DefaultCache.create(cacheConfig),
         sentinels, sentinelClientConfig);
   }
 

@@ -12,7 +12,7 @@ import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
-import redis.clients.jedis.csc.CacheProvider;
+import redis.clients.jedis.csc.DefaultCache;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
@@ -223,7 +223,7 @@ public class JedisCluster extends UnifiedJedis {
 
   @Experimental
   public JedisCluster(Set<HostAndPort> hnp, JedisClientConfig jedisClientConfig, CacheConfig cacheConfig) {
-    this(hnp, jedisClientConfig, new CacheProvider().getCache(cacheConfig));
+    this(hnp, jedisClientConfig, DefaultCache.create(cacheConfig));
   }
 
   @Experimental

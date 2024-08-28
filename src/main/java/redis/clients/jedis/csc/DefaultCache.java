@@ -4,24 +4,32 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import redis.clients.jedis.annots.VisibleForTesting;
+
 public class DefaultCache extends AbstractCache {
 
-    protected final Map<CacheKey, CacheEntry> cache;
+    private final Map<CacheKey, CacheEntry> cache;
     private final EvictionPolicy evictionPolicy;
 
     protected DefaultCache(int maximumSize) {
-        this(maximumSize, new HashMap<CacheKey, CacheEntry>());
+        this(maximumSize, DefaultCacheable.INSTANCE, new LRUEviction(maximumSize));
     }
 
+    @VisibleForTesting
     protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map) {
         this(maximumSize, map, DefaultCacheable.INSTANCE, new LRUEviction(maximumSize));
     }
 
     protected DefaultCache(int maximumSize, Cacheable cacheable) {
-        this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, new LRUEviction(maximumSize));
+        this(maximumSize, cacheable, new LRUEviction(maximumSize));
     }
 
-    protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable, EvictionPolicy evictionPolicy) {
+    protected DefaultCache(int maximumSize, Cacheable cacheable, EvictionPolicy evictionPolicy) {
+        this(maximumSize, new HashMap<CacheKey, CacheEntry>(maximumSize, 1f), cacheable, evictionPolicy);
+    }
+
+    private DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable,
+                EvictionPolicy evictionPolicy) {
         super(maximumSize, cacheable);
         this.cache = map;
         this.evictionPolicy = evictionPolicy;
@@ -68,4 +76,15 @@ public class DefaultCache extends AbstractCache {
         return cache.containsKey(cacheKey);
     }
 
+    public static DefaultCache create(CacheConfig config) {
+        return new DefaultCache(config.getMaxSize(), config.getCacheable(), getEvictionPolicy(config));
+    }
+
+    private static EvictionPolicy getEvictionPolicy(CacheConfig config) {
+        if (config.getEvictionPolicy() == null) {
+            // It will be default to LRUEviction, until we have other eviction implementations
+            return new LRUEviction(config.getMaxSize());
+        }
+        return config.getEvictionPolicy();
+    }
 }

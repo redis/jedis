@@ -1,6 +1,11 @@
 package redis.clients.jedis.csc;
 
+import redis.clients.jedis.annots.VisibleForTesting;
+
 public class CacheConfig {
+
+    @VisibleForTesting
+    static final int DEFAULT_CACHE_MAX_SIZE = 10_000;
 
     private int maxSize;
     private Cacheable cacheable;
@@ -23,9 +28,9 @@ public class CacheConfig {
     }
 
     public static class Builder {
-        private int maxSize;
+        private int maxSize = DEFAULT_CACHE_MAX_SIZE;
         private Cacheable cacheable = DefaultCacheable.INSTANCE;
-        private EvictionPolicy evictionPolicy;
+        private EvictionPolicy evictionPolicy = null;
 
         public Builder maxSize(int maxSize) {
             this.maxSize = maxSize;

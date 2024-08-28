@@ -1,29 +1,27 @@
 package redis.clients.jedis.csc;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class TestCache extends DefaultCache {
 
   public TestCache() {
-    this(new HashMap<CacheKey, CacheEntry>());
+    this(CacheConfig.DEFAULT_CACHE_MAX_SIZE);
   }
 
-  public TestCache(Map<CacheKey, CacheEntry> map) {
-    super(10000, map);
+  TestCache(int maximumSize) {
+    super(maximumSize);
   }
 
-  public TestCache(Map<CacheKey, CacheEntry> map, Cacheable cacheable) {
-    super(10000, map, cacheable, new LRUEviction(10000));
+  TestCache(Map<CacheKey, CacheEntry> map) {
+    this(CacheConfig.DEFAULT_CACHE_MAX_SIZE, map);
   }
 
-  public TestCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable) {
-    this(maximumSize, map, cacheable, new LRUEviction(maximumSize));
+  TestCache(int maximumSize, Map<CacheKey, CacheEntry> map) {
+    super(maximumSize, map);
   }
 
-  public TestCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable,
-      EvictionPolicy evictionPolicy) {
-    super(maximumSize, map, cacheable, evictionPolicy);
+  TestCache(Cacheable cacheable) {
+    super(CacheConfig.DEFAULT_CACHE_MAX_SIZE, cacheable);
   }
 
 }

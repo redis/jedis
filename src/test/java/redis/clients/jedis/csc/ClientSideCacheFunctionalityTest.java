@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -507,6 +508,40 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
       assertEquals(MAX_SIZE, cache.getSize());
       assertEquals(0, exceptions.size());
+    }
+  }
+
+  @Test
+  public void testNullValue() throws InterruptedException {
+    int MAX_SIZE = 20;
+    String nonExisting = "non-existing-key";
+    control.del(nonExisting);
+
+    TestCache cache = new TestCache(MAX_SIZE, new HashMap<>(), DefaultCacheable.INSTANCE);
+
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
+      CacheStats stats = cache.getStats();
+
+      String val = jedis.get(nonExisting);
+      assertNull(val);
+      assertEquals(1, cache.getSize());
+      assertEquals(0, stats.getHitCount());
+      assertEquals(1, stats.getMissCount());
+
+      val = jedis.get(nonExisting);
+      assertNull(val);
+      assertEquals(1, cache.getSize());
+      assertNull(cache.getCacheEntries().iterator().next().getValue());
+      assertEquals(1, stats.getHitCount());
+      assertEquals(1, stats.getMissCount());
+
+      control.set(nonExisting, "bar");
+      val = jedis.get(nonExisting);
+      assertEquals("bar", val);
+      assertEquals(1, cache.getSize());
+      assertEquals("bar", cache.getCacheEntries().iterator().next().getValue());
+      assertEquals(1, stats.getHitCount());
+      assertEquals(2, stats.getMissCount());
     }
   }
 

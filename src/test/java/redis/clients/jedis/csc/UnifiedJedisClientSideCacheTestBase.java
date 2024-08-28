@@ -59,10 +59,9 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.del("foo");
       assertThat(map, Matchers.aMapWithSize(1));
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(0));
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertThat(map, Matchers.aMapWithSize(1));
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertThat(map, Matchers.aMapWithSize(1));
     }
   }
 
@@ -88,9 +87,9 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.flushAll();
       assertThat(map, Matchers.aMapWithSize(1));
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertThat(map, Matchers.aMapWithSize(1));
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertThat(map, Matchers.aMapWithSize(1));
     }
   }
 

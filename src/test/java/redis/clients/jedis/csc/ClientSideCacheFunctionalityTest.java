@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -522,15 +523,23 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       CacheStats stats = cache.getStats();
 
       String val = jedis.get(nonExisting);
+      assertNull(val);
+      assertEquals(1, cache.getSize());
       assertEquals(0, stats.getHitCount());
       assertEquals(1, stats.getMissCount());
 
       val = jedis.get(nonExisting);
+      assertNull(val);
+      assertEquals(1, cache.getSize());
+      assertNull(cache.getCacheEntries().iterator().next().getValue());
       assertEquals(1, stats.getHitCount());
       assertEquals(1, stats.getMissCount());
 
       control.set(nonExisting, "bar");
       val = jedis.get(nonExisting);
+      assertEquals("bar", val);
+      assertEquals(1, cache.getSize());
+      assertEquals("bar", cache.getCacheEntries().iterator().next().getValue());
       assertEquals(1, stats.getHitCount());
       assertEquals(2, stats.getMissCount());
     }

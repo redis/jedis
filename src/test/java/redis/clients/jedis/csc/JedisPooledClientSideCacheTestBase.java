@@ -25,6 +25,11 @@ public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisCli
     return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3().build(), cache);
   }
 
+  @Override
+  protected JedisPooled createCachedJedis(CacheConfig cacheConfig) {
+    return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3().build(), cacheConfig);
+  }
+
   @Test
   public void clearIfOneDiesTest() {
     Cache cache = new TestCache();

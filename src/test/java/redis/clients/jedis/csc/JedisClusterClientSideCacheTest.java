@@ -38,4 +38,9 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
     return new JedisCluster(hnp, clientConfig.get(), cache);
   }
 
+  @Override
+  protected JedisCluster createCachedJedis(CacheConfig cacheConfig) {
+    return new JedisCluster(hnp, clientConfig.get(), cacheConfig);
+  }
+
 }

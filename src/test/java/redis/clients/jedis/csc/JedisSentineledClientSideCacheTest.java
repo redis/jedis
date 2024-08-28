@@ -33,4 +33,9 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
     return new JedisSentineled(MASTER_NAME, masterClientConfig, cache, sentinels, sentinelClientConfig);
   }
 
+  @Override
+  protected JedisSentineled createCachedJedis(CacheConfig cacheConfig) {
+    return new JedisSentineled(MASTER_NAME, masterClientConfig, cacheConfig, sentinels, sentinelClientConfig);
+  }
+
 }

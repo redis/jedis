@@ -24,6 +24,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   protected abstract UnifiedJedis createCachedJedis(Cache cache);
 
+  protected abstract UnifiedJedis createCachedJedis(CacheConfig cacheConfig);
+
   @Before
   public void setUp() throws Exception {
     control = createRegularJedis();
@@ -37,7 +39,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache())) {
+    CacheConfig cacheConfig = CacheConfig.builder().maxSize(1000).build();
+    try (UnifiedJedis jedis = createCachedJedis(cacheConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -64,7 +67,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void flushAll() {
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache())) {
+    CacheConfig cacheConfig = CacheConfig.builder().maxSize(1000).build();
+    try (UnifiedJedis jedis = createCachedJedis(cacheConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();

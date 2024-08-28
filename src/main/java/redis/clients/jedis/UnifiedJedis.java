@@ -20,6 +20,9 @@ import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.CacheConfig;
+import redis.clients.jedis.csc.CacheConnection;
+import redis.clients.jedis.csc.CacheProvider;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;
@@ -58,6 +61,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
+  private final Cache cache;
 
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
@@ -95,9 +99,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
-    this(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache), clientConfig.getRedisProtocol(),
-        clientSideCache);
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
+    this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(),
+        cache);
+  }
+
+  @Experimental
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
+    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig));
   }
 
   public UnifiedJedis(ConnectionProvider provider) {
@@ -109,8 +118,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache clientSideCache) {
-    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, clientSideCache);
+  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
+    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, cache);
   }
 
   /**
@@ -147,6 +156,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (proto != null)
       this.commandObjects.setProtocol(proto);
     this.graphCommandObjects = new GraphCommandObjects(this);
+    if (connection instanceof CacheConnection) {
+      this.cache = ((CacheConnection) connection).getCache();
+    } else {
+      this.cache = null;
+    }
   }
 
   @Deprecated
@@ -183,9 +197,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Experimental
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, Cache clientSideCache) {
+      RedisProtocol protocol, Cache cache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
-        new ClusterCommandObjects(), protocol, clientSideCache);
+        new ClusterCommandObjects(), protocol, cache);
   }
 
   /**
@@ -259,9 +273,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
-      RedisProtocol protocol, Cache clientSideCache) {
+      RedisProtocol protocol, Cache cache) {
 
-    if (clientSideCache != null && protocol != RedisProtocol.RESP3) {
+    if (cache != null && protocol != RedisProtocol.RESP3) {
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 
@@ -274,7 +288,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
-
+    this.cache = cache;
   }
 
   @Override
@@ -312,6 +326,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
     this.broadcastAndRoundRobinConfig = config;
     this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
+  }
+
+  public Cache getCache() {
+    return cache;
   }
 
   public String ping() {

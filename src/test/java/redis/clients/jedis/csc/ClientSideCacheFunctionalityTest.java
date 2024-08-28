@@ -259,7 +259,6 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       //invalidating the cache and read it back from server
       Assert.assertEquals("bar2", client.get("foo"));
 
-      // ArgumentCaptor<GuavaClientSideCache> argumentCaptor = ArgumentCaptor.forClass(GuavaClientSideCache.class);
       Mockito.verify(mock, Mockito.times(1)).deleteByRedisKeys(Mockito.anyList());
       Mockito.verify(mock, Mockito.times(2)).set(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
     } finally {
@@ -305,7 +304,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     ReentrantLock lock = new ReentrantLock(true);
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache())) {
+    CacheConfig cacheConfig = CacheConfig.builder().maxSize(1000).build();
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cacheConfig)) {
       // Submit multiple threads to perform concurrent operations
       CountDownLatch latch = new CountDownLatch(threadCount);
       for (int i = 0; i < threadCount; i++) {

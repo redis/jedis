@@ -50,7 +50,7 @@ public class CSCPooleadBenchmark {
                 .password(endpoint.getPassword()).build();
         List<Thread> tds = new ArrayList<>();
         final AtomicInteger ind = new AtomicInteger();
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), config, cache)) {
+        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), config, cache){}) {
             for (int i = 0; i < NUMBER_OF_THREADS; i++) {
                 Thread hj = new Thread(new Runnable() {
                     @Override

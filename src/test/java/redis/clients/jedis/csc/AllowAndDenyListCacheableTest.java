@@ -25,7 +25,7 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         createTestCache(map, new AllowAndDenyListWithStringKeys(null, null, null, null)),
-        singleConnectionPoolConfig.get())) {
+        singleConnectionPoolConfig.get()){}) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -38,7 +38,7 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         createTestCache(map, new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
-        singleConnectionPoolConfig.get())) {
+        singleConnectionPoolConfig.get()){}) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -51,7 +51,7 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         createTestCache(map, new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
-        singleConnectionPoolConfig.get())) {
+        singleConnectionPoolConfig.get()){}) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -64,7 +64,7 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         createTestCache(map, new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
-        singleConnectionPoolConfig.get())) {
+        singleConnectionPoolConfig.get()){}) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -77,7 +77,7 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         createTestCache(map, new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
-        singleConnectionPoolConfig.get())) {
+        singleConnectionPoolConfig.get()){}) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));

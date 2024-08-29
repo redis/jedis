@@ -39,8 +39,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      // this ping is an attempt to gain a reasonable amount of time to let invalidation messsage shows up on CacheConnection
-      control.ping();
       assertNull(jedis.get("foo"));
     }
   }
@@ -56,8 +54,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(1, cache.getSize());
       control.del("foo");
       assertEquals(1, cache.getSize());
-      // this ping is an attempt to gain a reasonable amount of time to let invalidation messsage shows up on CacheConnection
-      control.ping();
       assertNull(jedis.get("foo"));
       assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
@@ -72,8 +68,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      // this ping is an attempt to gain a reasonable amount of time to let invalidation messsage shows up on CacheConnection
-      control.ping();
       assertNull(jedis.get("foo"));
     }
   }
@@ -88,8 +82,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(1, cache.getSize());
       control.flushAll();
       assertEquals(1, cache.getSize());
-      // this ping is an attempt to gain a reasonable amount of time to let invalidation messsage shows up on CacheConnection
-      control.ping();
       assertNull(jedis.get("foo"));
       assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));

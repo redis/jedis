@@ -512,7 +512,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     String nonExisting = "non-existing-key";
     control.del(nonExisting);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CacheConfig().builder().maxSize(MAX_SIZE).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().maxSize(MAX_SIZE).build())) {
       Cache cache = jedis.getCache();
       CacheStats stats = cache.getStats();
 
@@ -539,16 +539,10 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
   }
 
-  public static class CustomCache extends TestCache {
-    public CustomCache(int maximumSize, EvictionPolicy evictionPolicy) {
-      super(maximumSize, evictionPolicy, DefaultCacheable.INSTANCE);
-    }
-  }
-
   @Test
   public void testCacheFactory() throws InterruptedException {
     // this checks the instantiation with parameters (int, EvictionPolicy, Cacheable)
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CacheConfig().builder().cacheClass(TestCache.class).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().cacheClass(TestCache.class).build())) {
       Cache cache = jedis.getCache();
       CacheStats stats = cache.getStats();
 
@@ -562,7 +556,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
 
     // this checks the instantiation with parameters (int, EvictionPolicy)
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CacheConfig().builder().cacheClass(CustomCache.class).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
+        CacheConfig.builder().cacheClass(TestCache.class).cacheable(null).build())) {
       Cache cache = jedis.getCache();
       CacheStats stats = cache.getStats();
 
@@ -575,5 +570,4 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(1, stats.getMissCount());
     }
   }
-
 }

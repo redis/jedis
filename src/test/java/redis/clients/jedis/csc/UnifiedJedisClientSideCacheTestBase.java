@@ -45,7 +45,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void simpleWithSimpleMap() {
-    // HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
       control.set("foo", "bar");

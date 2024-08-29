@@ -10,28 +10,33 @@ public final class CacheFactory {
 
     public static Cache getCache(CacheConfig config) {
         if (config.getCacheClass() == null) {
+            if (config.getCacheable() == null) {
+                throw new JedisCacheException("Cacheable is required to create the default cache!");
+            }
             return new DefaultCache(config.getMaxSize(), config.getCacheable(), getEvictionPolicy(config));
         }
         return instantiateCustomCache(config);
     }
 
-    private static  Cache instantiateCustomCache(CacheConfig config) {
+    private static Cache instantiateCustomCache(CacheConfig config) {
         try {
-            Constructor ctorWithCacheable = findConstructorWithCacheable(config.getCacheClass());
-            if (ctorWithCacheable != null) {
-                return (Cache) ctorWithCacheable.newInstance(config.getMaxSize(), getEvictionPolicy(config), config.getCacheable());
+            if (config.getCacheable() != null) {
+                Constructor ctorWithCacheable = findConstructorWithCacheable(config.getCacheClass());
+                if (ctorWithCacheable != null) {
+                    return (Cache) ctorWithCacheable.newInstance(config.getMaxSize(), getEvictionPolicy(config), config.getCacheable());
+                }
             }
             Constructor ctor = getConstructor(config.getCacheClass());
             return (Cache) ctor.newInstance(config.getMaxSize(), getEvictionPolicy(config));
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | SecurityException e) {
             throw new JedisCacheException("Failed to insantiate custom cache type!", e);
         }
     }
 
     private static Constructor findConstructorWithCacheable(Class customCacheType) {
         return Arrays.stream(customCacheType.getConstructors())
-                .filter(
-                    ctor -> Arrays.equals(ctor.getParameterTypes(), new Class[] { int.class, EvictionPolicy.class, Cacheable.class }))
+                .filter(ctor -> Arrays.equals(ctor.getParameterTypes(), new Class[] { int.class, EvictionPolicy.class, Cacheable.class }))
                 .findFirst().orElse(null);
     }
 

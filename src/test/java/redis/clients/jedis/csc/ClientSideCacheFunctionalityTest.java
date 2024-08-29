@@ -243,8 +243,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   public void testInvalidationWithUnifiedJedis() {
     Cache cache = new TestCache();
     Cache mock = Mockito.spy(cache);
-    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock) {
-    };
+    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock);
     UnifiedJedis controlClient = new UnifiedJedis(hnp, clientConfig.get());
 
     try {

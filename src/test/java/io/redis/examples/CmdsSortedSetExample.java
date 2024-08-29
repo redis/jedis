@@ -18,7 +18,7 @@ import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
 
 // HIDE_START
-public class CmdsSortedSet {
+public class CmdsSortedSetExample {
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");

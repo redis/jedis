@@ -6,16 +6,16 @@ import java.util.Arrays;
 
 import redis.clients.jedis.exceptions.JedisCacheException;
 
-public class CacheFactory {
+public final class CacheFactory {
 
-    public Cache getCache(CacheConfig config) {
+    public static Cache getCache(CacheConfig config) {
         if (config.getCacheClass() == null) {
             return new DefaultCache(config.getMaxSize(), config.getCacheable(), getEvictionPolicy(config));
         }
         return instantiateCustomCache(config);
     }
 
-    private Cache instantiateCustomCache(CacheConfig config) {
+    private static  Cache instantiateCustomCache(CacheConfig config) {
         try {
             Constructor ctorWithCacheable = findConstructorWithCacheable(config.getCacheClass());
             if (ctorWithCacheable != null) {
@@ -28,14 +28,14 @@ public class CacheFactory {
         }
     }
 
-    private Constructor findConstructorWithCacheable(Class customCacheType) {
+    private static Constructor findConstructorWithCacheable(Class customCacheType) {
         return Arrays.stream(customCacheType.getConstructors())
                 .filter(
                     ctor -> Arrays.equals(ctor.getParameterTypes(), new Class[] { int.class, EvictionPolicy.class, Cacheable.class }))
                 .findFirst().orElse(null);
     }
 
-    private Constructor getConstructor(Class customCacheType) {
+    private static Constructor getConstructor(Class customCacheType) {
         try {
             return customCacheType.getConstructor(int.class, EvictionPolicy.class);
         } catch (NoSuchMethodException e) {
@@ -48,7 +48,7 @@ public class CacheFactory {
         }
     }
 
-    private EvictionPolicy getEvictionPolicy(CacheConfig config) {
+    private static EvictionPolicy getEvictionPolicy(CacheConfig config) {
         if (config.getEvictionPolicy() == null) {
             // It will be default to LRUEviction, until we have other eviction implementations
             return new LRUEviction(config.getMaxSize());

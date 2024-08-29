@@ -100,7 +100,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Experimental
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
-    this(hostAndPort, clientConfig, new CacheFactory().getCache(cacheConfig));
+    this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig));
   }
 
   @Experimental

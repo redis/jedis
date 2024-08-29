@@ -19,7 +19,7 @@ public class JedisSentineled extends UnifiedJedis {
   @Experimental
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, CacheConfig cacheConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    this(masterName, masterClientConfig, new CacheFactory().getCache(cacheConfig),
+    this(masterName, masterClientConfig, CacheFactory.getCache(cacheConfig),
         sentinels, sentinelClientConfig);
   }
 

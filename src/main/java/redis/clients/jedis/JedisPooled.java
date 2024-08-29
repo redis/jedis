@@ -81,7 +81,7 @@ public class JedisPooled extends UnifiedJedis {
 
   @Experimental
   public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, CacheConfig cacheConfig) {
-    this(hostAndPort, clientConfig, new CacheFactory().getCache(cacheConfig));
+    this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig));
   }
 
   @Experimental
@@ -392,7 +392,7 @@ public class JedisPooled extends UnifiedJedis {
   @Experimental
   public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, CacheConfig cacheConfig,
       final GenericObjectPoolConfig<Connection> poolConfig) {
-    this(hostAndPort, clientConfig, new CacheFactory().getCache(cacheConfig), poolConfig);
+    this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig), poolConfig);
   }
 
   @Experimental

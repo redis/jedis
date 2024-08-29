@@ -546,7 +546,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
-  public void testCacheProvider() throws InterruptedException {
+  public void testCacheFactory() throws InterruptedException {
     // this checks the instantiation with parameters (int, EvictionPolicy, Cacheable)
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CacheConfig().builder().cacheClass(TestCache.class).build())) {
       Cache cache = jedis.getCache();

@@ -227,7 +227,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache) {
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache) {
     this(clusterNodes, clientConfig, clientSideCache, DEFAULT_MAX_ATTEMPTS,
         Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()));
   }
@@ -240,14 +240,14 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
       int maxAttempts, Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig),
         maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);
   }
 
   @Experimental
-  protected JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig),
         DEFAULT_MAX_ATTEMPTS, Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()),
@@ -255,7 +255,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
       GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig, topologyRefreshPeriod),

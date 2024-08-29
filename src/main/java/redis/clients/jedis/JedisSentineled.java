@@ -24,7 +24,7 @@ public class JedisSentineled extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache,
         sentinels, sentinelClientConfig), masterClientConfig.getRedisProtocol(), clientSideCache);
@@ -38,7 +38,7 @@ public class JedisSentineled extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache, poolConfig,

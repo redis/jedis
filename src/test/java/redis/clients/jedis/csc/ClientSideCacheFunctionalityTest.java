@@ -22,6 +22,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -171,21 +173,19 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       control.set("k" + i, "v" + i);
     }
 
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    Cache clientSideCache = new TestCache(map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache) {
-    }) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-      assertThat(map, aMapWithSize(count));
+      assertEquals(count, cache.getSize());
 
-      List<CacheKey> cacheKeys = new ArrayList<>(map.keySet());
+      List<CacheEntry> cacheKeys = new ArrayList<>(cache.getCacheEntries());
       for (int i = 0; i < count; i++) {
-        CacheKey cacheKey = cacheKeys.get(i);
-        assertTrue(clientSideCache.delete(cacheKey));
-        assertFalse(map.containsKey(cacheKey));
-        assertThat(map, aMapWithSize(count - i - 1));
+        CacheKey cacheKey = cacheKeys.get(i).getCacheKey();
+        assertTrue(cache.delete(cacheKey));
+        assertFalse(cache.hasCacheKey(cacheKey));
+        assertEquals(count - i - 1, cache.getSize());
       }
     }
   }
@@ -198,20 +198,19 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       control.set("k" + i, "v" + i);
     }
 
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    Cache clientSideCache = new TestCache(map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache) {
-    }) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
+   
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-      assertThat(map, aMapWithSize(count));
+      assertEquals(count, cache.getSize());
 
-      List<CacheKey> cacheKeysToDelete = new ArrayList<>(map.keySet()).subList(0, delete);
-      List<Boolean> isDeleted = clientSideCache.delete(cacheKeysToDelete);
+      List<CacheKey> cacheKeysToDelete = new ArrayList<>(cache.getCacheEntries()).subList(0, delete).stream().map(e->e.getCacheKey()).collect(Collectors.toList());
+      List<Boolean> isDeleted = cache.delete(cacheKeysToDelete);
       assertThat(isDeleted, hasSize(delete));
       isDeleted.forEach(Assert::assertTrue);
-      assertThat(map, aMapWithSize(count - delete));
+      assertEquals(count - delete, cache.getSize());
     }
   }
 

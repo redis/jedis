@@ -117,7 +117,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
+  public UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, cache);
   }
 
@@ -196,7 +196,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+  public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache cache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol, cache);

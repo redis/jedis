@@ -543,4 +543,41 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
   }
 
+  public static class CustomCache extends TestCache {
+    public CustomCache(int maximumSize, EvictionPolicy evictionPolicy) {
+      super(maximumSize, evictionPolicy, DefaultCacheable.INSTANCE);
+    }
+  }
+
+  @Test
+  public void testCacheProvider() throws InterruptedException {
+    // this checks the instantiation with parameters (int, EvictionPolicy, Cacheable)
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CacheConfig().builder().cacheClass(TestCache.class).build())) {
+      Cache cache = jedis.getCache();
+      CacheStats stats = cache.getStats();
+
+      String val = jedis.get("foo");
+      val = jedis.get("foo");
+      assertNull(val);
+      assertEquals(1, cache.getSize());
+      assertNull(cache.getCacheEntries().iterator().next().getValue());
+      assertEquals(1, stats.getHitCount());
+      assertEquals(1, stats.getMissCount());
+    }
+
+    // this checks the instantiation with parameters (int, EvictionPolicy)
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CacheConfig().builder().cacheClass(CustomCache.class).build())) {
+      Cache cache = jedis.getCache();
+      CacheStats stats = cache.getStats();
+
+      String val = jedis.get("foo");
+      val = jedis.get("foo");
+      assertNull(val);
+      assertEquals(1, cache.getSize());
+      assertNull(cache.getCacheEntries().iterator().next().getValue());
+      assertEquals(1, stats.getHitCount());
+      assertEquals(1, stats.getMissCount());
+    }
+  }
+
 }

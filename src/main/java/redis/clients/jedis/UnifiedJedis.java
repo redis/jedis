@@ -106,7 +106,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Experimental
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(), cache);
-
   }
 
   public UnifiedJedis(ConnectionProvider provider) {

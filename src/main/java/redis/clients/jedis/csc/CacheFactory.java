@@ -31,13 +31,13 @@ public class CacheFactory {
     private Constructor findConstructorWithCacheable(Class customCacheType) {
         return Arrays.stream(customCacheType.getConstructors())
                 .filter(
-                    ctor -> Arrays.equals(ctor.getParameterTypes(), new Class[] { Integer.class, EvictionPolicy.class, Cacheable.class }))
+                    ctor -> Arrays.equals(ctor.getParameterTypes(), new Class[] { int.class, EvictionPolicy.class, Cacheable.class }))
                 .findFirst().orElse(null);
     }
 
     private Constructor getConstructor(Class customCacheType) {
         try {
-            return customCacheType.getConstructor(Integer.class, EvictionPolicy.class);
+            return customCacheType.getConstructor(int.class, EvictionPolicy.class);
         } catch (NoSuchMethodException e) {
             String className = customCacheType.getName();
             throw new JedisCacheException(String.format(

@@ -43,7 +43,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       control.set("k" + i, "v" + i);
     }
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().maxSize(1000).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -92,7 +92,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
   @Test // T.5.2
   public void deleteByKeyUsingMGetTest() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().maxSize(1000).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
       Cache clientSideCache = jedis.getCache();
 
       jedis.set("1", "one");
@@ -216,7 +216,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k1", "v1");
     control.set("k2", "v2");
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().maxSize(1000).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
       jedis.mget("k1", "k2");
       assertEquals(1, jedis.getCache().getSize());
     }
@@ -272,7 +272,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   public void differentInstanceOnEachCacheHit() {
 
     // fill the cache for maxSize
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().maxSize(1000).build())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
       jedis.sadd("foo", "a");
       jedis.sadd("foo", "b");
@@ -348,7 +348,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
     // Create the shared mock instance of cache
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), CacheConfig.builder().maxSize(1000).build())) {
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
       // Submit multiple threads to perform concurrent operations
       CountDownLatch latch = new CountDownLatch(threadCount);
@@ -385,7 +385,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), CacheConfig.builder().maxSize(1000).build())) {
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), CacheConfig.builder().maxSize(maxSize).build())) {
       Cache testCache = jedis.getCache();
       // Submit multiple threads to perform concurrent operations
       CountDownLatch latch = new CountDownLatch(threadCount);

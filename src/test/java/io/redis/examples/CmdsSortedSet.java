@@ -18,7 +18,7 @@ import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
 
 // HIDE_START
-public class Cmds_sorted_set {
+public class CmdsSortedSet {
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -97,6 +97,7 @@ public class Cmds_sorted_set {
         Assert.assertEquals(new Tuple("uno", 1.0), zAddResult4.get(1));
         Assert.assertEquals(new Tuple("two", 2.0), zAddResult4.get(2));
         Assert.assertEquals(new Tuple("three", 3.0), zAddResult4.get(3));
+        jedis.del("myzset");
         // REMOVE_END
 
 
@@ -241,32 +242,75 @@ public class Cmds_sorted_set {
 
 
         // STEP_START zrange1
+        Map<String, Double> zRangeExampleParams1 = new HashMap<>();
+        zRangeExampleParams1.put("one", 1.0);
+        zRangeExampleParams1.put("two", 2.0);
+        zRangeExampleParams1.put("three", 3.0);
+        long zRangeResult1 = jedis.zadd("myzset", zRangeExampleParams1);
+        System.out.println(zRangeResult1);  // >>> 3
 
+        List<String> zRangeResult2 = jedis.zrange("myzset", new ZRangeParams(0, -1));
+        System.out.println(String.join(", ", zRangeResult2));   // >>> one, two, three
+
+        List<String> zRangeResult3 = jedis.zrange("myzset", new ZRangeParams(2, 3));
+        System.out.println(String.join(", ", zRangeResult3));   // >> three
+
+        List<String> zRangeResult4 = jedis.zrange("myzset", new ZRangeParams(-2, -1));
+        System.out.println(String.join(", ", zRangeResult4));   // >> two, three
         // STEP_END
 
         // Tests for 'zrange1' step.
         // REMOVE_START
-
+        Assert.assertEquals(3, zRangeResult1);
+        Assert.assertEquals("one, two, three", String.join(", ", zRangeResult2));
+        Assert.assertEquals("three", String.join(", ", zRangeResult3));
+        Assert.assertEquals("two, three", String.join(", ", zRangeResult4));
+        jedis.del("myzset");
         // REMOVE_END
 
 
         // STEP_START zrange2
+        Map<String, Double> zRangeExampleParams2 = new HashMap<>();
+        zRangeExampleParams2.put("one", 1.0);
+        zRangeExampleParams2.put("two", 2.0);
+        zRangeExampleParams2.put("three", 3.0);
+        long zRangeResult5 = jedis.zadd("myzset", zRangeExampleParams2);
+        System.out.println(zRangeResult5);  // >>> 3
 
+        List<Tuple> zRangeResult6 = jedis.zrangeWithScores("myzset", new ZRangeParams(0, 1));
+
+        for (Tuple item: zRangeResult6) {
+            System.out.println("Element: " + item.getElement() + ", Score: " + item.getScore());
+        }
+        // >>> Element: one, Score: 1.0
+        // >>> Element: two, Score: 2.0
         // STEP_END
 
         // Tests for 'zrange2' step.
         // REMOVE_START
-
+        Assert.assertEquals(3, zRangeResult5);
+        Assert.assertEquals(new Tuple("one", 1.0), zRangeResult6.get(0));
+        Assert.assertEquals(new Tuple("two", 2.0), zRangeResult6.get(1));
+        jedis.del("myzset");
         // REMOVE_END
 
 
         // STEP_START zrange3
+        Map<String, Double> zRangeExampleParams3 = new HashMap<>();
+        zRangeExampleParams3.put("one", 1.0);
+        zRangeExampleParams3.put("two", 2.0);
+        zRangeExampleParams3.put("three", 3.0);
+        long zRangeResult7 = jedis.zadd("myzset", zRangeExampleParams3);
+        System.out.println(zRangeResult7);  // >>> 3
 
+        List<String> zRangeResult8 = jedis.zrangeByScore("myzset", "(1", "+inf", 1, 1);
+        System.out.println(String.join(", ", zRangeResult8));   // >>> three
         // STEP_END
 
         // Tests for 'zrange3' step.
         // REMOVE_START
-
+        Assert.assertEquals(3, zRangeResult7);
+        Assert.assertEquals("three", String.join(", ", zRangeResult8));
         // REMOVE_END
 
 

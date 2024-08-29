@@ -67,8 +67,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     Map<CacheKey, CacheEntry> map = new LinkedHashMap<>(count);
     Cache cache = new DefaultCache(count, map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache) {
-    }) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
 
       // Retrieve the 100 keys in the same order
       for (int i = 0; i < count; i++) {
@@ -117,8 +116,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
     LinkedHashMap<CacheKey, CacheEntry> map = new LinkedHashMap<>();
     Cache clientSideCache = new TestCache(map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache) {
-    }) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
@@ -149,8 +147,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
     LinkedHashMap<CacheKey, CacheEntry> map = new LinkedHashMap<>();
     Cache clientSideCache = new TestCache(map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache) {
-    }) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
@@ -200,13 +197,13 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
-   
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
       assertEquals(count, cache.getSize());
 
-      List<CacheKey> cacheKeysToDelete = new ArrayList<>(cache.getCacheEntries()).subList(0, delete).stream().map(e->e.getCacheKey()).collect(Collectors.toList());
+      List<CacheKey> cacheKeysToDelete = new ArrayList<>(cache.getCacheEntries()).subList(0, delete).stream().map(e -> e.getCacheKey())
+          .collect(Collectors.toList());
       List<Boolean> isDeleted = cache.delete(cacheKeysToDelete);
       assertThat(isDeleted, hasSize(delete));
       isDeleted.forEach(Assert::assertTrue);

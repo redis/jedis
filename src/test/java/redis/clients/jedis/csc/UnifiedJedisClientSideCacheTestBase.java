@@ -1,15 +1,12 @@
 package redis.clients.jedis.csc;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +18,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
   protected UnifiedJedis control;
 
   protected abstract UnifiedJedis createRegularJedis();
-
-  protected abstract UnifiedJedis createCachedJedis(Cache cache);
 
   protected abstract UnifiedJedis createCachedJedis(CacheConfig cacheConfig);
 
@@ -50,18 +45,18 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void simpleWithSimpleMap() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache(map))) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       control.set("foo", "bar");
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertEquals(0, cache.getSize());
       assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
       control.del("foo");
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
     }
   }
 
@@ -78,37 +73,37 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void flushAllWithSimpleMap() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache(map))) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       control.set("foo", "bar");
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertEquals(0, cache.getSize());
       assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
       control.flushAll();
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
     }
   }
 
   @Test
   public void cacheNotEmptyTest() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache(map))) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       control.set("foo", "bar");
-      assertThat(map, Matchers.aMapWithSize(0));
+      assertEquals(0, cache.getSize());
       assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(1, cache.getSize());
     }
   }
 
   @Test
   public void cacheUsedTest() {
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    Cache cache = new TestCache(map);
-    try (UnifiedJedis jedis = createCachedJedis(cache)) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
+
       control.set("foo", "bar");
 
       assertEquals(0, cache.getStats().getMissCount());
@@ -126,7 +121,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void immutableCacheEntriesTest() {
-    try (UnifiedJedis jedis = createCachedJedis(new TestCache())) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
       jedis.set("{csc}a", "AA");
       jedis.set("{csc}b", "BB");
       jedis.set("{csc}c", "CC");
@@ -145,8 +140,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void invalidationTest() {
-    Cache cache = new TestCache();
-    try (UnifiedJedis jedis = createCachedJedis(cache)) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       jedis.set("{csc}1", "one");
       jedis.set("{csc}2", "two");
       jedis.set("{csc}3", "three");
@@ -170,8 +165,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void getNumEntriesTest() {
-    Cache cache = new TestCache();
-    try (UnifiedJedis jedis = createCachedJedis(cache)) {
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
 
       // Create 100 keys
       for (int i = 0; i < 100; i++) {
@@ -189,9 +184,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void invalidationOnCacheHitTest() {
-    Cache cache = new TestCache();
-    try (UnifiedJedis jedis = createCachedJedis(cache)) {
-
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       // Create 100 keys
       for (int i = 0; i < 100; i++) {
         jedis.set("key" + i, "value" + i);

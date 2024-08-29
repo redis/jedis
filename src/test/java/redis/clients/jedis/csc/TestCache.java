@@ -17,13 +17,12 @@ public class TestCache extends DefaultCache {
     super(10000, map, cacheable, new LRUEviction(10000));
   }
 
-  public TestCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable) {
-    this(maximumSize, map, cacheable, new LRUEviction(maximumSize));
+  public TestCache(int maximumSize, EvictionPolicy evictionPolicy ) {
+    super(maximumSize, new HashMap<CacheKey, CacheEntry>(), DefaultCacheable.INSTANCE, evictionPolicy);
   }
 
-  public TestCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable,
-      EvictionPolicy evictionPolicy) {
-    super(maximumSize, map, cacheable, evictionPolicy);
+  public TestCache(int maximumSize, EvictionPolicy evictionPolicy, Cacheable cacheable ) {
+    super(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, evictionPolicy);
   }
 
 }

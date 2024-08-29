@@ -21,20 +21,14 @@ public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisCli
   }
 
   @Override
-  protected JedisPooled createCachedJedis(Cache cache) {
-    return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3().build(), cache);
-  }
-
-  @Override
   protected JedisPooled createCachedJedis(CacheConfig cacheConfig) {
     return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3().build(), cacheConfig);
   }
 
   @Test
   public void clearIfOneDiesTest() {
-    Cache cache = new TestCache();
-    try (JedisPooled jedis = createCachedJedis(cache)) {
-
+    try (JedisPooled jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
       // Create 100 keys
       for (int i = 0; i < 100; i++) {
         jedis.set("key" + i, "value" + i);

@@ -22,7 +22,7 @@ import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheConnection;
-import redis.clients.jedis.csc.CacheProvider;
+import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;
@@ -100,7 +100,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Experimental
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
-    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig));
+    this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig));
   }
 
   @Experimental

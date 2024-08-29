@@ -21,6 +21,10 @@ public class DefaultCache extends AbstractCache {
         this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, new LRUEviction(maximumSize));
     }
 
+    protected DefaultCache(int maximumSize, Cacheable cacheable, EvictionPolicy evictionPolicy) {
+        this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, evictionPolicy);
+    }
+
     protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable, EvictionPolicy evictionPolicy) {
         super(maximumSize, cacheable);
         this.cache = map;

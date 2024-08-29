@@ -311,6 +311,7 @@ public class CmdsSortedSet {
         // REMOVE_START
         Assert.assertEquals(3, zRangeResult7);
         Assert.assertEquals("three", String.join(", ", zRangeResult8));
+        jedis.del("myzset");
         // REMOVE_END
 
 

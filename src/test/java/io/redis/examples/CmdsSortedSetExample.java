@@ -4,16 +4,14 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
 
 // REMOVE_END
 // HIDE_START
-import redis.clients.jedis.UnifiedJedis;
 // HIDE_END
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
 

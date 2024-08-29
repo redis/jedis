@@ -233,7 +233,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
       int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache), maxAttempts,
         maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);

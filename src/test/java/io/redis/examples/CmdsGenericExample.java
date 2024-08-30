@@ -10,6 +10,7 @@ import org.junit.Assert;
 // REMOVE_END
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.SetParams;
 // HIDE_END
 
@@ -76,12 +77,46 @@ public class CmdsGenericExample {
 
 
         // STEP_START expire
+        String expireResult1 = jedis.set("mykey", "Hello");
+        System.out.println(expireResult1);  // >>> OK
 
+        long expireResult2 = jedis.expire("mykey", 10);
+        System.out.println(expireResult2);  // >>> 1
+
+        long expireResult3 = jedis.ttl("mykey");
+        System.out.println(expireResult3);  // >>> 10
+
+        String expireResult4 = jedis.set("mykey", "Hello World");
+        System.out.println(expireResult4);  // >>> OK
+
+        long expireResult5 = jedis.ttl("mykey");
+        System.out.println(expireResult5);  // >>> -1
+
+        long expireResult6 = jedis.expire("mykey", 10, ExpiryOption.XX);
+        System.out.println(expireResult6);  // >>> 0
+
+        long expireResult7 = jedis.ttl("mykey");
+        System.out.println(expireResult7);  // >>> -1
+
+        long expireResult8 = jedis.expire("mykey", 10, ExpiryOption.NX);
+        System.out.println(expireResult8);  // >>> 1
+
+        long expireResult9 = jedis.ttl("mykey");
+        System.out.println(expireResult9);  // >>> 10
         // STEP_END
 
         // Tests for 'expire' step.
         // REMOVE_START
-
+        Assert.assertEquals("OK", expireResult1);
+        Assert.assertEquals(1, expireResult2);
+        Assert.assertEquals(10, expireResult3);
+        Assert.assertEquals("OK", expireResult4);
+        Assert.assertEquals(-1, expireResult5);
+        Assert.assertEquals(0, expireResult6);
+        Assert.assertEquals(-1, expireResult7);
+        Assert.assertEquals(1, expireResult8);
+        Assert.assertEquals(10, expireResult9);
+        jedis.del("mykey");
         // REMOVE_END
 
 

@@ -371,12 +371,22 @@ public class CmdsGenericExample {
 
 
         // STEP_START ttl
+        String ttlResult1 = jedis.set("mykey", "Hello");
+        System.out.println(ttlResult1); // >>> OK
 
+        long ttlResult2 = jedis.expire("mykey", 10);
+        System.out.println(ttlResult2); // >>> 1
+
+        long ttlResult3 = jedis.ttl("mykey");
+        System.out.println(ttlResult3); // >>> 10
         // STEP_END
 
         // Tests for 'ttl' step.
         // REMOVE_START
-
+        Assert.assertEquals("OK", ttlResult1);
+        Assert.assertEquals(1, ttlResult2);
+        Assert.assertEquals(10, ttlResult3);
+        jedis.del("mykey");
         // REMOVE_END
 
 

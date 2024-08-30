@@ -3,15 +3,12 @@
 package io.redis.examples;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
-
 import org.junit.Assert;
 
 // REMOVE_END
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ExpiryOption;
-import redis.clients.jedis.params.SetParams;
 // HIDE_END
 
 // HIDE_START

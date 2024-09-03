@@ -3,7 +3,6 @@
 package io.redis.examples;
 
 import org.junit.Test;
-import org.junit.Assert;
 
 // REMOVE_END
 // HIDE_START
@@ -126,9 +125,9 @@ public class Cmds_string {
 
         // Tests for 'incr' step.
         // REMOVE_START
-        Assert.assertEquals("OK", incrResult1);
-        Assert.assertEquals(11, incrResult2);
-        Assert.assertEquals("11", incrResult3);
+        assert incrResult1.equals("OK");
+        assert incrResult2 == 11;
+        assert incrResult3.equals("11");
         jedis.del("mykey");
         // REMOVE_END
 

@@ -3384,19 +3384,20 @@ public class CommandObjects {
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.SEARCH, indexName).add(query),
-        getSearchResultBuilder(() -> new SearchResultBuilder(true, false, true)));
+        getSearchResultBuilder(null, () -> new SearchResultBuilder(true, false, true)));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.SEARCH, indexName)
         .add(query).addParams(params.dialectOptional(searchDialect.get())),
-        getSearchResultBuilder(() -> new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), true)));
+        getSearchResultBuilder(params.getReturnFieldDecodeMap(), () -> new SearchResultBuilder(
+            !params.getNoContent(), params.getWithScores(), true, params.getReturnFieldDecodeMap())));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.SEARCH, indexName)
-        .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(() -> 
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true)));
+        .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(null,
+        () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true)));
   }
 
   @Deprecated
@@ -3405,8 +3406,8 @@ public class CommandObjects {
       throw new UnsupportedOperationException("binary ft.search is not implemented with resp3.");
     }
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
-        .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(() -> 
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false)));
+        .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(null,
+        () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false)));
   }
 
   public final CommandObject<String> ftExplain(String indexName, Query query) {
@@ -3449,20 +3450,27 @@ public class CommandObjects {
       String indexName, FTProfileParams profileParams, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
-        .addParams(query.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
-            getSearchResultBuilder(() -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true))));
+        .addParams(query.dialectOptional(searchDialect.get())),
+        new SearchProfileResponseBuilder<>(getSearchResultBuilder(null,
+            () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true))));
   }
 
   public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
-        .addParams(searchParams.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
-            getSearchResultBuilder(() -> new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), true))));
+        .addParams(searchParams.dialectOptional(searchDialect.get())),
+        new SearchProfileResponseBuilder<>(getSearchResultBuilder(searchParams.getReturnFieldDecodeMap(),
+            () -> new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), true,
+                searchParams.getReturnFieldDecodeMap()))));
   }
 
-  private Builder<SearchResult> getSearchResultBuilder(Supplier<Builder<SearchResult>> resp2) {
-    if (protocol == RedisProtocol.RESP3) return SearchResult.SEARCH_RESULT_BUILDER;
+  private Builder<SearchResult> getSearchResultBuilder(
+      Map<String, Boolean> isReturnFieldDecode, Supplier<Builder<SearchResult>> resp2) {
+    if (protocol == RedisProtocol.RESP3) {
+      return isReturnFieldDecode == null ? SearchResult.SEARCH_RESULT_BUILDER
+          : new SearchResult.PerFieldDecoderSearchResultBuilder(isReturnFieldDecode);
+    }
     return resp2.get();
   }
 

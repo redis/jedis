@@ -960,7 +960,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testReturnFields() {
+  public void returnFields() {
     assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
     Map<String, Object> doc = new HashMap<>();
@@ -975,10 +975,16 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Document ret = res.getDocuments().get(0);
     assertEquals("value1", ret.get("field1"));
     assertNull(ret.get("field2"));
+
+    res = client.ftSearch(index, "*", FTSearchParams.searchParams().returnField("field1", true));
+    assertEquals("value1", res.getDocuments().get(0).get("field1"));
+
+    res = client.ftSearch(index, "*", FTSearchParams.searchParams().returnField("field1", false));
+    assertArrayEquals("value1".getBytes(), (byte[]) res.getDocuments().get(0).get("field1"));
   }
 
   @Test
-  public void returnWithFieldNames() {
+  public void returnFieldsNames() {
     assertOK(client.ftCreate(index, TextField.of("a"), TextField.of("b"), TextField.of("c")));
 
     Map<String, Object> map = new HashMap<>();
@@ -989,14 +995,39 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     // Query
     SearchResult res = client.ftSearch(index, "*",
-        FTSearchParams.searchParams().returnFields(
-            FieldName.of("a"), FieldName.of("b").as("d")));
+        FTSearchParams.searchParams()
+            .returnFields(FieldName.of("a"),
+                FieldName.of("b").as("d")));
     assertEquals(1, res.getTotalResults());
     Document doc = res.getDocuments().get(0);
     assertEquals("value1", doc.get("a"));
     assertNull(doc.get("b"));
     assertEquals("value2", doc.get("d"));
     assertNull(doc.get("c"));
+
+    res = client.ftSearch(index, "*",
+        FTSearchParams.searchParams()
+            .returnField(FieldName.of("a"))
+            .returnField(FieldName.of("b").as("d")));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("value1", res.getDocuments().get(0).get("a"));
+    assertEquals("value2", res.getDocuments().get(0).get("d"));
+
+    res = client.ftSearch(index, "*",
+        FTSearchParams.searchParams()
+            .returnField(FieldName.of("a"), true)
+            .returnField(FieldName.of("b").as("d"), true));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("value1", res.getDocuments().get(0).get("a"));
+    assertEquals("value2", res.getDocuments().get(0).get("d"));
+
+    res = client.ftSearch(index, "*",
+        FTSearchParams.searchParams()
+            .returnField(FieldName.of("a"), false)
+            .returnField(FieldName.of("b").as("d"), false));
+    assertEquals(1, res.getTotalResults());
+    assertArrayEquals("value1".getBytes(), (byte[]) res.getDocuments().get(0).get("a"));
+    assertArrayEquals("value2".getBytes(), (byte[]) res.getDocuments().get(0).get("d"));
   }
 
   @Test

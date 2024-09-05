@@ -12,18 +12,18 @@ import java.util.List;
 
 public class FakeApp implements Runnable {
 
-  private static final Logger log = LoggerFactory.getLogger(FakeApp.class);
+  protected static final Logger log = LoggerFactory.getLogger(FakeApp.class);
 
   public void setKeepExecutingForSeconds(int keepExecutingForSeconds) {
     this.keepExecutingForSeconds = keepExecutingForSeconds;
   }
 
-  private int keepExecutingForSeconds = 60;
+  protected int keepExecutingForSeconds = 60;
 
-  private FaultInjectionClient.TriggerActionResponse actionResponse = null;
-  private final UnifiedJedis client;
-  private final ExecutedAction action;
-  private List<JedisException> exceptions = new ArrayList<>();
+  protected FaultInjectionClient.TriggerActionResponse actionResponse = null;
+  protected final UnifiedJedis client;
+  protected final ExecutedAction action;
+  protected List<JedisException> exceptions = new ArrayList<>();
 
   @FunctionalInterface
   public interface ExecutedAction {

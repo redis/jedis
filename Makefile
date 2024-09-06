@@ -446,7 +446,7 @@ start: stunnel cleanup compile-module
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
-	docker run -p 6479:6379 --name jedis-stack -d redis/redis-stack-server:edge
+	docker run -p 6479:6379 --name jedis-stack -d redis/redis-stack-server:6.2.6-v15
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -527,7 +527,7 @@ mvn-release:
 
 system-setup:
 	sudo apt install -y gcc g++
-	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
+	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch 6.2 --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
 

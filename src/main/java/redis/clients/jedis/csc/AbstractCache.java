@@ -146,8 +146,7 @@ public abstract class AbstractCache implements Cache {
     }
     lock.lock();
     try {
-      return ((List<Object>) keys).stream()
-          .map(this::deleteByRedisKey).flatMap(List::stream).collect(Collectors.toList());
+      return ((List<Object>) keys).stream().map(this::deleteByRedisKey).flatMap(List::stream).collect(Collectors.toList());
     } finally {
       lock.unlock();
     }
@@ -193,6 +192,10 @@ public abstract class AbstractCache implements Cache {
     return result;
   }
 
+  @Override
+  public boolean compatibilityMode() {
+    return false;
+  }
   // End of Cache interface methods
 
   // abstract methods to be implemented by the concrete classes
@@ -216,8 +219,8 @@ public abstract class AbstractCache implements Cache {
     } else if (key instanceof String) {
       return makeKeyForRedisKeysToCacheKeys(SafeEncoder.encode((String) key));
     } else {
-      throw new IllegalArgumentException(key.getClass().getSimpleName() + " is not supported."
-          + " Value: \"" + String.valueOf(key) + "\".");
+      throw new IllegalArgumentException(
+          key.getClass().getSimpleName() + " is not supported." + " Value: \"" + String.valueOf(key) + "\".");
     }
   }
 

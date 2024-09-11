@@ -11,17 +11,27 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
+import redis.clients.jedis.util.Version;
 
 public class CacheConnection extends Connection {
 
   private final Cache cache;
   private ReentrantLock lock;
+  private static final String REDIS = "redis";
+  private static final String MIN_REDIS_VERSION = "7.4";
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
 
     if (protocol != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
+    }
+    if (!cache.compatibilityMode()) {
+      Version current = new Version(version);
+      Version required = new Version(MIN_REDIS_VERSION);
+      if (!REDIS.equals(server) || current.compareTo(required) < 1) {
+        throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
+      }
     }
     this.cache = Objects.requireNonNull(cache);
     initializeClientSideCache();

@@ -521,22 +521,22 @@ public class Connection implements Closeable {
   }
 
   private void helloAndAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
-    Object helloResp = null;
+    Map<String, Object> helloResult = null;
     if (protocol != null && credentials != null && credentials.getUser() != null) {
       byte[] rawPass = encodeToBytes(credentials.getPassword());
       try {
-        sendCommand(Command.HELLO, encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
-        helloResp = getOne();
+        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
       } finally {
         Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }
     } else {
       auth(credentials);
-      helloResp = hello(protocol);
+      helloResult = protocol == null ? null : hello(encode(protocol.version()));
     }
-    Map<String, Object> helloResult = BuilderFactory.ENCODED_OBJECT_MAP.build(helloResp);
-    server = (String) helloResult.get("server");
-    version = (String) helloResult.get("version");
+    if (helloResult != null) {
+      server = (String) helloResult.get("server");
+      version = (String) helloResult.get("version");
+    }
 
     // clearing 'char[] credentials.getPassword()' should be
     // handled in RedisCredentialsProvider.cleanUp()
@@ -559,16 +559,12 @@ public class Connection implements Closeable {
     getStatusCodeReply();
   }
 
-  private Object hello(RedisProtocol protocol) {
-    if (protocol == null) {
-      sendCommand(Command.HELLO);
-    } else {
-      sendCommand(Command.HELLO, encode(protocol.version()));
-    }
-    return getOne();
+  protected Map<String, Object> hello(byte[]... args) {
+    sendCommand(Command.HELLO, args);
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
   }
 
-  private byte[] encodeToBytes(char[] chars) {
+  protected byte[] encodeToBytes(char[] chars) {
     // Source: https://stackoverflow.com/a/9670279/4021802
     ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(chars));
     byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());

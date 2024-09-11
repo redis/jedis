@@ -39,7 +39,7 @@ public class CacheConnection extends Connection {
       }
       Version current = new Version(version);
       Version required = new Version(MIN_REDIS_VERSION);
-      if (!REDIS.equals(server) || current.compareTo(required) < 1) {
+      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
         throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
       }
     }

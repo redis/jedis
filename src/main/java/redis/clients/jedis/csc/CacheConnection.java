@@ -1,8 +1,5 @@
 package redis.clients.jedis.csc;
 
-import static redis.clients.jedis.util.SafeEncoder.encode;
-
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 

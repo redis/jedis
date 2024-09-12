@@ -30,13 +30,6 @@ public class CacheConnection extends Connection {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
     if (!cache.compatibilityMode()) {
-      if (server == null || version == null) {
-        Map<String, Object> helloResult = hello(encode(protocol.version()));
-        if (helloResult != null) {
-          server = (String) helloResult.get("server");
-          version = (String) helloResult.get("version");
-        }
-      }
       Version current = new Version(version);
       Version required = new Version(MIN_REDIS_VERSION);
       if (!REDIS.equals(server) || current.compareTo(required) < 0) {

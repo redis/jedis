@@ -8,23 +8,23 @@ public class VersionTest {
 
     @Test
     public void compareSameVersions() {
-        Version a = new Version("5.2.4");
-        Version b = new Version("5.2.4");
+        RedisVersion a = new RedisVersion("5.2.4");
+        RedisVersion b = new RedisVersion("5.2.4");
         assertEquals(a, b);
 
-        Version c = new Version("5.2.0.0");
-        Version d = new Version("5.2");
+        RedisVersion c = new RedisVersion("5.2.0.0");
+        RedisVersion d = new RedisVersion("5.2");
         assertEquals(a, b);
     }
 
     @Test
     public void compareDifferentVersions() {
-        Version a = new Version("5.2.4");
-        Version b = new Version("5.1.4");
+        RedisVersion a = new RedisVersion("5.2.4");
+        RedisVersion b = new RedisVersion("5.1.4");
         assertEquals(1, a.compareTo(b));
 
-        Version c = new Version("5.2.4");
-        Version d = new Version("5.2.5");
+        RedisVersion c = new RedisVersion("5.2.4");
+        RedisVersion d = new RedisVersion("5.2.5");
         assertEquals(-1, c.compareTo(d));
     }
 }

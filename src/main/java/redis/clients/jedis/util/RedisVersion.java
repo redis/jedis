@@ -2,19 +2,19 @@ package redis.clients.jedis.util;
 
 import java.util.Arrays;
 
-public class Version implements Comparable<Version> {
+public class RedisVersion implements Comparable<RedisVersion> {
 
     private String version;
     private Integer[] numbers;
 
-    public Version(String version) {
+    public RedisVersion(String version) {
         if (version == null) throw new IllegalArgumentException("Version can not be null");
         this.version = version;
         this.numbers = Arrays.stream(version.split("\\.")).map(n -> Integer.parseInt(n)).toArray(Integer[]::new);
     }
 
     @Override
-    public int compareTo(Version other) {
+    public int compareTo(RedisVersion other) {
         int max = Math.max(this.numbers.length, other.numbers.length);
         for (int i = 0; i < max; i++) {
             int thisNumber = this.numbers.length > i ? this.numbers[i]:0;
@@ -35,7 +35,7 @@ public class Version implements Comparable<Version> {
         if (this == that) return true;
         if (that == null) return false;
         if (this.getClass() != that.getClass()) return false;
-        return this.compareTo((Version) that) == 0;
+        return this.compareTo((RedisVersion) that) == 0;
     }
 
 }

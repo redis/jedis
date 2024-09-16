@@ -11,7 +11,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
-import redis.clients.jedis.util.Version;
+import redis.clients.jedis.util.RedisVersion;
 
 public class CacheConnection extends Connection {
 
@@ -27,8 +27,8 @@ public class CacheConnection extends Connection {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
     if (!cache.compatibilityMode()) {
-      Version current = new Version(version);
-      Version required = new Version(MIN_REDIS_VERSION);
+      RedisVersion current = new RedisVersion(version);
+      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
       if (!REDIS.equals(server) || current.compareTo(required) < 0) {
         throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
       }

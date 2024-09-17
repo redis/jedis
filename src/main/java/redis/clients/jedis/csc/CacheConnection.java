@@ -11,7 +11,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
-import redis.clients.jedis.util.RedisVersion;
 
 public class CacheConnection extends Connection {
 

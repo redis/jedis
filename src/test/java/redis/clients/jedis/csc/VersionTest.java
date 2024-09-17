@@ -1,4 +1,4 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis.csc;
 
 import static org.junit.Assert.assertEquals;
 

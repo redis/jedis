@@ -1,8 +1,8 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis.csc;
 
 import java.util.Arrays;
 
-public class RedisVersion implements Comparable<RedisVersion> {
+class RedisVersion implements Comparable<RedisVersion> {
 
     private String version;
     private Integer[] numbers;

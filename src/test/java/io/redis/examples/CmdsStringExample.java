@@ -11,7 +11,7 @@ import redis.clients.jedis.UnifiedJedis;
 // HIDE_END
 
 // HIDE_START
-public class Cmds_string {
+public class CmdsStringExample {
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");

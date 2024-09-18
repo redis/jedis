@@ -105,4 +105,9 @@ public interface Cache {
      * @return The statistics of the cache
      */
     CacheStats getAndResetStats();
+
+    /**
+     * @return The compatibility of cache against different Redis versions
+     */
+    boolean compatibilityMode();
 }

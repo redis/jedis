@@ -12,6 +12,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
@@ -41,6 +42,8 @@ public class Connection implements Closeable {
   private boolean broken = false;
   private boolean strValActive;
   private String strVal;
+  protected String server;
+  protected String version;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -453,12 +456,12 @@ public class Connection implements Closeable {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
           redisCredentialsProvider.prepare();
-          helloOrAuth(protocol, redisCredentialsProvider.get());
+          helloAndAuth(protocol, redisCredentialsProvider.get());
         } finally {
           redisCredentialsProvider.cleanUp();
         }
       } else {
-        helloOrAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
+        helloAndAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
             : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
@@ -517,50 +520,56 @@ public class Connection implements Closeable {
     }
   }
 
-  private void helloOrAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
-
-    if (credentials == null || credentials.getPassword() == null) {
-      if (protocol != null) {
-        sendCommand(Command.HELLO, encode(protocol.version()));
-        getOne();
+  private void helloAndAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
+    Map<String, Object> helloResult = null;
+    if (protocol != null && credentials != null && credentials.getUser() != null) {
+      byte[] rawPass = encodeToBytes(credentials.getPassword());
+      try {
+        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
+      } finally {
+        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }
-      return;
+    } else {
+      auth(credentials);
+      helloResult = protocol == null ? null : hello(encode(protocol.version()));
     }
-
-    // Source: https://stackoverflow.com/a/9670279/4021802
-    ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(credentials.getPassword()));
-    byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());
-    Arrays.fill(passBuf.array(), (byte) 0); // clear sensitive data
-
-    try {
-      /// actual HELLO or AUTH -->
-      if (protocol != null) {
-        if (credentials.getUser() != null) {
-          sendCommand(Command.HELLO, encode(protocol.version()),
-              Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
-          getOne(); // Map
-        } else {
-          sendCommand(Command.AUTH, rawPass);
-          getStatusCodeReply(); // OK
-          sendCommand(Command.HELLO, encode(protocol.version()));
-          getOne(); // Map
-        }
-      } else { // protocol == null
-        if (credentials.getUser() != null) {
-          sendCommand(Command.AUTH, encode(credentials.getUser()), rawPass);
-        } else {
-          sendCommand(Command.AUTH, rawPass);
-        }
-        getStatusCodeReply(); // OK
-      }
-      /// <-- actual HELLO or AUTH
-    } finally {
-
-      Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+    if (helloResult != null) {
+      server = (String) helloResult.get("server");
+      version = (String) helloResult.get("version");
     }
 
     // clearing 'char[] credentials.getPassword()' should be
     // handled in RedisCredentialsProvider.cleanUp()
+  }
+
+  private void auth(RedisCredentials credentials) {
+    if (credentials == null || credentials.getPassword() == null) {
+      return;
+    }
+    byte[] rawPass = encodeToBytes(credentials.getPassword());
+    try {
+      if (credentials.getUser() == null) {
+        sendCommand(Command.AUTH, rawPass);
+      } else {
+        sendCommand(Command.AUTH, encode(credentials.getUser()), rawPass);
+      }
+    } finally {
+      Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+    }
+    getStatusCodeReply();
+  }
+
+  protected Map<String, Object> hello(byte[]... args) {
+    sendCommand(Command.HELLO, args);
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+  }
+
+  protected byte[] encodeToBytes(char[] chars) {
+    // Source: https://stackoverflow.com/a/9670279/4021802
+    ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(chars));
+    byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());
+    Arrays.fill(passBuf.array(), (byte) 0); // clear sensitive data
+    return rawPass;
   }
 
   public String select(final int index) {

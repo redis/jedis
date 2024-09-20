@@ -17,22 +17,6 @@ import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
-
-class Bicycle {
-    public String brand;
-    public String model;
-    public BigDecimal price;
-    public String description;
-    public String condition;
-  
-    public Bicycle(String brand, String model, BigDecimal price, String condition, String description) {
-      this.brand = brand;
-      this.model = model;
-      this.price = price;
-      this.condition = condition;
-      this.description = description;
-    }
-  }
 // HIDE_END
 
 // HIDE_START

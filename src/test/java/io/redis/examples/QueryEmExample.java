@@ -25,12 +25,12 @@ import redis.clients.jedis.exceptions.JedisDataException;
 public class QueryEmExample {
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379")
+        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
         //REMOVE_START
         // Clear any keys here before using them in tests.
-        jedis.ftDropIndex("idx:bicycle");
-        jedis.ftDropIndex("idx:email");
+        try {jedis.ftDropIndex("idx:bicycle");} catch (JedisDataException j){}
+        try {jedis.ftDropIndex("idx:email");} catch (JedisDataException j){}
         //REMOVE_END
 
         SchemaField[] schema = {

@@ -44,7 +44,7 @@ public class JedisCluster extends UnifiedJedis {
     this(Collections.singleton(node), timeout);
   }
 
-/**
+  /**
    * Creates a JedisCluster Instance. The provided Instance is used to make the first contact with the cluster.<br>
    * You can specify the timeout and the maximum attempts.
    * @param node Host to connect to.
@@ -112,7 +112,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
- * Creates a JedisCluster with multiple entry points.
+   * Creates a JedisCluster with multiple entry points.
    * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param nodes Hosts to connect to.
    */
@@ -251,7 +251,8 @@ public class JedisCluster extends UnifiedJedis {
    * You can specify the timeout and the maximum attempts. <br><br>
    *
    * Additionally, you are free to provide a {@link JedisClientConfig} instance. <br>
-   * You can use the {@link DefaultJedisClientConfig#builder()} Builder-Pattern to customize your configuration, including socketTimeouts, Username & Passwords as well as SSL related parameters.
+   * You can use the {@link DefaultJedisClientConfig#builder()} Builder-Pattern to customize your configuration, including socketTimeouts,
+   * Username & Passwords as well as SSL related parameters.
    *
    * @param clusterNodes Hosts to connect to.
    * @param clientConfig Timeout in milliseconds.

@@ -39,7 +39,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
 /**
-   * Creates a JedisCluster Instance where only a single Host is being used as a "Cluster".<br>
+   * Creates a JedisCluster Instance. The provided Instance is used to make the first contact with the cluster.<br>
    * You can specify the timeout and the maximum attempts.
    * @param node Host to connect to.
    * @param timeout connection and socket timeout in milliseconds.
@@ -246,7 +246,7 @@ public class JedisCluster extends UnifiedJedis {
 
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
-  super(provider, maxAttempts, maxTotalRetriesDuration  );
+  super(provider, maxAttempts, maxTotalRetriesDuration );
   }
 
   /**

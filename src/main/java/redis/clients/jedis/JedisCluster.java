@@ -26,7 +26,7 @@ public class JedisCluster extends UnifiedJedis {
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
   /**
-   * Creates a JedisCluster Instance. The provided Instance is used to make the first contact with the cluster.<br>
+   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
    * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param node Node to first connect to.
    */
@@ -35,9 +35,9 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
-   * Creates a JedisCluster Instance. The provided Instance is used to make the first contact with the cluster.<br>
+   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
    * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
-   * @param node Host to connect to.
+   * @param node Node to first connect to.
    * @param timeout connection and socket timeout in milliseconds.
    */
   public JedisCluster(HostAndPort node, int timeout) {
@@ -45,9 +45,9 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
-   * Creates a JedisCluster Instance. The provided Instance is used to make the first contact with the cluster.<br>
+   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
    * You can specify the timeout and the maximum attempts.
-   * @param node Host to connect to.
+   * @param node Node to first connect to.
    * @param timeout connection and socket timeout in milliseconds.
    * @param maxAttempts maximum attempts for executing a command.
    */
@@ -114,7 +114,7 @@ public class JedisCluster extends UnifiedJedis {
   /**
    * Creates a JedisCluster with multiple entry points.
    * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
-   * @param nodes Hosts to connect to.
+   * @param nodes Nodes to connect to.
    */
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
@@ -123,7 +123,7 @@ public class JedisCluster extends UnifiedJedis {
   /**
    * Creates a JedisCluster with multiple entry points.
    * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
-   * @param nodes Hosts to connect to.
+   * @param nodes Nodes to connect to.
    * @param timeout connection and socket timeout in milliseconds.
    */
   public JedisCluster(Set<HostAndPort> nodes, int timeout) {
@@ -133,7 +133,7 @@ public class JedisCluster extends UnifiedJedis {
   /**
    * Creates a JedisCluster with multiple entry points.<br>
    * You can specify the timeout and the maximum attempts.
-   * @param nodes Hosts to connect to.
+   * @param nodes Nodes to connect to.
    * @param timeout connection and socket timeout in milliseconds.
    * @param maxAttempts maximum attempts for executing a command.
    */
@@ -248,14 +248,14 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster with multiple entry points.<br>
-   * You can specify the timeout and the maximum attempts. <br><br>
+   * You can specify the timeout and the maximum attempts.<br>
    *
-   * Additionally, you are free to provide a {@link JedisClientConfig} instance. <br>
-   * You can use the {@link DefaultJedisClientConfig#builder()} Builder-Pattern to customize your configuration, including socketTimeouts,
-   * Username & Passwords as well as SSL related parameters.
+   * Additionally, you are free to provide a {@link JedisClientConfig} instance.<br>
+   * You can use the {@link DefaultJedisClientConfig#builder()} builder pattern to customize your configuration, including socket timeouts,
+   * username and passwords as well as SSL related parameters.
    *
-   * @param clusterNodes Hosts to connect to.
-   * @param clientConfig Timeout in milliseconds.
+   * @param clusterNodes Nodes to connect to.
+   * @param clientConfig Client configuration parameters.
    * @param maxAttempts maximum attempts for executing a command.
    * @param maxTotalRetriesDuration Maximum time used for reconnecting.
    */
@@ -277,7 +277,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
-   * Returns all nodes that were configured to connect to in key-value pairs ({@link Map}).
+   * Returns all nodes that were configured to connect to in key-value pairs ({@link Map}).<br>
    * Key is the HOST:PORT and the value is the connection pool.
    * @return the map of all connections.
    */
@@ -286,7 +286,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
-   * Returns the connection for one of the 16,384 slots.<br><br>
+   * Returns the connection for one of the 16,384 slots.
    * @param slot the slot to retrieve the connection for.
    * @return connection of the provided slot. {@code close()} of this connection must be called after use.
    */

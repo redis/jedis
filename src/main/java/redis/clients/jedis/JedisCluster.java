@@ -27,7 +27,7 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
-   * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param node Node to first connect to.
    */
   public JedisCluster(HostAndPort node) {
@@ -36,7 +36,7 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
-   * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param node Node to first connect to.
    * @param timeout connection and socket timeout in milliseconds.
    */
@@ -113,7 +113,7 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster with multiple entry points.
-   * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param nodes Nodes to connect to.
    */
   public JedisCluster(Set<HostAndPort> nodes) {
@@ -122,7 +122,7 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster with multiple entry points.
-   * Here, the default timeout of {@link JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@link JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param nodes Nodes to connect to.
    * @param timeout connection and socket timeout in milliseconds.
    */

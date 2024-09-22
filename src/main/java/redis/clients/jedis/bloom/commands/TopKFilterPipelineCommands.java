@@ -16,13 +16,9 @@ public interface TopKFilterPipelineCommands {
 
   Response<List<Boolean>> topkQuery(String key, String... items);
 
-  /**
-   * @deprecated As of RedisBloom 2.4, this command is regarded as deprecated.
-   */
-  @Deprecated
-  Response<List<Long>> topkCount(String key, String... items);
-
   Response<List<String>> topkList(String key);
+
+  Response<Map<String, Long>> topkListWithCount(String key);
 
   Response<Map<String, Object>> topkInfo(String key);
 }

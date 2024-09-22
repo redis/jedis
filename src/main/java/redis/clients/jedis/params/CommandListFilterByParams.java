@@ -1,14 +1,12 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.Protocol.Keyword;
 
-import static redis.clients.jedis.Protocol.Keyword.FILTERBY;
-import static redis.clients.jedis.Protocol.Keyword.MODULE;
-import static redis.clients.jedis.Protocol.Keyword.ACLCAT;
-import static redis.clients.jedis.Protocol.Keyword.PATTERN;
+import java.util.Objects;
 
 public class CommandListFilterByParams implements IParams {
+
   private String moduleName;
   private String category;
   private String pattern;
@@ -34,19 +32,33 @@ public class CommandListFilterByParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
-    args.add(FILTERBY);
+    args.add(Keyword.FILTERBY);
 
     if (moduleName != null && category == null && pattern == null) {
-      args.add(MODULE);
+      args.add(Keyword.MODULE);
       args.add(moduleName);
     } else if (moduleName == null && category != null && pattern == null) {
-      args.add(ACLCAT);
+      args.add(Keyword.ACLCAT);
       args.add(category);
     } else if (moduleName == null && category == null && pattern != null) {
-      args.add(PATTERN);
+      args.add(Keyword.PATTERN);
       args.add(pattern);
     } else {
-      throw new JedisDataException("Must choose exactly one filter");
+      throw new IllegalArgumentException("Must choose exactly one filter in "
+          + getClass().getSimpleName());
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CommandListFilterByParams that = (CommandListFilterByParams) o;
+    return Objects.equals(moduleName, that.moduleName) && Objects.equals(category, that.category) && Objects.equals(pattern, that.pattern);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(moduleName, category, pattern);
   }
 }

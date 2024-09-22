@@ -6,9 +6,11 @@ import java.util.*;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.LazyRawable;
 
 /**
  * Query represents query parameters and filters to load results from the engine
@@ -22,8 +24,7 @@ public class FTSearchParams implements IParams {
   private final List<IParams> filters = new LinkedList<>();
   private Collection<String> inKeys;
   private Collection<String> inFields;
-  private Collection<String> returnFields;
-  private Collection<FieldName> returnFieldNames;
+  private Collection<FieldName> returnFieldsNames;
   private boolean summarize;
   private SummarizeParams summarizeParams;
   private boolean highlight;
@@ -40,6 +41,9 @@ public class FTSearchParams implements IParams {
   private int[] limit;
   private Map<String, Object> params;
   private Integer dialect;
+
+  /// non command parameters
+  private Map<String, Boolean> returnFieldDecodeMap = null;
 
   public FTSearchParams() {
   }
@@ -76,17 +80,15 @@ public class FTSearchParams implements IParams {
       args.add(INFIELDS).add(inFields.size()).addObjects(inFields);
     }
 
-    if (returnFieldNames != null && !returnFieldNames.isEmpty()) {
+    if (returnFieldsNames != null && !returnFieldsNames.isEmpty()) {
       args.add(RETURN);
       LazyRawable returnCountObject = new LazyRawable();
       args.add(returnCountObject); // holding a place for setting the total count later.
       int returnCount = 0;
-      for (FieldName fn : returnFieldNames) {
+      for (FieldName fn : returnFieldsNames) {
         returnCount += fn.addCommandArguments(args);
       }
       returnCountObject.setRaw(Protocol.toByteArray(returnCount));
-    } else if (returnFields != null && !returnFields.isEmpty()) {
-      args.add(RETURN).add(returnFields.size()).addObjects(returnFields);
     }
 
     if (summarizeParams != null) {
@@ -141,7 +143,7 @@ public class FTSearchParams implements IParams {
     }
 
     if (params != null && !params.isEmpty()) {
-      args.add(PARAMS).add(params.size() * 2);
+      args.add(PARAMS).add(params.size() << 1);
       params.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
     }
 
@@ -254,21 +256,15 @@ public class FTSearchParams implements IParams {
    * @return the query object itself
    */
   public FTSearchParams returnFields(String... fields) {
-    if (returnFieldNames != null) {
-      Arrays.stream(fields).forEach(f -> returnFieldNames.add(FieldName.of(f)));
-    } else {
-      if (returnFields == null) {
-        returnFields = new ArrayList<>();
-      }
-      Arrays.stream(fields).forEach(f -> returnFields.add(f));
+    if (returnFieldsNames == null) {
+      returnFieldsNames = new ArrayList<>();
     }
+    Arrays.stream(fields).forEach(f -> returnFieldsNames.add(FieldName.of(f)));
     return this;
   }
 
   public FTSearchParams returnField(FieldName field) {
-    initReturnFieldNames();
-    returnFieldNames.add(field);
-    return this;
+    return returnFields(Collections.singleton(field));
   }
 
   public FTSearchParams returnFields(FieldName... fields) {
@@ -276,19 +272,30 @@ public class FTSearchParams implements IParams {
   }
 
   public FTSearchParams returnFields(Collection<FieldName> fields) {
-    initReturnFieldNames();
-    returnFieldNames.addAll(fields);
+    if (returnFieldsNames == null) {
+      returnFieldsNames = new ArrayList<>();
+    }
+    returnFieldsNames.addAll(fields);
     return this;
   }
 
-  private void initReturnFieldNames() {
-    if (returnFieldNames == null) {
-      returnFieldNames = new ArrayList<>();
+  public FTSearchParams returnField(String field, boolean decode) {
+    returnFields(field);
+    addReturnFieldDecode(field, decode);
+    return this;
+  }
+
+  public FTSearchParams returnField(FieldName field, boolean decode) {
+    returnFields(field);
+    addReturnFieldDecode(field.getAttribute() != null ? field.getAttribute() : field.getName(), decode);
+    return this;
+  }
+
+  private void addReturnFieldDecode(String returnName, boolean decode) {
+    if (returnFieldDecodeMap == null) {
+      returnFieldDecodeMap = new HashMap<>();
     }
-    if (returnFields != null) {
-      returnFields.forEach(f -> returnFieldNames.add(FieldName.of(f)));
-      returnFields = null;
-    }
+    returnFieldDecodeMap.put(returnName, decode);
   }
 
   public FTSearchParams summarize() {
@@ -421,12 +428,32 @@ public class FTSearchParams implements IParams {
     return this;
   }
 
+  /**
+   * This method will not replace the dialect if it has been already set.
+   * @param dialect dialect
+   * @return this
+   */
+  @Internal
+  public FTSearchParams dialectOptional(int dialect) {
+    if (dialect != 0 && this.dialect == null) {
+      this.dialect = dialect;
+    }
+    return this;
+  }
+
+  @Internal
   public boolean getNoContent() {
     return noContent;
   }
 
+  @Internal
   public boolean getWithScores() {
     return withScores;
+  }
+
+  @Internal
+  public Map<String, Boolean> getReturnFieldDecodeMap() {
+    return returnFieldDecodeMap;
   }
 
   /**

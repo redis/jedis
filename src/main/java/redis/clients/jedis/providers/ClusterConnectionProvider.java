@@ -1,10 +1,13 @@
 package redis.clients.jedis.providers;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.ClusterCommandArguments;
@@ -16,6 +19,8 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
+
+import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
 
 public class ClusterConnectionProvider implements ConnectionProvider {
 
@@ -29,6 +34,12 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes);
+    initializeSlotsCache(clusterNodes, clientConfig);
+  }
+
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
@@ -53,6 +64,9 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       }
     }
 
+    if (System.getProperty(INIT_NO_ERROR_PROPERTY) != null) {
+      return;
+    }
     JedisClusterOperationException uninitializedException
         = new JedisClusterOperationException("Could not initialize cluster slots cache.");
     uninitializedException.addSuppressed(firstException);
@@ -61,7 +75,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
 
   @Override
   public void close() {
-    cache.reset();
+    cache.close();
   }
 
   public void renewSlotCache() {
@@ -88,6 +102,11 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   public Connection getConnection(CommandArguments args) {
     final int slot = ((ClusterCommandArguments) args).getCommandHashSlot();
     return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
+  }
+
+  public Connection getReplicaConnection(CommandArguments args) {
+    final int slot = ((ClusterCommandArguments) args).getCommandHashSlot();
+    return slot >= 0 ? getReplicaConnectionFromSlot(slot) : getConnection();
   }
 
   @Override
@@ -144,6 +163,25 @@ public class ClusterConnectionProvider implements ConnectionProvider {
         return getConnection();
       }
     }
+  }
+
+  public Connection getReplicaConnectionFromSlot(int slot) {
+    List<ConnectionPool> connectionPools = cache.getSlotReplicaPools(slot);
+    ThreadLocalRandom random = ThreadLocalRandom.current();
+    if (connectionPools != null && !connectionPools.isEmpty()) {
+      // pick up randomly a connection
+      int idx = random.nextInt(connectionPools.size());
+      return connectionPools.get(idx).getResource();
+    }
+
+    renewSlotCache();
+    connectionPools = cache.getSlotReplicaPools(slot);
+    if (connectionPools != null && !connectionPools.isEmpty()) {
+      int idx = random.nextInt(connectionPools.size());
+      return connectionPools.get(idx).getResource();
+    }
+
+    return getConnectionFromSlot(slot);
   }
 
   @Override

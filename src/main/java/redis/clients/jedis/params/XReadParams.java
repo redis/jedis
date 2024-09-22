@@ -1,10 +1,9 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.BLOCK;
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
-import static redis.clients.jedis.Protocol.toByteArray;
-
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
+
+import java.util.Objects;
 
 public class XReadParams implements IParams {
 
@@ -28,13 +27,23 @@ public class XReadParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (count != null) {
-      args.add(COUNT);
-      args.add(toByteArray(count));
+      args.add(Keyword.COUNT).add(count);
     }
     if (block != null) {
-      args.add(BLOCK);
-      args.add(toByteArray(block));
-      args.blocking();
+      args.add(Keyword.BLOCK).add(block).blocking();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XReadParams that = (XReadParams) o;
+    return Objects.equals(count, that.count) && Objects.equals(block, that.block);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(count, block);
   }
 }

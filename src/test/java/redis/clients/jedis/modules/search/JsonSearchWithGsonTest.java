@@ -8,9 +8,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class JsonSearchWithGsonTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "gson-index";
@@ -24,6 +29,10 @@ public class JsonSearchWithGsonTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public JsonSearchWithGsonTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   class Account {
 

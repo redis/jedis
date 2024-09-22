@@ -1,8 +1,7 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.STOREDIST;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class GeoRadiusStoreParam implements IParams {
 
@@ -17,6 +16,11 @@ public class GeoRadiusStoreParam implements IParams {
     return new GeoRadiusStoreParam();
   }
 
+  /**
+   * WARNING: In Redis, if STOREDIST exists, store will be ignored.
+   * <p>
+   * Refer: https://github.com/antirez/redis/blob/6.0/src/geo.c#L649
+   */
   public GeoRadiusStoreParam store(String key) {
     if (key != null) {
       this.store = true;
@@ -33,19 +37,12 @@ public class GeoRadiusStoreParam implements IParams {
     return this;
   }
 
-  /**
-     * WARNING: In Redis, if STOREDIST exists, store will be ignored.
-     * <p>
-     * Refer: https://github.com/antirez/redis/blob/6.0/src/geo.c#L649
-     *
-   * @param args
-   */
   @Override
   public void addParams(CommandArguments args) {
     if (storeDist) {
-      args.add(STOREDIST).key(key);
+      args.add(Keyword.STOREDIST).key(key);
     } else if (store) {
-      args.add(STORE).key(key);
+      args.add(Keyword.STORE).key(key);
     } else {
       throw new IllegalArgumentException(this.getClass().getSimpleName()
           + " must has store or storedist option");

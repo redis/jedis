@@ -59,15 +59,32 @@ public interface RedisTimeSeriesCommands {
   long tsAdd(String key, long timestamp, double value);
 
   /**
-   * {@code TS.ADD key timestamp value [RETENTION retentionTime] [ENCODING [COMPRESSED|UNCOMPRESSED]] [CHUNK_SIZE size] [ON_DUPLICATE policy] [LABELS label value..]}
-   *
    * @param key
    * @param timestamp
    * @param value
    * @param createParams
    * @return timestamp
+   * @deprecated Use {@link RedisTimeSeriesCommands#tsAdd(java.lang.String, long, double, redis.clients.jedis.timeseries.TSAddParams)}.
    */
+  @Deprecated
   long tsAdd(String key, long timestamp, double value, TSCreateParams createParams);
+
+  /**
+   * {@code TS.ADD key timestamp value
+   * [RETENTION retentionTime]
+   * [ENCODING <COMPRESSED|UNCOMPRESSED>]
+   * [CHUNK_SIZE size]
+   * [DUPLICATE_POLICY policy]
+   * [ON_DUPLICATE policy_ovr]
+   * [LABELS label value..]}
+   *
+   * @param key
+   * @param timestamp
+   * @param value
+   * @param addParams
+   * @return timestamp
+   */
+  long tsAdd(String key, long timestamp, double value, TSAddParams addParams);
 
   /**
    * {@code TS.MADD key timestamp value [key timestamp value ...]}
@@ -81,9 +98,43 @@ public interface RedisTimeSeriesCommands {
 
   long tsIncrBy(String key, double value, long timestamp);
 
+  /**
+   * {@code TS.INCRBY key addend
+   * [TIMESTAMP timestamp]
+   * [RETENTION retentionPeriod]
+   * [ENCODING <COMPRESSED|UNCOMPRESSED>]
+   * [CHUNK_SIZE size]
+   * [DUPLICATE_POLICY policy]
+   * [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
+   * [LABELS [label value ...]]}
+   *
+   * @param key
+   * @param addend
+   * @param incrByParams
+   * @return timestamp
+   */
+  long tsIncrBy(String key, double addend, TSIncrByParams incrByParams);
+
   long tsDecrBy(String key, double value);
 
   long tsDecrBy(String key, double value, long timestamp);
+
+  /**
+   * {@code TS.DECRBY key subtrahend
+   * [TIMESTAMP timestamp]
+   * [RETENTION retentionPeriod]
+   * [ENCODING <COMPRESSED|UNCOMPRESSED>]
+   * [CHUNK_SIZE size]
+   * [DUPLICATE_POLICY policy]
+   * [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
+   * [LABELS [label value ...]]}
+   *
+   * @param key
+   * @param subtrahend
+   * @param decrByParams
+   * @return timestamp
+   */
+  long tsDecrBy(String key, double subtrahend, TSDecrByParams decrByParams);
 
   /**
    * {@code TS.RANGE key fromTimestamp toTimestamp}
@@ -141,7 +192,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
+  Map<String, TSMRangeElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
   /**
    * {@code TS.MRANGE fromTimestamp toTimestamp
@@ -157,7 +208,7 @@ public interface RedisTimeSeriesCommands {
    * @param multiRangeParams
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRange(TSMRangeParams multiRangeParams);
+  Map<String, TSMRangeElements> tsMRange(TSMRangeParams multiRangeParams);
 
   /**
    * {@code TS.MREVRANGE fromTimestamp toTimestamp FILTER filter...}
@@ -167,7 +218,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
+  Map<String, TSMRangeElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
 
   /**
    * {@code TS.MREVRANGE fromTimestamp toTimestamp
@@ -183,7 +234,7 @@ public interface RedisTimeSeriesCommands {
    * @param multiRangeParams
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams);
+  Map<String, TSMRangeElements> tsMRevRange(TSMRangeParams multiRangeParams);
 
   /**
    * {@code TS.GET key}
@@ -209,7 +260,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters secondary indexes
    * @return multi get elements
    */
-  List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
+  Map<String, TSMGetElement> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   /**
    * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType timeBucket}

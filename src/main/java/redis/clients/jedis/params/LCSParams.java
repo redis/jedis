@@ -1,11 +1,9 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 
-import static redis.clients.jedis.Protocol.Keyword.IDX;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.MINMATCHLEN;
-import static redis.clients.jedis.Protocol.Keyword.WITHMATCHLEN;
+import java.util.Objects;
 
 public class LCSParams implements IParams {
 
@@ -57,16 +55,29 @@ public class LCSParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (len) {
-      args.add(LEN);
+      args.add(Keyword.LEN);
     }
     if (idx) {
-      args.add(IDX);
+      args.add(Keyword.IDX);
     }
     if (minMatchLen != null) {
-      args.add(MINMATCHLEN).add(minMatchLen);
+      args.add(Keyword.MINMATCHLEN).add(minMatchLen);
     }
     if (withMatchLen) {
-      args.add(WITHMATCHLEN);
+      args.add(Keyword.WITHMATCHLEN);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    LCSParams lcsParams = (LCSParams) o;
+    return len == lcsParams.len && idx == lcsParams.idx && withMatchLen == lcsParams.withMatchLen && Objects.equals(minMatchLen, lcsParams.minMatchLen);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(len, idx, minMatchLen, withMatchLen);
   }
 }

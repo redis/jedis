@@ -10,13 +10,14 @@ on:
       - '**/*.rst'
     branches:
       - master
-      - '[0-9].[0-9]'
+      - '[0-9].*'
   pull_request:
     branches:
       - master
-      - '[0-9].[0-9]'
+      - '[0-9].*'
   schedule:
     - cron: '0 1 * * *' # nightly build
+  workflow_dispatch:
 
 jobs:
 
@@ -45,16 +46,17 @@ jobs:
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
+      - name: Build docs
+        run: |
+          mvn javadoc:jar
       - name: Run tests
         run: |
-          TEST="" make test
+          make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
-      - name: redismod docker
-        run: docker run -p 52567:6379 -d redislabs/redismod:edge
-      - name: Run tests
-        run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
-      - name: Codecov
-        run: |
-          bash <(curl -s https://codecov.io/bash)
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}

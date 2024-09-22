@@ -55,8 +55,8 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   @Override
   public int compareTo(StreamEntryID other) {
-    int timeComapre = Long.compare(this.time, other.time);
-    return timeComapre != 0 ? timeComapre : Long.compare(this.sequence, other.sequence);
+    int timeCompare = Long.compare(this.time, other.time);
+    return timeCompare != 0 ? timeCompare : Long.compare(this.sequence, other.sequence);
   }
 
   public long getTime() {
@@ -80,9 +80,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Should be used only with XADD
    *
-   * <code>
-   * XADD mystream * field1 value1
-   * </code>
+   * {@code XADD mystream * field1 value1}
    */
   public static final StreamEntryID NEW_ENTRY = new StreamEntryID() {
 
@@ -97,11 +95,31 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Should be used only with XGROUP CREATE
    *
-   * <code>
-   * XGROUP CREATE mystream consumer-group-name $
-   * </code>
+   * {@code XGROUP CREATE mystream consumer-group-name $}
    */
-  public static final StreamEntryID LAST_ENTRY = new StreamEntryID() {
+  public static final StreamEntryID XGROUP_LAST_ENTRY = new StreamEntryID() {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString() {
+      return "$";
+    }
+  };
+
+  /**
+   * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ENTRY} for XGROUP CREATE command or
+   * {@link StreamEntryID#XREAD_NEW_ENTRY} for XREAD command.
+   */
+  @Deprecated
+  public static final StreamEntryID LAST_ENTRY = XGROUP_LAST_ENTRY;
+
+  /**
+   * Should be used only with XREAD
+   *
+   * {@code XREAD BLOCK 5000 COUNT 100 STREAMS mystream $}
+   */
+  public static final StreamEntryID XREAD_NEW_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
 
@@ -114,9 +132,9 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Should be used only with XREADGROUP
    * <p>
-   * {@code XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >}
+   * {@code XREADGROUP GROUP mygroup myconsumer STREAMS mystream >}
    */
-  public static final StreamEntryID UNRECEIVED_ENTRY = new StreamEntryID() {
+  public static final StreamEntryID XREADGROUP_UNDELIVERED_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
 
@@ -125,6 +143,12 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
       return ">";
     }
   };
+
+  /**
+   * @deprecated Use {@link StreamEntryID#XREADGROUP_UNDELIVERED_ENTRY}.
+   */
+  @Deprecated
+  public static final StreamEntryID UNRECEIVED_ENTRY = XREADGROUP_UNDELIVERED_ENTRY;
 
   /**
    * Can be used in XRANGE, XREVRANGE and XPENDING commands.
@@ -143,6 +167,21 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
    * Can be used in XRANGE, XREVRANGE and XPENDING commands.
    */
   public static final StreamEntryID MAXIMUM_ID = new StreamEntryID() {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString() {
+      return "+";
+    }
+  };
+
+  /**
+   * Should be used only with XREAD
+   *
+   * {@code XREAD STREAMS mystream +}
+   */
+  public static final StreamEntryID XREAD_LAST_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
 

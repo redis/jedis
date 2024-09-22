@@ -10,12 +10,16 @@ import java.util.List;
 import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.bloom.BFInsertParams;
 import redis.clients.jedis.bloom.BFReserveParams;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class BloomTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
@@ -27,6 +31,10 @@ public class BloomTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public BloomTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void reserveBasic() {

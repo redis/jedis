@@ -9,6 +9,7 @@ public class JsonProtocol {
     DEL("JSON.DEL"),
     GET("JSON.GET"),
     MGET("JSON.MGET"),
+    MERGE("JSON.MERGE"),
     SET("JSON.SET"),
     TYPE("JSON.TYPE"),
     STRAPPEND("JSON.STRAPPEND"),

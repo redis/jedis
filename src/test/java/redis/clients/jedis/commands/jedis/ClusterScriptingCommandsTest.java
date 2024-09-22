@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -8,10 +10,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.junit.Test;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -109,5 +112,18 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     cluster.scriptFlush();
 
     assertEquals(Arrays.asList(false, false), cluster.scriptExists(Arrays.asList(sha1_1, sha1_2)));
+  }
+
+  @Test
+  public void broadcastWithError() {
+
+    JedisBroadcastException error = assertThrows(JedisBroadcastException.class, () -> cluster.functionDelete("xyz"));
+
+    Map<HostAndPort, Object> replies = error.getReplies();
+    assertEquals(3, replies.size());
+    replies.values().forEach(r -> {
+      assertSame(JedisDataException.class, r.getClass());
+      assertEquals("ERR Library not found", ((JedisDataException) r).getMessage());
+    });
   }
 }

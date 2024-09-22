@@ -1,12 +1,9 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.ABSTTL;
-import static redis.clients.jedis.Protocol.Keyword.FREQ;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.REPLACE;
-
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.Protocol.Keyword;
+
+import java.util.Objects;
 
 public class RestoreParams implements IParams {
 
@@ -45,21 +42,32 @@ public class RestoreParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (replace) {
-      args.add(REPLACE.getRaw());
+      args.add(Keyword.REPLACE);
     }
 
     if (absTtl) {
-      args.add(ABSTTL.getRaw());
+      args.add(Keyword.ABSTTL);
     }
 
     if (idleTime != null) {
-      args.add(IDLETIME.getRaw());
-      args.add(Protocol.toByteArray(idleTime));
+      args.add(Keyword.IDLETIME).add(idleTime);
     }
 
     if (frequency != null) {
-      args.add(FREQ.getRaw());
-      args.add(Protocol.toByteArray(frequency));
+      args.add(Keyword.FREQ).add(frequency);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    RestoreParams that = (RestoreParams) o;
+    return replace == that.replace && absTtl == that.absTtl && Objects.equals(idleTime, that.idleTime) && Objects.equals(frequency, that.frequency);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(replace, absTtl, idleTime, frequency);
   }
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -47,9 +46,8 @@ public interface StringCommands extends BitCommands {
    */
   String get(String key);
 
-  /**
-   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
-   */
+  String setGet(String key, String value);
+
   String setGet(String key, String value, SetParams params);
 
   /**
@@ -118,7 +116,9 @@ public interface StringCommands extends BitCommands {
    * @param key
    * @param value
    * @return The old value that was stored in key
+   * @deprecated Use {@link StringCommands#setGet(java.lang.String, java.lang.String)}.
    */
+  @Deprecated
   String getSet(String key, String value);
 
   /**
@@ -174,7 +174,7 @@ public interface StringCommands extends BitCommands {
 
   /**
    * <b><a href="http://redis.io/commands/mset">MSet Command</a></b>
-   * Set the the respective keys to the respective values. MSET will replace old values with new
+   * Set the respective keys to the respective values. MSET will replace old values with new
    * values, while {@link StringCommands#msetnx(String...) MSETNX} will not perform any operation at all even
    * if just a single key already exists.
    * <p>
@@ -215,10 +215,10 @@ public interface StringCommands extends BitCommands {
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -232,10 +232,10 @@ public interface StringCommands extends BitCommands {
    * INCRBY work just like {@link StringCommands#incr(String) INCR} but instead to increment by 1 the
    * increment is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -269,10 +269,10 @@ public interface StringCommands extends BitCommands {
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
-   * DECR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -286,10 +286,10 @@ public interface StringCommands extends BitCommands {
    * DECRBY work just like {@link StringCommands#decr(String) DECR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
-   * DECRBY commands are limited to 64 bit signed integers.
+   * DECRBY commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -340,18 +340,6 @@ public interface StringCommands extends BitCommands {
    * @return The length of the string at key, or 0 when key does not exist
    */
   long strlen(String key);
-
-  /**
-   * Calculate the longest common subsequence of keyA and keyB.
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link StringCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
-   * @param keyA
-   * @param keyB
-   * @param params
-   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
-   */
-  @Deprecated
-  LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.

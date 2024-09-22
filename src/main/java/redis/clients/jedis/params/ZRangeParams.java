@@ -2,13 +2,13 @@ package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.BYLEX;
 import static redis.clients.jedis.Protocol.Keyword.BYSCORE;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.REV;
 import static redis.clients.jedis.args.RawableFactory.from;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.Rawable;
+
+import java.util.Objects;
 
 public class ZRangeParams implements IParams {
 
@@ -89,20 +89,28 @@ public class ZRangeParams implements IParams {
 
     args.add(min).add(max);
     if (by != null) {
-//      if (by == BYSCORE || by == BYLEX) {
-//        args.add(by);
-//      } else {
-//        throw new IllegalArgumentException(by.name() + " is not a valid ZRANGE type argument.");
-//      }
       args.add(by);
     }
 
     if (rev) {
-      args.add(REV);
+      args.add(Keyword.REV);
     }
 
-    if (this.limit) {
-      args.add(LIMIT).add(offset).add(count);
+    if (limit) {
+      args.add(Keyword.LIMIT).add(offset).add(count);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ZRangeParams that = (ZRangeParams) o;
+    return rev == that.rev && limit == that.limit && offset == that.offset && count == that.count && by == that.by && Objects.equals(min, that.min) && Objects.equals(max, that.max);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(by, min, max, rev, limit, offset, count);
   }
 }

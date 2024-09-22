@@ -1,11 +1,9 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.IDLE;
-import static redis.clients.jedis.Protocol.Keyword.TIME;
-import static redis.clients.jedis.Protocol.Keyword.RETRYCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.FORCE;
-
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
+
+import java.util.Objects;
 
 public class XClaimParams implements IParams {
 
@@ -64,16 +62,29 @@ public class XClaimParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (idleTime != null) {
-      args.add(IDLE).add(idleTime);
+      args.add(Keyword.IDLE).add(idleTime);
     }
     if (idleUnixTime != null) {
-      args.add(TIME).add(idleUnixTime);
+      args.add(Keyword.TIME).add(idleUnixTime);
     }
     if (retryCount != null) {
-      args.add(RETRYCOUNT).add(retryCount);
+      args.add(Keyword.RETRYCOUNT).add(retryCount);
     }
     if (force) {
-      args.add(FORCE);
+      args.add(Keyword.FORCE);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XClaimParams that = (XClaimParams) o;
+    return force == that.force && Objects.equals(idleTime, that.idleTime) && Objects.equals(idleUnixTime, that.idleUnixTime) && Objects.equals(retryCount, that.retryCount);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(idleTime, idleUnixTime, retryCount, force);
   }
 }

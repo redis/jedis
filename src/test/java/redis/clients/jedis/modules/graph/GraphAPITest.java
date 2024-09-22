@@ -13,20 +13,28 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.graph.Header;
 import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.graph.Statistics;
 import redis.clients.jedis.graph.entities.*;
-
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@org.junit.Ignore
+@RunWith(Parameterized.class)
 public class GraphAPITest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public GraphAPITest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @After
@@ -770,7 +778,7 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
     assertNotNull(client.graphProfile("social", "CREATE (:person{name:'roi',age:32})"));
     assertNotNull(client.graphProfile("social", "CREATE (:person{name:'amit',age:30})"));
 
-    List<List<String>> slowlogs = client.graphSlowlog("social");
+    List<List<Object>> slowlogs = client.graphSlowlog("social");
     assertEquals(2, slowlogs.size());
     slowlogs.forEach(sl -> assertFalse(sl.isEmpty()));
     slowlogs.forEach(sl -> sl.forEach(Assert::assertNotNull));

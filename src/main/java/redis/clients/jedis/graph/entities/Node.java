@@ -6,7 +6,9 @@ import java.util.Objects;
 
 /**
  * * A class represent an node (graph entity). In addition to the base class id and properties, a node has labels.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public class Node extends GraphEntity {
 
     //members

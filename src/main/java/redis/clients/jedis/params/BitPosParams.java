@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.args.BitCountOption;
 
+import java.util.Objects;
+
 public class BitPosParams implements IParams {
 
   private Long start;
@@ -33,11 +35,18 @@ public class BitPosParams implements IParams {
     return this;
   }
 
+  /**
+   * {@link BitPosParams#start(long) START} must be set for END option.
+   */
   public BitPosParams end(long end) {
     this.end = end;
     return this;
   }
 
+  /**
+   * Both {@link BitPosParams#start(long) START} and {@link BitPosParams#end(long) END} both must be
+   * set for MODIFIER option.
+   */
   public BitPosParams modifier(BitCountOption modifier) {
     this.modifier = modifier;
     return this;
@@ -54,5 +63,18 @@ public class BitPosParams implements IParams {
         }
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    BitPosParams that = (BitPosParams) o;
+    return Objects.equals(start, that.start) && Objects.equals(end, that.end) && Objects.equals(modifier, that.modifier);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(start, end, modifier);
   }
 }

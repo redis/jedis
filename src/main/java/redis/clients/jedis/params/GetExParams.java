@@ -1,16 +1,16 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.Protocol.Keyword;
 
-public class GetExParams extends Params implements IParams {
+import java.util.Objects;
 
-  private static final String PX = "px";
-  private static final String EX = "ex";
-  private static final String EXAT = "exat";
-  private static final String PXAT = "pxat";
-  private static final String PERSIST = "persist";
+public class GetExParams implements IParams {
+
+  private Keyword expiration;
+  private Long expirationValue;
+
+  private boolean persist;
 
   public GetExParams() {
   }
@@ -19,13 +19,18 @@ public class GetExParams extends Params implements IParams {
     return new GetExParams();
   }
 
+  private GetExParams expiration(Keyword type, Long value) {
+    this.expiration = type;
+    this.expirationValue = value;
+    return this;
+  }
+
   /**
    * Set the specified expire time, in seconds.
    * @return GetExParams
    */
   public GetExParams ex(long secondsToExpire) {
-    addParam(EX, secondsToExpire);
-    return this;
+    return expiration(Keyword.EX, secondsToExpire);
   }
 
   /**
@@ -33,8 +38,7 @@ public class GetExParams extends Params implements IParams {
    * @return GetExParams
    */
   public GetExParams px(long millisecondsToExpire) {
-    addParam(PX, millisecondsToExpire);
-    return this;
+    return expiration(Keyword.PX, millisecondsToExpire);
   }
 
   /**
@@ -43,8 +47,7 @@ public class GetExParams extends Params implements IParams {
    * @return GetExParams
    */
   public GetExParams exAt(long seconds) {
-    addParam(EXAT, seconds);
-    return this;
+    return expiration(Keyword.EXAT, seconds);
   }
 
   /**
@@ -53,8 +56,7 @@ public class GetExParams extends Params implements IParams {
    * @return GetExParams
    */
   public GetExParams pxAt(long milliseconds) {
-    addParam(PXAT, milliseconds);
-    return this;
+    return expiration(Keyword.PXAT, milliseconds);
   }
 
   /**
@@ -62,27 +64,29 @@ public class GetExParams extends Params implements IParams {
    * @return GetExParams
    */
   public GetExParams persist() {
-    addParam(PERSIST);
-    return this;
+    return expiration(Keyword.PERSIST, null);
   }
 
   @Override
   public void addParams(CommandArguments args) {
-    if (contains(EX)) {
-      args.add(SafeEncoder.encode(EX));
-      args.add(Protocol.toByteArray((long) getParam(EX)));
-    } else if (contains(PX)) {
-      args.add(SafeEncoder.encode(PX));
-      args.add(Protocol.toByteArray((long) getParam(PX)));
-    } else if (contains(EXAT)) {
-      args.add(SafeEncoder.encode(EXAT));
-      args.add(Protocol.toByteArray((long) getParam(EXAT)));
-    } else if (contains(PXAT)) {
-      args.add(SafeEncoder.encode(PXAT));
-      args.add(Protocol.toByteArray((long) getParam(PXAT)));
-    } else if (contains(PERSIST)) {
-      args.add(SafeEncoder.encode(PERSIST));
+    if (expiration != null) {
+      args.add(expiration);
+      if (expirationValue != null) {
+        args.add(expirationValue);
+      }
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GetExParams that = (GetExParams) o;
+    return persist == that.persist && expiration == that.expiration && Objects.equals(expirationValue, that.expirationValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(expiration, expirationValue, persist);
+  }
 }

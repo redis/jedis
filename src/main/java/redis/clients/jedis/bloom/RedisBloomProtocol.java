@@ -85,7 +85,6 @@ public class RedisBloomProtocol {
     ADD("TOPK.ADD"),
     INCRBY("TOPK.INCRBY"),
     QUERY("TOPK.QUERY"),
-    COUNT("TOPK.COUNT"),
     LIST("TOPK.LIST"),
     INFO("TOPK.INFO");
 
@@ -121,7 +120,7 @@ public class RedisBloomProtocol {
   public enum RedisBloomKeyword implements Rawable {
 
     CAPACITY, ERROR, NOCREATE, EXPANSION, NONSCALING, BUCKETSIZE, MAXITERATIONS, ITEMS, WEIGHTS,
-    COMPRESSION, OVERRIDE;
+    COMPRESSION, OVERRIDE, WITHCOUNT;
 
     private final byte[] raw;
 

@@ -35,15 +35,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
-  /**
-   * @deprecated Use {@link RedisCredentialsProvider} through
-   * {@link JedisClientConfig#getCredentialsProvider()}.
-   */
-  @Deprecated
-  public void setPassword(final String password) {
-    this.clientConfig.updatePassword(password);
-  }
-
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
     // what to do ??
@@ -53,14 +44,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public void destroyObject(PooledObject<Connection> pooledConnection) throws Exception {
     final Connection jedis = pooledConnection.getObject();
     if (jedis.isConnected()) {
-      try {
-        // need a proper test, probably with mock
-        if (!jedis.isBroken()) {
-          jedis.quit();
-        }
-      } catch (RuntimeException e) {
-        logger.debug("Error while QUIT", e);
-      }
       try {
         jedis.close();
       } catch (RuntimeException e) {
@@ -74,21 +57,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     Connection jedis = null;
     try {
       jedis = new Connection(jedisSocketFactory, clientConfig);
-      jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      if (jedis != null) {
-        try {
-          jedis.quit();
-        } catch (RuntimeException e) {
-          logger.debug("Error while QUIT", e);
-        }
-        try {
-          jedis.close();
-        } catch (RuntimeException e) {
-          logger.debug("Error while close", e);
-        }
-      }
+      logger.debug("Error while makeObject", je);
       throw je;
     }
   }
@@ -105,7 +76,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       // check HostAndPort ??
       return jedis.isConnected() && jedis.ping();
     } catch (final Exception e) {
-      logger.error("Error while validating pooled Connection object.", e);
+      logger.warn("Error while validating pooled Connection object.", e);
       return false;
     }
   }

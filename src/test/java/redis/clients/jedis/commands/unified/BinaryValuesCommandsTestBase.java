@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.SafeEncoder;
@@ -34,6 +35,10 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   protected int expireSeconds = 2;
   protected long expireMillis = expireSeconds * 1000;
   protected byte[] binaryValue;
+
+  public BinaryValuesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void startUp() {
@@ -111,6 +116,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   public void setAndKeepttl() {
     assertEquals("OK", jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds)));
     assertEquals("OK", jedis.set(bfoo, binaryValue, setParams().keepttl()));
+    assertEquals("OK", jedis.set(bfoo, binaryValue, setParams().keepTtl()));
     long ttl = jedis.ttl(bfoo);
     assertTrue(0 < ttl && ttl <= expireSeconds);
     jedis.set(bfoo, binaryValue);
@@ -329,12 +335,12 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals("OK", jedis.set(bfoo, bbar));
 
     // GET old value
-    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue, setParams()));
+    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue));
 
     assertArrayEquals(binaryValue, jedis.get(bfoo));
 
     // GET null value
-    assertNull(jedis.setGet(bbar, bfoo, setParams()));
+    assertNull(jedis.setGet(bbar, bfoo));
   }
 
   @Test

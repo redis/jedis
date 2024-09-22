@@ -3,7 +3,6 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -17,9 +16,8 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<String> get(String key);
 
-  /**
-   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
-   */
+  Response<String> setGet(String key, String value);
+
   Response<String> setGet(String key, String value, SetParams params);
 
   Response<String> getDel(String key);
@@ -30,6 +28,10 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<String> getrange(String key, long startOffset, long endOffset);
 
+  /**
+   * @deprecated Use {@link StringPipelineCommands#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   Response<String> getSet(String key, String value);
 
   Response<Long> setnx(String key, String value);
@@ -59,13 +61,6 @@ public interface StringPipelineCommands extends BitPipelineCommands {
   Response<String> substr(String key, int start, int end);
 
   Response<Long> strlen(String key);
-
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link StringPipelineCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
-   */
-  @Deprecated
-  Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
 
   Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params);
 }

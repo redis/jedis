@@ -6,12 +6,6 @@ import java.net.Socket;
 import org.junit.Test;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
-
-//import redis.clients.jedis.HostAndPort;
-//import redis.clients.jedis.Jedis;
-import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.JedisSocketFactory;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import static org.junit.Assert.assertEquals;
@@ -19,9 +13,32 @@ import static org.junit.Assert.assertEquals;
 public class UdsTest {
 
   @Test
-  public void testConnectsToUds() {
+  public void jedisConnectsToUds() {
+    try (Jedis jedis = new Jedis(new UdsJedisSocketFactory())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void jedisConnectsToUdsResp3() {
+    try (Jedis jedis = new Jedis(new UdsJedisSocketFactory(),
+        DefaultJedisClientConfig.builder().resp3().build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void unifiedJedisConnectsToUds() {
     try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory())) {
-//      assertEquals("PONG", jedis.ping());
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void unifiedJedisConnectsToUdsResp3() {
+    try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory(),
+        DefaultJedisClientConfig.builder().resp3().build())) {
+      assertEquals("PONG", jedis.ping());
     }
   }
 

@@ -1,0 +1,39 @@
+name: Documentation Tests
+
+on:
+  push:
+    tags-ignore:
+      - '*'
+    branches:
+      - 'emb-examples'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  doctests:
+    runs-on: ubuntu-latest
+    services:
+      redis-stack:
+        image: redis/redis-stack-server:latest
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Run doctests
+        run: |
+          mvn -Pdoctests test

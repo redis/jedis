@@ -9,6 +9,7 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
+import redis.clients.jedis.util.LazyRawable;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -138,7 +139,6 @@ public class Query implements IParams {
   private boolean _noContent = false;
   private boolean _noStopwords = false;
   private boolean _withScores = false;
-  private boolean _withPayloads = false;
   private String _language = null;
   private String[] _fields = null;
   private String[] _keys = null;
@@ -150,14 +150,13 @@ public class Query implements IParams {
   private String summarizeSeparator = null;
   private int summarizeNumFragments = -1;
   private int summarizeFragmentLen = -1;
-  private byte[] _payload = null;
   private String _sortBy = null;
   private boolean _sortAsc = true;
   private boolean wantsHighlight = false;
   private boolean wantsSummarize = false;
   private String _scorer = null;
   private Map<String, Object> _params = null;
-  private int _dialect = 0;
+  private Integer _dialect;
   private int _slop = -1;
   private long _timeout = -1;
   private boolean _inOrder = false;
@@ -192,9 +191,6 @@ public class Query implements IParams {
     if (_withScores) {
       args.add(SearchKeyword.WITHSCORES.getRaw());
     }
-    if (_withPayloads) {
-      args.add(SearchKeyword.WITHPAYLOADS.getRaw());
-    }
     if (_language != null) {
       args.add(SearchKeyword.LANGUAGE.getRaw());
       args.add(SafeEncoder.encode(_language));
@@ -217,11 +213,6 @@ public class Query implements IParams {
       args.add(SearchKeyword.SORTBY.getRaw());
       args.add(SafeEncoder.encode(_sortBy));
       args.add((_sortAsc ? SearchKeyword.ASC : SearchKeyword.DESC).getRaw());
-    }
-
-    if (_payload != null) {
-      args.add(SearchKeyword.PAYLOAD.getRaw());
-      args.add(_payload);
     }
 
     if (_paging.offset != 0 || _paging.num != 10) {
@@ -301,14 +292,14 @@ public class Query implements IParams {
 
     if (_params != null && _params.size() > 0) {
       args.add(SearchKeyword.PARAMS.getRaw());
-      args.add(_params.size() * 2);
+      args.add(_params.size() << 1);
       for (Map.Entry<String, Object> entry : _params.entrySet()) {
         args.add(entry.getKey());
         args.add(entry.getValue());
       }
     }
 
-    if (_dialect != 0) {
+    if (_dialect != null) {
       args.add(SearchKeyword.DIALECT.getRaw());
       args.add(_dialect);
     }
@@ -358,18 +349,6 @@ public class Query implements IParams {
   }
 
   /**
-   * Set the query payload to be evaluated by the scoring function
-   *
-   * @return the query object itself
-   * @deprecated Since RediSearch 2.0.0, PAYLOAD option is deprecated.
-   */
-  @Deprecated
-  public Query setPayload(byte[] payload) {
-    _payload = payload;
-    return this;
-  }
-
-  /**
    * Set the query to verbatim mode, disabling stemming and query expansion
    *
    * @return the query object
@@ -415,22 +394,6 @@ public class Query implements IParams {
    */
   public Query setWithScores() {
     this._withScores = true;
-    return this;
-  }
-
-  public boolean getWithPayloads() {
-    return _withPayloads;
-  }
-
-  /**
-   * Set the query to return object payloads, if any were given
-   *
-   * @return the query object itself
-   * @deprecated Since RediSearch 2.0.0, WITHPAYLOADS option is deprecated.
-   */
-  @Deprecated
-  public Query setWithPayload() {
-    this._withPayloads = true;
     return this;
   }
 
@@ -578,6 +541,18 @@ public class Query implements IParams {
    */
   public Query dialect(int dialect) {
     _dialect = dialect;
+    return this;
+  }
+
+  /**
+   * This method will not replace the dialect if it has been already set.
+   * @param dialect dialect
+   * @return this
+   */
+  public Query dialectOptional(int dialect) {
+    if (dialect != 0 && this._dialect == null) {
+      this._dialect = dialect;
+    }
     return this;
   }
 

@@ -9,13 +9,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
+
+@RunWith(Parameterized.class)
 public class VariadicCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
   final byte[] bfoo2 = { 0x01, 0x02, 0x03, 0x04, 0x0B };
+
+  public VariadicCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void hdel() {

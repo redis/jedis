@@ -6,8 +6,10 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
@@ -16,9 +18,11 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.resps.ScanResult;
 
 public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
@@ -113,23 +117,71 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
   }
 
   @Test
-  public void broadcastRawPing() {
+  public void rawPingBroadcast() {
     String reply = cluster.broadcastCommand(
         new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
     assertEquals("PONG", reply);
   }
 
   @Test
-  public void broadcastPing() {
+  public void pingBroadcast() {
     assertEquals("PONG", cluster.ping());
   }
 
   @Test
-  public void broadcastFlushAll() {
+  public void flushAllBroadcast() {
     assertNull(cluster.get("foo"));
     assertEquals("OK", cluster.set("foo", "bar"));
     assertEquals("bar", cluster.get("foo"));
     cluster.flushAll();
     assertNull(cluster.get("foo"));
+  }
+
+  @Test
+  public void scanIteration() {
+    Set<String> allIn = new HashSet<>(26 * 26);
+    char[] arr = new char[2];
+    for (int i = 0; i < 26; i++) {
+      arr[0] = (char) ('a' + i);
+      for (int j = 0; j < 26; j++) {
+        arr[1] = (char) ('a' + j);
+        String str = new String(arr);
+        cluster.incr(str);
+        allIn.add(str);
+      }
+    }
+
+    Set<String> allScan = new HashSet<>();
+    ScanIteration scan = cluster.scanIteration(10, "*");
+    while (!scan.isIterationCompleted()) {
+      ScanResult<String> batch = scan.nextBatch();
+      allScan.addAll(batch.getResult());
+    }
+    assertEquals(allIn, allScan);
+
+    Set<String> allTypeScan = new HashSet<>();
+    ScanIteration typeScan = cluster.scanIteration(10, "*", "string");
+    while (!typeScan.isIterationCompleted()) {
+      ScanResult<String> batch = typeScan.nextBatch();
+      allTypeScan.addAll(batch.getResult());
+    }
+    assertEquals(allIn, allTypeScan);
+  }
+
+  @Test
+  public void scanIterationCollect() {
+    Set<String> allIn = new HashSet<>(26 * 26);
+    char[] arr = new char[2];
+    for (int i = 0; i < 26; i++) {
+      arr[0] = (char) ('a' + i);
+      for (int j = 0; j < 26; j++) {
+        arr[1] = (char) ('a' + j);
+        String str = new String(arr);
+        cluster.incr(str);
+        allIn.add(str);
+      }
+    }
+
+    assertEquals(allIn, cluster.scanIteration(100, "*").collect(new HashSet<>(26 * 26)));
   }
 }

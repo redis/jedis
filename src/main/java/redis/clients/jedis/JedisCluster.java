@@ -222,6 +222,19 @@ public class JedisCluster extends UnifiedJedis {
         Duration.ofMillis((long) clientConfig.getSocketTimeoutMillis() * maxAttempts));
   }
 
+  /**
+   * Creates a JedisCluster with multiple entry points.<br>
+   * You can specify the timeout and the maximum attempts.<br>
+   *
+   * Additionally, you are free to provide a {@link JedisClientConfig} instance.<br>
+   * You can use the {@link DefaultJedisClientConfig#builder()} builder pattern to customize your configuration, including socket timeouts,
+   * username and passwords as well as SSL related parameters.
+   *
+   * @param clusterNodes Nodes to connect to.
+   * @param clientConfig Client configuration parameters.
+   * @param maxAttempts maximum attempts for executing a command.
+   * @param maxTotalRetriesDuration Maximum time used for reconnecting.
+   */
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
@@ -246,19 +259,6 @@ public class JedisCluster extends UnifiedJedis {
         maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }
 
-  /**
-   * Creates a JedisCluster with multiple entry points.<br>
-   * You can specify the timeout and the maximum attempts.<br>
-   *
-   * Additionally, you are free to provide a {@link JedisClientConfig} instance.<br>
-   * You can use the {@link DefaultJedisClientConfig#builder()} builder pattern to customize your configuration, including socket timeouts,
-   * username and passwords as well as SSL related parameters.
-   *
-   * @param clusterNodes Nodes to connect to.
-   * @param clientConfig Client configuration parameters.
-   * @param maxAttempts maximum attempts for executing a command.
-   * @param maxTotalRetriesDuration Maximum time used for reconnecting.
-   */
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
       Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration,
@@ -266,8 +266,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
-      Duration maxTotalRetriesDuration) {
+  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     super(provider, maxAttempts, maxTotalRetriesDuration);
   }
 

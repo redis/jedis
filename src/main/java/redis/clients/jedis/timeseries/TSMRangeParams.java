@@ -7,6 +7,8 @@ import static redis.clients.jedis.timeseries.TimeSeriesProtocol.PLUS;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.*;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
+import java.util.Arrays;
+import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
@@ -259,5 +261,51 @@ public class TSMRangeParams implements IParams {
     if (groupByLabel != null && groupByReduce != null) {
       args.add(GROUPBY).add(groupByLabel).add(REDUCE).add(groupByReduce);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    TSMRangeParams that = (TSMRangeParams) o;
+    return latest == that.latest && withLabels == that.withLabels &&
+        bucketDuration == that.bucketDuration && empty == that.empty &&
+        Objects.equals(fromTimestamp, that.fromTimestamp) &&
+        Objects.equals(toTimestamp, that.toTimestamp) &&
+        Arrays.equals(filterByTimestamps, that.filterByTimestamps) &&
+        Arrays.equals(filterByValues, that.filterByValues) &&
+        Arrays.equals(selectedLabels, that.selectedLabels) &&
+        Objects.equals(count, that.count) && Arrays.equals(align, that.align) &&
+        aggregationType == that.aggregationType &&
+        Arrays.equals(bucketTimestamp, that.bucketTimestamp) &&
+        Arrays.equals(filters, that.filters) &&
+        Objects.equals(groupByLabel, that.groupByLabel) &&
+        Objects.equals(groupByReduce, that.groupByReduce);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Objects.hashCode(fromTimestamp);
+    result = 31 * result + Objects.hashCode(toTimestamp);
+    result = 31 * result + Boolean.hashCode(latest);
+    result = 31 * result + Arrays.hashCode(filterByTimestamps);
+    result = 31 * result + Arrays.hashCode(filterByValues);
+    result = 31 * result + Boolean.hashCode(withLabels);
+    result = 31 * result + Arrays.hashCode(selectedLabels);
+    result = 31 * result + Objects.hashCode(count);
+    result = 31 * result + Arrays.hashCode(align);
+    result = 31 * result + Objects.hashCode(aggregationType);
+    result = 31 * result + Long.hashCode(bucketDuration);
+    result = 31 * result + Arrays.hashCode(bucketTimestamp);
+    result = 31 * result + Boolean.hashCode(empty);
+    result = 31 * result + Arrays.hashCode(filters);
+    result = 31 * result + Objects.hashCode(groupByLabel);
+    result = 31 * result + Objects.hashCode(groupByReduce);
+    return result;
   }
 }

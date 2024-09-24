@@ -50,7 +50,7 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.17.2</jackson.version>
-		<maven.surefire.version>3.3.1</maven.surefire.version>
+		<maven.surefire.version>3.5.0</maven.surefire.version>
 	</properties>
 
 	<dependencies>
@@ -136,7 +136,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5-fluent</artifactId>
-			<version>5.3.1</version>
+			<version>5.4</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -237,7 +237,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.10.0</version>
 				<configuration>
 					<source>8</source><!-- Until JDK 11+ -->
 					<detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->
@@ -312,7 +312,7 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.2.5</version>
+						<version>3.2.6</version>
 						<configuration>
 							<gpgArguments>
 								<arg>--pinentry-mode</arg>

@@ -2,18 +2,14 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import java.nio.file.DirectoryStream.Filter;
 // REMOVE_END
 // HIDE_START
 import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.IndexDataType;
 import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.schemafields.NumericField;
@@ -21,11 +17,11 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.SearchResult;
-import redis.clients.jedis.search.FTSearchParams.NumericFilter;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.exceptions.JedisDataException;
-// HIDE_END
 import redis.clients.jedis.json.Path2;
+// HIDE_END
+
 
 
 // HIDE_START

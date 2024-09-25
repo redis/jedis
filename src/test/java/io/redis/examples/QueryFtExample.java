@@ -8,15 +8,8 @@ import org.junit.Test;
 // HIDE_START
 import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.schemafields.NumericField;
-import redis.clients.jedis.search.schemafields.SchemaField;
-import redis.clients.jedis.search.schemafields.TextField;
-import redis.clients.jedis.search.schemafields.TagField;
-import redis.clients.jedis.search.SearchResult;
-import redis.clients.jedis.search.Document;
+import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
 // HIDE_END

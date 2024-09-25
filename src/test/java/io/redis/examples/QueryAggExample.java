@@ -4,6 +4,7 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 // REMOVE_END
 // HIDE_START
 import java.util.List;
@@ -309,7 +310,11 @@ public class QueryAggExample {
             "idx:bicycle",
             new AggregationBuilder("*")
                 .load("__key")
-                .groupBy("@condition", Reducers.to_list("__key").as("bicycles"))
+                .groupBy(
+                    "@condition",
+                    Reducers
+                        .to_list("__key")
+                        .as("bicycles"))
         );
 
         List<Row> rows4 = res4.getRows();
@@ -319,7 +324,7 @@ public class QueryAggExample {
             System.out.println(rows4.get(i));
         }
         // >>> {condition=refurbished, bicycles=[bicycle:9]}
-        // >>> {condition=used, bicycles=[bicycle:3, bicycle:4, bicycle:1, bicycle:2]}
+        // >>> {condition=used, bicycles=[bicycle:1, bicycle:2, bicycle:3, bicycle:4]}
         // >>> {condition=new, bicycles=[bicycle:7, bicycle:0, bicycle:5, bicycle:6, bicycle:8]}
         // STEP_END
 
@@ -334,6 +339,7 @@ public class QueryAggExample {
             "{condition=used, bicycles=[bicycle:3, bicycle:4, bicycle:1, bicycle:2]}",
             rows4.get(1).toString()
         );
+        
         Assert.assertEquals(
             "{condition=new, bicycles=[bicycle:7, bicycle:0, bicycle:5, bicycle:6, bicycle:8]}",
             rows4.get(2).toString()

@@ -5,9 +5,14 @@ package io.redis.examples;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 // REMOVE_END
 // HIDE_START
 import java.util.List;
+
+import javax.swing.SortOrder;
+
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.FTCreateParams;
@@ -20,6 +25,7 @@ import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
+import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.exceptions.JedisDataException;
 // HIDE_END
 
@@ -314,7 +320,8 @@ public class QueryAggExample {
                     "@condition",
                     Reducers
                         .to_list("__key")
-                        .as("bicycles"))
+                        .as("bicycles")
+                )
         );
 
         List<Row> rows4 = res4.getRows();
@@ -324,26 +331,41 @@ public class QueryAggExample {
             System.out.println(rows4.get(i));
         }
         // >>> {condition=refurbished, bicycles=[bicycle:9]}
-        // >>> {condition=used, bicycles=[bicycle:1, bicycle:2, bicycle:3, bicycle:4]}
+        // >>> {condition=used, bicycles=[bicycle:3, bicycle:4, bicycle:1, bicycle:2]}
         // >>> {condition=new, bicycles=[bicycle:7, bicycle:0, bicycle:5, bicycle:6, bicycle:8]}
         // STEP_END
 
         // Tests for 'agg4' step.
         // REMOVE_START
         Assert.assertEquals(3, rows4.size());
-        Assert.assertEquals(
-            "{condition=refurbished, bicycles=[bicycle:9]}",
-            rows4.get(0).toString()
-        );
-        Assert.assertEquals(
-            "{condition=used, bicycles=[bicycle:3, bicycle:4, bicycle:1, bicycle:2]}",
-            rows4.get(1).toString()
-        );
+
+        Row test4Row = rows4.get(0);
+        Assert.assertEquals("refurbished", test4Row.getString("condition"));
+
+        ArrayList<String> test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
+        Assert.assertEquals(1, test4Bikes.size());
+        Assert.assertTrue(test4Bikes.contains("bicycle:9"));
+
+        test4Row = rows4.get(1);
+        Assert.assertEquals("used", test4Row.getString("condition"));
         
-        Assert.assertEquals(
-            "{condition=new, bicycles=[bicycle:7, bicycle:0, bicycle:5, bicycle:6, bicycle:8]}",
-            rows4.get(2).toString()
-        );
+        test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
+        Assert.assertEquals(4, test4Bikes.size());
+        Assert.assertTrue(test4Bikes.contains("bicycle:1"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:2"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:3"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:4"));
+        
+        test4Row = rows4.get(2);
+        Assert.assertEquals("new", test4Row.getString("condition"));
+
+        test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
+        Assert.assertEquals(5, test4Bikes.size());
+        Assert.assertTrue(test4Bikes.contains("bicycle:0"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:5"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:6"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:7"));
+        Assert.assertTrue(test4Bikes.contains("bicycle:8"));
         // REMOVE_END
 
 

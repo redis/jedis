@@ -207,10 +207,7 @@ public class QueryFtExample {
         }
 
         // STEP_START ft1
-        SearchResult res1 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("@description: kids")
-        );
+        SearchResult res1 = jedis.ftSearch("idx:bicycle", "@description: kids");
         System.out.println(res1.getTotalResults()); // >>> 2
 
         List<Document> docs1 = res1.getDocuments();
@@ -231,10 +228,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft2
-        SearchResult res2 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("@model: ka*")
-        );
+        SearchResult res2 = jedis.ftSearch("idx:bicycle","@model: ka*");
         System.out.println(res2.getTotalResults()); // >>> 1
 
         List<Document> docs2 = res2.getDocuments();
@@ -253,10 +247,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft3
-        SearchResult res3 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("@brand: *bikes")
-        );
+        SearchResult res3 = jedis.ftSearch("idx:bicycle", "@brand: *bikes");
         System.out.println(res3.getTotalResults()); // >>> 2
 
         List<Document> docs3 = res3.getDocuments();
@@ -277,10 +268,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft4
-        SearchResult res4 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("%optamized%")
-        );
+        SearchResult res4 = jedis.ftSearch("idx:bicycle", "%optamized%");
         System.out.println(res4.getTotalResults()); // >>> 1
 
         List<Document> docs4 = res4.getDocuments();

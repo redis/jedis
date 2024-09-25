@@ -9,15 +9,10 @@ import org.junit.Test;
 import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.FTCreateParams;
+import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.schemafields.GeoField;
-import redis.clients.jedis.search.schemafields.GeoShapeField;
-import redis.clients.jedis.search.schemafields.NumericField;
-import redis.clients.jedis.search.schemafields.SchemaField;
-import redis.clients.jedis.search.schemafields.TextField;
+import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
-import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -221,7 +216,8 @@ public class QueryGeoExample {
         // STEP_START geo1
         SearchResult res1 = jedis.ftSearch(
             "idx:bicycle",
-            new Query("@store_location:[$lon $lat $radius $units]")
+            "@store_location:[$lon $lat $radius $units]",
+            FTSearchParams.searchParams()
                 .addParam("lon", -0.1778)
                 .addParam("lat", 51.5524)
                 .addParam("radius", 20)
@@ -248,7 +244,8 @@ public class QueryGeoExample {
         // STEP_START geo2
         SearchResult res2 = jedis.ftSearch(
             "idx:bicycle",
-            new Query("@pickup_zone:[CONTAINS $bike]")
+            "@pickup_zone:[CONTAINS $bike]",
+            FTSearchParams.searchParams()
                 .addParam("bike", "POINT(-0.1278 51.5074)")
                 .dialect(3)
         );
@@ -272,7 +269,8 @@ public class QueryGeoExample {
         // STEP_START geo3
         SearchResult res3 = jedis.ftSearch(
             "idx:bicycle",
-            new Query("@pickup_zone:[WITHIN $europe]")
+            "@pickup_zone:[WITHIN $europe]",
+            FTSearchParams.searchParams()
                 .addParam("europe", "POLYGON((-25 35, 40 35, 40 70, -25 70, -25 35))")
                 .dialect(3)
         );

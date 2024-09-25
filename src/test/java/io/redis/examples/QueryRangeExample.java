@@ -11,15 +11,13 @@ import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.FTCreateParams;
 import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.schemafields.NumericField;
-import redis.clients.jedis.search.schemafields.SchemaField;
-import redis.clients.jedis.search.schemafields.TextField;
-import redis.clients.jedis.search.schemafields.TagField;
+import redis.clients.jedis.search.FTSearchParams;
+import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.args.SortingOrder;
 // HIDE_END
 
 
@@ -218,10 +216,7 @@ public class QueryRangeExample {
 
 
         // STEP_START range1
-        SearchResult res1 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("@price:[500 1000]")
-        );
+        SearchResult res1 = jedis.ftSearch("idx:bicycle", "@price:[500 1000]");
         System.out.println(res1.getTotalResults()); // >>> 3
 
         List<Document> docs1 = res1.getDocuments();
@@ -246,8 +241,10 @@ public class QueryRangeExample {
         // STEP_START range2
         SearchResult res2 = jedis.ftSearch(
             "idx:bicycle",
-            new Query("*")
-                .addFilter(new Query.NumericFilter("price", 500, 1000)) 
+            "*",
+            FTSearchParams
+                .searchParams()
+                .filter("price", 500, 1000)
         );
         System.out.println(res2.getTotalResults()); // >>> 3
 
@@ -273,10 +270,9 @@ public class QueryRangeExample {
         // STEP_START range3
         SearchResult res3 = jedis.ftSearch(
             "idx:bicycle",
-            new Query("*")
-                .addFilter(
-                    new Query.NumericFilter("price", 1000, true, Double.POSITIVE_INFINITY, false)
-                )  
+            "*",
+            FTSearchParams.searchParams()
+                .filter("price", 1000, true, Double.POSITIVE_INFINITY, false)  
         );
         System.out.println(res3.getTotalResults()); // >>> 5
 
@@ -306,8 +302,9 @@ public class QueryRangeExample {
         // STEP_START range4
         SearchResult res4 = jedis.ftSearch(
             "idx:bicycle",
-            new Query("@price:[-inf 2000]")
-                .setSortBy("price", true)
+            "@price:[-inf 2000]",
+            FTSearchParams.searchParams()
+                .sortBy("price", SortingOrder.ASC)
                 .limit(0, 5) 
         );
         System.out.println(res4.getTotalResults()); // >>> 7

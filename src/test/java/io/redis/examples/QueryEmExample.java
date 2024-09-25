@@ -4,7 +4,6 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
 // REMOVE_END
 
 // HIDE_START
@@ -15,12 +14,10 @@ import redis.clients.jedis.search.FTCreateParams;
 import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.IndexDataType;
 import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.schemafields.NumericField;
-import redis.clients.jedis.search.schemafields.SchemaField;
-import redis.clients.jedis.search.schemafields.TextField;
-import redis.clients.jedis.search.schemafields.TagField;
+import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.Document;
+import redis.clients.jedis.search.RediSearchUtil;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class QueryEmExample {
@@ -217,10 +214,7 @@ public class QueryEmExample {
 
 
         // STEP_START em1
-        SearchResult res1 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("@price:[270 270]")
-        );
+        SearchResult res1 = jedis.ftSearch("idx:bicycle","@price:[270 270]");
         System.out.println(res1.getTotalResults()); // >>> 1
 
         List<Document> docs1 = res1.getDocuments();
@@ -232,9 +226,9 @@ public class QueryEmExample {
 
         SearchResult res2 = jedis.ftSearch(
             "idx:bicycle",
-            new Query().addFilter(
-                new Query.NumericFilter("price", 270, 270)
-            )
+            "*",
+            FTSearchParams.searchParams()
+                .filter("price", 270, 270)
         );
         System.out.println(res2.getTotalResults()); // >>> 1
 
@@ -257,10 +251,7 @@ public class QueryEmExample {
 
 
         // STEP_START em2
-        SearchResult res3 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("@condition:{new}")
-        );
+        SearchResult res3 = jedis.ftSearch("idx:bicycle", "@condition:{new}");
         System.out.println(res3.getTotalResults()); // >>> 5
 
         List<Document> docs3 = res3.getDocuments();
@@ -299,17 +290,13 @@ public class QueryEmExample {
         );
 
         jedis.jsonSet("key:1", new Path2("$"), "{\"email\": \"test@redis.com\"}");
-
-        try {
-            SearchResult res4 = jedis.ftSearch(
-                "idx:email",
-                "test@redis.com",
-                new FTSearchParams().dialect(2)
-            );
-            System.out.println(res4.getTotalResults());
-        } catch (JedisDataException j) {
-            System.out.println("Query syntax 'test@redis.com' not supported in Jedis.");
-        }
+        
+        SearchResult res4 = jedis.ftSearch(
+            "idx:email",
+            RediSearchUtil.escapeQuery("@email{test@redis.com}"),
+            new FTSearchParams().dialect(2)
+        );
+        System.out.println(res4.getTotalResults());
         // STEP_END
 
         // Tests for 'em3' step.

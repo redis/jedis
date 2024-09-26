@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.search.*
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -299,7 +299,7 @@ public class QueryEmExample {
 
         // STEP_START em4
         SearchResult res5 = jedis.ftSearch("idx:bicycle",
-            new Query("@description:\"rough terrain\"")
+            "@description:\"rough terrain\""
         );
         System.out.println(res5.getTotalResults()); // >>> 1
 

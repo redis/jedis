@@ -10,14 +10,8 @@ import org.junit.Test;
 import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.FTSearchParams;
-import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.*
 import redis.clients.jedis.search.schemafields.*;
-import redis.clients.jedis.search.SearchResult;
-import redis.clients.jedis.search.Document;
-import redis.clients.jedis.search.RediSearchUtil;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class QueryEmExample {

@@ -4432,11 +4432,13 @@ public class CommandObjects {
         .addParams(params), GearsLibraryInfo.GEARS_LIBRARY_INFO_LIST);
   }
 
+  @Deprecated
   public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(GearsCommand.TFCALL).add(library + "." + function)
         .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
+  @Deprecated
   public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(GearsCommand.TFCALLASYNC).add(library + "." + function)
         .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);

@@ -9,8 +9,8 @@ public class RedisGearsProtocol {
   public enum GearsCommand implements ProtocolCommand {
 
     @Deprecated TFUNCTION,
-    TFCALL,
-    TFCALLASYNC;
+    @Deprecated TFCALL,
+    @Deprecated TFCALLASYNC;
 
     private final byte[] raw;
 

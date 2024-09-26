@@ -5002,11 +5002,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tFunctionList(params));
   }
 
+  @Deprecated
   @Override
   public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
     return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
   }
 
+  @Deprecated
   @Override
   public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
     return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));

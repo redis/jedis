@@ -20,7 +20,7 @@ public interface RedisGearsCommands {
 
   @Deprecated String tFunctionDelete(String libraryName);
 
-  Object tFunctionCall(String library, String function, List<String> keys, List<String> args);
+  @Deprecated Object tFunctionCall(String library, String function, List<String> keys, List<String> args);
 
-  Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args);
+  @Deprecated Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args);
 }

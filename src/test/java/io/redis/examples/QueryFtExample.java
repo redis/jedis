@@ -228,7 +228,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft2
-        SearchResult res2 = jedis.ftSearch("idx:bicycle","@model: ka*");
+        SearchResult res2 = jedis.ftSearch("idx:bicycle", "@model: ka*");
         System.out.println(res2.getTotalResults()); // >>> 1
 
         List<Document> docs2 = res2.getDocuments();

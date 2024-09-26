@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.bloom.commands.RedisBloomCommands;
-import redis.clients.jedis.gears.RedisGearsCommands;
 import redis.clients.jedis.graph.RedisGraphCommands;
 import redis.clients.jedis.json.commands.RedisJsonCommands;
 import redis.clients.jedis.search.RediSearchCommands;
@@ -12,7 +11,6 @@ public interface RedisModuleCommands extends
     RedisJsonCommands,
     RedisTimeSeriesCommands,
     RedisBloomCommands,
-    RedisGraphCommands,
-    RedisGearsCommands {
+    RedisGraphCommands {
 
 }

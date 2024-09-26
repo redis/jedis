@@ -19,9 +19,6 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.gears.*;
-import redis.clients.jedis.gears.RedisGearsProtocol.*;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
@@ -4412,38 +4409,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   // RedisGraph commands
-
-  // RedisGears commands
-  @Deprecated
-  public final CommandObject<String> tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LOAD)
-        .addParams(params).add(libraryCode), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<String> tFunctionDelete(String libraryName) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.DELETE)
-        .add(libraryName), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<List<GearsLibraryInfo>> tFunctionList(TFunctionListParams params) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LIST)
-        .addParams(params), GearsLibraryInfo.GEARS_LIBRARY_INFO_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFCALL).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
-  }
-
-  @Deprecated
-  public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFCALLASYNC).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
-  }
-  // RedisGears commands
 
   // Transaction commands
   public final CommandObject<String> watch(String... keys) {

@@ -287,10 +287,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft5
-        SearchResult res5 = jedis.ftSearch(
-            "idx:bicycle",
-            new Query("%%optamised%%")
-        );
+        SearchResult res5 = jedis.ftSearch("idx:bicycle", "%%optamised%%");
         System.out.println(res5.getTotalResults()); // >>> 1
 
         List<Document> docs5 = res5.getDocuments();

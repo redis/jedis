@@ -218,11 +218,10 @@ public class QueryEmExample {
         }
         // >>> bicycle:0
 
-        SearchResult res2 = jedis.ftSearch(
-            "idx:bicycle",
+        SearchResult res2 = jedis.ftSearch("idx:bicycle",
             "*",
             FTSearchParams.searchParams()
-                .filter("price", 270, 270)
+                    .filter("price", 270, 270)
         );
         System.out.println(res2.getTotalResults()); // >>> 1
 
@@ -278,15 +277,14 @@ public class QueryEmExample {
 
         jedis.ftCreate("idx:email", 
             new FTCreateParams()
-                .addPrefix("key:")
-                .on(IndexDataType.JSON),
+                    .addPrefix("key:")
+                    .on(IndexDataType.JSON),
             emailSchema
         );
 
-        jedis.jsonSet("key:1", new Path2("$"), "{\"email\": \"test@redis.com\"}");
+        jedis.jsonSet("key:1", Path2.ROOT_PATH, "{\"email\": \"test@redis.com\"}");
         
-        SearchResult res4 = jedis.ftSearch(
-            "idx:email",
+        SearchResult res4 = jedis.ftSearch("idx:email",
             RediSearchUtil.escapeQuery("@email{test@redis.com}"),
             new FTSearchParams().dialect(2)
         );
@@ -300,8 +298,7 @@ public class QueryEmExample {
 
 
         // STEP_START em4
-        SearchResult res5 = jedis.ftSearch(
-            "idx:bicycle",
+        SearchResult res5 = jedis.ftSearch("idx:bicycle",
             new Query("@description:\"rough terrain\"")
         );
         System.out.println(res5.getTotalResults()); // >>> 1

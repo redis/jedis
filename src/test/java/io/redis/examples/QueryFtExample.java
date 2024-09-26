@@ -307,8 +307,8 @@ public class QueryFtExample {
         Assert.assertEquals("bicycle:3", docs5.get(0).getId());
         // REMOVE_END
 
-
 // HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.RedisProtocol;
@@ -19,6 +20,7 @@ import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=triggers_and_functions">Triggers and functions</a> commands.
  */
+@Ignore
 public class CommandObjectsTriggersAndFunctionsCommandsTest extends CommandObjectsModulesTestBase {
 
   public CommandObjectsTriggersAndFunctionsCommandsTest(RedisProtocol protocol) {

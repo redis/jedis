@@ -4984,16 +4984,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // RedisGraph commands
 
   // RedisGears commands
+  @Deprecated
   @Override
   public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
     return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
   }
 
+  @Deprecated
   @Override
   public String tFunctionDelete(String libraryName) {
     return executeCommand(commandObjects.tFunctionDelete(libraryName));
   }
 
+  @Deprecated
   @Override
   public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
     return executeCommand(commandObjects.tFunctionList(params));

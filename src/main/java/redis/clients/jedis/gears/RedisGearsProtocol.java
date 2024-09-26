@@ -8,7 +8,7 @@ public class RedisGearsProtocol {
 
   public enum GearsCommand implements ProtocolCommand {
 
-    TFUNCTION,
+    @Deprecated TFUNCTION,
     TFCALL,
     TFCALLASYNC;
 

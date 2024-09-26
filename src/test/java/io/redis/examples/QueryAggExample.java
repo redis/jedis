@@ -4,12 +4,11 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 // REMOVE_END
+
 // HIDE_START
 import java.util.List;
+import java.util.ArrayList;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.FTCreateParams;

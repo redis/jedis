@@ -202,7 +202,7 @@ public class QueryEmExample {
         };
 
         for (int i = 0; i < bicycleJsons.length; i++) {
-            jedis.jsonSet("bicycle:" + i, new Path2("$"), bicycleJsons[i]);
+            jedis.jsonSet("bicycle:" + i, Path2.ROOT_PATH, bicycleJsons[i]);
         }
 // HIDE_END
 

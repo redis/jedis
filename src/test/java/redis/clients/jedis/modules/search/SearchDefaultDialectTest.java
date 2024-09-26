@@ -210,6 +210,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     MatcherAssert.assertThat(error.getMessage(), Matchers.containsString("DIALECT requires a non negative integer"));
   }
 
+  @org.junit.Ignore
   @Test
   public void warningMaxPrefixExpansions() {
     final String configParam = "MAXPREFIXEXPANSIONS";

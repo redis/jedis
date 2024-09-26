@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
@@ -297,6 +298,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public Cluster getCluster() {
         return multiClusterMap.get(activeMultiClusterIndex);
+    }
+
+    @VisibleForTesting
+    public Cluster getCluster(int multiClusterIndex) {
+        return multiClusterMap.get(multiClusterIndex);
     }
 
     public CircuitBreaker getClusterCircuitBreaker() {

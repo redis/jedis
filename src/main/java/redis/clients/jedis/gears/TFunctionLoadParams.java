@@ -4,6 +4,7 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.gears.RedisGearsProtocol.GearsKeyword;
 import redis.clients.jedis.params.IParams;
 
+@Deprecated
 public class TFunctionLoadParams implements IParams {
   private boolean replace = false;
   private String config;

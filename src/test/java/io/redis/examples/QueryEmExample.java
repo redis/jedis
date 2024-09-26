@@ -320,8 +320,8 @@ public class QueryEmExample {
         Assert.assertEquals("bicycle:8", docs5.get(0).getId());
         // REMOVE_END
 
-
 // HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

@@ -8,13 +8,9 @@ import org.junit.Test;
 // HIDE_START
 import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.FTSearchParams;
-import redis.clients.jedis.search.IndexDataType;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
-import redis.clients.jedis.search.SearchResult;
-import redis.clients.jedis.search.Document;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
 // HIDE_END
@@ -43,8 +39,8 @@ public class QueryGeoExample {
 
         jedis.ftCreate("idx:bicycle",
             FTCreateParams.createParams()
-                .on(IndexDataType.JSON)
-                .addPrefix("bicycle:"),
+                    .on(IndexDataType.JSON)
+                    .addPrefix("bicycle:"),
             schema
         );
 
@@ -210,19 +206,18 @@ public class QueryGeoExample {
         };
 
         for (int i = 0; i < bicycleJsons.length; i++) {
-            jedis.jsonSet("bicycle:" + i, new Path2("$"), bicycleJsons[i]);
+            jedis.jsonSet("bicycle:" + i, Path2.ROOT_PATH, bicycleJsons[i]);
         }
 
         // STEP_START geo1
-        SearchResult res1 = jedis.ftSearch(
-            "idx:bicycle",
+        SearchResult res1 = jedis.ftSearch("idx:bicycle",
             "@store_location:[$lon $lat $radius $units]",
             FTSearchParams.searchParams()
-                .addParam("lon", -0.1778)
-                .addParam("lat", 51.5524)
-                .addParam("radius", 20)
-                .addParam("units", "mi")
-                .dialect(2)
+                    .addParam("lon", -0.1778)
+                    .addParam("lat", 51.5524)
+                    .addParam("radius", 20)
+                    .addParam("units", "mi")
+                    .dialect(2)
         );
         System.out.println(res1.getTotalResults()); // >>> 1
 
@@ -242,12 +237,11 @@ public class QueryGeoExample {
 
 
         // STEP_START geo2
-        SearchResult res2 = jedis.ftSearch(
-            "idx:bicycle",
+        SearchResult res2 = jedis.ftSearch("idx:bicycle",
             "@pickup_zone:[CONTAINS $bike]",
             FTSearchParams.searchParams()
-                .addParam("bike", "POINT(-0.1278 51.5074)")
-                .dialect(3)
+                    .addParam("bike", "POINT(-0.1278 51.5074)")
+                    .dialect(3)
         );
         System.out.println(res2.getTotalResults());   // >>> 1
 
@@ -267,12 +261,11 @@ public class QueryGeoExample {
 
 
         // STEP_START geo3
-        SearchResult res3 = jedis.ftSearch(
-            "idx:bicycle",
+        SearchResult res3 = jedis.ftSearch("idx:bicycle",
             "@pickup_zone:[WITHIN $europe]",
             FTSearchParams.searchParams()
-                .addParam("europe", "POLYGON((-25 35, 40 35, 40 70, -25 70, -25 35))")
-                .dialect(3)
+                    .addParam("europe", "POLYGON((-25 35, 40 35, 40 70, -25 70, -25 35))")
+                    .dialect(3)
         );
         System.out.println(res3.getTotalResults()); // >>> 5
 
@@ -298,9 +291,8 @@ public class QueryGeoExample {
         Assert.assertEquals("bicycle:9", docs3.get(4).getId());
         // REMOVE_END
 
-
 // HIDE_START
-
+        jedis.close();
     }
 }
 // HIDE_END

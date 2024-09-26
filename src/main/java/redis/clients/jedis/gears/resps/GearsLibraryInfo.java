@@ -12,6 +12,7 @@ import static redis.clients.jedis.gears.resps.FunctionInfo.FUNCTION_INFO_LIST;
 import static redis.clients.jedis.gears.resps.StreamTriggerInfo.STREAM_TRIGGER_INFO_LIST;
 import static redis.clients.jedis.gears.resps.TriggerInfo.KEYSPACE_TRIGGER_INFO_LIST;
 
+@Deprecated
 public class GearsLibraryInfo {
   private final String apiVersion;
   private final List<String> clusterFunctions;
@@ -90,6 +91,7 @@ public class GearsLibraryInfo {
     return user;
   }
 
+  @Deprecated
   public static final Builder<GearsLibraryInfo> GEARS_LIBRARY_INFO = new Builder<GearsLibraryInfo>() {
     @Override
     public GearsLibraryInfo build(Object data) {
@@ -171,6 +173,7 @@ public class GearsLibraryInfo {
     }
   };
 
+  @Deprecated
   public static final Builder<List<GearsLibraryInfo>> GEARS_LIBRARY_INFO_LIST = new Builder<List<GearsLibraryInfo>>() {
     @Override
     public List<GearsLibraryInfo> build(Object data) {

@@ -6,6 +6,7 @@ import redis.clients.jedis.BuilderFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class FunctionStreamInfo {
   private final String name;
   private final String idToReadFrom;
@@ -67,6 +68,7 @@ public class FunctionStreamInfo {
     this.pendingIds = pendingIds;
   }
 
+  @Deprecated
   public static final Builder<List<FunctionStreamInfo>> STREAM_INFO_LIST = new Builder<List<FunctionStreamInfo>>() {
     @Override
     public List<FunctionStreamInfo> build(Object data) {

@@ -4,6 +4,7 @@ import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 
 import java.util.List;
 
+@Deprecated
 public interface RedisGearsCommands {
 
   @Deprecated default String tFunctionLoad(String libraryCode) {

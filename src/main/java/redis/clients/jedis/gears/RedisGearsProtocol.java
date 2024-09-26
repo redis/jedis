@@ -4,8 +4,10 @@ import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Deprecated
 public class RedisGearsProtocol {
 
+  @Deprecated
   public enum GearsCommand implements ProtocolCommand {
 
     @Deprecated TFUNCTION,
@@ -24,6 +26,7 @@ public class RedisGearsProtocol {
     }
   }
 
+  @Deprecated
   public enum GearsKeyword implements Rawable {
 
     CONFIG,

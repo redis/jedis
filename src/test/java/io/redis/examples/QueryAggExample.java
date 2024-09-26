@@ -10,22 +10,12 @@ import java.util.Arrays;
 // REMOVE_END
 // HIDE_START
 import java.util.List;
-
-import javax.swing.SortOrder;
-
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.FTCreateParams;
 import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.schemafields.NumericField;
-import redis.clients.jedis.search.schemafields.SchemaField;
-import redis.clients.jedis.search.schemafields.TextField;
-import redis.clients.jedis.search.schemafields.TagField;
-import redis.clients.jedis.search.aggr.AggregationBuilder;
-import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.search.aggr.Reducers;
-import redis.clients.jedis.search.aggr.Row;
-import redis.clients.jedis.search.aggr.SortedField;
+import redis.clients.jedis.search.schemafields.*;
+import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 // HIDE_END
 
@@ -51,8 +41,8 @@ public class QueryAggExample {
 
         jedis.ftCreate("idx:bicycle",
             FTCreateParams.createParams()
-                .on(IndexDataType.JSON)
-                .addPrefix("bicycle:"),
+                    .on(IndexDataType.JSON)
+                    .addPrefix("bicycle:"),
             schema
         );
 
@@ -222,11 +212,10 @@ public class QueryAggExample {
         }
 
         // STEP_START agg1
-        AggregationResult res1 = jedis.ftAggregate(
-            "idx:bicycle",
+        AggregationResult res1 = jedis.ftAggregate("idx:bicycle",
             new AggregationBuilder("@condition:{new}")
-                .load("__key", "price")
-                .apply("@price - (@price * 0.1)", "discounted")
+                    .load("__key", "price")
+                    .apply("@price - (@price * 0.1)", "discounted")
         );
         
         List<Row> rows1 = res1.getRows();
@@ -254,16 +243,12 @@ public class QueryAggExample {
 
 
         // STEP_START agg2
-        AggregationResult res2 = jedis.ftAggregate(
-            "idx:bicycle",
+        AggregationResult res2 = jedis.ftAggregate("idx:bicycle",
             new AggregationBuilder("*")
-                .load("price")
-                .apply("@price<1000", "price_category")
-                .groupBy(
-                    "@condition",
-                    Reducers.sum("@price_category")
-                        .as("num_affordable")
-                )
+                    .load("price")
+                    .apply("@price<1000", "price_category")
+                    .groupBy("@condition",
+                        Reducers.sum("@price_category").as("num_affordable"))
         );
 
         List<Row> rows2 = res2.getRows();
@@ -287,12 +272,10 @@ public class QueryAggExample {
 
 
         // STEP_START agg3
-        AggregationResult res3 = jedis.ftAggregate(
-            "idx:bicycle",
+        AggregationResult res3 = jedis.ftAggregate("idx:bicycle",
             new AggregationBuilder("*")
-                .apply("'bicycle'", "type")
-                .groupBy("@type", Reducers.count().as("num_total")
-            )
+                    .apply("'bicycle'", "type")
+                    .groupBy("@type", Reducers.count().as("num_total"))
         );
 
         List<Row> rows3 = res3.getRows();
@@ -312,16 +295,11 @@ public class QueryAggExample {
 
 
         // STEP_START agg4
-        AggregationResult res4 = jedis.ftAggregate(
-            "idx:bicycle",
+        AggregationResult res4 = jedis.ftAggregate("idx:bicycle",
             new AggregationBuilder("*")
-                .load("__key")
-                .groupBy(
-                    "@condition",
-                    Reducers
-                        .to_list("__key")
-                        .as("bicycles")
-                )
+                    .load("__key")
+                    .groupBy("@condition",
+                        Reducers.to_list("__key").as("bicycles"))
         );
 
         List<Row> rows4 = res4.getRows();
@@ -368,9 +346,8 @@ public class QueryAggExample {
         Assert.assertTrue(test4Bikes.contains("bicycle:8"));
         // REMOVE_END
 
-
 // HIDE_START
-
+        jedis.close();
     }
 }
 // HIDE_END

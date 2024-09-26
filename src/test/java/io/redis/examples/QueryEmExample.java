@@ -35,8 +35,8 @@ public class QueryEmExample {
 
         jedis.ftCreate("idx:bicycle",
             FTCreateParams.createParams()
-                .on(IndexDataType.JSON)
-                .addPrefix("bicycle:"),
+                    .on(IndexDataType.JSON)
+                    .addPrefix("bicycle:"),
             schema
         );
 

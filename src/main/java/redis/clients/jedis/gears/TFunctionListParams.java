@@ -6,6 +6,7 @@ import redis.clients.jedis.params.IParams;
 
 import java.util.Collections;
 
+@Deprecated
 public class TFunctionListParams implements IParams {
   private boolean withCode = false;
   private int verbose;

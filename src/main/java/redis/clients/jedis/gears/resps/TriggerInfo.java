@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import static redis.clients.jedis.BuilderFactory.LONG;
 import static redis.clients.jedis.BuilderFactory.STRING;
 
+@Deprecated
 public class TriggerInfo {
   private final String name;
   private final String description;
@@ -80,6 +81,7 @@ public class TriggerInfo {
     this.totalExecutionTime = totalExecutionTime;
   }
 
+  @Deprecated
   public static final Builder<List<TriggerInfo>> KEYSPACE_TRIGGER_INFO_LIST = new Builder<List<TriggerInfo>>() {
     @Override
     public List<TriggerInfo> build(Object data) {

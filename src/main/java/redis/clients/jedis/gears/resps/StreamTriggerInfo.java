@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import static redis.clients.jedis.BuilderFactory.*;
 import static redis.clients.jedis.gears.resps.FunctionStreamInfo.STREAM_INFO_LIST;
 
+@Deprecated
 public class StreamTriggerInfo {
   private final String name;
   private final String description;
@@ -60,6 +61,7 @@ public class StreamTriggerInfo {
     this(name, description, prefix, window, trim, Collections.emptyList());
   }
 
+  @Deprecated
   public static final Builder<List<StreamTriggerInfo>> STREAM_TRIGGER_INFO_LIST = new Builder<List<StreamTriggerInfo>>() {
     @Override
     public List<StreamTriggerInfo> build(Object data) {

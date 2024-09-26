@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import static redis.clients.jedis.BuilderFactory.*;
 
+@Deprecated
 public class FunctionInfo {
   private final String name;
   private final String description;
@@ -40,6 +41,7 @@ public class FunctionInfo {
     this.flags = flags;
   }
 
+  @Deprecated
   public static final Builder<List<FunctionInfo>> FUNCTION_INFO_LIST = new Builder<List<FunctionInfo>>() {
     @Override
     public List<FunctionInfo> build(Object data) {

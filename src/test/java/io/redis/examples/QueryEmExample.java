@@ -208,7 +208,7 @@ public class QueryEmExample {
 
 
         // STEP_START em1
-        SearchResult res1 = jedis.ftSearch("idx:bicycle","@price:[270 270]");
+        SearchResult res1 = jedis.ftSearch("idx:bicycle", "@price:[270 270]");
         System.out.println(res1.getTotalResults()); // >>> 1
 
         List<Document> docs1 = res1.getDocuments();

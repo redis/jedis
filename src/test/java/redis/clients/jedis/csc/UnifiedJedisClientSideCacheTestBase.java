@@ -52,6 +52,9 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       assertEquals(1, cache.getSize());
       control.del("foo");
+      control.set("dummyKey", "dummyValue");
+      control.get("dummyKey");
+      control.del("dummyKey");
       assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
       assertEquals(1, cache.getSize());
@@ -80,6 +83,9 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       assertEquals(1, cache.getSize());
       control.flushAll();
+      control.set("dummyKey", "dummyValue");
+      control.get("dummyKey");
+      control.del("dummyKey");
       assertEquals(1, cache.getSize());
       assertNull(jedis.get("foo"));
       assertEquals(1, cache.getSize());

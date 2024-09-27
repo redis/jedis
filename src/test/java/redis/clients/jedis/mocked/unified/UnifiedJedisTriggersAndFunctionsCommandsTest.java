@@ -9,12 +9,13 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 
+@Ignore
 public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test

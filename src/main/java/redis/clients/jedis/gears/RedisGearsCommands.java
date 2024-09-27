@@ -4,23 +4,24 @@ import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 
 import java.util.List;
 
+@Deprecated
 public interface RedisGearsCommands {
 
-  default String tFunctionLoad(String libraryCode) {
+  @Deprecated default String tFunctionLoad(String libraryCode) {
     return tFunctionLoad(libraryCode, TFunctionLoadParams.loadParams());
   }
 
-  String tFunctionLoad(String libraryCode, TFunctionLoadParams params);
+  @Deprecated String tFunctionLoad(String libraryCode, TFunctionLoadParams params);
 
-  default List<GearsLibraryInfo> tFunctionList() {
+  @Deprecated default List<GearsLibraryInfo> tFunctionList() {
     return tFunctionList(TFunctionListParams.listParams());
   }
 
-  List<GearsLibraryInfo> tFunctionList(TFunctionListParams params);
+  @Deprecated List<GearsLibraryInfo> tFunctionList(TFunctionListParams params);
 
-  String tFunctionDelete(String libraryName);
+  @Deprecated String tFunctionDelete(String libraryName);
 
-  Object tFunctionCall(String library, String function, List<String> keys, List<String> args);
+  @Deprecated Object tFunctionCall(String library, String function, List<String> keys, List<String> args);
 
-  Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args);
+  @Deprecated Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args);
 }

@@ -75,6 +75,8 @@
 			<version>2.11.0</version>
 		</dependency>
 
+		<!-- Optional dependencies -->
+
 		<!-- UNIX socket connection support -->
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
@@ -90,6 +92,7 @@
 			<version>1.20.0</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>

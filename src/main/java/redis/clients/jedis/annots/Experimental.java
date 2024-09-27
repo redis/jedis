@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
  * If a type is marked with this annotation, all its members are considered experimental.
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR})
 public @interface Experimental { }

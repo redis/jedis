@@ -12,6 +12,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
@@ -31,7 +32,7 @@ import redis.clients.jedis.util.RedisOutputStream;
 public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
-  private RedisProtocol protocol;
+  protected RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -41,6 +42,8 @@ public class Connection implements Closeable {
   private boolean broken = false;
   private boolean strValActive;
   private String strVal;
+  protected String server;
+  protected String version;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -55,9 +58,7 @@ public class Connection implements Closeable {
   }
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
-    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    initializeFromClientConfig(clientConfig);
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig);
   }
 
   public Connection(final JedisSocketFactory socketFactory) {
@@ -373,16 +374,40 @@ public class Connection implements Closeable {
     }
   }
 
+  @Experimental
+  protected Object protocolRead(RedisInputStream is) {
+    return Protocol.read(is);
+  }
+
+  @Experimental
+  protected void protocolReadPushes(RedisInputStream is) {
+  }
+
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
-      return Protocol.read(inputStream);
-//      Object read = Protocol.read(inputStream);
-//      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(read));
-//      return read;
+      return protocolRead(inputStream);
+    } catch (JedisConnectionException exc) {
+      broken = true;
+      throw exc;
+    }
+  }
+
+  protected void readPushesWithCheckingBroken() {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
+    }
+
+    try {
+      if (inputStream.available() > 0) {
+        protocolReadPushes(inputStream);
+      }
+    } catch (IOException e) {
+      broken = true;
+      throw new JedisConnectionException("Failed to check buffer on connection.", e);
     } catch (JedisConnectionException exc) {
       setBroken();
       throw exc;
@@ -404,6 +429,7 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
+   *
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -419,7 +445,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeFromClientConfig(final JedisClientConfig config) {
+  protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
       connect();
 
@@ -430,12 +456,12 @@ public class Connection implements Closeable {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
           redisCredentialsProvider.prepare();
-          helloOrAuth(protocol, redisCredentialsProvider.get());
+          helloAndAuth(protocol, redisCredentialsProvider.get());
         } finally {
           redisCredentialsProvider.cleanUp();
         }
       } else {
-        helloOrAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
+        helloAndAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
             : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
@@ -447,7 +473,9 @@ public class Connection implements Closeable {
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
-      if (setInfoConfig == null) setInfoConfig = ClientSetInfoConfig.DEFAULT;
+      if (setInfoConfig == null) {
+        setInfoConfig = ClientSetInfoConfig.DEFAULT;
+      }
 
       if (!setInfoConfig.isDisabled()) {
         String libName = JedisMetaInfo.getArtifactId();
@@ -492,50 +520,56 @@ public class Connection implements Closeable {
     }
   }
 
-  private void helloOrAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
-
-    if (credentials == null || credentials.getPassword() == null) {
-      if (protocol != null) {
-        sendCommand(Command.HELLO, encode(protocol.version()));
-        getOne();
+  private void helloAndAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
+    Map<String, Object> helloResult = null;
+    if (protocol != null && credentials != null && credentials.getUser() != null) {
+      byte[] rawPass = encodeToBytes(credentials.getPassword());
+      try {
+        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
+      } finally {
+        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }
-      return;
+    } else {
+      auth(credentials);
+      helloResult = protocol == null ? null : hello(encode(protocol.version()));
     }
-
-    // Source: https://stackoverflow.com/a/9670279/4021802
-    ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(credentials.getPassword()));
-    byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());
-    Arrays.fill(passBuf.array(), (byte) 0); // clear sensitive data
-
-    try {
-      /// actual HELLO or AUTH -->
-      if (protocol != null) {
-        if (credentials.getUser() != null) {
-          sendCommand(Command.HELLO, encode(protocol.version()),
-              Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
-          getOne(); // Map
-        } else {
-          sendCommand(Command.AUTH, rawPass);
-          getStatusCodeReply(); // OK
-          sendCommand(Command.HELLO, encode(protocol.version()));
-          getOne(); // Map
-        }
-      } else { // protocol == null
-        if (credentials.getUser() != null) {
-          sendCommand(Command.AUTH, encode(credentials.getUser()), rawPass);
-        } else {
-          sendCommand(Command.AUTH, rawPass);
-        }
-        getStatusCodeReply(); // OK
-      }
-      /// <-- actual HELLO or AUTH
-    } finally {
-
-      Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+    if (helloResult != null) {
+      server = (String) helloResult.get("server");
+      version = (String) helloResult.get("version");
     }
 
     // clearing 'char[] credentials.getPassword()' should be
     // handled in RedisCredentialsProvider.cleanUp()
+  }
+
+  private void auth(RedisCredentials credentials) {
+    if (credentials == null || credentials.getPassword() == null) {
+      return;
+    }
+    byte[] rawPass = encodeToBytes(credentials.getPassword());
+    try {
+      if (credentials.getUser() == null) {
+        sendCommand(Command.AUTH, rawPass);
+      } else {
+        sendCommand(Command.AUTH, encode(credentials.getUser()), rawPass);
+      }
+    } finally {
+      Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+    }
+    getStatusCodeReply();
+  }
+
+  protected Map<String, Object> hello(byte[]... args) {
+    sendCommand(Command.HELLO, args);
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+  }
+
+  protected byte[] encodeToBytes(char[] chars) {
+    // Source: https://stackoverflow.com/a/9670279/4021802
+    ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(chars));
+    byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());
+    Arrays.fill(passBuf.array(), (byte) 0); // clear sensitive data
+    return rawPass;
   }
 
   public String select(final int index) {

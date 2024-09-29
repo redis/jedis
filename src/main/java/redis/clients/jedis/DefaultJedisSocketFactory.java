@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -90,6 +91,24 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setSoTimeout(socketTimeout);
 
       if (ssl) {
+        socket = createSslSocket(_hostAndPort, socket);
+      }
+
+      return socket;
+
+    } catch (Exception ex) {
+      IOUtils.closeQuietly(socket);
+      if (ex instanceof JedisConnectionException) {
+        throw (JedisConnectionException) ex;
+      } else {
+        throw new JedisConnectionException("Failed to create socket.", ex);
+      }
+    }
+  }
+
+  private Socket createSslSocket(HostAndPort _hostAndPort, Socket socket) throws IOException {
+
+      if (ssl) {
         SSLSocketFactory _sslSocketFactory = this.sslSocketFactory;
         if (null == _sslSocketFactory) {
           _sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -111,15 +130,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       }
 
       return socket;
-
-    } catch (Exception ex) {
-      IOUtils.closeQuietly(socket);
-      if (ex instanceof JedisConnectionException) {
-        throw (JedisConnectionException) ex;
-      } else {
-        throw new JedisConnectionException("Failed to create socket.", ex);
-      }
-    }
   }
 
   public void updateHostAndPort(HostAndPort hostAndPort) {

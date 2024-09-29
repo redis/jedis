@@ -45,8 +45,8 @@ The table below highlights version compatibility of the most-recent library vers
 |---------------|---------------------------------------|-------------------|
 | 3.9+          | 5.0 to 6.2 Family of releases         | 8, 11             |
 | >= 4.0        | Version 5.0 to 7.2 Family of releases | 8, 11, 17         |
-| >= 5.0        | Version 6.0 to current                | 8, 11, 17         |
-| >= 5.2        | Version 7.4 to current                | 8, 11, 17, 21     |
+| >= 5.0        | Version 6.0 to current                | 8, 11, 17, 21     |
+| >= 5.2        | Version 7.2 to current                | 8, 11, 17, 21     |
 
 ## Getting started
 

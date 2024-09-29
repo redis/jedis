@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private int socketTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean ssl = false;
   private SSLSocketFactory sslSocketFactory = null;
+  private SslOptions sslOptions = null;
   private SSLParameters sslParameters = null;
   private HostnameVerifier hostnameVerifier = null;
   private HostAndPortMapper hostAndPortMapper = null;
@@ -50,6 +52,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       this.ssl = config.isSsl();
       this.sslSocketFactory = config.getSslSocketFactory();
       this.sslParameters = config.getSslParameters();
+      this.sslOptions = config.getSslOptions();
       this.hostnameVerifier = config.getHostnameVerifier();
       this.hostAndPortMapper = config.getHostAndPortMapper();
     }
@@ -90,7 +93,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket = connectToFirstSuccessfulHost(_hostAndPort);
       socket.setSoTimeout(socketTimeout);
 
-      if (ssl) {
+      if (ssl || sslOptions != null) {
         socket = createSslSocket(_hostAndPort, socket);
       }
 
@@ -106,30 +109,34 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
-  private Socket createSslSocket(HostAndPort _hostAndPort, Socket socket) throws IOException {
+  private Socket createSslSocket(HostAndPort _hostAndPort, Socket socket) throws IOException, GeneralSecurityException {
 
-      if (ssl) {
-        SSLSocketFactory _sslSocketFactory = this.sslSocketFactory;
-        if (null == _sslSocketFactory) {
-          _sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        }
-        Socket plainSocket = socket;
-        socket = _sslSocketFactory.createSocket(socket, _hostAndPort.getHost(), _hostAndPort.getPort(), true);
+    Socket plainSocket = socket;
 
-        if (null != sslParameters) {
-          ((SSLSocket) socket).setSSLParameters(sslParameters);
-        }
-        socket = new SSLSocketWrapper((SSLSocket) socket, plainSocket);
+    SSLSocketFactory _sslSocketFactory;
+    if (sslOptions != null) {
+      _sslSocketFactory = sslOptions.createSslContext().getSocketFactory();
+    } else {
+      _sslSocketFactory = this.sslSocketFactory;
+    }
+    if (null == _sslSocketFactory) {
+      _sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+    }
 
-        if (null != hostnameVerifier
-            && !hostnameVerifier.verify(_hostAndPort.getHost(), ((SSLSocket) socket).getSession())) {
-          String message = String.format(
-            "The connection to '%s' failed ssl/tls hostname verification.", _hostAndPort.getHost());
-          throw new JedisConnectionException(message);
-        }
-      }
+    SSLSocket sslSocket = (SSLSocket) _sslSocketFactory.createSocket(socket, _hostAndPort.getHost(), _hostAndPort.getPort(), true);
 
-      return socket;
+    if (null != sslParameters) {
+      sslSocket.setSSLParameters(sslParameters);
+    }
+
+    if (null != hostnameVerifier
+        && !hostnameVerifier.verify(_hostAndPort.getHost(), sslSocket.getSession())) {
+      String message = String.format(
+          "The connection to '%s' failed ssl/tls hostname verification.", _hostAndPort.getHost());
+      throw new JedisConnectionException(message);
+    }
+
+    return new SSLSocketWrapper(sslSocket, plainSocket);
   }
 
   public void updateHostAndPort(HostAndPort hostAndPort) {

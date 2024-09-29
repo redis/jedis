@@ -72,6 +72,15 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * {@link JedisClientConfig#isSsl()} and {@link JedisClientConfig#getSslSocketFactory()} will be ignored if
+   * {@link JedisClientConfig#getSslOptions() this} is set.
+   * @return ssl options
+   */
+  default SslOptions getSslOptions() {
+    return null;
+  }
+
   default HostnameVerifier getHostnameVerifier() {
     return null;
   }

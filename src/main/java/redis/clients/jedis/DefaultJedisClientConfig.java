@@ -21,6 +21,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final SSLSocketFactory sslSocketFactory;
   private final SSLParameters sslParameters;
   private final SslOptions sslOptions;
+  private final SslHostnameVerifyMode sslHostnameVerifyMode;
   private final HostnameVerifier hostnameVerifier;
 
   private final HostAndPortMapper hostAndPortMapper;
@@ -45,7 +46,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.ssl = ssl;
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
-    this.sslOptions = null;
+    this.sslOptions = null; // TODO:
+    this.sslHostnameVerifyMode = null; // TODO:
     this.hostnameVerifier = hostnameVerifier;
     this.hostAndPortMapper = hostAndPortMapper;
     this.clientSetInfoConfig = clientSetInfoConfig;
@@ -64,6 +66,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.sslSocketFactory = builder.sslSocketFactory;
     this.sslParameters = builder.sslParameters;
     this.sslOptions = builder.sslOptions;
+    this.sslHostnameVerifyMode = builder.sslHostnameVerifyMode;
     this.hostnameVerifier = builder.hostnameVerifier;
     this.hostAndPortMapper = builder.hostAndPortMapper;
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
@@ -137,6 +140,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
+  public SslHostnameVerifyMode getSslHostnameVerifyMode() {
+    return sslHostnameVerifyMode;
+  }
+
+  @Override
   public HostnameVerifier getHostnameVerifier() {
     return hostnameVerifier;
   }
@@ -178,6 +186,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private SSLSocketFactory sslSocketFactory = null;
     private SSLParameters sslParameters = null;
     private SslOptions sslOptions = null;
+    private SslHostnameVerifyMode sslHostnameVerifyMode = null;
     private HostnameVerifier hostnameVerifier = null;
 
     private HostAndPortMapper hostAndPortMapper = null;
@@ -279,6 +288,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public Builder sslOptions(SslOptions sslOptions) {
       this.sslOptions = sslOptions;
+      return this;
+    }
+
+    public Builder sslHostnameVerifyMode(SslHostnameVerifyMode sslHostnameVerifyMode) {
+      this.sslHostnameVerifyMode = sslHostnameVerifyMode;
       return this;
     }
 

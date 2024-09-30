@@ -81,6 +81,10 @@ public interface JedisClientConfig {
     return null;
   }
 
+  default SslHostnameVerifyMode getSslHostnameVerifyMode() {
+    return null; // TODO: SslVerifyMode.HTTPS
+  }
+
   default HostnameVerifier getHostnameVerifier() {
     return null;
   }

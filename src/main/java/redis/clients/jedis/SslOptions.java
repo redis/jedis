@@ -327,6 +327,8 @@ public class SslOptions {
         //SSLContext sslContext = SSLContext.getInstance("TLS"); // examples
 
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        // TODO: set null for key managers and/or trust managers
+        // TODO: null doesn't completely disables these...
 
         return sslContext;
     }

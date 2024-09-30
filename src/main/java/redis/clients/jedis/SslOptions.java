@@ -198,7 +198,7 @@ public class SslOptions {
          *
          * @param keystore the keystore file, must not be {@code null}.
          * @param keystorePassword
-         * @return {@code this
+         * @return {@code this}
          */
         public Builder keystore(URL keystore, char[] keystorePassword) {
 

@@ -31,6 +31,7 @@ import java.util.Objects;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import redis.clients.jedis.util.InsecureTrustManagerFactory;
 
 /**
  * Options to configure SSL options for the connections kept to Redis servers.
@@ -55,6 +56,8 @@ public class SslOptions {
 
     private final char[] truststorePassword;
 
+    private final boolean insecureTrust;
+
     private SslOptions(Builder builder) {
         this.keyManagerAlgorithm = builder.keyManagerAlgorithm;
         this.trustManagerAlgorithm = builder.trustManagerAlgorithm;
@@ -64,6 +67,7 @@ public class SslOptions {
         this.keystorePassword = builder.keystorePassword;
         this.truststoreResource = builder.truststoreResource;
         this.truststorePassword = builder.truststorePassword;
+        this.insecureTrust = builder.insecureTrust;
     }
 
     /**
@@ -97,6 +101,8 @@ public class SslOptions {
 
         private char[] truststorePassword = new char[0];
 
+        private boolean insecureTrust = false;
+
         private Builder() {
         }
 
@@ -105,8 +111,18 @@ public class SslOptions {
             return this;
         }
 
+        public Builder systemDefaultKeyManager() {
+            this.keyManagerAlgorithm = null;
+            return this;
+        }
+
         public Builder trustManagerAlgorithm(String trustManagerAlgorithm) {
             this.trustManagerAlgorithm = Objects.requireNonNull(trustManagerAlgorithm, "TrustManagerAlgorithm must not be null");
+            return this;
+        }
+
+        public Builder systemDefaultTrustManager() {
+            this.trustManagerAlgorithm = null;
             return this;
         }
 
@@ -287,6 +303,11 @@ public class SslOptions {
             return this;
         }
 
+        public Builder insecureTrust(boolean insecureTrust) {
+            this.insecureTrust = insecureTrust;
+            return this;
+        }
+
         /**
          * Create a new instance of {@link SslOptions}
          *
@@ -307,28 +328,49 @@ public class SslOptions {
      */
     public SSLContext createSslContext() throws IOException, GeneralSecurityException {
 
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        try (InputStream keystoreStream = keystoreResource.get()) {
-            keyStore.load(keystoreStream, keystorePassword);
+        final KeyManagerFactory keyManagerFactory;
+        if (keyManagerAlgorithm == null) {
+            keyManagerFactory = null;
+        } else {
+
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            try (InputStream keystoreStream = keystoreResource.get()) {
+                keyStore.load(keystoreStream, keystorePassword);
+            }
+
+            keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
+            keyManagerFactory.init(keyStore, keystorePassword);
+
         }
 
-        KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-        try (InputStream truststoreStream = truststoreResource.get()) {
-            trustStore.load(truststoreStream, truststorePassword);
+        final TrustManagerFactory trustManagerFactory;
+        if (insecureTrust) {
+
+            trustManagerFactory = InsecureTrustManagerFactory.INSTANCE;
+
+        } else if (trustManagerAlgorithm == null) {
+
+            trustManagerFactory = null;
+
+        } else {
+
+            KeyStore trustStore = KeyStore.getInstance(trustStoreType);
+            try (InputStream truststoreStream = truststoreResource.get()) {
+                trustStore.load(truststoreStream, truststorePassword);
+            }
+
+            trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
+            trustManagerFactory.init(trustStore);
+
         }
-
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
-        trustManagerFactory.init(trustStore);
-
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
-        keyManagerFactory.init(keyStore, keystorePassword);
 
         SSLContext sslContext = SSLContext.getDefault();
         //SSLContext sslContext = SSLContext.getInstance("TLS"); // examples
 
-        sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-        // TODO: set null for key managers and/or trust managers
-        // TODO: null doesn't completely disables these...
+        sslContext.init(
+                keyManagerFactory == null ? null : keyManagerFactory.getKeyManagers(),
+                trustManagerFactory == null ? null : trustManagerFactory.getTrustManagers(),
+                null);
 
         return sslContext;
     }

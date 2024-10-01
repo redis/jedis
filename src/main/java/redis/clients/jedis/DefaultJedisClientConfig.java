@@ -30,7 +30,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean readOnlyForRedisClusterReplicas;
 
-  // TODO:
+  // TODO: how many constructors should we have? 1) all params, 2) builder 3) another config
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -317,7 +317,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
   }
 
-  // TOOD:
+  // TOOD: depends on which constructors we're going to have/keep
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -329,7 +329,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         false);
   }
 
-  // TODO:
+  // TOOD: depends on which constructors we're going to have/keep
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
     return new DefaultJedisClientConfig(copy.getRedisProtocol(),
         copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),

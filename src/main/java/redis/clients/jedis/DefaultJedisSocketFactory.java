@@ -124,8 +124,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
     if (sslOptions != null) {
 
-      SSLContext _sslContext = sslOptions.createSslContext();
-
       _sslParameters = sslParameters != null ? sslParameters : new SSLParameters(); // TODO:
 
       if (sslHostnameVerifyMode == SslHostnameVerifyMode.HTTPS) {
@@ -133,6 +131,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       } else if (sslHostnameVerifyMode == SslHostnameVerifyMode.DISABLE) {
         _sslParameters.setEndpointIdentificationAlgorithm("");
       }
+
+      SSLContext _sslContext = sslOptions.createSslContext();
 
       _sslSocketFactory = _sslContext.getSocketFactory();
 

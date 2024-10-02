@@ -39,6 +39,10 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
+      // These dummyKey operations just to gain some time for arrival of invalidation message on connection 
+      control.set("dummyKey", "dummyValue");
+      control.get("dummyKey");
+      control.del("dummyKey");
       assertNull(jedis.get("foo"));
     }
   }
@@ -52,6 +56,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       assertEquals(1, cache.getSize());
       control.del("foo");
+      // These dummyKey operations just to gain some time for arrival of invalidation message on connection 
       control.set("dummyKey", "dummyValue");
       control.get("dummyKey");
       control.del("dummyKey");
@@ -83,6 +88,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       assertEquals(1, cache.getSize());
       control.flushAll();
+      // These dummyKey operations just to gain some time for arrival of invalidation message on connection 
       control.set("dummyKey", "dummyValue");
       control.get("dummyKey");
       control.del("dummyKey");

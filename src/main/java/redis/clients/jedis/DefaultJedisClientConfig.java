@@ -175,7 +175,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     /**
-     * Shortcut to {@link Builder#protocol(redis.clients.jedis.RedisProtocol)} with {@link RedisProtocol#RESP3}.
+     * Shortcut to {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * {@link RedisProtocol#RESP3}.
      */
     public Builder resp3() {
       return protocol(RedisProtocol.RESP3);

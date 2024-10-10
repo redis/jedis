@@ -68,11 +68,13 @@
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20240303</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.11.0</version>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Optional dependencies -->

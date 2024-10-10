@@ -1,12 +1,23 @@
 package redis.clients.jedis.args;
 
 import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.util.SafeEncoder.encode;
+
+import java.util.Arrays;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Factory class to get {@link Rawable} objects.
  */
 public final class RawableFactory {
+
+  /**
+   * Get a {@link Rawable} from a {@code boolean}.
+   * @param b boolean value
+   * @return raw
+   */
+  public static Rawable from(boolean b) {
+    return from(toByteArray(b));
+  }
 
   /**
    * Get a {@link Rawable} from an {@code int}.
@@ -15,6 +26,15 @@ public final class RawableFactory {
    */
   public static Rawable from(int i) {
     return from(toByteArray(i));
+  }
+
+  /**
+   * Get a {@link Rawable} from a {@code long}.
+   * @param l long value
+   * @return raw
+   */
+  public static Rawable from(long l) {
+    return from(toByteArray(l));
   }
 
   /**
@@ -52,12 +72,24 @@ public final class RawableFactory {
     private final byte[] raw;
 
     public Raw(byte[] raw) {
-      this.raw = raw;
+      this.raw = Arrays.copyOf(raw, raw.length);
     }
 
     @Override
     public byte[] getRaw() {
       return raw;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      return Arrays.equals(raw, ((Raw) o).raw);
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(raw);
     }
   }
 
@@ -66,8 +98,10 @@ public final class RawableFactory {
    */
   public static class RawString extends Raw {
 
+    // TODO: private final String str; ^ implements Rawable
+
     public RawString(String str) {
-      super(encode(str));
+      super(SafeEncoder.encode(str));
     }
   }
 

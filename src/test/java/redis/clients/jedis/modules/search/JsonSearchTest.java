@@ -5,10 +5,13 @@ import static org.junit.Assert.*;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
-
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.json.JsonProtocol;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
@@ -16,6 +19,7 @@ import redis.clients.jedis.search.Schema.*;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
   public static final String JSON_ROOT = "$";
@@ -31,6 +35,10 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public JsonSearchTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   private void setJson(String key, JSONObject json) {
     CommandObject command = new CommandObject<>(
@@ -142,23 +150,22 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
     setJson(id, json);
 
     // query
-    SearchResult sr = client.ftSearch(index, new Query().setWithScores().setWithPayload());
+    SearchResult sr = client.ftSearch(index, new Query().setWithScores());
     assertEquals(1, sr.getTotalResults());
 
     Document doc = sr.getDocuments().get(0);
     assertEquals(1.0, doc.getScore(), 0);
-    assertNull(doc.getPayload());
     assertEquals(json.toString(), doc.get(JSON_ROOT));
 
     // query repeat
-    sr = client.ftSearch(index, new Query().setWithScores().setWithPayload());
+    sr = client.ftSearch(index, new Query().setWithScores());
 
     doc = sr.getDocuments().get(0);
     JSONObject jsonRead = new JSONObject((String) doc.get(JSON_ROOT));
     assertEquals(json.toString(), jsonRead.toString());
 
     // query repeat
-    sr = client.ftSearch(index, new Query().setWithScores().setWithPayload());
+    sr = client.ftSearch(index, new Query().setWithScores());
 
     doc = sr.getDocuments().get(0);
     jsonRead = new JSONObject(doc.getString(JSON_ROOT));

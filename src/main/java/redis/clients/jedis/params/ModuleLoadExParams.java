@@ -1,12 +1,11 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.ARGS;
-import static redis.clients.jedis.Protocol.Keyword.CONFIG;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.util.KeyValue;
 
 public class ModuleLoadExParams implements IParams {
@@ -34,10 +33,23 @@ public class ModuleLoadExParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
 
-    this.configs.forEach(kv -> args.add(CONFIG).add(kv.getKey()).add(kv.getValue()));
+    this.configs.forEach(kv -> args.add(Keyword.CONFIG).add(kv.getKey()).add(kv.getValue()));
 
     if (!this.args.isEmpty()) {
-      args.add(ARGS).addObjects(this.args);
+      args.add(Keyword.ARGS).addObjects(this.args);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ModuleLoadExParams that = (ModuleLoadExParams) o;
+    return Objects.equals(configs, that.configs) && Objects.equals(args, that.args);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(configs, args);
   }
 }

@@ -18,7 +18,7 @@ public interface Node {
 
     /**
      * Never encapsulate. Note that this may be ignored if parentheses are semantically required
-     * (e.g. {@code @foo:(val1|val2)}. However something like {@code @foo:v1 @bar:v2} need not be
+     * (e.g. {@code @foo:(val1|val2)}. However, something like {@code @foo:v1 @bar:v2} need not be
      * parenthesized.
      */
 

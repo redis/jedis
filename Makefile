@@ -209,7 +209,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7379
-cluster-node-timeout 50
+cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node1.pid
 logfile /tmp/redis_cluster_node1.log
 save ""
@@ -223,7 +223,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7380
-cluster-node-timeout 50
+cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node2.pid
 logfile /tmp/redis_cluster_node2.log
 save ""
@@ -237,7 +237,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7381
-cluster-node-timeout 50
+cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node3.pid
 logfile /tmp/redis_cluster_node3.log
 save ""
@@ -251,7 +251,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7382
-cluster-node-timeout 50
+cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node4.pid
 logfile /tmp/redis_cluster_node4.log
 save ""
@@ -265,13 +265,57 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7383
-cluster-node-timeout 5000
+cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node5.pid
 logfile /tmp/redis_cluster_node5.log
 save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node5.conf
+endef
+
+# STABLE CLUSTER REDIS NODES
+# The structure of this cluster is not changed by the tests!
+define REDIS_STABLE_CLUSTER_NODE1_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7479
+cluster-node-timeout 15000
+pidfile /tmp/redis_stable_cluster_node1.pid
+logfile /tmp/redis_stable_cluster_node1.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_stable_cluster_node1.conf
+endef
+
+define REDIS_STABLE_CLUSTER_NODE2_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7480
+cluster-node-timeout 15000
+pidfile /tmp/redis_stable_cluster_node2.pid
+logfile /tmp/redis_stable_cluster_node2.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_stable_cluster_node2.conf
+endef
+
+define REDIS_STABLE_CLUSTER_NODE3_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7481
+cluster-node-timeout 15000
+pidfile /tmp/redis_stable_cluster_node3.pid
+logfile /tmp/redis_stable_cluster_node3.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_stable_cluster_node3.conf
 endef
 
 # UDS REDIS NODES
@@ -355,6 +399,9 @@ export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
+export REDIS_STABLE_CLUSTER_NODE1_CONF
+export REDIS_STABLE_CLUSTER_NODE2_CONF
+export REDIS_STABLE_CLUSTER_NODE3_CONF
 export REDIS_UDS
 export REDIS_UNAVAILABLE_CONF
 export STUNNEL_CONF
@@ -366,7 +413,7 @@ ifndef STUNNEL_BIN
 endif
 export SKIP_SSL
 
-start: stunnel cleanup
+start: stunnel cleanup compile-module
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -393,8 +440,13 @@ start: stunnel cleanup
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_STABLE_CLUSTER_NODE1_CONF" | redis-server -
+	echo "$$REDIS_STABLE_CLUSTER_NODE2_CONF" | redis-server -
+	echo "$$REDIS_STABLE_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
+	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
+	docker run -p 6479:6379 --name jedis-stack -d redis/redis-stack-server:edge
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -404,6 +456,7 @@ stunnel:
 	@if [ -e "$$STUNNEL_BIN" ]; then\
 	    echo "$$STUNNEL_CONF" | stunnel -fd 0;\
 	fi
+
 stop:
 	kill `cat /tmp/redis1.pid`
 	kill `cat /tmp/redis2.pid`
@@ -426,6 +479,9 @@ stop:
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_stable_cluster_node1.pid`
+	kill `cat /tmp/redis_stable_cluster_node2.pid`
+	kill `cat /tmp/redis_stable_cluster_node3.pid`
 	kill `cat /tmp/redis_uds.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
 	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
@@ -439,29 +495,35 @@ stop:
 	rm -f /tmp/redis_cluster_node3.conf
 	rm -f /tmp/redis_cluster_node4.conf
 	rm -f /tmp/redis_cluster_node5.conf
+	rm -f /tmp/redis_stable_cluster_node1.conf
+	rm -f /tmp/redis_stable_cluster_node2.conf
+	rm -f /tmp/redis_stable_cluster_node3.conf
+	docker rm -f jedis-stack
 
-test: compile-module start
-	sleep 2
+test: | start mvn-test stop
+
+mvn-test:
 	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
-	make stop
 
-package: start
+package: | start mvn-package stop
+
+mvn-package:
 	mvn clean package
-	make stop
 
-deploy: start
+deploy: | start mvn-deploy stop
+
+mvn-deploy:
 	mvn clean deploy
-	make stop
 
 format:
 	mvn java-formatter:format
 
-release:
-	make start
+release: | start mvn-release stop
+
+mvn-release:
 	mvn release:clean
 	mvn release:prepare
 	mvn release:perform -DskipTests
-	make stop
 
 system-setup:
 	sudo apt install -y gcc g++

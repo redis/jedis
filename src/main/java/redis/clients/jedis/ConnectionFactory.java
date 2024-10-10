@@ -1,12 +1,14 @@
 package redis.clients.jedis;
 
-
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -17,8 +19,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private static final Logger logger = LoggerFactory.getLogger(ConnectionFactory.class);
 
   private final JedisSocketFactory jedisSocketFactory;
-
   private final JedisClientConfig clientConfig;
+  private Cache clientSideCache = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this.clientConfig = DefaultJedisClientConfig.builder().build();
@@ -26,17 +28,20 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
+    this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
-  public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
-    this.jedisSocketFactory = jedisSocketFactory;
+  @Experimental
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache csCache) {
+    this.clientConfig = clientConfig;
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
+    this.clientSideCache = csCache;
   }
 
-  public void setPassword(final String password) {
-    this.clientConfig.updatePassword(password);
+  public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
+    this.clientConfig = clientConfig;
+    this.jedisSocketFactory = jedisSocketFactory;
   }
 
   @Override
@@ -49,14 +54,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     final Connection jedis = pooledConnection.getObject();
     if (jedis.isConnected()) {
       try {
-        // need a proper test, probably with mock
-        if (!jedis.isBroken()) {
-          jedis.quit();
-        }
-      } catch (RuntimeException e) {
-        logger.debug("Error while QUIT", e);
-      }
-      try {
         jedis.close();
       } catch (RuntimeException e) {
         logger.debug("Error while close", e);
@@ -66,24 +63,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
-    Connection jedis = null;
     try {
-      jedis = new Connection(jedisSocketFactory, clientConfig);
-      jedis.connect();
+      Connection jedis = clientSideCache == null ? new Connection(jedisSocketFactory, clientConfig)
+          : new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      if (jedis != null) {
-        try {
-          jedis.quit();
-        } catch (RuntimeException e) {
-          logger.debug("Error while QUIT", e);
-        }
-        try {
-          jedis.close();
-        } catch (RuntimeException e) {
-          logger.debug("Error while close", e);
-        }
-      }
+      logger.debug("Error while makeObject", je);
       throw je;
     }
   }
@@ -100,7 +85,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       // check HostAndPort ??
       return jedis.isConnected() && jedis.ping();
     } catch (final Exception e) {
-      logger.error("Error while validating pooled Connection object.", e);
+      logger.warn("Error while validating pooled Connection object.", e);
       return false;
     }
   }

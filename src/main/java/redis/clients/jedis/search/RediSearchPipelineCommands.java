@@ -41,6 +41,16 @@ public interface RediSearchPipelineCommands {
 
   Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
+  Response<String> ftAliasAdd(String aliasName, String indexName);
+
+  Response<String> ftAliasUpdate(String aliasName, String indexName);
+
+  Response<String> ftAliasDel(String aliasName);
+
+  Response<String> ftDropIndex(String indexName);
+
+  Response<String> ftDropIndexDD(String indexName);
+
   default Response<SearchResult> ftSearch(String indexName) {
     return ftSearch(indexName, "*");
   }
@@ -51,6 +61,7 @@ public interface RediSearchPipelineCommands {
 
   Response<SearchResult> ftSearch(String indexName, Query query);
 
+  @Deprecated
   Response<SearchResult> ftSearch(byte[] indexName, Query query);
 
   Response<String> ftExplain(String indexName, Query query);
@@ -58,14 +69,6 @@ public interface RediSearchPipelineCommands {
   Response<List<String>> ftExplainCLI(String indexName, Query query);
 
   Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr);
-
-  Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count);
-
-  Response<String> ftCursorDel(String indexName, long cursorId);
-
-  Response<String> ftDropIndex(String indexName);
-
-  Response<String> ftDropIndexDD(String indexName);
 
   Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms);
 
@@ -92,15 +95,9 @@ public interface RediSearchPipelineCommands {
 
   Response<Set<String>> ftTagVals(String indexName, String fieldName);
 
-  Response<String> ftAliasAdd(String aliasName, String indexName);
+  Response<Map<String, Object>> ftConfigGet(String option);
 
-  Response<String> ftAliasUpdate(String aliasName, String indexName);
-
-  Response<String> ftAliasDel(String aliasName);
-
-  Response<Map<String, String>> ftConfigGet(String option);
-
-  Response<Map<String, String>> ftConfigGet(String indexName, String option);
+  Response<Map<String, Object>> ftConfigGet(String indexName, String option);
 
   Response<String> ftConfigSet(String option, String value);
 

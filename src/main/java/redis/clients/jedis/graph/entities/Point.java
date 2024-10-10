@@ -5,7 +5,9 @@ import java.util.Objects;
 
 /**
  * This class represents a (geographical) point in the graph.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public final class Point {
 
     private static final double EPSILON = 1e-5;

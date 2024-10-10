@@ -1,11 +1,11 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
 
 import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
@@ -37,7 +37,7 @@ public class ScanParams implements IParams {
    * @see <a href="https://redis.io/commands/scan#the-count-option">COUNT option in Redis documentation</a>
    */
   public ScanParams count(final Integer count) {
-    params.put(COUNT, ByteBuffer.wrap(Protocol.toByteArray(count)));
+    params.put(Keyword.COUNT, ByteBuffer.wrap(Protocol.toByteArray(count)));
     return this;
   }
 
@@ -63,5 +63,18 @@ public class ScanParams implements IParams {
     } else {
       return null;
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ScanParams that = (ScanParams) o;
+    return Objects.equals(params, that.params);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(params);
   }
 }

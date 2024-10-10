@@ -1,38 +1,41 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import java.util.List;
+import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.util.SafeEncoder;
 
-import java.util.List;
-
+@RunWith(Parameterized.class)
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
   private final byte[] binaryKey = SafeEncoder.encode(key);
-  private final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
+  private final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
   private Jedis lfuJedis;
+
+  public ObjectCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
+    lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(),
+        lfuEndpoint.getClientConfigBuilder().build());
     lfuJedis.connect();
     lfuJedis.flushAll();
   }
@@ -48,11 +51,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   public void objectRefcount() {
     jedis.lpush(key, "hello world");
     Long refcount = jedis.objectRefcount(key);
-    assertEquals(new Long(1), refcount);
+    assertEquals(Long.valueOf(1), refcount);
 
     // Binary
     refcount = jedis.objectRefcount(binaryKey);
-    assertEquals(new Long(1), refcount);
+    assertEquals(Long.valueOf(1), refcount);
 
   }
 
@@ -79,22 +82,22 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(key, "hello world");
 
     Long time = jedis.objectIdletime(key);
-    assertEquals(new Long(0), time);
+    assertEquals(Long.valueOf(0), time);
 
     // Binary
     time = jedis.objectIdletime(binaryKey);
-    assertEquals(new Long(0), time);
+    assertEquals(Long.valueOf(0), time);
   }
 
   @Test
   public void objectHelp() {
     // String
     List<String> helpTexts = jedis.objectHelp();
-    assertNotNull(helpTexts);
+    Assert.assertNotNull(helpTexts);
 
     // Binary
     List<byte[]> helpBinaryTexts = jedis.objectHelpBinary();
-    assertNotNull(helpBinaryTexts);
+    Assert.assertNotNull(helpBinaryTexts);
   }
 
   @Test
@@ -102,20 +105,13 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     lfuJedis.set(key, "test1");
     lfuJedis.get(key);
     // String
-    Long count = lfuJedis.objectFreq(key);
-    assertTrue(count > 0);
-
+    assertThat(lfuJedis.objectFreq(key), greaterThanOrEqualTo(1L));
     // Binary
-    count = lfuJedis.objectFreq(binaryKey);
-    assertTrue(count > 0);
+    assertThat(lfuJedis.objectFreq(binaryKey), greaterThanOrEqualTo(1L));
 
-    assertNull(lfuJedis.objectFreq("no_such_key"));
+    Assert.assertNull(lfuJedis.objectFreq("no_such_key"));
 
-    try {
-      jedis.set(key, "test2");
-      jedis.objectFreq(key);
-      fail("Freq is only allowed with LFU policy");
-    } catch (JedisDataException e) {
-    }
+    jedis.set(key, "test2");
+    Assert.assertThrows("Freq is only allowed with LFU policy", JedisDataException.class, () -> jedis.objectFreq(key));
   }
 }

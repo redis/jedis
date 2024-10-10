@@ -5,7 +5,6 @@ import java.util.List;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.util.KeyValue;
 
 public interface ListCommands {
@@ -303,13 +302,13 @@ public interface ListCommands {
    *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @param keys
    */
-  KeyedListElement blpop(double timeout, String... keys);
+  KeyValue<String, String> blpop(double timeout, String... keys);
 
 
   /**
    * @see ListCommands#blpop(double, String...)
    */
-  KeyedListElement blpop(double timeout, String key);
+  KeyValue<String, String> blpop(double timeout, String key);
 
   /**
    * The blocking version of {@link ListCommands#rpop(String)} RPOP} because it blocks the connection
@@ -334,12 +333,12 @@ public interface ListCommands {
    *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @param keys
    */
-  KeyedListElement brpop(double timeout, String... keys);
+  KeyValue<String, String> brpop(double timeout, String... keys);
 
   /**
    * @see ListCommands#brpop(double, String...)
    */
-  KeyedListElement brpop(double timeout, String key);
+  KeyValue<String, String> brpop(double timeout, String key);
 
   /**
    * Atomically return and remove the last (tail) element of the srckey list, and push the element
@@ -398,7 +397,7 @@ public interface ListCommands {
 
   KeyValue<String, List<String>> lmpop(ListDirection direction, int count, String... keys);
 
-  KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys);
+  KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, String... keys);
 
-  KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys);
+  KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, int count, String... keys);
 }

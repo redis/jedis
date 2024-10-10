@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
@@ -31,6 +30,10 @@ public interface SortedSetBinaryCommands {
   Long zrank(byte[] key, byte[] member);
 
   Long zrevrank(byte[] key, byte[] member);
+
+  KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member);
+
+  KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member);
 
   List<byte[]> zrange(byte[] key, long start, long stop);
 
@@ -126,43 +129,49 @@ public interface SortedSetBinaryCommands {
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
 
-  List<byte[]> bzpopmax(double timeout, byte[]... keys);
+  KeyValue<byte[], Tuple> bzpopmax(double timeout, byte[]... keys);
 
-  List<byte[]> bzpopmin(double timeout, byte[]... keys);
+  KeyValue<byte[], Tuple> bzpopmin(double timeout, byte[]... keys);
 
-  Set<byte[]> zdiff(byte[]... keys);
+  List<byte[]> zdiff(byte[]... keys);
 
-  Set<Tuple> zdiffWithScores(byte[]... keys);
+  List<Tuple> zdiffWithScores(byte[]... keys);
 
+  /**
+   * @deprecated Use {@link #zdiffstore(byte[], byte[][])}.
+   */
+  @Deprecated
   long zdiffStore(byte[] dstkey, byte[]... keys);
 
-  Set<byte[]> zinter(ZParams params, byte[]... keys);
+  long zdiffstore(byte[] dstkey, byte[]... keys);
 
-  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+  List<byte[]> zinter(ZParams params, byte[]... keys);
+
+  List<Tuple> zinterWithScores(ZParams params, byte[]... keys);
 
   long zinterstore(byte[] dstkey, byte[]... sets);
 
   long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
 
   /**
-   * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
-   * instead of returning the result set, it returns just the cardinality of the result.
+   * Similar to {@link #zinter(ZParams, byte[][]) ZINTER}, but instead of returning the result set,
+   * it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
    * being the number of input sorted sets
-   * @see SortedSetBinaryCommands#zinter(ZParams, byte[]...)
+   * @see #zinter(ZParams, byte[][])
    * @param keys group of sets
    * @return The number of elements in the resulting intersection
    */
   long zintercard(byte[]... keys);
 
   /**
-   * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
-   * instead of returning the result set, it returns just the cardinality of the result.
+   * Similar to {@link #zinter(ZParams, byte[][]) ZINTER}, but instead of returning the result set,
+   * it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
    * being the number of input sorted sets
-   * @see SortedSetBinaryCommands#zinter(ZParams, byte[]...)
+   * @see #zinter(ZParams, byte[][])
    * @param limit If the intersection cardinality reaches limit partway through the computation,
    *              the algorithm will exit and yield limit as the cardinality
    * @param keys group of sets
@@ -170,9 +179,9 @@ public interface SortedSetBinaryCommands {
    */
   long zintercard(long limit, byte[]... keys);
 
-  Set<byte[]> zunion(ZParams params, byte[]... keys);
+  List<byte[]> zunion(ZParams params, byte[]... keys);
 
-  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
+  List<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
   long zunionstore(byte[] dstkey, byte[]... sets);
 
@@ -182,7 +191,7 @@ public interface SortedSetBinaryCommands {
 
   KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys);
 
-  KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys);
+  KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, byte[]... keys);
 
-  KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys);
+  KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys);
 }

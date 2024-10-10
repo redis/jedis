@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -8,11 +10,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.junit.Test;
 
-import redis.clients.jedis.JedisBroadcast;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -98,29 +100,30 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void broadcast() {
-    Map<?, Supplier<String>> stringReplies;
-    String script_1 = "return 'jedis'", script_2 = "return 79", sha1_1, sha1_2;
-    JedisBroadcast broadcast = new JedisBroadcast(cluster);
 
-    stringReplies = broadcast.scriptLoad(script_1);
-    assertEquals(3, stringReplies.size());
-    sha1_1 = stringReplies.values().stream().findAny().get().get();
-    stringReplies.values().forEach(reply -> assertEquals(sha1_1, reply.get()));
+    String script_1 = "return 'jedis'";
+    String sha1_1 = cluster.scriptLoad(script_1);
 
-    stringReplies = broadcast.scriptLoad(script_2);
-    assertEquals(3, stringReplies.size());
-    sha1_2 = stringReplies.values().stream().findAny().get().get();
-    stringReplies.values().forEach(reply -> assertEquals(sha1_2, reply.get()));
+    String script_2 = "return 79";
+    String sha1_2 = cluster.scriptLoad(script_2);
 
-    Map<?, Supplier<List<Boolean>>> booleanListReplies;
-    booleanListReplies = broadcast.scriptExists(sha1_1, sha1_2);
-    assertEquals(3, booleanListReplies.size());
-    booleanListReplies.values().forEach(reply -> assertEquals(Arrays.asList(true, true), reply.get()));
+    assertEquals(Arrays.asList(true, true), cluster.scriptExists(Arrays.asList(sha1_1, sha1_2)));
 
-    broadcast.scriptFlush();
+    cluster.scriptFlush();
 
-    booleanListReplies = broadcast.scriptExists(sha1_1, sha1_2);
-    assertEquals(3, booleanListReplies.size());
-    booleanListReplies.values().forEach(reply -> assertEquals(Arrays.asList(false, false), reply.get()));
+    assertEquals(Arrays.asList(false, false), cluster.scriptExists(Arrays.asList(sha1_1, sha1_2)));
+  }
+
+  @Test
+  public void broadcastWithError() {
+
+    JedisBroadcastException error = assertThrows(JedisBroadcastException.class, () -> cluster.functionDelete("xyz"));
+
+    Map<HostAndPort, Object> replies = error.getReplies();
+    assertEquals(3, replies.size());
+    replies.values().forEach(r -> {
+      assertSame(JedisDataException.class, r.getClass());
+      assertEquals("ERR Library not found", ((JedisDataException) r).getMessage());
+    });
   }
 }

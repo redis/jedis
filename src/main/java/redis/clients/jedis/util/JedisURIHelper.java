@@ -2,10 +2,10 @@ package redis.clients.jedis.util;
 
 import java.net.URI;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 
 public final class JedisURIHelper {
-
-  private static final int DEFAULT_DB = 0;
 
   private static final String REDIS = "redis";
   private static final String REDISS = "rediss";
@@ -43,12 +43,32 @@ public final class JedisURIHelper {
     if (pathSplit.length > 1) {
       String dbIndexStr = pathSplit[1];
       if (dbIndexStr.isEmpty()) {
-        return DEFAULT_DB;
+        return Protocol.DEFAULT_DATABASE;
       }
       return Integer.parseInt(dbIndexStr);
     } else {
-      return DEFAULT_DB;
+      return Protocol.DEFAULT_DATABASE;
     }
+  }
+
+  public static RedisProtocol getRedisProtocol(URI uri) {
+    if (uri.getQuery() == null) return null;
+
+    String[] params = uri.getQuery().split("&");
+    for (String param : params) {
+      int idx = param.indexOf("=");
+      if (idx < 0) continue;
+      if ("protocol".equals(param.substring(0, idx))) {
+        String ver = param.substring(idx + 1);
+        for (RedisProtocol proto : RedisProtocol.values()) {
+          if (proto.version().equals(ver)) {
+            return proto;
+          }
+        }
+        throw new IllegalArgumentException("Unknown protocol " + ver);
+      }
+    }
+    return null; // null (default) when not defined
   }
 
   public static boolean isValid(URI uri) {

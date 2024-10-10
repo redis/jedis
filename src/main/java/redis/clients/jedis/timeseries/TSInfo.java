@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.util.DoublePrecision;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class TSInfo {
@@ -101,7 +103,7 @@ public class TSInfo {
                 chunksValueList.add(new HashMap<>(chunk));
                 if (chunk.containsKey(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)) {
                   chunk.put(CHUNKS_BYTES_PER_SAMPLE_PROPERTY,
-                      DoublePrecision.parseFloatingPointNumber((String) chunk.get(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)));
+                      DoublePrecision.parseEncodedFloatingPointNumber(chunk.get(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)));
                 }
                 chunks.add(chunk);
               }
@@ -126,12 +128,80 @@ public class TSInfo {
     }
   };
 
+  public static Builder<TSInfo> TIMESERIES_INFO_RESP3 = new Builder<TSInfo>() {
+    @Override
+    public TSInfo build(Object data) {
+      List<KeyValue> list = (List<KeyValue>) data;
+      Map<String, Object> properties = new HashMap<>();
+      Map<String, String> labels = null;
+      Map<String, Rule> rules = null;
+      List<Map<String, Object>> chunks = null;
+
+      for (KeyValue propertyValue : list) {
+        String prop = BuilderFactory.STRING.build(propertyValue.getKey());
+        Object value = propertyValue.getValue();
+        if (value instanceof List) {
+          switch (prop) {
+            case LABELS_PROPERTY:
+              labels = BuilderFactory.STRING_MAP.build(value);
+              value = labels;
+              break;
+            case RULES_PROPERTY:
+              List<KeyValue> rulesDataList = (List<KeyValue>) value;
+              Map<String, List<Object>> rulesValueMap = new HashMap<>(rulesDataList.size(), 1f);
+              rules = new HashMap<>(rulesDataList.size());
+              for (KeyValue rkv : rulesDataList) {
+                String ruleName = BuilderFactory.STRING.build(rkv.getKey());
+                List<Object> ruleValueList = BuilderFactory.ENCODED_OBJECT_LIST.build(rkv.getValue());
+                rulesValueMap.put(ruleName, ruleValueList);
+                rules.put(ruleName, new Rule(ruleName, ruleValueList));
+              }
+              value = rulesValueMap;
+              break;
+            case CHUNKS_PROPERTY:
+              List<List<KeyValue>> chunksDataList = (List<List<KeyValue>>) value;
+              List<Map<String, Object>> chunksValueList = new ArrayList<>(chunksDataList.size());
+              chunks = new ArrayList<>(chunksDataList.size());
+              for (List<KeyValue> chunkDataAsList : chunksDataList) {
+                Map<String, Object> chunk = chunkDataAsList.stream()
+                    .collect(Collectors.toMap(kv -> BuilderFactory.STRING.build(kv.getKey()),
+                        kv -> BuilderFactory.ENCODED_OBJECT.build(kv.getValue())));
+                chunksValueList.add(chunk);
+                chunks.add(chunk);
+              }
+              value = chunksValueList;
+              break;
+            default:
+              value = SafeEncoder.encodeObject(value);
+              break;
+          }
+        } else if (value instanceof byte[]) {
+          value = BuilderFactory.STRING.build(value);
+          if (DUPLICATE_POLICY_PROPERTY.equals(prop)) {
+            try {
+              value = DuplicatePolicy.valueOf(((String) value).toUpperCase());
+            } catch (Exception e) { }
+          }
+        }
+        properties.put(prop, value);
+      }
+
+      return new TSInfo(properties, labels, rules, chunks);
+    }
+  };
+
   public static class Rule {
 
     private final String compactionKey;
     private final long bucketDuration;
     private final AggregationType aggregator;
     private final long alignmentTimestamp;
+
+    private Rule(String compaction, List<Object> encodedValues) {
+      this(compaction, (Long) encodedValues.get(0),
+          AggregationType.safeValueOf((String) encodedValues.get(1)),
+          (Long) encodedValues.get(2));
+    }
 
     private Rule(String compaction, long bucket, AggregationType aggregation, long alignment) {
       this.compactionKey = compaction;

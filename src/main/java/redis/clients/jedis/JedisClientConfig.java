@@ -1,10 +1,15 @@
 package redis.clients.jedis;
 
+import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 public interface JedisClientConfig {
+
+  default RedisProtocol getRedisProtocol() {
+    return null;
+  }
 
   /**
    * @return Connection timeout in milliseconds
@@ -39,7 +44,9 @@ public interface JedisClientConfig {
     return null;
   }
 
-  default void updatePassword(String password) {
+  default Supplier<RedisCredentials> getCredentialsProvider() {
+    return new DefaultRedisCredentialsProvider(
+        new DefaultRedisCredentials(getUser(), getPassword()));
   }
 
   default int getDatabase() {
@@ -51,7 +58,7 @@ public interface JedisClientConfig {
   }
 
   /**
-   * @return <code>true</code> - to create a TLS connection. <code>false</code> - otherwise.
+   * @return {@code true} - to create TLS connection(s). {@code false} - otherwise.
    */
   default boolean isSsl() {
     return false;
@@ -73,4 +80,22 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * Execute READONLY command to connections.
+   * <p>
+   * READONLY command is specific to Redis Cluster replica nodes. So this config param is only
+   * intended for Redis Cluster connections.
+   * @return {@code true} - to execute READONLY command to connection(s). {@code false} - otherwise.
+   */
+  default boolean isReadOnlyForRedisClusterReplicas() {
+    return false;
+  }
+
+  /**
+   * Modify the behavior of internally executing CLIENT SETINFO command.
+   * @return CLIENT SETINFO config
+   */
+  default ClientSetInfoConfig getClientSetInfoConfig() {
+    return ClientSetInfoConfig.DEFAULT;
+  }
 }

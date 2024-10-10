@@ -2,6 +2,7 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -9,7 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -35,7 +39,48 @@ public class ClusterCommandExecutor implements CommandExecutor {
   }
 
   @Override
+  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
+    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
+
+    boolean isErrored = false;
+    T reply = null;
+    JedisBroadcastException bcastError = new JedisBroadcastException();
+    for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
+      HostAndPort node = HostAndPort.from(entry.getKey());
+      ConnectionPool pool = entry.getValue();
+      try (Connection connection = pool.getResource()) {
+        T aReply = execute(connection, commandObject);
+        bcastError.addReply(node, aReply);
+        if (isErrored) { // already errored
+        } else if (reply == null) {
+          reply = aReply; // ok
+        } else if (reply.equals(aReply)) {
+          // ok
+        } else {
+          isErrored = true;
+          reply = null;
+        }
+      } catch (Exception anError) {
+        bcastError.addReply(node, anError);
+        isErrored = true;
+      }
+    }
+    if (isErrored) {
+      throw bcastError;
+    }
+    return reply;
+  }
+
+  @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, false);
+  }
+
+  public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, true);
+  }
+
+  private <T> T doExecuteCommand(CommandObject<T> commandObject, boolean toReplica) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
@@ -51,7 +96,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
             connection.executeCommand(Protocol.Command.ASKING);
           }
         } else {
-          connection = provider.getConnection(commandObject.getArguments());
+          connection = toReplica ? provider.getReplicaConnection(commandObject.getArguments())
+              : provider.getConnection(commandObject.getArguments());
         }
 
         return execute(connection, commandObject);
@@ -99,6 +145,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
     return connection.executeCommand(commandObject);
   }
@@ -157,6 +204,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected void sleep(long sleepMillis) {
     try {
       TimeUnit.MILLISECONDS.sleep(sleepMillis);

@@ -9,19 +9,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
 import redis.clients.jedis.providers.ConnectionProvider;
 
+/**
+ * @deprecated Redis Graph support is deprecated.
+ */
+@Deprecated
 public class GraphCommandObjects {
 
   private final RedisGraphCommands graph;
   private final Connection connection;
   private final ConnectionProvider provider;
+  private Function<ProtocolCommand, CommandArguments> commArgs = (comm) -> new CommandArguments(comm);
+
   private final ConcurrentHashMap<String, Builder<ResultSet>> builders = new ConcurrentHashMap<>();
 
   public GraphCommandObjects(RedisGraphCommands graphCommands) {
@@ -31,24 +41,28 @@ public class GraphCommandObjects {
   }
 
   public GraphCommandObjects(Connection connection) {
+    this.graph = null;
     this.connection = connection;
     this.provider = null;
-    this.graph = null;
   }
 
   public GraphCommandObjects(ConnectionProvider provider) {
-    this.provider = provider;
-    this.connection = null;
     this.graph = null;
+    this.connection = null;
+    this.provider = provider;
+  }
+
+  public void setBaseCommandArgumentsCreator(Function<ProtocolCommand, CommandArguments> commArgs) {
+    this.commArgs = commArgs;
   }
 
   // RedisGraph commands
   public final CommandObject<ResultSet> graphQuery(String name, String query) {
-    return new CommandObject<>(new CommandArguments(GraphCommand.QUERY).key(name).add(query).add(__COMPACT), getBuilder(name));
+    return new CommandObject<>(commArgs.apply(GraphCommand.QUERY).key(name).add(query).add(__COMPACT), getBuilder(name));
   }
 
   public final CommandObject<ResultSet> graphReadonlyQuery(String name, String query) {
-    return new CommandObject<>(new CommandArguments(GraphCommand.RO_QUERY).key(name).add(query).add(__COMPACT), getBuilder(name));
+    return new CommandObject<>(commArgs.apply(GraphCommand.RO_QUERY).key(name).add(query).add(__COMPACT), getBuilder(name));
   }
 
   public final CommandObject<ResultSet> graphQuery(String name, String query, long timeout) {
@@ -76,11 +90,13 @@ public class GraphCommandObjects {
   }
 
   private CommandObject<ResultSet> graphQuery(String name, GraphQueryParams params) {
-    return new CommandObject<>(params.getArguments(name), getBuilder(name));
+    return new CommandObject<>(
+        commArgs.apply(!params.isReadonly() ? GraphCommand.QUERY : GraphCommand.RO_QUERY)
+            .key(name).addParams(params), getBuilder(name));
   }
 
   public final CommandObject<String> graphDelete(String name) {
-    return new CommandObject<>(new CommandArguments(GraphCommand.DELETE).key(name), STRING);
+    return new CommandObject<>(commArgs.apply(GraphCommand.DELETE).key(name), STRING);
   }
   // RedisGraph commands
 
@@ -92,9 +108,7 @@ public class GraphCommandObjects {
   }
 
   private void createBuilder(String graphName) {
-    synchronized (builders) {
-      builders.putIfAbsent(graphName, new ResultSetBuilder(new GraphCacheImpl(graphName)));
-    }
+    builders.computeIfAbsent(graphName, graphNameKey -> new ResultSetBuilder(new GraphCacheImpl(graphNameKey)));
   }
 
   private class GraphCacheImpl implements GraphCache {
@@ -130,6 +144,8 @@ public class GraphCommandObjects {
     private final String name;
     private final String query;
     private final List<String> data = new CopyOnWriteArrayList<>();
+    
+    private final Lock dataLock = new ReentrantLock(true);
 
     /**
      *
@@ -150,14 +166,18 @@ public class GraphCommandObjects {
      */
     public String getCachedData(int index) {
       if (index >= data.size()) {
-        synchronized (data) {
+        dataLock.lock();
+        
+        try {
           if (index >= data.size()) {
             getProcedureInfo();
           }
+        } finally {
+          dataLock.unlock();
         }
       }
+      
       return data.get(index);
-
     }
 
     /**

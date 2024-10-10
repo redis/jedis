@@ -8,8 +8,8 @@ import java.util.Map;
 
 /**
  * This class holds information about a stream info with command {@code xinfo stream mystream full}.
- * They can be access via getters. For future purpose there is also {@link #getStreamFullInfo()} method
- * that returns a generic {@link Map} - in case where more info is returned from the server.
+ * They can be accessed via getters. There is also {@link StreamFullInfo#getStreamFullInfo()} method
+ * that returns a generic {@link Map} in case where more info are returned from the server.
  */
 public class StreamFullInfo implements Serializable {
 

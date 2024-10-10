@@ -3,10 +3,18 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class HyperLogLogCommandsTest extends JedisCommandsTestBase {
+
+  public HyperLogLogCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void pfadd() {

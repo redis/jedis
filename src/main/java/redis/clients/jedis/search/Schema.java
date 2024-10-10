@@ -21,7 +21,7 @@ public class Schema {
     VECTOR
   }
 
-  @Deprecated // TODO: this should be private
+  // public for CommandObjects
   public final List<Field> fields;
 
   public Schema() {
@@ -161,10 +161,9 @@ public class Schema {
   public static class Field implements IParams {
 
     protected final FieldName fieldName;
-    @Deprecated public final String name;
-    @Deprecated public final FieldType type;
-    @Deprecated public final boolean sortable;
-    @Deprecated public final boolean noIndex;
+    protected final FieldType type;
+    protected final boolean sortable;
+    protected final boolean noIndex;
 
     public Field(String name, FieldType type) {
       this(name, type, false, false);
@@ -184,7 +183,6 @@ public class Schema {
 
     public Field(FieldName name, FieldType type, boolean sortable, boolean noIndex) {
       this.fieldName = name;
-      this.name = this.fieldName.getName();
       this.type = type;
       this.sortable = sortable;
       this.noIndex = noIndex;
@@ -367,7 +365,7 @@ public class Schema {
     @Override
     public void addTypeArgs(CommandArguments args) {
       args.add(algorithm);
-      args.add(attributes.size() * 2);
+      args.add(attributes.size() << 1);
       for (Map.Entry<String, Object> entry : attributes.entrySet()) {
         args.add(entry.getKey());
         args.add(entry.getValue());

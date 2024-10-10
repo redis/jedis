@@ -1,21 +1,17 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.MAXLEN;
-import static redis.clients.jedis.Protocol.Keyword.MINID;
-import static redis.clients.jedis.Protocol.Keyword.NOMKSTREAM;
-import static redis.clients.jedis.util.SafeEncoder.encode;
-
-import java.util.Arrays;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.args.RawableFactory;
+
+import java.util.Objects;
 
 public class XAddParams implements IParams {
 
-  private static final byte[] NEW_ENTRY = encode(StreamEntryID.NEW_ENTRY.toString());
-
-  private byte[] id;
+  private Rawable id;
 
   private Long maxLen;
 
@@ -39,12 +35,12 @@ public class XAddParams implements IParams {
   }
 
   public XAddParams id(byte[] id) {
-    this.id = Arrays.copyOf(id, id.length);
+    this.id = RawableFactory.from(id);
     return this;
   }
 
   public XAddParams id(String id) {
-    this.id = encode(id);
+    this.id = RawableFactory.from(id);
     return this;
   }
 
@@ -89,11 +85,11 @@ public class XAddParams implements IParams {
   public void addParams(CommandArguments args) {
 
     if (nomkstream) {
-      args.add(NOMKSTREAM.getRaw());
+      args.add(Keyword.NOMKSTREAM);
     }
 
     if (maxLen != null) {
-      args.add(MAXLEN.getRaw());
+      args.add(Keyword.MAXLEN);
 
       if (approximateTrimming) {
         args.add(Protocol.BYTES_TILDE);
@@ -101,9 +97,9 @@ public class XAddParams implements IParams {
         args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.add(Protocol.toByteArray(maxLen));
+      args.add(maxLen);
     } else if (minId != null) {
-      args.add(MINID.getRaw());
+      args.add(Keyword.MINID);
 
       if (approximateTrimming) {
         args.add(Protocol.BYTES_TILDE);
@@ -111,14 +107,26 @@ public class XAddParams implements IParams {
         args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.add(encode(minId));
+      args.add(minId);
     }
 
     if (limit != null) {
-      args.add(LIMIT.getRaw());
-      args.add(Protocol.toByteArray(limit));
+      args.add(Keyword.LIMIT).add(limit);
     }
 
-    args.add(id != null ? id : NEW_ENTRY);
+    args.add(id != null ? id : StreamEntryID.NEW_ENTRY);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XAddParams that = (XAddParams) o;
+    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming && nomkstream == that.nomkstream && Objects.equals(id, that.id) && Objects.equals(maxLen, that.maxLen) && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, maxLen, approximateTrimming, exactTrimming, nomkstream, minId, limit);
   }
 }

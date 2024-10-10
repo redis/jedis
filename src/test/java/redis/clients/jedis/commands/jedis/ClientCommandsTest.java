@@ -18,13 +18,19 @@ import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.resps.TrackingInfo;
 
+@RunWith(Parameterized.class)
 public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
@@ -32,12 +38,16 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private Jedis client;
 
+  public ClientCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    client = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    client.auth("foobared");
+    client = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    client.auth(endpoint.getPassword());
     client.clientSetname(clientName);
   }
 
@@ -63,6 +73,17 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void clientSetInfoCommand() {
+    String libName = "Jedis::A-Redis-Java-library";
+    String libVersion = "999.999.999";
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_NAME, libName));
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
+    String info = client.clientInfo();
+    assertTrue(info.contains("lib-name=" + libName));
+    assertTrue(info.contains("lib-ver=" + libVersion));
+  }
+
+  @Test
   public void clientId() {
     long clientId = client.clientId();
 
@@ -75,8 +96,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientIdmultipleConnection() {
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
-      client2.auth("foobared");
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
+      client2.auth(endpoint.getPassword());
       client2.clientSetname("fancy_jedis_another_name");
 
       // client-id is monotonically increasing
@@ -89,7 +110,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     long clientIdInitial = client.clientId();
     client.disconnect();
     client.connect();
-    client.auth("foobared");
+    client.auth(endpoint.getPassword());
     long clientIdAfterReconnect = client.clientId();
 
     assertTrue(clientIdInitial < clientIdAfterReconnect);
@@ -210,14 +231,35 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void killUser() {
-    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
     client.aclSetUser("test_kill", "on", "+acl", ">password1");
-    try {
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
       client2.auth("test_kill", "password1");
+
       assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
       assertDisconnected(client2);
     } finally {
       jedis.aclDelUser("test_kill");
+    }
+  }
+
+  @Test
+  public void killMaxAge() throws InterruptedException {
+    long maxAge = 2;
+
+    // sleep twice the maxAge, to be sure
+    Thread.sleep(maxAge * 2 * 1000);
+
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
+      client2.auth(endpoint.getPassword());
+
+      long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
+
+      // The reality is that some tests leak clients, so we can't assert
+      // on the exact number of killed clients.
+      assertTrue(killedClients > 0);
+
+      assertDisconnected(client);
+      assertConnected(client2);
     }
   }
 
@@ -246,6 +288,26 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, client.clientList(ClientType.PUBSUB).split("\\n").length);
   }
 
+  @Test
+  public void trackingInfo() {
+    TrackingInfo trackingInfo = client.clientTrackingInfo();
+
+    assertEquals(1, trackingInfo.getFlags().size());
+    assertEquals(-1, trackingInfo.getRedirect());
+    assertEquals(0, trackingInfo.getPrefixes().size());
+  }
+
+  @Test
+  public void trackingInfoResp3() {
+    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+            .protocol(RedisProtocol.RESP3).build());
+    TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
+
+    assertEquals(1, trackingInfo.getFlags().size());
+    assertEquals(-1, trackingInfo.getRedirect());
+    assertEquals(0, trackingInfo.getPrefixes().size());
+  }
+
   private void assertDisconnected(Jedis j) {
     try {
       j.ping();
@@ -253,6 +315,10 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     } catch (JedisConnectionException jce) {
       // should be here
     }
+  }
+
+  private void assertConnected(Jedis j) {
+    assertEquals("PONG", j.ping());
   }
 
   private String findInClientList() {

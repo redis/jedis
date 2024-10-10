@@ -108,16 +108,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_POOL_CONFIG)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
-//      Collection<JedisPool> values = clusterNodes.values();
-//      for (JedisPool jedisPool : values) {
-//        Jedis jedis = jedisPool.getResource();
-//        try {
-//          assertEquals(clientName, jedis.clientGetname());
-//        } finally {
-//          jedis.close();
-//        }
-//      }
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -133,11 +123,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(hp),
         DefaultJedisClientConfig.builder().password("cluster").clientName(clientName).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-//      jc.getClusterNodes().values().forEach(jedisPool -> {
-//        try (Jedis jedis = jedisPool.getResource()) {
-//          assertEquals(clientName, jedis.clientGetname());
-//        }
-//      });
       jc.getClusterNodes().values().forEach(pool -> {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -193,6 +178,33 @@ public class JedisClusterTest extends JedisClusterTestBase {
       nodeSlave2.get("test");
       fail();
     } catch (JedisMovedDataException e) {
+    }
+
+    nodeSlave2.clusterReset(ClusterResetType.SOFT);
+    nodeSlave2.flushDB();
+  }
+
+  @Test
+  public void testReadFromReplicas() throws Exception {
+    node1.clusterMeet(LOCAL_IP, nodeInfoSlave2.getPort());
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
+
+    for (String nodeInfo : node2.clusterNodes().split("\n")) {
+      if (nodeInfo.contains("myself")) {
+        nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
+        break;
+      }
+    }
+
+    DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+        .password("cluster").readOnlyForRedisClusterReplicas().build();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+    try (JedisCluster jedisCluster = new JedisCluster(nodeInfo1, READ_REPLICAS_CLIENT_CONFIG,
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+      assertEquals("OK", jedisCluster.set("test", "read-from-replicas"));
+
+      assertEquals("read-from-replicas", jedisCluster.executeCommandToReplica(commandObjects.get("test")));
+      // TODO: ensure data being served from replica node(s)
     }
 
     nodeSlave2.clusterReset(ClusterResetType.SOFT);
@@ -486,7 +498,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-//  @Test(expected = JedisExhaustedPoolException.class)
   @Test(expected = JedisException.class)
   public void testIfPoolConfigAppliesToClusterPools() {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
@@ -533,12 +544,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, 4000, 4000, DEFAULT_REDIRECTIONS,
         "cluster", DEFAULT_POOL_CONFIG)) {
 
-//      for (JedisPool pool : jc.getClusterNodes().values()) {
-//        Jedis jedis = pool.getResource();
-//        assertEquals(4000, jedis.getClient().getConnectionTimeout());
-//        assertEquals(4000, jedis.getClient().getSoTimeout());
-//        jedis.close();
-//      }
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Connection conn = pool.getResource()) {
           assertEquals(4000, conn.getSoTimeout());
@@ -555,10 +560,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       jc.getClusterNodes().values().forEach(pool -> {
-//        try (Jedis jedis = pool.getResource()) {
-//          assertEquals(4000, jedis.getClient().getConnectionTimeout());
-//          assertEquals(4000, jedis.getClient().getSoTimeout());
-//        }
         try (Connection conn = pool.getResource()) {
           assertEquals(4000, conn.getSoTimeout());
         }
@@ -606,10 +607,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
 
-//      try (Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
-//        ClientKillerUtil.tagClient(j, "DEAD");
-//        ClientKillerUtil.killClient(j, "DEAD");
-//      }
       try (Connection c = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
         Jedis j = new Jedis(c);
         ClientKillerUtil.tagClient(j, "DEAD");
@@ -647,7 +644,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
@@ -664,7 +660,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     config.setMaxTotal(1);
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
@@ -737,6 +732,65 @@ public class JedisClusterTest extends JedisClusterTestBase {
       setUp();
       // cluster.set("bar", "foo") will get JedisMovedDataException and renewSlotCache
       cluster.set("bar", "foo");
+      assertEquals(3, cluster.getClusterNodes().size());
+    }
+  }
+
+  @Test(timeout = 30_000)
+  public void clusterPeriodTopologyRefreshTest() throws Exception {
+    Set<HostAndPort> jedisClusterNode = new HashSet<>();
+    jedisClusterNode.add(nodeInfo1);
+    jedisClusterNode.add(nodeInfo2);
+    jedisClusterNode.add(nodeInfo3);
+
+    // we set topologyRefreshPeriod is 1s
+    Duration topologyRefreshPeriod = Duration.ofSeconds(1);
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_CLIENT_CONFIG, DEFAULT_POOL_CONFIG,
+        topologyRefreshPeriod, DEFAULT_REDIRECTIONS, Duration.ofSeconds(10))) {
+      assertEquals(3, cluster.getClusterNodes().size());
+      cleanUp(); // cleanup and add node4
+
+      // at first, join node4 to cluster
+      node1.clusterMeet(LOCAL_IP, nodeInfo2.getPort());
+      node1.clusterMeet(LOCAL_IP, nodeInfo3.getPort());
+      node1.clusterMeet(LOCAL_IP, nodeInfo4.getPort());
+      // split available slots across the three nodes
+      int slotsPerNode = CLUSTER_HASHSLOTS / 4;
+      int[] node1Slots = new int[slotsPerNode];
+      int[] node2Slots = new int[slotsPerNode];
+      int[] node3Slots = new int[slotsPerNode];
+      int[] node4Slots = new int[slotsPerNode];
+      for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0, slot4 = 0; i < CLUSTER_HASHSLOTS; i++) {
+        if (i < slotsPerNode) {
+          node1Slots[slot1++] = i;
+        } else if (i >= slotsPerNode && i < slotsPerNode*2) {
+          node2Slots[slot2++] = i;
+        } else if (i >= slotsPerNode*2 && i < slotsPerNode*3) {
+          node3Slots[slot3++] = i;
+        } else {
+          node4Slots[slot4++] = i;
+        }
+      }
+
+      node1.clusterAddSlots(node1Slots);
+      node2.clusterAddSlots(node2Slots);
+      node3.clusterAddSlots(node3Slots);
+      node4.clusterAddSlots(node4Slots);
+      JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, node4);
+
+      // Now we just wait topologyRefreshPeriod * 3 (executor will delay) for cluster topology refresh (3 -> 4)
+      Thread.sleep(topologyRefreshPeriod.toMillis() * 3);
+
+      assertEquals(4, cluster.getClusterNodes().size());
+      String nodeKey4 = LOCAL_IP + ":" + nodeInfo4.getPort();
+      assertTrue(cluster.getClusterNodes().keySet().contains(nodeKey4));
+
+      // make 4 nodes to 3 nodes
+      cleanUp();
+      setUp();
+
+      // Now we just wait topologyRefreshPeriod * 3 (executor will delay) for cluster topology refresh (4 -> 3)
+      Thread.sleep(topologyRefreshPeriod.toMillis() * 3);
       assertEquals(3, cluster.getClusterNodes().size());
     }
   }

@@ -1,6 +1,7 @@
 package redis.clients.jedis.modules.search;
 
 import static org.junit.Assert.*;
+import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
@@ -17,6 +18,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.NumericField;
+import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
@@ -55,6 +57,14 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     Map<String, String> map = new LinkedHashMap<>();
     doc.getProperties().forEach(entry -> map.put(entry.getKey(), String.valueOf(entry.getValue())));
     client.hset(key, map);
+  }
+
+  private static Map<String, String> toMap(String... values) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < values.length; i += 2) {
+      map.put(values[i], values[i + 1]);
+    }
+    return map;
   }
 
   @Test
@@ -199,4 +209,30 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
             FTSpellCheckParams.spellCheckParams().dialect(0)));
     MatcherAssert.assertThat(error.getMessage(), Matchers.containsString("DIALECT requires a non negative integer"));
   }
+
+  @org.junit.Ignore
+  @Test
+  public void warningMaxPrefixExpansions() {
+    final String configParam = "MAXPREFIXEXPANSIONS";
+    String configValue = (String) client.ftConfigGet(configParam).get(configParam);
+    try {
+      assertOK(client.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.HASH),
+          TextField.of("t"), TagField.of("t2")));
+
+      client.hset("doc13", toMap("t", "foo", "t2", "foo"));
+
+      client.ftConfigSet(configParam, "1");
+
+      SearchResult srcResult = client.ftSearch(INDEX, "fo*");
+      assertEqualsByProtocol(protocol, null, Arrays.asList(), srcResult.getWarnings());
+
+      client.hset("doc23", toMap("t", "fooo", "t2", "fooo"));
+
+      AggregationResult aggResult = client.ftAggregate(INDEX, new AggregationBuilder("fo*").loadAll());
+      assertEqualsByProtocol(protocol, null, Arrays.asList("Max prefix expansions limit was reached"), aggResult.getWarnings());
+    } finally {
+      client.ftConfigSet(configParam, configValue);
+    }
+  }
+
 }

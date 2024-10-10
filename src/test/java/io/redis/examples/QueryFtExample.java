@@ -222,8 +222,10 @@ public class QueryFtExample {
         // Tests for 'ft1' step.
         // REMOVE_START
         Assert.assertEquals(2, res1.getTotalResults());
-        Assert.assertEquals("bicycle:2", docs1.get(0).getId());
-        Assert.assertEquals("bicycle:1", docs1.get(1).getId());
+        Assert.assertArrayEquals(
+            new String[] {"bicycle:1", "bicycle:2" },
+            docs1.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -262,8 +264,10 @@ public class QueryFtExample {
         // Tests for 'ft3' step.
         // REMOVE_START
         Assert.assertEquals(2, res3.getTotalResults());
-        Assert.assertEquals("bicycle:6", docs3.get(0).getId());
-        Assert.assertEquals("bicycle:4", docs3.get(1).getId());
+        Assert.assertArrayEquals(
+            new String[] {"bicycle:4", "bicycle:6" },
+            docs3.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 

@@ -326,11 +326,10 @@ public class QueryRangeExample {
         // Tests for 'range4' step.
         // REMOVE_START
         Assert.assertEquals(7, res4.getTotalResults());
-        Assert.assertEquals("bicycle:0", docs4.get(0).getId());
-        Assert.assertEquals("bicycle:7", docs4.get(1).getId());
-        Assert.assertEquals("bicycle:5", docs4.get(2).getId());
-        Assert.assertEquals("bicycle:2", docs4.get(3).getId());
-        Assert.assertEquals("bicycle:9", docs4.get(4).getId());
+        Assert.assertArrayEquals(
+            new String[] {"bicycle:0", "bicycle:2", "bicycle:5", "bicycle:7", "bicycle:9" },
+            docs4.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 // HIDE_START

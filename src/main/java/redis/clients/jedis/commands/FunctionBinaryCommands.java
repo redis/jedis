@@ -14,7 +14,7 @@ public interface FunctionBinaryCommands {
    * @param name
    * @param keys
    * @param args
-   * @return 
+   * @return value depends on the function that was executed
    */
   Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
 

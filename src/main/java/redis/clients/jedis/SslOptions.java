@@ -56,7 +56,7 @@ public class SslOptions {
 
     private final char[] truststorePassword;
 
-    private final boolean insecureTrust;
+    private final boolean noTruststoreVerification;
 
     private SslOptions(Builder builder) {
         this.keyManagerAlgorithm = builder.keyManagerAlgorithm;
@@ -67,7 +67,7 @@ public class SslOptions {
         this.keystorePassword = builder.keystorePassword;
         this.truststoreResource = builder.truststoreResource;
         this.truststorePassword = builder.truststorePassword;
-        this.insecureTrust = builder.insecureTrust;
+        this.noTruststoreVerification = builder.noTruststoreVerification;
     }
 
     /**
@@ -101,7 +101,7 @@ public class SslOptions {
 
         private char[] truststorePassword = new char[0];
 
-        private boolean insecureTrust = false;
+        private boolean noTruststoreVerification = false;
 
         private Builder() {
         }
@@ -303,8 +303,8 @@ public class SslOptions {
             return this;
         }
 
-        public Builder insecureTrust(boolean insecureTrust) {
-            this.insecureTrust = insecureTrust;
+        public Builder noTruststoreVerification(boolean noTruststoreVerification) {
+            this.noTruststoreVerification = noTruststoreVerification;
             return this;
         }
 
@@ -344,7 +344,7 @@ public class SslOptions {
         }
 
         final TrustManagerFactory trustManagerFactory;
-        if (insecureTrust) {
+        if (noTruststoreVerification) {
 
             trustManagerFactory = InsecureTrustManagerFactory.INSTANCE;
 

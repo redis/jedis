@@ -16,17 +16,15 @@ Are you looking for a high-level library to handle object mapping? See [redis-om
 
 ## How do I Redis?
 
-[Learn for free at Redis University](https://university.redis.com/)
+[Learn for free at Redis University](https://university.redis.io/academy/)
 
-[Build faster with the Redis Launchpad](https://launchpad.redis.com/)
+[Try the Redis Cloud](https://redis.io/try-free/)
 
-[Try the Redis Cloud](https://redis.com/try-free/)
+[Dive in developer tutorials](https://redis.io/learn/)
 
-[Dive in developer tutorials](https://developer.redis.com/)
+[Join the Redis community](https://redis.io/community/)
 
-[Join the Redis community](https://redis.com/community/)
-
-[Work at Redis](https://redis.com/company/careers/jobs/)
+[Work at Redis](https://redis.io/careers/jobs/)
 
 ## Supported Redis versions
 
@@ -125,7 +123,7 @@ jedis.sadd("planets", "Mars");
 ## Using Redis modules
 
 Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
-[RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+[RedisJSON](https://redis.io/json/) and [RediSearch](https://redis.io/search/).
 
 See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
 
@@ -133,7 +131,7 @@ See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisear
 
 Jedis supports retry and failover for your Redis deployments. This is useful when:
 
-1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
+1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://redis.io/docs/latest/operate/rs/databases/active-active/) clusters.
 2. You want your application to connect to one deployment at a time and to fail over to the next available deployment if the first deployment becomes unavailable.
 
 For the complete failover configuration options and examples, see the [Jedis failover docs](docs/failover.md).
@@ -170,4 +168,4 @@ Jedis is licensed under the [MIT license](https://github.com/redis/jedis/blob/ma
 
 ## Sponsorship
 
-[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
+[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.io/)

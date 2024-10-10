@@ -76,10 +76,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       assertEquals(1, cache.getSize());
       control.flushAll();
-      // These dummyKey operations just to gain some time for arrival of invalidation message on connection 
-      control.set("dummyKey", "dummyValue");
-      control.get("dummyKey");
-      control.del("dummyKey");
       assertEquals(1, cache.getSize());
       AssertUtil.tryAssert(() -> jedis.get("foo"), null, 50, 100);
       assertEquals(1, cache.getSize());

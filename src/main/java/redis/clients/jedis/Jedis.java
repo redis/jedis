@@ -199,8 +199,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * the following fields: user, password, database, protocol version, and whether to use SSL.
    *
    * For example, if the URI is "redis://user:password@localhost:6379/1", the user and password fields will be set
-   * to "user" and "password" respectively, the database field will be set to 1. If those fields are also set in
-   * the JedisClientConfig object, the URI values will take precedence.
+   * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
+   * from the JedisClientConfig object.
    *
    * @param uri The URI to connect to
    * @param config The JedisClientConfig object to use

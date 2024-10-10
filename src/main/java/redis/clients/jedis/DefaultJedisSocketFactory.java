@@ -126,9 +126,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
       _sslParameters = sslParameters != null ? sslParameters : new SSLParameters(); // TODO:
 
-      if (sslHostnameVerifyMode == SslHostnameVerifyMode.HTTPS) {
+      if (sslHostnameVerifyMode == SslHostnameVerifyMode.FULL) {
         _sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-      } else if (sslHostnameVerifyMode == SslHostnameVerifyMode.DISABLE) {
+      } else if (sslHostnameVerifyMode == SslHostnameVerifyMode.CA) {
         _sslParameters.setEndpointIdentificationAlgorithm("");
       }
 

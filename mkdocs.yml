@@ -1,0 +1,8 @@
+site_name: Jedis
+repo_url: https://github.com/redis/jedis
+theme:
+  name: material
+  logo: assets/images/logo.png
+  favicon: assets/images/favicon-16x16.png
+extra_css:
+  - css/extra.css

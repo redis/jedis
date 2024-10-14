@@ -95,7 +95,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       Cache cache = jedis.getCache();
       control.set("foo", "bar");
       assertEquals(0, cache.getSize());
-      assertEquals("bar", (jedis.get("foo")));
+      assertEquals("bar", jedis.get("foo"));
       assertEquals(1, cache.getSize());
     }
   }

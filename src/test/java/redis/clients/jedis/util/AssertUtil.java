@@ -9,8 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import org.junit.ComparisonFailure;
 import redis.clients.jedis.RedisProtocol;
 
@@ -148,30 +146,5 @@ public class AssertUtil {
     } else {
       assertEquals(expected, actual);
     }
-  }
-
-  public static <T> void tryAssert(Callable<T> callable, T expected, long interval, int iterations) {
-    int attempts = 0;
-
-    while (attempts++ < iterations) {
-
-      T result;
-      try {
-        result = callable.call();
-      } catch (Exception e) {
-        throw new AssertionError("Callable threw an exception", e);
-      }
-
-      if (Objects.equals(expected, result)) {
-         return;
-      }
-
-      try {
-        TimeUnit.MILLISECONDS.sleep(interval);
-      } catch (InterruptedException e) {
-        throw new AssertionError("Thread was interrupted", e);
-      }
-    }
-    throw new AssertionError("tryAssert failed after " + iterations + " attempts");
   }
 }

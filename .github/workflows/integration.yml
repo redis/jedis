@@ -60,3 +60,11 @@ jobs:
         with:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') }}
+        uses: codecov/test-results-action@v1
+        with:
+          fail_ci_if_error: false
+          files: ./target/surefire-reports/TEST*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true

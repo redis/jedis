@@ -2,6 +2,7 @@ package redis.clients.jedis.csc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.awaitility.Awaitility.await;
 
 import java.util.Arrays;
@@ -41,7 +42,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
       await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-          .until(() -> jedis.get("foo") == null);
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 
@@ -56,7 +57,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.del("foo");
       assertEquals(1, cache.getSize());
       await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-          .until(() -> jedis.get("foo") == null);
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
       assertEquals(1, cache.getSize());
     }
   }
@@ -69,7 +70,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
       await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-          .until(() -> jedis.get("foo") == null);
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 
@@ -84,7 +85,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.flushAll();
       assertEquals(1, cache.getSize());
       await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-          .until(() -> jedis.get("foo") == null);
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
       assertEquals(1, cache.getSize());
     }
   }

@@ -61,7 +61,7 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Upload test results to Codecov
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') || github.event_name == 'workflow_dispatch'}}
         uses: codecov/test-results-action@v1
         with:
           fail_ci_if_error: false

@@ -67,4 +67,3 @@ jobs:
           fail_ci_if_error: false
           files: ./target/surefire-reports/TEST*
           token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true

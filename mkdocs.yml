@@ -1,8 +1,33 @@
 site_name: Jedis
+repo_name: Jedis
+site_author: Redis, Inc.
+site_description: Jedis is a Redis client for the JVM.
 repo_url: https://github.com/redis/jedis
+remote_branch: gh-pages
+
 theme:
   name: material
   logo: assets/images/logo.png
   favicon: assets/images/favicon-16x16.png
 extra_css:
   - css/extra.css
+
+plugins:
+  - search
+  - macros:
+      include_dir: .
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+#      - Maven: jedis-maven.md
+  - Migrating from older versions:
+      - 3 to 4:
+        - Breaking changes: 3to4.md
+        - Primitives: 3to4-primitives.md
+        - ZSET: 3to4-zset-list.md
+  - Search: redisearch.md
+  - JSON: redisjson.md
+  - Failover: failover.md
+  - FAQ: faq.md
+

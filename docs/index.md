@@ -1,3 +1,1 @@
-# Jedis
-
-It's Jedis!
+{% include 'README.md' %}

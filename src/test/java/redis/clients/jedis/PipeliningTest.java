@@ -20,12 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.awaitility.Awaitility;
 
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
@@ -342,7 +344,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
-      assertEquals("aof", j.get("wait"));
+      Awaitility.await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertEquals("aof", j.get("wait")));
     }
   }
 

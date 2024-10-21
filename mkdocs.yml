@@ -19,8 +19,6 @@ plugins:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-#      - Maven: jedis-maven.md
   - Migrating from older versions:
       - 3 to 4:
         - Breaking changes: 3to4.md

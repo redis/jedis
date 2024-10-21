@@ -20,6 +20,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final boolean ssl;
   private final SSLSocketFactory sslSocketFactory;
   private final SSLParameters sslParameters;
+  private final SslOptions sslOptions;
+  private final SslHostnameVerifyMode sslHostnameVerifyMode;
   private final HostnameVerifier hostnameVerifier;
 
   private final HostAndPortMapper hostAndPortMapper;
@@ -28,6 +30,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean readOnlyForRedisClusterReplicas;
 
+  // TODO: how many constructors should we have? 1) all params, 2) builder 3) another config
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -43,10 +46,31 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.ssl = ssl;
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
+    this.sslOptions = null; // TODO:
+    this.sslHostnameVerifyMode = null; // TODO:
     this.hostnameVerifier = hostnameVerifier;
     this.hostAndPortMapper = hostAndPortMapper;
     this.clientSetInfoConfig = clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = readOnlyForRedisClusterReplicas;
+  }
+
+  private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
+    this.redisProtocol = builder.redisProtocol;
+    this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
+    this.socketTimeoutMillis = builder.socketTimeoutMillis;
+    this.blockingSocketTimeoutMillis = builder.blockingSocketTimeoutMillis;
+    this.credentialsProvider = builder.credentialsProvider;
+    this.database = builder.database;
+    this.clientName = builder.clientName;
+    this.ssl = builder.ssl;
+    this.sslSocketFactory = builder.sslSocketFactory;
+    this.sslParameters = builder.sslParameters;
+    this.sslOptions = builder.sslOptions;
+    this.sslHostnameVerifyMode = builder.sslHostnameVerifyMode;
+    this.hostnameVerifier = builder.hostnameVerifier;
+    this.hostAndPortMapper = builder.hostAndPortMapper;
+    this.clientSetInfoConfig = builder.clientSetInfoConfig;
+    this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
   }
 
   @Override
@@ -111,6 +135,16 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
+  public SslOptions getSslOptions() {
+    return sslOptions;
+  }
+
+  @Override
+  public SslHostnameVerifyMode getSslHostnameVerifyMode() {
+    return sslHostnameVerifyMode;
+  }
+
+  @Override
   public HostnameVerifier getHostnameVerifier() {
     return hostnameVerifier;
   }
@@ -151,6 +185,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean ssl = false;
     private SSLSocketFactory sslSocketFactory = null;
     private SSLParameters sslParameters = null;
+    private SslOptions sslOptions = null;
+    private SslHostnameVerifyMode sslHostnameVerifyMode = null;
     private HostnameVerifier hostnameVerifier = null;
 
     private HostAndPortMapper hostAndPortMapper = null;
@@ -168,15 +204,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
             new DefaultRedisCredentials(user, password));
       }
 
-      return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis, socketTimeoutMillis,
-          blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
-          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig,
-          readOnlyForRedisClusterReplicas);
+      return new DefaultJedisClientConfig(this);
     }
 
     /**
      * Shortcut to {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
      * {@link RedisProtocol#RESP3}.
+     * @return this
      */
     public Builder resp3() {
       return protocol(RedisProtocol.RESP3);
@@ -253,6 +287,16 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder sslOptions(SslOptions sslOptions) {
+      this.sslOptions = sslOptions;
+      return this;
+    }
+
+    public Builder sslHostnameVerifyMode(SslHostnameVerifyMode sslHostnameVerifyMode) {
+      this.sslHostnameVerifyMode = sslHostnameVerifyMode;
+      return this;
+    }
+
     public Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
       this.hostnameVerifier = hostnameVerifier;
       return this;
@@ -274,6 +318,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
   }
 
+  // TOOD: depends on which constructors we're going to have/keep
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -285,6 +330,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         false);
   }
 
+  // TOOD: depends on which constructors we're going to have/keep
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
     return new DefaultJedisClientConfig(copy.getRedisProtocol(),
         copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),

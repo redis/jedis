@@ -26,3 +26,6 @@ matrix:
   sources:
   - '*.md'
   - 'docs/**'
+  - '!docs/Dockerfile'
+  - '!docs/css/**'
+

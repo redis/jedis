@@ -202,7 +202,9 @@ mget
 microservice
 microservices
 millisecondsTimestamp
+MkDocs
 mkdocs
+md
 mset
 msetnx
 multikey

@@ -1,6 +1,7 @@
 !!!Spelling check failed!!!
 APM
 ARGV
+BaseObjectPoolConfig
 BFCommands
 BitOP
 BitPosParams
@@ -16,6 +17,7 @@ ClusterPipeline
 ClusterPubSub
 ConnectionPool
 CoreCommands
+Dockerfile
 EVAL
 EVALSHA
 Failback
@@ -46,6 +48,7 @@ JedisCluster
 JedisConnectionException
 JedisPool
 JedisPooled
+JedisPubSub
 JedisShardInfo
 ListPosition
 Ludovico
@@ -174,6 +177,7 @@ incr
 incrBy
 incrByFloat
 ini
+io
 json
 keyslot
 keyspace
@@ -198,6 +202,7 @@ mget
 microservice
 microservices
 millisecondsTimestamp
+mkdocs
 mset
 msetnx
 multikey
@@ -224,6 +229,7 @@ pubsub
 punsubscribe
 py
 pypi
+PoolConfig
 quickstart
 readonly
 readwrite
@@ -234,10 +240,12 @@ reinitialization
 renamenx
 replicaof
 repo
+README
 rpush
 rpushx
 runtime
 sadd
+SafeEncoder
 scard
 scoreMembers
 sdiffstore
@@ -260,6 +268,7 @@ strlen
 stunnel
 subcommands
 sunionstore
+pipelining
 thevalueofmykey
 timeseries
 toctree
@@ -311,3 +320,4 @@ zrevrangeByScore
 zrevrangeByScoreWithScores
 zrevrangeWithScores
 zunionstore
+yml

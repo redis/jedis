@@ -42,7 +42,7 @@ else
    t.set("key", "value");
 ```
 
-However, there are some commands like setnx, that include such a conditional execution. Those are of course supported within transactions. You can build your own customized commands using eval/ LUA scripting. 
+However, there are some commands like setnx, that include such a conditional execution. Those are of course supported within transactions. You can build your own customized commands using EVAL / LUA scripting. 
 
 
 ## Pipelining

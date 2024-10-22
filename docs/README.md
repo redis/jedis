@@ -1,10 +1,10 @@
 # Jedis Documentation
 
-This documenation uses [MkDocs](https://www.mkdocs.org/) to generate the static site.
+This documentation uses [MkDocs](https://www.mkdocs.org/) to generate the static site.
 
 See [mkdocs.yml](../mkdocs.yml) for the configuration. 
 
-To develop the documentation locally, you can use the included [Dockefile](ockerfile) to build a container with all the 
+To develop the documentation locally, you can use the included [Dockerfile](Dockerfile) to build a container with all the 
 dependencies, and run it to preview your changes:
 
 ```bash

@@ -28,4 +28,5 @@ matrix:
   - 'docs/**'
   - '!docs/Dockerfile'
   - '!docs/css/**'
+  - '!docs/assets/**'
 

@@ -5,6 +5,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import  redis.clients.authentication.core.TokenAuthConfig;
+
 public interface JedisClientConfig {
 
   default RedisProtocol getRedisProtocol() {
@@ -45,8 +47,11 @@ public interface JedisClientConfig {
   }
 
   default Supplier<RedisCredentials> getCredentialsProvider() {
-    return new DefaultRedisCredentialsProvider(
-        new DefaultRedisCredentials(getUser(), getPassword()));
+    return new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(getUser(), getPassword()));
+  }
+
+  default TokenAuthConfig getTokenAuthConfig() {
+    return null;
   }
 
   default int getDatabase() {

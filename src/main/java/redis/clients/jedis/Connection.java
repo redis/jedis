@@ -14,12 +14,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicReference;
 
+import redis.clients.authentication.core.AuthenticatedConnection;
+import redis.clients.authentication.core.Token;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.authentication.TokenCredentials;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -29,7 +33,7 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
-public class Connection implements Closeable {
+public class Connection implements Closeable, AuthenticatedConnection {
 
   private ConnectionPool memberOf;
   protected RedisProtocol protocol;
@@ -44,6 +48,7 @@ public class Connection implements Closeable {
   private String strVal;
   protected String server;
   protected String version;
+  protected AtomicReference<Token> currentToken = new AtomicReference<Token>(null);
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -542,6 +547,10 @@ public class Connection implements Closeable {
     // handled in RedisCredentialsProvider.cleanUp()
   }
 
+  public void setToken(Token token) {
+    currentToken.set(token);
+  }
+
   private void auth(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
       return;
@@ -557,6 +566,13 @@ public class Connection implements Closeable {
       Arrays.fill(rawPass, (byte) 0); // clear sensitive data
     }
     getStatusCodeReply();
+  }
+
+  public void reAuth() {
+    Token temp = currentToken.getAndSet(null);
+    if (temp != null) {
+      auth(new TokenCredentials(temp));
+    }
   }
 
   protected Map<String, Object> hello(byte[]... args) {
@@ -584,5 +600,10 @@ public class Connection implements Closeable {
       throw new JedisException(status);
     }
     return true;
+  }
+
+  @Override
+  public void authenticate(Token token) {
+    this.setToken(token);
   }
 }

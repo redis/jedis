@@ -1,0 +1,4 @@
+[submodule "redis-authx"]
+	path = redis-authx
+	url = https://github.com/redis/tbd-auth-entraid
+	branch = tba-draft

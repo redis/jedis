@@ -93,6 +93,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>redis.clients.authentication</groupId>
+			<artifactId>redis-authx-core</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+
 		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>

@@ -6,7 +6,13 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
+
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.authentication.TokenCredentials;
+import redis.clients.authentication.core.AuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.exceptions.JedisException;
@@ -20,28 +26,70 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   private final JedisSocketFactory jedisSocketFactory;
   private final JedisClientConfig clientConfig;
-  private Cache clientSideCache = null;
+  private final Cache clientSideCache;
+  private final Supplier<Connection> objectMaker;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
-    this.clientConfig = DefaultJedisClientConfig.builder().build();
-    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort);
+    this(hostAndPort, DefaultJedisClientConfig.builder().build(), null, null);
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
-    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
+    this(hostAndPort, clientConfig, null, null);
   }
 
   @Experimental
-  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache csCache) {
-    this.clientConfig = clientConfig;
-    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
-    this.clientSideCache = csCache;
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
+      Cache csCache, AuthXManager authXManager) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache,
+        authXManager);
   }
 
-  public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
+  public ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
+      final JedisClientConfig clientConfig) {
+    this(jedisSocketFactory, clientConfig, null, null);
+  }
+
+  private ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
+      final JedisClientConfig clientConfig, Cache csCache, AuthXManager authXManager) {
+
     this.jedisSocketFactory = jedisSocketFactory;
+    this.clientSideCache = csCache;
+
+    if (authXManager == null) {
+      this.clientConfig = clientConfig;
+      this.objectMaker = connectionSupplier();
+    } else {
+      this.clientConfig = replaceCredentialsProvider(clientConfig,
+        buildCredentialsProvider(authXManager));
+      Supplier<Connection> supplier = connectionSupplier();
+      this.objectMaker = () -> (Connection) authXManager.addConnection(supplier.get());
+
+      try {
+        authXManager.start(true);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        throw new JedisException("AuthXManager failed to start!", e);
+      }
+    }
+  }
+
+  private JedisClientConfig replaceCredentialsProvider(JedisClientConfig origin,
+      Supplier<RedisCredentials> newCredentialsProvider) {
+    return DefaultJedisClientConfig.builder().from(origin)
+        .credentialsProvider(newCredentialsProvider).build();
+  }
+
+  private Supplier<RedisCredentials> buildCredentialsProvider(AuthXManager connManager) {
+    return new Supplier<RedisCredentials>() {
+      @Override
+      public RedisCredentials get() {
+        return new TokenCredentials(connManager.getCurrentToken());
+      }
+    };
+  }
+
+  private Supplier<Connection> connectionSupplier() {
+    return clientSideCache == null ? () -> new Connection(jedisSocketFactory, clientConfig)
+        : () -> new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
   }
 
   @Override
@@ -64,8 +112,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
     try {
-      Connection jedis = clientSideCache == null ? new Connection(jedisSocketFactory, clientConfig)
-          : new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
+      Connection jedis = objectMaker.get();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
       logger.debug("Error while makeObject", je);
@@ -76,6 +123,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   @Override
   public void passivateObject(PooledObject<Connection> pooledConnection) throws Exception {
     // TODO maybe should select db 0? Not sure right now.
+    Connection jedis = pooledConnection.getObject();
+    jedis.reAuth();
   }
 
   @Override
@@ -83,6 +132,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     final Connection jedis = pooledConnection.getObject();
     try {
       // check HostAndPort ??
+      jedis.reAuth();
       return jedis.isConnected() && jedis.ping();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);

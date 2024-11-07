@@ -64,6 +64,7 @@ public class HomeJsonExample {
                 .addPrefix("user:"),
                 schema
         );
+
         System.out.println(createResult); // >>> OK
         // STEP_END
         // REMOVE_START
@@ -85,6 +86,7 @@ public class HomeJsonExample {
         SearchResult findPaulResult = jedis.ftSearch("idx:users",
              "Paul @age:[30 40]"
         );
+        
         System.out.println(findPaulResult.getTotalResults()); // >>> 1
 
         List<Document> paulDocs = findPaulResult.getDocuments();
@@ -145,6 +147,7 @@ public class HomeJsonExample {
                     .sorted().toArray());
         // REMOVE_END
 // HIDE_START
+
         jedis.close();
     }
 }

@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -15,6 +13,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
+
+  private JedisAuthXManager authXManager;
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(hostAndPort, clientConfig, createAuthXManager(clientConfig));
@@ -75,22 +75,29 @@ public class ConnectionPool extends Pool<Connection> {
     return conn;
   }
 
-  private static JedisAuthXManager createAuthXManager(JedisClientConfig clientConfig) {
-    return (clientConfig.getTokenAuthConfig() != null)
-        ? (JedisAuthXManager) AuthXManagerFactory.create(JedisAuthXManager.class,
-          clientConfig.getTokenAuthConfig())
-        : null;
+  @Override
+  public void close() {
+    if (authXManager != null) {
+      authXManager.stop();
+    }
+    super.close();
+  }
+
+  private static JedisAuthXManager createAuthXManager(JedisClientConfig config) {
+    if (config.getTokenAuthConfig() != null) {
+      return AuthXManagerFactory.create(JedisAuthXManager.class, config.getTokenAuthConfig());
+    }
+    return null;
   }
 
   private void attachAuthXManager(JedisAuthXManager authXManager) {
+    this.authXManager = authXManager;
     if (authXManager != null) {
       authXManager.setListener(new TokenListener() {
         @Override
         public void onTokenRenewed(Token token) {
           try {
-            ConnectionPool.this.evict();
-            System.out.println("pool evict: " + ConnectionPool.this.hashCode());
-
+            evict();
           } catch (Exception e) {
             throw new JedisException("Failed to evict connections from pool", e);
           }

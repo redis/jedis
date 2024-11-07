@@ -46,8 +46,8 @@ public class TokenBasedAuthenticationIntegrationTests {
 
         IdentityProvider idProvider = mock(IdentityProvider.class);
         when(idProvider.requestToken())
-                .thenReturn(new SimpleToken(password, new Date(System.currentTimeMillis() + 100000),
-                        new Date(), Collections.singletonMap("oid", user)));
+                .thenReturn(new SimpleToken(password, System.currentTimeMillis() + 100000,
+                        System.currentTimeMillis(), Collections.singletonMap("oid", user)));
 
         IdentityProviderConfig idProviderConfig = mock(IdentityProviderConfig.class);
         when(idProviderConfig.getProvider()).thenReturn(idProvider);

@@ -77,9 +77,9 @@ public class HomeJsonExample {
         String user3Set = jedis.jsonSet("user:3", new Path2("$"), user3);
         // STEP_END
         // REMOVE_START
-        Assert.assertTrue(user1Set.equals("OK"));
-        Assert.assertTrue(user2Set.equals("OK"));
-        Assert.assertTrue(user3Set.equals("OK"));
+        Assert.assertEquals("OK", user1Set);
+        Assert.assertEquals("OK", user2Set);
+        Assert.assertEquals("OK", user3Set);
         // REMOVE_END
 
         // STEP_START query1

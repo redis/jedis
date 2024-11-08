@@ -26,7 +26,7 @@ public class HomeJsonExample {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // STEP_END
         //REMOVE_START
-        // Clear any keys here before using them in tests.
+        // Clear the indexes and keys here before using them in tests.
         try {jedis.ftDropIndex("idx:users");} catch (JedisDataException j){}
         jedis.del("bike", "bike:1", "crashes", "newbike", "riders", "bikes:inventory");
         //REMOVE_END

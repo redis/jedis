@@ -97,7 +97,7 @@ public class HomeJsonExample {
         // >>> User:3
         // STEP_END
         // REMOVE_START
-        Assert.assertTrue(paulDocs.get(0).getId().equals("user:3"));
+        Assert.assertEquals("user:3", paulDocs.get(0).getId());
         // REMOVE_END
 
         // STEP_START query2

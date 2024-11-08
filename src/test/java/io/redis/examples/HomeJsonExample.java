@@ -68,7 +68,7 @@ public class HomeJsonExample {
         System.out.println(createResult); // >>> OK
         // STEP_END
         // REMOVE_START
-        Assert.assertTrue(createResult.equals("OK"));
+        Assert.assertEquals("OK", createResult);
         // REMOVE_END
 
         // STEP_START add_data

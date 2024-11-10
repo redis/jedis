@@ -23,16 +23,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.Objects;
+
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.KeyManager;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import redis.clients.jedis.util.InsecureTrustManagerFactory;
+import javax.net.ssl.X509ExtendedTrustManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Options to configure SSL options for the connections kept to Redis servers.
@@ -40,6 +51,8 @@ import redis.clients.jedis.util.InsecureTrustManagerFactory;
  * @author Mark Paluch
  */
 public class SslOptions {
+
+    private static final Logger logger = LoggerFactory.getLogger(SslOptions.class);
 
     private final String keyManagerAlgorithm;
 
@@ -342,17 +355,17 @@ public class SslOptions {
      */
     public SSLContext createSslContext() throws IOException, GeneralSecurityException {
 
-        TrustManagerFactory trustManagerFactory = null;
+        TrustManager[] trustManagers = null;
 
         if (sslVerifyMode == SslVerifyMode.FULL) {
             this.sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
         } else if (sslVerifyMode == SslVerifyMode.CA) {
             this.sslParameters.setEndpointIdentificationAlgorithm("");
         } else if (sslVerifyMode == SslVerifyMode.INSECURE) {
-            trustManagerFactory = InsecureTrustManagerFactory.INSTANCE;
+            trustManagers = new TrustManager[] { INSECURE_TRUST_MANAGER };
         }
 
-        KeyManagerFactory keyManagerFactory = null;
+        KeyManager[] keyManagers = null;
         if (keyManagerAlgorithm != null) {
 
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
@@ -360,11 +373,12 @@ public class SslOptions {
                 keyStore.load(keystoreStream, keystorePassword);
             }
 
-            keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
             keyManagerFactory.init(keyStore, keystorePassword);
+            keyManagers = keyManagerFactory.getKeyManagers();
         }
 
-        if (trustManagerFactory != null) {
+        if (trustManagers != null) {
             // skip
         } else if (trustManagerAlgorithm == null) {
 
@@ -373,17 +387,15 @@ public class SslOptions {
                 trustStore.load(truststoreStream, truststorePassword);
             }
 
-            trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
             trustManagerFactory.init(trustStore);
+            trustManagers = trustManagerFactory.getTrustManagers();
         }
 
         SSLContext sslContext = SSLContext.getDefault();
         //SSLContext sslContext = SSLContext.getInstance("TLS"); // examples
 
-        sslContext.init(
-                keyManagerFactory == null ? null : keyManagerFactory.getKeyManagers(),
-                trustManagerFactory == null ? null : trustManagerFactory.getTrustManagers(),
-                null);
+        sslContext.init(keyManagers, trustManagers, null);
 
         return sslContext;
     }
@@ -450,5 +462,53 @@ public class SslOptions {
         InputStream get() throws IOException;
 
     }
+
+    private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
+
+    private static final TrustManager INSECURE_TRUST_MANAGER = new X509ExtendedTrustManager() {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String s) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Accepting a client certificate: " + chain[0].getSubjectDN());
+            }
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String s) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Accepting a server certificate: " + chain[0].getSubjectDN());
+            }
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String s, Socket socket)
+                throws CertificateException {
+            checkClientTrusted(chain, s);
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String s, SSLEngine sslEngine)
+                throws CertificateException {
+            checkClientTrusted(chain, s);
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String s, Socket socket)
+                throws CertificateException {
+            checkServerTrusted(chain, s);
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String s, SSLEngine sslEngine)
+                throws CertificateException {
+            checkServerTrusted(chain, s);
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return EMPTY_X509_CERTIFICATES;
+        }
+    };
 
 }

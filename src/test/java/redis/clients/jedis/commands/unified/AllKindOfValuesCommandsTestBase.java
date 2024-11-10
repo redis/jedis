@@ -22,6 +22,7 @@ import static redis.clients.jedis.util.SafeEncoder.encodeObject;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +30,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Test;
@@ -286,6 +289,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void expire() {
     assertEquals(0, jedis.expire("foo", 20L));
 
@@ -302,6 +306,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void expireAt() {
     long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
@@ -322,6 +327,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void expireTime() {
     long unixTime;
 
@@ -458,6 +464,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void pexpire() {
     assertEquals(0, jedis.pexpire("foo", 10000));
 
@@ -499,6 +506,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void pexpireTime() {
     long unixTime = (System.currentTimeMillis()) + 10000;
 

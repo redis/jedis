@@ -70,12 +70,5 @@ public abstract class RedisModuleCommandsTestBase {
   public void tearDown() throws Exception {
     client.close();
   }
-//
-//  public static void tearDown() {
-//    client.close();
-//  }
-//
-//  protected static Connection createConnection() {
-//    return new Connection(hnp);
-//  }
+
 }

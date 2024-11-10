@@ -1,0 +1,20 @@
+REDIS1_CONF   6379:6390     "standalone0"                         : "redis://localhost:6379"
+REDIS1_CONF   6379:6390     "standalone0-acl"                     : "redis://localhost:6379",
+REDIS1_CONF   6379:6390     "standalone0-tls"                     : "rediss://localhost:6390"
+REDIS1_CONF   6379:6390     "standalone0-acl-tls"                 : "rediss://localhost:6390"
+------------
+REDIS2_CONF   6380          "standalone1"                         : "redis://localhost:6380"
+REDIS3_CONF   6381:16381    "standalone2-primary"                 : "redis://localhost:6381"
+REDIS4_CONF   6382:16382    "standalone3-replica-of-standalone2"  : "redis://localhost:6382"
+  (slaveof 6381)
+REDIS5_CONF   6383          "standalone4-replica-of-standalone1"  : "redis://localhost:6383"
+  (slaveof 6379)
+REDIS6_CONF   6384          "standalone5-primary"                 : "redis://localhost:6384"
+REDIS7_CONF   6385          "standalone6-replica-of-standalone5"  : "redis://localhost:6385"
+  (slaveof 6384)
+REDIS8_CONF   6386          "standalone7-with-lfu-policy"         : "redis://localhost:6386"
+REDIS9_CONF   6387:16387   ? missing
+REDIS10_CONF  6388          "standalone9"                         : "redis://localhost:6388"
+REDIS11_CONF  6389          "standalone10-replica-of-standalone9" : "redis://localhost:6389"
+  (replicaof 6388)
+jedis-stack   6479          "modules-docker"                      : "redis://localhost:6479"

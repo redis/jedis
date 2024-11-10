@@ -2,6 +2,8 @@ package redis.clients.jedis.csc;
 
 import static org.junit.Assert.assertEquals;
 
+import io.redis.test.utils.RedisVersionRule;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import redis.clients.jedis.EndpointConfig;

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
@@ -351,6 +352,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void testHscan() {
     String key = "testHashScan";
     byte[] bkey = key.getBytes();
@@ -416,6 +418,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAndHttl() {
     long seconds1 = 20;
     long seconds2 = 10;
@@ -433,6 +436,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAndHttlBinary() {
     long seconds1 = 20;
     long seconds2 = 10;
@@ -450,6 +454,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAndHpttl() {
     long millis1 = 20_000;
     long millis2 = 10_000;
@@ -465,6 +470,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAndHpttlBinary() {
     long millis1 = 20_000;
     long millis2 = 10_000;
@@ -480,6 +486,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAtAndExpireTime() {
     long currSeconds = System.currentTimeMillis() / 1000;
     long seconds1 = currSeconds + 20;
@@ -498,6 +505,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAtAndExpireTimeBinary() {
     long currSeconds = System.currentTimeMillis() / 1000;
     long seconds1 = currSeconds + 20;
@@ -516,6 +524,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAtAndPexpireTime() {
     long currMillis = System.currentTimeMillis();
     long unixMillis = currMillis + 20_000;
@@ -531,6 +540,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAtAndPexpireTimeBinary() {
     long currMillis = System.currentTimeMillis();
     long unixMillis = currMillis + 20_000;
@@ -546,6 +556,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpersist() {
     long seconds = 20;
 
@@ -560,6 +571,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpersistBinary() {
     long seconds = 20;
 

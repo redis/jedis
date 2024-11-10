@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
 
@@ -667,7 +668,8 @@ public class JedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
-  public void clusterLinks2() throws InterruptedException {
+  @EnabledOnCommand(value = "CLUSTER", subCommand = "LINKS")
+  public void clusterLinks2() {
     Set<String> mapKeys = new HashSet<>(Arrays.asList("direction", "node", "create-time", "events",
         "send-buffer-allocated", "send-buffer-used"));
 

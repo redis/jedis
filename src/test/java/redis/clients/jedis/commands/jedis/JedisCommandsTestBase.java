@@ -2,13 +2,26 @@ package redis.clients.jedis.commands.jedis;
 
 import java.util.Collection;
 
+import io.redis.test.utils.EnabledOnCommandRule;
+import io.redis.test.utils.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.runners.Parameterized.Parameters;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 
 public abstract class JedisCommandsTestBase {
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(
+          HostAndPorts.getRedisEndpoint("standalone0").getHostAndPort(),
+          HostAndPorts.getRedisEndpoint("standalone0").getClientConfigBuilder().build());
+
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
+          HostAndPorts.getRedisEndpoint("standalone0").getHostAndPort(),
+          HostAndPorts.getRedisEndpoint("standalone0").getClientConfigBuilder().build());
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this
@@ -26,7 +39,6 @@ public abstract class JedisCommandsTestBase {
   protected final RedisProtocol protocol;
 
   protected Jedis jedis;
-
   /**
    * The RESP protocol is to be injected by the subclasses, usually via JUnit
    * parameterized tests, because most of the subclassed tests are meant to be
@@ -43,7 +55,8 @@ public abstract class JedisCommandsTestBase {
   @Before
   public void setUp() throws Exception {
     jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-        .protocol(protocol).timeoutMillis(500).build());
+            .protocol(protocol)
+            .timeoutMillis(500).build());
     jedis.flushAll();
   }
 

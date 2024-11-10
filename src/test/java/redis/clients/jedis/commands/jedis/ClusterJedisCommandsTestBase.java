@@ -5,14 +5,14 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.redis.test.utils.EnabledOnCommandRule;
+import io.redis.test.utils.RedisVersionRule;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisCluster;
+import org.junit.Rule;
+import redis.clients.jedis.*;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class ClusterJedisCommandsTestBase {
@@ -26,6 +26,11 @@ public abstract class ClusterJedisCommandsTestBase {
   private HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
   private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
   JedisCluster cluster;
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() throws InterruptedException {

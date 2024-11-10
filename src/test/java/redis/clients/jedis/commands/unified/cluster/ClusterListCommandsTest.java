@@ -10,13 +10,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.EnabledOnCommandRule;
+import io.redis.test.utils.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.unified.ListCommandsTestBase;
@@ -26,6 +32,15 @@ import redis.clients.jedis.util.KeyValue;
 public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
 
   public ClusterListCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -259,6 +274,7 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void lmpop() {
     String mylist1 = "mylist1{.}";
     String mylist2 = "mylist2{.}";
@@ -284,6 +300,7 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void blmpopSimple() {
     String mylist1 = "mylist1{.}";
     String mylist2 = "mylist2{.}";

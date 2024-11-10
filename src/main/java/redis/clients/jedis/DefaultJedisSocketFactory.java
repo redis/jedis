@@ -28,7 +28,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private boolean ssl = false;
   private SSLSocketFactory sslSocketFactory = null;
   private SslOptions sslOptions = null;
-  private SslHostnameVerifyMode sslHostnameVerifyMode = null;
   private SSLParameters sslParameters = null;
   private HostnameVerifier hostnameVerifier = null;
   private HostAndPortMapper hostAndPortMapper = null;
@@ -55,7 +54,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       this.sslSocketFactory = config.getSslSocketFactory();
       this.sslParameters = config.getSslParameters();
       this.sslOptions = config.getSslOptions();
-      this.sslHostnameVerifyMode = config.getSslHostnameVerifyMode();
       this.hostnameVerifier = config.getHostnameVerifier();
       this.hostAndPortMapper = config.getHostAndPortMapper();
     }
@@ -124,23 +122,15 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
     if (sslOptions != null) {
 
-      _sslParameters = sslParameters != null ? sslParameters : new SSLParameters(); // TODO:
-
-      if (sslHostnameVerifyMode == SslHostnameVerifyMode.FULL) {
-        _sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-      } else if (sslHostnameVerifyMode == SslHostnameVerifyMode.CA) {
-        _sslParameters.setEndpointIdentificationAlgorithm("");
-      }
-
       SSLContext _sslContext = sslOptions.createSslContext();
-
       _sslSocketFactory = _sslContext.getSocketFactory();
+
+      _sslParameters = sslOptions.getSslParameters();
 
     } else {
 
       _sslSocketFactory = this.sslSocketFactory;
       _sslParameters = this.sslParameters;
-
     }
 
     if (_sslSocketFactory == null) {

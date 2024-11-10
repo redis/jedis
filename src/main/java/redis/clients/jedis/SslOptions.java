@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 import redis.clients.jedis.util.InsecureTrustManagerFactory;
 
@@ -56,7 +57,9 @@ public class SslOptions {
 
     private final char[] truststorePassword;
 
-    private final boolean noTruststoreVerification;
+    private final SSLParameters sslParameters;
+
+    private final SslVerifyMode sslVerifyMode;
 
     private SslOptions(Builder builder) {
         this.keyManagerAlgorithm = builder.keyManagerAlgorithm;
@@ -67,7 +70,8 @@ public class SslOptions {
         this.keystorePassword = builder.keystorePassword;
         this.truststoreResource = builder.truststoreResource;
         this.truststorePassword = builder.truststorePassword;
-        this.noTruststoreVerification = builder.noTruststoreVerification;
+        this.sslParameters = builder.sslParameters;
+        this.sslVerifyMode = builder.sslVerifyMode;
     }
 
     /**
@@ -101,7 +105,9 @@ public class SslOptions {
 
         private char[] truststorePassword = new char[0];
 
-        private boolean noTruststoreVerification = false;
+        private SSLParameters sslParameters;
+
+        private SslVerifyMode sslVerifyMode = SslVerifyMode.FULL;
 
         private Builder() {
         }
@@ -303,8 +309,13 @@ public class SslOptions {
             return this;
         }
 
-        public Builder noTruststoreVerification(boolean noTruststoreVerification) {
-            this.noTruststoreVerification = noTruststoreVerification;
+        public Builder sslParameters(SSLParameters sslParameters) {
+            this.sslParameters = sslParameters;
+            return this;
+        }
+
+        public Builder sslVerifyMode(SslVerifyMode sslVerifyMode) {
+            this.sslVerifyMode = sslVerifyMode;
             return this;
         }
 
@@ -314,6 +325,9 @@ public class SslOptions {
          * @return new instance of {@link SslOptions}
          */
         public SslOptions build() {
+            if (this.sslParameters == null) {
+                this.sslParameters = new SSLParameters();
+            }
             return new SslOptions(this);
         }
 
@@ -322,16 +336,24 @@ public class SslOptions {
     /**
      * A {@link SSLContext} object that is configured with values from this {@link SslOptions} object.
      *
-     * @return a {@link SSLContext}.
+     * @return {@link SSLContext}
      * @throws IOException thrown when loading the keystore or the truststore fails.
      * @throws GeneralSecurityException thrown when loading the keystore or the truststore fails.
      */
     public SSLContext createSslContext() throws IOException, GeneralSecurityException {
 
-        final KeyManagerFactory keyManagerFactory;
-        if (keyManagerAlgorithm == null) {
-            keyManagerFactory = null;
-        } else {
+        TrustManagerFactory trustManagerFactory = null;
+
+        if (sslVerifyMode == SslVerifyMode.FULL) {
+            this.sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+        } else if (sslVerifyMode == SslVerifyMode.CA) {
+            this.sslParameters.setEndpointIdentificationAlgorithm("");
+        } else if (sslVerifyMode == SslVerifyMode.INSECURE) {
+            trustManagerFactory = InsecureTrustManagerFactory.INSTANCE;
+        }
+
+        KeyManagerFactory keyManagerFactory = null;
+        if (keyManagerAlgorithm != null) {
 
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
             try (InputStream keystoreStream = keystoreResource.get()) {
@@ -340,19 +362,11 @@ public class SslOptions {
 
             keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
             keyManagerFactory.init(keyStore, keystorePassword);
-
         }
 
-        final TrustManagerFactory trustManagerFactory;
-        if (noTruststoreVerification) {
-
-            trustManagerFactory = InsecureTrustManagerFactory.INSTANCE;
-
+        if (trustManagerFactory != null) {
+            // skip
         } else if (trustManagerAlgorithm == null) {
-
-            trustManagerFactory = null;
-
-        } else {
 
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
             try (InputStream truststoreStream = truststoreResource.get()) {
@@ -361,7 +375,6 @@ public class SslOptions {
 
             trustManagerFactory = TrustManagerFactory.getInstance(trustManagerAlgorithm);
             trustManagerFactory.init(trustStore);
-
         }
 
         SSLContext sslContext = SSLContext.getDefault();
@@ -375,8 +388,16 @@ public class SslOptions {
         return sslContext;
     }
 
-    private static boolean isEmpty(String cs) {
-        return cs == null || cs.isEmpty();
+    /**
+     * {@link #createSslContext()} must be called before this.
+     * @return {@link SSLParameters}
+     */
+    public SSLParameters getSslParameters() {
+        return sslParameters;
+    }
+
+    private static boolean isEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 
     private static char[] getPassword(String truststorePassword) {

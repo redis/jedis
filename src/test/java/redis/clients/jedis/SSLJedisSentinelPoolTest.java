@@ -2,9 +2,13 @@ package redis.clients.jedis;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import redis.clients.jedis.util.TlsUtil;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
 public class SSLJedisSentinelPoolTest {
 
@@ -19,7 +23,8 @@ public class SSLJedisSentinelPoolTest {
 
   @BeforeClass
   public static void prepare() {
-    SSLJedisTest.setupTrustStore();
+    TlsUtil.createAndSaveEnvTruststore("redis9-sentinel", "changeit");
+    //TlsUtil.setJvmTrustStore(envTruststore("redis9-sentinel"));
 
     sentinels.add(HostAndPorts.getSentinelServers().get(4));
   }
@@ -28,11 +33,18 @@ public class SSLJedisSentinelPoolTest {
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
 
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .user("acljedis").password("fizzbuzz").clientName("master-client").ssl(true)
-        .hostAndPortMapper(SSL_PORT_MAPPER).build();
+            .user("acljedis")
+            .password("fizzbuzz")
+            .clientName("master-client")
+            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
+            .ssl(true)
+            .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .user("sentinel").password("foobared").clientName("sentinel-client").ssl(false).build();
+            .user("sentinel")
+            .password("foobared")
+            .clientName("sentinel-client")
+            .ssl(false).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
       pool.getResource().close();
@@ -48,11 +60,18 @@ public class SSLJedisSentinelPoolTest {
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
 
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .user("acljedis").password("fizzbuzz").clientName("master-client").ssl(false).build();
+            .user("acljedis")
+            .password("fizzbuzz")
+            .clientName("master-client")
+            .ssl(false).build();
 
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .user("sentinel").password("foobared").clientName("sentinel-client")
-        .ssl(true).hostAndPortMapper(SSL_PORT_MAPPER).build();
+            .user("sentinel")
+            .password("foobared")
+            .clientName("sentinel-client")
+            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
+            .ssl(true)
+            .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
       pool.getResource().close();
@@ -68,12 +87,20 @@ public class SSLJedisSentinelPoolTest {
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .user("acljedis").password("fizzbuzz").clientName("master-client").ssl(true)
-        .hostAndPortMapper(SSL_PORT_MAPPER).build();
+            .user("acljedis")
+            .password("fizzbuzz")
+            .clientName("master-client")
+            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
+            .ssl(true)
+            .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .user("sentinel").password("foobared").clientName("sentinel-client")
-        .ssl(true).hostAndPortMapper(SSL_PORT_MAPPER).build();
+            .user("sentinel")
+            .password("foobared")
+            .clientName("sentinel-client")
+            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
+            .ssl(true)
+            .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
       pool.getResource().close();

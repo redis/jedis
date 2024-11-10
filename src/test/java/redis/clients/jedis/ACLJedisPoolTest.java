@@ -4,33 +4,33 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.RedisVersionUtil;
 
 /**
  * This test class is a copy of {@link JedisPoolTest}.
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
+@SinceRedisVersion("6.0.0")
 public class ACLJedisPoolTest {
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 
   private static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0");
 
-  @BeforeClass
-  public static void prepare() throws Exception {
-    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
-  }
+  @ClassRule
+  public static RedisVersionRule  versionRule = new RedisVersionRule(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
 
   @Test
   public void checkConnections() {

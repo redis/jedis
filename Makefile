@@ -7,6 +7,7 @@ protected-mode no
 port 6379
 requirepass foobared
 user acljedis on allcommands allkeys >fizzbuzz
+user deploy on allcommands allkeys >verify
 pidfile /tmp/redis1.pid
 logfile /tmp/redis1.log
 save ""
@@ -189,6 +190,7 @@ endef
 
 define REDIS_SENTINEL5
 port 26383
+tlsport 36383
 daemonize yes
 protected-mode no
 user default off
@@ -525,8 +527,14 @@ mvn-release:
 	mvn release:prepare
 	mvn release:perform -DskipTests
 
-system-setup:
-	sudo apt install -y gcc g++
+install-gcc:
+	@if [ "$(shell uname)" = "Darwin" ]; then \
+		brew install gcc; \
+	else \
+		sudo apt install -y gcc g++; \
+	fi
+
+system-setup: install-gcc
 	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git

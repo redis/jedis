@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -308,6 +309,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0", message = "see https://redis.io/docs/latest/commands/client-setinfo/")
   public void clientSetInfoDefault() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
         .clientSetInfoConfig(ClientSetInfoConfig.DEFAULT).build())) {
@@ -319,6 +321,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0", message = "@see https://redis.io/docs/latest/commands/client-setinfo/")
   public void clientSetInfoDisabled() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
         .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build())) {
@@ -330,6 +333,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0", message = "@see https://redis.io/docs/latest/commands/client-setinfo/")
   public void clientSetInfoLibNameSuffix() {
     final String libNameSuffix = "for-redis";
     ClientSetInfoConfig setInfoConfig = ClientSetInfoConfig.withLibNameSuffix(libNameSuffix);

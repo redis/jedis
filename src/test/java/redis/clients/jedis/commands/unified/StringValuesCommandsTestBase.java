@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
 import redis.clients.jedis.RedisProtocol;
@@ -244,6 +246,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 

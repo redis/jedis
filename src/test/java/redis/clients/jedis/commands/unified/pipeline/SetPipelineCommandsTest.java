@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -378,6 +379,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void sintercard() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");

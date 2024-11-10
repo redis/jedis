@@ -5,11 +5,17 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.EnabledOnCommandRule;
+import io.redis.test.utils.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.SetCommandsTestBase;
 
@@ -25,6 +31,15 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
   public ClusterSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(
+            HostAndPorts.getStableClusterServers().get(0),
+            DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() {
@@ -178,6 +193,7 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void sintercard() {
     jedis.sadd("foo{.}", "a");
     jedis.sadd("foo{.}", "b");

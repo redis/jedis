@@ -7,6 +7,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
+import io.redis.test.utils.RedisVersionRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedisShardedPubSub;
@@ -16,6 +21,7 @@ import redis.clients.jedis.JedisShardedPubSub;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
 
+@SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
 public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisCommandsTestBase {
 
   private void publishOne(final String channel, final String message) {
@@ -24,6 +30,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void subscribe() throws InterruptedException {
     cluster.ssubscribe(new JedisShardedPubSub() {
       @Override public void onSMessage(String channel, String message) {
@@ -48,6 +55,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void subscribeMany() {
     cluster.ssubscribe(new JedisShardedPubSub() {
       @Override public void onSMessage(String channel, String message) {
@@ -62,6 +70,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void pubSubChannels() {
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
@@ -82,6 +91,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void pubSubChannelsWithPattern() {
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
@@ -102,6 +112,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void pubSubNumSub() {
     final Map<String, Long> expectedNumSub = new HashMap<>();
     expectedNumSub.put("{testchannel}1", 1L);
@@ -125,6 +136,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void binarySubscribe() {
     cluster.ssubscribe(new BinaryJedisShardedPubSub() {
       @Override public void onSMessage(byte[] channel, byte[] message) {
@@ -147,6 +159,7 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void binarySubscribeMany() {
     cluster.ssubscribe(new BinaryJedisShardedPubSub() {
       @Override public void onSMessage(byte[] channel, byte[] message) {

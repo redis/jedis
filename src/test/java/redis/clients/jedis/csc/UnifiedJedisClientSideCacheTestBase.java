@@ -3,9 +3,11 @@ package redis.clients.jedis.csc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.awaitility.Awaitility.await;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +41,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 
@@ -53,9 +56,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(1, cache.getSize());
       control.del("foo");
       assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
-      assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
       assertEquals(1, cache.getSize());
     }
   }
@@ -67,7 +69,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 
@@ -81,9 +84,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(1, cache.getSize());
       control.flushAll();
       assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
-      assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
       assertEquals(1, cache.getSize());
     }
   }

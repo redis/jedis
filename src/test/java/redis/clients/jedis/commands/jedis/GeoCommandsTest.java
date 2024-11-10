@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
+import static redis.clients.jedis.util.GeoCoordinateMatcher.isEqualWithTolerance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -532,7 +533,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
-    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
+    assertThat(members.get(0).getCoordinate(), isEqualWithTolerance( 2.19093829393386841, 41.43379028184083523));
   }
 
   @Test

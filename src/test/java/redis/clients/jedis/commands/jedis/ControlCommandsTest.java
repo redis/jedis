@@ -535,7 +535,6 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Allowed to be called with no argument to get info on all commands.")
   public void commandInfo() {
     Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
 

@@ -520,6 +520,25 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, setInfo.getSubcommands().size());
   }
 
+  @Test // GitHub Issue #4020
+  public void commandInfoAcl() {
+    Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
+
+    CommandInfo aclInfo = infos.get("acl");
+    assertEquals(-2, aclInfo.getArity());
+    assertEquals(0, aclInfo.getFlags().size());
+    assertEquals(0, aclInfo.getFirstKey());
+    assertEquals(0, aclInfo.getLastKey());
+    assertEquals(0, aclInfo.getStep());
+    assertEquals(1, aclInfo.getAclCategories().size());
+    assertEquals(0, aclInfo.getTips().size());
+    assertEquals(13, aclInfo.getSubcommands().size());
+    aclInfo.getSubcommands().forEach((name, subcommand) -> {
+      assertNotNull(name);
+      assertNotNull(subcommand);
+    });
+  }
+
   @Test
   public void commandList() {
     List<String> commands = jedis.commandList();

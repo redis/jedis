@@ -2,10 +2,13 @@ package redis.clients.jedis.resps;
 
 import redis.clients.jedis.Builder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static redis.clients.jedis.BuilderFactory.STRING_LIST;
 import static redis.clients.jedis.BuilderFactory.LONG;
+import static redis.clients.jedis.BuilderFactory.STRING;
+import static redis.clients.jedis.BuilderFactory.STRING_LIST;
 
 public class CommandInfo {
   private final long arity;
@@ -15,10 +18,10 @@ public class CommandInfo {
   private final long step;
   private final List<String> aclCategories;
   private final List<String> tips;
-  private final List<String> subcommands;
+  private final Map<String, CommandInfo> subcommands;
 
   public CommandInfo(long arity, List<String> flags, long firstKey, long lastKey, long step,
-      List<String> aclCategories, List<String> tips, List<String> subcommands) {
+      List<String> aclCategories, List<String> tips, Map<String, CommandInfo> subcommands) {
     this.arity = arity;
     this.flags = flags;
     this.firstKey = firstKey;
@@ -89,7 +92,7 @@ public class CommandInfo {
   /**
    * All the command's subcommands, if any
    */
-  public List<String> getSubcommands() {
+  public Map<String, CommandInfo> getSubcommands() {
     return subcommands;
   }
 
@@ -97,6 +100,9 @@ public class CommandInfo {
     @Override
     public CommandInfo build(Object data) {
       List<Object> commandData = (List<Object>) data;
+      if (commandData.isEmpty()) {
+        return null;
+      }
 
       long arity = LONG.build(commandData.get(1));
       List<String> flags = STRING_LIST.build(commandData.get(2));
@@ -105,9 +111,35 @@ public class CommandInfo {
       long step = LONG.build(commandData.get(5));
       List<String> aclCategories = STRING_LIST.build(commandData.get(6));
       List<String> tips = STRING_LIST.build(commandData.get(7));
-      List<String> subcommands = STRING_LIST.build(commandData.get(9));
+      Map<String, CommandInfo> subcommands = COMMAND_INFO_RESPONSE.build(commandData.get(9));
 
       return new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
     }
   };
+
+  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<Map<String, CommandInfo>>() {
+    @Override
+    public Map<String, CommandInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      Map<String, CommandInfo> map = new HashMap<>(rawList.size());
+
+      for (Object rawCommandInfo : rawList) {
+        if (rawCommandInfo == null) {
+          continue;
+        }
+
+        List<Object> commandInfo = (List<Object>) rawCommandInfo;
+        String name = STRING.build(commandInfo.get(0));
+        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(commandInfo);
+        map.put(name, info);
+      }
+
+      return map;
+    }
+  };
+
 }

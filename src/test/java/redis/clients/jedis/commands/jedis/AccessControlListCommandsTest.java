@@ -16,7 +16,6 @@ import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
 import java.util.Arrays;
 import java.util.List;
 
-import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -234,7 +233,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @EnabledOnCommand(value = "ACL", subCommand = "DRYRUN")
+  @SinceRedisVersion("7.0.0")
   public void aclDryRun() {
     jedis.aclSetUser(USER_NAME, "nopass", "allkeys", "+set", "-get");
 
@@ -249,7 +248,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @EnabledOnCommand(value = "ACL", subCommand = "DRYRUN")
+  @SinceRedisVersion("7.0.0")
   public void aclDryRunBinary() {
     byte[] username = USER_NAME.getBytes();
 

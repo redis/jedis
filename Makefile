@@ -190,7 +190,6 @@ endef
 
 define REDIS_SENTINEL5
 port 26383
-tlsport 36383
 daemonize yes
 protected-mode no
 user default off

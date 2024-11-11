@@ -2,7 +2,7 @@ services:
   redis1-2-5-10-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: redis1-2-5-10-sentinel
     #network_mode: host
     environment:
@@ -25,7 +25,7 @@ services:
   redis3-4-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: redis3-4-sentinel
     #network_mode: host
     environment:
@@ -48,7 +48,7 @@ services:
   redis6-7-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: redis6-7-sentinel
     #network_mode: host
     environment:
@@ -65,7 +65,7 @@ services:
   redis9-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: redis9-sentinel
     #network_mode: host
     environment:
@@ -85,7 +85,7 @@ services:
   redis10-11:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: redis10-11
     #network_mode: host
     environment:
@@ -99,7 +99,7 @@ services:
   redis-unavailable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: redis-unavailable-1
     #network_mode: host
     environment:
@@ -113,7 +113,7 @@ services:
   cluster-unbound:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: cluster-unbound-1
     environment:
       - TLS_ENABLED=yes
@@ -128,7 +128,7 @@ services:
   cluster-stable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: ${CLIENT_LIBS_TEST_IMAGE:-redislabs/client-libs-test:8.0-M01}
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
     container_name: cluster-stable-1
     #network_mode: host
     command: --cluster-announce-ip 127.0.0.1

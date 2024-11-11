@@ -63,7 +63,7 @@ jobs:
       - name: Set up Docker Compose environment
         run: |
           mkdir -m 777 $REDIS_ENV_WORK_DIR
-          export CLIENT_LIBS_TEST_IMAGE="${CLIENT_LIBS_IMAGE_PREFIX}:${{ matrix.redis_version }}"
+          export REDIS_VERSION="${{ matrix.redis_version }}"
           export COMPOSE_ENV_FILES="src/test/resources/env/.env"
           if [[ "${{ matrix.redis_version }}" == "6.2.16" ]]; then
            COMPOSE_ENV_FILES+=",src/test/resources/env/.env.v${{ matrix.redis_version }}"

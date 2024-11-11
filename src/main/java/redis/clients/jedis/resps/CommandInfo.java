@@ -11,6 +11,8 @@ import static redis.clients.jedis.BuilderFactory.STRING;
 import static redis.clients.jedis.BuilderFactory.STRING_LIST;
 
 public class CommandInfo {
+
+  private final String name;
   private final long arity;
   private final List<String> flags;
   private final long firstKey;
@@ -20,8 +22,20 @@ public class CommandInfo {
   private final List<String> tips;
   private final Map<String, CommandInfo> subcommands;
 
+  /**
+   * THIS IGNORES 'subcommands' parameter.
+   * @param subcommands WILL BE IGNORED
+   * @deprecated
+   */
+  @Deprecated
   public CommandInfo(long arity, List<String> flags, long firstKey, long lastKey, long step,
+      List<String> aclCategories, List<String> tips, List<String> subcommands) {
+    this((String) null, arity, flags, firstKey, lastKey, step, aclCategories, tips, (Map) null);
+  }
+
+  private CommandInfo(String name, long arity, List<String> flags, long firstKey, long lastKey, long step,
       List<String> aclCategories, List<String> tips, Map<String, CommandInfo> subcommands) {
+    this.name = name;
     this.arity = arity;
     this.flags = flags;
     this.firstKey = firstKey;
@@ -30,6 +44,13 @@ public class CommandInfo {
     this.aclCategories = aclCategories;
     this.tips = tips;
     this.subcommands = subcommands;
+  }
+
+  /**
+   * Command name
+   */
+  public String getName() {
+    return name;
   }
 
   /**
@@ -104,6 +125,7 @@ public class CommandInfo {
         return null;
       }
 
+      String name = STRING.build(commandData.get(0));
       long arity = LONG.build(commandData.get(1));
       List<String> flags = STRING_LIST.build(commandData.get(2));
       long firstKey = LONG.build(commandData.get(3));
@@ -113,7 +135,7 @@ public class CommandInfo {
       List<String> tips = STRING_LIST.build(commandData.get(7));
       Map<String, CommandInfo> subcommands = COMMAND_INFO_RESPONSE.build(commandData.get(9));
 
-      return new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
+      return new CommandInfo(name, arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
     }
   };
 

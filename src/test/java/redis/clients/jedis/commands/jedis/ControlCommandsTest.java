@@ -534,8 +534,9 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, aclInfo.getTips().size());
     assertEquals(13, aclInfo.getSubcommands().size());
     aclInfo.getSubcommands().forEach((name, subcommand) -> {
-      assertNotNull(name);
+      assertThat(name, Matchers.startsWith("acl|"));
       assertNotNull(subcommand);
+      assertEquals(name, subcommand.getName());
     });
   }
 

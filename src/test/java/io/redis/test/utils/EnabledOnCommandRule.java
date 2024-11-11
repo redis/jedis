@@ -99,9 +99,8 @@ public class EnabledOnCommandRule implements TestRule {
              */
             private boolean isCommandAvailable(Jedis jedisClient, String command, String subCommand) {
                 try {
-                    Object raw = jedisClient.sendCommand(redis.clients.jedis.Protocol.Command.COMMAND);
-                    Map<String, CommandInfo> commandList = BuilderFactory.COMMAND_INFO_RESPONSE.build(raw);
-                    CommandInfo commandInfo = commandList.get(command.toLowerCase());
+                    Map<String, CommandInfo> commandInfoMap= jedisClient.commandInfo(command);
+                    CommandInfo commandInfo = commandInfoMap.get(command.toLowerCase());
                     if (commandInfo != null) {
                         // If a subCommand is provided, check for the subcommand under this command
                         if (subCommand != null && !subCommand.isEmpty()) {
@@ -117,8 +116,8 @@ public class EnabledOnCommandRule implements TestRule {
                     }
                     return false; // Command not found
                 } catch (Exception e) {
-                    logger.error("Error checking command '{}' availability: {}", command, e.getMessage());
-                    return false;
+                    String msg = String.format("Error found while EnableOnCommand for command '%s'", command);
+                   throw new RuntimeException(msg, e);
                 }
             }
         };

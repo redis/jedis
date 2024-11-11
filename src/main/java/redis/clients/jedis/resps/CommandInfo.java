@@ -120,6 +120,10 @@ public class CommandInfo {
   public static final Builder<CommandInfo> COMMAND_INFO_BUILDER = new Builder<CommandInfo>() {
     @Override
     public CommandInfo build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
       List<Object> commandData = (List<Object>) data;
       if (commandData.isEmpty()) {
         return null;
@@ -150,14 +154,10 @@ public class CommandInfo {
       Map<String, CommandInfo> map = new HashMap<>(rawList.size());
 
       for (Object rawCommandInfo : rawList) {
-        if (rawCommandInfo == null) {
-          continue;
+        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(rawCommandInfo);
+        if (info != null) {
+          map.put(info.getName(), info);
         }
-
-        List<Object> commandInfo = (List<Object>) rawCommandInfo;
-        String name = STRING.build(commandInfo.get(0));
-        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(commandInfo);
-        map.put(name, info);
       }
 
       return map;

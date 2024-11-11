@@ -10,9 +10,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.EnabledOnCommandRule;
 import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionRule;
 import io.redis.test.utils.RedisVersionUtil;
 import org.junit.*;
 import redis.clients.jedis.util.TlsUtil;

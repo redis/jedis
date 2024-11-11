@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -572,6 +573,22 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
       assertNotNull(subcommand);
       assertEquals(name, subcommand.getName());
     });
+  }
+
+  @Test
+  @Ignore( "Till https://github.com/redis/jedis/issues/4020 is resolved")
+  public void commandInfoWithSubcommands() {
+    Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
+
+    CommandInfo aclInfo = infos.get("acl");
+    assertEquals(2, aclInfo.getArity());
+    assertEquals(0, aclInfo.getFlags().size());
+    assertEquals(0, aclInfo.getFirstKey());
+    assertEquals(0, aclInfo.getLastKey());
+    assertEquals(0, aclInfo.getStep());
+    assertEquals(1, aclInfo.getAclCategories().size());
+    assertEquals(0, aclInfo.getTips().size());
+    assertFalse(aclInfo.getSubcommands().isEmpty());
   }
 
   @Test

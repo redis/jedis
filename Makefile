@@ -526,14 +526,8 @@ mvn-release:
 	mvn release:prepare
 	mvn release:perform -DskipTests
 
-install-gcc:
-	@if [ "$(shell uname)" = "Darwin" ]; then \
-		brew install gcc; \
-	else \
-		sudo apt install -y gcc g++; \
-	fi
-
-system-setup: install-gcc
+system-setup:
+	sudo apt install -y gcc g++
 	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git

@@ -523,6 +523,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test // GitHub Issue #4020
   public void commandInfoAcl() {
     Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
+    assertThat(infos, Matchers.aMapWithSize(1));
 
     CommandInfo aclInfo = infos.get("acl");
     assertEquals(-2, aclInfo.getArity());

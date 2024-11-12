@@ -105,8 +105,8 @@ public class EnabledOnCommandRule implements TestRule {
                         // If a subCommand is provided, check for the subcommand under this command
                         if (subCommand != null && !subCommand.isEmpty()) {
                             // Check if this command supports the provided subcommand
-                            for (String supportedSubCommand : commandInfo.getSubcommands()) {
-                                if (subCommand.equalsIgnoreCase(supportedSubCommand)) {
+                            for (CommandInfo supportedSubCommand : commandInfo.getSubcommands()) {
+                                if ((command+subCommand).equalsIgnoreCase(supportedSubCommand.getName())) {
                                     return true;
                                 }
                             }

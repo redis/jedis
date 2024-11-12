@@ -16,14 +16,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
 
-import redis.clients.authentication.core.AuthenticatedConnection;
-import redis.clients.authentication.core.Token;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.authentication.TokenCredentials;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -33,7 +30,7 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
-public class Connection implements Closeable, AuthenticatedConnection {
+public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
   protected RedisProtocol protocol;
@@ -48,7 +45,8 @@ public class Connection implements Closeable, AuthenticatedConnection {
   private String strVal;
   protected String server;
   protected String version;
-  protected AtomicReference<Token> currentToken = new AtomicReference<Token>(null);
+  protected AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<RedisCredentials>(
+      null);
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -98,8 +96,8 @@ public class Connection implements Closeable, AuthenticatedConnection {
     SocketAddress remoteAddr = socket.getRemoteSocketAddress();
     SocketAddress localAddr = socket.getLocalSocketAddress();
     if (remoteAddr != null) {
-      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id,
-          localAddr, (broken ? '!' : '-'), remoteAddr);
+      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id, localAddr,
+        (broken ? '!' : '-'), remoteAddr);
     } else if (localAddr != null) {
       strVal = String.format("%s{id: 0x%X, L:%s}", className, id, localAddr);
     } else {
@@ -443,8 +441,8 @@ public class Connection implements Closeable, AuthenticatedConnection {
     for (int i = 0; i < info.length(); i++) {
       char c = info.charAt(i);
       if (c < '!' || c > '~') {
-        throw new JedisValidationException("client info cannot contain spaces, "
-            + "newlines or special characters.");
+        throw new JedisValidationException(
+            "client info cannot contain spaces, " + "newlines or special characters.");
       }
     }
     return true;
@@ -474,7 +472,8 @@ public class Connection implements Closeable, AuthenticatedConnection {
 
       String clientName = config.getClientName();
       if (clientName != null && validateClientInfo(clientName)) {
-        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
+        fireAndForgetMsg
+            .add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
@@ -530,12 +529,13 @@ public class Connection implements Closeable, AuthenticatedConnection {
     if (protocol != null && credentials != null && credentials.getUser() != null) {
       byte[] rawPass = encodeToBytes(credentials.getPassword());
       try {
-        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
+        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(),
+          encode(credentials.getUser()), rawPass);
       } finally {
         Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }
     } else {
-      auth(credentials);
+      authenticate(credentials);
       helloResult = protocol == null ? null : hello(encode(protocol.version()));
     }
     if (helloResult != null) {
@@ -547,11 +547,11 @@ public class Connection implements Closeable, AuthenticatedConnection {
     // handled in RedisCredentialsProvider.cleanUp()
   }
 
-  public void setToken(Token token) {
-    currentToken.set(token);
+  public void setCredentials(RedisCredentials credentials) {
+    currentCredentials.set(credentials);
   }
 
-  private void auth(RedisCredentials credentials) {
+  public void authenticate(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
       return;
     }
@@ -569,9 +569,9 @@ public class Connection implements Closeable, AuthenticatedConnection {
   }
 
   public void reAuth() {
-    Token temp = currentToken.getAndSet(null);
+    RedisCredentials temp = currentCredentials.getAndSet(null);
     if (temp != null) {
-      auth(new TokenCredentials(temp));
+      authenticate(temp);
     }
   }
 
@@ -600,10 +600,5 @@ public class Connection implements Closeable, AuthenticatedConnection {
       throw new JedisException(status);
     }
     return true;
-  }
-
-  @Override
-  public void authenticate(Token token) {
-    this.setToken(token);
   }
 }

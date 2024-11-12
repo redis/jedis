@@ -11,8 +11,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.authentication.TokenCredentials;
-import redis.clients.authentication.core.AuthXManager;
+import redis.clients.jedis.authentication.JedisAuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.exceptions.JedisException;
@@ -39,7 +38,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Experimental
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
-      Cache csCache, AuthXManager authXManager) {
+      Cache csCache, JedisAuthXManager authXManager) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache,
         authXManager);
   }
@@ -50,7 +49,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   private ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
-      final JedisClientConfig clientConfig, Cache csCache, AuthXManager authXManager) {
+      final JedisClientConfig clientConfig, Cache csCache, JedisAuthXManager authXManager) {
 
     this.jedisSocketFactory = jedisSocketFactory;
     this.clientSideCache = csCache;
@@ -60,7 +59,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       this.objectMaker = connectionSupplier();
     } else {
       this.clientConfig = replaceCredentialsProvider(clientConfig,
-        buildCredentialsProvider(authXManager));
+        authXManager);
       Supplier<Connection> supplier = connectionSupplier();
       this.objectMaker = () -> (Connection) authXManager.addConnection(supplier.get());
 
@@ -76,15 +75,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       Supplier<RedisCredentials> newCredentialsProvider) {
     return DefaultJedisClientConfig.builder().from(origin)
         .credentialsProvider(newCredentialsProvider).build();
-  }
-
-  private Supplier<RedisCredentials> buildCredentialsProvider(AuthXManager connManager) {
-    return new Supplier<RedisCredentials>() {
-      @Override
-      public RedisCredentials get() {
-        return new TokenCredentials(connManager.getCurrentToken());
-      }
-    };
   }
 
   private Supplier<Connection> connectionSupplier() {

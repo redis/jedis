@@ -3,9 +3,6 @@ package redis.clients.jedis;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.authentication.core.AuthXManagerFactory;
-import redis.clients.authentication.core.Token;
-import redis.clients.authentication.core.TokenListener;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.JedisAuthXManager;
 import redis.clients.jedis.csc.Cache;
@@ -23,7 +20,7 @@ public class ConnectionPool extends Pool<Connection> {
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       JedisAuthXManager authXManager) {
     this(new ConnectionFactory(hostAndPort, clientConfig, null, authXManager));
-    attachAuthXManager(authXManager);
+    attachAuthenticationListener(authXManager);
   }
 
   @Experimental
@@ -36,7 +33,7 @@ public class ConnectionPool extends Pool<Connection> {
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, JedisAuthXManager authXManager) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache, authXManager));
-    attachAuthXManager(authXManager);
+    attachAuthenticationListener(authXManager);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
@@ -60,7 +57,7 @@ public class ConnectionPool extends Pool<Connection> {
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache, authXManager),
         poolConfig);
-    attachAuthXManager(authXManager);
+        attachAuthenticationListener(authXManager);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
@@ -85,26 +82,20 @@ public class ConnectionPool extends Pool<Connection> {
 
   private static JedisAuthXManager createAuthXManager(JedisClientConfig config) {
     if (config.getTokenAuthConfig() != null) {
-      return AuthXManagerFactory.create(JedisAuthXManager.class, config.getTokenAuthConfig());
+      return new JedisAuthXManager(config.getTokenAuthConfig());
     }
     return null;
   }
 
-  private void attachAuthXManager(JedisAuthXManager authXManager) {
+  private void attachAuthenticationListener(JedisAuthXManager authXManager) {
     this.authXManager = authXManager;
     if (authXManager != null) {
-      authXManager.setListener(new TokenListener() {
-        @Override
-        public void onTokenRenewed(Token token) {
-          try {
-            evict();
-          } catch (Exception e) {
-            throw new JedisException("Failed to evict connections from pool", e);
-          }
-        }
-
-        @Override
-        public void onError(Exception reason) {
+      authXManager.setListener(token -> {
+        try {
+          // this is to trigger validations on each connection via ConnectionFactory
+          evict();
+        } catch (Exception e) {
+          throw new JedisException("Failed to evict connections from pool", e);
         }
       });
     }

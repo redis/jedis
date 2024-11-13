@@ -24,7 +24,6 @@ public class SSLJedisSentinelPoolTest {
   @BeforeClass
   public static void prepare() {
     TlsUtil.createAndSaveEnvTruststore("redis9-sentinel", "changeit");
-    //TlsUtil.setJvmTrustStore(envTruststore("redis9-sentinel"));
 
     sentinels.add(HostAndPorts.getSentinelServers().get(4));
   }

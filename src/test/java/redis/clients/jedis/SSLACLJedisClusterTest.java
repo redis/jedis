@@ -34,7 +34,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
       if ("127.0.0.1".equals(host)) {
         host = "localhost";
-        //port += tlsPortOffset;  // Apply the port offset
       }
 
       return new HostAndPort(host, port);

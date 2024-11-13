@@ -29,7 +29,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     int port = hostAndPort.getPort();
     if (host.equals("127.0.0.1")) {
       host = "localhost";
-      //port = port + 1000;
     }
     return new HostAndPort(host, port);
   };
@@ -39,7 +38,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     if ("localhost".equals(hostAndPort.getHost())) {
       return hostAndPort;
     }
-    //return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() + 1000);
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() );
   };
 

@@ -180,7 +180,8 @@ public class TokenBasedAuthenticationUnitTests {
   }
 
   @Test
-  public void testAuthXManagerReceivesNewToken() throws InterruptedException, ExecutionException, TimeoutException {
+  public void testAuthXManagerReceivesNewToken()
+      throws InterruptedException, ExecutionException, TimeoutException {
 
     IdentityProvider identityProvider = () -> new SimpleToken("tokenVal",
         System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
@@ -204,8 +205,9 @@ public class TokenBasedAuthenticationUnitTests {
 
   @Test
   public void testBlockForInitialToken() {
+    String exceptionMessage = "Test exception from identity provider!";
     IdentityProvider identityProvider = () -> {
-      throw new RuntimeException("Test exception from identity provider!");
+      throw new RuntimeException(exceptionMessage);
     };
 
     TokenManager tokenManager = new TokenManager(identityProvider,
@@ -214,8 +216,8 @@ public class TokenBasedAuthenticationUnitTests {
     JedisAuthXManager manager = new JedisAuthXManager(tokenManager);
     ExecutionException e = assertThrows(ExecutionException.class, () -> manager.start(true));
 
-    assertEquals("java.lang.RuntimeException: Test exception from identity provider!",
-      e.getCause().getCause().getMessage());
+    assertEquals(exceptionMessage,
+      e.getCause().getCause().getCause().getCause().getMessage());
   }
 
   @Test

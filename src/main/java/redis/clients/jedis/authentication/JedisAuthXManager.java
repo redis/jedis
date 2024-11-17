@@ -79,7 +79,7 @@ public class JedisAuthXManager implements Supplier<RedisCredentials> {
 
     public void onError(Exception reason) {
         throw new JedisAuthenticationException(
-                "Token request/renewal failed with message:" + reason.getMessage(), reason);
+                "Token manager failed to acquire new token!", reason);
     }
 
     public Connection addConnection(Connection connection) {

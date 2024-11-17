@@ -54,7 +54,7 @@ public class TokenBasedAuthenticationIntegrationTests {
 
         TokenAuthConfig tokenAuthConfig = TokenAuthConfig.builder()
                 .identityProviderConfig(idProviderConfig).expirationRefreshRatio(0.8F)
-                .lowerRefreshBoundMillis(10000).tokenRequestExecutionTimeoutInMs(1000).build();
+                .lowerRefreshBoundMillis(10000).tokenRequestExecTimeoutInMs(1000).build();
 
         JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
                 .tokenAuthConfig(tokenAuthConfig).build();

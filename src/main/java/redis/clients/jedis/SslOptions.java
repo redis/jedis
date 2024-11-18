@@ -366,7 +366,7 @@ public class SslOptions {
         }
 
         KeyManager[] keyManagers = null;
-        if (keyManagerAlgorithm != null) {
+        if (keystoreResource != null) {
 
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
             try (InputStream keystoreStream = keystoreResource.get()) {
@@ -380,7 +380,7 @@ public class SslOptions {
 
         if (trustManagers != null) {
             // skip
-        } else if (trustManagerAlgorithm == null) {
+        } else if (truststoreResource != null) {
 
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
             try (InputStream truststoreStream = truststoreResource.get()) {
@@ -392,8 +392,9 @@ public class SslOptions {
             trustManagers = trustManagerFactory.getTrustManagers();
         }
 
-        SSLContext sslContext = SSLContext.getDefault();
-        //SSLContext sslContext = SSLContext.getInstance("TLS"); // examples
+        //SSLContext sslContext = SSLContext.getDefault(); // throws exception
+        //SSLContext sslContext = SSLContext.getInstance("TLS"); // in redis.io examples, works
+        SSLContext sslContext = SSLContext.getInstance("SSL"); // also works
 
         sslContext.init(keyManagers, trustManagers, null);
 

@@ -23,7 +23,7 @@ import javax.net.ssl.X509TrustManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-@org.junit.Ignore
+@org.junit.Ignore // TODO: enable -- (in a different way?)
 public class SSLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");

@@ -10,6 +10,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.SSLJedisTest.BasicHostnameVerifier;
 
-@org.junit.Ignore // TODO: enable -- (in a different way?)
 public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
@@ -44,6 +44,11 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   @BeforeClass
   public static void prepare() {
     SSLJedisTest.setupTrustStore(); // set up trust store for SSL tests
+  }
+
+  @AfterClass
+  public static void unprepare() {
+    SSLJedisTest.cleanupTrustStore();
   }
 
   @Test

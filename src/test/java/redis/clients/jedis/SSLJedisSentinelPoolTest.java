@@ -3,10 +3,10 @@ package redis.clients.jedis;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-@org.junit.Ignore // TODO: enable -- (in a different way?)
 public class SSLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
@@ -23,6 +23,11 @@ public class SSLJedisSentinelPoolTest {
     SSLJedisTest.setupTrustStore();
 
     sentinels.add(HostAndPorts.getSentinelServers().get(4));
+  }
+
+  @AfterClass
+  public static void unprepare() {
+    SSLJedisTest.cleanupTrustStore();
   }
 
   @Test

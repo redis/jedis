@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.*;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,6 +27,11 @@ public class SSLACLJedisTest {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
         RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+  }
+
+  @AfterClass
+  public static void unprepare() {
+    SSLJedisTest.cleanupTrustStore();
   }
 
   @Test

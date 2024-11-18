@@ -20,29 +20,43 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-@org.junit.Ignore // TODO: enable -- (in a different way?)
 public class SSLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
+
+  public static void setupTrustStore() {
+    setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
+  }
+
+  private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
+    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
+        new File(trustStoreFilePath).exists());
+    System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
+    System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
+  }
+
+  public static void cleanupTrustStore() {
+    clearJvmTrustStore();
+  }
+
+  private static void clearJvmTrustStore() {
+    System.clearProperty("javax.net.ssl.trustStore");
+    System.clearProperty("javax.net.ssl.trustStoreType");
+  }
 
   @BeforeClass
   public static void prepare() {
     setupTrustStore();
   }
 
-  public static void setupTrustStore() {
-//    setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
+  @AfterClass
+  public static void unprepare() {
+    cleanupTrustStore();
   }
-
-//  private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-//    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-//        new File(trustStoreFilePath).exists());
-//    System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
-//    System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
-//  }
 
   @Test
   public void connectWithSsl() {

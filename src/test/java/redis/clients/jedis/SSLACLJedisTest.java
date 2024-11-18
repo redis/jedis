@@ -13,7 +13,6 @@ import redis.clients.jedis.util.RedisVersionUtil;
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
-@org.junit.Ignore // TODO: enable -- (in a different way?)
 public class SSLACLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");

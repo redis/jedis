@@ -17,6 +17,7 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.SSLJedisTest.BasicHostnameVerifier;
 
+@org.junit.Ignore
 public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;

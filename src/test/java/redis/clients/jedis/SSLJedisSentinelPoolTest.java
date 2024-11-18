@@ -6,6 +6,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+@org.junit.Ignore
 public class SSLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";

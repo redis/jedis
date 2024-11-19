@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
+@SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
@@ -47,7 +48,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
         DefaultJedisClientConfig.builder().password("cluster")
@@ -115,7 +115,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
   public void connectByIpAddress() {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder()

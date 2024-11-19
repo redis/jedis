@@ -140,6 +140,8 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
       } catch (SocketException e) {
           throw new RuntimeException(e);
       }
+      //ipv6 loopback
+      allLocalIps.add("::1");
       return allLocalIps;
   }
 }

@@ -108,6 +108,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x misses [~]>")
   public void aclGetUser() {
     // get default user information
     AccessControlUser userInfo = jedis.aclGetUser("default");
@@ -507,6 +508,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x skips [&]>")
   public void aclBinaryCommandsTest() {
     jedis.aclSetUser(USER_NAME.getBytes());
     assertNotNull(jedis.aclGetUser(USER_NAME));

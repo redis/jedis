@@ -555,6 +555,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test // GitHub Issue #4020
+  @SinceRedisVersion(value = "7.0.0", message = "In Redis 6.2.x ACL flags not empty")
   public void commandInfoAcl() {
     Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
     assertThat(infos, Matchers.aMapWithSize(1));

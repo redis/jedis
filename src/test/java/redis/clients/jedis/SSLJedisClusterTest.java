@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import io.redis.test.utils.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
@@ -46,6 +47,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
         DefaultJedisClientConfig.builder().password("cluster")
@@ -113,6 +115,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
   public void connectByIpAddress() {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder()
@@ -147,6 +150,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
   public void connectToNodesSucceedsWithSSLParametersAndHostMapping() {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");

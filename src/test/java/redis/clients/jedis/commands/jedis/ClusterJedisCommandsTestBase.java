@@ -58,7 +58,6 @@ public abstract class ClusterJedisCommandsTestBase {
     int[] node1Slots = new int[slotsPerNode];
     int[] node2Slots = new int[slotsPerNode + 1];
     int[] node3Slots = new int[slotsPerNode];
-//    for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < JedisCluster.HASHSLOTS; i++) {
     for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < CLUSTER_HASHSLOTS; i++) {
       if (i < slotsPerNode) {
         node1Slots[slot1++] = i;
@@ -76,28 +75,25 @@ public abstract class ClusterJedisCommandsTestBase {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-//    cluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
-//    cluster = new JedisCluster(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
     cluster = new JedisCluster(jedisClusterNode, null, "cluster");
-
   }
 
   @AfterClass
   public static void cleanUp() {
     int slotTest = JedisClusterCRC16.getSlot("test");
     int slot51 = JedisClusterCRC16.getSlot("51");
-    String node3Id = getNodeId(node3.clusterNodes());
-    node2.clusterSetSlotNode(slotTest, node3Id);
-    node2.clusterSetSlotNode(slot51, node3Id);
-    node2.clusterDelSlots(slotTest, slot51);
+    if (node3 != null ) {
+      String node3Id = getNodeId(node3.clusterNodes());
+      node2.clusterSetSlotNode(slotTest, node3Id);
+      node2.clusterSetSlotNode(slot51, node3Id);
+      node2.clusterDelSlots(slotTest, slot51);
+    }
   }
 
   @After
   public void tearDown() {
     // clear all slots
-//    int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
     int[] slotsToDelete = new int[CLUSTER_HASHSLOTS];
-//    for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
     for (int i = 0; i < CLUSTER_HASHSLOTS; i++) {
       slotsToDelete[i] = i;
     }

@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedisShardedPubSub;

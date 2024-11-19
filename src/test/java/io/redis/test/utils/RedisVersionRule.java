@@ -14,11 +14,17 @@ import redis.clients.jedis.JedisClientConfig;
 
 import java.lang.reflect.Method;
 
+import static io.redis.test.utils.RedisVersionUtil.FORCE_REDIS_SERVER_VERSION_ENV;
+
 public class RedisVersionRule implements TestRule {
     private static final Logger logger = LoggerFactory.getLogger(RedisVersionRule.class);
 
     private final HostAndPort hostPort;
     private final JedisClientConfig config;
+    private static final RedisVersion forcedVersion = System.getenv(FORCE_REDIS_SERVER_VERSION_ENV) != null
+            ? RedisVersion.of(System.getenv(FORCE_REDIS_SERVER_VERSION_ENV))
+            : null;
+
 
     public RedisVersionRule(EndpointConfig endpoint) {
         this.hostPort = endpoint.getHostAndPort();
@@ -56,9 +62,19 @@ public class RedisVersionRule implements TestRule {
                 }
             }
             private void checkRedisVersion(Jedis jedisClient, SinceRedisVersion versionAnnotation) {
+
+                // Check if the environment variable is set
+                RedisVersion currentVersion;
+
+                if (forcedVersion != null) {
+                    logger.info("Using forced Redis server version from environment variable: " + forcedVersion);
+                    currentVersion = forcedVersion;
+                } else {
+                    RedisInfo info = RedisInfo.parseInfoServer(jedisClient.info("server"));
+                    currentVersion = RedisVersion.of(info.getRedisVersion());
+                }
+
                 RedisVersion minRequiredVersion = RedisVersion.of(versionAnnotation.value());
-                RedisInfo info = RedisInfo.parseInfoServer(jedisClient.info("server"));
-                RedisVersion currentVersion = RedisVersion.of(info.getRedisVersion());
                 if (currentVersion.isLessThan(minRequiredVersion)) {
                     Assume.assumeTrue("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion, false);
                 }
@@ -80,7 +96,6 @@ public class RedisVersionRule implements TestRule {
                         }
                     }
                 } catch (Exception e) {
-                    // Handle any potential exceptions here
                     throw new RuntimeException("Could not resolve EnabledOnCommand annotation", e);
                 }
                 return null;

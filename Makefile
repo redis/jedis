@@ -1,10 +1,10 @@
 PATH := ./redis-git/src:${PATH}
-STUNNEL_BIN := $(shell which stunnel)
 
 define REDIS1_CONF
 daemonize yes
 protected-mode no
 port 6379
+tls-port 6390
 requirepass foobared
 user acljedis on allcommands allkeys >fizzbuzz
 user deploy on allcommands allkeys >verify
@@ -14,6 +14,10 @@ save ""
 appendonly no
 enable-module-command yes
 client-output-buffer-limit pubsub 256k 128k 5
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS2_CONF
@@ -31,18 +35,24 @@ define REDIS3_CONF
 daemonize yes
 protected-mode no
 port 6381
+tls-port 16381
 requirepass foobared
 masterauth foobared
 pidfile /tmp/redis3.pid
 logfile /tmp/redis3.log
 save ""
 appendonly no
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS4_CONF
 daemonize yes
 protected-mode no
 port 6382
+tls-port 16382
 requirepass foobared
 masterauth foobared
 pidfile /tmp/redis4.pid
@@ -50,6 +60,10 @@ logfile /tmp/redis4.log
 save ""
 appendonly no
 slaveof localhost 6381
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS5_CONF
@@ -105,6 +119,7 @@ define REDIS9_CONF
 daemonize yes
 protected-mode no
 port 6387
+tls-port 16387
 user default off
 user acljedis on allcommands allkeys >fizzbuzz
 pidfile /tmp/redis9.pid
@@ -112,6 +127,10 @@ logfile /tmp/redis9.log
 save ""
 appendonly no
 client-output-buffer-limit pubsub 256k 128k 5
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS10_CONF
@@ -138,6 +157,7 @@ endef
 # SENTINELS
 define REDIS_SENTINEL1
 port 26379
+tls-port 36379
 daemonize yes
 protected-mode no
 sentinel monitor mymaster 127.0.0.1 6379 1
@@ -147,10 +167,15 @@ sentinel failover-timeout mymaster 120000
 sentinel parallel-syncs mymaster 1
 pidfile /tmp/sentinel1.pid
 logfile /tmp/sentinel1.log
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_SENTINEL2
 port 26380
+tls-port 36380
 daemonize yes
 protected-mode no
 sentinel monitor mymaster 127.0.0.1 6381 1
@@ -160,6 +185,10 @@ sentinel parallel-syncs mymaster 1
 sentinel failover-timeout mymaster 120000
 pidfile /tmp/sentinel2.pid
 logfile /tmp/sentinel2.log
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_SENTINEL3
@@ -177,6 +206,7 @@ endef
 
 define REDIS_SENTINEL4
 port 26382
+tls-port 36382
 daemonize yes
 protected-mode no
 sentinel monitor mymaster 127.0.0.1 6381 1
@@ -186,10 +216,15 @@ sentinel parallel-syncs mymaster 1
 sentinel failover-timeout mymaster 120000
 pidfile /tmp/sentinel4.pid
 logfile /tmp/sentinel4.log
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_SENTINEL5
 port 26383
+tls-port 36383
 daemonize yes
 protected-mode no
 user default off
@@ -202,6 +237,10 @@ sentinel failover-timeout aclmaster 120000
 sentinel parallel-syncs aclmaster 1
 pidfile /tmp/sentinel5.pid
 logfile /tmp/sentinel5.log
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 # CLUSTER REDIS NODES
@@ -210,6 +249,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7379
+tls-port 8379
 cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node1.pid
 logfile /tmp/redis_cluster_node1.log
@@ -217,6 +257,10 @@ save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node1.conf
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_CLUSTER_NODE2_CONF
@@ -224,6 +268,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7380
+tls-port 8380
 cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node2.pid
 logfile /tmp/redis_cluster_node2.log
@@ -231,6 +276,10 @@ save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node2.conf
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_CLUSTER_NODE3_CONF
@@ -238,6 +287,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7381
+tls-port 8381
 cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node3.pid
 logfile /tmp/redis_cluster_node3.log
@@ -245,6 +295,10 @@ save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node3.conf
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_CLUSTER_NODE4_CONF
@@ -252,6 +306,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7382
+tls-port 8382
 cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node4.pid
 logfile /tmp/redis_cluster_node4.log
@@ -259,6 +314,10 @@ save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node4.conf
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 define REDIS_CLUSTER_NODE5_CONF
@@ -266,6 +325,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7383
+tls-port 8383
 cluster-node-timeout 15000
 pidfile /tmp/redis_cluster_node5.pid
 logfile /tmp/redis_cluster_node5.log
@@ -273,6 +333,10 @@ save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node5.conf
+tls-auth-clients no
+tls-cert-file "src/test/resources/private.crt"
+tls-key-file "src/test/resources/private.key"
+tls-ca-cert-file "src/test/resources/private.crt"
 endef
 
 # STABLE CLUSTER REDIS NODES
@@ -343,42 +407,6 @@ save ""
 appendonly no
 endef
 
-#STUNNEL
-define STUNNEL_CONF
-cert = src/test/resources/private.pem
-pid = /tmp/stunnel.pid
-[redis_1]
-accept = 127.0.0.1:6390
-connect = 127.0.0.1:6379
-[redis_3]
-accept = 127.0.0.1:16381
-connect = 127.0.0.1:6381
-[redis_4]
-accept = 127.0.0.1:16382
-connect = 127.0.0.1:6382
-[redis_9]
-accept = 127.0.0.1:16387
-connect = 127.0.0.1:6387
-[redis_cluster_1]
-accept = 127.0.0.1:8379
-connect = 127.0.0.1:7379
-[redis_cluster_2]
-accept = 127.0.0.1:8380
-connect = 127.0.001:7380
-[redis_cluster_3]
-accept = 127.0.0.1:8381
-connect = 127.0.001:7381
-[redis_cluster_4]
-accept = 127.0.0.1:8382
-connect = 127.0.0.1:7382
-[redis_cluster_5]
-accept = 127.0.0.1:8383
-connect = 127.0.0.1:7383
-[redis_sentinel_5]
-accept = 127.0.0.1:36383
-connect = 127.0.0.1:26383
-endef
-
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF
@@ -405,16 +433,9 @@ export REDIS_STABLE_CLUSTER_NODE2_CONF
 export REDIS_STABLE_CLUSTER_NODE3_CONF
 export REDIS_UDS
 export REDIS_UNAVAILABLE_CONF
-export STUNNEL_CONF
-export STUNNEL_BIN
 
 
-ifndef STUNNEL_BIN
-    SKIP_SSL := !SSL*,
-endif
-export SKIP_SSL
-
-start: stunnel cleanup compile-module
+start: cleanup compile-module
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -451,12 +472,11 @@ start: stunnel cleanup compile-module
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
+	- rm -vf /tmp/redis_stable_cluster_node*.conf 2>/dev/null
+	- rm -vf /tmp/redis_cluster_node*.log 2>/dev/null
+	- rm -vf /tmp/redis_stable_cluster_node*.log 2>/dev/null
 	- rm dump.rdb appendonly.aof - 2>/dev/null
 
-stunnel:
-	@if [ -e "$$STUNNEL_BIN" ]; then\
-	    echo "$$STUNNEL_CONF" | stunnel -fd 0;\
-	fi
 
 stop:
 	kill `cat /tmp/redis1.pid`
@@ -484,7 +504,6 @@ stop:
 	kill `cat /tmp/redis_stable_cluster_node2.pid`
 	kill `cat /tmp/redis_stable_cluster_node3.pid`
 	kill `cat /tmp/redis_uds.pid` || true
-	kill `cat /tmp/stunnel.pid` || true
 	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
@@ -504,7 +523,7 @@ stop:
 test: | start mvn-test stop
 
 mvn-test:
-	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
+	mvn -Dtest=${TEST} clean compile test
 
 package: | start mvn-package stop
 
@@ -527,10 +546,15 @@ mvn-release:
 	mvn release:perform -DskipTests
 
 system-setup:
-	sudo apt install -y gcc g++
+	# Install gcc with Homebrew (macOS) or apt (Linux)
+	if [ "$(shell uname)" = "Darwin" ]; then \
+		brew install gcc || true; \
+	else \
+		sudo apt install -y gcc g++; \
+	fi
 	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git
+	$(MAKE) -C redis-git BUILD_TLS=yes
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

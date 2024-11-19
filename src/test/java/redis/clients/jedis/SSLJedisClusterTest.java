@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import io.redis.test.utils.RedisVersion;
 import io.redis.test.utils.RedisVersionUtil;

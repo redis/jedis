@@ -25,6 +25,47 @@ Jedis unit tests use many Redis instances, so we use a ```Makefile``` to prepare
 Start unit tests with ```make test```.
 Set up test environments with ```make start```, tear down those environments with ```make stop``` and clean up the environment files with ```make cleanup```.
 
+
+# Jedis Test Environment Using Docker
+
+This guide explains how to bootstrap and manage a test environment for Jedis using Docker Compose.
+
+## Workflow Steps
+1. **Bring up the test environment** (examples provided below).
+2. **Run tests** (via IDE, Maven, etc.).
+3. **Destroy the test environment** using `docker compose down`.
+
+### Important Note
+The default test environment uses the temporary work folder `./redis-env-work`.  
+Some tests might leave Redis nodes in an inconsistent state, so this folder should be cleaned or removed before bootstrapping the environment again.
+
+
+## Bootstrap test env using Docker
+- **Redis 8.0-M01**
+```
+rm -rf ./redis-env-work
+export REDIS_VERSION=8.0-M01
+docker compose --env-file src/test/resources/env/.env -f src/test/resources/env/docker-compose.yml up
+```
+- **Redis 7.4.1**
+```
+rm -rf ./redis-env-work
+export REDIS_VERSION=7.4.1
+docker compose --env-file src/test/resources/env/.env -f src/test/resources/env/docker-compose.yml up
+```
+- **Redis 7.2.6**
+```
+rm -rf ./redis-env-work
+export REDIS_VERSION=7.2.6
+docker compose --env-file src/test/resources/env/.env -f src/test/resources/env/docker-compose.yml up
+```
+- **Redis 6.2.16**
+  - **NOTE :** 6.2.16 uses a dedicated .env.v6.12.16 file, since some of the redis configuration settings are not supported in 6.2.16
+```
+rm -rf ./redis-env-work
+docker compose --env-file src/test/resources/env/.env.v6.12.16 -f src/test/resources/env/docker-compose.yml up
+```
+
 # Some rules of Jedis source code
 
 ## Code Convention

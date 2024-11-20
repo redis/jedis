@@ -8253,6 +8253,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
+  public Map<String, CommandInfo> command() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND);
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
+  }
+
   public List<String> commandList() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, LIST);

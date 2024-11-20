@@ -21,7 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import com.google.gson.annotations.Since;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -504,10 +503,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
 
   @Test
-  public void command() {
+  public void commandNoArgs() {
     Map<String, CommandInfo> infos = jedis.command();
 
-    assertThat(infos.size(),greaterThan(0));
+    assertThat(infos.size(), greaterThan(0));
 
     CommandInfo getInfo = infos.get("get");
     assertEquals(2, getInfo.getArity());

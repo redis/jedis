@@ -1,9 +1,10 @@
 package redis.clients.jedis;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Assert;
-import org.junit.Test;
 
 public class BuilderTest {
 
@@ -20,9 +21,9 @@ public class BuilderTest {
 
     try {
       BuilderFactory.DOUBLE.build("".getBytes());
-      Assert.fail("Empty String should throw NumberFormatException.");
+      Assertions.fail("Empty String should throw NumberFormatException.");
     } catch (NumberFormatException expected) {
-      Assert.assertEquals("empty String", expected.getMessage());
+      Assertions.assertEquals("empty String", expected.getMessage());
     }
   }
 }

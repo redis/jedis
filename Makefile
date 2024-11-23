@@ -1,5 +1,9 @@
 PATH := ./redis-git/src:${PATH}
 
+# Supported test env versions
+SUPPORTED_TEST_ENV_VERSIONS := 8.0-M01 7.4.1 7.2.6 6.2.16
+DEFAULT_TEST_ENV_VERSION := 8.0-M01
+
 define REDIS1_CONF
 daemonize yes
 protected-mode no
@@ -559,5 +563,32 @@ system-setup:
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c
 
+# Start test environment with specific version using predefined docker compose setup
+
+start-test-env:
+	@if [ -z "$(version)" ]; then \
+		version=$(arg); \
+		if [ -z "$$version" ]; then \
+			version="$(DEFAULT_TEST_ENV_VERSION)"; \
+		fi; \
+	fi; \
+	if ! echo "$(SUPPORTED_TEST_ENV_VERSIONS)" | grep -qw "$$version"; then \
+		echo "Error: Invalid version '$$version'. Supported versions are: $(SUPPORTED_TEST_ENV_VERSIONS)."; \
+		exit 1; \
+	fi; \
+	env_file="src/test/resources/env/.env"; \
+	if [ "$$version" = "6.2.16" ]; then \
+		env_file="src/test/resources/env/.env.v6.2.16"; \
+	fi; \
+	rm -rf /tmp/redis-env-work; \
+	export REDIS_VERSION=$$version && \
+	docker compose --env-file $$env_file -f src/test/resources/env/docker-compose.yml up -d; \
+	echo "Started test environment with Redis version $$version."
+
+# Stop the test environment
+stop-test-env:
+	docker compose -f src/test/resources/env/docker-compose.yml down; \
+	rm -rf /tmp/redis-env-work; \
+	echo "Stopped test environment and performed cleanup."
 
 .PHONY: test

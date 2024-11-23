@@ -31,40 +31,38 @@ Set up test environments with ```make start```, tear down those environments wit
 This guide explains how to bootstrap and manage a test environment for Jedis using Docker Compose.
 
 ## Workflow Steps
-1. **Bring up the test environment** (examples provided below).
-2. **Run tests** (via IDE, Maven, etc.).
-3. **Destroy the test environment** using `docker compose down`.
+1. **Start the test environment** by running the following command (examples below).
+   - For instance, to start the environment with Redis 8.0-M01, use `make start-test-env`.
+2. **Run tests** through your IDE, Maven, or other testing tools as needed.
+3. **Stop the test environment** by running the following command:
+   - `make stop-test-env`
+   - This will stop and tear down the Docker containers running the Redis service
 
-### Important Note
-The default test environment uses the temporary work folder `./redis-env-work`.  
-Some tests might leave Redis nodes in an inconsistent state, so this folder should be cleaned or removed before bootstrapping the environment again.
+# Start the Test Environment Using Docker
 
+You can bootstrap the test environment for supported versions of Redis using the provided `make` targets.
 
-## Bootstrap test env using Docker
-- **Redis 8.0-M01**
+## Option 1: Using `make` Targets
+To bring up the test environment for a specific Redis version (8.0-M01, 7.4.1, 7.2.6, or 6.2.16), use the following command:
+```bash
+make start-test-env version=8.0-M01  # Replace with desired version
 ```
-rm -rf ./redis-env-work
+
+## Option 2: Using docker compose commands directly
+Docker compose file can be found in `src/test/resources/env` folder.
+- **Redis  8.0-M01, 7.4.1, 7.2.6**
+```bash
+rm -rf /tmp/redis-env-work
 export REDIS_VERSION=8.0-M01
-docker compose --env-file src/test/resources/env/.env -f src/test/resources/env/docker-compose.yml up
-```
-- **Redis 7.4.1**
-```
-rm -rf ./redis-env-work
-export REDIS_VERSION=7.4.1
-docker compose --env-file src/test/resources/env/.env -f src/test/resources/env/docker-compose.yml up
-```
-- **Redis 7.2.6**
-```
-rm -rf ./redis-env-work
-export REDIS_VERSION=7.2.6
-docker compose --env-file src/test/resources/env/.env -f src/test/resources/env/docker-compose.yml up
+docker compose up
 ```
 - **Redis 6.2.16**
-  - **NOTE :** 6.2.16 uses a dedicated .env.v6.12.16 file, since some of the redis configuration settings are not supported in 6.2.16
+- **NOTE:** Redis 6.2.16 uses a dedicated `.env.v6.2.16`.
+```bash
+rm -rf /tmp/redis-env-work
+docker compose --env-file .env.v6.2.16 up
 ```
-rm -rf ./redis-env-work
-docker compose --env-file src/test/resources/env/.env.v6.12.16 -f src/test/resources/env/docker-compose.yml up
-```
+
 
 # Some rules of Jedis source code
 

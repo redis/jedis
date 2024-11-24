@@ -5,9 +5,18 @@ package redis.clients.jedis;
  */
 public enum SslVerifyMode {
 
+    /**
+     * No verification at all.
+     */
     INSECURE,
 
+    /**
+     * Verify the CA and certificate without verifying that the hostname matches.
+     */
     CA,
 
+    /**
+     * Full certificate verification.
+     */
     FULL;
 }

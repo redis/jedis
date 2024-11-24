@@ -186,4 +186,14 @@ public class SSLJedisTest {
       throw new IllegalArgumentException("The certificate has no common name.");
     }
   }
+
+  static class LocalhostVerifier extends BasicHostnameVerifier {
+    @Override
+    public boolean verify(String hostname, SSLSession session) {
+      if (hostname.equals("127.0.0.1")) {
+        hostname = "localhost";
+      }
+      return super.verify(hostname, session);
+    }
+  }
 }

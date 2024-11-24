@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.AfterClass;
@@ -17,6 +16,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.SSLJedisTest.BasicHostnameVerifier;
+import redis.clients.jedis.SSLJedisTest.LocalhostVerifier;
 
 public class SSLJedisClusterTest extends JedisClusterTestBase {
 
@@ -235,16 +235,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
       assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
       assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
       assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
-    }
-  }
-
-  public class LocalhostVerifier extends BasicHostnameVerifier {
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      if (hostname.equals("127.0.0.1")) {
-        hostname = "localhost";
-      }
-      return super.verify(hostname, session);
     }
   }
 }

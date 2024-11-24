@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.Assert;
@@ -16,6 +15,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.SSLJedisTest.BasicHostnameVerifier;
+import redis.clients.jedis.SSLJedisTest.LocalhostVerifier;
 
 public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
 
@@ -201,16 +201,6 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
             .sslSocketFactory(sslSocketFactory).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
     } catch (JedisClusterOperationException e) {
       assertEquals("Could not initialize cluster slots cache.", e.getMessage());
-    }
-  }
-
-  public class LocalhostVerifier extends BasicHostnameVerifier {
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      if (hostname.equals("127.0.0.1")) {
-        hostname = "localhost";
-      }
-      return super.verify(hostname, session);
     }
   }
 }

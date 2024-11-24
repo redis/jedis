@@ -44,6 +44,7 @@ public interface JedisClientConfig {
     return null;
   }
 
+  // TODO: return null
   default Supplier<RedisCredentials> getCredentialsProvider() {
     return new DefaultRedisCredentialsProvider(
         new DefaultRedisCredentials(getUser(), getPassword()));

@@ -29,29 +29,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean readOnlyForRedisClusterReplicas;
 
-  // TODO: how many constructors should we have? 1) all params, 2) builder 3) another config
-  private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
-      int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
-      String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
-      ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForRedisClusterReplicas) {
-    this.redisProtocol = protocol;
-    this.connectionTimeoutMillis = connectionTimeoutMillis;
-    this.socketTimeoutMillis = soTimeoutMillis;
-    this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
-    this.credentialsProvider = credentialsProvider;
-    this.database = database;
-    this.clientName = clientName;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.sslOptions = null; // TODO:
-    this.hostnameVerifier = hostnameVerifier;
-    this.hostAndPortMapper = hostAndPortMapper;
-    this.clientSetInfoConfig = clientSetInfoConfig;
-    this.readOnlyForRedisClusterReplicas = readOnlyForRedisClusterReplicas;
-  }
-
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -304,25 +281,51 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
   }
 
-  // TOOD: depends on which constructors we're going to have/keep
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    return new DefaultJedisClientConfig(null,
-        connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
-        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
-        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null,
-        false);
+    Builder builder = builder();
+    builder.connectionTimeoutMillis(connectionTimeoutMillis).socketTimeoutMillis(soTimeoutMillis)
+        .blockingSocketTimeoutMillis(blockingSocketTimeoutMillis);
+    if (user != null || password != null) {
+      // deliberately not handling 'user != null && password == null' here
+      builder.credentials(new DefaultRedisCredentials(user, password));
+    }
+    builder.database(database).clientName(clientName);
+    builder.ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters).hostnameVerifier(hostnameVerifier);
+    builder.hostAndPortMapper(hostAndPortMapper);
+    return builder.build();
   }
 
-  // TOOD: depends on which constructors we're going to have/keep
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(copy.getRedisProtocol(),
-        copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),
-        copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
-        copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
-        copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper(),
-        copy.getClientSetInfoConfig(), copy.isReadOnlyForRedisClusterReplicas());
+    Builder builder = builder();
+    builder.protocol(copy.getRedisProtocol());
+    builder.connectionTimeoutMillis(copy.getConnectionTimeoutMillis());
+    builder.socketTimeoutMillis(copy.getSocketTimeoutMillis());
+    builder.blockingSocketTimeoutMillis(copy.getBlockingSocketTimeoutMillis());
+
+    Supplier<RedisCredentials> credentialsProvider = copy.getCredentialsProvider();
+    if (credentialsProvider != null) {
+      builder.credentialsProvider(credentialsProvider);
+    } else {
+      String user = copy.getUser();
+      String password = copy.getPassword();
+      if (user != null || password != null) {
+        // deliberately not handling 'user != null && password == null' here
+        builder.credentials(new DefaultRedisCredentials(user, password));
+      }
+    }
+
+    builder.database(copy.getDatabase());
+    builder.clientName(copy.getClientName());
+
+    builder.ssl(copy.isSsl());
+    builder.sslSocketFactory(copy.getSslSocketFactory());
+    builder.sslParameters(copy.getSslParameters());
+    builder.hostnameVerifier(copy.getHostnameVerifier());
+    builder.sslOptions(copy.getSslOptions());
+    builder.hostAndPortMapper(copy.getHostAndPortMapper());
+    return builder.build();
   }
 }

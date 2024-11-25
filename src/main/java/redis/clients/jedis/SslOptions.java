@@ -47,8 +47,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Options to configure SSL options for the connections kept to Redis servers.
- *
- * @author Mark Paluch
  */
 public class SslOptions {
 
@@ -74,6 +72,8 @@ public class SslOptions {
 
     private final SslVerifyMode sslVerifyMode;
 
+    private final String sslContextProtocol;
+
     private SslOptions(Builder builder) {
         this.keyManagerAlgorithm = builder.keyManagerAlgorithm;
         this.trustManagerAlgorithm = builder.trustManagerAlgorithm;
@@ -85,6 +85,7 @@ public class SslOptions {
         this.truststorePassword = builder.truststorePassword;
         this.sslParameters = builder.sslParameters;
         this.sslVerifyMode = builder.sslVerifyMode;
+        this.sslContextProtocol = builder.sslContextProtocol;
     }
 
     /**
@@ -121,6 +122,8 @@ public class SslOptions {
         private SSLParameters sslParameters;
 
         private SslVerifyMode sslVerifyMode = SslVerifyMode.FULL;
+
+        private String sslContextProtocol = "TLS";
 
         private Builder() {
         }
@@ -332,6 +335,11 @@ public class SslOptions {
             return this;
         }
 
+        public Builder sslContextProtocol(String protocol) {
+            this.sslContextProtocol = protocol;
+            return this;
+        }
+
         /**
          * Create a new instance of {@link SslOptions}
          *
@@ -392,10 +400,7 @@ public class SslOptions {
             trustManagers = trustManagerFactory.getTrustManagers();
         }
 
-        //SSLContext sslContext = SSLContext.getDefault(); // throws exception
-        //SSLContext sslContext = SSLContext.getInstance("TLS"); // in redis.io examples, works
-        SSLContext sslContext = SSLContext.getInstance("SSL"); // also works
-
+        SSLContext sslContext = SSLContext.getInstance(sslContextProtocol);
         sslContext.init(keyManagers, trustManagers, null);
 
         return sslContext;

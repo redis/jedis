@@ -49,6 +49,19 @@ public class SSLOptionsJedisTest {
   }
 
   @Test
+  public void connectWithSslContextProtocol() {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder()
+            .sslOptions(SslOptions.builder()
+                .sslContextProtocol("SSL")
+                .truststore(new File("src/test/resources/truststore.jceks"))
+                .trustStoreType("jceks")
+                .build()).build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
   public void connectWithAcl() {
     try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(),
         aclEndpoint.getClientConfigBuilder()

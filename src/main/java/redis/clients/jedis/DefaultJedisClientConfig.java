@@ -298,6 +298,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return builder.build();
   }
 
+  @Deprecated
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
     Builder builder = builder();
     builder.protocol(copy.getRedisProtocol());
@@ -326,6 +327,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     builder.hostnameVerifier(copy.getHostnameVerifier());
     builder.sslOptions(copy.getSslOptions());
     builder.hostAndPortMapper(copy.getHostAndPortMapper());
+
+    builder.clientSetInfoConfig(copy.getClientSetInfoConfig());
+    if (copy.isReadOnlyForRedisClusterReplicas()) {
+      builder.readOnlyForRedisClusterReplicas();
+    }
     return builder.build();
   }
 }

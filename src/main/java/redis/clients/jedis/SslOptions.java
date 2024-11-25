@@ -32,8 +32,8 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import javax.net.ssl.KeyManager;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -169,8 +169,7 @@ public class SslOptions {
         public Builder keystore(File keystore, char[] keystorePassword) {
 
             Objects.requireNonNull(keystore, "Keystore must not be null");
-//            LettuceAssert.isTrue(keystore.exists(), () -> String.format("Keystore file %s does not exist", truststore));
-//            LettuceAssert.isTrue(keystore.isFile(), () -> String.format("Keystore %s is not a file", truststore));
+            assertFile("Keystore", keystore);
 
             return keystore(Resource.from(keystore), keystorePassword);
         }
@@ -214,10 +213,9 @@ public class SslOptions {
          */
         public Builder keystore(Resource resource, char[] keystorePassword) {
 
-            Objects.requireNonNull(resource, "Keystore InputStreamProvider must not be null");
+            this.keystoreResource = Objects.requireNonNull(resource, "Keystore InputStreamProvider must not be null");
 
             this.keystorePassword = getPassword(keystorePassword);
-            this.keystoreResource = resource;
 
             return this;
         }
@@ -246,8 +244,7 @@ public class SslOptions {
         public Builder truststore(File truststore, String truststorePassword) {
 
             Objects.requireNonNull(truststore, "Truststore must not be null");
-//            LettuceAssert.isTrue(truststore.exists(), () -> String.format("Truststore file %s does not exist", truststore));
-//            LettuceAssert.isTrue(truststore.isFile(), () -> String.format("Truststore file %s is not a file", truststore));
+            assertFile("Truststore", truststore);
 
             return truststore(Resource.from(truststore), getPassword(truststorePassword));
         }
@@ -291,10 +288,9 @@ public class SslOptions {
          */
         private Builder truststore(Resource resource, char[] truststorePassword) {
 
-            Objects.requireNonNull(resource, "Truststore InputStreamProvider must not be null");
+            this.truststoreResource = Objects.requireNonNull(resource, "Truststore InputStreamProvider must not be null");
 
             this.truststorePassword = getPassword(truststorePassword);
-            this.truststoreResource = resource;
 
             return this;
         }
@@ -361,7 +357,7 @@ public class SslOptions {
         }
 
         if (trustManagers != null) {
-            // skip
+            // already processed
         } else if (truststoreResource != null) {
 
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
@@ -388,16 +384,28 @@ public class SslOptions {
         return sslParameters;
     }
 
-    private static boolean isEmpty(String str) {
-        return str == null || str.isEmpty();
-    }
-
-    private static char[] getPassword(String truststorePassword) {
-        return !isEmpty(truststorePassword) ? truststorePassword.toCharArray() : null;
+    private static char[] getPassword(String password) {
+        return password != null ? password.toCharArray() : null;
     }
 
     private static char[] getPassword(char[] chars) {
         return chars != null ? Arrays.copyOf(chars, chars.length) : null;
+    }
+
+    /**
+     * Assert that {@code file} {@link File#exists() exists}.
+     *
+     * @param keyword file recognizer
+     * @param file
+     * @throws IllegalArgumentException if the file doesn't exist
+     */
+    public static void assertFile(String keyword, File file) {
+        if (!file.exists()) {
+            throw new IllegalArgumentException(String.format("%s file %s does not exist", keyword, file));
+        }
+        if (!file.isFile()) {
+            throw new IllegalArgumentException(String.format("%s file %s is not a file", keyword, file));
+        }
     }
 
     /**

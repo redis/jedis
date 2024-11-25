@@ -52,9 +52,10 @@ public class SslOptions {
 
     private static final Logger logger = LoggerFactory.getLogger(SslOptions.class);
 
-    private final String keyManagerAlgorithm;
+    private final String keyManagerAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
+    //private final String keyManagerAlgorithm = TrustManagerFactory.getDefaultAlgorithm(); // Lettuce
 
-    private final String trustManagerAlgorithm;
+    private final String trustManagerAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
 
     private final String keyStoreType;
 
@@ -75,8 +76,6 @@ public class SslOptions {
     private final String sslContextProtocol;
 
     private SslOptions(Builder builder) {
-        this.keyManagerAlgorithm = builder.keyManagerAlgorithm;
-        this.trustManagerAlgorithm = builder.trustManagerAlgorithm;
         this.keyStoreType = builder.keyStoreType;
         this.trustStoreType = builder.trustStoreType;
         this.keystoreResource = builder.keystoreResource;
@@ -102,11 +101,6 @@ public class SslOptions {
      */
     public static class Builder {
 
-        private String keyManagerAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
-        //private String keyManagerAlgorithm = TrustManagerFactory.getDefaultAlgorithm(); // Lettuce
-
-        private String trustManagerAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-
         private String keyStoreType;
 
         private String trustStoreType;
@@ -126,26 +120,6 @@ public class SslOptions {
         private String sslContextProtocol = "TLS";
 
         private Builder() {
-        }
-
-        public Builder keyManagerAlgorithm(String keyManagerAlgorithm) {
-            this.keyManagerAlgorithm = Objects.requireNonNull(keyManagerAlgorithm, "KeyManagerAlgorithm must not be null");
-            return this;
-        }
-
-        public Builder systemDefaultKeyManager() {
-            this.keyManagerAlgorithm = null;
-            return this;
-        }
-
-        public Builder trustManagerAlgorithm(String trustManagerAlgorithm) {
-            this.trustManagerAlgorithm = Objects.requireNonNull(trustManagerAlgorithm, "TrustManagerAlgorithm must not be null");
-            return this;
-        }
-
-        public Builder systemDefaultTrustManager() {
-            this.trustManagerAlgorithm = null;
-            return this;
         }
 
         /**

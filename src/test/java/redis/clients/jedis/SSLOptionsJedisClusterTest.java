@@ -178,29 +178,4 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-  @Test
-  @org.junit.Ignore // TODO: how do we do this with SslOptions
-  public void connectWithCustomSocketFactory() throws Exception {
-    final SSLSocketFactory sslSocketFactory = SSLJedisTest.createTrustStoreSslSocketFactory();
-
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslSocketFactory(sslSocketFactory).hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-      assertEquals(3, jc.getClusterNodes().size());
-    }
-  }
-
-  @Test
-  @org.junit.Ignore // TODO: how do we do this with SslOptions
-  public void connectWithEmptyTrustStore() throws Exception {
-    final SSLSocketFactory sslSocketFactory = SSLJedisTest.createTrustNoOneSslSocketFactory();
-
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslSocketFactory(sslSocketFactory).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-    } catch (JedisClusterOperationException e) {
-      assertEquals("Could not initialize cluster slots cache.", e.getMessage());
-    }
-  }
 }

@@ -11,8 +11,7 @@ public class JedisPooledClientSideCacheTest extends JedisPooledClientSideCacheTe
 
   @ClassRule
   public static RedisVersionRule versionRule = new RedisVersionRule(
-          HostAndPorts.getRedisEndpoint("standalone1").getHostAndPort(),
-          HostAndPorts.getRedisEndpoint("standalone1").getClientConfigBuilder().build());
+          HostAndPorts.getRedisEndpoint("standalone1"));
 
   @BeforeClass
   public static void prepare() {

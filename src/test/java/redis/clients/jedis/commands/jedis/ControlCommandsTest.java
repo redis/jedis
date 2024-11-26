@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -577,7 +576,6 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @Ignore( "Till https://github.com/redis/jedis/issues/4020 is resolved")
   public void commandInfoWithSubcommands() {
     Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
 

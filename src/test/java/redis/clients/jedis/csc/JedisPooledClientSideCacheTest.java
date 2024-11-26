@@ -1,7 +1,7 @@
 package redis.clients.jedis.csc;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import redis.clients.jedis.HostAndPorts;

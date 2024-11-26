@@ -2,8 +2,8 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import static org.junit.Assert.assertEquals;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

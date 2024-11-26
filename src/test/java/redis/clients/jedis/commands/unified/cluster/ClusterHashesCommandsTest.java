@@ -1,7 +1,7 @@
 package redis.clients.jedis.commands.unified.cluster;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

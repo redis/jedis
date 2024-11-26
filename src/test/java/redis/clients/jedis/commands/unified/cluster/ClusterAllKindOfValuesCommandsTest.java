@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

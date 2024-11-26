@@ -1,4 +1,4 @@
-package io.redis.test.utils;
+package redis.clients.jedis.util;
 
 import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.Assume;

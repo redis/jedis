@@ -10,7 +10,7 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -254,13 +254,14 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Added support for XADD ID auto sequence is introduced in 7.0.0")
   public void xaddParamsId() {
     String key = "kk";
     Map<String, String> map = singletonMap("ff", "vv");
 
     pipe.xadd(key, XAddParams.xAddParams().id(new StreamEntryID(0, 1)), map);
     pipe.xadd(key, XAddParams.xAddParams().id(2, 3), map);
-    pipe.xadd(key, XAddParams.xAddParams().id("4-0"), map);
+    pipe.xadd(key, XAddParams.xAddParams().id(4), map);
     pipe.xadd(key, XAddParams.xAddParams().id("5-6"), map);
     pipe.xadd(key, XAddParams.xAddParams().id("7-8".getBytes()), map);
     pipe.xadd(key, XAddParams.xAddParams(), map);
@@ -279,31 +280,6 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat((StreamEntryID) results.get(5),
         greaterThan((StreamEntryID) results.get(4)));
   }
-
-  @Test
-  @SinceRedisVersion(value = "7.2.0", message = "Starting with Redis version 7.0.0: Added support for the <ms>-* explicit ID form.")
-  public void xaddParamsExplicitId() {
-    String key = "kk";
-    Map<String, String> map = singletonMap("ff", "vv");
-
-    pipe.xadd(key, XAddParams.xAddParams().id(new StreamEntryID(0, 1)), map);
-    pipe.xadd(key, XAddParams.xAddParams().id(2), map);
-    pipe.xadd(key, XAddParams.xAddParams().id(2), map);
-    pipe.xadd(key, XAddParams.xAddParams(), map);
-
-    List<Object> results = pipe.syncAndReturnAll();
-
-    assertThat(results, contains(
-            equalTo(new StreamEntryID(0, 1)),
-            equalTo(new StreamEntryID(2, 0)),
-            equalTo(new StreamEntryID(2, 1)),
-            instanceOf(StreamEntryID.class)
-    ));
-
-    assertThat((StreamEntryID) results.get(2),
-            greaterThan((StreamEntryID) results.get(1)));
-  }
-
 
   @Test
   public void xdel() {

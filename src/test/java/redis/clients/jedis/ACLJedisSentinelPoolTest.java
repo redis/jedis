@@ -1,14 +1,12 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.*;
-import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.*;
 

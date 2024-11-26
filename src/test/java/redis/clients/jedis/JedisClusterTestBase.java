@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
-import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.net.URISyntaxException;
 import org.junit.BeforeClass;

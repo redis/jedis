@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.TlsUtil.*;
 

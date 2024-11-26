@@ -5,11 +5,17 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersionRule;
+import org.junit.ClassRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import org.junit.ClassRule;
-import redis.clients.jedis.*;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPoolConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisCluster;
 
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
@@ -26,16 +32,17 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
         return poolConfig;
       };
 
-    @ClassRule
-    public static RedisVersionRule   versionRule = new RedisVersionRule(hnp.iterator().next(), clientConfig.get());
+  @ClassRule
+  public static RedisVersionRule   versionRule = new RedisVersionRule(hnp.iterator().next(), clientConfig.get());
 
-    @Override
-    protected JedisCluster createRegularJedis() {
+  @Override
+  protected JedisCluster createRegularJedis() {
     return new JedisCluster(hnp, clientConfig.get());
-    }
+  }
 
-    @Override
-        protected JedisCluster createCachedJedis(CacheConfig cacheConfig) {
-        return new JedisCluster(hnp, clientConfig.get(), cacheConfig);
-    }
+  @Override
+  protected JedisCluster createCachedJedis(CacheConfig cacheConfig) {
+    return new JedisCluster(hnp, clientConfig.get(), cacheConfig);
+  }
+
 }

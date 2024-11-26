@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;

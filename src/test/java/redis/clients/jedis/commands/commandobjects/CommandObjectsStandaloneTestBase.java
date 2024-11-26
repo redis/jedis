@@ -1,7 +1,7 @@
 package redis.clients.jedis.commands.commandobjects;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.Rule;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
@@ -12,9 +12,9 @@ import redis.clients.jedis.RedisProtocol;
 public abstract class CommandObjectsStandaloneTestBase extends CommandObjectsTestBase {
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
 
   public CommandObjectsStandaloneTestBase(RedisProtocol protocol) {
     super(protocol, HostAndPorts.getRedisEndpoint("standalone0"));

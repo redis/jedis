@@ -9,8 +9,6 @@ import static org.junit.Assert.fail;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersionRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;

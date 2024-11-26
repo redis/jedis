@@ -4,13 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.ClassRule;
 import org.junit.Test;

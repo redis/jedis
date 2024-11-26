@@ -1,16 +1,16 @@
-package io.redis.test.utils;
+package redis.clients.jedis.util;
 
+import io.redis.test.utils.RedisInfo;
+import io.redis.test.utils.RedisVersion;
 import redis.clients.jedis.*;
-import redis.clients.jedis.util.SafeEncoder;
-
-import java.util.Map;
 
 import static redis.clients.jedis.util.TlsUtil.createTrustAllSslSocketFactory;
 
 public class RedisVersionUtil {
 
   static final String FORCE_REDIS_SERVER_VERSION_ENV = "forceRedisServerVersion";
-  private static final RedisVersion forcedVersion = System.getenv(FORCE_REDIS_SERVER_VERSION_ENV) != null
+
+  static final RedisVersion forcedVersion = System.getenv(FORCE_REDIS_SERVER_VERSION_ENV) != null
           ? RedisVersion.of(System.getenv(FORCE_REDIS_SERVER_VERSION_ENV))
           : null;
 

@@ -1,7 +1,7 @@
 package redis.clients.jedis.commands.unified.pooled;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,13 +14,9 @@ import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
 @RunWith(Parameterized.class)
 public class PooledStringValuesCommandsTest extends StringValuesCommandsTestBase {
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(
-          PooledCommandsTestHelper.nodeInfo.getHostAndPort(),
-          PooledCommandsTestHelper.nodeInfo.getClientConfigBuilder().build());
+  public RedisVersionRule versionRule = new RedisVersionRule(PooledCommandsTestHelper.nodeInfo);
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
-          PooledCommandsTestHelper.nodeInfo.getHostAndPort(),
-          PooledCommandsTestHelper.nodeInfo.getClientConfigBuilder().build());
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(PooledCommandsTestHelper.nodeInfo);
 
   public PooledStringValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);

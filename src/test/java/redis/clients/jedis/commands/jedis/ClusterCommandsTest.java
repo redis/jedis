@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.*;

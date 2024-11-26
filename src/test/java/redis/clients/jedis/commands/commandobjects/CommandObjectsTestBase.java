@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import java.util.Collection;
 
 import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

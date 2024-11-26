@@ -32,14 +32,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
@@ -53,10 +52,10 @@ import redis.clients.jedis.util.JedisByteHashMap;
 public class HashesCommandsTest extends JedisCommandsTestBase {
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
 
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };

@@ -3,8 +3,8 @@ package redis.clients.jedis.csc;
 import java.util.function.Supplier;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.Before;

@@ -1,6 +1,8 @@
-package io.redis.test.utils;
+package redis.clients.jedis.util;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisInfo;
+import io.redis.test.utils.RedisVersion;
 import org.junit.Assume;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -14,16 +16,14 @@ import redis.clients.jedis.JedisClientConfig;
 
 import java.lang.reflect.Method;
 
-import static io.redis.test.utils.RedisVersionUtil.FORCE_REDIS_SERVER_VERSION_ENV;
+import static redis.clients.jedis.util.RedisVersionUtil.FORCE_REDIS_SERVER_VERSION_ENV;
+import static redis.clients.jedis.util.RedisVersionUtil.forcedVersion;
 
 public class RedisVersionRule implements TestRule {
     private static final Logger logger = LoggerFactory.getLogger(RedisVersionRule.class);
 
     private final HostAndPort hostPort;
     private final JedisClientConfig config;
-    private static final RedisVersion forcedVersion = System.getenv(FORCE_REDIS_SERVER_VERSION_ENV) != null
-            ? RedisVersion.of(System.getenv(FORCE_REDIS_SERVER_VERSION_ENV))
-            : null;
 
 
     public RedisVersionRule(EndpointConfig endpoint) {

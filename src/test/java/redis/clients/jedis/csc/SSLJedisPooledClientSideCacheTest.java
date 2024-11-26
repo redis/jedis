@@ -11,7 +11,7 @@ import redis.clients.jedis.HostAndPorts;
 import java.nio.file.Path;
 
 import static org.junit.Assume.assumeTrue;
-import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCacheTestBase {
 

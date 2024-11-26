@@ -9,8 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,13 +26,9 @@ import redis.clients.jedis.exceptions.JedisDataException;
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(
-          PooledCommandsTestHelper.nodeInfo.getHostAndPort()
-          ,PooledCommandsTestHelper.nodeInfo.getClientConfigBuilder().build());
+  public RedisVersionRule versionRule = new RedisVersionRule(PooledCommandsTestHelper.nodeInfo);
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
-          PooledCommandsTestHelper.nodeInfo.getHostAndPort(),
-          PooledCommandsTestHelper.nodeInfo.getClientConfigBuilder().build());
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(PooledCommandsTestHelper.nodeInfo);
 
   public PooledMiscellaneousTest(RedisProtocol protocol) {
     super(protocol);

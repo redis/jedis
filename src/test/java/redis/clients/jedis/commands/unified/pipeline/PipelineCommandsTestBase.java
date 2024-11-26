@@ -2,8 +2,8 @@ package redis.clients.jedis.commands.unified.pipeline;
 
 import java.util.Collection;
 
-import io.redis.test.utils.EnabledOnCommandRule;
-import io.redis.test.utils.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,13 +31,9 @@ public abstract class PipelineCommandsTestBase {
   protected final RedisProtocol protocol;
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(
-          PooledCommandsTestHelper.nodeInfo.getHostAndPort(),
-          PooledCommandsTestHelper.nodeInfo.getClientConfigBuilder().build());
+  public RedisVersionRule versionRule = new RedisVersionRule(PooledCommandsTestHelper.nodeInfo);
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(PooledCommandsTestHelper.nodeInfo);
   /**
    * The RESP protocol is to be injected by the subclasses, usually via JUnit
    * parameterized tests, because most of the subclassed tests are meant to be

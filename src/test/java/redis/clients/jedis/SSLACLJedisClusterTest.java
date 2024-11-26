@@ -11,7 +11,7 @@ import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import io.redis.test.utils.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.junit.*;
 import redis.clients.jedis.util.TlsUtil;
 

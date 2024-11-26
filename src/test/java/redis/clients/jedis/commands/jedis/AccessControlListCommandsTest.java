@@ -11,7 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static io.redis.test.utils.RedisVersionUtil.getRedisVersion;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.util.Arrays;
 import java.util.List;

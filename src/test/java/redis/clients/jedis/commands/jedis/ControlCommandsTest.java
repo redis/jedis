@@ -580,7 +580,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
 
     CommandInfo aclInfo = infos.get("acl");
-    assertEquals(2, aclInfo.getArity());
+    assertEquals(-2, aclInfo.getArity());
     assertEquals(0, aclInfo.getFlags().size());
     assertEquals(0, aclInfo.getFirstKey());
     assertEquals(0, aclInfo.getLastKey());

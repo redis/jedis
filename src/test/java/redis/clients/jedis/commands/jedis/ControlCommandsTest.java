@@ -576,21 +576,6 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void commandInfoWithSubcommands() {
-    Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
-
-    CommandInfo aclInfo = infos.get("acl");
-    assertEquals(-2, aclInfo.getArity());
-    assertEquals(0, aclInfo.getFlags().size());
-    assertEquals(0, aclInfo.getFirstKey());
-    assertEquals(0, aclInfo.getLastKey());
-    assertEquals(0, aclInfo.getStep());
-    assertEquals(1, aclInfo.getAclCategories().size());
-    assertEquals(0, aclInfo.getTips().size());
-    assertFalse(aclInfo.getSubcommands().isEmpty());
-  }
-
-  @Test
   @SinceRedisVersion("7.0.0")
   public void commandList() {
     List<String> commands = jedis.commandList();

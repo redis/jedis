@@ -310,12 +310,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     if (credentialsProvider != null) {
       builder.credentialsProvider(credentialsProvider);
     } else {
-      String user = copy.getUser();
-      String password = copy.getPassword();
-      if (user != null || password != null) {
-        // deliberately not handling 'user != null && password == null' here
-        builder.credentials(new DefaultRedisCredentials(user, password));
-      }
+      builder.user(copy.getUser());
+      builder.password(copy.getPassword());
     }
 
     builder.database(copy.getDatabase());

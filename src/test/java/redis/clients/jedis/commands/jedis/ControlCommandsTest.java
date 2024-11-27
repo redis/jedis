@@ -498,22 +498,18 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandGetKeys() {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
 
-  }
-
-  @Test
-  @SinceRedisVersion("7.0.0")
-  public void commandGetKeysAndFlags() {
     List<KeyValue<String, List<String>>> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
     assertEquals("k1", keySandFlags.get(0).getKey());
     assertEquals(2, keySandFlags.get(0).getValue().size());
   }
 
-
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandNoArgs() {
     Map<String, CommandInfo> infos = jedis.command();
 
@@ -535,6 +531,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandInfo() {
     Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
 
@@ -554,7 +551,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test // GitHub Issue #4020
-  @SinceRedisVersion(value = "7.0.0", message = "In Redis 6.2.x ACL flags not empty")
+  @SinceRedisVersion("7.0.0")
   public void commandInfoAcl() {
     Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
     assertThat(infos, Matchers.aMapWithSize(1));

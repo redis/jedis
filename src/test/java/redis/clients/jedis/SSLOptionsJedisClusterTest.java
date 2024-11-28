@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -149,10 +148,6 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     HostnameVerifier localhostVerifier = new LocalhostVerifier();
 
-    SslOptions sslOptions = SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks").build();
-
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
@@ -183,7 +178,8 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks").build())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build())
             .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc3.get("foo");

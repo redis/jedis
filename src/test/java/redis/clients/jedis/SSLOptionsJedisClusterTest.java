@@ -95,7 +95,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
-                .sslParameters(sslParameters)
+                .sslParameters(() -> sslParameters)
                 .truststore(new File("src/test/resources/truststore.jceks"))
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(portMap).build(),
@@ -117,7 +117,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
-                .sslParameters(sslParameters)
+                .sslParameters(() -> sslParameters)
                 .truststore(new File("src/test/resources/truststore.jceks"))
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
@@ -134,7 +134,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
-                .sslParameters(sslParameters)
+                .sslParameters(() -> sslParameters)
                 .truststore(new File("src/test/resources/truststore.jceks"))
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),

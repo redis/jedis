@@ -32,6 +32,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.function.Supplier;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -69,7 +70,7 @@ public class SslOptions {
 
     private final char[] truststorePassword;
 
-    private final SSLParameters sslParameters;
+    private final Supplier<SSLParameters> sslParameters;
 
     private final SslVerifyMode sslVerifyMode;
 
@@ -113,7 +114,7 @@ public class SslOptions {
 
         private char[] truststorePassword = new char[0];
 
-        private SSLParameters sslParameters;
+        private Supplier<SSLParameters> sslParameters = SSLParameters::new;
 
         private SslVerifyMode sslVerifyMode = SslVerifyMode.FULL;
 
@@ -295,7 +296,7 @@ public class SslOptions {
             return this;
         }
 
-        public Builder sslParameters(SSLParameters sslParameters) {
+        public Builder sslParameters(Supplier<SSLParameters> sslParameters) {
             this.sslParameters = sslParameters;
             return this;
         }
@@ -316,9 +317,6 @@ public class SslOptions {
          * @return new instance of {@link SslOptions}
          */
         public SslOptions build() {
-            if (this.sslParameters == null) {
-                this.sslParameters = new SSLParameters();
-            }
             return new SslOptions(this);
         }
 
@@ -335,11 +333,7 @@ public class SslOptions {
 
         TrustManager[] trustManagers = null;
 
-        if (sslVerifyMode == SslVerifyMode.FULL) {
-            this.sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-        } else if (sslVerifyMode == SslVerifyMode.CA) {
-            this.sslParameters.setEndpointIdentificationAlgorithm("");
-        } else if (sslVerifyMode == SslVerifyMode.INSECURE) {
+        if (sslVerifyMode == SslVerifyMode.INSECURE) {
             trustManagers = new TrustManager[] { INSECURE_TRUST_MANAGER };
         }
 
@@ -376,12 +370,16 @@ public class SslOptions {
         return sslContext;
     }
 
-    /**
-     * {@link #createSslContext()} must be called before this.
-     * @return {@link SSLParameters}
-     */
     public SSLParameters getSslParameters() {
-        return sslParameters;
+        SSLParameters _sslParameters = sslParameters.get();
+
+        if (sslVerifyMode == SslVerifyMode.FULL) {
+            _sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+        } else if (sslVerifyMode == SslVerifyMode.CA) {
+            _sslParameters.setEndpointIdentificationAlgorithm("");
+        }
+
+        return _sslParameters;
     }
 
     private static char[] getPassword(String password) {

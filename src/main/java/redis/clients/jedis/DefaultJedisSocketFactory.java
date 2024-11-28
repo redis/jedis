@@ -144,13 +144,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       sslSocket.setSSLParameters(_sslParameters);
     }
 
-    if (sslOptions == null) {
-      // limiting HostnameVerifier only for legacy ssl config
-      if (hostnameVerifier != null && !hostnameVerifier.verify(_hostAndPort.getHost(), sslSocket.getSession())) {
-        String message = String.format("The connection to '%s' failed ssl/tls hostname verification.",
-            _hostAndPort.getHost());
-        throw new JedisConnectionException(message);
-      }
+    // allowing HostnameVerifier for both SslOptions and legacy ssl config
+    if (hostnameVerifier != null && !hostnameVerifier.verify(_hostAndPort.getHost(), sslSocket.getSession())) {
+      String message = String.format("The connection to '%s' failed ssl/tls hostname verification.",
+          _hostAndPort.getHost());
+      throw new JedisConnectionException(message);
     }
 
     return new SSLSocketWrapper(sslSocket, plainSocket);

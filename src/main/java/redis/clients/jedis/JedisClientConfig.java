@@ -73,17 +73,17 @@ public interface JedisClientConfig {
     return null;
   }
 
-  default HostnameVerifier getHostnameVerifier() {
-    return null;
-  }
-
   /**
-   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()},
-   * {@link JedisClientConfig#getSslParameters()} and {@link JedisClientConfig#getHostnameVerifier()} will be ignored if
+   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
+   * {@link JedisClientConfig#getSslParameters()} will be ignored if
    * {@link JedisClientConfig#getSslOptions() this} is set.
    * @return ssl options
    */
   default SslOptions getSslOptions() {
+    return null;
+  }
+
+  default HostnameVerifier getHostnameVerifier() {
     return null;
   }
 

@@ -148,11 +148,13 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     HostnameVerifier localhostVerifier = new LocalhostVerifier();
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster")
-            .sslOptions(SslOptions.builder()
+    SslOptions sslOptions = SslOptions.builder()
                 .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks").build())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build();
+
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
+        DefaultJedisClientConfig.builder().password("cluster").sslOptions(sslOptions)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
@@ -164,10 +166,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     }
 
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
-        DefaultJedisClientConfig.builder().password("cluster")
-            .sslOptions(SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks").build())
+        DefaultJedisClientConfig.builder().password("cluster").sslOptions(sslOptions)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
     } catch (JedisClusterOperationException e) {
@@ -175,11 +174,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     }
     
     try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster")
-            .sslOptions(SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks")
-                .sslVerifyMode(SslVerifyMode.CA).build())
+        DefaultJedisClientConfig.builder().password("cluster").sslOptions(sslOptions)
             .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc3.get("foo");

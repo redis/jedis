@@ -78,8 +78,8 @@ public interface JedisClientConfig {
   }
 
   /**
-   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
-   * {@link JedisClientConfig#getHostnameVerifier()} will be ignored if
+   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()},
+   * {@link JedisClientConfig#getSslParameters()} and {@link JedisClientConfig#getHostnameVerifier()} will be ignored if
    * {@link JedisClientConfig#getSslOptions() this} is set.
    * @return ssl options
    */

@@ -28,7 +28,7 @@ public class ACLJedisPoolTest {
   private static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0");
 
   @ClassRule
-  public static RedisVersionRule  versionRule = new RedisVersionRule(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+  public static RedisVersionRule versionRule = new RedisVersionRule(endpoint);
 
   @Test
   public void checkConnections() {

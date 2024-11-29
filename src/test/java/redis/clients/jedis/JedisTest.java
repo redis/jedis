@@ -321,7 +321,6 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value = "7.2.0", message = "@see https://redis.io/docs/latest/commands/client-setinfo/")
   public void clientSetInfoDisabled() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
         .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build())) {

@@ -635,7 +635,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis2.pttl("foo") <= 1000);
 
     jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
-    assertThat("ttl", jedis2.pttl("bar"), lessThanOrEqualTo(1000l + TIME_SKEW));
+    assertThat(jedis2.pttl("bar"), lessThanOrEqualTo(1000l + TIME_SKEW));
 
 
     jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));

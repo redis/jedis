@@ -50,10 +50,10 @@ public class EndpointConfig {
     public int getPort() {
         return getHostAndPort().getPort();
     }
+
     public Boolean isTls() {
         return tls;
     }
-
 
     public int getBdbId() { return bdbId; }
 

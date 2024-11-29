@@ -741,7 +741,6 @@ public class ClusterPipeliningTest {
     assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
     assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
 
-
     GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
     expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
     expectedResponse.setDistance(0.0881);
@@ -749,8 +748,6 @@ public class ClusterPipeliningTest {
 
     assertThat(r8.get().get(0),isEqualToGeoRadiusResponse(expectedResponse));
     assertThat(r9.get().get(0),isEqualToGeoRadiusResponse(expectedResponse));
-
-
 
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));

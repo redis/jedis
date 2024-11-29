@@ -16,7 +16,6 @@ import redis.clients.jedis.JedisClientConfig;
 
 import java.lang.reflect.Method;
 
-import static redis.clients.jedis.util.RedisVersionUtil.FORCE_REDIS_SERVER_VERSION_ENV;
 import static redis.clients.jedis.util.RedisVersionUtil.forcedVersion;
 
 public class RedisVersionRule implements TestRule {

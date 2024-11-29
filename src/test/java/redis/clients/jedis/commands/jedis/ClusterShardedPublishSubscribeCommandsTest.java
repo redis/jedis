@@ -27,7 +27,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void subscribe() throws InterruptedException {
     cluster.ssubscribe(new JedisShardedPubSub() {
       @Override public void onSMessage(String channel, String message) {
@@ -52,7 +51,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void subscribeMany() {
     cluster.ssubscribe(new JedisShardedPubSub() {
       @Override public void onSMessage(String channel, String message) {
@@ -67,7 +65,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void pubSubChannels() {
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
@@ -88,7 +85,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void pubSubChannelsWithPattern() {
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
@@ -109,7 +105,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void pubSubNumSub() {
     final Map<String, Long> expectedNumSub = new HashMap<>();
     expectedNumSub.put("{testchannel}1", 1L);
@@ -133,7 +128,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void binarySubscribe() {
     cluster.ssubscribe(new BinaryJedisShardedPubSub() {
       @Override public void onSMessage(byte[] channel, byte[] message) {
@@ -156,7 +150,6 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
   public void binarySubscribeMany() {
     cluster.ssubscribe(new BinaryJedisShardedPubSub() {
       @Override public void onSMessage(byte[] channel, byte[] message) {

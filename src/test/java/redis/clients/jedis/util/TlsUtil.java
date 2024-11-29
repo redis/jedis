@@ -268,19 +268,4 @@ public class TlsUtil {
             throw new RuntimeException("Failed to create a trust-all SSL socket factory", e);
         }
     }
-
-    public static void main(String[] args) {
-        try {
-
-            String truststorePassword = null;
-
-            String caCertPath = "./work/redis1-2-5-10-sentinel/work/tls/ca.crt";
-            String truststorePath = "./work/redis1-2-5-10-sentinel/work/truststore.jceks";
-            Path truststore = createAndSaveTruststore(caCertPath, truststorePath, "change_me");
-            System.out.println("Truststore saved at: " + truststore.toAbsolutePath());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

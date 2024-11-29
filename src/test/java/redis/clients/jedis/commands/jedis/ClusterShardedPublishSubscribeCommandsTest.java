@@ -18,7 +18,7 @@ import redis.clients.jedis.JedisShardedPubSub;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
 
-@SinceRedisVersion(value = "7.0.0", message = "SSUBSCRIBE")
+@SinceRedisVersion(value = "7.0.0", message = "Sharded Pub/Sub")
 public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisCommandsTestBase {
 
   private void publishOne(final String channel, final String message) {

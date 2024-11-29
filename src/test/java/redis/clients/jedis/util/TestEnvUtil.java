@@ -9,13 +9,13 @@ public class TestEnvUtil {
     public static final String ENV_LOCAL = "local";
 
     private static final String TEST_ENV_PROVIDER = System.getenv().getOrDefault("TEST_ENV_PROVIDER", ENV_DOCKER);
-    private static final String TESTMODULE_SO = Optional.ofNullable(System.getenv("TESTMODULE_SO"))
+    private static final String TESTMODULE_SO_PATH = Optional.ofNullable(System.getenv("TESTMODULE_SO"))
             .orElseGet(() -> isContainerEnv()
                     ? "/redis/work/modules/testmodule.so"
                     : "/tmp/testmodule.so");
 
-    public static String testModuleSo() {
-        return TESTMODULE_SO;
+    public static String testModuleSoPath() {
+        return TESTMODULE_SO_PATH;
     }
 
     public static boolean isContainerEnv() {

@@ -160,6 +160,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void xaddParamsId() {
     StreamEntryID id;
     String key = "kk";
@@ -176,13 +177,11 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, id.getTime());
     assertEquals(3, id.getSequence());
 
-    // Starting with Redis version 7.0.0: Added support for the <ms>-* explicit ID form.
-    if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
-      id = jedis.xadd(key, XAddParams.xAddParams().id(4), map);
-      assertNotNull(id);
-      assertEquals(4, id.getTime());
-      assertEquals(0, id.getSequence());
-    }
+    id = jedis.xadd(key, XAddParams.xAddParams().id(4), map);
+    assertNotNull(id);
+    assertEquals(4, id.getTime());
+    assertEquals(0, id.getSequence());
+
     id = jedis.xadd(key, XAddParams.xAddParams().id("5-6"), map);
     assertNotNull(id);
     assertEquals(5, id.getTime());

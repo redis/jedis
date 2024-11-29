@@ -49,7 +49,7 @@ public class ModuleTest extends JedisCommandsTestBase {
   @Test
   public void testModules() {
     try {
-      assertEquals("OK", jedis.moduleLoad(TestEnvUtil.testModuleSo()));
+      assertEquals("OK", jedis.moduleLoad(TestEnvUtil.testModuleSoPath()));
 
       List<Module> modules = jedis.moduleList();
 

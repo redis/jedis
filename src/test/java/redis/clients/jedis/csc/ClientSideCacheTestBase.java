@@ -22,11 +22,10 @@ public abstract class ClientSideCacheTestBase {
   protected Jedis control;
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(
-            HostAndPorts.getRedisEndpoint("standalone1"));
+  public RedisVersionRule versionRule = new RedisVersionRule( HostAndPorts.getRedisEndpoint("standalone1"));
+
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
-          HostAndPorts.getRedisEndpoint("standalone1"));
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(HostAndPorts.getRedisEndpoint("standalone1"));
 
   @Before
   public void setUp() throws Exception {

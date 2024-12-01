@@ -19,8 +19,8 @@ public class ClusterBitCommandsTest extends BitCommandsTestBase {
 
   @Rule
   public RedisVersionRule versionRule = new RedisVersionRule(
-            HostAndPorts.getStableClusterServers().get(0)
-            ,DefaultJedisClientConfig.builder().password("cluster").build());
+            HostAndPorts.getStableClusterServers().get(0),
+            DefaultJedisClientConfig.builder().password("cluster").build());
   @Rule
   public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
           HostAndPorts.getStableClusterServers().get(0),

@@ -30,6 +30,7 @@ public abstract class JedisClusterTestBase {
   public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1,DefaultJedisClientConfig.builder().password("cluster").build());
   @Rule
   public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+
   @Before
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);

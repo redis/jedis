@@ -37,6 +37,7 @@ public abstract class JedisCommandsTestBase {
   protected final RedisProtocol protocol;
 
   protected Jedis jedis;
+
   /**
    * The RESP protocol is to be injected by the subclasses, usually via JUnit
    * parameterized tests, because most of the subclassed tests are meant to be
@@ -53,8 +54,7 @@ public abstract class JedisCommandsTestBase {
   @Before
   public void setUp() throws Exception {
     jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-            .protocol(protocol)
-            .timeoutMillis(500).build());
+        .protocol(protocol).timeoutMillis(500).build());
     jedis.flushAll();
   }
 

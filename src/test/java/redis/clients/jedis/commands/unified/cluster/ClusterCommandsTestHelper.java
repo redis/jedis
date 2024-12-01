@@ -14,7 +14,7 @@ public class ClusterCommandsTestHelper {
     clearClusterData();
     return new JedisCluster(
         Collections.singleton(HostAndPorts.getStableClusterServers().get(0)),
-            DefaultJedisClientConfig.builder().password("cluster").protocol(protocol).build());
+        DefaultJedisClientConfig.builder().password("cluster").protocol(protocol).build());
   }
 
   static void clearClusterData() {

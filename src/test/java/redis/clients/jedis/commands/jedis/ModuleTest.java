@@ -23,7 +23,7 @@ public class ModuleTest extends JedisCommandsTestBase {
 
   @BeforeClass
   public static void checkDockerEnvironment() {
-    Assume.assumeFalse("Module tests not supported against dockerised test env yet!",TestEnvUtil.isContainerEnv());
+    Assume.assumeFalse("Module tests not supported against dockerised test env yet!", TestEnvUtil.isContainerEnv());
   }
 
   static enum ModuleCommand implements ProtocolCommand {

@@ -82,7 +82,7 @@ public abstract class ClusterJedisCommandsTestBase {
   public static void cleanUp() {
     int slotTest = JedisClusterCRC16.getSlot("test");
     int slot51 = JedisClusterCRC16.getSlot("51");
-    if (node3 != null ) {
+    if (node3 != null) {
       String node3Id = getNodeId(node3.clusterNodes());
       node2.clusterSetSlotNode(slotTest, node3Id);
       node2.clusterSetSlotNode(slot51, node3Id);

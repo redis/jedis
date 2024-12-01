@@ -33,7 +33,7 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
       };
 
   @ClassRule
-  public static RedisVersionRule   versionRule = new RedisVersionRule(hnp.iterator().next(), clientConfig.get());
+  public static RedisVersionRule versionRule = new RedisVersionRule(hnp.iterator().next(), clientConfig.get());
 
   @Override
   protected JedisCluster createRegularJedis() {

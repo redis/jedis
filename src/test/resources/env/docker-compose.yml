@@ -1,9 +1,9 @@
 services:
-  redis1-2-5-10-sentinel:
+  redis1-2-5-8-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION:-8.0-M01}"
-    container_name: redis1-2-5-10-sentinel
+    container_name: redis1-2-5-8-sentinel
     #network_mode: host
     environment:
       - REDIS_CLUSTER=no
@@ -20,8 +20,8 @@ services:
       - "36379:36379" # sentinel tls
     command: ${ENABLE_MODULE_COMMAND_DIRECTIVE}
     volumes:
-      -  ${REDIS_ENV_CONF_DIR}/redis1-2-5-10-sentinel/config:/redis/config:r
-      -  ${REDIS_ENV_WORK_DIR}/redis1-2-5-10-sentinel/work:/redis/work:rw
+      -  ${REDIS_ENV_CONF_DIR}/redis1-2-5-8-sentinel/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/redis1-2-5-8-sentinel/work:/redis/work:rw
   redis3-4-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1

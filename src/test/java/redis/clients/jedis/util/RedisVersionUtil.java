@@ -4,8 +4,6 @@ import io.redis.test.utils.RedisInfo;
 import io.redis.test.utils.RedisVersion;
 import redis.clients.jedis.*;
 
-import static redis.clients.jedis.util.TlsUtil.createTrustAllSslSocketFactory;
-
 public class RedisVersionUtil {
 
   static final String FORCE_REDIS_SERVER_VERSION_ENV = "forceRedisServerVersion";
@@ -51,10 +49,9 @@ public class RedisVersionUtil {
     }
     
     DefaultJedisClientConfig.Builder builder = endpoint.getClientConfigBuilder();
-    if (endpoint.isTls()) {
-      builder.sslSocketFactory(createTrustAllSslSocketFactory());
-    }
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), builder.build())) {
+    DefaultJedisClientConfig clientConfig = builder.build();
+
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), clientConfig)) {
       return getRedisVersion(jedis);
     }
   }

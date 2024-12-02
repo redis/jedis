@@ -17,7 +17,7 @@ public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCach
 
   @BeforeClass
   public static void prepare() {
-    Path trusStorePath = TlsUtil.createAndSaveEnvTruststore("redis1-2-5-10-sentinel", "changeit");
+    Path trusStorePath = TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
     TlsUtil.setCustomTrustStore(trusStorePath, "changeit");
 
     endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");

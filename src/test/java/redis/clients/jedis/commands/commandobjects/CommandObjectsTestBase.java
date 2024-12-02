@@ -86,13 +86,11 @@ public abstract class CommandObjectsTestBase {
         commandExecutor.executeCommand(commandObjects.flushAll()),
         equalTo("OK"));
 
-    if ( RedisVersionUtil
-            .getRedisVersion(endpoint)
+    if (RedisVersionUtil.getRedisVersion(endpoint)
             .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
       assertThat(
               commandExecutor.executeCommand(commandObjects.functionFlush(FlushMode.SYNC)),
               equalTo("OK"));
-
     }
   }
 

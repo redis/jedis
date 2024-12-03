@@ -53,7 +53,7 @@ public class SSLOptionsJedisTest {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                .sslContextProtocol("SSL")
+                .sslProtocol("SSL")
                 .truststore(new File("src/test/resources/truststore.jceks"))
                 .trustStoreType("jceks")
                 .build()).build())) {

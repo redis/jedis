@@ -73,7 +73,7 @@ public class SslOptions {
 
     private final SslVerifyMode sslVerifyMode;
 
-    private final String sslContextProtocol;
+    private final String sslProtocol; // protocol for SSLContext
 
     private SslOptions(Builder builder) {
         this.keyStoreType = builder.keyStoreType;
@@ -84,7 +84,7 @@ public class SslOptions {
         this.truststorePassword = builder.truststorePassword;
         this.sslParameters = builder.sslParameters;
         this.sslVerifyMode = builder.sslVerifyMode;
-        this.sslContextProtocol = builder.sslContextProtocol;
+        this.sslProtocol = builder.sslProtocol;
     }
 
     /**
@@ -117,7 +117,7 @@ public class SslOptions {
 
         private SslVerifyMode sslVerifyMode = SslVerifyMode.FULL;
 
-        private String sslContextProtocol = "TLS";
+        private String sslProtocol = "TLS"; // protocol for SSLContext
 
         private Builder() {
         }
@@ -305,8 +305,13 @@ public class SslOptions {
             return this;
         }
 
-        public Builder sslContextProtocol(String protocol) {
-            this.sslContextProtocol = protocol;
+        /**
+         * The SSL/TLS protocol to be used to initialize {@link SSLContext}.
+         * @param protocol the ssl/tls protocol
+         * @return {@code this}
+         */
+        public Builder sslProtocol(String protocol) {
+            this.sslProtocol = protocol;
             return this;
         }
 
@@ -321,7 +326,6 @@ public class SslOptions {
             }
             return new SslOptions(this);
         }
-
     }
 
     /**
@@ -370,7 +374,7 @@ public class SslOptions {
             trustManagers = trustManagerFactory.getTrustManagers();
         }
 
-        SSLContext sslContext = SSLContext.getInstance(sslContextProtocol);
+        SSLContext sslContext = SSLContext.getInstance(sslProtocol);
         sslContext.init(keyManagers, trustManagers, null);
 
         return sslContext;

@@ -123,7 +123,7 @@ public class EndpointConfig {
       DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder()
           .password(password).ssl(tls);
 
-        if (tls & environment != null) {
+        if (tls && environment != null) {
           builder.sslSocketFactory(TlsUtil.sslSocketFactoryForEnv(environment));
         }
 

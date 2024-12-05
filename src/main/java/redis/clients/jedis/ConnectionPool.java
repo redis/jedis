@@ -4,36 +4,25 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.authentication.JedisAuthXManager;
+import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
 
-  private JedisAuthXManager authXManager;
+  private AuthXManager authXManager;
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(hostAndPort, clientConfig, createAuthXManager(clientConfig));
-  }
-
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      JedisAuthXManager authXManager) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, null, authXManager));
-    attachAuthenticationListener(authXManager);
+    this(new ConnectionFactory(hostAndPort, clientConfig));
+    attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache) {
-    this(hostAndPort, clientConfig, clientSideCache, createAuthXManager(clientConfig));
-  }
-
-  @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      Cache clientSideCache, JedisAuthXManager authXManager) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache, authXManager));
-    attachAuthenticationListener(authXManager);
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
+    attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
@@ -42,22 +31,15 @@ public class ConnectionPool extends Pool<Connection> {
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(hostAndPort, clientConfig, null, createAuthXManager(clientConfig), poolConfig);
+    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
+    attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(hostAndPort, clientConfig, clientSideCache, createAuthXManager(clientConfig), poolConfig);
-  }
-
-  @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      Cache clientSideCache, JedisAuthXManager authXManager,
-      GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache, authXManager),
-        poolConfig);
-        attachAuthenticationListener(authXManager);
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
+    attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
@@ -80,17 +62,10 @@ public class ConnectionPool extends Pool<Connection> {
     super.close();
   }
 
-  private static JedisAuthXManager createAuthXManager(JedisClientConfig config) {
-    if (config.getTokenAuthConfig() != null) {
-      return new JedisAuthXManager(config.getTokenAuthConfig());
-    }
-    return null;
-  }
-
-  private void attachAuthenticationListener(JedisAuthXManager authXManager) {
+  private void attachAuthenticationListener(AuthXManager authXManager) {
     this.authXManager = authXManager;
     if (authXManager != null) {
-      authXManager.setListener(token -> {
+      authXManager.addPostAuthenticationHook(token -> {
         try {
           // this is to trigger validations on each connection via ConnectionFactory
           evict();

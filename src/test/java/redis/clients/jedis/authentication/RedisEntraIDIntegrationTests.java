@@ -1,0 +1,404 @@
+package redis.clients.jedis.authentication;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+import org.mockito.MockedConstruction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import redis.clients.authentication.core.IdentityProvider;
+import redis.clients.authentication.core.IdentityProviderConfig;
+import redis.clients.authentication.core.SimpleToken;
+import redis.clients.authentication.core.Token;
+import redis.clients.authentication.core.TokenAuthConfig;
+import redis.clients.authentication.entraid.EntraIDIdentityProvider;
+import redis.clients.authentication.entraid.EntraIDIdentityProviderConfig;
+import redis.clients.authentication.entraid.EntraIDTokenAuthConfigBuilder;
+import redis.clients.authentication.entraid.ManagedIdentityInfo.UserManagedIdentityType;
+import redis.clients.authentication.entraid.ServicePrincipalInfo;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.exceptions.JedisAccessControlException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.scenario.FaultInjectionClient;
+
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class RedisEntraIDIntegrationTests {
+  private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
+
+  private static EntraIDTestContext testCtx;
+  private static EndpointConfig endpointConfig;
+  private static HostAndPort hnp;
+
+  private final FaultInjectionClient faultClient = new FaultInjectionClient();
+
+  @BeforeClass
+  public static void before() {
+    try {
+      testCtx = EntraIDTestContext.DEFAULT;
+      endpointConfig = HostAndPorts.getRedisEndpoint("standalone-entraid-acl");
+      hnp = endpointConfig.getHostAndPort();
+    } catch (IllegalArgumentException e) {
+      log.warn("Skipping test because no Redis endpoint is configured");
+      org.junit.Assume.assumeTrue(false);
+    }
+  }
+
+  @Test
+  public void testJedisConfig() {
+    AtomicInteger counter = new AtomicInteger(0);
+    try (MockedConstruction<EntraIDIdentityProvider> mockedConstructor = mockConstruction(
+      EntraIDIdentityProvider.class, (mock, context) -> {
+        ServicePrincipalInfo info = (ServicePrincipalInfo) context.arguments().get(0);
+
+        assertEquals(testCtx.getClientId(), info.getClientId());
+        assertEquals(testCtx.getAuthority(), info.getAuthority());
+        assertEquals(testCtx.getClientSecret(), info.getSecret());
+        assertEquals(testCtx.getRedisScopes(), context.arguments().get(1));
+        assertNotNull(mock);
+        doAnswer(invocation -> {
+          counter.incrementAndGet();
+          return new SimpleToken("token1", System.currentTimeMillis() + 5 * 60 * 1000,
+              System.currentTimeMillis(), Collections.singletonMap("oid", "default"));
+        }).when(mock).requestToken();
+      })) {
+
+      TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+          .authority(testCtx.getAuthority()).clientId(testCtx.getClientId())
+          .secret(testCtx.getClientSecret()).scopes(testCtx.getRedisScopes()).build();
+
+      DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+          .authXManager(new AuthXManager(tokenAuthConfig)).build();
+
+      JedisPooled jedis = new JedisPooled(new HostAndPort("localhost", 6379), jedisConfig);
+      assertNotNull(jedis);
+      assertEquals(1, counter.get());
+
+    }
+  }
+
+  // T.1.1
+  // Verify authentication using Azure AD with managed identities
+  // @Test
+  public void withUserAssignedId_azureManagedIdentityIntegrationTest() {
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId())
+        .userAssignedManagedIdentity(UserManagedIdentityType.CLIENT_ID, "userManagedAuthxId")
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes()).build();
+
+    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+      String key = UUID.randomUUID().toString();
+      jedis.set(key, "value");
+      assertEquals("value", jedis.get(key));
+      jedis.del(key);
+    }
+  }
+
+  // T.1.1
+  // Verify authentication using Azure AD with managed identities
+  // @Test
+  public void withSystemAssignedId_azureManagedIdentityIntegrationTest() {
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId()).systemAssignedManagedIdentity()
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes()).build();
+
+    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+      String key = UUID.randomUUID().toString();
+      jedis.set(key, "value");
+      assertEquals("value", jedis.get(key));
+      jedis.del(key);
+    }
+  }
+
+  // T.1.1
+  // Verify authentication using Azure AD with service principals
+  @Test
+  public void withSecret_azureServicePrincipalIntegrationTest() {
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes()).build();
+
+    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+      String key = UUID.randomUUID().toString();
+      jedis.set(key, "value");
+      assertEquals("value", jedis.get(key));
+      jedis.del(key);
+    }
+  }
+
+  // T.1.1        
+  // Verify authentication using Azure AD with service principals
+  @Test
+  public void withCertificate_azureServicePrincipalIntegrationTest() {
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes()).build();
+
+    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+      String key = UUID.randomUUID().toString();
+      jedis.set(key, "value");
+      assertEquals("value", jedis.get(key));
+      jedis.del(key);
+    }
+  }
+
+  // T.2.2
+  // Test that the Redis client is not blocked/interrupted during token renewal.
+  @Test
+  public void renewalDuringOperationsTest() throws InterruptedException, ExecutionException {
+    // set the stage with consecutive get/set operations with unique keys which takes at least for 2000 ms with a jedispooled instace, 
+    // configure token manager to renew token approximately every 100ms
+    // wait till all operations are completed and verify that token was renewed at least 20 times after initial token acquisition 
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes())
+        .expirationRefreshRatio(0.000001F).build();
+
+    AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
+    Consumer<Token> hook = mock(Consumer.class);
+    authXManager.addPostAuthenticationHook(hook);
+
+    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .authXManager(authXManager).build();
+
+    long startTime = System.currentTimeMillis();
+    List<Future<?>> futures = new ArrayList<>();
+    ExecutorService executor = Executors.newFixedThreadPool(5);
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+      for (int i = 0; i < 5; i++) {
+        Future<?> future = executor.submit(() -> {
+          for (; System.currentTimeMillis() - startTime < 2000;) {
+            String key = UUID.randomUUID().toString();
+            jedis.set(key, "value");
+            assertEquals("value", jedis.get(key));
+            jedis.del(key);
+          }
+        });
+        futures.add(future);
+      }
+      for (Future<?> task : futures) {
+        task.get();
+      }
+
+      verify(hook, atLeast(20)).accept(any());
+      executor.shutdown();
+    }
+  }
+
+  // T.3.2
+  // Verify that all existing connections can be re-authenticated when a new token is received.
+  @Test
+  public void allConnectionsReauthTest() throws InterruptedException, ExecutionException {
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes())
+        .expirationRefreshRatio(0.000001F).build();
+
+    AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
+    authXManager = spy(authXManager);
+
+    List<Connection> connections = new ArrayList<>();
+
+    doAnswer(invocation -> {
+      Connection connection = spy((Connection) invocation.getArgument(0));
+      invocation.getArguments()[0] = connection;
+      connections.add(connection);
+      Object result = invocation.callRealMethod();
+      return result;
+    }).when(authXManager).addConnection(any(Connection.class));
+
+    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .authXManager(authXManager).build();
+
+    long startTime = System.currentTimeMillis();
+    List<Future<?>> futures = new ArrayList<>();
+    ExecutorService executor = Executors.newFixedThreadPool(5);
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+      for (int i = 0; i < 5; i++) {
+        Future<?> future = executor.submit(() -> {
+          for (; System.currentTimeMillis() - startTime < 2000;) {
+            String key = UUID.randomUUID().toString();
+            jedis.set(key, "value");
+            assertEquals("value", jedis.get(key));
+            jedis.del(key);
+          }
+        });
+        futures.add(future);
+      }
+      for (Future<?> task : futures) {
+        task.get();
+      }
+
+      connections.forEach(conn -> {
+        verify(conn, atLeast(1)).reAuth();
+      });
+      executor.shutdown();
+    }
+  }
+
+  // T.3.2
+  // Test system behavior when some connections fail to re-authenticate during bulk authentication. e.g when a network partition occurs for 1 or more of them
+  @Test
+  public void partialReauthFailureTest() {
+
+  }
+
+  // T.3.3
+  // Verify behavior when attempting to authenticate a single connection with an expired token.
+  @Test
+  public void connectionAuthWithExpiredTokenTest() {
+    IdentityProvider idp = new EntraIDIdentityProviderConfig(
+        new ServicePrincipalInfo(testCtx.getClientId(), testCtx.getClientSecret(),
+            testCtx.getAuthority()),
+        testCtx.getRedisScopes()).getProvider();
+
+    IdentityProvider mockIdentityProvider = mock(IdentityProvider.class);
+    AtomicReference<Token> token = new AtomicReference<>();
+    doAnswer(invocation -> {
+      if (token.get() == null) {
+        token.set(idp.requestToken());
+      }
+      return token.get();
+    }).when(mockIdentityProvider).requestToken();
+    IdentityProviderConfig idpConfig = mock(IdentityProviderConfig.class);
+    when(idpConfig.getProvider()).thenReturn(mockIdentityProvider);
+
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .identityProviderConfig(idpConfig).expirationRefreshRatio(0.000001F).build();
+    AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
+    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .authXManager(authXManager).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+      for (int i = 0; i < 50; i++) {
+        String key = UUID.randomUUID().toString();
+        jedis.set(key, "value");
+        assertEquals("value", jedis.get(key));
+        jedis.del(key);
+      }
+
+      token
+          .set(new SimpleToken("token1", System.currentTimeMillis() - 1, System.currentTimeMillis(),
+              Collections.singletonMap("oid", idp.requestToken().tryGet("oid"))));
+
+      JedisAccessControlException aclException = assertThrows(JedisAccessControlException.class,
+        () -> {
+          for (int i = 0; i < 50; i++) {
+            String key = UUID.randomUUID().toString();
+            jedis.set(key, "value");
+            assertEquals("value", jedis.get(key));
+            jedis.del(key);
+          }
+        });
+
+      assertEquals("WRONGPASS invalid username-password pair", aclException.getMessage());
+    }
+  }
+
+  // T.3.4
+  // Verify handling of reconnection and re-authentication after a network partition. (use cached token)
+  // @Test
+  public void networkPartitionEvictionTest() {
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
+        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes())
+        .expirationRefreshRatio(0.5F).build();
+    AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
+    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .authXManager(authXManager).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+      for (int i = 0; i < 5; i++) {
+        String key = UUID.randomUUID().toString();
+        jedis.set(key, "value");
+        assertEquals("value", jedis.get(key));
+        jedis.del(key);
+      }
+
+      triggerNetworkFailure();
+
+      JedisConnectionException aclException = assertThrows(JedisConnectionException.class, () -> {
+        for (int i = 0; i < 50; i++) {
+          String key = UUID.randomUUID().toString();
+          jedis.set(key, "value");
+          assertEquals("value", jedis.get(key));
+          jedis.del(key);
+        }
+      });
+
+      assertEquals("Unexpected end of stream.", aclException.getMessage());
+      Awaitility.await().pollDelay(Durations.ONE_HUNDRED_MILLISECONDS).atMost(Durations.TWO_SECONDS)
+          .until(() -> {
+            String key = UUID.randomUUID().toString();
+            jedis.set(key, "value");
+            assertEquals("value", jedis.get(key));
+            jedis.del(key);
+            return true;
+          });
+    }
+  }
+
+  private void triggerNetworkFailure() {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("bdb_id", endpointConfig.getBdbId());
+
+    FaultInjectionClient.TriggerActionResponse actionResponse = null;
+    String action = "network_failure";
+    try {
+      log.info("Triggering {}", action);
+      actionResponse = faultClient.triggerAction(action, params);
+    } catch (IOException e) {
+      fail("Fault Injection Server error:" + e.getMessage());
+    }
+    log.info("Action id: {}", actionResponse.getActionId());
+  }
+}

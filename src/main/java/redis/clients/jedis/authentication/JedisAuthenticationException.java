@@ -1,6 +1,8 @@
 package redis.clients.jedis.authentication;
 
-public class JedisAuthenticationException extends RuntimeException {
+import redis.clients.jedis.exceptions.JedisException;
+
+public class JedisAuthenticationException extends JedisException {
 
     public JedisAuthenticationException(String message) {
         super(message);

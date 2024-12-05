@@ -5,7 +5,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import  redis.clients.authentication.core.TokenAuthConfig;
+import redis.clients.jedis.authentication.AuthXManager;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -30,7 +30,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean readOnlyForRedisClusterReplicas;
 
-  private final TokenAuthConfig tokenAuthConfig;
+  private final AuthXManager authXManager;
 
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis,
       int soTimeoutMillis, int blockingSocketTimeoutMillis,
@@ -38,7 +38,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
       ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForRedisClusterReplicas,
-      TokenAuthConfig tokenAuthConfig) {
+      AuthXManager authXManager) {
     this.redisProtocol = protocol;
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
@@ -53,7 +53,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.hostAndPortMapper = hostAndPortMapper;
     this.clientSetInfoConfig = clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = readOnlyForRedisClusterReplicas;
-    this.tokenAuthConfig = tokenAuthConfig;
+    this.authXManager = authXManager;
+
   }
 
   @Override
@@ -93,8 +94,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public TokenAuthConfig getTokenAuthConfig() {
-    return tokenAuthConfig;
+  public AuthXManager getAuthXManager() {
+    return authXManager;
   }
 
   @Override
@@ -171,7 +172,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private boolean readOnlyForRedisClusterReplicas = false;
 
-    private TokenAuthConfig tokenAuthConfig = null;
+    private AuthXManager authXManager;
 
     private Builder() {
     }
@@ -185,7 +186,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis,
           socketTimeoutMillis, blockingSocketTimeoutMillis, credentialsProvider, database,
           clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper,
-          clientSetInfoConfig, readOnlyForRedisClusterReplicas, tokenAuthConfig);
+          clientSetInfoConfig, readOnlyForRedisClusterReplicas, authXManager);
     }
 
     /**
@@ -287,8 +288,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder tokenAuthConfig(TokenAuthConfig tokenAuthConfig) {
-      this.tokenAuthConfig = tokenAuthConfig;
+    public Builder authXManager(AuthXManager authXManager) {
+      this.authXManager = authXManager;
       return this;
     }
 
@@ -307,7 +308,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.hostAndPortMapper = instance.getHostAndPortMapper();
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
-      this.tokenAuthConfig = instance.getTokenAuthConfig();
+      this.authXManager = instance.getAuthXManager();
       return this;
     }
   }
@@ -316,12 +317,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       int blockingSocketTimeoutMillis, String user, String password, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      HostAndPortMapper hostAndPortMapper, TokenAuthConfig tokenAuthConfig) {
+      HostAndPortMapper hostAndPortMapper, AuthXManager authXManager) {
     return new DefaultJedisClientConfig(null, connectionTimeoutMillis, soTimeoutMillis,
         blockingSocketTimeoutMillis,
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
         clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null,
-        false, tokenAuthConfig);
+        false, authXManager);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
@@ -330,6 +331,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         copy.getCredentialsProvider(), copy.getDatabase(), copy.getClientName(), copy.isSsl(),
         copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
         copy.getHostAndPortMapper(), copy.getClientSetInfoConfig(),
-        copy.isReadOnlyForRedisClusterReplicas(), copy.getTokenAuthConfig());
+        copy.isReadOnlyForRedisClusterReplicas(), copy.getAuthXManager());
   }
 }

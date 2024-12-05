@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.awaitility.Durations;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,12 +37,15 @@ import redis.clients.authentication.core.TokenAuthConfig;
 import redis.clients.authentication.core.TokenListener;
 import redis.clients.authentication.core.TokenManager;
 import redis.clients.authentication.core.TokenManagerConfig;
+import redis.clients.authentication.core.TokenRequestException;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.HostAndPort;
 
 public class TokenBasedAuthenticationUnitTests {
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+
+  private HostAndPort hnp = new HostAndPort("localhost", 6379);
+  private EndpointConfig endpoint = new EndpointConfig(hnp, null, null, false);
 
   @Test
   public void testJedisAuthXManagerInstance() {
@@ -57,25 +61,25 @@ public class TokenBasedAuthenticationUnitTests {
         assertEquals(tokenManagerConfig, context.arguments().get(1));
       })) {
 
-      new JedisAuthXManager(new TokenAuthConfig(tokenManagerConfig, identityProviderConfig));
+      new AuthXManager(new TokenAuthConfig(tokenManagerConfig, identityProviderConfig));
     }
   }
 
   @Test
-  public void testJedisAuthXManagerTriggersEvict() throws Exception {
+  public void withExpirationRefreshRatio_testJedisAuthXManagerTriggersEvict() throws Exception {
 
     IdentityProvider idProvider = mock(IdentityProvider.class);
     when(idProvider.requestToken())
-        .thenReturn(new SimpleToken("password", System.currentTimeMillis() + 100000,
+        .thenReturn(new SimpleToken("password", System.currentTimeMillis() + 1000,
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
-        new TokenManagerConfig(0.5F, 1000, 1000, null));
-    JedisAuthXManager jedisAuthXManager = new JedisAuthXManager(tokenManager);
+        new TokenManagerConfig(0.4F, 100, 1000, null));
+    AuthXManager jedisAuthXManager = new AuthXManager(tokenManager);
 
     AtomicInteger numberOfEvictions = new AtomicInteger(0);
-    ConnectionPool pool = new ConnectionPool(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build(), jedisAuthXManager) {
+    ConnectionPool pool = new ConnectionPool(hnp,
+        endpoint.getClientConfigBuilder().authXManager(jedisAuthXManager).build()) {
       @Override
       public void evict() throws Exception {
         numberOfEvictions.incrementAndGet();
@@ -83,8 +87,35 @@ public class TokenBasedAuthenticationUnitTests {
       }
     };
 
-    jedisAuthXManager.start(true);
-    assertEquals(1, numberOfEvictions.get());
+    await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
+        .atMost(Durations.FIVE_HUNDRED_MILLISECONDS)
+        .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+  }
+
+  public void withLowerRefreshBounds_testJedisAuthXManagerTriggersEvict() throws Exception {
+
+    IdentityProvider idProvider = mock(IdentityProvider.class);
+    when(idProvider.requestToken())
+        .thenReturn(new SimpleToken("password", System.currentTimeMillis() + 1000,
+            System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
+
+    TokenManager tokenManager = new TokenManager(idProvider,
+        new TokenManagerConfig(0.9F, 600, 1000, null));
+    AuthXManager jedisAuthXManager = new AuthXManager(tokenManager);
+
+    AtomicInteger numberOfEvictions = new AtomicInteger(0);
+    ConnectionPool pool = new ConnectionPool(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().authXManager(jedisAuthXManager).build()) {
+      @Override
+      public void evict() throws Exception {
+        numberOfEvictions.incrementAndGet();
+        super.evict();
+      }
+    };
+
+    await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
+        .atMost(Durations.FIVE_HUNDRED_MILLISECONDS)
+        .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
   }
 
   public static class TokenManagerConfigWrapper extends TokenManagerConfig {
@@ -190,7 +221,7 @@ public class TokenBasedAuthenticationUnitTests {
     TokenManager tokenManager = new TokenManager(identityProvider,
         new TokenManagerConfig(0.7F, 200, 2000, null));
 
-    JedisAuthXManager manager = spy(new JedisAuthXManager(tokenManager));
+    AuthXManager manager = spy(new AuthXManager(tokenManager));
 
     final Token[] tokenHolder = new Token[1];
     doAnswer(invocation -> {
@@ -213,11 +244,10 @@ public class TokenBasedAuthenticationUnitTests {
     TokenManager tokenManager = new TokenManager(identityProvider,
         new TokenManagerConfig(0.7F, 200, 2000, new TokenManagerConfig.RetryPolicy(5, 100)));
 
-    JedisAuthXManager manager = new JedisAuthXManager(tokenManager);
-    ExecutionException e = assertThrows(ExecutionException.class, () -> manager.start(true));
+    AuthXManager manager = new AuthXManager(tokenManager);
+    TokenRequestException e = assertThrows(TokenRequestException.class, () -> manager.start(true));
 
-    assertEquals(exceptionMessage,
-      e.getCause().getCause().getCause().getCause().getMessage());
+    assertEquals(exceptionMessage, e.getCause().getCause().getCause().getMessage());
   }
 
   @Test
@@ -231,9 +261,9 @@ public class TokenBasedAuthenticationUnitTests {
     };
 
     TokenManager tokenManager = new TokenManager(identityProvider, new TokenManagerConfig(0.7F, 200,
-        2000, new TokenManagerConfig.RetryPolicy(numberOfRetries - 1, 100)));
+        2000, new TokenManagerConfig.RetryPolicy(numberOfRetries - 1, 0)));
 
-    JedisAuthXManager manager = spy(new JedisAuthXManager(tokenManager));
+    AuthXManager manager = spy(new AuthXManager(tokenManager));
     manager.start(false);
 
     requesLatch.await();
@@ -296,7 +326,7 @@ public class TokenBasedAuthenticationUnitTests {
     TokenManager tokenManager = new TokenManager(identityProvider, new TokenManagerConfig(0.7F, 200,
         executionTimeout, new TokenManagerConfig.RetryPolicy(numberOfRetries, 100)));
 
-    JedisAuthXManager manager = spy(new JedisAuthXManager(tokenManager));
+    AuthXManager manager = spy(new AuthXManager(tokenManager));
     manager.start(false);
     requesLatch.await();
     verify(manager, never()).onError(any());

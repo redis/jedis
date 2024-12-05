@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -18,25 +19,22 @@ import redis.clients.authentication.core.TokenManager;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.RedisCredentials;
 
-public class JedisAuthXManager implements Supplier<RedisCredentials> {
+public final class AuthXManager implements Supplier<RedisCredentials> {
 
-    private static final Logger log = LoggerFactory.getLogger(JedisAuthXManager.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthXManager.class);
 
     private TokenManager tokenManager;
     private List<WeakReference<Connection>> connections = Collections
             .synchronizedList(new ArrayList<>());
     private Token currentToken;
-    private AuthenticationListener listener;
+    private AuthXEventListener listener = AuthXEventListener.NOOP_LISTENER;
+    private List<Consumer<Token>> postAuthenticateHooks = new ArrayList<>();
 
-    public interface AuthenticationListener {
-        public void onAuthenticate(Token token);
-    }
-
-    public JedisAuthXManager(TokenManager tokenManager) {
+    protected AuthXManager(TokenManager tokenManager) {
         this.tokenManager = tokenManager;
     }
 
-    public JedisAuthXManager(TokenAuthConfig tokenAuthConfig) {
+    public AuthXManager(TokenAuthConfig tokenAuthConfig) {
         this(new TokenManager(tokenAuthConfig.getIdentityProviderConfig().getProvider(),
                 tokenAuthConfig.getTokenManagerConfig()));
     }
@@ -53,7 +51,8 @@ public class JedisAuthXManager implements Supplier<RedisCredentials> {
 
             @Override
             public void onError(Exception reason) {
-                JedisAuthXManager.this.onError(reason);
+                listener.onIdentityProviderError(reason);
+                AuthXManager.this.onError(reason);
             }
         }, blockForInitialToken);
     }
@@ -63,23 +62,18 @@ public class JedisAuthXManager implements Supplier<RedisCredentials> {
         for (WeakReference<Connection> connectionRef : connections) {
             Connection connection = connectionRef.get();
             if (connection != null) {
-                try {
-                    connection.setCredentials(credentialsFromToken);
-                } catch (Exception e) {
-                    log.error("Failed to authenticate connection!", e);
-                }
+                connection.setCredentials(credentialsFromToken);
             } else {
                 connections.remove(connectionRef);
             }
         }
-        if (listener != null) {
-            listener.onAuthenticate(token);
-        }
+        postAuthenticateHooks.forEach(hook -> hook.accept(token));
     }
 
     public void onError(Exception reason) {
-        throw new JedisAuthenticationException(
-                "Token manager failed to acquire new token!", reason);
+        log.error("Token manager failed to acquire new token!", reason);
+        throw new JedisAuthenticationException("Token manager failed to acquire new token!",
+                reason);
     }
 
     public Connection addConnection(Connection connection) {
@@ -91,8 +85,22 @@ public class JedisAuthXManager implements Supplier<RedisCredentials> {
         tokenManager.stop();
     }
 
-    public void setListener(AuthenticationListener listener) {
-        this.listener = listener;
+    public void setListener(AuthXEventListener listener) {
+        if (listener != null) {
+            this.listener = listener;
+        }
+    }
+
+    public void addPostAuthenticationHook(Consumer<Token> postAuthenticateHook) {
+        postAuthenticateHooks.add(postAuthenticateHook);
+    }
+
+    public void removePostAuthenticationHook(Consumer<Token> postAuthenticateHook) {
+        postAuthenticateHooks.remove(postAuthenticateHook);
+    }
+
+    public AuthXEventListener getListener() {
+        return listener;
     }
 
     @Override

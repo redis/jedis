@@ -156,6 +156,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>redis.clients.authentication</groupId>
+			<artifactId>redis-authx-entraid</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- circuit breaker / failover -->
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>

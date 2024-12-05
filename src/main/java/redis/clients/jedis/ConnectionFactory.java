@@ -11,7 +11,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.authentication.JedisAuthXManager;
+import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.authentication.AuthXEventListener;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.exceptions.JedisException;
@@ -28,41 +29,43 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final Cache clientSideCache;
   private final Supplier<Connection> objectMaker;
 
+  private final AuthXEventListener authenticationEventListener;
+
   public ConnectionFactory(final HostAndPort hostAndPort) {
-    this(hostAndPort, DefaultJedisClientConfig.builder().build(), null, null);
+    this(hostAndPort, DefaultJedisClientConfig.builder().build(), null);
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(hostAndPort, clientConfig, null, null);
+    this(hostAndPort, clientConfig, null);
   }
 
   @Experimental
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
-      Cache csCache, JedisAuthXManager authXManager) {
-    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache,
-        authXManager);
+      Cache csCache) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache);
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
       final JedisClientConfig clientConfig) {
-    this(jedisSocketFactory, clientConfig, null, null);
+    this(jedisSocketFactory, clientConfig, null);
   }
 
   private ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
-      final JedisClientConfig clientConfig, Cache csCache, JedisAuthXManager authXManager) {
+      final JedisClientConfig clientConfig, Cache csCache) {
 
     this.jedisSocketFactory = jedisSocketFactory;
     this.clientSideCache = csCache;
+    AuthXManager authXManager = clientConfig.getAuthXManager();
 
     if (authXManager == null) {
       this.clientConfig = clientConfig;
       this.objectMaker = connectionSupplier();
+      this.authenticationEventListener = AuthXEventListener.NOOP_LISTENER;
     } else {
-      this.clientConfig = replaceCredentialsProvider(clientConfig,
-        authXManager);
+      this.clientConfig = replaceCredentialsProvider(clientConfig, authXManager);
       Supplier<Connection> supplier = connectionSupplier();
       this.objectMaker = () -> (Connection) authXManager.addConnection(supplier.get());
-
+      this.authenticationEventListener = authXManager.getListener();
       try {
         authXManager.start(true);
       } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -114,7 +117,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public void passivateObject(PooledObject<Connection> pooledConnection) throws Exception {
     // TODO maybe should select db 0? Not sure right now.
     Connection jedis = pooledConnection.getObject();
-    jedis.reAuth();
+    try {
+      jedis.reAuth();
+    } catch (Exception e) {
+      authenticationEventListener.onConnectionAuthenticationError(e);
+      throw e;
+    }
   }
 
   @Override
@@ -122,7 +130,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     final Connection jedis = pooledConnection.getObject();
     try {
       // check HostAndPort ??
-      jedis.reAuth();
+      try {
+        jedis.reAuth();
+      } catch (Exception e) {
+        authenticationEventListener.onConnectionAuthenticationError(e);
+        throw e;
+      }
       return jedis.isConnected() && jedis.ping();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);

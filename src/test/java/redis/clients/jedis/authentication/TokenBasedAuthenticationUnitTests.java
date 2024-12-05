@@ -1,7 +1,6 @@
 package redis.clients.jedis.authentication;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -12,9 +11,13 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.atLeast;
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.*;
 import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -22,12 +25,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Durations;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 
 import redis.clients.authentication.core.IdentityProvider;
 import redis.clients.authentication.core.IdentityProviderConfig;
@@ -87,8 +88,7 @@ public class TokenBasedAuthenticationUnitTests {
       }
     };
 
-    await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
-        .atMost(Durations.FIVE_HUNDRED_MILLISECONDS)
+    await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
         .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
   }
 
@@ -113,8 +113,7 @@ public class TokenBasedAuthenticationUnitTests {
       }
     };
 
-    await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
-        .atMost(Durations.FIVE_HUNDRED_MILLISECONDS)
+    await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
         .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
   }
 
@@ -253,22 +252,34 @@ public class TokenBasedAuthenticationUnitTests {
   @Test
   public void testNoBlockForInitialToken()
       throws InterruptedException, ExecutionException, TimeoutException {
-    int numberOfRetries = 5;
+    int numberOfRetries = 1;
     CountDownLatch requesLatch = new CountDownLatch(numberOfRetries);
     IdentityProvider identityProvider = () -> {
-      requesLatch.countDown();
+      try {
+        System.out.println("awaiting");
+        requesLatch.await();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       throw new RuntimeException("Test exception from identity provider!");
     };
 
-    TokenManager tokenManager = new TokenManager(identityProvider, new TokenManagerConfig(0.7F, 200,
-        2000, new TokenManagerConfig.RetryPolicy(numberOfRetries - 1, 0)));
+    TokenManager tokenManager = new TokenManager(identityProvider,
+        new TokenManagerConfig(0.7F, 200, 500, new TokenManagerConfig.RetryPolicy(5, 0)));
 
     AuthXManager manager = spy(new AuthXManager(tokenManager));
     manager.start(false);
 
-    requesLatch.await();
-    verify(manager, Mockito.atLeastOnce()).onError(Mockito.any());
-    verify(manager, Mockito.never()).authenticateConnections(Mockito.any());
+    await().during(FIVE_HUNDRED_MILLISECONDS).until(tokenManager::getCurrentToken,
+      Matchers.nullValue());
+    verify(manager, never()).onError(any());
+    verify(manager, never()).authenticateConnections(any());
+    requesLatch.countDown();
+
+    await().during(FIVE_HUNDRED_MILLISECONDS).until(tokenManager::getCurrentToken,
+      Matchers.nullValue());
+    verify(manager, atLeast(1)).onError(any());
+    verify(manager, never()).authenticateConnections(any());
   }
 
   @Test

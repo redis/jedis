@@ -299,7 +299,7 @@ public class RedisEntraIDIntegrationTests {
     IdentityProvider idp = new EntraIDIdentityProviderConfig(
         new ServicePrincipalInfo(testCtx.getClientId(), testCtx.getClientSecret(),
             testCtx.getAuthority()),
-        testCtx.getRedisScopes()).getProvider();
+        testCtx.getRedisScopes(),1000).getProvider();
 
     IdentityProvider mockIdentityProvider = mock(IdentityProvider.class);
     AtomicReference<Token> token = new AtomicReference<>();

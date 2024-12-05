@@ -47,6 +47,7 @@ public class Connection implements Closeable {
   protected String version;
   protected AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<RedisCredentials>(
       null);
+  private boolean isTokenBasedAuthenticationEnabled = false;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -453,6 +454,7 @@ public class Connection implements Closeable {
       connect();
 
       protocol = config.getRedisProtocol();
+      isTokenBasedAuthenticationEnabled = (config.getAuthXManager() != null);
 
       final Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
       if (credentialsProvider instanceof RedisCredentialsProvider) {
@@ -600,5 +602,9 @@ public class Connection implements Closeable {
       throw new JedisException(status);
     }
     return true;
+  }
+
+  public boolean isTokenBasedAuthenticationEnabled() {
+    return isTokenBasedAuthenticationEnabled;
   }
 }

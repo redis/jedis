@@ -288,7 +288,7 @@ public class SslOptions {
          * @param truststorePassword the truststore password. May be empty to omit password and the truststore integrity check.
          * @return {@code this}
          */
-        private Builder truststore(Resource resource, char[] truststorePassword) {
+        public Builder truststore(Resource resource, char[] truststorePassword) {
 
             this.truststoreResource = Objects.requireNonNull(resource, "Truststore InputStreamProvider must not be null");
 

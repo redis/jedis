@@ -76,8 +76,9 @@ public class PipeTransExample {
         jedis.set("shellpath", "/usr/syscmds/");
 
         // Start the transaction and watch the key we are about to update.
-        trans = jedis.multi();
-        trans.watch("shellpath");
+        trans = jedis.transaction(false); // create a Transaction object without sending MULTI command
+        trans.watch("shellpath"); // send WATCH command(s)
+        trans.multi(); // send MULTI command
 
         String currentPath = jedis.get("shellpath");
         String newPath = currentPath + ":/usr/mycmds/";

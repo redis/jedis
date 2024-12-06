@@ -11,12 +11,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.atLeast;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.*;
 import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -38,7 +38,6 @@ import redis.clients.authentication.core.TokenAuthConfig;
 import redis.clients.authentication.core.TokenListener;
 import redis.clients.authentication.core.TokenManager;
 import redis.clients.authentication.core.TokenManagerConfig;
-import redis.clients.authentication.core.TokenRequestException;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
@@ -154,8 +153,8 @@ public class TokenBasedAuthenticationUnitTests {
 
     delay = manager.calculateRenewalDelay(expireDate, issueDate);
 
-    assertThat(delay, Matchers
-        .greaterThanOrEqualTo(Math.min(duration - config.lower, (long) (duration * config.ratio))));
+    assertThat(delay,
+      lessThanOrEqualTo(Math.min(duration - config.lower, (long) (duration * config.ratio))));
 
     duration = 10000;
     config.lower = 8000;
@@ -165,8 +164,8 @@ public class TokenBasedAuthenticationUnitTests {
 
     delay = manager.calculateRenewalDelay(expireDate, issueDate);
 
-    assertThat(delay, Matchers
-        .greaterThanOrEqualTo(Math.min(duration - config.lower, (long) (duration * config.ratio))));
+    assertThat(delay,
+      lessThanOrEqualTo(Math.min(duration - config.lower, (long) (duration * config.ratio))));
 
     duration = 10000;
     config.lower = 10000;
@@ -234,7 +233,7 @@ public class TokenBasedAuthenticationUnitTests {
   }
 
   @Test
-  public void testBlockForInitialToken() {
+  public void testBlockForInitialTokenWhenException() {
     String exceptionMessage = "Test exception from identity provider!";
     IdentityProvider identityProvider = () -> {
       throw new RuntimeException(exceptionMessage);
@@ -244,41 +243,33 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 2000, new TokenManagerConfig.RetryPolicy(5, 100)));
 
     AuthXManager manager = new AuthXManager(tokenManager);
-    TokenRequestException e = assertThrows(TokenRequestException.class, () -> manager.start());
+    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class,
+      () -> manager.start());
 
-    assertEquals(exceptionMessage, e.getCause().getCause().getCause().getMessage());
+    assertEquals(exceptionMessage, e.getCause().getCause().getMessage());
   }
 
   @Test
-  public void testNoBlockForInitialToken()
-      throws InterruptedException, ExecutionException, TimeoutException {
-    int numberOfRetries = 1;
-    CountDownLatch requesLatch = new CountDownLatch(numberOfRetries);
+  public void testBlockForInitialTokenWhenHangs() {
+    String exceptionMessage = "AuthXManager failed to start!";
+    CountDownLatch latch = new CountDownLatch(1);
     IdentityProvider identityProvider = () -> {
       try {
-        requesLatch.await();
+        latch.await();
       } catch (InterruptedException e) {
-        e.printStackTrace();
       }
-      throw new RuntimeException("Test exception from identity provider!");
+      return null;
     };
 
     TokenManager tokenManager = new TokenManager(identityProvider,
-        new TokenManagerConfig(0.7F, 200, 500, new TokenManagerConfig.RetryPolicy(5, 0)));
+        new TokenManagerConfig(0.7F, 200, 1000, new TokenManagerConfig.RetryPolicy(2, 100)));
 
-    AuthXManager manager = spy(new AuthXManager(tokenManager));
-    manager.start();
+    AuthXManager manager = new AuthXManager(tokenManager);
+    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class,
+      () -> manager.start());
 
-    await().during(FIVE_HUNDRED_MILLISECONDS).until(tokenManager::getCurrentToken,
-      Matchers.nullValue());
-    verify(manager, never()).onError(any());
-    verify(manager, never()).authenticateConnections(any());
-    requesLatch.countDown();
-
-    await().during(FIVE_HUNDRED_MILLISECONDS).until(tokenManager::getCurrentToken,
-      Matchers.nullValue());
-    verify(manager, atLeast(1)).onError(any());
-    verify(manager, never()).authenticateConnections(any());
+    latch.countDown();
+    assertEquals(exceptionMessage, e.getMessage());
   }
 
   @Test
@@ -337,9 +328,13 @@ public class TokenBasedAuthenticationUnitTests {
         executionTimeout, new TokenManagerConfig.RetryPolicy(numberOfRetries, 100)));
 
     AuthXManager manager = spy(new AuthXManager(tokenManager));
+    AuthXEventListener listener = mock(AuthXEventListener.class);
+    manager.setListener(listener);
     manager.start();
     requesLatch.await();
-    verify(manager, never()).onError(any());
+    verify(listener, never()).onIdentityProviderError(any());
+    verify(listener, never()).onConnectionAuthenticationError(any());
+
     await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
       verify(manager, times(1)).authenticateConnections(any());
     });

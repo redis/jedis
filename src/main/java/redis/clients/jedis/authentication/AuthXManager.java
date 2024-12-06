@@ -75,7 +75,6 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
             @Override
             public void onError(Exception reason) {
                 listener.onIdentityProviderError(reason);
-                AuthXManager.this.onError(reason);
             }
         }, true);
     }
@@ -91,12 +90,6 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
             }
         }
         postAuthenticateHooks.forEach(hook -> hook.accept(token));
-    }
-
-    public void onError(Exception reason) {
-        log.error("Token manager failed to acquire new token!", reason);
-        throw new JedisAuthenticationException("Token manager failed to acquire new token!",
-                reason);
     }
 
     public Connection addConnection(Connection connection) {

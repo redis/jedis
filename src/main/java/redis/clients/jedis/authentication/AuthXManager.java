@@ -4,8 +4,10 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -29,6 +31,7 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
     private Token currentToken;
     private AuthXEventListener listener = AuthXEventListener.NOOP_LISTENER;
     private List<Consumer<Token>> postAuthenticateHooks = new ArrayList<>();
+    private AtomicReference<CompletableFuture<Void>> uniqueStarterTask = new AtomicReference<>();
 
     protected AuthXManager(TokenManager tokenManager) {
         this.tokenManager = tokenManager;
@@ -39,9 +42,29 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
                 tokenAuthConfig.getTokenManagerConfig()));
     }
 
-    public void start(boolean blockForInitialToken)
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void start() {
+        Future<Void> safeStarter = safeStart(this::tokenManagerStart);
+        try {
+            safeStarter.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new JedisAuthenticationException("AuthXManager failed to start!",
+                    (e instanceof ExecutionException) ? e.getCause() : e);
+        }
+    }
 
+    private Future<Void> safeStart(Runnable starter) {
+        if (uniqueStarterTask.compareAndSet(null, new CompletableFuture<Void>())) {
+            try {
+                starter.run();
+                uniqueStarterTask.get().complete(null);
+            } catch (Exception e) {
+                uniqueStarterTask.get().completeExceptionally(e);
+            }
+        }
+        return uniqueStarterTask.get();
+    }
+
+    private void tokenManagerStart() {
         tokenManager.start(new TokenListener() {
             @Override
             public void onTokenRenewed(Token token) {
@@ -54,7 +77,7 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
                 listener.onIdentityProviderError(reason);
                 AuthXManager.this.onError(reason);
             }
-        }, blockForInitialToken);
+        }, true);
     }
 
     public void authenticateConnections(Token token) {

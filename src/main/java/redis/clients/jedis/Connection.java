@@ -21,6 +21,7 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -454,9 +455,15 @@ public class Connection implements Closeable {
       connect();
 
       protocol = config.getRedisProtocol();
-      isTokenBasedAuthenticationEnabled = (config.getAuthXManager() != null);
 
-      final Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+      Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+
+      AuthXManager authXManager = config.getAuthXManager();
+      if (authXManager != null) {
+        isTokenBasedAuthenticationEnabled = true;
+        credentialsProvider = authXManager;
+      }
+
       if (credentialsProvider instanceof RedisCredentialsProvider) {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {

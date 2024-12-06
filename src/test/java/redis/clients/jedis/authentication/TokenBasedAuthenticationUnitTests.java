@@ -229,7 +229,7 @@ public class TokenBasedAuthenticationUnitTests {
       return null;
     }).when(manager).authenticateConnections(any());
 
-    manager.start(true);
+    manager.start();
     assertEquals(tokenHolder[0].getValue(), "tokenVal");
   }
 
@@ -244,7 +244,7 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 2000, new TokenManagerConfig.RetryPolicy(5, 100)));
 
     AuthXManager manager = new AuthXManager(tokenManager);
-    TokenRequestException e = assertThrows(TokenRequestException.class, () -> manager.start(true));
+    TokenRequestException e = assertThrows(TokenRequestException.class, () -> manager.start());
 
     assertEquals(exceptionMessage, e.getCause().getCause().getCause().getMessage());
   }
@@ -256,7 +256,6 @@ public class TokenBasedAuthenticationUnitTests {
     CountDownLatch requesLatch = new CountDownLatch(numberOfRetries);
     IdentityProvider identityProvider = () -> {
       try {
-        System.out.println("awaiting");
         requesLatch.await();
       } catch (InterruptedException e) {
         e.printStackTrace();
@@ -268,7 +267,7 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 500, new TokenManagerConfig.RetryPolicy(5, 0)));
 
     AuthXManager manager = spy(new AuthXManager(tokenManager));
-    manager.start(false);
+    manager.start();
 
     await().during(FIVE_HUNDRED_MILLISECONDS).until(tokenManager::getCurrentToken,
       Matchers.nullValue());
@@ -338,7 +337,7 @@ public class TokenBasedAuthenticationUnitTests {
         executionTimeout, new TokenManagerConfig.RetryPolicy(numberOfRetries, 100)));
 
     AuthXManager manager = spy(new AuthXManager(tokenManager));
-    manager.start(false);
+    manager.start();
     requesLatch.await();
     verify(manager, never()).onError(any());
     await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {

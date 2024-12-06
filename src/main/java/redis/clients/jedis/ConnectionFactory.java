@@ -6,8 +6,6 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.annots.Experimental;
@@ -29,7 +27,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final Cache clientSideCache;
   private final Supplier<Connection> objectMaker;
 
-  private final AuthXEventListener authenticationEventListener;
+  private final AuthXEventListener authXEventListener;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this(hostAndPort, DefaultJedisClientConfig.builder().build(), null);
@@ -55,29 +53,18 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
     this.jedisSocketFactory = jedisSocketFactory;
     this.clientSideCache = csCache;
-    AuthXManager authXManager = clientConfig.getAuthXManager();
+    this.clientConfig = clientConfig;
 
+    AuthXManager authXManager = clientConfig.getAuthXManager();
     if (authXManager == null) {
-      this.clientConfig = clientConfig;
       this.objectMaker = connectionSupplier();
-      this.authenticationEventListener = AuthXEventListener.NOOP_LISTENER;
+      this.authXEventListener = AuthXEventListener.NOOP_LISTENER;
     } else {
-      this.clientConfig = replaceCredentialsProvider(clientConfig, authXManager);
       Supplier<Connection> supplier = connectionSupplier();
       this.objectMaker = () -> (Connection) authXManager.addConnection(supplier.get());
-      this.authenticationEventListener = authXManager.getListener();
-      try {
-        authXManager.start(true);
-      } catch (InterruptedException | ExecutionException | TimeoutException e) {
-        throw new JedisException("AuthXManager failed to start!", e);
-      }
+      this.authXEventListener = authXManager.getListener();
+      authXManager.start();
     }
-  }
-
-  private JedisClientConfig replaceCredentialsProvider(JedisClientConfig origin,
-      Supplier<RedisCredentials> newCredentialsProvider) {
-    return DefaultJedisClientConfig.builder().from(origin)
-        .credentialsProvider(newCredentialsProvider).build();
   }
 
   private Supplier<Connection> connectionSupplier() {
@@ -120,7 +107,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     try {
       jedis.reAuth();
     } catch (Exception e) {
-      authenticationEventListener.onConnectionAuthenticationError(e);
+      authXEventListener.onConnectionAuthenticationError(e);
       throw e;
     }
   }
@@ -133,7 +120,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       try {
         jedis.reAuth();
       } catch (Exception e) {
-        authenticationEventListener.onConnectionAuthenticationError(e);
+        authXEventListener.onConnectionAuthenticationError(e);
         throw e;
       }
       return jedis.isConnected() && jedis.ping();

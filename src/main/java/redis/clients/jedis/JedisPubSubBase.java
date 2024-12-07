@@ -53,11 +53,20 @@ public abstract class JedisPubSubBase<T> {
   }
 
   public final void subscribe(T... channels) {
+    checkConnectionSuitableForPubSub();
     sendAndFlushCommand(Command.SUBSCRIBE, channels);
   }
 
   public final void psubscribe(T... patterns) {
+    checkConnectionSuitableForPubSub();
     sendAndFlushCommand(Command.PSUBSCRIBE, patterns);
+  }
+
+  private void checkConnectionSuitableForPubSub() {
+    if (client.protocol == RedisProtocol.RESP2 && client.isTokenBasedAuthenticationEnabled()) {
+      throw new JedisException(
+          "Blocking pub/sub operations are not supported on token-based authentication enabled connections with RESP2 protocol!");
+    }
   }
 
   public final void punsubscribe() {
@@ -108,7 +117,7 @@ public abstract class JedisPubSubBase<T> {
 
   protected abstract T encode(byte[] raw);
 
-//  private void process(Client client) {
+  //  private void process(Client client) {
   private void process() {
 
     do {
@@ -177,7 +186,7 @@ public abstract class JedisPubSubBase<T> {
       }
     } while (!Thread.currentThread().isInterrupted() && isSubscribed());
 
-//    /* Invalidate instance since this thread is no longer listening */
-//    this.client = null;
+    //    /* Invalidate instance since this thread is no longer listening */
+    //    this.client = null;
   }
 }

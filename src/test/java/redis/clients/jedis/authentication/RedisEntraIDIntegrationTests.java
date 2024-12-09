@@ -1,5 +1,8 @@
 package redis.clients.jedis.authentication;
 
+import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.FIVE_SECONDS;
+import static org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
@@ -23,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -193,9 +197,9 @@ public class RedisEntraIDIntegrationTests {
   // Test that the Redis client is not blocked/interrupted during token renewal.
   @Test
   public void renewalDuringOperationsTest() throws InterruptedException, ExecutionException {
-    // set the stage with consecutive get/set operations with unique keys which takes at least for 2000 ms with a jedispooled instace, 
-    // configure token manager to renew token approximately every 100ms
-    // wait till all operations are completed and verify that token was renewed at least 10 times after initial token acquisition 
+    // set the stage with consecutive get/set operations with unique keys which keeps running with a jedispooled instace, 
+    // configure token manager to renew token approximately approximately every 10ms
+    // wait till token was renewed at least 10 times after initial token acquisition 
     // Additional note: Assumptions made on the time taken for token renewal and operations are based on the current implementation and may vary in future
     // Assumptions:
     //    - TTL of token is 2 hour
@@ -204,8 +208,7 @@ public class RedisEntraIDIntegrationTests {
     //    - each auth command takes 40 ms in total to complete(considering the cloud test environments)
     //    - each auth command would need to wait for an ongoing customer operation(GET/SET/DEL) to complete, which would take another 40 ms
     //    - each renewal happens in 40+40+7 = 87 ms
-    //    - total number of renewals would be 2000 / 87 = 22.9885 ~ 23
-    //    - to avoid a flaky test results, we will consider approximately half of it as 10 renewals
+    //    - total number of renewals would take 87 * 10 = 870 ms
     TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
         .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
         .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes())
@@ -218,29 +221,42 @@ public class RedisEntraIDIntegrationTests {
     DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
         .authXManager(authXManager).build();
 
-    long startTime = System.currentTimeMillis();
-    List<Future<?>> futures = new ArrayList<>();
-    ExecutorService executor = Executors.newFixedThreadPool(5);
+    ExecutorService jedisExecutors = Executors.newFixedThreadPool(5);
+    AtomicBoolean completed = new AtomicBoolean(false);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
-      for (int i = 0; i < 5; i++) {
-        Future<?> future = executor.submit(() -> {
-          for (; System.currentTimeMillis() - startTime < 2000;) {
-            String key = UUID.randomUUID().toString();
-            jedis.set(key, "value");
-            assertEquals("value", jedis.get(key));
-            jedis.del(key);
+    ExecutorService runner = Executors.newSingleThreadExecutor();
+    runner.submit(() -> {
+
+      try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+          Future<?> future = jedisExecutors.submit(() -> {
+            while (!completed.get()) {
+              String key = UUID.randomUUID().toString();
+              jedis.set(key, "value");
+              assertEquals("value", jedis.get(key));
+              jedis.del(key);
+            }
+          });
+          futures.add(future);
+        }
+        for (Future<?> task : futures) {
+          try {
+            task.get();
+          } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
           }
-        });
-        futures.add(future);
+        }
       }
-      for (Future<?> task : futures) {
-        task.get();
-      }
+    });
 
+    await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_SECONDS).untilAsserted(() -> {
       verify(hook, atLeast(10)).accept(any());
-      executor.shutdown();
-    }
+    });
+
+    completed.set(true);
+    runner.shutdown();
+    jedisExecutors.shutdown();
   }
 
   // T.3.2

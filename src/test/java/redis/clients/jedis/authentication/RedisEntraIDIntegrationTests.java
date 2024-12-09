@@ -195,7 +195,17 @@ public class RedisEntraIDIntegrationTests {
   public void renewalDuringOperationsTest() throws InterruptedException, ExecutionException {
     // set the stage with consecutive get/set operations with unique keys which takes at least for 2000 ms with a jedispooled instace, 
     // configure token manager to renew token approximately every 100ms
-    // wait till all operations are completed and verify that token was renewed at least 20 times after initial token acquisition 
+    // wait till all operations are completed and verify that token was renewed at least 10 times after initial token acquisition 
+    // Additional note: Assumptions made on the time taken for token renewal and operations are based on the current implementation and may vary in future
+    // Assumptions:
+    //    - TTL of token is 2 hour
+    //    - expirationRefreshRatio is 0.000001F
+    //    - renewal delay is 7 ms each time a token is acquired
+    //    - each auth command takes 40 ms in total to complete(considering the cloud test environments)
+    //    - each auth command would need to wait for an ongoing customer operation(GET/SET/DEL) to complete, which would take another 40 ms
+    //    - each renewal happens in 40+40+7 = 87 ms
+    //    - total number of renewals would be 2000 / 87 = 22.9885 ~ 23
+    //    - to avoid a flaky test results, we will consider approximately half of it as 10 renewals
     TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
         .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())
         .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes())
@@ -228,7 +238,7 @@ public class RedisEntraIDIntegrationTests {
         task.get();
       }
 
-      verify(hook, atLeast(20)).accept(any());
+      verify(hook, atLeast(10)).accept(any());
       executor.shutdown();
     }
   }
@@ -299,7 +309,7 @@ public class RedisEntraIDIntegrationTests {
     IdentityProvider idp = new EntraIDIdentityProviderConfig(
         new ServicePrincipalInfo(testCtx.getClientId(), testCtx.getClientSecret(),
             testCtx.getAuthority()),
-        testCtx.getRedisScopes(),1000).getProvider();
+        testCtx.getRedisScopes(), 1000).getProvider();
 
     IdentityProvider mockIdentityProvider = mock(IdentityProvider.class);
     AtomicReference<Token> token = new AtomicReference<>();

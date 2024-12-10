@@ -135,9 +135,12 @@ public class CommandInfo {
       long firstKey = LONG.build(commandData.get(3));
       long lastKey = LONG.build(commandData.get(4));
       long step = LONG.build(commandData.get(5));
-      List<String> aclCategories = STRING_LIST.build(commandData.get(6));
-      List<String> tips = STRING_LIST.build(commandData.get(7));
-      Map<String, CommandInfo> subcommands = COMMAND_INFO_RESPONSE.build(commandData.get(9));
+      // Redis 6.0
+      List<String> aclCategories = commandData.size() >= 7 ? STRING_LIST.build(commandData.get(6)) : null;
+      // Redis 7.0
+      List<String> tips = commandData.size() >= 8 ? STRING_LIST.build(commandData.get(7)) : null;
+      Map<String, CommandInfo> subcommands = commandData.size() >= 10
+          ? COMMAND_INFO_RESPONSE.build(commandData.get(9)) : null;
 
       return new CommandInfo(name, arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
     }

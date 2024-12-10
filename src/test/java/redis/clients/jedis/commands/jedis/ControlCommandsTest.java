@@ -501,6 +501,28 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, keySandFlags.get(0).getValue().size());
   }
 
+
+  @Test
+  public void commandNoArgs() {
+    Map<String, CommandInfo> infos = jedis.command();
+
+    assertThat(infos.size(), greaterThan(0));
+
+    CommandInfo getInfo = infos.get("get");
+    assertEquals(2, getInfo.getArity());
+    assertEquals(2, getInfo.getFlags().size());
+    assertEquals(1, getInfo.getFirstKey());
+    assertEquals(1, getInfo.getLastKey());
+    assertEquals(1, getInfo.getStep());
+
+    assertNull(infos.get("foo")); // non-existing command
+
+    CommandInfo setInfo = infos.get("set");
+    assertEquals(3, setInfo.getAclCategories().size());
+    assertEquals(0, setInfo.getTips().size());
+    assertEquals(0, setInfo.getSubcommands().size());
+  }
+
   @Test
   public void commandInfo() {
     Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");

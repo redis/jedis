@@ -30,6 +30,7 @@ nav:
   - Failover: failover.md
   - FAQ: faq.md
   - API Reference: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
+  - Tutorials and Examples:  tutorials_examples.md
   - Jedis Guide: https://redis.io/docs/latest/develop/connect/clients/java/jedis/
   - Redis Command Reference: https://redis.io/docs/latest/commands/
 

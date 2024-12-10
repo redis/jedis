@@ -305,7 +305,7 @@ public class RedisEntraIDIntegrationTests {
       }
 
       connections.forEach(conn -> {
-        verify(conn, atLeast(1)).reAuth();
+        verify(conn, atLeast(1)).reAuthenticate();
       });
       executor.shutdown();
     }

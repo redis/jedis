@@ -56,10 +56,13 @@ public class ConnectionPool extends Pool<Connection> {
 
   @Override
   public void close() {
-    if (authXManager != null) {
-      authXManager.stop();
+    try {
+      if (authXManager != null) {
+        authXManager.stop();
+      }
+    } finally {
+      super.close();
     }
-    super.close();
   }
 
   private void attachAuthenticationListener(AuthXManager authXManager) {

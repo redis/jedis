@@ -104,12 +104,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public void passivateObject(PooledObject<Connection> pooledConnection) throws Exception {
     // TODO maybe should select db 0? Not sure right now.
     Connection jedis = pooledConnection.getObject();
-    try {
-      jedis.reAuth();
-    } catch (Exception e) {
-      authXEventListener.onConnectionAuthenticationError(e);
-      throw e;
-    }
+    reAuthenticate(jedis);
   }
 
   @Override
@@ -117,16 +112,23 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     final Connection jedis = pooledConnection.getObject();
     try {
       // check HostAndPort ??
-      try {
-        jedis.reAuth();
-      } catch (Exception e) {
-        authXEventListener.onConnectionAuthenticationError(e);
-        throw e;
+      if (!jedis.isConnected()) {
+        return false;
       }
-      return jedis.isConnected() && jedis.ping();
+      reAuthenticate(jedis);
+      return jedis.ping();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);
       return false;
+    }
+  }
+
+  private void reAuthenticate(Connection jedis) throws Exception {
+    try {
+      jedis.reAuthenticate();
+    } catch (Exception e) {
+      authXEventListener.onConnectionAuthenticationError(e);
+      throw e;
     }
   }
 }

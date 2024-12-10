@@ -560,7 +560,7 @@ public class Connection implements Closeable {
     currentCredentials.set(credentials);
   }
 
-  public void authenticate(RedisCredentials credentials) {
+  private void authenticate(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
       return;
     }
@@ -577,11 +577,8 @@ public class Connection implements Closeable {
     getStatusCodeReply();
   }
 
-  public void reAuth() {
-    RedisCredentials temp = currentCredentials.getAndSet(null);
-    if (temp != null) {
-      authenticate(temp);
-    }
+  public void reAuthenticate() {
+    authenticate(currentCredentials.getAndSet(null));
   }
 
   protected Map<String, Object> hello(byte[]... args) {

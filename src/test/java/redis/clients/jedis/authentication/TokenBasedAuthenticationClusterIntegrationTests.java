@@ -118,7 +118,7 @@ public class TokenBasedAuthenticationClusterIntegrationTests extends JedisCluste
 
             connections.forEach(conn -> {
                 await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(ONE_SECOND)
-                        .untilAsserted(() -> verify(conn, atLeast(2)).reAuth());
+                        .untilAsserted(() -> verify(conn, atLeast(2)).reAuthenticate());
             });
             latch.countDown();
             task1.get();

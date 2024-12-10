@@ -3,7 +3,7 @@ package redis.clients.jedis.authentication;
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.RedisCredentials;
 
-public class TokenCredentials implements RedisCredentials {
+class TokenCredentials implements RedisCredentials {
     private final String user;
     private final char[] password;
 

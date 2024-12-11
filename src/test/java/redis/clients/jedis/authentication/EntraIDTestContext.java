@@ -18,6 +18,7 @@ public class EntraIDTestContext {
   private static final String AZURE_PRIVATE_KEY = "AZURE_PRIVATE_KEY";
   private static final String AZURE_CERT = "AZURE_CERT";
   private static final String AZURE_REDIS_SCOPES = "AZURE_REDIS_SCOPES";
+  private static final String AZURE_USER_ASSIGNED_MANAGED_ID = "AZURE_USER_ASSIGNED_MANAGED_ID";
 
   private String clientId;
   private String authority;
@@ -25,6 +26,7 @@ public class EntraIDTestContext {
   private PrivateKey privateKey;
   private X509Certificate cert;
   private Set<String> redisScopes;
+  private String userAssignedManagedIdentity;
 
   public static final EntraIDTestContext DEFAULT = new EntraIDTestContext();
 
@@ -32,14 +34,19 @@ public class EntraIDTestContext {
     clientId = System.getenv(AZURE_CLIENT_ID);
     authority = System.getenv(AZURE_AUTHORITY);
     clientSecret = System.getenv(AZURE_CLIENT_SECRET);
+    userAssignedManagedIdentity = System.getenv(AZURE_USER_ASSIGNED_MANAGED_ID);
   }
 
   public EntraIDTestContext(String clientId, String authority, String clientSecret,
-      Set<String> redisScopes) {
+      PrivateKey privateKey, X509Certificate cert, Set<String> redisScopes,
+      String userAssignedManagedIdentity) {
     this.clientId = clientId;
     this.authority = authority;
     this.clientSecret = clientSecret;
+    this.privateKey = privateKey;
+    this.cert = cert;
     this.redisScopes = redisScopes;
+    this.userAssignedManagedIdentity = userAssignedManagedIdentity;
   }
 
   public String getClientId() {
@@ -74,6 +81,10 @@ public class EntraIDTestContext {
       this.redisScopes = new HashSet<>(Arrays.asList(redisScopesEnv.split(";")));
     }
     return redisScopes;
+  }
+
+  public String getUserAssignedManagedIdentity() {
+    return userAssignedManagedIdentity;
   }
 
   private PrivateKey getPrivateKey(String privateKey) {

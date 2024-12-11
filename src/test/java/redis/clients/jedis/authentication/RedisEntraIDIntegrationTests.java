@@ -49,7 +49,6 @@ import redis.clients.authentication.core.TokenAuthConfig;
 import redis.clients.authentication.entraid.EntraIDIdentityProvider;
 import redis.clients.authentication.entraid.EntraIDIdentityProviderConfig;
 import redis.clients.authentication.entraid.EntraIDTokenAuthConfigBuilder;
-import redis.clients.authentication.entraid.ManagedIdentityInfo.UserManagedIdentityType;
 import redis.clients.authentication.entraid.ServicePrincipalInfo;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -113,45 +112,6 @@ public class RedisEntraIDIntegrationTests {
       assertNotNull(jedis);
       assertEquals(1, counter.get());
 
-    }
-  }
-
-  // T.1.1
-  // Verify authentication using Azure AD with managed identities
-  // @Test
-  public void withUserAssignedId_azureManagedIdentityIntegrationTest() {
-    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
-        .clientId(testCtx.getClientId())
-        .userAssignedManagedIdentity(UserManagedIdentityType.CLIENT_ID, "userManagedAuthxId")
-        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes()).build();
-
-    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
-        .authXManager(new AuthXManager(tokenAuthConfig)).build();
-
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
-      String key = UUID.randomUUID().toString();
-      jedis.set(key, "value");
-      assertEquals("value", jedis.get(key));
-      jedis.del(key);
-    }
-  }
-
-  // T.1.1
-  // Verify authentication using Azure AD with managed identities
-  // @Test
-  public void withSystemAssignedId_azureManagedIdentityIntegrationTest() {
-    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
-        .clientId(testCtx.getClientId()).systemAssignedManagedIdentity()
-        .authority(testCtx.getAuthority()).scopes(testCtx.getRedisScopes()).build();
-
-    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
-        .authXManager(new AuthXManager(tokenAuthConfig)).build();
-
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
-      String key = UUID.randomUUID().toString();
-      jedis.set(key, "value");
-      assertEquals("value", jedis.get(key));
-      jedis.del(key);
     }
   }
 

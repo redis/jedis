@@ -560,9 +560,9 @@ public class Connection implements Closeable {
     currentCredentials.set(credentials);
   }
 
-  private void authenticate(RedisCredentials credentials) {
+  private String authenticate(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
-      return;
+      return null;
     }
     byte[] rawPass = encodeToBytes(credentials.getPassword());
     try {
@@ -574,11 +574,11 @@ public class Connection implements Closeable {
     } finally {
       Arrays.fill(rawPass, (byte) 0); // clear sensitive data
     }
-    getStatusCodeReply();
+    return getStatusCodeReply();
   }
 
-  public void reAuthenticate() {
-    authenticate(currentCredentials.getAndSet(null));
+  public String reAuthenticate() {
+    return authenticate(currentCredentials.getAndSet(null));
   }
 
   protected Map<String, Object> hello(byte[]... args) {

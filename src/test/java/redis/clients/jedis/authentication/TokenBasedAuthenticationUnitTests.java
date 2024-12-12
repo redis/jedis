@@ -63,7 +63,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     IdentityProvider idProvider = mock(IdentityProvider.class);
     when(idProvider.requestToken())
-        .thenReturn(new SimpleToken("password", System.currentTimeMillis() + 1000,
+        .thenReturn(new SimpleToken("default","password", System.currentTimeMillis() + 1000,
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
@@ -88,7 +88,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     IdentityProvider idProvider = mock(IdentityProvider.class);
     when(idProvider.requestToken())
-        .thenReturn(new SimpleToken("password", System.currentTimeMillis() + 1000,
+        .thenReturn(new SimpleToken("default","password", System.currentTimeMillis() + 1000,
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
@@ -205,7 +205,7 @@ public class TokenBasedAuthenticationUnitTests {
   public void testAuthXManagerReceivesNewToken()
       throws InterruptedException, ExecutionException, TimeoutException {
 
-    IdentityProvider identityProvider = () -> new SimpleToken("tokenVal",
+    IdentityProvider identityProvider = () -> new SimpleToken("user1","tokenVal",
         System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
         Collections.singletonMap("oid", "user1"));
 
@@ -277,7 +277,7 @@ public class TokenBasedAuthenticationUnitTests {
       if (requesLatch.getCount() > 0) {
         throw new RuntimeException("Test exception from identity provider!");
       }
-      return new SimpleToken("tokenValX", System.currentTimeMillis() + 50 * 1000,
+      return new SimpleToken("user1","tokenValX", System.currentTimeMillis() + 50 * 1000,
           System.currentTimeMillis(), Collections.singletonMap("oid", "user1"));
     });
 
@@ -313,7 +313,7 @@ public class TokenBasedAuthenticationUnitTests {
         }
         return null;
       }
-      return new SimpleToken("tokenValX", System.currentTimeMillis() + tokenLifetime,
+      return new SimpleToken("user1","tokenValX", System.currentTimeMillis() + tokenLifetime,
           System.currentTimeMillis(), Collections.singletonMap("oid", "user1"));
     };
 

@@ -8,7 +8,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -64,8 +63,8 @@ public class TokenBasedAuthenticationIntegrationTests {
 
     IdentityProvider idProvider = mock(IdentityProvider.class);
     when(idProvider.requestToken())
-        .thenReturn(new SimpleToken(password, System.currentTimeMillis() + 100000,
-            System.currentTimeMillis(), Collections.singletonMap("oid", user)));
+        .thenReturn(new SimpleToken(user, password, System.currentTimeMillis() + 100000,
+            System.currentTimeMillis(), null));
 
     IdentityProviderConfig idProviderConfig = mock(IdentityProviderConfig.class);
     when(idProviderConfig.getProvider()).thenReturn(idProvider);

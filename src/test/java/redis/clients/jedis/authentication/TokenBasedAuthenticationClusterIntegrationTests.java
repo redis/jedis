@@ -45,9 +45,9 @@ public class TokenBasedAuthenticationClusterIntegrationTests extends JedisCluste
                 return new IdentityProvider() {
                     @Override
                     public Token requestToken() {
-                        return new SimpleToken("cluster", System.currentTimeMillis() + 5 * 1000,
-                                System.currentTimeMillis(),
-                                Collections.singletonMap("oid", "default"));
+                        return new SimpleToken("default", "cluster",
+                                System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
+                                null);
                     }
                 };
             }
@@ -77,9 +77,9 @@ public class TokenBasedAuthenticationClusterIntegrationTests extends JedisCluste
                 return new IdentityProvider() {
                     @Override
                     public Token requestToken() {
-                        return new SimpleToken("cluster", System.currentTimeMillis() + 5 * 1000,
-                                System.currentTimeMillis(),
-                                Collections.singletonMap("oid", "default"));
+                        return new SimpleToken("default", "cluster",
+                                System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
+                                null);
                     }
                 };
             }

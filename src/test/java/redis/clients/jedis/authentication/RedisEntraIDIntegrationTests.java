@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -96,8 +95,8 @@ public class RedisEntraIDIntegrationTests {
         assertNotNull(mock);
         doAnswer(invocation -> {
           counter.incrementAndGet();
-          return new SimpleToken("token1", System.currentTimeMillis() + 5 * 60 * 1000,
-              System.currentTimeMillis(), Collections.singletonMap("oid", "default"));
+          return new SimpleToken("default", "token1", System.currentTimeMillis() + 5 * 60 * 1000,
+              System.currentTimeMillis(), null);
         }).when(mock).requestToken();
       })) {
 
@@ -312,9 +311,8 @@ public class RedisEntraIDIntegrationTests {
         jedis.del(key);
       }
 
-      token
-          .set(new SimpleToken("token1", System.currentTimeMillis() - 1, System.currentTimeMillis(),
-              Collections.singletonMap("oid", idp.requestToken().tryGet("oid"))));
+      token.set(new SimpleToken(idp.requestToken().getUser(), "token1",
+          System.currentTimeMillis() - 1, System.currentTimeMillis(), null));
 
       JedisAccessControlException aclException = assertThrows(JedisAccessControlException.class,
         () -> {

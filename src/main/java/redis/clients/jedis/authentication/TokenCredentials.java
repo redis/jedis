@@ -8,7 +8,7 @@ class TokenCredentials implements RedisCredentials {
     private final char[] password;
 
     public TokenCredentials(Token token) {
-        user = token.tryGet("oid");
+        user = token.getUser();
         password = token.getValue().toCharArray();
     }
 

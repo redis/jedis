@@ -270,13 +270,6 @@ public class RedisEntraIDIntegrationTests {
     }
   }
 
-  // T.3.2
-  // Test system behavior when some connections fail to re-authenticate during bulk authentication. e.g when a network partition occurs for 1 or more of them
-  @Test
-  public void partialReauthFailureTest() {
-
-  }
-
   // T.3.3
   // Verify behavior when attempting to authenticate a single connection with an expired token.
   @Test

@@ -4,6 +4,7 @@ import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
@@ -12,7 +13,8 @@ import redis.clients.jedis.util.SafeEncoder;
 public abstract class JedisPubSubBase<T> {
 
   private int subscribedChannels = 0;
-  private volatile Connection client;
+  private final JedisSafeAuthenticator authenticator = new JedisSafeAuthenticator();
+  private final Consumer<Object> pingResultHandler = this::processPingReply;
 
   public void onMessage(T channel, T message) {
   }
@@ -36,12 +38,7 @@ public abstract class JedisPubSubBase<T> {
   }
 
   private void sendAndFlushCommand(Command command, T... args) {
-    if (client == null) {
-      throw new JedisException(getClass() + " is not connected to a Connection.");
-    }
-    CommandArguments cargs = new CommandArguments(command).addObjects(args);
-    client.sendCommand(cargs);
-    client.flush();
+    authenticator.sendAndFlushCommand(command, args);
   }
 
   public final void unsubscribe() {
@@ -63,7 +60,8 @@ public abstract class JedisPubSubBase<T> {
   }
 
   private void checkConnectionSuitableForPubSub() {
-    if (client.protocol == RedisProtocol.RESP2 && client.isTokenBasedAuthenticationEnabled()) {
+    if (authenticator.client.protocol != RedisProtocol.RESP3
+        && authenticator.client.isTokenBasedAuthenticationEnabled()) {
       throw new JedisException(
           "Blocking pub/sub operations are not supported on token-based authentication enabled connections with RESP2 protocol!");
     }
@@ -78,7 +76,13 @@ public abstract class JedisPubSubBase<T> {
   }
 
   public final void ping() {
-    sendAndFlushCommand(Command.PING);
+    authenticator.commandSync.lock();
+    try {
+      sendAndFlushCommand(Command.PING);
+      authenticator.resultHandler.add(pingResultHandler);
+    } finally {
+      authenticator.commandSync.unlock();
+    }
   }
 
   public final void ping(T argument) {
@@ -94,24 +98,24 @@ public abstract class JedisPubSubBase<T> {
   }
 
   public final void proceed(Connection client, T... channels) {
-    this.client = client;
-    this.client.setTimeoutInfinite();
+    authenticator.registerForAuthentication(client);
+    authenticator.client.setTimeoutInfinite();
     try {
       subscribe(channels);
       process();
     } finally {
-      this.client.rollbackTimeout();
+      authenticator.client.rollbackTimeout();
     }
   }
 
   public final void proceedWithPatterns(Connection client, T... patterns) {
-    this.client = client;
-    this.client.setTimeoutInfinite();
+    authenticator.registerForAuthentication(client);
+    authenticator.client.setTimeoutInfinite();
     try {
       psubscribe(patterns);
       process();
     } finally {
-      this.client.rollbackTimeout();
+      authenticator.client.rollbackTimeout();
     }
   }
 
@@ -121,7 +125,7 @@ public abstract class JedisPubSubBase<T> {
   private void process() {
 
     do {
-      Object reply = client.getUnflushedObject();
+      Object reply = authenticator.client.getUnflushedObject();
 
       if (reply instanceof List) {
         List<Object> listReply = (List<Object>) reply;
@@ -175,12 +179,8 @@ public abstract class JedisPubSubBase<T> {
           throw new JedisException("Unknown message type: " + firstObj);
         }
       } else if (reply instanceof byte[]) {
-        byte[] resp = (byte[]) reply;
-        if ("PONG".equals(SafeEncoder.encode(resp))) {
-          onPong(null);
-        } else {
-          onPong(encode(resp));
-        }
+        Consumer<Object> resultHandler = authenticator.resultHandler.remove();
+        resultHandler.accept(reply);
       } else {
         throw new JedisException("Unknown message type: " + reply);
       }
@@ -188,5 +188,14 @@ public abstract class JedisPubSubBase<T> {
 
     //    /* Invalidate instance since this thread is no longer listening */
     //    this.client = null;
+  }
+
+  private void processPingReply(Object reply) {
+    byte[] resp = (byte[]) reply;
+    if ("PONG".equals(SafeEncoder.encode(resp))) {
+      onPong(null);
+    } else {
+      onPong(encode(resp));
+    }
   }
 }

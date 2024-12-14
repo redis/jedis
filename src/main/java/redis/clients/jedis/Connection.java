@@ -46,9 +46,8 @@ public class Connection implements Closeable {
   private String strVal;
   protected String server;
   protected String version;
-  protected AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<RedisCredentials>(
-      null);
-  private boolean isTokenBasedAuthenticationEnabled = false;
+  private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
+  private AuthXManager authXManager;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -68,6 +67,7 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
+    this.authXManager = null;
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
@@ -458,9 +458,8 @@ public class Connection implements Closeable {
 
       Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
 
-      AuthXManager authXManager = config.getAuthXManager();
+      authXManager = config.getAuthXManager();
       if (authXManager != null) {
-        isTokenBasedAuthenticationEnabled = true;
         credentialsProvider = authXManager;
       }
 
@@ -608,7 +607,11 @@ public class Connection implements Closeable {
     return true;
   }
 
-  public boolean isTokenBasedAuthenticationEnabled() {
-    return isTokenBasedAuthenticationEnabled;
+  protected boolean isTokenBasedAuthenticationEnabled() {
+    return authXManager != null;
+  }
+
+  protected AuthXManager getAuthXManager() {
+    return authXManager;
   }
 }

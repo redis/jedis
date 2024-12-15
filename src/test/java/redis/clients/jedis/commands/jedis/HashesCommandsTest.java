@@ -31,6 +31,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,6 +50,13 @@ import redis.clients.jedis.util.JedisByteHashMap;
 
 @RunWith(Parameterized.class)
 public class HashesCommandsTest extends JedisCommandsTestBase {
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
+
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
+
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
@@ -479,6 +490,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hscanNoValues() {
     jedis.hset("foo", "b", "y");
     jedis.hset("foo", "a", "x");
@@ -502,6 +514,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "NOVALUES flag (since Redis 7.4)")
   public void hscanNoValuesMatch() {
     ScanParams params = new ScanParams();
     params.match("a*");
@@ -534,6 +547,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "NOVALUES flag (since Redis 7.4)")
   public void hscanNoValuesCount() {
     ScanParams params = new ScanParams();
     params.count(2);
@@ -653,6 +667,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAndHttl() {
     long seconds1 = 20;
     long seconds2 = 10;
@@ -670,6 +685,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAndHttlBinary() {
     long seconds1 = 20;
     long seconds2 = 10;
@@ -687,6 +703,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAndHpttl() {
     long millis1 = 20_000;
     long millis2 = 10_000;
@@ -702,6 +719,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAndHpttlBinary() {
     long millis1 = 20_000;
     long millis2 = 10_000;
@@ -717,6 +735,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAtAndExpireTime() {
     long currSeconds = System.currentTimeMillis() / 1000;
     long seconds1 = currSeconds + 20;
@@ -735,6 +754,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hexpireAtAndExpireTimeBinary() {
     long currSeconds = System.currentTimeMillis() / 1000;
     long seconds1 = currSeconds + 20;
@@ -753,6 +773,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAtAndPexpireTime() {
     long currMillis = System.currentTimeMillis();
     long unixMillis = currMillis + 20_000;
@@ -768,6 +789,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpexpireAtAndPexpireTimeBinary() {
     long currMillis = System.currentTimeMillis();
     long unixMillis = currMillis + 20_000;
@@ -783,6 +805,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpersist() {
     long seconds = 20;
 
@@ -797,6 +820,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.4.0")
   public void hpersistBinary() {
     long seconds = 20;
 

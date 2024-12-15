@@ -2,12 +2,13 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.commands.unified.BitCommandsTestBase;
@@ -15,6 +16,15 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 @RunWith(Parameterized.class)
 public class ClusterBitCommandsTest extends BitCommandsTestBase {
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(
+            HostAndPorts.getStableClusterServers().get(0),
+            DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
 
   public ClusterBitCommandsTest(RedisProtocol protocol) {
     super(protocol);

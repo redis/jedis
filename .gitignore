@@ -11,7 +11,9 @@ build/
 bin/
 tags
 .idea
+.run
 *.aof
 *.rdb
 redis-git
 appendonlydir/
+.DS_Store

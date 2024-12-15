@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
@@ -52,6 +53,7 @@ public class CommandObjectsBitmapCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added the BYTE|BIT option.")
   public void testBitcount() {
     String key = "bitcountKey";
     byte[] keyBytes = key.getBytes();
@@ -82,6 +84,7 @@ public class CommandObjectsBitmapCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message="Starting with Redis version 7.0.0: Added the BYTE|BIT option.")
   public void testBitpos() {
     String key = "bitposKey";
     byte[] keyBytes = key.getBytes();

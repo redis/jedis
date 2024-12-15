@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -157,6 +160,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void xaddParamsId() {
     StreamEntryID id;
     String key = "kk";
@@ -348,6 +352,31 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, streams2.size());
     assertEquals(id1, streams2.get(stream1).get(0).getID());
     assertEquals(id2, streams2.get(stream2).get(0).getID());
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.4.0", message = "From Redis 7.4, you can use the + sign as a special ID to request last entry")
+  public void xreadAsMapLastEntry() {
+
+    final String stream1 = "xread-stream1";
+    final String stream2 = "xread-stream2";
+
+    Map<String, StreamEntryID> streamQeury1 = singletonMap(stream1, new StreamEntryID());
+
+    // Before creating Stream
+    assertNull(jedis.xreadAsMap(XReadParams.xReadParams().block(1), streamQeury1));
+    assertNull(jedis.xreadAsMap(XReadParams.xReadParams(), streamQeury1));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    StreamEntryID id1 = new StreamEntryID(1);
+    StreamEntryID id2 = new StreamEntryID(2);
+    StreamEntryID id3 = new StreamEntryID(3);
+
+    assertEquals(id1, jedis.xadd(stream1, id1, map));
+    assertEquals(id2, jedis.xadd(stream2, id2, map));
+    assertEquals(id3, jedis.xadd(stream1, id3, map));
+
 
     // Read from last entry
     Map<String, StreamEntryID> streamQueryLE = singletonMap(stream1, StreamEntryID.XREAD_LAST_ENTRY);
@@ -880,6 +909,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     final String MY_CONSUMER = "myConsumer";
     final String MY_CONSUMER2 = "myConsumer2";
 
+    final RedisVersion redisVersion = RedisVersionUtil.getRedisVersion(jedis);
+
     Map<String, String> map1 = new HashMap<>();
     map1.put(F1, V1);
     StreamEntryID id1 = jedis.xadd(STREAM_NAME, (StreamEntryID) null, map1);
@@ -942,7 +973,10 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(MY_CONSUMER, consumersInfo.get(0).getName());
     assertEquals(0L, consumersInfo.get(0).getPending());
     assertThat(consumersInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
-    assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
+
+    if ( redisVersion.isGreaterThanOrEqualTo(RedisVersion.V7_2_0)) {
+      assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
+    }
 
     // Consumer info test
     assertEquals(MY_CONSUMER,
@@ -954,7 +988,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(MY_CONSUMER, consumerInfo.get(0).getName());
     assertEquals(0L, consumerInfo.get(0).getPending());
     assertThat(consumerInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
-    assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
+    if (redisVersion.isGreaterThanOrEqualTo(RedisVersion.V7_2_0)) {
+      assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
+    }
 
     // test with more groups and consumers
     jedis.xgroupCreate(STREAM_NAME, G2, StreamEntryID.XGROUP_LAST_ENTRY, false);
@@ -1028,7 +1064,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamConsumerFullInfo consumer = group.getConsumers().get(0);
     assertEquals("xreadGroup-consumer", consumer.getName());
     assertThat(consumer.getSeenTime(), Matchers.greaterThanOrEqualTo(0L));
-    assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
+    if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_2_0)) {
+      assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
+    }
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));

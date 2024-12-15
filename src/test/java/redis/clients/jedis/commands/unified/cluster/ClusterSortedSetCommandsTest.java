@@ -10,11 +10,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
 import redis.clients.jedis.params.ZAddParams;
@@ -31,6 +37,15 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   final byte[] ba = { 0x0A };
   final byte[] bb = { 0x0B };
   final byte[] bc = { 0x0C };
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
 
   public ClusterSortedSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -234,6 +249,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zintercard() {
     jedis.zadd("foo{.}", 1, "a");
     jedis.zadd("foo{.}", 2, "b");

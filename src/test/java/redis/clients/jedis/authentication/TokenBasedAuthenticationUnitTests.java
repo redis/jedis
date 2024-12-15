@@ -63,7 +63,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     IdentityProvider idProvider = mock(IdentityProvider.class);
     when(idProvider.requestToken())
-        .thenReturn(new SimpleToken("default","password", System.currentTimeMillis() + 1000,
+        .thenReturn(new SimpleToken("default", "password", System.currentTimeMillis() + 1000,
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
@@ -88,7 +88,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     IdentityProvider idProvider = mock(IdentityProvider.class);
     when(idProvider.requestToken())
-        .thenReturn(new SimpleToken("default","password", System.currentTimeMillis() + 1000,
+        .thenReturn(new SimpleToken("default", "password", System.currentTimeMillis() + 1000,
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
@@ -205,7 +205,7 @@ public class TokenBasedAuthenticationUnitTests {
   public void testAuthXManagerReceivesNewToken()
       throws InterruptedException, ExecutionException, TimeoutException {
 
-    IdentityProvider identityProvider = () -> new SimpleToken("user1","tokenVal",
+    IdentityProvider identityProvider = () -> new SimpleToken("user1", "tokenVal",
         System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
         Collections.singletonMap("oid", "user1"));
 
@@ -277,7 +277,7 @@ public class TokenBasedAuthenticationUnitTests {
       if (requesLatch.getCount() > 0) {
         throw new RuntimeException("Test exception from identity provider!");
       }
-      return new SimpleToken("user1","tokenValX", System.currentTimeMillis() + 50 * 1000,
+      return new SimpleToken("user1", "tokenValX", System.currentTimeMillis() + 50 * 1000,
           System.currentTimeMillis(), Collections.singletonMap("oid", "user1"));
     });
 
@@ -289,9 +289,10 @@ public class TokenBasedAuthenticationUnitTests {
     TokenListener listener = mock(TokenListener.class);
     tokenManager.start(listener, false);
     requesLatch.await();
+    await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
+        .untilAsserted(() -> verify(listener).onTokenRenewed(argument.capture()));
     verify(identityProvider, times(numberOfRetries)).requestToken();
     verify(listener, never()).onError(any());
-    verify(listener).onTokenRenewed(argument.capture());
     assertEquals("tokenValX", argument.getValue().getValue());
   }
 
@@ -313,7 +314,7 @@ public class TokenBasedAuthenticationUnitTests {
         }
         return null;
       }
-      return new SimpleToken("user1","tokenValX", System.currentTimeMillis() + tokenLifetime,
+      return new SimpleToken("user1", "tokenValX", System.currentTimeMillis() + tokenLifetime,
           System.currentTimeMillis(), Collections.singletonMap("oid", "user1"));
     };
 

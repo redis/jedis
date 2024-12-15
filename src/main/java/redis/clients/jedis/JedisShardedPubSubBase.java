@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class JedisShardedPubSubBase<T> {
 
@@ -101,7 +102,10 @@ public abstract class JedisShardedPubSubBase<T> {
           throw new JedisException("Unknown message type: " + firstObj);
         }
       } else if (reply instanceof byte[]) {
-        Consumer<Object> resultHandler = authenticator.resultHandler.remove();
+        Consumer<Object> resultHandler = authenticator.resultHandler.poll();
+        if (resultHandler == null) {
+          throw new JedisException("Unexpected message : " + SafeEncoder.encode((byte[]) reply));
+        }
         resultHandler.accept(reply);
       } else {
         throw new JedisException("Unknown message type: " + reply);

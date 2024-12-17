@@ -52,7 +52,6 @@ public class SslOptions {
 
     private static final Logger logger = LoggerFactory.getLogger(SslOptions.class);
 
-    //private final String keyManagerAlgorithm = TrustManagerFactory.getDefaultAlgorithm(); // Lettuce
     private final String keyManagerAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
 
     private final String trustManagerAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -107,12 +106,10 @@ public class SslOptions {
 
         private Resource keystoreResource;
 
-        //private char[] keystorePassword = new char[0]; // Lettuce
         private char[] keystorePassword = null;
 
         private Resource truststoreResource;
 
-        //private char[] truststorePassword = new char[0]; // Lettuce
         private char[] truststorePassword = null;
 
         private SSLParameters sslParameters;
@@ -156,7 +153,6 @@ public class SslOptions {
          */
         public Builder keystore(File keystore) {
             return keystore(keystore, null);
-            //return keystore(keystore, new char[0]); // Lettuce
         }
 
         /**

@@ -6,28 +6,15 @@ import java.io.File;
 
 import org.junit.Test;
 
-public class SSLOptionsJedisTest {
+public class SSLOptionsJedisPooledTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
   protected static final EndpointConfig aclEndpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
 
   @Test
-  public void connectWithSsl() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder()
-            .sslOptions(SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks")
-                .build()).build())) {
-      jedis.auth(endpoint.getPassword());
-      assertEquals("PONG", jedis.ping());
-    }
-  }
-
-  @Test
   public void connectWithClientConfig() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
                 .truststore(new File("src/test/resources/truststore.jceks"))
@@ -39,7 +26,7 @@ public class SSLOptionsJedisTest {
 
   @Test
   public void connectWithSslInsecure() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
                 .sslVerifyMode(SslVerifyMode.INSECURE)
@@ -50,7 +37,7 @@ public class SSLOptionsJedisTest {
 
   @Test
   public void connectWithSslContextProtocol() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
                 .sslProtocol("SSL")
@@ -63,7 +50,7 @@ public class SSLOptionsJedisTest {
 
   @Test
   public void connectWithAcl() {
-    try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(),
+    try (JedisPooled jedis = new JedisPooled(aclEndpoint.getHostAndPort(),
         aclEndpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
                 .truststore(new File("src/test/resources/truststore.jceks"))

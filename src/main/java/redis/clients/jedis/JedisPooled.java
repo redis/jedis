@@ -295,7 +295,7 @@ public class JedisPooled extends UnifiedJedis {
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final int database, final String clientName) {
     this(new HostAndPort(host, port), DefaultJedisClientConfig.create(connectionTimeout, soTimeout,
-        infiniteSoTimeout, user, password, database, clientName, false, null, null, null, null),
+        infiniteSoTimeout, user, password, database, clientName, false, null, null, null, null, null),
         poolConfig);
   }
 
@@ -306,7 +306,7 @@ public class JedisPooled extends UnifiedJedis {
       final HostnameVerifier hostnameVerifier) {
     this(new HostAndPort(host, port), DefaultJedisClientConfig.create(connectionTimeout, soTimeout,
         infiniteSoTimeout, user, password, database, clientName, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier, null), poolConfig);
+        hostnameVerifier, null, null), poolConfig);
   }
 
   public JedisPooled(final URI uri) {

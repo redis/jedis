@@ -103,6 +103,9 @@ public class JedisClusterInfoCache {
     this.clientConfig = clientConfig;
     this.clientSideCache = clientSideCache;
     this.startNodes = startNodes;
+    if (clientConfig.getAuthXManager() != null) {
+      clientConfig.getAuthXManager().start();
+    }
     if (topologyRefreshPeriod != null) {
       logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();

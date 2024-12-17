@@ -239,12 +239,12 @@ public class SslOptions {
          * @param truststorePassword the truststore password. May be empty to omit password and the truststore integrity check.
          * @return {@code this}
          */
-        public Builder truststore(File truststore, String truststorePassword) {
+        public Builder truststore(File truststore, char[] truststorePassword) {
 
             Objects.requireNonNull(truststore, "Truststore must not be null");
             assertFile("Truststore", truststore);
 
-            return truststore(Resource.from(truststore), getPassword(truststorePassword));
+            return truststore(Resource.from(truststore), truststorePassword);
         }
 
         /**
@@ -268,11 +268,11 @@ public class SslOptions {
          * @param truststorePassword the truststore password. May be empty to omit password and the truststore integrity check.
          * @return {@code this}
          */
-        public Builder truststore(URL truststore, String truststorePassword) {
+        public Builder truststore(URL truststore, char[] truststorePassword) {
 
             Objects.requireNonNull(truststore, "Truststore must not be null");
 
-            return truststore(Resource.from(truststore), getPassword(truststorePassword));
+            return truststore(Resource.from(truststore), truststorePassword);
         }
 
         /**
@@ -384,10 +384,6 @@ public class SslOptions {
      */
     public SSLParameters getSslParameters() {
         return sslParameters;
-    }
-
-    private static char[] getPassword(String password) {
-        return password != null ? password.toCharArray() : null;
     }
 
     private static char[] getPassword(char[] chars) {

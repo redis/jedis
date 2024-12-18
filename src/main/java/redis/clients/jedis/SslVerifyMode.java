@@ -6,6 +6,8 @@ package redis.clients.jedis;
 public enum SslVerifyMode {
 
     /**
+     * DO NOT USE THIS IN PRODUCTION.
+     * <p>
      * No verification at all.
      */
     INSECURE,

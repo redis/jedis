@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Options to configure SSL options for the connections kept to Redis servers.
+ *
+ * @author Mark Paluch
  */
 public class SslOptions {
 
@@ -274,11 +276,23 @@ public class SslOptions {
             return this;
         }
 
+        /**
+         * Sets a configured {@link SSLParameters}.
+         *
+         * @param sslParameters a {@link SSLParameters} object.
+         * @return {@code this}
+         */
         public Builder sslParameters(SSLParameters sslParameters) {
             this.sslParameters = sslParameters;
             return this;
         }
 
+        /**
+         * Sets the {@link SslVerifyMode}.
+         *
+         * @param sslVerifyMode the {@link SslVerifyMode}.
+         * @return {@code this}
+         */
         public Builder sslVerifyMode(SslVerifyMode sslVerifyMode) {
             this.sslVerifyMode = sslVerifyMode;
             return this;
@@ -316,6 +330,7 @@ public class SslOptions {
      */
     public SSLContext createSslContext() throws IOException, GeneralSecurityException {
 
+        KeyManager[] keyManagers = null;
         TrustManager[] trustManagers = null;
 
         if (sslVerifyMode == SslVerifyMode.FULL) {
@@ -326,7 +341,6 @@ public class SslOptions {
             trustManagers = new TrustManager[] { INSECURE_TRUST_MANAGER };
         }
 
-        KeyManager[] keyManagers = null;
         if (keystoreResource != null) {
 
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
@@ -339,9 +353,7 @@ public class SslOptions {
             keyManagers = keyManagerFactory.getKeyManagers();
         }
 
-        if (trustManagers != null) {
-            // already processed
-        } else if (truststoreResource != null) {
+        if (trustManagers == null && truststoreResource != null) {
 
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
             try (InputStream truststoreStream = truststoreResource.get()) {

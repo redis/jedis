@@ -10,6 +10,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,15 +44,20 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
   @BeforeClass
   public static void prepare() {
-    // We need to set up certificates first before connecting to the endpoint with enabled TLS
-    SSLJedisTest.setupTrustStore();
-
     // TODO(imalinovskyi): Remove hardcoded connection settings
     //  once this test is refactored to support RE
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
             RedisVersionUtil.checkRedisMajorVersionNumber(6,
                     new EndpointConfig(new HostAndPort("localhost", 8379),
                             "default", "cluster", true)));
+
+    // We need to set up certificates first before connecting to the endpoint with enabled TLS
+    SSLJedisTest.setupTrustStore();
+  }
+
+  @AfterClass
+  public static void unprepare() {
+    SSLJedisTest.cleanupTrustStore();
   }
 
   @Test

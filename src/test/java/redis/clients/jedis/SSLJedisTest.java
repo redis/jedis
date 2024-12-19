@@ -20,17 +20,13 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SSLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
-
-  @BeforeClass
-  public static void prepare() {
-    setupTrustStore();
-  }
 
   public static void setupTrustStore() {
     setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
@@ -41,6 +37,25 @@ public class SSLJedisTest {
         new File(trustStoreFilePath).exists());
     System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
     System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
+  }
+
+  public static void cleanupTrustStore() {
+    clearJvmTrustStore();
+  }
+
+  private static void clearJvmTrustStore() {
+    System.clearProperty("javax.net.ssl.trustStore");
+    System.clearProperty("javax.net.ssl.trustStoreType");
+  }
+
+  @BeforeClass
+  public static void prepare() {
+    setupTrustStore();
+  }
+
+  @AfterClass
+  public static void unprepare() {
+    cleanupTrustStore();
   }
 
   @Test
@@ -169,6 +184,16 @@ public class SSLJedisTest {
         }
       }
       throw new IllegalArgumentException("The certificate has no common name.");
+    }
+  }
+
+  static class LocalhostVerifier extends BasicHostnameVerifier {
+    @Override
+    public boolean verify(String hostname, SSLSession session) {
+      if (hostname.equals("127.0.0.1")) {
+        hostname = "localhost";
+      }
+      return super.verify(hostname, session);
     }
   }
 }

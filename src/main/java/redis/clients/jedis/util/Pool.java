@@ -1,23 +1,35 @@
 package redis.clients.jedis.util;
 
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisException;
+import today.bonfire.oss.sop.PoolEntity;
+import today.bonfire.oss.sop.PooledObjectFactory;
+import today.bonfire.oss.sop.SimpleObjectPool;
 
-public class Pool<T> extends GenericObjectPool<T> {
+import java.time.Duration;
 
-  // Legacy
-  public Pool(GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
+public class Pool<T extends PoolEntity> extends SimpleObjectPool<T> {
+
+  private final static JedisPoolConfig defaultPoolConfig = new JedisPoolConfig();
+
+  public Pool(JedisPoolConfig poolConfig, PooledObjectFactory<T> factory) {
     this(factory, poolConfig);
   }
 
-  public Pool(final PooledObjectFactory<T> factory, final GenericObjectPoolConfig<T> poolConfig) {
-    super(factory, poolConfig);
+  public Pool(final PooledObjectFactory<T> factory, final JedisPoolConfig poolConfig) {
+    super(poolConfig.getMaxTotal(),
+          poolConfig.getMinIdle(),
+          poolConfig.getMinEvictableIdleTimeMillis(),
+          poolConfig.getMaxWaitMillis(),
+          factory);
   }
 
   public Pool(final PooledObjectFactory<T> factory) {
-    super(factory);
+    super(defaultPoolConfig.getMaxTotal(),
+          defaultPoolConfig.getMinIdle(),
+          defaultPoolConfig.getMinEvictableIdleTimeMillis(),
+          defaultPoolConfig.getMaxWaitMillis(),
+          factory);
   }
 
   @Override
@@ -35,7 +47,7 @@ public class Pool<T> extends GenericObjectPool<T> {
 
   public T getResource() {
     try {
-      return super.borrowObject();
+      return super.borrowObject(Duration.ofMillis(10000)); // Default timeout 5 seconds
     } catch (JedisException je) {
       throw je;
     } catch (Exception e) {
@@ -59,20 +71,13 @@ public class Pool<T> extends GenericObjectPool<T> {
       return;
     }
     try {
-      super.invalidateObject(resource);
+      super.returnObject(resource, true);
     } catch (Exception e) {
       throw new JedisException("Could not return the broken resource to the pool", e);
     }
   }
 
-  @Override
-  public void addObjects(int count) {
-    try {
-      for (int i = 0; i < count; i++) {
-        addObject();
-      }
-    } catch (Exception e) {
-      throw new JedisException("Error trying to add idle objects", e);
-    }
+  protected void clear() {
+    super.destroyAllIdleObjects();
   }
 }

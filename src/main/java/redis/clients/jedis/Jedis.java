@@ -1,26 +1,9 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.*;
-import static redis.clients.jedis.Protocol.SentinelKeyword.*;
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.util.SafeEncoder.encode;
-
-import java.io.Closeable;
-import java.net.URI;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.Arrays;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
-import redis.clients.jedis.Protocol.*;
+import redis.clients.jedis.Protocol.ClusterKeyword;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.Protocol.SentinelKeyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -31,10 +14,37 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
+import today.bonfire.oss.sop.PoolEntity;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.Closeable;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.SentinelKeyword.GET_MASTER_ADDR_BY_NAME;
+import static redis.clients.jedis.Protocol.SentinelKeyword.MASTER;
+import static redis.clients.jedis.Protocol.SentinelKeyword.MASTERS;
+import static redis.clients.jedis.Protocol.SentinelKeyword.MYID;
+import static redis.clients.jedis.Protocol.SentinelKeyword.REMOVE;
+import static redis.clients.jedis.Protocol.SentinelKeyword.REPLICAS;
+import static redis.clients.jedis.Protocol.SentinelKeyword.SENTINELS;
+import static redis.clients.jedis.Protocol.SentinelKeyword.SLAVES;
+import static redis.clients.jedis.Protocol.toByteArray;
+import static redis.clients.jedis.util.SafeEncoder.encode;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
-    ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-    SentinelCommands, Closeable {
+                              ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
+                              SentinelCommands, Closeable, PoolEntity {
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
@@ -46,6 +56,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
   private Pool<Jedis> dataSource = null;
+
+  private Long entityId;
 
   public Jedis() {
     connection = new Connection();
@@ -9830,4 +9842,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return result;
   }
 
+  @Override
+  public Long getEntityId() {
+    return entityId;
+  }
+
+  @Override
+  public void setEntityId(Long entityIdValue) {
+    this.entityId = entityIdValue;
+  }
 }

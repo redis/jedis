@@ -1,33 +1,33 @@
 package redis.clients.jedis;
 
-import java.time.Duration;
-import java.util.Set;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
+
+import java.time.Duration;
+import java.util.Set;
 
 public class ClusterPipeline extends MultiNodePipelineBase {
 
   private final ClusterConnectionProvider provider;
-  private AutoCloseable closeable = null;
+  private       AutoCloseable             closeable = null;
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig),
-        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig) {
+                         JedisPoolConfig poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig),
-        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+                         JedisPoolConfig poolConfig, Duration topologyRefreshPeriod) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
-        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 
@@ -54,15 +54,6 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   }
 
   @Override
-  public void close() {
-    try {
-      super.close();
-    } finally {
-      IOUtils.closeQuietly(closeable);
-    }
-  }
-
-  @Override
   protected HostAndPort getNodeKey(CommandArguments args) {
     return provider.getNode(((ClusterCommandArguments) args).getCommandHashSlot());
   }
@@ -70,6 +61,15 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   @Override
   protected Connection getConnection(HostAndPort nodeKey) {
     return provider.getConnection(nodeKey);
+  }
+
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } finally {
+      IOUtils.closeQuietly(closeable);
+    }
   }
 
   public Response<Long> spublish(String channel, String message) {

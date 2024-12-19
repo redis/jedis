@@ -1,44 +1,56 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
-
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
-import redis.clients.jedis.args.*;
-import redis.clients.jedis.bloom.*;
-import redis.clients.jedis.commands.JedisCommands;
+import redis.clients.jedis.args.BitCountOption;
+import redis.clients.jedis.args.BitOP;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.FunctionRestorePolicy;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.args.SortedSetOption;
+import redis.clients.jedis.bloom.BFInsertParams;
+import redis.clients.jedis.bloom.BFReserveParams;
+import redis.clients.jedis.bloom.CFInsertParams;
+import redis.clients.jedis.bloom.CFReserveParams;
+import redis.clients.jedis.bloom.TDigestMergeParams;
 import redis.clients.jedis.commands.JedisBinaryCommands;
+import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
-import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.executors.*;
+import redis.clients.jedis.executors.ClusterCommandExecutor;
+import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.executors.DefaultCommandExecutor;
+import redis.clients.jedis.executors.RetryableCommandExecutor;
+import redis.clients.jedis.executors.SimpleCommandExecutor;
 import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.MultiClusterPipeline;
 import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.providers.*;
+import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.providers.ConnectionProvider;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.providers.PooledConnectionProvider;
+import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
@@ -49,6 +61,13 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
+
+import java.net.URI;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -178,7 +197,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+      JedisPoolConfig poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts,
         maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }

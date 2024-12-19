@@ -1,6 +1,19 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.util.SafeEncoder.encode;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.args.ClientAttributeOption;
+import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisValidationException;
+import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.RedisInputStream;
+import redis.clients.jedis.util.RedisOutputStream;
+import today.bonfire.oss.sop.PoolEntity;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,21 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.args.ClientAttributeOption;
-import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.RedisInputStream;
-import redis.clients.jedis.util.RedisOutputStream;
+import static redis.clients.jedis.util.SafeEncoder.encode;
 
-public class Connection implements Closeable {
+public class Connection implements Closeable, PoolEntity {
 
   private ConnectionPool memberOf;
   protected RedisProtocol protocol;
@@ -44,6 +45,7 @@ public class Connection implements Closeable {
   private String strVal;
   protected String server;
   protected String version;
+  private Long entityId;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -584,5 +586,15 @@ public class Connection implements Closeable {
       throw new JedisException(status);
     }
     return true;
+  }
+
+  @Override
+  public Long getEntityId() {
+    return entityId;
+  }
+
+  @Override
+  public void setEntityId(Long entityIdValue) {
+    this.entityId = entityIdValue;
   }
 }

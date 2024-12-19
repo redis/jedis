@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
-import java.util.List;
-import java.util.regex.Pattern;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
+
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @deprecated Sharding/Sharded feature will be removed in next major release.
@@ -24,7 +24,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig) {
+                       JedisPoolConfig poolConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig));
     setProtocol(clientConfig);
   }
@@ -35,7 +35,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, Hashing algo) {
+                       JedisPoolConfig poolConfig, Hashing algo) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo));
     setProtocol(clientConfig);
   }
@@ -61,7 +61,6 @@ public class JedisSharding extends UnifiedJedis {
   /**
    * @param doMulti param
    * @return nothing
-   * @throws UnsupportedOperationException
    */
   @Override
   public AbstractTransaction transaction(boolean doMulti) {

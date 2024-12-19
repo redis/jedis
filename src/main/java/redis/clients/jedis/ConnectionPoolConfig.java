@@ -1,15 +1,51 @@
 package redis.clients.jedis;
 
-import java.time.Duration;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
-public class ConnectionPoolConfig extends GenericObjectPoolConfig<Connection> {
+public class ConnectionPoolConfig extends JedisPoolConfig {
 
   public ConnectionPoolConfig() {
-    // defaults to make your life with connection pool easier :)
-    setTestWhileIdle(true);
-    setMinEvictableIdleTime(Duration.ofMillis(60000));
-    setTimeBetweenEvictionRuns(Duration.ofMillis(30000));
-    setNumTestsPerEvictionRun(-1);
+    this(poolBbuilder());
+  }
+
+  private ConnectionPoolConfig(Builder builder) {
+    super();
+    setTestWhileIdle(builder.testWhileIdle);
+    setMinEvictableIdleTimeMillis(builder.minEvictableIdleTimeMillis);
+    setTimeBetweenEvictionRunsMillis(builder.timeBetweenEvictionRunsMillis);
+    setNumTestsPerEvictionRun(builder.numTestsPerEvictionRun);
+  }
+
+  public static Builder poolBbuilder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+    private boolean testWhileIdle                 = true;
+    private long    minEvictableIdleTimeMillis    = 60000L;
+    private long    timeBetweenEvictionRunsMillis = 30000L;
+    private int     numTestsPerEvictionRun        = -1;
+
+    public Builder testWhileIdle(boolean testWhileIdle) {
+      this.testWhileIdle = testWhileIdle;
+      return this;
+    }
+
+    public Builder minEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
+      this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+      return this;
+    }
+
+    public Builder timeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
+      this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+      return this;
+    }
+
+    public Builder numTestsPerEvictionRun(int numTestsPerEvictionRun) {
+      this.numTestsPerEvictionRun = numTestsPerEvictionRun;
+      return this;
+    }
+
+    public ConnectionPoolConfig build() {
+      return new ConnectionPoolConfig(this);
+    }
   }
 }

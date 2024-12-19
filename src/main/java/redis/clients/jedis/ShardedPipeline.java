@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
-import java.util.List;
-import java.util.regex.Pattern;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.IOUtils;
+
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * WARNING: RESP3 is not properly implemented for ShardedPipeline.
@@ -16,7 +16,7 @@ import redis.clients.jedis.util.IOUtils;
 public class ShardedPipeline extends MultiNodePipelineBase {
 
   private final ShardedConnectionProvider provider;
-  private AutoCloseable closeable = null;
+  private       AutoCloseable             closeable = null;
 
   public ShardedPipeline(List<HostAndPort> shards, JedisClientConfig clientConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig));
@@ -29,7 +29,7 @@ public class ShardedPipeline extends MultiNodePipelineBase {
   }
 
   public ShardedPipeline(List<HostAndPort> shards, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, Hashing algo, Pattern tagPattern) {
+                         JedisPoolConfig poolConfig, Hashing algo, Pattern tagPattern) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo), tagPattern);
     this.closeable = this.provider;
   }
@@ -40,15 +40,6 @@ public class ShardedPipeline extends MultiNodePipelineBase {
   }
 
   @Override
-  public void close() {
-    try {
-      super.close();
-    } finally {
-      IOUtils.closeQuietly(closeable);
-    }
-  }
-
-  @Override
   protected HostAndPort getNodeKey(CommandArguments args) {
     return provider.getNode(((ShardedCommandArguments) args).getKeyHash());
   }
@@ -56,6 +47,15 @@ public class ShardedPipeline extends MultiNodePipelineBase {
   @Override
   protected Connection getConnection(HostAndPort nodeKey) {
     return provider.getConnection(nodeKey);
+  }
+
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } finally {
+      IOUtils.closeQuietly(closeable);
+    }
   }
 
   /**

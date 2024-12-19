@@ -1,15 +1,12 @@
 package redis.clients.jedis;
 
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.exceptions.JedisException;
+import today.bonfire.oss.sop.PooledObjectFactory;
 
 /**
  * PoolableObjectFactory custom impl.
@@ -45,48 +42,46 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   @Override
-  public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
-    // what to do ??
-  }
-
-  @Override
-  public void destroyObject(PooledObject<Connection> pooledConnection) throws Exception {
-    final Connection jedis = pooledConnection.getObject();
-    if (jedis.isConnected()) {
-      try {
-        jedis.close();
-      } catch (RuntimeException e) {
-        logger.debug("Error while close", e);
-      }
-    }
-  }
-
-  @Override
-  public PooledObject<Connection> makeObject() throws Exception {
+  public Connection createObject() {
     try {
-      Connection jedis = clientSideCache == null ? new Connection(jedisSocketFactory, clientConfig)
+      return clientSideCache == null ? new Connection(jedisSocketFactory, clientConfig)
           : new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
-      return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      logger.debug("Error while makeObject", je);
+      logger.debug("Error while creating object", je);
       throw je;
     }
   }
 
   @Override
-  public void passivateObject(PooledObject<Connection> pooledConnection) throws Exception {
-    // TODO maybe should select db 0? Not sure right now.
+  public boolean isObjectValidForBorrow(Connection obj) {
+    try {
+      // Quick validation before borrowing - same as previous validateObject
+      return obj.isConnected();
+    } catch (final Exception e) {
+      logger.warn("Error while validating connection for borrow.", e);
+      return false;
+    }
   }
 
   @Override
-  public boolean validateObject(PooledObject<Connection> pooledConnection) {
-    final Connection jedis = pooledConnection.getObject();
+  public boolean isObjectValid(Connection obj) {
     try {
-      // check HostAndPort ??
-      return jedis.isConnected() && jedis.ping();
+      // Full validation - same logic as before
+      return obj.isConnected() && obj.ping();
     } catch (final Exception e) {
-      logger.warn("Error while validating pooled Connection object.", e);
+      logger.warn("Error while validating connection.", e);
       return false;
+    }
+  }
+
+  @Override
+  public void destroyObject(Connection obj) {
+    if (obj.isConnected()) {
+      try {
+        obj.close();
+      } catch (RuntimeException e) {
+        logger.debug("Error while closing", e);
+      }
     }
   }
 }

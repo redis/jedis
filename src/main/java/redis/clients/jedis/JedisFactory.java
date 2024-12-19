@@ -1,20 +1,16 @@
 package redis.clients.jedis;
 
-import java.net.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.JedisURIHelper;
+import today.bonfire.oss.sop.PooledObjectFactory;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.JedisURIHelper;
+import java.net.URI;
 
 /**
  * PoolableObjectFactory custom impl.
@@ -136,69 +132,76 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(uri.getHost(), uri.getPort()), this.clientConfig);
   }
 
-  void setHostAndPort(final HostAndPort hostAndPort) {
-    if (!(jedisSocketFactory instanceof DefaultJedisSocketFactory)) {
+  public void setHostAndPort(final HostAndPort hostAndPort) {
+    if (jedisSocketFactory instanceof DefaultJedisSocketFactory jsf) {
+      jsf.updateHostAndPort(hostAndPort);
+    }else{
       throw new IllegalStateException("setHostAndPort method has limited capability.");
     }
-    ((DefaultJedisSocketFactory) jedisSocketFactory).updateHostAndPort(hostAndPort);
   }
 
-  @Override
-  public void activateObject(PooledObject<Jedis> pooledJedis) throws Exception {
-    final Jedis jedis = pooledJedis.getObject();
-    if (jedis.getDB() != clientConfig.getDatabase()) {
-      jedis.select(clientConfig.getDatabase());
-    }
-  }
 
   @Override
-  public void destroyObject(PooledObject<Jedis> pooledJedis) throws Exception {
-    final Jedis jedis = pooledJedis.getObject();
-    if (jedis.isConnected()) {
-      try {
-        jedis.close();
-      } catch (RuntimeException e) {
-        logger.debug("Error while close", e);
-      }
-    }
-  }
-
-  @Override
-  public PooledObject<Jedis> makeObject() throws Exception {
-    Jedis jedis = null;
+  public Jedis createObject() {
     try {
-      jedis = new Jedis(jedisSocketFactory, clientConfig);
-      return new DefaultPooledObject<>(jedis);
+      Jedis jedis = new Jedis(jedisSocketFactory, clientConfig);
+      return jedis;
     } catch (JedisException je) {
-      logger.debug("Error while makeObject", je);
+      logger.debug("Error while creating object", je);
       throw je;
     }
   }
 
   @Override
-  public void passivateObject(PooledObject<Jedis> pooledJedis) throws Exception {
-    // TODO maybe should select db 0? Not sure right now.
-  }
-
-  @Override
-  public boolean validateObject(PooledObject<Jedis> pooledJedis) {
-    final Jedis jedis = pooledJedis.getObject();
+  public boolean isObjectValidForBorrow(Jedis obj) {
     try {
       boolean targetHasNotChanged = true;
       if (jedisSocketFactory instanceof DefaultJedisSocketFactory) {
         HostAndPort targetAddress = ((DefaultJedisSocketFactory) jedisSocketFactory).getHostAndPort();
-        HostAndPort objectAddress = jedis.getConnection().getHostAndPort();
+        HostAndPort objectAddress = obj.getConnection().getHostAndPort();
 
         targetHasNotChanged = targetAddress.getHost().equals(objectAddress.getHost())
             && targetAddress.getPort() == objectAddress.getPort();
       }
 
       return targetHasNotChanged
-          && jedis.getConnection().isConnected()
-          && jedis.ping().equals("PONG");
+          && obj.getConnection().isConnected()
+          && obj.ping().equals("PONG");
     } catch (final Exception e) {
-      logger.warn("Error while validating pooled Jedis object.", e);
+      logger.warn("Error while validating Jedis object for borrow.", e);
       return false;
+    }
+  }
+
+  @Override
+  public boolean isObjectValid(Jedis obj) {
+    try {
+      boolean targetHasNotChanged = true;
+      if (jedisSocketFactory instanceof DefaultJedisSocketFactory) {
+        HostAndPort targetAddress = ((DefaultJedisSocketFactory) jedisSocketFactory).getHostAndPort();
+        HostAndPort objectAddress = obj.getConnection().getHostAndPort();
+
+        targetHasNotChanged = targetAddress.getHost().equals(objectAddress.getHost())
+            && targetAddress.getPort() == objectAddress.getPort();
+      }
+
+      return targetHasNotChanged
+          && obj.getConnection().isConnected()
+          && obj.ping().equals("PONG");
+    } catch (final Exception e) {
+      logger.warn("Error while validating Jedis object.", e);
+      return false;
+    }
+  }
+
+  @Override
+  public void destroyObject(Jedis obj) {
+    if (obj.isConnected()) {
+      try {
+        obj.close();
+      } catch (RuntimeException e) {
+        logger.debug("Error while closing", e);
+      }
     }
   }
 }

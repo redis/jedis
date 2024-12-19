@@ -1,24 +1,24 @@
 package redis.clients.jedis.providers;
 
-import java.util.Collections;
-import java.util.Map;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.Pool;
+import today.bonfire.oss.sop.PooledObjectFactory;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class PooledConnectionProvider implements ConnectionProvider {
 
   private final Pool<Connection> pool;
-  private Object connectionMapKey = "";
+  private       Object           connectionMapKey = "";
 
   public PooledConnectionProvider(HostAndPort hostAndPort) {
     this(new ConnectionFactory(hostAndPort));
@@ -37,14 +37,14 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig) {
+                                  JedisPoolConfig poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
 
   @Experimental
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-      GenericObjectPoolConfig<Connection> poolConfig) {
+                                  JedisPoolConfig poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
@@ -55,7 +55,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
-      GenericObjectPoolConfig<Connection> poolConfig) {
+                                  JedisPoolConfig poolConfig) {
     this(new ConnectionPool(factory, poolConfig));
     this.connectionMapKey = factory;
   }

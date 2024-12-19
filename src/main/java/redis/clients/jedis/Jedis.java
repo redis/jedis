@@ -8250,7 +8250,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
-    return BuilderFactory.COMMAND_INFO_RESPONSE.build(connection.getOne());
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
+  }
+
+  public Map<String, CommandInfo> command() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND);
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
   public List<String> commandList() {

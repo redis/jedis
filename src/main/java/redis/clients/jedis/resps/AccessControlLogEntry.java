@@ -47,9 +47,10 @@ public class AccessControlLogEntry implements Serializable {
     ageSeconds = (Double) map.get(AGE_SECONDS);
     clientInfo = getMapFromRawClientInfo((String) map.get(CLIENT_INFO));
     logEntry = map;
-    entryId = (long) map.get(ENTRY_ID);
-    timestampCreated = (long) map.get(TIMESTAMP_CREATED);
-    timestampLastUpdated = (long) map.get(TIMESTAMP_LAST_UPDATED);
+    // Redis 7.2
+    entryId = map.containsKey(ENTRY_ID) ? (long) map.get(ENTRY_ID) : -1L;
+    timestampCreated = map.containsKey(TIMESTAMP_CREATED) ? (long) map.get(TIMESTAMP_CREATED) : -1L;
+    timestampLastUpdated = map.containsKey(TIMESTAMP_LAST_UPDATED) ? (long) map.get(TIMESTAMP_LAST_UPDATED) : -1L;
   }
 
   public long getCount() {

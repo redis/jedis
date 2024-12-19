@@ -975,30 +975,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<Map<String, CommandInfo>>() {
-    @Override
-    public Map<String, CommandInfo> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
-      List<Object> rawList = (List<Object>) data;
-      Map<String, CommandInfo> map = new HashMap<>(rawList.size());
-
-      for (Object rawCommandInfo : rawList) {
-        if (rawCommandInfo == null) {
-          continue;
-        }
-
-        List<Object> commandInfo = (List<Object>) rawCommandInfo;
-        String name = STRING.build(commandInfo.get(0));
-        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(commandInfo);
-        map.put(name, info);
-      }
-
-      return map;
-    }
-  };
+  @Deprecated
+  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = CommandInfo.COMMAND_INFO_RESPONSE;
 
   public static final Builder<Map<String, LatencyLatestInfo>> LATENCY_LATEST_RESPONSE = new Builder<Map<String, LatencyLatestInfo>>() {
     @Override

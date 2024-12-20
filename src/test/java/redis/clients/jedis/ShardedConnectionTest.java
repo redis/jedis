@@ -1,15 +1,15 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.Test;
-import redis.clients.jedis.exceptions.JedisDataException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class ShardedConnectionTest {
 
@@ -45,38 +45,38 @@ public class ShardedConnectionTest {
     }
   }
 
-//  @Test
-//  public void checkPoolWhenJedisIsBroken() {
-//    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-//    poolConfig.setMaxTotal(1);
-//    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
-//      jedis.sendCommand(Protocol.Command.QUIT);
-//      jedis.incr("foo");
-//    } catch (JedisConnectionException jce) {
-//    }
-//  }
-//
-//  @Test
-//  public void checkPoolTestOnBorrowWhenJedisIsBroken() {
-//    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-//    poolConfig.setMaxTotal(1);
-//    poolConfig.setTestOnBorrow(true);
-//    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
-//      jedis.sendCommand(Protocol.Command.QUIT);
-//      jedis.incr("foo");
-//    }
-//  }
-//
-//  @Test
-//  public void checkPoolTestOnReturnWhenJedisIsBroken() {
-//    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-//    poolConfig.setMaxTotal(1);
-//    poolConfig.setTestOnReturn(true);
-//    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
-//      jedis.sendCommand(Protocol.Command.QUIT);
-//      jedis.incr("foo");
-//    }
-//  }
+  //  @Test
+  //  public void checkPoolWhenJedisIsBroken() {
+  //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+  //    poolConfig.setMaxTotal(1);
+  //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+  //      jedis.sendCommand(Protocol.Command.QUIT);
+  //      jedis.incr("foo");
+  //    } catch (JedisConnectionException jce) {
+  //    }
+  //  }
+  //
+  //  @Test
+  //  public void checkPoolTestOnBorrowWhenJedisIsBroken() {
+  //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+  //    poolConfig.setMaxTotal(1);
+  //    poolConfig.setTestOnBorrow(true);
+  //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+  //      jedis.sendCommand(Protocol.Command.QUIT);
+  //      jedis.incr("foo");
+  //    }
+  //  }
+  //
+  //  @Test
+  //  public void checkPoolTestOnReturnWhenJedisIsBroken() {
+  //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+  //    poolConfig.setMaxTotal(1);
+  //    poolConfig.setTestOnReturn(true);
+  //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+  //      jedis.sendCommand(Protocol.Command.QUIT);
+  //      jedis.incr("foo");
+  //    }
+  //  }
 
   @Test
   public void checkFailedJedisServer() {
@@ -92,9 +92,9 @@ public class ShardedConnectionTest {
 
   @Test
   public void checkResourceIsCloseable() throws URISyntaxException {
-    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    var poolConfig = new JedisPoolConfig();
     poolConfig.setMaxTotal(1);
-    poolConfig.setBlockWhenExhausted(false);
+    // poolconfig.setBlockWhenExhausted(false);
 
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
       jedis.set("hello", "jedis");

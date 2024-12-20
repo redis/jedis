@@ -1,15 +1,13 @@
 package redis.clients.jedis;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class UnavailableConnectionTest {
 
@@ -33,10 +31,10 @@ public class UnavailableConnectionTest {
   private static Jedis brokenJedis1;
 
   public static void setupAvoidQuitInDestroyObject() {
-    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    var config = new JedisPoolConfig();
     config.setMaxTotal(1);
     poolForBrokenJedis1 = new JedisPool(config, unavailableNode.getHost(),
-        unavailableNode.getPort());
+                                        unavailableNode.getPort());
     brokenJedis1 = poolForBrokenJedis1.getResource();
     threadForBrokenJedis1 = new Thread(new Runnable() {
       @Override

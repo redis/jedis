@@ -1,18 +1,16 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertSame;
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.Test;
-
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class JedisSentinelPoolTest {
 
@@ -35,10 +33,10 @@ public class JedisSentinelPoolTest {
   public void repeatedSentinelPoolInitialization() {
 
     for (int i = 0; i < 20; ++i) {
-      GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+      var config = new JedisPoolConfig();
 
       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-          "foobared", 2);
+                                                     "foobared", 2);
       pool.getResource().close();
       pool.destroy();
     }
@@ -63,10 +61,10 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    var config = new JedisPoolConfig();
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+                                                   "foobared", 2);
     Jedis jedis = pool.getResource();
     jedis.auth("foobared");
     jedis.set("foo", "bar");
@@ -78,11 +76,11 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void returnResourceShouldResetState() {
-    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    var config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
+    // config.setBlockWhenExhausted(false);
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2)) {
+                                                        "foobared", 2)) {
 
       Jedis jedis = null;
       try (Jedis jedis1 = pool.getResource()) {
@@ -101,11 +99,11 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void checkResourceIsCloseable() {
-    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    var config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
+    // config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+                                                   "foobared", 2);
 
     Jedis jedis = pool.getResource();
     try {
@@ -124,11 +122,11 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void customClientName() {
-    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    var config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
+    // config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 0, "my_shiny_client_name");
+                                                   "foobared", 0, "my_shiny_client_name");
 
     Jedis jedis = pool.getResource();
 

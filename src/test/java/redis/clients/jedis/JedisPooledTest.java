@@ -1,23 +1,20 @@
 package redis.clients.jedis;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anything;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Assert;
+import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Assert;
-import org.junit.Test;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class JedisPooledTest {
 
@@ -29,7 +26,7 @@ public class JedisPooledTest {
   @Test
   public void checkCloseableConnections() {
     JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpointStandalone7.getHost(),
-        endpointStandalone7.getPort(), 2000);
+                                       endpointStandalone7.getPort(), 2000);
     pool.set("foo", "bar");
     assertEquals("bar", pool.get("foo"));
     pool.close();
@@ -39,7 +36,7 @@ public class JedisPooledTest {
   @Test
   public void checkResourceWithConfig() {
     try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(),
-        DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())) {
+                                            DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())) {
 
       try (Connection jedis = pool.getPool().getResource()) {
         assertTrue(jedis.ping());
@@ -50,11 +47,11 @@ public class JedisPooledTest {
 
   @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
-    GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
+    var config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
+    // config.setBlockWhenExhausted(false);
     try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config);
-        Connection jedis = pool.getPool().getResource()) {
+         Connection jedis = pool.getPool().getResource()) {
 
       try (Connection jedis2 = pool.getPool().getResource()) {
       }
@@ -71,7 +68,7 @@ public class JedisPooledTest {
 
     try (JedisPooled pool = new JedisPooled(
         endpointStandalone1.getURIBuilder().credentials("", endpointStandalone1.getPassword()).path("/2").build()
-            .toString())) {
+                           .toString())) {
       assertEquals("bar", pool.get("foo"));
     }
   }
@@ -104,8 +101,8 @@ public class JedisPooledTest {
   @Test
   public void customClientName() {
     try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), DefaultJedisClientConfig.builder()
-        .clientName("my_shiny_client_name").build());
-        Connection jedis = pool.getPool().getResource()) {
+                                                                                                          .clientName("my_shiny_client_name").build());
+         Connection jedis = pool.getPool().getResource()) {
       assertEquals("my_shiny_client_name", new Jedis(jedis).clientGetname());
     }
   }
@@ -113,7 +110,7 @@ public class JedisPooledTest {
   @Test
   public void invalidClientName() {
     try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), DefaultJedisClientConfig.builder()
-        .clientName("invalid client name").build());
+                                                                                                          .clientName("invalid client name").build());
          Connection jedis = pool.getPool().getResource()) {
     } catch (Exception e) {
       if (!e.getMessage().startsWith("client info cannot contain space")) {
@@ -137,7 +134,7 @@ public class JedisPooledTest {
   @Test
   public void getNumActiveReturnsTheCorrectNumber() {
     try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(),
-        endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
+                                            endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
 
       Connection jedis = pool.getPool().getResource();
       assertEquals(1, pool.getPool().getNumActive());
@@ -156,7 +153,7 @@ public class JedisPooledTest {
   @Test
   public void closeResourceTwice() {
     try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(),
-        endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
+                                            endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
       Connection j = pool.getPool().getResource();
       j.ping();
       j.close();
@@ -167,7 +164,7 @@ public class JedisPooledTest {
   @Test
   public void closeBrokenResourceTwice() {
     try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(),
-        endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
+                                            endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
       Connection j = pool.getPool().getResource();
       try {
         // make connection broken
@@ -184,11 +181,11 @@ public class JedisPooledTest {
 
   @Test
   public void testResetValidCredentials() {
-    DefaultRedisCredentialsProvider credentialsProvider = 
+    DefaultRedisCredentialsProvider credentialsProvider =
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
 
     try (JedisPooled pool = new JedisPooled(endpointStandalone1.getHostAndPort(), DefaultJedisClientConfig.builder()
-        .credentialsProvider(credentialsProvider).build())) {
+                                                                                                          .credentialsProvider(credentialsProvider).build())) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
@@ -244,11 +241,11 @@ public class JedisPooledTest {
     };
 
     // TODO: do it without the help of pool config; from Connection constructor? (configurable) force ping?
-    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    var poolConfig = new JedisPoolConfig();
     poolConfig.setMaxTotal(1);
     poolConfig.setTestOnBorrow(true);
     try (JedisPooled pool = new JedisPooled(endpointStandalone1.getHostAndPort(), DefaultJedisClientConfig.builder()
-        .credentialsProvider(credentialsProvider).build(), poolConfig)) {
+                                                                                                          .credentialsProvider(credentialsProvider).build(), poolConfig)) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");

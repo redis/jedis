@@ -14,10 +14,11 @@ public class RecommendedSettings {
     poolConfig.setMaxTotal(8);
     poolConfig.setMaxIdle(8);
     poolConfig.setMinIdle(0);
-    poolConfig.setBlockWhenExhausted(true);
-    poolConfig.setMaxWait(Duration.ofSeconds(1));
+    // poolConfig.setBlockWhenExhausted(true);
+    // poolConfig.setMaxWait(Duration.ofSeconds(1));
     poolConfig.setTestWhileIdle(true);
-    poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+    // poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+    // TODO
   }
 
   public static int MAX_RETRIES = 5;

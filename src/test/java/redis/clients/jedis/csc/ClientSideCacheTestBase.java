@@ -1,17 +1,16 @@
 package redis.clients.jedis.csc;
 
-import java.util.function.Supplier;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.Before;
-
-import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.function.Supplier;
 
 abstract class ClientSideCacheTestBase {
 
@@ -34,7 +33,7 @@ abstract class ClientSideCacheTestBase {
 
   protected static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();
 
-  protected static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig = () -> {
+  protected static final Supplier<JedisPoolConfig> singleConnectionPoolConfig = () -> {
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(1);
     return poolConfig;

@@ -1,18 +1,16 @@
 package redis.clients.jedis.csc;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
-import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
 
 public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
@@ -21,7 +19,7 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
   private static final Supplier<JedisClientConfig> clientConfig
       = () -> DefaultJedisClientConfig.builder().resp3().password("cluster").build();
 
-  private static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig
+  private static final Supplier<JedisPoolConfig> singleConnectionPoolConfig
       = () -> {
         ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
         poolConfig.setMaxTotal(1);

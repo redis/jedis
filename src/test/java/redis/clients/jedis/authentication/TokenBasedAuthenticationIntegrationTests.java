@@ -54,12 +54,8 @@ public class TokenBasedAuthenticationIntegrationTests {
     try {
       endpointConfig = HostAndPorts.getRedisEndpoint("standalone0");
     } catch (IllegalArgumentException e) {
-      try {
-        endpointConfig = HostAndPorts.getRedisEndpoint("standalone");
-      } catch (IllegalArgumentException ex) {
-        log.warn("Skipping test because no Redis endpoint is configured");
-        org.junit.Assume.assumeTrue(false);
-      }
+      log.warn("Skipping test because no Redis endpoint is configured");
+      org.junit.Assume.assumeTrue(false);
     }
   }
 

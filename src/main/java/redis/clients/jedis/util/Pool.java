@@ -80,4 +80,16 @@ public class Pool<T extends PoolEntity> extends SimpleObjectPool<T> {
   protected void clear() {
     super.destroyAllIdleObjects();
   }
+
+  public int getNumActive() {
+    return super.getBorrowedCount();
+  }
+
+  public int getNumIdle() {
+    return super.getIdleCount();
+  }
+
+  public int getNumWaiters() {
+    return super.waitingCount();
+  }
 }

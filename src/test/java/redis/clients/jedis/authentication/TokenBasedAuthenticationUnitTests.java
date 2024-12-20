@@ -31,6 +31,7 @@ import redis.clients.authentication.core.TokenAuthConfig;
 import redis.clients.authentication.core.TokenListener;
 import redis.clients.authentication.core.TokenManager;
 import redis.clients.authentication.core.TokenManagerConfig;
+import redis.clients.authentication.core.TokenManagerConfig.RetryPolicy;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
@@ -67,7 +68,7 @@ public class TokenBasedAuthenticationUnitTests {
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
-        new TokenManagerConfig(0.4F, 100, 1000, null));
+        new TokenManagerConfig(0.4F, 100, 1000, new RetryPolicy(1, 1)));
     AuthXManager jedisAuthXManager = new AuthXManager(tokenManager);
 
     AtomicInteger numberOfEvictions = new AtomicInteger(0);
@@ -92,7 +93,7 @@ public class TokenBasedAuthenticationUnitTests {
             System.currentTimeMillis(), Collections.singletonMap("oid", "default")));
 
     TokenManager tokenManager = new TokenManager(idProvider,
-        new TokenManagerConfig(0.9F, 600, 1000, null));
+        new TokenManagerConfig(0.9F, 600, 1000, new RetryPolicy(1, 1)));
     AuthXManager jedisAuthXManager = new AuthXManager(tokenManager);
 
     AtomicInteger numberOfEvictions = new AtomicInteger(0);
@@ -125,6 +126,11 @@ public class TokenBasedAuthenticationUnitTests {
     @Override
     public float getExpirationRefreshRatio() {
       return ratio;
+    }
+
+    @Override
+    public RetryPolicy getRetryPolicy() {
+      return new RetryPolicy(1, 1);
     }
   }
 
@@ -210,7 +216,7 @@ public class TokenBasedAuthenticationUnitTests {
         Collections.singletonMap("oid", "user1"));
 
     TokenManager tokenManager = new TokenManager(identityProvider,
-        new TokenManagerConfig(0.7F, 200, 2000, null));
+        new TokenManagerConfig(0.7F, 200, 2000, new RetryPolicy(1, 1)));
 
     AuthXManager manager = spy(new AuthXManager(tokenManager));
 

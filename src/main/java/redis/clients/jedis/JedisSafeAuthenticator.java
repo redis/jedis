@@ -16,7 +16,7 @@ import redis.clients.jedis.authentication.JedisAuthenticationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class JedisSafeAuthenticator {
+class JedisSafeAuthenticator {
 
   private static final Token PLACEHOLDER_TOKEN = new SimpleToken(null, null, 0, 0, null);
   private static final Logger logger = LoggerFactory.getLogger(JedisSafeAuthenticator.class);

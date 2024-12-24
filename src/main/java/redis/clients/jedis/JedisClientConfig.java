@@ -46,6 +46,7 @@ public interface JedisClientConfig {
     return null;
   }
 
+  // TODO: return null
   default Supplier<RedisCredentials> getCredentialsProvider() {
     return new DefaultRedisCredentialsProvider(
         new DefaultRedisCredentials(getUser(), getPassword()));
@@ -75,6 +76,16 @@ public interface JedisClientConfig {
   }
 
   default SSLParameters getSslParameters() {
+    return null;
+  }
+
+  /**
+   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
+   * {@link JedisClientConfig#getSslParameters()} will be ignored if
+   * {@link JedisClientConfig#getSslOptions() this} is set.
+   * @return ssl options
+   */
+  default SslOptions getSslOptions() {
     return null;
   }
 

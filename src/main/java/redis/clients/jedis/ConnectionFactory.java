@@ -16,28 +16,28 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private static final Logger logger = LoggerFactory.getLogger(ConnectionFactory.class);
 
   private final JedisSocketFactory jedisSocketFactory;
-  private final JedisClientConfig clientConfig;
-  private Cache clientSideCache = null;
+  private final JedisClientConfig  clientConfig;
+  private       Cache              clientSideCache = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
-    this.clientConfig = DefaultJedisClientConfig.builder().build();
+    this.clientConfig       = DefaultJedisClientConfig.builder().build();
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort);
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
+    this.clientConfig       = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
   @Experimental
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache csCache) {
-    this.clientConfig = clientConfig;
+    this.clientConfig       = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
-    this.clientSideCache = csCache;
+    this.clientSideCache    = csCache;
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
+    this.clientConfig       = clientConfig;
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
@@ -45,11 +45,19 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public Connection createObject() {
     try {
       return clientSideCache == null ? new Connection(jedisSocketFactory, clientConfig)
-          : new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
+                                     : new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
     } catch (JedisException je) {
       logger.debug("Error while creating object", je);
       throw je;
     }
+  }
+
+  @Override public void activateObject(Connection obj) {
+    // no-op
+  }
+
+  @Override public void passivateObject(Connection obj) {
+    // no-op
   }
 
   @Override

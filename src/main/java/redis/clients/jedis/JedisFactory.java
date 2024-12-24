@@ -152,6 +152,16 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     }
   }
 
+  @Override public void activateObject(Jedis obj) {
+    if (obj.getDB() != clientConfig.getDatabase()) {
+      obj.select(clientConfig.getDatabase());
+    }
+  }
+
+  @Override public void passivateObject(Jedis obj) {
+    // no-op
+  }
+
   @Override
   public boolean isObjectValidForBorrow(Jedis obj) {
     try {

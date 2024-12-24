@@ -7,11 +7,11 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisClusterInfoCache;
-import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -39,27 +39,27 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      JedisPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
   @Experimental
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
-      JedisPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      JedisPoolConfig poolConfig, Duration topologyRefreshPeriod) {
+                                   SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
   @Experimental
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
-      JedisPoolConfig poolConfig, Duration topologyRefreshPeriod) {
+      SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
     this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }

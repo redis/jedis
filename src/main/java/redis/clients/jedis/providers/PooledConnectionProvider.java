@@ -6,11 +6,11 @@ import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.Pool;
 import today.bonfire.oss.sop.PooledObjectFactory;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.Collections;
 import java.util.Map;
@@ -37,14 +37,14 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-                                  JedisPoolConfig poolConfig) {
+                                  SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
 
   @Experimental
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-                                  JedisPoolConfig poolConfig) {
+                                  SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
@@ -55,7 +55,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
-                                  JedisPoolConfig poolConfig) {
+                                  SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionPool(factory, poolConfig));
     this.connectionMapKey = factory;
   }

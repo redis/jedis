@@ -1,10 +1,5 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.*;
-import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
-
-import java.util.*;
-
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -12,10 +7,21 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import redis.clients.jedis.args.*;
+import redis.clients.jedis.args.BitOP;
+import redis.clients.jedis.args.ClusterResetType;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.params.*;
+import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.GeoAddParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.SortingParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.StreamEntry;
@@ -23,6 +29,18 @@ import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
+
+import java.util.*;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 public class ClusterPipeliningTest {
 
@@ -1079,9 +1097,9 @@ public class ClusterPipeliningTest {
   @Test(timeout = 10_000L)
   public void multiple() {
     final int maxTotal = 100;
-    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-    poolConfig.setMaxTotal(maxTotal);
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig)) {
+    var poolConfig = ConnectionPoolConfig.builder();
+    poolConfig.maxPoolSize(maxTotal);
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig.build())) {
       for (int i = 0; i < maxTotal; i++) {
         assertThreadsCount();
         String s = Integer.toString(i);

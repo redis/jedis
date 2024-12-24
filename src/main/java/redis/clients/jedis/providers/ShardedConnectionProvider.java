@@ -10,6 +10,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ShardedCommandArguments;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Hashing;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +29,7 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   private final TreeMap<Long, HostAndPort>  nodes     = new TreeMap<>();
   private final Map<String, ConnectionPool> resources = new HashMap<>();
   private final JedisClientConfig           clientConfig;
-  private final JedisPoolConfig             poolConfig;
+  private final SimpleObjectPoolConfig      poolConfig;
   private final Hashing                     algo;
 
   public ShardedConnectionProvider(List<HostAndPort> shards) {
@@ -40,7 +41,7 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                                   JedisPoolConfig poolConfig) {
+                                   SimpleObjectPoolConfig poolConfig) {
     this(shards, clientConfig, poolConfig, Hashing.MURMUR_HASH);
   }
 
@@ -50,7 +51,7 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                                   JedisPoolConfig poolConfig, Hashing algo) {
+                                   SimpleObjectPoolConfig poolConfig, Hashing algo) {
     this.clientConfig = clientConfig;
     this.poolConfig   = poolConfig;
     this.algo         = algo;

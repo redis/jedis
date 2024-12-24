@@ -13,7 +13,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
-import today.bonfire.oss.sop.PoolEntity;
+import today.bonfire.oss.sop.PoolObject;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
-public class Connection implements Closeable, PoolEntity {
+public class Connection implements Closeable, PoolObject {
 
   private ConnectionPool memberOf;
   protected RedisProtocol protocol;

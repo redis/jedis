@@ -2,33 +2,26 @@ package redis.clients.jedis.util;
 
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisException;
-import today.bonfire.oss.sop.PoolEntity;
+import today.bonfire.oss.sop.PoolObject;
 import today.bonfire.oss.sop.PooledObjectFactory;
 import today.bonfire.oss.sop.SimpleObjectPool;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
-import java.time.Duration;
+public class Pool<T extends PoolObject> extends SimpleObjectPool<T> {
 
-public class Pool<T extends PoolEntity> extends SimpleObjectPool<T> {
+  private final static JedisPoolConfig defaultPoolConfig = JedisPoolConfig.builder().build();
 
-  private final static JedisPoolConfig defaultPoolConfig = new JedisPoolConfig();
-
-  public Pool(JedisPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public Pool(SimpleObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
     this(factory, poolConfig);
   }
 
-  public Pool(final PooledObjectFactory<T> factory, final JedisPoolConfig poolConfig) {
-    super(poolConfig.getMaxTotal(),
-          poolConfig.getMinIdle(),
-          poolConfig.getMinEvictableIdleTimeMillis(),
-          poolConfig.getMaxWaitMillis(),
+  public Pool(final PooledObjectFactory<T> factory, final SimpleObjectPoolConfig poolConfig) {
+    super(poolConfig,
           factory);
   }
 
   public Pool(final PooledObjectFactory<T> factory) {
-    super(defaultPoolConfig.getMaxTotal(),
-          defaultPoolConfig.getMinIdle(),
-          defaultPoolConfig.getMinEvictableIdleTimeMillis(),
-          defaultPoolConfig.getMaxWaitMillis(),
+    super(defaultPoolConfig,
           factory);
   }
 
@@ -47,7 +40,7 @@ public class Pool<T extends PoolEntity> extends SimpleObjectPool<T> {
 
   public T getResource() {
     try {
-      return super.borrowObject(Duration.ofMillis(10000)); // Default timeout 5 seconds
+      return super.borrowObject();
     } catch (JedisException je) {
       throw je;
     } catch (Exception e) {
@@ -82,11 +75,11 @@ public class Pool<T extends PoolEntity> extends SimpleObjectPool<T> {
   }
 
   public int getNumActive() {
-    return super.getBorrowedCount();
+    return super.borrowedObjectsCount();
   }
 
   public int getNumIdle() {
-    return super.getIdleCount();
+    return super.idleObjectCount();
   }
 
   public int getNumWaiters() {

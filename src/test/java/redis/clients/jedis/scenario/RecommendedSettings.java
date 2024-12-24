@@ -10,14 +10,14 @@ public class RecommendedSettings {
 
   static {
     poolConfig = new ConnectionPoolConfig();
-    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-    poolConfig.setMaxTotal(8);
-    poolConfig.setMaxIdle(8);
-    poolConfig.setMinIdle(0);
+    var poolConfig = ConnectionPoolConfig.builder();
+    poolConfig.maxPoolSize(8);
+    poolConfig.minPoolSize(0);
     // poolConfig.setBlockWhenExhausted(true);
-    // poolConfig.setMaxWait(Duration.ofSeconds(1));
-    poolConfig.setTestWhileIdle(true);
-    // poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+    poolConfig.waitingForObjectTimeout(Duration.ofSeconds(1));
+    poolConfig.testWhileIdle(true);
+    poolConfig.objEvictionTimeout(Duration.ofSeconds(60));
+    poolConfig.durationBetweenEvictionsRuns(Duration.ofSeconds(1));
     // TODO
   }
 

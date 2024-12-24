@@ -6,6 +6,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,11 +19,9 @@ import static org.junit.Assert.fail;
  */
 public class SentineledConnectionProviderTest {
 
-  private static final String MASTER_NAME = "mymaster";
-
   protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
-
+  private static final String MASTER_NAME = "mymaster";
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
   @Before
@@ -67,11 +66,11 @@ public class SentineledConnectionProviderTest {
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    var config = new JedisPoolConfig();
+    var config = JedisPoolConfig.builder();
 
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
                                                      DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
-                                                     config, sentinels, DefaultJedisClientConfig.builder().build())) {
+                                                     config.build(), sentinels, DefaultJedisClientConfig.builder().build())) {
       assertSame(SentineledConnectionProvider.class, jedis.provider.getClass());
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -80,13 +79,13 @@ public class SentineledConnectionProviderTest {
 
   @Test
   public void checkResourceIsCloseable() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
 
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
                                                      DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
-                                                     config, sentinels, DefaultJedisClientConfig.builder().build())) {
+                                                     config.build(), sentinels, DefaultJedisClientConfig.builder().build())) {
 
       Connection conn = jedis.provider.getConnection();
       try {
@@ -129,7 +128,7 @@ public class SentineledConnectionProviderTest {
 
         try (Connection conn2 = jedis.provider.getConnection()) {
           fail("Should not get resource from pool");
-        } catch (JedisException e) { }
+        } catch (JedisException e) {}
       }
     }
   }
@@ -146,7 +145,7 @@ public class SentineledConnectionProviderTest {
 
       try (Connection conn1 = jedis.provider.getConnection()) {
         fail("Should not get resource from pool");
-      } catch (JedisException e) { }
+      } catch (JedisException e) {}
 
       credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
 

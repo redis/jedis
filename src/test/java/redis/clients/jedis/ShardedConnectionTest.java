@@ -5,6 +5,7 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class ShardedConnectionTest {
   //  @Test
   //  public void checkPoolWhenJedisIsBroken() {
   //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-  //    poolConfig.setMaxTotal(1);
+  //    poolConfig.maxPoolSize(1);
   //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
   //      jedis.sendCommand(Protocol.Command.QUIT);
   //      jedis.incr("foo");
@@ -59,7 +60,7 @@ public class ShardedConnectionTest {
   //  @Test
   //  public void checkPoolTestOnBorrowWhenJedisIsBroken() {
   //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-  //    poolConfig.setMaxTotal(1);
+  //    poolConfig.maxPoolSize(1);
   //    poolConfig.setTestOnBorrow(true);
   //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
   //      jedis.sendCommand(Protocol.Command.QUIT);
@@ -70,7 +71,7 @@ public class ShardedConnectionTest {
   //  @Test
   //  public void checkPoolTestOnReturnWhenJedisIsBroken() {
   //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-  //    poolConfig.setMaxTotal(1);
+  //    poolConfig.maxPoolSize(1);
   //    poolConfig.setTestOnReturn(true);
   //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
   //      jedis.sendCommand(Protocol.Command.QUIT);
@@ -92,11 +93,11 @@ public class ShardedConnectionTest {
 
   @Test
   public void checkResourceIsCloseable() throws URISyntaxException {
-    var poolConfig = new JedisPoolConfig();
-    poolConfig.setMaxTotal(1);
+    var poolConfig = JedisPoolConfig.builder();
+    poolConfig.maxPoolSize(1);
     // poolconfig.setBlockWhenExhausted(false);
-
-    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+poolConfig.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig.build())) {
       jedis.set("hello", "jedis");
     }
   }

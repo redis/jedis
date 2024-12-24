@@ -8,6 +8,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -45,8 +46,8 @@ public class JedisClusterInfoCache {
   private final Lock                   w              = rwl.writeLock();
   private final Lock                   rediscoverLock = new ReentrantLock();
 
-  private final JedisPoolConfig          poolConfig;
-  private final JedisClientConfig        clientConfig;
+  private final SimpleObjectPoolConfig poolConfig;
+  private final JedisClientConfig      clientConfig;
   private final Cache                    clientSideCache;
   private final Set<HostAndPort>         startNodes;
   /**
@@ -65,25 +66,25 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
-                               final JedisPoolConfig poolConfig, final Set<HostAndPort> startNodes) {
+                               final SimpleObjectPoolConfig poolConfig, final Set<HostAndPort> startNodes) {
     this(clientConfig, null, poolConfig, startNodes);
   }
 
   @Experimental
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
-                               final JedisPoolConfig poolConfig, final Set<HostAndPort> startNodes) {
+                               final SimpleObjectPoolConfig poolConfig, final Set<HostAndPort> startNodes) {
     this(clientConfig, clientSideCache, poolConfig, startNodes, null);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
-                               final JedisPoolConfig poolConfig, final Set<HostAndPort> startNodes,
+                               final SimpleObjectPoolConfig poolConfig, final Set<HostAndPort> startNodes,
                                final Duration topologyRefreshPeriod) {
     this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
   }
 
   @Experimental
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
-                               final JedisPoolConfig poolConfig, final Set<HostAndPort> startNodes,
+                               final SimpleObjectPoolConfig poolConfig, final Set<HostAndPort> startNodes,
                                final Duration topologyRefreshPeriod) {
     this.poolConfig      = poolConfig;
     this.clientConfig    = clientConfig;

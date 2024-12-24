@@ -4,6 +4,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.Pool;
 import today.bonfire.oss.sop.PooledObjectFactory;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 public class ConnectionPool extends Pool<Connection> {
 
@@ -21,18 +22,18 @@ public class ConnectionPool extends Pool<Connection> {
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      JedisPoolConfig poolConfig) {
+                        SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-      JedisPoolConfig poolConfig) {
+                        SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
-      JedisPoolConfig poolConfig) {
+                        SimpleObjectPoolConfig poolConfig) {
     super(factory, poolConfig);
   }
 

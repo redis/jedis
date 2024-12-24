@@ -8,6 +8,7 @@ import redis.clients.jedis.exceptions.JedisException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -72,10 +73,10 @@ public class JedisPoolTest {
 
   @Test
   public void checkResourceIsClosableAndReusable() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    try (JedisPool pool = new JedisPool(config, endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword(), 0,
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisPool pool = new JedisPool(config.build(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword(), 0,
                                         "closable-reusable-pool", false, null, null, null)) {
 
       Jedis jedis = pool.getResource();
@@ -108,10 +109,10 @@ public class JedisPoolTest {
 
   @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    try (JedisPool pool = new JedisPool(config, endpointStandalone0.getHost(), endpointStandalone0.getPort());
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisPool pool = new JedisPool(config.build(), endpointStandalone0.getHost(), endpointStandalone0.getPort());
          Jedis jedis = pool.getResource()) {
       jedis.auth(endpointStandalone0.getPassword());
 
@@ -123,9 +124,9 @@ public class JedisPoolTest {
 
   @Test
   public void securePool() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setTestOnBorrow(true);
-    JedisPool pool = new JedisPool(config, endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword());
+    var config = JedisPoolConfig.builder();
+    config.testOnBorrow(true);
+    JedisPool pool = new JedisPool(config.build(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword());
     try (Jedis jedis = pool.getResource()) {
       jedis.set("foo", "bar");
     }
@@ -268,9 +269,9 @@ public class JedisPoolTest {
   //     }
   //   }
   //
-  //   var config = new JedisPoolConfig();
-  //   config.setMaxTotal(1);
-  //   JedisPool pool = new JedisPool(config, new CrashingJedisPooledObjectFactory());
+  //   var config = JedisPoolConfig.builder();
+  //   config.maxPoolSize(1);
+  //   JedisPool pool = new JedisPool(config.build(), new CrashingJedisPooledObjectFactory());
   //   Jedis crashingJedis = pool.getResource();
   //
   //   try {
@@ -283,10 +284,10 @@ public class JedisPoolTest {
 
   @Test
   public void returnResourceShouldResetState() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    JedisPool pool = new JedisPool(config, endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword());
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    JedisPool pool = new JedisPool(config.build(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword());
 
     Jedis jedis = pool.getResource();
     try {
@@ -385,8 +386,8 @@ public class JedisPoolTest {
 
   @Test
   public void testCloseConnectionOnMakeObject() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setTestOnBorrow(true);
+    var config = JedisPoolConfig.builder();
+    config.testOnBorrow(true);
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(),
                                         endpointStandalone0.getPort(), 2000, "wrong pass");
          Jedis jedis = new Jedis(endpointStandalone0.getURIBuilder().defaultCredentials().build())) {

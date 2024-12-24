@@ -5,6 +5,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.Set;
 
@@ -31,7 +32,7 @@ public class JedisSentineled extends UnifiedJedis {
   }
 
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
-                         final JedisPoolConfig poolConfig,
+                         final SimpleObjectPoolConfig poolConfig,
                          Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig),
           masterClientConfig.getRedisProtocol());
@@ -39,7 +40,7 @@ public class JedisSentineled extends UnifiedJedis {
 
   @Experimental
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
-                         final JedisPoolConfig poolConfig,
+                         final SimpleObjectPoolConfig poolConfig,
                          Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache, poolConfig,
                                            sentinels, sentinelClientConfig), masterClientConfig.getRedisProtocol(), clientSideCache);

@@ -61,6 +61,7 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.net.URI;
 import java.time.Duration;
@@ -101,6 +102,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
+  /**
+   * Create a new UnifiedJedis with the provided URI and JedisClientConfig object. Note that all fields
+   * that can be parsed from the URI will be used instead of the corresponding configuration values. This includes
+   * the following fields: user, password, database, protocol version, and whether to use SSL.
+   *
+   * For example, if the URI is "redis://user:password@localhost:6379/1", the user and password fields will be set
+   * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
+   * from the JedisClientConfig object.
+   *
+   * @param uri The URI to connect to
+   * @param config The JedisClientConfig object to use
+   */
   public UnifiedJedis(final URI uri, JedisClientConfig config) {
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
@@ -197,7 +210,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      JedisPoolConfig poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+                      SimpleObjectPoolConfig poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts,
         maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.IOUtils;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -29,7 +30,7 @@ public class ShardedPipeline extends MultiNodePipelineBase {
   }
 
   public ShardedPipeline(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                         JedisPoolConfig poolConfig, Hashing algo, Pattern tagPattern) {
+                         SimpleObjectPoolConfig poolConfig, Hashing algo, Pattern tagPattern) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo), tagPattern);
     this.closeable = this.provider;
   }

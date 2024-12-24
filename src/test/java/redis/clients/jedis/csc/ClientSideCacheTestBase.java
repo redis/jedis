@@ -8,7 +8,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPoolConfig;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.function.Supplier;
 
@@ -33,10 +33,10 @@ abstract class ClientSideCacheTestBase {
 
   protected static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();
 
-  protected static final Supplier<JedisPoolConfig> singleConnectionPoolConfig = () -> {
-    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-    poolConfig.setMaxTotal(1);
-    return poolConfig;
+  protected static final Supplier<SimpleObjectPoolConfig> singleConnectionPoolConfig = () -> {
+    var poolConfig = ConnectionPoolConfig.builder();
+    poolConfig.maxPoolSize(1);
+    return poolConfig.build();
   };
 
 }

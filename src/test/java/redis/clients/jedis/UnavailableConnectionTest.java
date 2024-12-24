@@ -31,9 +31,9 @@ public class UnavailableConnectionTest {
   private static Jedis brokenJedis1;
 
   public static void setupAvoidQuitInDestroyObject() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    poolForBrokenJedis1 = new JedisPool(config, unavailableNode.getHost(),
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    poolForBrokenJedis1 = new JedisPool(config.build(), unavailableNode.getHost(),
                                         unavailableNode.getPort());
     brokenJedis1 = poolForBrokenJedis1.getResource();
     threadForBrokenJedis1 = new Thread(new Runnable() {

@@ -140,20 +140,19 @@ public class MultiClusterPooledConnectionProviderTest {
 
     @Test
     public void testConnectionPoolConfigApplied() {
-        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-        poolConfig.setMaxTotal(8);
-        poolConfig.setMaxIdle(4);
-        poolConfig.setMinIdle(1);
+        var poolConfig = ConnectionPoolConfig.builder();
+        poolConfig.maxPoolSize(8);
+        poolConfig.minPoolSize(1);
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
-        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig.build());
+        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig.build());
         try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
                 new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
             MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
             ConnectionPool connectionPool = activeCluster.getConnectionPool();
             // assertEquals(8, connectionPool.getMaxTotal());
-            // assertEquals(4, connectionPool.getMaxIdle());
-            // assertEquals(1, connectionPool.getMinIdle()); // TODO
+            // assertEquals(4, connectionPool.getMaxIdle()); //TODO
+            assertEquals(1, connectionPool.getNumIdle());
         }
     }
 }

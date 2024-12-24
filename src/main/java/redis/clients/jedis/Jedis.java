@@ -14,7 +14,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
-import today.bonfire.oss.sop.PoolEntity;
+import today.bonfire.oss.sop.PoolObject;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -44,7 +44,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
                               ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-                              SentinelCommands, Closeable, PoolEntity {
+                              SentinelCommands, Closeable, PoolObject {
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();

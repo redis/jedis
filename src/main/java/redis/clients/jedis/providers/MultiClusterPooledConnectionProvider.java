@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
-import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.annots.Experimental;
@@ -21,6 +20,7 @@ import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.Collections;
 import java.util.List;
@@ -117,7 +117,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     ClusterConfig[] clusterConfigs = multiClusterClientConfig.getClusterConfigs();
     for (ClusterConfig config : clusterConfigs) {
-      JedisPoolConfig poolConfig = config.getConnectionPoolConfig();
+      SimpleObjectPoolConfig poolConfig = config.getConnectionPoolConfig();
 
       String clusterId = "cluster:" + config.getPriority() + ":" + config.getHostAndPort();
 

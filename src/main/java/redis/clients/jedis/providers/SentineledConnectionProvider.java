@@ -8,13 +8,13 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,9 +31,9 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   protected final Collection<SentinelListener> sentinelListeners = new ArrayList<>();
   private final String masterName;
   private final JedisClientConfig masterClientConfig;
-  private final Cache clientSideCache;
-  private final JedisPoolConfig masterPoolConfig;
-  private final JedisClientConfig sentinelClientConfig;
+  private final Cache                  clientSideCache;
+  private final SimpleObjectPoolConfig masterPoolConfig;
+  private final JedisClientConfig      sentinelClientConfig;
   private final long subscribeRetryWaitTimeMillis;
   private final Lock initPoolLock = new ReentrantLock(true);
   private volatile HostAndPort currentMaster;
@@ -51,7 +51,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-                                      final JedisPoolConfig poolConfig,
+                                      final SimpleObjectPoolConfig poolConfig,
                                       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig,
          DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
@@ -59,14 +59,14 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-                                      Cache clientSideCache, final JedisPoolConfig poolConfig,
+                                      Cache clientSideCache, final SimpleObjectPoolConfig poolConfig,
                                       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
          DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-                                      final JedisPoolConfig poolConfig,
+                                      final SimpleObjectPoolConfig poolConfig,
                                       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
                                       final long subscribeRetryWaitTimeMillis) {
     this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis);
@@ -74,7 +74,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-                                      Cache clientSideCache, final JedisPoolConfig poolConfig,
+                                      Cache clientSideCache, final SimpleObjectPoolConfig poolConfig,
                                       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
                                       final long subscribeRetryWaitTimeMillis) {
 

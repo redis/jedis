@@ -1,51 +1,66 @@
 package redis.clients.jedis;
 
-public class ConnectionPoolConfig extends JedisPoolConfig {
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
+
+import java.time.Duration;
+
+/**
+ * Configuration class for Connection pool that extends SimpleObjectPoolConfig.
+ * Provides pool-specific default values and configuration options while leveraging
+ * the base pool configuration capabilities.
+ */
+public class ConnectionPoolConfig extends SimpleObjectPoolConfig {
 
   public ConnectionPoolConfig() {
-    this(poolBbuilder());
+    super(builder().defaultConfig().prepareAndCheck());
   }
 
-  private ConnectionPoolConfig(Builder builder) {
-    super();
-    setTestWhileIdle(builder.testWhileIdle);
-    setMinEvictableIdleTimeMillis(builder.minEvictableIdleTimeMillis);
-    setTimeBetweenEvictionRunsMillis(builder.timeBetweenEvictionRunsMillis);
-    setNumTestsPerEvictionRun(builder.numTestsPerEvictionRun);
+  public ConnectionPoolConfig(SimpleObjectPoolConfig.Builder config) {
+    super(config);
   }
 
-  public static Builder poolBbuilder() {
+  /**
+   * Creates a new builder instance with pool-specific default settings.
+   *
+   * @return A new Builder instance with pool-specific default settings
+   */
+  public static Builder builder() {
     return new Builder();
   }
 
-  public static class Builder {
-    private boolean testWhileIdle                 = true;
-    private long    minEvictableIdleTimeMillis    = 60000L;
-    private long    timeBetweenEvictionRunsMillis = 30000L;
-    private int     numTestsPerEvictionRun        = -1;
+  /**
+   * Builder class for ConnectionPoolConfig that extends SimpleObjectPoolConfig.Builder
+   * to provide pool-specific configuration options.
+   */
+  public static class Builder extends SimpleObjectPoolConfig.Builder {
 
-    public Builder testWhileIdle(boolean testWhileIdle) {
-      this.testWhileIdle = testWhileIdle;
+    /**
+     * Sets default pool configuration values.
+     *
+     * @return this Builder instance
+     */
+    public Builder defaultConfig() {
+      this.maxPoolSize(8)
+          .minPoolSize(0)
+          .fairness(false)
+          .testOnCreate(false)
+          .testOnBorrow(true)
+          .testWhileIdle(true)
+          .testOnReturn(false)
+          .durationBetweenEvictionsRuns(Duration.ofSeconds(30))
+          .objEvictionTimeout(Duration.ofSeconds(60));
       return this;
     }
 
-    public Builder minEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
-      this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+    @Override protected Builder prepareAndCheck() {
+      super.prepareAndCheck();
       return this;
     }
 
-    public Builder timeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
-      this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
-      return this;
-    }
-
-    public Builder numTestsPerEvictionRun(int numTestsPerEvictionRun) {
-      this.numTestsPerEvictionRun = numTestsPerEvictionRun;
-      return this;
-    }
-
+    @Override
     public ConnectionPoolConfig build() {
-      return new ConnectionPoolConfig(this);
+      var config = super.prepareAndCheck();
+      return new ConnectionPoolConfig(config);
     }
   }
 }

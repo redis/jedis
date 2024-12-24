@@ -1,26 +1,20 @@
 package redis.clients.jedis.commands.unified;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import static redis.clients.jedis.Protocol.Command.BLPOP;
-import static redis.clients.jedis.Protocol.Command.GET;
-import static redis.clients.jedis.Protocol.Command.HGETALL;
-import static redis.clients.jedis.Protocol.Command.LRANGE;
-import static redis.clients.jedis.Protocol.Command.PING;
-import static redis.clients.jedis.Protocol.Command.RPUSH;
-import static redis.clients.jedis.Protocol.Command.SET;
-import static redis.clients.jedis.Protocol.Command.XINFO;
-import static redis.clients.jedis.util.SafeEncoder.encode;
-import static redis.clients.jedis.util.SafeEncoder.encodeObject;
-import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
-import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
+import org.hamcrest.Matchers;
+import org.junit.Assume;
+import org.junit.Test;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.ScanIteration;
+import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.RestoreParams;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,22 +23,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.hamcrest.Matchers;
-import org.junit.Assume;
-import org.junit.Test;
 
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.ScanIteration;
-import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.args.ExpiryOption;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.util.AssertUtil;
-import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.SafeEncoder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.BLPOP;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.HGETALL;
+import static redis.clients.jedis.Protocol.Command.LRANGE;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.RPUSH;
+import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.Protocol.Command.XINFO;
+import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.util.SafeEncoder.encode;
+import static redis.clients.jedis.util.SafeEncoder.encodeObject;
 
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
@@ -863,6 +862,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertEquals(entryAsList, ((List) findValueFromMapAsList(encodeObj, "first-entry")).get(1));
     assertEquals(entryAsList, ((List) findValueFromMapAsList(encodeObj, "last-entry")).get(1));
   }
+
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {

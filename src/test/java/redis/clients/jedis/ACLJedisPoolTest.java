@@ -8,6 +8,7 @@ import redis.clients.jedis.util.RedisVersionUtil;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -57,10 +58,11 @@ public class ACLJedisPoolTest {
 
   @Test
   public void checkResourceIsClosableAndReusable() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    try (JedisPool pool = new JedisPool(config, endpoint.getHost(), endpoint.getPort(),
+    var config = JedisPoolConfig.builder()
+                                .defaultConfig()
+                                .maxPoolSize(1)
+                                .waitingForObjectTimeout(Duration.ZERO);
+    try (JedisPool pool = new JedisPool(config.build(), endpoint.getHost(), endpoint.getPort(),
                                         Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, 0 /* infinite */, endpoint.getUsername(),
                                         endpoint.getPassword(), Protocol.DEFAULT_DATABASE, "closable-reusable-pool", false, null, null, null)) {
 
@@ -77,10 +79,10 @@ public class ACLJedisPoolTest {
 
   @Test
   public void checkResourceWithConfigIsClosableAndReusable() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    try (JedisPool pool = new JedisPool(config, endpoint.getHostAndPort(),
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisPool pool = new JedisPool(config.build(), endpoint.getHostAndPort(),
                                         endpoint.getClientConfigBuilder().clientName("closable-reusable-pool")
                                                 .build())) {
 
@@ -115,10 +117,10 @@ public class ACLJedisPoolTest {
 
   @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    try (JedisPool pool = new JedisPool(config, endpoint.getHost(), endpoint.getPort());
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisPool pool = new JedisPool(config.build(), endpoint.getHost(), endpoint.getPort());
          Jedis jedis = pool.getResource()) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
 
@@ -130,9 +132,9 @@ public class ACLJedisPoolTest {
 
   @Test
   public void securePool() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setTestOnBorrow(true);
-    JedisPool pool = new JedisPool(config, endpoint.getHost(), endpoint.getPort(), 2000, endpoint.getUsername(),
+    var config = JedisPoolConfig.builder();
+    config.testOnBorrow(true);
+    JedisPool pool = new JedisPool(config.build(), endpoint.getHost(), endpoint.getPort(), 2000, endpoint.getUsername(),
                                    endpoint.getPassword());
     try (Jedis jedis = pool.getResource()) {
       jedis.set("foo", "bar");
@@ -143,9 +145,9 @@ public class ACLJedisPoolTest {
 
   @Test
   public void securePoolNonSSL() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setTestOnBorrow(true);
-    JedisPool pool = new JedisPool(config, endpoint.getHost(), endpoint.getPort(), 2000, endpoint.getUsername(),
+    var config = JedisPoolConfig.builder();
+    config.testOnBorrow(true);
+    JedisPool pool = new JedisPool(config.build(), endpoint.getHost(), endpoint.getPort(), 2000, endpoint.getUsername(),
                                    endpoint.getPassword(), false);
     try (Jedis jedis = pool.getResource()) {
       jedis.set("foo", "bar");
@@ -257,9 +259,9 @@ public class ACLJedisPoolTest {
 
   @Test
   public void testCloseConnectionOnMakeObject() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setTestOnBorrow(true);
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(),
+    var config = JedisPoolConfig.builder();
+    config.testOnBorrow(true);
+    try (JedisPool pool = new JedisPool(config.build(), endpoint.getHost(),
                                         endpoint.getPort(), 2000, endpoint.getUsername(), "wrongpassword");
          Jedis jedis = new Jedis(endpointWithDefaultUser.getURIBuilder()
                                                         .credentials("", endpointWithDefaultUser.getPassword()).build())) {

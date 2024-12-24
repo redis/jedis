@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +16,7 @@ public class SSLJedisSentinelPoolTest {
   private static final HostAndPortMapper SSL_PORT_MAPPER = (HostAndPort hap)
       -> new HostAndPort(hap.getHost(), hap.getPort() + 10000);
 
-  private static final JedisPoolConfig POOL_CONFIG = new JedisPoolConfig();
+  private static final SimpleObjectPoolConfig POOL_CONFIG = JedisPoolConfig.builder().build();
 
   @BeforeClass
   public static void prepare() {

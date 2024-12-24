@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                       JedisPoolConfig poolConfig) {
+                       SimpleObjectPoolConfig poolConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig));
     setProtocol(clientConfig);
   }
@@ -35,7 +36,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                       JedisPoolConfig poolConfig, Hashing algo) {
+                       SimpleObjectPoolConfig poolConfig, Hashing algo) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo));
     setProtocol(clientConfig);
   }

@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.time.Duration;
 import java.util.Set;
@@ -18,14 +19,14 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-                         JedisPoolConfig poolConfig) {
+                         SimpleObjectPoolConfig poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig),
          createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-                         JedisPoolConfig poolConfig, Duration topologyRefreshPeriod) {
+                         SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
          createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;

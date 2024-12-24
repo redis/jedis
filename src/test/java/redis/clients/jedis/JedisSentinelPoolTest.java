@@ -5,6 +5,7 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,12 +15,10 @@ import static org.junit.Assert.assertTrue;
 
 public class JedisSentinelPoolTest {
 
-  private static final String MASTER_NAME = "mymaster";
-
-  protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
-  protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
-
-  protected final Set<String> sentinels = new HashSet<>();
+  protected static final HostAndPort sentinel1   = HostAndPorts.getSentinelServers().get(1);
+  protected static final HostAndPort sentinel2   = HostAndPorts.getSentinelServers().get(3);
+  private static final   String      MASTER_NAME = "mymaster";
+  protected final        Set<String> sentinels   = new HashSet<>();
 
   @Before
   public void setUp() throws Exception {
@@ -33,9 +32,9 @@ public class JedisSentinelPoolTest {
   public void repeatedSentinelPoolInitialization() {
 
     for (int i = 0; i < 20; ++i) {
-      var config = new JedisPoolConfig();
+      var config = JedisPoolConfig.builder();
 
-      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
                                                      "foobared", 2);
       pool.getResource().close();
       pool.destroy();
@@ -54,16 +53,16 @@ public class JedisSentinelPoolTest {
 
   @Test(expected = JedisException.class)
   public void initializeWithNotMonitoredMasterNameShouldThrowException() {
-    final String wrongMasterName = "wrongMasterName";
-    JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName, sentinels);
+    final String      wrongMasterName = "wrongMasterName";
+    JedisSentinelPool pool            = new JedisSentinelPool(wrongMasterName, sentinels);
     pool.destroy();
   }
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    var config = new JedisPoolConfig();
+    var config = JedisPoolConfig.builder();
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
                                                    "foobared", 2);
     Jedis jedis = pool.getResource();
     jedis.auth("foobared");
@@ -76,10 +75,10 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void returnResourceShouldResetState() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
                                                         "foobared", 2)) {
 
       Jedis jedis = null;
@@ -99,10 +98,10 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void checkResourceIsCloseable() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
                                                    "foobared", 2);
 
     Jedis jedis = pool.getResource();
@@ -122,10 +121,10 @@ public class JedisSentinelPoolTest {
 
   @Test
   public void customClientName() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
-    // config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
                                                    "foobared", 0, "my_shiny_client_name");
 
     Jedis jedis = pool.getResource();

@@ -1,182 +1,67 @@
 package redis.clients.jedis;
 
-public class JedisPoolConfig {
-  private int     maxTotal                      = 8;
-  private int     maxIdle                       = 8;
-  private int     minIdle                       = 0;
-  private long    maxWaitMillis                 = 5000L;
-  private long    minEvictableIdleTimeMillis    = 60000L;
-  private long    timeBetweenEvictionRunsMillis = 30000L;
-  private int     numTestsPerEvictionRun        = 3;
-  private boolean testOnBorrow                  = true;
-  private boolean testOnReturn                  = false;
-  private boolean testWhileIdle                 = true;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
+
+import java.time.Duration;
+
+/**
+ * Configuration class for Jedis connection pool that extends SimpleObjectPoolConfig.
+ * Provides Jedis-specific default values and configuration options while leveraging
+ * the base pool configuration capabilities.
+ */
+public class JedisPoolConfig extends SimpleObjectPoolConfig {
 
   public JedisPoolConfig() {
-    this(builder());
+    super(builder().defaultConfig().prepareAndCheck());
   }
 
-  private JedisPoolConfig(Builder builder) {
-    this.maxTotal                      = builder.maxTotal;
-    this.maxIdle                       = builder.maxIdle;
-    this.minIdle                       = builder.minIdle;
-    this.maxWaitMillis                 = builder.maxWaitMillis;
-    this.minEvictableIdleTimeMillis    = builder.minEvictableIdleTimeMillis;
-    this.timeBetweenEvictionRunsMillis = builder.timeBetweenEvictionRunsMillis;
-    this.numTestsPerEvictionRun        = builder.numTestsPerEvictionRun;
-    this.testOnBorrow                  = builder.testOnBorrow;
-    this.testOnReturn                  = builder.testOnReturn;
-    this.testWhileIdle                 = builder.testWhileIdle;
+  public JedisPoolConfig(SimpleObjectPoolConfig.Builder config) {
+    super(config);
   }
 
+  /**
+   * Creates a new builder instance with Jedis-specific default settings.
+   *
+   * @return A new Builder instance with Jedis-specific default settings
+   */
   public static Builder builder() {
     return new Builder();
   }
 
-  public int getMaxTotal() {
-    return maxTotal;
-  }
+  /**
+   * Builder class for JedisPoolConfig that extends SimpleObjectPoolConfig.Builder
+   * to provide Jedis-specific configuration options.
+   */
+  public static class Builder extends SimpleObjectPoolConfig.Builder {
 
-  public void setMaxTotal(int maxTotal) {
-    this.maxTotal = maxTotal;
-  }
-
-  public int getMaxIdle() {
-    return maxIdle;
-  }
-
-  public void setMaxIdle(int maxIdle) {
-    this.maxIdle = maxIdle;
-  }
-
-  public int getMinIdle() {
-    return minIdle;
-  }
-
-  public void setMinIdle(int minIdle) {
-    this.minIdle = minIdle;
-  }
-
-  public long getMaxWaitMillis() {
-    return maxWaitMillis;
-  }
-
-  public void setMaxWaitMillis(long maxWaitMillis) {
-    this.maxWaitMillis = maxWaitMillis;
-  }
-
-  public long getMinEvictableIdleTimeMillis() {
-    return minEvictableIdleTimeMillis;
-  }
-
-  public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
-    this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
-  }
-
-  public long getTimeBetweenEvictionRunsMillis() {
-    return timeBetweenEvictionRunsMillis;
-  }
-
-  public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
-    this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
-  }
-
-  public int getNumTestsPerEvictionRun() {
-    return numTestsPerEvictionRun;
-  }
-
-  public void setNumTestsPerEvictionRun(int numTestsPerEvictionRun) {
-    this.numTestsPerEvictionRun = numTestsPerEvictionRun;
-  }
-
-  public boolean isTestOnBorrow() {
-    return testOnBorrow;
-  }
-
-  public void setTestOnBorrow(boolean testOnBorrow) {
-    this.testOnBorrow = testOnBorrow;
-  }
-
-  public boolean isTestOnReturn() {
-    return testOnReturn;
-  }
-
-  public void setTestOnReturn(boolean testOnReturn) {
-    this.testOnReturn = testOnReturn;
-  }
-
-  public boolean isTestWhileIdle() {
-    return testWhileIdle;
-  }
-
-  public void setTestWhileIdle(boolean testWhileIdle) {
-    this.testWhileIdle = testWhileIdle;
-  }
-
-  public static class Builder {
-    private int     maxTotal                      = 8;
-    private int     maxIdle                       = 8;
-    private int     minIdle                       = 0;
-    private long    maxWaitMillis                 = 5000L;
-    private long    minEvictableIdleTimeMillis    = 60000L;
-    private long    timeBetweenEvictionRunsMillis = 30000L;
-    private int     numTestsPerEvictionRun        = 3;
-    private boolean testOnBorrow                  = true;
-    private boolean testOnReturn                  = false;
-    private boolean testWhileIdle                 = true;
-
-    public Builder maxTotal(int maxTotal) {
-      this.maxTotal = maxTotal;
+    /**
+     * Sets default Jedis pool configuration values.
+     *
+     * @return this Builder instance
+     */
+    public Builder defaultConfig() {
+      this.maxPoolSize(8)
+          .minPoolSize(0)
+          .fairness(false)
+          .testOnCreate(false)
+          .testOnBorrow(true)
+          .testWhileIdle(true)
+          .testOnReturn(false)
+          .durationBetweenEvictionsRuns(Duration.ofSeconds(30))
+          .objEvictionTimeout(Duration.ofSeconds(60));
       return this;
     }
 
-    public Builder maxIdle(int maxIdle) {
-      this.maxIdle = maxIdle;
+
+    @Override protected Builder prepareAndCheck() {
+      super.prepareAndCheck();
       return this;
     }
 
-    public Builder minIdle(int minIdle) {
-      this.minIdle = minIdle;
-      return this;
-    }
-
-    public Builder maxWaitMillis(long maxWaitMillis) {
-      this.maxWaitMillis = maxWaitMillis;
-      return this;
-    }
-
-    public Builder minEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
-      this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
-      return this;
-    }
-
-    public Builder timeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
-      this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
-      return this;
-    }
-
-    public Builder numTestsPerEvictionRun(int numTestsPerEvictionRun) {
-      this.numTestsPerEvictionRun = numTestsPerEvictionRun;
-      return this;
-    }
-
-    public Builder testOnBorrow(boolean testOnBorrow) {
-      this.testOnBorrow = testOnBorrow;
-      return this;
-    }
-
-    public Builder testOnReturn(boolean testOnReturn) {
-      this.testOnReturn = testOnReturn;
-      return this;
-    }
-
-    public Builder testWhileIdle(boolean testWhileIdle) {
-      this.testWhileIdle = testWhileIdle;
-      return this;
-    }
-
+    @Override
     public JedisPoolConfig build() {
-      return new JedisPoolConfig(this);
+      var config = super.prepareAndCheck();
+      return new JedisPoolConfig(config);
     }
   }
 }

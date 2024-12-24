@@ -6,7 +6,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPoolConfig;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,12 +19,12 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
   private static final Supplier<JedisClientConfig> clientConfig
       = () -> DefaultJedisClientConfig.builder().resp3().password("cluster").build();
 
-  private static final Supplier<JedisPoolConfig> singleConnectionPoolConfig
+  private static final Supplier<SimpleObjectPoolConfig> singleConnectionPoolConfig
       = () -> {
-        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-        poolConfig.setMaxTotal(1);
-        return poolConfig;
-      };
+    var poolConfig = ConnectionPoolConfig.builder();
+    poolConfig.maxPoolSize(1);
+    return poolConfig.build();
+  };
 
   @Override
   protected JedisCluster createRegularJedis() {

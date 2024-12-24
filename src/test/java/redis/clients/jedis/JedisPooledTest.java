@@ -7,6 +7,7 @@ import redis.clients.jedis.exceptions.JedisException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,10 +48,11 @@ public class JedisPooledTest {
 
   @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
-    var config = new JedisPoolConfig();
-    config.setMaxTotal(1);
+    var config = JedisPoolConfig.builder();
+    config.maxPoolSize(1);
     // config.setBlockWhenExhausted(false);
-    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config);
+    config.waitingForObjectTimeout(Duration.ZERO);
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config.build());
          Connection jedis = pool.getPool().getResource()) {
 
       try (Connection jedis2 = pool.getPool().getResource()) {
@@ -241,11 +243,11 @@ public class JedisPooledTest {
     };
 
     // TODO: do it without the help of pool config; from Connection constructor? (configurable) force ping?
-    var poolConfig = new JedisPoolConfig();
-    poolConfig.setMaxTotal(1);
-    poolConfig.setTestOnBorrow(true);
+    var poolConfig = JedisPoolConfig.builder();
+    poolConfig.maxPoolSize(1);
+    poolConfig.testOnBorrow(true);
     try (JedisPooled pool = new JedisPooled(endpointStandalone1.getHostAndPort(), DefaultJedisClientConfig.builder()
-                                                                                                          .credentialsProvider(credentialsProvider).build(), poolConfig)) {
+                                                                                                          .credentialsProvider(credentialsProvider).build(), poolConfig.build())) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");

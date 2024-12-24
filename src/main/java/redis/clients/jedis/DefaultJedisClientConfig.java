@@ -308,6 +308,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.ssl = instance.isSsl();
       this.sslSocketFactory = instance.getSslSocketFactory();
       this.sslParameters = instance.getSslParameters();
+      this.sslOptions = instance.getSslOptions();
       this.hostnameVerifier = instance.getHostnameVerifier();
       this.hostAndPortMapper = instance.getHostAndPortMapper();
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();

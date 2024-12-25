@@ -1,44 +1,44 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>today.bonfire.oss</groupId>
+        <artifactId>bonfire-oss-parent</artifactId>
+        <version>1.1.5</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <groupId>redis.clients</groupId>
+    <groupId>today.bonfire.oss</groupId>
     <artifactId>jedis</artifactId>
     <version>5.2.0-SNAPSHOT</version>
     <name>Jedis</name>
     <description>Jedis is a blazingly small and sane Redis java client.</description>
-    <url>https://github.com/redis/jedis</url>
+    <url>https://github.com/BonfireTrunk/jedis</url>
 
     <licenses>
         <license>
             <name>MIT</name>
-            <url>https://github.com/redis/jedis/blob/master/LICENSE</url>
+            <url>https://github.com/BonfireTrunk/jedis/blob/master/LICENSE</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/redis/jedis/issues</url>
+        <url>https://github.com/BonfireTrunk/jedis/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:redis/jedis.git</connection>
-        <url>scm:git:git@github.com:redis/jedis.git</url>
-        <developerConnection>scm:git:git@github.com:redis/jedis.git</developerConnection>
+        <connection>scm:git:git@github.com:BonfireTrunk/jedis.git</connection>
+        <url>scm:git:git@github.com:BonfireTrunk/jedis.git</url>
+        <developerConnection>scm:git:git@github.com:BonfireTrunk/jedis.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <properties>
         <github.global.server>github</github.global.server>
         <jedis.module.name>redis.clients.jedis</jedis.module.name>
-        <slf4j.version>1.7.36</slf4j.version>
         <resilience4j.version>1.7.1</resilience4j.version>
         <jackson.version>2.17.2</jackson.version>
         <maven.surefire.version>3.5.0</maven.surefire.version>
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>today.bonfire.oss</groupId>
             <artifactId>simple-object-pool</artifactId>
-            <version>2.1.0</version>
+            <version>2.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -127,11 +127,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -194,17 +198,6 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <build>
         <resources>
             <resource>
@@ -254,54 +247,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.10.0</version>
-                <configuration>
-                    <source>8</source><!-- Until JDK 11+ -->
-                    <detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->
-                    <!--<doclint>none</doclint>-->
-                    <!--<doclint>all,-missing</doclint>-->
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>3.1.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.7.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
                 <artifactId>maven-java-formatter-plugin</artifactId>
                 <version>0.4</version>
@@ -338,33 +283,6 @@
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <!--Sign the components - this is required by maven central for releases -->
-                    <plugin>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.6</version>
-                        <configuration>
-                            <gpgArguments>
-                                <arg>--pinentry-mode</arg>
-                                <arg>loopback</arg>
-                            </gpgArguments>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>doctests</id>
             <build>

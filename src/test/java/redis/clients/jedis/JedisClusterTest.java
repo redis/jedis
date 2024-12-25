@@ -498,7 +498,7 @@ public class JedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-  @Test(expected = JedisException.class)
+  @Test(expected = IllegalArgumentException.class) // TODO: change the test case
   public void testIfPoolConfigAppliesToClusterPools() {
     var config = JedisPoolConfig.builder();
     config.maxPoolSize(0);

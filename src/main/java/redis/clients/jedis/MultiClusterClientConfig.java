@@ -5,6 +5,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowT
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
+import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -193,8 +194,8 @@ public final class MultiClusterClientConfig {
 
     private int               priority;
     private HostAndPort       hostAndPort;
-    private JedisClientConfig    clientConfig;
-    private ConnectionPoolConfig connectionPoolConfig;
+    private JedisClientConfig      clientConfig;
+    private SimpleObjectPoolConfig connectionPoolConfig;
 
     public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
       this.hostAndPort  = hostAndPort;
@@ -202,7 +203,7 @@ public final class MultiClusterClientConfig {
     }
 
     public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-                         ConnectionPoolConfig connectionPoolConfig) {
+                         SimpleObjectPoolConfig connectionPoolConfig) {
       this.hostAndPort          = hostAndPort;
       this.clientConfig         = clientConfig;
       this.connectionPoolConfig = connectionPoolConfig;
@@ -224,7 +225,7 @@ public final class MultiClusterClientConfig {
       return clientConfig;
     }
 
-    public ConnectionPoolConfig getConnectionPoolConfig() {
+    public SimpleObjectPoolConfig getConnectionPoolConfig() {
       return connectionPoolConfig;
     }
   }

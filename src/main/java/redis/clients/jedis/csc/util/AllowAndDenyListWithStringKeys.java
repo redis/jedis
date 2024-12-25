@@ -14,8 +14,8 @@ public class AllowAndDenyListWithStringKeys implements Cacheable {
   private final Set<String> allowKeys;
   private final Set<String> denyKeys;
 
-  public AllowAndDenyListWithStringKeys(Set<ProtocolCommand> allowCommands, Set<ProtocolCommand> denyCommands,
-      Set<String> allowKeys, Set<String> denyKeys) {
+  public AllowAndDenyListWithStringKeys(Set<ProtocolCommand> allowCommands,
+      Set<ProtocolCommand> denyCommands, Set<String> allowKeys, Set<String> denyKeys) {
     this.allowCommands = allowCommands;
     this.denyCommands = denyCommands;
     this.allowKeys = allowKeys;

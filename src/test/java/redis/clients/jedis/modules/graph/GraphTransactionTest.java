@@ -27,7 +27,7 @@ import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 @RunWith(Parameterized.class)
 public class GraphTransactionTest extends RedisModuleCommandsTestBase {
 
-//  private Connection c;
+  // private Connection c;
 
   @BeforeClass
   public static void prepare() {
@@ -38,31 +38,31 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     super(protocol);
   }
 
-//
-//  @Before
-//  public void createApi() {
-//    api = new RedisGraph();
-//  }
-//
-//  @After
-//  public void deleteGraph() {
-//    api.deleteGraph("social");
-//    api.close();
-//  }
-//
-//  @Before
-//  public void createApi() {
-//    c = createConnection();
-//  }
-//
-//  @After
-//  public void deleteGraph() {
-//    c.close();
-//  }
+  //
+  // @Before
+  // public void createApi() {
+  // api = new RedisGraph();
+  // }
+  //
+  // @After
+  // public void deleteGraph() {
+  // api.deleteGraph("social");
+  // api.close();
+  // }
+  //
+  // @Before
+  // public void createApi() {
+  // c = createConnection();
+  // }
+  //
+  // @After
+  // public void deleteGraph() {
+  // c.close();
+  // }
 
   @Test
   public void testMultiExec() {
-//    Transaction transaction = new Transaction(c);
+    // Transaction transaction = new Transaction(c);
     AbstractTransaction transaction = client.multi();
 
     transaction.set("x", "1");
@@ -72,7 +72,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     transaction.get("x");
     transaction.graphQuery("social", "MATCH (n:Person) RETURN n");
     transaction.graphDelete("g");
-//    transaction.callProcedure("social", "db.labels");
+    // transaction.callProcedure("social", "db.labels");
     transaction.graphQuery("social", "CALL db.labels()");
     List<Object> results = transaction.exec();
 
@@ -81,12 +81,12 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", results.get(0));
 
     // Redis graph command
-//    assertEquals(ResultSetImpl.class, results.get(1).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(1).getClass());
     ResultSet resultSet = (ResultSet) results.get(1);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
 
-//    assertEquals(ResultSetImpl.class, results.get(2).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(2).getClass());
     resultSet = (ResultSet) results.get(2);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
@@ -100,7 +100,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     assertEquals("2", results.get(4));
 
     // Graph query result
-//    assertEquals(ResultSetImpl.class, results.get(5).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(5).getClass());
     resultSet = (ResultSet) results.get(5);
 
     assertNotNull(resultSet.getHeader());
@@ -126,7 +126,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("n"), record.keys());
     assertEquals(expectedNode, record.getValue("n"));
 
-//    assertEquals(ResultSetImpl.class, results.get(7).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(7).getClass());
     resultSet = (ResultSet) results.get(7);
 
     assertNotNull(resultSet.getHeader());
@@ -145,48 +145,49 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("label"), record.keys());
     assertEquals("Person", record.getValue("label"));
   }
-//
-//  @Test
-//  public void testWriteTransactionWatch() {
-//
-//    RedisGraphContext c1 = api.getContext();
-//    RedisGraphContext c2 = api.getContext();
-//
-//    c1.watch("social");
-//    RedisGraphTransaction t1 = c1.multi();
-//
-//    t1.graphQuery("social", "CREATE (:Person {name:'a'})");
-//    c2.graphQuery("social", "CREATE (:Person {name:'b'})");
-//    List<Object> returnValue = t1.exec();
-//    assertNull(returnValue);
-//    c1.close();
-//    c2.close();
-//  }
-//
-//  @Test
-//  public void testReadTransactionWatch() {
-//
-//    RedisGraphContext c1 = api.getContext();
-//    RedisGraphContext c2 = api.getContext();
-//    assertNotEquals(c1.getConnectionContext(), c2.getConnectionContext());
-//    c1.graphQuery("social", "CREATE (:Person {name:'a'})");
-//    c1.watch("social");
-//    RedisGraphTransaction t1 = c1.multi();
-//
-//    Map<String, Object> params = new HashMap<>();
-//    params.put("name", 'b');
-//    t1.graphQuery("social", "CREATE (:Person {name:$name})", params);
-//    c2.graphQuery("social", "MATCH (n) return n");
-//    List<Object> returnValue = t1.exec();
-//
-//    assertNotNull(returnValue);
-//    c1.close();
-//    c2.close();
-//  }
+
+  //
+  // @Test
+  // public void testWriteTransactionWatch() {
+  //
+  // RedisGraphContext c1 = api.getContext();
+  // RedisGraphContext c2 = api.getContext();
+  //
+  // c1.watch("social");
+  // RedisGraphTransaction t1 = c1.multi();
+  //
+  // t1.graphQuery("social", "CREATE (:Person {name:'a'})");
+  // c2.graphQuery("social", "CREATE (:Person {name:'b'})");
+  // List<Object> returnValue = t1.exec();
+  // assertNull(returnValue);
+  // c1.close();
+  // c2.close();
+  // }
+  //
+  // @Test
+  // public void testReadTransactionWatch() {
+  //
+  // RedisGraphContext c1 = api.getContext();
+  // RedisGraphContext c2 = api.getContext();
+  // assertNotEquals(c1.getConnectionContext(), c2.getConnectionContext());
+  // c1.graphQuery("social", "CREATE (:Person {name:'a'})");
+  // c1.watch("social");
+  // RedisGraphTransaction t1 = c1.multi();
+  //
+  // Map<String, Object> params = new HashMap<>();
+  // params.put("name", 'b');
+  // t1.graphQuery("social", "CREATE (:Person {name:$name})", params);
+  // c2.graphQuery("social", "MATCH (n) return n");
+  // List<Object> returnValue = t1.exec();
+  //
+  // assertNotNull(returnValue);
+  // c1.close();
+  // c2.close();
+  // }
 
   @Test
   public void testMultiExecWithReadOnlyQueries() {
-//    Transaction transaction = new Transaction(c);
+    // Transaction transaction = new Transaction(c);
     AbstractTransaction transaction = client.multi();
 
     transaction.set("x", "1");
@@ -194,7 +195,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     transaction.graphQuery("g", "CREATE (:Person {name:'a'})");
     transaction.graphReadonlyQuery("social", "MATCH (n:Person) RETURN n");
     transaction.graphDelete("g");
-//    transaction.callProcedure("social", "db.labels");
+    // transaction.callProcedure("social", "db.labels");
     transaction.graphQuery("social", "CALL db.labels()");
     List<Object> results = transaction.exec();
 
@@ -203,18 +204,18 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", results.get(0));
 
     // Redis graph command
-//    assertEquals(ResultSetImpl.class, results.get(1).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(1).getClass());
     ResultSet resultSet = (ResultSet) results.get(1);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
 
-//    assertEquals(ResultSetImpl.class, results.get(2).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(2).getClass());
     resultSet = (ResultSet) results.get(2);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
 
     // Graph read-only query result
-//    assertEquals(ResultSetImpl.class, results.get(5).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(5).getClass());
     resultSet = (ResultSet) results.get(3);
 
     assertNotNull(resultSet.getHeader());
@@ -240,7 +241,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("n"), record.keys());
     assertEquals(expectedNode, record.getValue("n"));
 
-//    assertEquals(ResultSetImpl.class, results.get(5).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(5).getClass());
     resultSet = (ResultSet) results.get(5);
 
     assertNotNull(resultSet.getHeader());

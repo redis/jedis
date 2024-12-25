@@ -30,7 +30,7 @@ import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 @RunWith(Parameterized.class)
 public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
-//  private Connection c;
+  // private Connection c;
 
   @BeforeClass
   public static void prepare() {
@@ -41,31 +41,31 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     super(protocol);
   }
 
-//
-//  @Before
-//  public void createApi() {
-//    api = new RedisGraph();
-//  }
-//
-//  @After
-//  public void deleteGraph() {
-//    api.deleteGraph("social");
-//    api.close();
-//  }
-//
-//  @Before
-//  public void createApi() {
-//    c = createConnection();
-//  }
-//
-//  @After
-//  public void deleteGraph() {
-//    c.close();
-//  }
+  //
+  // @Before
+  // public void createApi() {
+  // api = new RedisGraph();
+  // }
+  //
+  // @After
+  // public void deleteGraph() {
+  // api.deleteGraph("social");
+  // api.close();
+  // }
+  //
+  // @Before
+  // public void createApi() {
+  // c = createConnection();
+  // }
+  //
+  // @After
+  // public void deleteGraph() {
+  // c.close();
+  // }
 
   @Test
   public void testSync() {
-//    Pipeline pipeline = new Pipeline(c);
+    // Pipeline pipeline = new Pipeline(c);
     Pipeline pipeline = (Pipeline) client.pipelined();
 
     pipeline.set("x", "1");
@@ -75,7 +75,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     pipeline.get("x");
     pipeline.graphQuery("social", "MATCH (n:Person) RETURN n");
     pipeline.graphDelete("g");
-//    pipeline.callProcedure("social", "db.labels");
+    // pipeline.callProcedure("social", "db.labels");
     pipeline.graphQuery("social", "CALL db.labels()");
     List<Object> results = pipeline.syncAndReturnAll();
 
@@ -84,12 +84,12 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", results.get(0));
 
     // Redis graph command
-//    assertEquals(ResultSetImpl.class, results.get(1).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(1).getClass());
     ResultSet resultSet = (ResultSet) results.get(1);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
 
-//    assertEquals(ResultSetImpl.class, results.get(2).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(2).getClass());
     resultSet = (ResultSet) results.get(2);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
@@ -103,7 +103,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals("2", results.get(4));
 
     // Graph query result
-//    assertEquals(ResultSetImpl.class, results.get(5).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(5).getClass());
     resultSet = (ResultSet) results.get(5);
 
     assertNotNull(resultSet.getHeader());
@@ -129,7 +129,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("n"), record.keys());
     assertEquals(expectedNode, record.getValue("n"));
 
-//    assertEquals(ResultSetImpl.class, results.get(7).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(7).getClass());
     resultSet = (ResultSet) results.get(7);
 
     assertNotNull(resultSet.getHeader());
@@ -151,7 +151,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testReadOnlyQueries() {
-//    Pipeline pipeline = new Pipeline(c);
+    // Pipeline pipeline = new Pipeline(c);
     Pipeline pipeline = (Pipeline) client.pipelined();
 
     pipeline.set("x", "1");
@@ -159,7 +159,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     pipeline.graphQuery("g", "CREATE (:Person {name:'a'})");
     pipeline.graphReadonlyQuery("social", "MATCH (n:Person) RETURN n");
     pipeline.graphDelete("g");
-//    pipeline.callProcedure("social", "db.labels");
+    // pipeline.callProcedure("social", "db.labels");
     pipeline.graphQuery("social", "CALL db.labels()");
     List<Object> results = pipeline.syncAndReturnAll();
 
@@ -168,18 +168,18 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", results.get(0));
 
     // Redis graph command
-//    assertEquals(ResultSetImpl.class, results.get(1).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(1).getClass());
     ResultSet resultSet = (ResultSet) results.get(1);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
 
-//    assertEquals(ResultSetImpl.class, results.get(2).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(2).getClass());
     resultSet = (ResultSet) results.get(2);
     assertEquals(1, resultSet.getStatistics().nodesCreated());
     assertEquals(1, resultSet.getStatistics().propertiesSet());
 
     // Graph read-only query result
-//    assertEquals(ResultSetImpl.class, results.get(5).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(5).getClass());
     resultSet = (ResultSet) results.get(3);
 
     assertNotNull(resultSet.getHeader());
@@ -205,7 +205,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("n"), record.keys());
     assertEquals(expectedNode, record.getValue("n"));
 
-//    assertEquals(ResultSetImpl.class, results.get(5).getClass());
+    // assertEquals(ResultSetImpl.class, results.get(5).getClass());
     resultSet = (ResultSet) results.get(5);
 
     assertNotNull(resultSet.getHeader());
@@ -227,7 +227,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testWaitReplicas() {
-//    Pipeline pipeline = new Pipeline(c);
+    // Pipeline pipeline = new Pipeline(c);
     Pipeline pipeline = (Pipeline) client.pipelined();
     pipeline.set("x", "1");
     pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
@@ -240,7 +240,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
   @Test
   @org.junit.Ignore
   public void testWaitAof() {
-//    Pipeline pipeline = new Pipeline(c);
+    // Pipeline pipeline = new Pipeline(c);
     Pipeline pipeline = (Pipeline) client.pipelined();
     pipeline.set("x", "1");
     pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");

@@ -114,8 +114,9 @@ public class SetParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SetParams setParams = (SetParams) o;
-    return Objects.equals(existance, setParams.existance) && Objects.equals(expiration, setParams.expiration)
-            && Objects.equals(expirationValue, setParams.expirationValue);
+    return Objects.equals(existance, setParams.existance)
+        && Objects.equals(expiration, setParams.expiration)
+        && Objects.equals(expirationValue, setParams.expirationValue);
   }
 
   @Override

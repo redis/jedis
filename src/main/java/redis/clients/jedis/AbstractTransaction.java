@@ -28,7 +28,8 @@ public abstract class AbstractTransaction extends PipeliningBase implements Clos
 
   public abstract String unwatch();
 
-  @Override public abstract void close();
+  @Override
+  public abstract void close();
 
   public abstract List<Object> exec();
 

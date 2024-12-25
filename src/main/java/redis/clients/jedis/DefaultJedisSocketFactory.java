@@ -60,18 +60,23 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       Collections.shuffle(hosts);
     }
 
-    JedisConnectionException jce = new JedisConnectionException("Failed to connect to " + hostAndPort + ".");
+    JedisConnectionException jce = new JedisConnectionException("Failed to connect to "
+        + hostAndPort + ".");
     for (InetAddress host : hosts) {
       try {
         Socket socket = new Socket();
 
         socket.setReuseAddress(true);
         socket.setKeepAlive(true); // Will monitor the TCP connection is valid
-        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
-        socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
+        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of
+                                    // data
+        socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is
+                                     // closed immediately
 
-        // Passing 'host' directly will avoid another call to InetAddress.getByName() inside the InetSocketAddress constructor.
-        // For machines with ipv4 and ipv6, but the startNode uses ipv4 to connect, the ipv6 connection may fail.
+        // Passing 'host' directly will avoid another call to InetAddress.getByName() inside the
+        // InetSocketAddress constructor.
+        // For machines with ipv4 and ipv6, but the startNode uses ipv4 to connect, the ipv6
+        // connection may fail.
         socket.connect(new InetSocketAddress(host, hostAndPort.getPort()), connectionTimeout);
         return socket;
       } catch (Exception e) {
@@ -95,7 +100,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
           _sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
         Socket plainSocket = socket;
-        socket = _sslSocketFactory.createSocket(socket, _hostAndPort.getHost(), _hostAndPort.getPort(), true);
+        socket = _sslSocketFactory.createSocket(socket, _hostAndPort.getHost(),
+          _hostAndPort.getPort(), true);
 
         if (null != sslParameters) {
           ((SSLSocket) socket).setSSLParameters(sslParameters);

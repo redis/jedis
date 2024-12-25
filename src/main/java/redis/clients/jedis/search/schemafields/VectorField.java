@@ -11,14 +11,14 @@ import redis.clients.jedis.search.FieldName;
 public class VectorField extends SchemaField {
 
   public enum VectorAlgorithm {
-    FLAT,
-    HNSW
+    FLAT, HNSW
   }
 
   private final VectorAlgorithm algorithm;
   private final Map<String, Object> attributes;
 
   private boolean indexMissing;
+
   // private boolean noIndex; // throws Field `NOINDEX` does not have a type
 
   public VectorField(String fieldName, VectorAlgorithm algorithm, Map<String, Object> attributes) {

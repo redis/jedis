@@ -14,11 +14,7 @@ import redis.clients.jedis.params.IParams;
 public class Schema {
 
   public enum FieldType {
-    TAG,
-    TEXT,
-    GEO,
-    NUMERIC,
-    VECTOR
+    TAG, TEXT, GEO, NUMERIC, VECTOR
   }
 
   // public for CommandObjects
@@ -38,7 +34,6 @@ public class Schema {
 
   /**
    * Add a text field to the schema with a given weight
-   *
    * @param name the field's name
    * @param weight its weight, a positive floating point number
    * @return the schema object
@@ -50,7 +45,6 @@ public class Schema {
 
   /**
    * Add a text field that can be sorted on
-   *
    * @param name the field's name
    * @param weight its weight, a positive floating point number
    * @return the schema object
@@ -62,7 +56,6 @@ public class Schema {
 
   /**
    * Add a geo filtering field to the schema.
-   *
    * @param name the field's name
    * @return the schema object
    */
@@ -73,7 +66,6 @@ public class Schema {
 
   /**
    * Add a numeric field to the schema
-   *
    * @param name the fields's nam e
    * @return the schema object
    */
@@ -123,7 +115,8 @@ public class Schema {
     return this;
   }
 
-  public Schema addVectorField(String name, VectorField.VectorAlgo algorithm, Map<String, Object> attributes) {
+  public Schema addVectorField(String name, VectorField.VectorAlgo algorithm,
+      Map<String, Object> attributes) {
     fields.add(new VectorField(name, algorithm, attributes));
     return this;
   }
@@ -188,7 +181,7 @@ public class Schema {
       this.noIndex = noIndex;
     }
 
-    public void as(String attribute){
+    public void as(String attribute) {
       this.fieldName.as(attribute);
     }
 
@@ -207,14 +200,15 @@ public class Schema {
 
     /**
      * Subclasses should override this method.
-     *
      * @param args
      */
-    protected void addTypeArgs(CommandArguments args) { }
+    protected void addTypeArgs(CommandArguments args) {
+    }
 
     @Override
     public String toString() {
-      return "Field{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex + "}";
+      return "Field{name='" + fieldName + "', type=" + type + ", sortable=" + sortable
+          + ", noindex=" + noIndex + "}";
     }
   }
 
@@ -251,14 +245,16 @@ public class Schema {
       this(name, weight, sortable, nostem, noindex, null);
     }
 
-    public TextField(String name, double weight, boolean sortable, boolean nostem, boolean noindex, String phonetic) {
+    public TextField(String name, double weight, boolean sortable, boolean nostem, boolean noindex,
+        String phonetic) {
       super(name, FieldType.TEXT, sortable, noindex);
       this.weight = weight;
       this.nostem = nostem;
       this.phonetic = phonetic;
     }
 
-    public TextField(FieldName name, double weight, boolean sortable, boolean nostem, boolean noindex, String phonetic) {
+    public TextField(FieldName name, double weight, boolean sortable, boolean nostem,
+        boolean noindex, String phonetic) {
       super(name, FieldType.TEXT, sortable, noindex);
       this.weight = weight;
       this.nostem = nostem;
@@ -282,8 +278,9 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "TextField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
-          + ", weight=" + weight + ", nostem=" + nostem + ", phonetic='" + phonetic + "'}";
+      return "TextField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable
+          + ", noindex=" + noIndex + ", weight=" + weight + ", nostem=" + nostem + ", phonetic='"
+          + phonetic + "'}";
     }
   }
 
@@ -341,16 +338,16 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
-          + ", separator='" + separator + ", caseSensitive='" + caseSensitive + "'}";
+      return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable
+          + ", noindex=" + noIndex + ", separator='" + separator + ", caseSensitive='"
+          + caseSensitive + "'}";
     }
   }
 
   public static class VectorField extends Field {
 
     public enum VectorAlgo {
-      FLAT,
-      HNSW
+      FLAT, HNSW
     }
 
     private final VectorAlgo algorithm;
@@ -374,7 +371,8 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "VectorField{name='" + fieldName + "', type=" + type + ", algorithm=" + algorithm + ", attributes=" + attributes + "}";
+      return "VectorField{name='" + fieldName + "', type=" + type + ", algorithm=" + algorithm
+          + ", attributes=" + attributes + "}";
     }
   }
 }

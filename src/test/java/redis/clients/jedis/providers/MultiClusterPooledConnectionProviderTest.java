@@ -34,17 +34,16 @@ public class MultiClusterPooledConnectionProviderTest {
   @Before
   public void setUp() {
 
-    ClusterConfig[]        clusterConfigs       = new ClusterConfig[2];
+    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
     SimpleObjectPoolConfig connectionPoolConfig = null;
-    clusterConfigs[0]    = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(),
-                                             connectionPoolConfig);
-    connectionPoolConfig = ConnectionPoolConfig.builder()
-                                               .testOnBorrow(false)
-                                               .build();
-    clusterConfigs[1]    = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(),
-                                             connectionPoolConfig);
+    clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0
+        .getClientConfigBuilder().build(), connectionPoolConfig);
+    connectionPoolConfig = ConnectionPoolConfig.builder().testOnBorrow(false).build();
+    clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0
+        .getClientConfigBuilder().build(), connectionPoolConfig);
 
-    provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterConfigs).build());
+    provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(
+        clusterConfigs).build());
   }
 
   @Test
@@ -53,8 +52,8 @@ public class MultiClusterPooledConnectionProviderTest {
     CircuitBreaker circuitBreaker = provider.getClusterCircuitBreaker(1);
     circuitBreaker.getState();
 
-    if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))
-      circuitBreaker.transitionToClosedState();
+    if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState())) circuitBreaker
+        .transitionToClosedState();
 
     circuitBreaker.transitionToForcedOpenState();
     assertEquals(CircuitBreaker.State.FORCED_OPEN, circuitBreaker.getState());
@@ -85,12 +84,14 @@ public class MultiClusterPooledConnectionProviderTest {
 
     try {
       provider.incrementActiveMultiClusterIndex();
-    } catch (Exception e) {}
+    } catch (Exception e) {
+    }
 
     // This should set the isLastClusterCircuitBreakerForcedOpen to true
     try {
       provider.incrementActiveMultiClusterIndex();
-    } catch (Exception e) {}
+    } catch (Exception e) {
+    }
 
     assertEquals(true, provider.isLastClusterCircuitBreakerForcedOpen());
   }
@@ -157,12 +158,14 @@ public class MultiClusterPooledConnectionProviderTest {
     poolConfig.maxPoolSize(8);
     poolConfig.minPoolSize(1);
     ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig.build());
-    clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig.build());
+    clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0
+        .getClientConfigBuilder().build(), poolConfig.build());
+    clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0
+        .getClientConfigBuilder().build(), poolConfig.build());
     try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
         new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
-      MultiClusterPooledConnectionProvider.Cluster activeCluster  = customProvider.getCluster();
-      ConnectionPool                               connectionPool = activeCluster.getConnectionPool();
+      MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
+      ConnectionPool connectionPool = activeCluster.getConnectionPool();
       // assertEquals(8, connectionPool.getMaxTotal());
       // assertEquals(4, connectionPool.getMaxIdle()); //TODO
       assertEquals(1, connectionPool.currentPoolSize());

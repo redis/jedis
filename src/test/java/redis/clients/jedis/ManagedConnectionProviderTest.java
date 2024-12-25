@@ -15,7 +15,8 @@ public class ManagedConnectionProviderTest {
   @Before
   public void setUp() {
     EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
-    connection = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+    connection = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .build());
   }
 
   @After
@@ -30,7 +31,8 @@ public class ManagedConnectionProviderTest {
       try {
         jedis.get("any");
         Assert.fail("Should get NPE.");
-      } catch (NullPointerException npe) { }
+      } catch (NullPointerException npe) {
+      }
       managed.setConnection(connection);
       Assert.assertNull(jedis.get("any"));
     }

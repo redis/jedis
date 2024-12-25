@@ -37,8 +37,8 @@ public class SSLJedisTest {
   }
 
   private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-        new File(trustStoreFilePath).exists());
+    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath), new File(
+        trustStoreFilePath).exists());
     System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
     System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
   }
@@ -53,8 +53,8 @@ public class SSLJedisTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder().ssl(true).build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), DefaultJedisClientConfig.builder()
+        .ssl(true).build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -62,13 +62,12 @@ public class SSLJedisTest {
 
   @Test
   public void connectWithConfigInterface() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        new JedisClientConfig() {
-          @Override
-          public boolean isSsl() {
-            return true;
-          }
-        })) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), new JedisClientConfig() {
+      @Override
+      public boolean isSsl() {
+        return true;
+      }
+    })) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }

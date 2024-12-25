@@ -26,11 +26,12 @@ public class BloomTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public BloomTest(RedisProtocol protocol) {
     super(protocol);
@@ -89,8 +90,8 @@ public class BloomTest extends RedisModuleCommandsTestBase {
     // bf.reserve bfexpansion 0.001 1000 expansion 4
     client.bfReserve("bfexpansion", 0.001, 1000, BFReserveParams.reserveParams().expansion(4));
     assertEquals(Arrays.asList(true), client.bfInsert("bfexpansion", "a"));
-    assertEquals(Arrays.asList(true), client.bfInsert("bfexpansion",
-        BFInsertParams.insertParams().noCreate(), "b"));
+    assertEquals(Arrays.asList(true),
+      client.bfInsert("bfexpansion", BFInsertParams.insertParams().noCreate(), "b"));
   }
 
   @Test
@@ -128,7 +129,8 @@ public class BloomTest extends RedisModuleCommandsTestBase {
     client.bfMAdd("simpleBloom", "foo", "bar", "baz", "bat", "bag");
 
     // Check if they exist:
-    List<Boolean> rv = client.bfMExists("simpleBloom", "foo", "bar", "baz", "bat", "Mark", "nonexist");
+    List<Boolean> rv = client.bfMExists("simpleBloom", "foo", "bar", "baz", "bat", "Mark",
+      "nonexist");
     // All items except the last one will be 'true'
     assertEquals(Arrays.asList(true, true, true, true, true, false), rv);
 
@@ -186,8 +188,8 @@ public class BloomTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void insertNonScaling() {
-    List<Boolean> insert = client.bfInsert("nonscaling_err",
-        BFInsertParams.insertParams().capacity(4).nonScaling(), "a", "b", "c");
+    List<Boolean> insert = client.bfInsert("nonscaling_err", BFInsertParams.insertParams()
+        .capacity(4).nonScaling(), "a", "b", "c");
     assertEquals(Arrays.asList(true, true, true), insert);
 
     insert = client.bfInsert("nonscaling_err", "d", "e");
@@ -197,10 +199,9 @@ public class BloomTest extends RedisModuleCommandsTestBase {
   @Test
   public void insertExpansion() {
     // BF.INSERT bfexpansion CAPACITY 3 expansion 3 ITEMS a b c d e f g h j k l o i u y t r e w q
-    List<Boolean> insert = client.bfInsert("bfexpansion",
-        BFInsertParams.insertParams().capacity(3).expansion(3),
-        "a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l",
-        "o", "i", "u", "y", "t", "r", "e", "w", "q");
+    List<Boolean> insert = client.bfInsert("bfexpansion", BFInsertParams.insertParams().capacity(3)
+        .expansion(3), "a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l", "o", "i", "u", "y",
+      "t", "r", "e", "w", "q");
     assertEquals(20, insert.size());
   }
 

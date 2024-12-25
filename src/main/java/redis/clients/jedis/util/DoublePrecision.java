@@ -18,19 +18,19 @@ public final class DoublePrecision {
 
       switch (str) {
 
-        case "inf":
-        case "+inf":
-          return Double.POSITIVE_INFINITY;
+      case "inf":
+      case "+inf":
+        return Double.POSITIVE_INFINITY;
 
-        case "-inf":
-          return Double.NEGATIVE_INFINITY;
+      case "-inf":
+        return Double.NEGATIVE_INFINITY;
 
-        case "nan":
-        case "-nan": // for some module commands // TODO: remove
-          return Double.NaN;
+      case "nan":
+      case "-nan": // for some module commands // TODO: remove
+        return Double.NaN;
 
-        default:
-          throw e;
+      default:
+        throw e;
       }
     }
   }

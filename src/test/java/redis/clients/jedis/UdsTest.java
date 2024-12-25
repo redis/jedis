@@ -21,8 +21,8 @@ public class UdsTest {
 
   @Test
   public void jedisConnectsToUdsResp3() {
-    try (Jedis jedis = new Jedis(new UdsJedisSocketFactory(),
-        DefaultJedisClientConfig.builder().resp3().build())) {
+    try (Jedis jedis = new Jedis(new UdsJedisSocketFactory(), DefaultJedisClientConfig.builder()
+        .resp3().build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

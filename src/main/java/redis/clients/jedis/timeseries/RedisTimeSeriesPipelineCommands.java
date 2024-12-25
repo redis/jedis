@@ -45,11 +45,13 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams);
 
-  Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
+  Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp,
+      String... filters);
 
   Response<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams);
 
-  Response<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
+  Response<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp,
+      String... filters);
 
   Response<Map<String, TSMRangeElements>> tsMRevRange(TSMRangeParams multiRangeParams);
 
@@ -59,9 +61,11 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
 
-  Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
+  Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
+      long timeBucket);
 
-  Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp);
+  Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
+      long bucketDuration, long alignTimestamp);
 
   Response<String> tsDeleteRule(String sourceKey, String destKey);
 

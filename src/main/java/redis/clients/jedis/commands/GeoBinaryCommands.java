@@ -41,7 +41,8 @@ public interface GeoBinaryCommands {
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
+      GeoUnit unit);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
@@ -54,14 +55,16 @@ public interface GeoBinaryCommands {
 
   long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
-  
+
   List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit);
+  List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height,
+      GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double width, double height, GeoUnit unit);
+  List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double width, double height,
+      GeoUnit unit);
 
   List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params);
 
@@ -69,9 +72,11 @@ public interface GeoBinaryCommands {
 
   long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double radius, GeoUnit unit);
 
-  long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit);
+  long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height,
+      GeoUnit unit);
 
-  long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width, double height, GeoUnit unit);
+  long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width, double height,
+      GeoUnit unit);
 
   long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params);
 

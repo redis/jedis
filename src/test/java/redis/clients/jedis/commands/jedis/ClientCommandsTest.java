@@ -174,7 +174,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    assertEquals(1, jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));
+    assertEquals(1,
+      jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));
     assertDisconnected(jedis);
   }
 
@@ -222,7 +223,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     matcher.find();
     String addr = matcher.group(1);
     int lastColon = addr.lastIndexOf(":");
-    String[] hp = new String[]{addr.substring(0, lastColon), addr.substring(lastColon + 1)};
+    String[] hp = new String[] { addr.substring(0, lastColon), addr.substring(lastColon + 1) };
 
     assertEquals(1, jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1]))));
 
@@ -300,7 +301,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   @Test
   public void trackingInfoResp3() {
     Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-            .protocol(RedisProtocol.RESP3).build());
+        .protocol(RedisProtocol.RESP3).build());
     TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
 
     assertEquals(1, trackingInfo.getFlags().size());

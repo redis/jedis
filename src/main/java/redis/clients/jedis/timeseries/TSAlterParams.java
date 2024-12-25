@@ -56,7 +56,6 @@ public class TSAlterParams implements IParams {
 
   /**
    * Set label-value pairs
-   *
    * @param labels label-value pairs
    * @return the object itself
    */
@@ -118,11 +117,11 @@ public class TSAlterParams implements IParams {
     }
 
     TSAlterParams that = (TSAlterParams) o;
-    return ignore == that.ignore && ignoreMaxTimediff == that.ignoreMaxTimediff &&
-        Double.compare(ignoreMaxValDiff, that.ignoreMaxValDiff) == 0 &&
-        Objects.equals(retentionPeriod, that.retentionPeriod) &&
-        Objects.equals(chunkSize, that.chunkSize) &&
-        duplicatePolicy == that.duplicatePolicy && Objects.equals(labels, that.labels);
+    return ignore == that.ignore && ignoreMaxTimediff == that.ignoreMaxTimediff
+        && Double.compare(ignoreMaxValDiff, that.ignoreMaxValDiff) == 0
+        && Objects.equals(retentionPeriod, that.retentionPeriod)
+        && Objects.equals(chunkSize, that.chunkSize) && duplicatePolicy == that.duplicatePolicy
+        && Objects.equals(labels, that.labels);
   }
 
   @Override

@@ -12,9 +12,8 @@ public final class DefaultRedisCredentials implements RedisCredentials {
 
   public DefaultRedisCredentials(String user, CharSequence password) {
     this.user = user;
-    this.password = password == null ? null
-        : password instanceof String ? ((String) password).toCharArray()
-            : toCharArray(password);
+    this.password = password == null ? null : password instanceof String ? ((String) password)
+        .toCharArray() : toCharArray(password);
   }
 
   @Override

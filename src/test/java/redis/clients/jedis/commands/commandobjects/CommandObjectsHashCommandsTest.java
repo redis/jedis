@@ -299,9 +299,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     assertThat(values, containsInAnyOrder(value1, value2));
 
     Map<String, String> hash = exec(commandObjects.hgetAll(key));
-    assertThat(hash, allOf(
-        hasEntry(field1, value1),
-        hasEntry(field2, value2)));
+    assertThat(hash, allOf(hasEntry(field1, value1), hasEntry(field2, value2)));
 
     // binary
     Set<byte[]> keysBinary = exec(commandObjects.hkeys(keyBinary));
@@ -311,8 +309,9 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     assertThat(valuesBinary, containsInAnyOrder(value1.getBytes(), value2.getBytes()));
 
     Map<byte[], byte[]> hashBinary = exec(commandObjects.hgetAll(keyBinary));
-    assertThat(hashBinary, allOf(
-        hasEntry(field1.getBytes(), value1.getBytes()),
+    assertThat(
+      hashBinary,
+      allOf(hasEntry(field1.getBytes(), value1.getBytes()),
         hasEntry(field2.getBytes(), value2.getBytes())));
   }
 
@@ -411,7 +410,8 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     Long strlenBinary = exec(commandObjects.hstrlen(bkey, "field1".getBytes()));
     assertThat(strlenBinary, equalTo(6L));
 
-    Long strlenNonExistingFieldBinary = exec(commandObjects.hstrlen(bkey, "nonExistingField".getBytes()));
+    Long strlenNonExistingFieldBinary = exec(commandObjects.hstrlen(bkey,
+      "nonExistingField".getBytes()));
     assertThat(strlenNonExistingFieldBinary, equalTo(0L));
   }
 
@@ -422,14 +422,17 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.hset("foo", "bar", "car"));
     exec(commandObjects.hset("foo", "bare", "care"));
-    assertThat(exec(commandObjects.hexpire("foo", seconds1, "bar", "bared")), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hexpire("foo", seconds1, "bar", "bared")),
+      equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset("foo", "bared", "cared"));
-    assertThat(exec(commandObjects.hexpire("foo", seconds2, ExpiryOption.NX, "bar", "bared")), equalTo(asList(0L, 1L)));
+    assertThat(exec(commandObjects.hexpire("foo", seconds2, ExpiryOption.NX, "bar", "bared")),
+      equalTo(asList(0L, 1L)));
 
-    assertThat(exec(commandObjects.httl("foo", "bar", "bare", "bared")),
-        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      exec(commandObjects.httl("foo", "bar", "bare", "bared")),
+      contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L), both(lessThanOrEqualTo(seconds2))
+          .and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -442,11 +445,13 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     assertThat(exec(commandObjects.hexpire(bfoo, seconds1, bbar1, bbar3)), equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset(bfoo, bbar3, bcar));
-    assertThat(exec(commandObjects.hexpire(bfoo, seconds2, ExpiryOption.NX, bbar1, bbar3)), equalTo(asList(0L, 1L)));
+    assertThat(exec(commandObjects.hexpire(bfoo, seconds2, ExpiryOption.NX, bbar1, bbar3)),
+      equalTo(asList(0L, 1L)));
 
-    assertThat(exec(commandObjects.httl(bfoo, bbar1, bbar2, bbar3)),
-        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      exec(commandObjects.httl(bfoo, bbar1, bbar2, bbar3)),
+      contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L), both(lessThanOrEqualTo(seconds2))
+          .and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -455,13 +460,17 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     long millis2 = 10_000;
 
     exec(commandObjects.hset("foo", "bar", "car"));
-    assertThat(exec(commandObjects.hpexpire("foo", millis1, "bar", "bared")), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hpexpire("foo", millis1, "bar", "bared")),
+      equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset("foo", "bared", "cared"));
-    assertThat(exec(commandObjects.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared")), equalTo(asList(1L, 0L)));
+    assertThat(exec(commandObjects.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared")),
+      equalTo(asList(1L, 0L)));
 
-    assertThat(exec(commandObjects.hpttl("foo", "bar", "bare", "bared")),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+    assertThat(
+      exec(commandObjects.hpttl("foo", "bar", "bare", "bared")),
+      contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L),
+        equalTo(-1L)));
   }
 
   @Test
@@ -473,10 +482,13 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     assertThat(exec(commandObjects.hpexpire(bfoo, millis1, bbar1, bbar3)), equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset(bfoo, bbar3, bcar));
-    assertThat(exec(commandObjects.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3)), equalTo(asList(1L, 0L)));
+    assertThat(exec(commandObjects.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3)),
+      equalTo(asList(1L, 0L)));
 
-    assertThat(exec(commandObjects.hpttl(bfoo, bbar1, bbar2, bbar3)),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+    assertThat(
+      exec(commandObjects.hpttl(bfoo, bbar1, bbar2, bbar3)),
+      contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L),
+        equalTo(-1L)));
   }
 
   @Test
@@ -487,14 +499,17 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.hset("foo", "bar", "car"));
     exec(commandObjects.hset("foo", "bare", "care"));
-    assertThat(exec(commandObjects.hexpireAt("foo", seconds1, "bar", "bared")), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hexpireAt("foo", seconds1, "bar", "bared")),
+      equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset("foo", "bared", "cared"));
-    assertThat(exec(commandObjects.hexpireAt("foo", seconds2, ExpiryOption.LT, "bar", "bared")), equalTo(asList(1L, 1L)));
+    assertThat(exec(commandObjects.hexpireAt("foo", seconds2, ExpiryOption.LT, "bar", "bared")),
+      equalTo(asList(1L, 1L)));
 
-    assertThat(exec(commandObjects.hexpireTime("foo", "bar", "bare", "bared")),
-        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      exec(commandObjects.hexpireTime("foo", "bar", "bare", "bared")),
+      contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)),
+        equalTo(-1L), both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -505,14 +520,17 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.hset(bfoo, bbar1, bcar));
     exec(commandObjects.hset(bfoo, bbar2, bcar));
-    assertThat(exec(commandObjects.hexpireAt(bfoo, seconds1, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hexpireAt(bfoo, seconds1, bbar1, bbar3)),
+      equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset(bfoo, bbar3, bcar));
-    assertThat(exec(commandObjects.hexpireAt(bfoo, seconds2, ExpiryOption.LT, bbar1, bbar3)), equalTo(asList(1L, 1L)));
+    assertThat(exec(commandObjects.hexpireAt(bfoo, seconds2, ExpiryOption.LT, bbar1, bbar3)),
+      equalTo(asList(1L, 1L)));
 
-    assertThat(exec(commandObjects.hexpireTime(bfoo, bbar1, bbar2, bbar3)),
-        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      exec(commandObjects.hexpireTime(bfoo, bbar1, bbar2, bbar3)),
+      contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)),
+        equalTo(-1L), both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -521,13 +539,15 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     long unixMillis = currMillis + 20_000;
 
     exec(commandObjects.hset("foo", "bar", "car"));
-    assertThat(exec(commandObjects.hpexpireAt("foo", unixMillis - 100, "bar", "bared")), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hpexpireAt("foo", unixMillis - 100, "bar", "bared")),
+      equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset("foo", "bared", "cared"));
-    assertThat(exec(commandObjects.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared")), equalTo(asList(1L, 0L)));
+    assertThat(exec(commandObjects.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared")),
+      equalTo(asList(1L, 0L)));
 
     assertThat(exec(commandObjects.hpexpireTime("foo", "bar", "bare", "bared")),
-        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+      contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -536,13 +556,15 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     long unixMillis = currMillis + 20_000;
 
     exec(commandObjects.hset(bfoo, bbar1, bcar));
-    assertThat(exec(commandObjects.hpexpireAt(bfoo, unixMillis - 100, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hpexpireAt(bfoo, unixMillis - 100, bbar1, bbar3)),
+      equalTo(asList(1L, -2L)));
 
     exec(commandObjects.hset(bfoo, bbar3, bcar));
-    assertThat(exec(commandObjects.hpexpireAt(bfoo, unixMillis, ExpiryOption.GT, bbar1, bbar3)), equalTo(asList(1L, 0L)));
+    assertThat(exec(commandObjects.hpexpireAt(bfoo, unixMillis, ExpiryOption.GT, bbar1, bbar3)),
+      equalTo(asList(1L, 0L)));
 
     assertThat(exec(commandObjects.hpexpireTime(bfoo, bbar1, bbar2, bbar3)),
-        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+      contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -551,12 +573,14 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.hset("foo", "bar", "car"));
     exec(commandObjects.hset("foo", "bare", "care"));
-    assertThat(exec(commandObjects.hexpire("foo", seconds, "bar", "bared")), equalTo(asList(1L, -2L)));
+    assertThat(exec(commandObjects.hexpire("foo", seconds, "bar", "bared")),
+      equalTo(asList(1L, -2L)));
 
-    assertThat(exec(commandObjects.hpersist("foo", "bar", "bare", "bared")), equalTo(asList(1L, -1L, -2L)));
+    assertThat(exec(commandObjects.hpersist("foo", "bar", "bare", "bared")),
+      equalTo(asList(1L, -1L, -2L)));
 
     assertThat(exec(commandObjects.httl("foo", "bar", "bare", "bared")),
-        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+      contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 
   @Test
@@ -567,9 +591,10 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.hset(bfoo, bbar2, bcar));
     assertThat(exec(commandObjects.hexpire(bfoo, seconds, bbar1, bbar3)), equalTo(asList(1L, -2L)));
 
-    assertThat(exec(commandObjects.hpersist(bfoo, bbar1, bbar2, bbar3)), equalTo(asList(1L, -1L, -2L)));
+    assertThat(exec(commandObjects.hpersist(bfoo, bbar1, bbar2, bbar3)),
+      equalTo(asList(1L, -1L, -2L)));
 
     assertThat(exec(commandObjects.httl(bfoo, bbar1, bbar2, bbar3)),
-        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+      contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 }

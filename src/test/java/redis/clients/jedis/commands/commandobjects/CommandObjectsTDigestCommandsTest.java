@@ -91,7 +91,8 @@ public class CommandObjectsTDigestCommandsTest extends CommandObjectsModulesTest
     String add2 = exec(commandObjects.tdigestAdd(sourceKey2, 30.0, 40.0));
     assertThat(add2, equalTo("OK"));
 
-    String merge = exec(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKey1, sourceKey2));
+    String merge = exec(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKey1,
+      sourceKey2));
     assertThat(merge, equalTo("OK"));
 
     Double minAfterMerge = exec(commandObjects.tdigestMin(destinationKey));

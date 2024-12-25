@@ -63,11 +63,13 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 10 && ttl <= 20);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 30 && ttl <= 40);
 
@@ -232,7 +234,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test(expected = JedisDataException.class)
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    jedis.incr("foo"); // Should throw an exception 
+    jedis.incr("foo"); // Should throw an exception
   }
 
   @Test
@@ -247,17 +249,14 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2",
-            LCSParams.LCSParams());
+    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams());
     assertEquals("mytext", stringMatchResult.getMatchString());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().withMatchLen());
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().minMatchLen(10));
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().minMatchLen(10));
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 

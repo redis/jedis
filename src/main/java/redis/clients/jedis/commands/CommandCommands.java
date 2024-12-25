@@ -17,8 +17,8 @@ public interface CommandCommands {
   long commandCount();
 
   /**
-   * Return documentary information about commands.
-   * If not specifying commands, the reply includes all the server's commands.
+   * Return documentary information about commands. If not specifying commands, the reply includes
+   * all the server's commands.
    * @param commands specify the names of one or more commands
    * @return list of {@link CommandDocument}
    */

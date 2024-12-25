@@ -31,8 +31,8 @@ public class ClusterCommandExecutorTest {
 
   private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
-  private static final CommandObject<String> STR_COM_OBJECT
-      = new CommandObject<>(new ClusterCommandArguments(null).key(""), null);
+  private static final CommandObject<String> STR_COM_OBJECT = new CommandObject<>(
+      new ClusterCommandArguments(null).key(""), null);
 
   @Test
   public void runSuccessfulExecute() {
@@ -42,6 +42,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "foo";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -322,7 +323,7 @@ public class ClusterCommandExecutorTest {
   public void runStopsRetryingAfterTimeout() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
-    //final LongConsumer sleep = mock(LongConsumer.class);
+    // final LongConsumer sleep = mock(LongConsumer.class);
     final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, Duration.ZERO) {
       @Override
@@ -338,7 +339,7 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        //sleep.accept(sleepMillis);
+        // sleep.accept(sleepMillis);
         totalSleepMs.addAndGet(sleepMillis);
       }
     };
@@ -349,7 +350,7 @@ public class ClusterCommandExecutorTest {
     } catch (JedisClusterOperationException e) {
       // expected
     }
-    //InOrder inOrder = inOrder(connectionHandler, sleep);
+    // InOrder inOrder = inOrder(connectionHandler, sleep);
     InOrder inOrder = inOrder(connectionHandler);
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();

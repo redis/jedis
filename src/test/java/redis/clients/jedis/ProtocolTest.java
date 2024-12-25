@@ -32,7 +32,7 @@ public class ProtocolTest {
     PipedOutputStream pos = new PipedOutputStream(pis);
     RedisOutputStream ros = new RedisOutputStream(pos);
 
-//    Protocol.sendCommand(ros, Protocol.Command.GET, "SOMEKEY".getBytes(Protocol.CHARSET));
+    // Protocol.sendCommand(ros, Protocol.Command.GET, "SOMEKEY".getBytes(Protocol.CHARSET));
     Protocol.sendCommand(ros, new CommandArguments(Protocol.Command.GET).add("SOMEKEY"));
     ros.flush();
     pos.close();

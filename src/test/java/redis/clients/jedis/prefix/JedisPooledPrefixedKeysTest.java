@@ -10,6 +10,7 @@ public class JedisPooledPrefixedKeysTest extends PrefixedKeysTest<JedisPooled> {
 
   @Override
   JedisPooled nonPrefixingJedis() {
-    return new JedisPooled(ENDPOINT.getHostAndPort(), ENDPOINT.getClientConfigBuilder().timeoutMillis(500).build());
+    return new JedisPooled(ENDPOINT.getHostAndPort(), ENDPOINT.getClientConfigBuilder()
+        .timeoutMillis(500).build());
   }
 }

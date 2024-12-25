@@ -31,11 +31,12 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public SpellCheckTest(RedisProtocol protocol) {
     super(protocol);
@@ -52,7 +53,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   @Test
   public void dictionary() {
     assertEquals(3L, client.ftDictAdd("dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDump("dict"));
+    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")),
+      client.ftDictDump("dict"));
     assertEquals(3L, client.ftDictDel("dict", "foo", "bar", "hello world"));
     assertEquals(Collections.emptySet(), client.ftDictDump("dict"));
   }
@@ -61,7 +63,7 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   public void dictionaryBySampleKey() {
     assertEquals(3L, client.ftDictAddBySampleKey(index, "dict", "foo", "bar", "hello world"));
     assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")),
-        client.ftDictDumpBySampleKey(index, "dict"));
+      client.ftDictDumpBySampleKey(index, "dict"));
     assertEquals(3L, client.ftDictDelBySampleKey(index, "dict", "foo", "bar", "hello world"));
     assertEquals(Collections.emptySet(), client.ftDictDumpBySampleKey(index, "dict"));
   }
@@ -81,12 +83,15 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   @Test
   public void crossTermDictionary() {
     client.ftCreate(index, TextField.of("report"));
-    client.ftDictAdd("slang", "timmies", "toque", "toonie", "serviette", "kerfuffle", "chesterfield");
+    client.ftDictAdd("slang", "timmies", "toque", "toonie", "serviette", "kerfuffle",
+      "chesterfield");
 
     Map<String, Map<String, Double>> expected = Collections.singletonMap("tooni",
-        Collections.singletonMap("toonie", 0d));
-    assertEquals(expected, client.ftSpellCheck(index, "Tooni toque kerfuffle",
-        FTSpellCheckParams.spellCheckParams().includeTerm("slang").excludeTerm("slang")));
+      Collections.singletonMap("toonie", 0d));
+    assertEquals(
+      expected,
+      client.ftSpellCheck(index, "Tooni toque kerfuffle", FTSpellCheckParams.spellCheckParams()
+          .includeTerm("slang").excludeTerm("slang")));
   }
 
   @Test

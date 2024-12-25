@@ -35,14 +35,14 @@ public class CommandObjectsTopkCommandsTest extends CommandObjectsModulesTestBas
     String reserve = exec(commandObjects.topkReserve(key, topKSize));
     assertThat(reserve, equalTo("OK"));
 
-    List<String> add = exec(commandObjects.topkAdd(key,
-        "apple", "banana", "carrot", "apple", "banana",
-        "date", "eggplant", "fig", "grape", "apple"));
-    // As the values are added, some items get kicked out from top 3. They are returned in the response.
-    assertThat(add, contains(
-        nullValue(), nullValue(), nullValue(), nullValue(), nullValue(),
-        equalTo("carrot"), equalTo("date"), equalTo("eggplant"), equalTo("fig"), nullValue()
-    ));
+    List<String> add = exec(commandObjects.topkAdd(key, "apple", "banana", "carrot", "apple",
+      "banana", "date", "eggplant", "fig", "grape", "apple"));
+    // As the values are added, some items get kicked out from top 3. They are returned in the
+    // response.
+    assertThat(
+      add,
+      contains(nullValue(), nullValue(), nullValue(), nullValue(), nullValue(), equalTo("carrot"),
+        equalTo("date"), equalTo("eggplant"), equalTo("fig"), nullValue()));
 
     List<Boolean> query = exec(commandObjects.topkQuery(key, "apple", "banana", "carrot", "grape"));
     assertThat(query, contains(true, true, false, true));
@@ -80,9 +80,8 @@ public class CommandObjectsTopkCommandsTest extends CommandObjectsModulesTestBas
     String reserve = exec(commandObjects.topkReserve(key, topKSize));
     assertThat(reserve, equalTo("OK"));
 
-    List<String> add = exec(commandObjects.topkAdd(key,
-        "apple", "banana", "carrot", "apple", "banana",
-        "date", "eggplant", "fig", "grape", "apple"));
+    List<String> add = exec(commandObjects.topkAdd(key, "apple", "banana", "carrot", "apple",
+      "banana", "date", "eggplant", "fig", "grape", "apple"));
     assertThat(add, notNullValue());
 
     List<String> list = exec(commandObjects.topkList(key));

@@ -10,25 +10,25 @@ import java.util.Set;
 public class ClusterPipeline extends MultiNodePipelineBase {
 
   private final ClusterConnectionProvider provider;
-  private       AutoCloseable             closeable = null;
+  private AutoCloseable closeable = null;
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig),
-         createClusterCommandObjects(clientConfig.getRedisProtocol()));
+        createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-                         SimpleObjectPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig),
-         createClusterCommandObjects(clientConfig.getRedisProtocol()));
+        createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-                         SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
-         createClusterCommandObjects(clientConfig.getRedisProtocol()));
+      SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig,
+        topologyRefreshPeriod), createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }
 

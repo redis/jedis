@@ -10,18 +10,17 @@ public class RedisCredentialsProviderUsage {
 
   public static void main(String[] args) {
 
-    DefaultRedisCredentials initialCredentials
-        = new DefaultRedisCredentials("<INITIAL_USERNAME>", "<INITIAL_PASSWORD>");
+    DefaultRedisCredentials initialCredentials = new DefaultRedisCredentials("<INITIAL_USERNAME>",
+        "<INITIAL_PASSWORD>");
 
-    DefaultRedisCredentialsProvider credentialsProvider
-        = new DefaultRedisCredentialsProvider(initialCredentials);
+    DefaultRedisCredentialsProvider credentialsProvider = new DefaultRedisCredentialsProvider(
+        initialCredentials);
 
     final String host = "<HOST>";
     final int port = 6379;
     final HostAndPort address = new HostAndPort(host, port);
-    final DefaultJedisClientConfig clientConfig
-        = DefaultJedisClientConfig.builder()
-            .credentialsProvider(credentialsProvider).build();
+    final DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).build();
 
     JedisPooled jedis = new JedisPooled(address, clientConfig);
 
@@ -30,8 +29,8 @@ public class RedisCredentialsProviderUsage {
     // ...
 
     // when credentials is required to be updated
-    DefaultRedisCredentials updatedCredentials
-        = new DefaultRedisCredentials("<UPDATED_USERNAME>", "<UPDATED_PASSWORD>");
+    DefaultRedisCredentials updatedCredentials = new DefaultRedisCredentials("<UPDATED_USERNAME>",
+        "<UPDATED_PASSWORD>");
 
     credentialsProvider.setCredentials(updatedCredentials);
 

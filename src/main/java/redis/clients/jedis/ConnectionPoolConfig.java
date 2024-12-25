@@ -5,9 +5,9 @@ import today.bonfire.oss.sop.SimpleObjectPoolConfig;
 import java.time.Duration;
 
 /**
- * Configuration class for Connection pool that extends SimpleObjectPoolConfig.
- * Provides pool-specific default values and configuration options while leveraging
- * the base pool configuration capabilities.
+ * Configuration class for Connection pool that extends SimpleObjectPoolConfig. Provides
+ * pool-specific default values and configuration options while leveraging the base pool
+ * configuration capabilities.
  */
 public class ConnectionPoolConfig extends SimpleObjectPoolConfig {
 
@@ -21,7 +21,6 @@ public class ConnectionPoolConfig extends SimpleObjectPoolConfig {
 
   /**
    * Creates a new builder instance with pool-specific default settings.
-   *
    * @return A new Builder instance with pool-specific default settings
    */
   public static Builder builder() {
@@ -29,30 +28,25 @@ public class ConnectionPoolConfig extends SimpleObjectPoolConfig {
   }
 
   /**
-   * Builder class for ConnectionPoolConfig that extends SimpleObjectPoolConfig.Builder
-   * to provide pool-specific configuration options.
+   * Builder class for ConnectionPoolConfig that extends SimpleObjectPoolConfig.Builder to provide
+   * pool-specific configuration options.
    */
   public static class Builder extends SimpleObjectPoolConfig.Builder {
 
     /**
      * Sets default pool configuration values.
-     *
      * @return this Builder instance
      */
     public Builder defaultConfig() {
-      this.maxPoolSize(8)
-          .minPoolSize(0)
-          .fairness(false)
-          .testOnCreate(false)
-          .testOnBorrow(true)
-          .testWhileIdle(true)
-          .testOnReturn(false)
+      this.maxPoolSize(8).minPoolSize(0).fairness(false).testOnCreate(false).testOnBorrow(true)
+          .testWhileIdle(true).testOnReturn(false)
           .durationBetweenEvictionsRuns(Duration.ofSeconds(30))
           .objEvictionTimeout(Duration.ofSeconds(60));
       return this;
     }
 
-    @Override protected Builder prepareAndCheck() {
+    @Override
+    protected Builder prepareAndCheck() {
       super.prepareAndCheck();
       return this;
     }

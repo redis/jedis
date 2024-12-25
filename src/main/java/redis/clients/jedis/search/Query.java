@@ -39,7 +39,8 @@ public class Query implements IParams {
     private final double max;
     private final boolean exclusiveMax;
 
-    public NumericFilter(String property, double min, boolean exclusiveMin, double max, boolean exclusiveMax) {
+    public NumericFilter(String property, double min, boolean exclusiveMin, double max,
+        boolean exclusiveMax) {
       super(property);
       this.min = min;
       this.max = max;
@@ -168,7 +169,6 @@ public class Query implements IParams {
 
   /**
    * Create a new index
-   *
    * @param queryString the textual part of the query
    */
   public Query(String queryString) {
@@ -326,7 +326,6 @@ public class Query implements IParams {
 
   /**
    * Limit the results to a certain offset and limit
-   *
    * @param offset the first result to show, zero based indexing
    * @param limit how many results we want to show
    * @return the query itself, for builder-style syntax
@@ -339,7 +338,6 @@ public class Query implements IParams {
 
   /**
    * Add a filter to the query's filter list
-   *
    * @param f either a numeric or geo filter object
    * @return the query itself
    */
@@ -350,7 +348,6 @@ public class Query implements IParams {
 
   /**
    * Set the query to verbatim mode, disabling stemming and query expansion
-   *
    * @return the query object
    */
   public Query setVerbatim() {
@@ -364,7 +361,6 @@ public class Query implements IParams {
 
   /**
    * Set the query not to return the contents of documents, and rather just return the ids
-   *
    * @return the query itself
    */
   public Query setNoContent() {
@@ -374,7 +370,6 @@ public class Query implements IParams {
 
   /**
    * Set the query not to filter for stopwords. In general this should not be used
-   *
    * @return the query object
    */
   public Query setNoStopwords() {
@@ -389,7 +384,6 @@ public class Query implements IParams {
   /**
    * Set the query to return a factored score for each results. This is useful to merge results from
    * multiple queries.
-   *
    * @return the query object itself
    */
   public Query setWithScores() {
@@ -401,9 +395,7 @@ public class Query implements IParams {
    * Set the query language, for stemming purposes
    * <p>
    * See http://redisearch.io for documentation on languages and stemming
-   *
    * @param language a language.
-   *
    * @return the query object itself
    */
   public Query setLanguage(String language) {
@@ -415,9 +407,7 @@ public class Query implements IParams {
    * Set the query custom scorer
    * <p>
    * See http://redisearch.io for documentation on extending RediSearch
-   *
    * @param scorer a custom scorer.
-   *
    * @return the query object itself
    */
   public Query setScorer(String scorer) {
@@ -427,7 +417,6 @@ public class Query implements IParams {
 
   /**
    * Limit the query to results that are limited to a specific set of fields
-   *
    * @param fields a list of TEXT fields in the schemas
    * @return the query object itself
    */
@@ -438,7 +427,6 @@ public class Query implements IParams {
 
   /**
    * Limit the query to results that are limited to a specific set of keys
-   *
    * @param keys a list of TEXT fields in the schemas
    * @return the query object itself
    */
@@ -449,7 +437,6 @@ public class Query implements IParams {
 
   /**
    * Result's projection - the fields to return by the query
-   *
    * @param fields a list of TEXT fields in the schemas
    * @return the query object itself
    */
@@ -461,7 +448,6 @@ public class Query implements IParams {
 
   /**
    * Result's projection - the fields to return by the query
-   *
    * @param fields a list of TEXT fields in the schemas
    * @return the query object itself
    */
@@ -476,7 +462,7 @@ public class Query implements IParams {
       highlightFields = fields;
     }
     if (tags != null) {
-      highlightTags = new String[]{tags.open, tags.close};
+      highlightTags = new String[] { tags.open, tags.close };
     } else {
       highlightTags = null;
     }
@@ -488,7 +474,8 @@ public class Query implements IParams {
     return highlightFields(null, fields);
   }
 
-  public Query summarizeFields(int contextLen, int fragmentCount, String separator, String... fields) {
+  public Query summarizeFields(int contextLen, int fragmentCount, String separator,
+      String... fields) {
     if (fields == null || fields.length > 0) {
       summarizeFields = fields;
     }
@@ -505,7 +492,6 @@ public class Query implements IParams {
 
   /**
    * Set the query to be sorted by a Sortable field defined in the schema
-   *
    * @param field the sorting field's name
    * @param ascending if set to true, the sorting order is ascending, else descending
    * @return the query object itself
@@ -517,10 +503,9 @@ public class Query implements IParams {
   }
 
   /**
-   * Parameters can be referenced in the query string by a $ , followed by the parameter name,
-   * e.g., $user , and each such reference in the search query to a parameter name is substituted
-   * by the corresponding parameter value.
-   *
+   * Parameters can be referenced in the query string by a $ , followed by the parameter name, e.g.,
+   * $user , and each such reference in the search query to a parameter name is substituted by the
+   * corresponding parameter value.
    * @param name
    * @param value can be String, long or float
    * @return the query object itself
@@ -535,7 +520,6 @@ public class Query implements IParams {
 
   /**
    * Set the dialect version to execute the query accordingly
-   *
    * @param dialect integer
    * @return the query object itself
    */
@@ -558,7 +542,6 @@ public class Query implements IParams {
 
   /**
    * Set the slop to execute the query accordingly
-   *
    * @param slop integer
    * @return the query object itself
    */
@@ -569,7 +552,6 @@ public class Query implements IParams {
 
   /**
    * Set the timeout to execute the query accordingly
-   *
    * @param timeout long
    * @return the query object itself
    */
@@ -579,8 +561,8 @@ public class Query implements IParams {
   }
 
   /**
-   * Set the query terms appear in the same order in the document as in the query, regardless of the offsets between them
-   *
+   * Set the query terms appear in the same order in the document as in the query, regardless of the
+   * offsets between them
    * @return the query object
    */
   public Query setInOrder() {
@@ -590,7 +572,6 @@ public class Query implements IParams {
 
   /**
    * Set the query to use a custom query expander instead of the stemmer
-   *
    * @param field the expander field's name
    * @return the query object itself
    */

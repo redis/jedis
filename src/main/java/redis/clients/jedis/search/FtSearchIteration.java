@@ -18,14 +18,16 @@ public class FtSearchIteration extends JedisCommandIterationBase<SearchResult, D
   /**
    * {@link FTSearchParams#limit(int, int)} will be ignored.
    */
-  public FtSearchIteration(ConnectionProvider connectionProvider, int batchSize, String indexName, String query, FTSearchParams params) {
+  public FtSearchIteration(ConnectionProvider connectionProvider, int batchSize, String indexName,
+      String query, FTSearchParams params) {
     this(connectionProvider, null, batchSize, indexName, query, params);
   }
 
   /**
    * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
    */
-  public FtSearchIteration(ConnectionProvider connectionProvider, int batchSize, String indexName, Query query) {
+  public FtSearchIteration(ConnectionProvider connectionProvider, int batchSize, String indexName,
+      Query query) {
     this(connectionProvider, null, batchSize, indexName, query);
   }
 

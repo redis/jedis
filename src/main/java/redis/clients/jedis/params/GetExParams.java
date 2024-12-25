@@ -82,7 +82,8 @@ public class GetExParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     GetExParams that = (GetExParams) o;
-    return persist == that.persist && expiration == that.expiration && Objects.equals(expirationValue, that.expirationValue);
+    return persist == that.persist && expiration == that.expiration
+        && Objects.equals(expirationValue, that.expirationValue);
   }
 
   @Override

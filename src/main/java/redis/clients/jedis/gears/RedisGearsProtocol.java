@@ -10,9 +10,10 @@ public class RedisGearsProtocol {
   @Deprecated
   public enum GearsCommand implements ProtocolCommand {
 
-    @Deprecated TFUNCTION,
-    @Deprecated TFCALL,
-    @Deprecated TFCALLASYNC;
+    @Deprecated
+    TFUNCTION, @Deprecated
+    TFCALL, @Deprecated
+    TFCALLASYNC;
 
     private final byte[] raw;
 
@@ -29,14 +30,7 @@ public class RedisGearsProtocol {
   @Deprecated
   public enum GearsKeyword implements Rawable {
 
-    CONFIG,
-    REPLACE,
-    LOAD,
-    DELETE,
-    LIST,
-    WITHCODE,
-    LIBRARY,
-    VERBOSE;
+    CONFIG, REPLACE, LOAD, DELETE, LIST, WITHCODE, LIBRARY, VERBOSE;
 
     private final byte[] raw;
 

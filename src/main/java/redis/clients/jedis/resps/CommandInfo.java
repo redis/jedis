@@ -30,14 +30,11 @@ public class CommandInfo {
   }
 
   /**
-   * Arity is the number of arguments a command expects. It follows a simple pattern:
-   * A positive integer means a fixed number of arguments.
-   * A negative integer means a minimal number of arguments.
-   *
-   * Examples:
-   *
-   * GET's arity is 2 since the command only accepts one argument and always has the format GET _key_.
-   * MGET's arity is -2 since the command accepts at least one argument, but possibly multiple ones: MGET _key1_ [key2] [key3] ....
+   * Arity is the number of arguments a command expects. It follows a simple pattern: A positive
+   * integer means a fixed number of arguments. A negative integer means a minimal number of
+   * arguments. Examples: GET's arity is 2 since the command only accepts one argument and always
+   * has the format GET _key_. MGET's arity is -2 since the command accepts at least one argument,
+   * but possibly multiple ones: MGET _key1_ [key2] [key3] ....
    */
   public long getArity() {
     return arity;
@@ -58,15 +55,16 @@ public class CommandInfo {
   }
 
   /**
-   * The position of the command's last key name argument
-   * Commands that accept a single key have both first key and last key set to 1
+   * The position of the command's last key name argument Commands that accept a single key have
+   * both first key and last key set to 1
    */
   public long getLastKey() {
     return lastKey;
   }
 
   /**
-   * This value is the step, or increment, between the first key and last key values where the keys are
+   * This value is the step, or increment, between the first key and last key values where the keys
+   * are
    */
   public long getStep() {
     return step;
@@ -107,7 +105,8 @@ public class CommandInfo {
       List<String> tips = STRING_LIST.build(commandData.get(7));
       List<String> subcommands = STRING_LIST.build(commandData.get(9));
 
-      return new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
+      return new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips,
+          subcommands);
     }
   };
 }

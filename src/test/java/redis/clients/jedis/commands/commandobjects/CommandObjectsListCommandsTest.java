@@ -109,7 +109,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   public void testLtrimBinary() {
     byte[] key = "list".getBytes();
 
-    exec(commandObjects.rpush(key, "one".getBytes(), "two".getBytes(), "three".getBytes(), "four".getBytes()));
+    exec(commandObjects.rpush(key, "one".getBytes(), "two".getBytes(), "three".getBytes(),
+      "four".getBytes()));
 
     String trim = exec(commandObjects.ltrim(key, 1, 2));
     assertThat(trim, equalTo("OK"));
@@ -199,10 +200,12 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   public void testLremBinary() {
     byte[] keyBytes = "remList".getBytes();
 
-    exec(commandObjects.rpush(keyBytes, "duplicate".getBytes(), "duplicate".getBytes(), "unique".getBytes()));
+    exec(commandObjects.rpush(keyBytes, "duplicate".getBytes(), "duplicate".getBytes(),
+      "unique".getBytes()));
 
     List<byte[]> lrangeBefore = exec(commandObjects.lrange(keyBytes, 0, -1));
-    assertThat(lrangeBefore, contains("duplicate".getBytes(), "duplicate".getBytes(), "unique".getBytes()));
+    assertThat(lrangeBefore,
+      contains("duplicate".getBytes(), "duplicate".getBytes(), "unique".getBytes()));
 
     Long lremMultiple = exec(commandObjects.lrem(keyBytes, 0, "duplicate".getBytes()));
     assertThat(lremMultiple, equalTo(2L));
@@ -215,8 +218,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   public void testPopCommands() {
     String key = "popList";
 
-    exec(commandObjects.rpush(key,
-        "first", "second", "third", "first", "second", "third"));
+    exec(commandObjects.rpush(key, "first", "second", "third", "first", "second", "third"));
 
     String lpop = exec(commandObjects.lpop(key));
     assertThat(lpop, equalTo("first"));
@@ -235,9 +237,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   public void testPopCommandsBinary() {
     byte[] key = "popList".getBytes();
 
-    exec(commandObjects.rpush(key,
-        "first".getBytes(), "second".getBytes(), "third".getBytes(),
-        "first".getBytes(), "second".getBytes(), "third".getBytes()));
+    exec(commandObjects.rpush(key, "first".getBytes(), "second".getBytes(), "third".getBytes(),
+      "first".getBytes(), "second".getBytes(), "third".getBytes()));
 
     byte[] lpop = exec(commandObjects.lpop(key));
     assertThat(lpop, equalTo("first".getBytes()));
@@ -276,13 +277,15 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     List<Long> lposMultiple = exec(commandObjects.lpos(key, value, params, 2));
     assertThat(lposMultiple, contains(3L, 1L));
 
-    List<Long> lposMultipleBinary = exec(commandObjects.lpos(key.getBytes(), value.getBytes(), params, 2));
+    List<Long> lposMultipleBinary = exec(commandObjects.lpos(key.getBytes(), value.getBytes(),
+      params, 2));
     assertThat(lposMultipleBinary, contains(3L, 1L));
 
     Long lposNonExistent = exec(commandObjects.lpos(key, nonExistentValue));
     assertThat(lposNonExistent, nullValue());
 
-    Long lposNonExistentBinary = exec(commandObjects.lpos(key.getBytes(), nonExistentValue.getBytes()));
+    Long lposNonExistentBinary = exec(commandObjects.lpos(key.getBytes(),
+      nonExistentValue.getBytes()));
     assertThat(lposNonExistentBinary, nullValue());
   }
 
@@ -405,7 +408,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.lpush(key1, value1));
     exec(commandObjects.lpush(key2, value2));
 
-    KeyValue<String, String> blpopDoubleTimeoutMultiple = exec(commandObjects.blpop(1.0, key1, key2));
+    KeyValue<String, String> blpopDoubleTimeoutMultiple = exec(commandObjects
+        .blpop(1.0, key1, key2));
     assertThat(blpopDoubleTimeoutMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(blpopDoubleTimeoutMultiple.getValue(), anyOf(equalTo(value1), equalTo(value2)));
   }
@@ -438,7 +442,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.lpush(key1, value1));
     exec(commandObjects.lpush(key2, value2));
 
-    KeyValue<byte[], byte[]> blpopDoubleTimeoutMultiple = exec(commandObjects.blpop(1.0, key1, key2));
+    KeyValue<byte[], byte[]> blpopDoubleTimeoutMultiple = exec(commandObjects
+        .blpop(1.0, key1, key2));
     assertThat(blpopDoubleTimeoutMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(blpopDoubleTimeoutMultiple.getValue(), anyOf(equalTo(value1), equalTo(value2)));
   }
@@ -470,7 +475,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.lpush(key1, value1));
     exec(commandObjects.lpush(key2, value2));
 
-    KeyValue<String, String> brpopDoubleTimeoutMultiple = exec(commandObjects.brpop(1.0, key1, key2));
+    KeyValue<String, String> brpopDoubleTimeoutMultiple = exec(commandObjects
+        .brpop(1.0, key1, key2));
     assertThat(brpopDoubleTimeoutMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(brpopDoubleTimeoutMultiple.getValue(), anyOf(equalTo(value1), equalTo(value2)));
   }
@@ -503,7 +509,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.lpush(key1, value1));
     exec(commandObjects.lpush(key2, value2));
 
-    KeyValue<byte[], byte[]> brpopDoubleTimeoutMultiple = exec(commandObjects.brpop(1.0, key1, key2));
+    KeyValue<byte[], byte[]> brpopDoubleTimeoutMultiple = exec(commandObjects
+        .brpop(1.0, key1, key2));
     assertThat(brpopDoubleTimeoutMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(brpopDoubleTimeoutMultiple.getValue(), anyOf(equalTo(value1), equalTo(value2)));
   }
@@ -568,7 +575,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.lpush(srcKey, value1));
 
-    String result = exec(commandObjects.lmove(srcKey, dstKey, ListDirection.LEFT, ListDirection.RIGHT));
+    String result = exec(commandObjects.lmove(srcKey, dstKey, ListDirection.LEFT,
+      ListDirection.RIGHT));
     assertThat(result, equalTo(value1));
 
     List<String> dstList = exec(commandObjects.lrange(dstKey, 0, -1));
@@ -576,7 +584,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.lpush(srcKey, value2));
 
-    String bResult = exec(commandObjects.blmove(srcKey, dstKey, ListDirection.LEFT, ListDirection.LEFT, 1.0));
+    String bResult = exec(commandObjects.blmove(srcKey, dstKey, ListDirection.LEFT,
+      ListDirection.LEFT, 1.0));
     assertThat(bResult, equalTo(value2));
 
     dstList = exec(commandObjects.lrange(dstKey, 0, -1));
@@ -592,7 +601,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.lpush(srcKey, value1));
 
-    byte[] result = exec(commandObjects.lmove(srcKey, dstKey, ListDirection.LEFT, ListDirection.RIGHT));
+    byte[] result = exec(commandObjects.lmove(srcKey, dstKey, ListDirection.LEFT,
+      ListDirection.RIGHT));
     assertThat(result, equalTo(value1));
 
     List<byte[]> dstList = exec(commandObjects.lrange(dstKey, 0, -1));
@@ -600,7 +610,8 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
     exec(commandObjects.lpush(srcKey, value2));
 
-    byte[] bResult = exec(commandObjects.blmove(srcKey, dstKey, ListDirection.LEFT, ListDirection.LEFT, 1.0));
+    byte[] bResult = exec(commandObjects.blmove(srcKey, dstKey, ListDirection.LEFT,
+      ListDirection.LEFT, 1.0));
     assertThat(bResult, equalTo(value2));
 
     dstList = exec(commandObjects.lrange(dstKey, 0, -1));
@@ -617,19 +628,23 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.lpush(key1, value1, value1, value1, value1, value1, value1));
     exec(commandObjects.lpush(key2, value2, value2, value2, value2, value2, value2));
 
-    KeyValue<String, List<String>> lmpop = exec(commandObjects.lmpop(ListDirection.LEFT, key1, key2));
+    KeyValue<String, List<String>> lmpop = exec(commandObjects
+        .lmpop(ListDirection.LEFT, key1, key2));
     assertThat(lmpop.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(lmpop.getValue(), anyOf(contains(value1), contains(value2)));
 
-    KeyValue<String, List<String>> lmpopMultiple = exec(commandObjects.lmpop(ListDirection.LEFT, 2, key1, key2));
+    KeyValue<String, List<String>> lmpopMultiple = exec(commandObjects.lmpop(ListDirection.LEFT, 2,
+      key1, key2));
     assertThat(lmpopMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(lmpopMultiple.getValue(), anyOf(contains(value1, value1), contains(value2, value2)));
 
-    KeyValue<String, List<String>> blmpop = exec(commandObjects.blmpop(1.0, ListDirection.LEFT, key1, key2));
+    KeyValue<String, List<String>> blmpop = exec(commandObjects.blmpop(1.0, ListDirection.LEFT,
+      key1, key2));
     assertThat(blmpop.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(blmpop.getValue(), anyOf(contains(value1), contains(value2)));
 
-    KeyValue<String, List<String>> blmpopMultiple = exec(commandObjects.blmpop(1.0, ListDirection.LEFT, 2, key1, key2));
+    KeyValue<String, List<String>> blmpopMultiple = exec(commandObjects.blmpop(1.0,
+      ListDirection.LEFT, 2, key1, key2));
     assertThat(blmpopMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(blmpopMultiple.getValue(), anyOf(contains(value1, value1), contains(value2, value2)));
   }
@@ -644,20 +659,26 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.lpush(key1, value1, value1, value1, value1, value1, value1));
     exec(commandObjects.lpush(key2, value2, value2, value2, value2, value2, value2));
 
-    KeyValue<byte[], List<byte[]>> lmpop = exec(commandObjects.lmpop(ListDirection.LEFT, key1, key2));
+    KeyValue<byte[], List<byte[]>> lmpop = exec(commandObjects
+        .lmpop(ListDirection.LEFT, key1, key2));
     assertThat(lmpop.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(lmpop.getValue(), anyOf(contains(equalTo(value1)), contains(equalTo(value2))));
 
-    KeyValue<byte[], List<byte[]>> lmpopMultiple = exec(commandObjects.lmpop(ListDirection.LEFT, 2, key1, key2));
+    KeyValue<byte[], List<byte[]>> lmpopMultiple = exec(commandObjects.lmpop(ListDirection.LEFT, 2,
+      key1, key2));
     assertThat(lmpopMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
-    assertThat(lmpopMultiple.getValue(), anyOf(contains(equalTo(value1), equalTo(value1)), contains(equalTo(value2), equalTo(value2))));
+    assertThat(lmpopMultiple.getValue(),
+      anyOf(contains(equalTo(value1), equalTo(value1)), contains(equalTo(value2), equalTo(value2))));
 
-    KeyValue<byte[], List<byte[]>> blmpop = exec(commandObjects.blmpop(1.0, ListDirection.LEFT, key1, key2));
+    KeyValue<byte[], List<byte[]>> blmpop = exec(commandObjects.blmpop(1.0, ListDirection.LEFT,
+      key1, key2));
     assertThat(blmpop.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(blmpop.getValue(), anyOf(contains(equalTo(value1)), contains(equalTo(value2))));
 
-    KeyValue<byte[], List<byte[]>> blmpopMultiple = exec(commandObjects.blmpop(1.0, ListDirection.LEFT, 2, key1, key2));
+    KeyValue<byte[], List<byte[]>> blmpopMultiple = exec(commandObjects.blmpop(1.0,
+      ListDirection.LEFT, 2, key1, key2));
     assertThat(blmpopMultiple.getKey(), anyOf(equalTo(key1), equalTo(key2)));
-    assertThat(blmpopMultiple.getValue(), anyOf(contains(equalTo(value1), equalTo(value1)), contains(equalTo(value2), equalTo(value2))));
+    assertThat(blmpopMultiple.getValue(),
+      anyOf(contains(equalTo(value1), equalTo(value1)), contains(equalTo(value2), equalTo(value2))));
   }
 }

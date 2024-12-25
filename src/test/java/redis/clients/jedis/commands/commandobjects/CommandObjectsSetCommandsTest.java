@@ -128,7 +128,8 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     List<Boolean> mIsMember = exec(commandObjects.smismember(key, member1, "nonMember"));
     assertThat(mIsMember, contains(true, false));
 
-    List<Boolean> mIsMemberBinary = exec(commandObjects.smismember(key.getBytes(), member1.getBytes(), "nonMember".getBytes()));
+    List<Boolean> mIsMemberBinary = exec(commandObjects.smismember(key.getBytes(),
+      member1.getBytes(), "nonMember".getBytes()));
     assertThat(mIsMemberBinary, contains(true, false));
   }
 
@@ -145,16 +146,21 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     assertThat(randomMember, anyOf(equalTo(member1), equalTo(member2), equalTo(member3)));
 
     byte[] randomMemberBinary = exec(commandObjects.srandmember(key.getBytes()));
-    assertThat(new String(randomMemberBinary), anyOf(equalTo(member1), equalTo(member2), equalTo(member3)));
+    assertThat(new String(randomMemberBinary),
+      anyOf(equalTo(member1), equalTo(member2), equalTo(member3)));
 
     List<String> randomMembers = exec(commandObjects.srandmember(key, 2));
     assertThat(randomMembers, hasSize(2));
-    assertThat(randomMembers, everyItem(anyOf(equalTo(member1), equalTo(member2), equalTo(member3))));
+    assertThat(randomMembers,
+      everyItem(anyOf(equalTo(member1), equalTo(member2), equalTo(member3))));
     assertThat(randomMembers, not(contains(randomMember)));
 
     List<byte[]> randomMembersBinary = exec(commandObjects.srandmember(key.getBytes(), 2));
     assertThat(randomMembersBinary, hasSize(2));
-    assertThat(randomMembersBinary, everyItem(anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes()), equalTo(member3.getBytes()))));
+    assertThat(
+      randomMembersBinary,
+      everyItem(anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes()),
+        equalTo(member3.getBytes()))));
     assertThat(randomMembersBinary, not(contains(randomMemberBinary)));
   }
 
@@ -172,12 +178,17 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     ScanResult<String> scan = exec(commandObjects.sscan(key, ScanParams.SCAN_POINTER_START, params));
 
     assertThat(scan.getResult(), hasSize(lessThanOrEqualTo(3)));
-    assertThat(scan.getResult(), everyItem(anyOf(equalTo(member1), equalTo(member2), equalTo(member3))));
+    assertThat(scan.getResult(),
+      everyItem(anyOf(equalTo(member1), equalTo(member2), equalTo(member3))));
 
-    ScanResult<byte[]> scanBinary = exec(commandObjects.sscan(key.getBytes(), ScanParams.SCAN_POINTER_START_BINARY, params));
+    ScanResult<byte[]> scanBinary = exec(commandObjects.sscan(key.getBytes(),
+      ScanParams.SCAN_POINTER_START_BINARY, params));
 
     assertThat(scanBinary.getResult(), hasSize(lessThanOrEqualTo(3)));
-    assertThat(scanBinary.getResult(), everyItem(anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes()), equalTo(member3.getBytes()))));
+    assertThat(
+      scanBinary.getResult(),
+      everyItem(anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes()),
+        equalTo(member3.getBytes()))));
   }
 
   @Test
@@ -217,8 +228,10 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     byte[] key2 = "testSet2".getBytes();
     byte[] dstKey = "testSetDiff".getBytes();
 
-    exec(commandObjects.sadd(key1, "member1".getBytes(), "member2".getBytes(), "member3".getBytes()));
-    exec(commandObjects.sadd(key2, "member2".getBytes(), "member3".getBytes(), "member4".getBytes()));
+    exec(commandObjects
+        .sadd(key1, "member1".getBytes(), "member2".getBytes(), "member3".getBytes()));
+    exec(commandObjects
+        .sadd(key2, "member2".getBytes(), "member3".getBytes(), "member4".getBytes()));
 
     Long diffStore = exec(commandObjects.sdiffstore(dstKey, key1, key2));
     assertThat(diffStore, equalTo(1L));
@@ -250,7 +263,8 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     Long interCardLimited = exec(commandObjects.sintercard(1, key1, key2));
     assertThat(interCardLimited, equalTo(1L));
 
-    Long interCardLimitedBinary = exec(commandObjects.sintercard(1, key1.getBytes(), key2.getBytes()));
+    Long interCardLimitedBinary = exec(commandObjects.sintercard(1, key1.getBytes(),
+      key2.getBytes()));
     assertThat(interCardLimitedBinary, equalTo(1L));
   }
 
@@ -276,8 +290,10 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     byte[] key2 = "testSetInter2B".getBytes();
     byte[] dstKey = "testSetInterResultB".getBytes();
 
-    exec(commandObjects.sadd(key1, "member1".getBytes(), "member2".getBytes(), "member3".getBytes()));
-    exec(commandObjects.sadd(key2, "member2".getBytes(), "member3".getBytes(), "member4".getBytes()));
+    exec(commandObjects
+        .sadd(key1, "member1".getBytes(), "member2".getBytes(), "member3".getBytes()));
+    exec(commandObjects
+        .sadd(key2, "member2".getBytes(), "member3".getBytes(), "member4".getBytes()));
 
     Long interStore = exec(commandObjects.sinterstore(dstKey, key1, key2));
     assertThat(interStore, equalTo(2L));
@@ -296,13 +312,15 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
     Set<String> unionResult = exec(commandObjects.sunion(key1, key2));
 
-    assertThat(unionResult, containsInAnyOrder(
-        "member1", "member2", "member3", "member4", "member5"));
+    assertThat(unionResult,
+      containsInAnyOrder("member1", "member2", "member3", "member4", "member5"));
 
     Set<byte[]> bunionResult = exec(commandObjects.sunion(key1.getBytes(), key2.getBytes()));
 
-    assertThat(bunionResult, containsInAnyOrder(
-        "member1".getBytes(), "member2".getBytes(), "member3".getBytes(), "member4".getBytes(), "member5".getBytes()));
+    assertThat(
+      bunionResult,
+      containsInAnyOrder("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
+        "member4".getBytes(), "member5".getBytes()));
   }
 
   @Test
@@ -320,8 +338,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
     Set<String> dstSet = exec(commandObjects.smembers(dstKey));
 
-    assertThat(dstSet, containsInAnyOrder(
-        "member1", "member2", "member3", "member4", "member5"));
+    assertThat(dstSet, containsInAnyOrder("member1", "member2", "member3", "member4", "member5"));
   }
 
   @Test
@@ -330,15 +347,19 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
     byte[] key2 = "testSetUnion2".getBytes();
     byte[] dstKey = "testSetUnionResult".getBytes();
 
-    exec(commandObjects.sadd(key1, "member1".getBytes(), "member2".getBytes(), "member3".getBytes()));
-    exec(commandObjects.sadd(key2, "member3".getBytes(), "member4".getBytes(), "member5".getBytes()));
+    exec(commandObjects
+        .sadd(key1, "member1".getBytes(), "member2".getBytes(), "member3".getBytes()));
+    exec(commandObjects
+        .sadd(key2, "member3".getBytes(), "member4".getBytes(), "member5".getBytes()));
 
     Long unionStore = exec(commandObjects.sunionstore(dstKey, key1, key2));
     assertThat(unionStore, equalTo(5L));
 
     Set<byte[]> dstSet = exec(commandObjects.smembers(dstKey));
-    assertThat(dstSet, containsInAnyOrder(
-        "member1".getBytes(), "member2".getBytes(), "member3".getBytes(), "member4".getBytes(), "member5".getBytes()));
+    assertThat(
+      dstSet,
+      containsInAnyOrder("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
+        "member4".getBytes(), "member5".getBytes()));
   }
 
   @Test

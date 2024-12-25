@@ -20,33 +20,28 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 // HIDE_START
 public class QueryAggExample {
-    @Test
-    public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+  @Test
+  public void run() {
+    UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
-        //REMOVE_START
-        // Clear any keys here before using them in tests.
-        try { jedis.ftDropIndex("idx:bicycle"); } catch (JedisDataException j) {}
-        //REMOVE_END
-// HIDE_END
+    // REMOVE_START
+    // Clear any keys here before using them in tests.
+    try {
+      jedis.ftDropIndex("idx:bicycle");
+    } catch (JedisDataException j) {
+    }
+    // REMOVE_END
+    // HIDE_END
 
-        SchemaField[] schema = {
-            TextField.of("$.brand").as("brand"),
-            TextField.of("$.model").as("model"),
-            TextField.of("$.description").as("description"),
-            NumericField.of("$.price").as("price"),
-            TagField.of("$.condition").as("condition")
-        };
+    SchemaField[] schema = { TextField.of("$.brand").as("brand"),
+        TextField.of("$.model").as("model"), TextField.of("$.description").as("description"),
+        NumericField.of("$.price").as("price"), TagField.of("$.condition").as("condition") };
 
-        jedis.ftCreate("idx:bicycle",
-            FTCreateParams.createParams()
-                    .on(IndexDataType.JSON)
-                    .addPrefix("bicycle:"),
-            schema
-        );
+    jedis.ftCreate("idx:bicycle",
+      FTCreateParams.createParams().on(IndexDataType.JSON).addPrefix("bicycle:"), schema);
 
-        String[] bicycleJsons = new String[] {
-            "  {"
+    String[] bicycleJsons = new String[] {
+        "  {"
             + "	  \"pickup_zone\": \"POLYGON((-74.0610 40.7578, -73.9510 40.7578, -73.9510 40.6678, "
             + "-74.0610 40.6678, -74.0610 40.7578))\","
             + "	  \"store_location\": \"-74.0060,40.7128\","
@@ -56,10 +51,9 @@ public class QueryAggExample {
             + "	  \"description\": \"Small and powerful, the Jigger is the best ride for the smallest of tikes! "
             + "This is the tiniest kids’ pedal bike on the market available without a coaster brake, the Jigger "
             + "is the vehicle of choice for the rare tenacious little rider raring to go.\","
-            + "	  \"condition\": \"new\""
-            + "  }",
+            + "	  \"condition\": \"new\"" + "  }",
 
-            "  {"
+        "  {"
             + "    \"pickup_zone\": \"POLYGON((-118.2887 34.0972, -118.1987 34.0972, -118.1987 33.9872, "
             + "-118.2887 33.9872, -118.2887 34.0972))\","
             + "	  \"store_location\": \"-118.2437,34.0522\","
@@ -69,10 +63,9 @@ public class QueryAggExample {
             + "	  \"description\": \"Kids want to ride with as little weight as possible. Especially "
             + "on an incline! They may be at the age when a 27.5'' wheel bike is just too clumsy coming "
             + "off a 24'' bike. The Hillcraft 26 is just the solution they need!\","
-            + "	  \"condition\": \"used\""
-            + "  }",
+            + "	  \"condition\": \"used\"" + "  }",
 
-            "  {"
+        "  {"
             + "    \"pickup_zone\": \"POLYGON((-87.6848 41.9331, -87.5748 41.9331, -87.5748 41.8231, "
             + "-87.6848 41.8231, -87.6848 41.9331))\","
             + "	  \"store_location\": \"-87.6298,41.8781\","
@@ -83,10 +76,9 @@ public class QueryAggExample {
             + "and uberlight mountain bike for their first experience on tracks and easy cruising through "
             + "forests and fields. The lower  top tube makes it easy to mount and dismount in any "
             + "situation, giving your kids greater safety on the trails.\","
-            + "  	\"condition\": \"used\""
-            + "  }",
+            + "  	\"condition\": \"used\"" + "  }",
 
-            "  {"
+        "  {"
             + "    \"pickup_zone\": \"POLYGON((-80.2433 25.8067, -80.1333 25.8067, -80.1333 25.6967, "
             + "-80.2433 25.6967, -80.2433 25.8067))\","
             + "  	\"store_location\": \"-80.1918,25.7617\","
@@ -99,11 +91,9 @@ public class QueryAggExample {
             + "If you like 29ers, try the Eva 291. It’s a brand new bike for 2022.. This "
             + "full-suspension, cross-country ride has been designed for velocity. The 291 has "
             + "100mm of front and rear travel, a superlight aluminum frame and fast-rolling "
-            + "29-inch wheels. Yippee!\","
-            + "  	\"condition\": \"used\""
-            + "  }",
+            + "29-inch wheels. Yippee!\"," + "  	\"condition\": \"used\"" + "  }",
 
-            "  {"
+        "  {"
             + "    \"pickup_zone\": \"POLYGON((-122.4644 37.8199, -122.3544 37.8199, -122.3544 37.7099, "
             + "-122.4644 37.7099, -122.4644 37.8199))\","
             + "  	\"store_location\": \"-122.4194,37.7749\","
@@ -114,11 +104,9 @@ public class QueryAggExample {
             + "for a lively trail bike that's just as inspiring on the climbs as it is over rougher "
             + "ground, the Wilder is one heck of a bike built specifically for short women. Both the "
             + "frames and components have been tweaked to include a women’s saddle, different bars "
-            + "and unique colourway.\","
-            + "  	\"condition\": \"used\""
-            + "  }",
+            + "and unique colourway.\"," + "  	\"condition\": \"used\"" + "  }",
 
-            "  {"
+        "  {"
             + "    \"pickup_zone\": \"POLYGON((-0.1778 51.5524, 0.0822 51.5524, 0.0822 51.4024, "
             + "-0.1778 51.4024, -0.1778 51.5524))\","
             + "    \"store_location\": \"-0.1278,51.5074\","
@@ -129,26 +117,20 @@ public class QueryAggExample {
             + "not to say that it’s a basic machine. With an internal weld aluminium frame, a full "
             + "carbon fork, and the slick-shifting Claris gears from Shimano’s, this is a bike which "
             + "doesn’t break the bank and delivers craved performance.\","
-            + "    \"condition\": \"new\""
-            + "  }",
+            + "    \"condition\": \"new\"" + "  }",
 
-            "  {"
-            + "    \"pickup_zone\": \"POLYGON((2.1767 48.9016, 2.5267 48.9016, 2.5267 48.5516, "
-            + "2.1767 48.5516, 2.1767 48.9016))\","
-            + "    \"store_location\": \"2.3522,48.8566\","
-            + "    \"brand\": \"ScramBikes\","
-            + "    \"model\": \"WattBike\","
+        "  {" + "    \"pickup_zone\": \"POLYGON((2.1767 48.9016, 2.5267 48.9016, 2.5267 48.5516, "
+            + "2.1767 48.5516, 2.1767 48.9016))\"," + "    \"store_location\": \"2.3522,48.8566\","
+            + "    \"brand\": \"ScramBikes\"," + "    \"model\": \"WattBike\","
             + "    \"price\": 2300,"
             + "    \"description\": \"The WattBike is the best e-bike for people who still "
             + "feel young at heart. It has a Bafang 1000W mid-drive system and a 48V 17.5AH "
             + "Samsung Lithium-Ion battery, allowing you to ride for more than 60 miles on one "
             + "charge. It’s great for tackling hilly terrain or if you just fancy a more "
             + "leisurely ride. With three working modes, you can choose between E-bike, "
-            + "assisted bicycle, and normal bike modes.\","
-            + "    \"condition\": \"new\""
-            + "  }",
+            + "assisted bicycle, and normal bike modes.\"," + "    \"condition\": \"new\"" + "  }",
 
-            "  {"
+        "  {"
             + "    \"pickup_zone\": \"POLYGON((13.3260 52.5700, 13.6550 52.5700, 13.6550 52.2700, "
             + "13.3260 52.2700, 13.3260 52.5700))\","
             + "    \"store_location\": \"13.4050,52.5200\","
@@ -167,16 +149,12 @@ public class QueryAggExample {
             + "provide a smooth, stable ride on paved roads and gravel. Rack and fender mounts "
             + "facilitate setting up the Roll Low-Entry as your preferred commuter, and the "
             + "BMX-like handlebar offers space for mounting a flashlight, bell, or phone holder.\","
-            + "    \"condition\": \"new\""
-            + "  }",
+            + "    \"condition\": \"new\"" + "  }",
 
-            "  {"
-            + "    \"pickup_zone\": \"POLYGON((1.9450 41.4301, 2.4018 41.4301, 2.4018 41.1987, "
+        "  {" + "    \"pickup_zone\": \"POLYGON((1.9450 41.4301, 2.4018 41.4301, 2.4018 41.1987, "
             + "1.9450 41.1987, 1.9450 41.4301))\","
-            + "    \"store_location\": \"2.1734, 41.3851\","
-            + "    \"brand\": \"nHill\","
-            + "    \"model\": \"Summit\","
-            + "    \"price\": 1200,"
+            + "    \"store_location\": \"2.1734, 41.3851\"," + "    \"brand\": \"nHill\","
+            + "    \"model\": \"Summit\"," + "    \"price\": 1200,"
             + "    \"description\": \"This budget mountain bike from nHill performs well both "
             + "on bike paths and on the trail. The fork with 100mm of travel absorbs rough "
             + "terrain. Fat Kenda Booster tires give you grip in corners and on wet trails. "
@@ -185,169 +163,150 @@ public class QueryAggExample {
             + "Whether you want an affordable bike that you can take to work, but also take "
             + "trail in mountains on the weekends or you’re just after a stable, comfortable "
             + "ride for the bike path, the Summit gives a good value for money.\","
-            + "    \"condition\": \"new\""
-            + "  }",
+            + "    \"condition\": \"new\"" + "  }",
 
-            "  {"
-            + "    \"pickup_zone\": \"POLYGON((12.4464 42.1028, 12.5464 42.1028, "
+        "  {" + "    \"pickup_zone\": \"POLYGON((12.4464 42.1028, 12.5464 42.1028, "
             + "12.5464 41.7028, 12.4464 41.7028, 12.4464 42.1028))\","
-            + "    \"store_location\": \"12.4964,41.9028\","
-            + "    \"model\": \"ThrillCycle\","
-            + "    \"brand\": \"BikeShind\","
-            + "    \"price\": 815,"
+            + "    \"store_location\": \"12.4964,41.9028\"," + "    \"model\": \"ThrillCycle\","
+            + "    \"brand\": \"BikeShind\"," + "    \"price\": 815,"
             + "    \"description\": \"An artsy,  retro-inspired bicycle that’s as "
             + "functional as it is pretty: The ThrillCycle steel frame offers a smooth ride. "
             + "A 9-speed drivetrain has enough gears for coasting in the city, but we wouldn’t "
             + "suggest taking it to the mountains. Fenders protect you from mud, and a rear "
             + "basket lets you transport groceries, flowers and books. The ThrillCycle comes "
             + "with a limited lifetime warranty, so this little guy will last you long "
-            + "past graduation.\","
-            + "    \"condition\": \"refurbished\""
-            + "  }"
-        };
+            + "past graduation.\"," + "    \"condition\": \"refurbished\"" + "  }" };
 
-        for (int i = 0; i < bicycleJsons.length; i++) {
-            jedis.jsonSet("bicycle:" + i, new Path2("$"), bicycleJsons[i]);
-        }
-
-        // STEP_START agg1
-        AggregationResult res1 = jedis.ftAggregate("idx:bicycle",
-            new AggregationBuilder("@condition:{new}")
-                    .load("__key", "price")
-                    .apply("@price - (@price * 0.1)", "discounted")
-        );
-        
-        List<Row> rows1 = res1.getRows();
-        System.out.println(rows1.size());   // >>> 5
-
-        for (int i = 0; i < rows1.size(); i++) {
-            System.out.println(rows1.get(i));
-        }
-        // >>> {__key=bicycle:0, discounted=243, price=270}
-        // >>> {__key=bicycle:5, discounted=729, price=810}
-        // >>> {__key=bicycle:6, discounted=2070, price=2300}
-        // >>> {__key=bicycle:7, discounted=387, price=430}
-        // >>> {__key=bicycle:8, discounted=1080, price=1200}
-        // STEP_END
-
-        // Tests for 'agg1' step.
-        // REMOVE_START
-        Assert.assertEquals(5, rows1.size());
-        Assert.assertEquals("{__key=bicycle:0, discounted=243, price=270}", rows1.get(0).toString());
-        Assert.assertEquals("{__key=bicycle:5, discounted=729, price=810}", rows1.get(1).toString());
-        Assert.assertEquals("{__key=bicycle:6, discounted=2070, price=2300}", rows1.get(2).toString());
-        Assert.assertEquals("{__key=bicycle:7, discounted=387, price=430}", rows1.get(3).toString());
-        Assert.assertEquals("{__key=bicycle:8, discounted=1080, price=1200}", rows1.get(4).toString());
-        // REMOVE_END
-
-
-        // STEP_START agg2
-        AggregationResult res2 = jedis.ftAggregate("idx:bicycle",
-            new AggregationBuilder("*")
-                    .load("price")
-                    .apply("@price<1000", "price_category")
-                    .groupBy("@condition",
-                        Reducers.sum("@price_category").as("num_affordable"))
-        );
-
-        List<Row> rows2 = res2.getRows();
-        System.out.println(rows2.size());   // >>> 3
-
-        for (int i = 0; i < rows2.size(); i++) {
-            System.out.println(rows2.get(i));
-        }
-        // >>> {condition=refurbished, num_affordable=1}
-        // >>> {condition=used, num_affordable=1}
-        // >>> {condition=new, num_affordable=3}
-        // STEP_END
-
-        // Tests for 'agg2' step.
-        // REMOVE_START
-        Assert.assertEquals(3, rows2.size());
-        Assert.assertEquals("{condition=refurbished, num_affordable=1}", rows2.get(0).toString());
-        Assert.assertEquals("{condition=used, num_affordable=1}", rows2.get(1).toString());
-        Assert.assertEquals("{condition=new, num_affordable=3}", rows2.get(2).toString());
-        // REMOVE_END
-
-
-        // STEP_START agg3
-        AggregationResult res3 = jedis.ftAggregate("idx:bicycle",
-            new AggregationBuilder("*")
-                    .apply("'bicycle'", "type")
-                    .groupBy("@type", Reducers.count().as("num_total"))
-        );
-
-        List<Row> rows3 = res3.getRows();
-        System.out.println(rows3.size());   // >>> 1
-
-        for (int i = 0; i < rows3.size(); i++) {
-            System.out.println(rows3.get(i));
-        }
-        // >>> {type=bicycle, num_total=10}
-        // STEP_END
-
-        // Tests for 'agg3' step.
-        // REMOVE_START
-        Assert.assertEquals(1, rows3.size());
-        Assert.assertEquals("{type=bicycle, num_total=10}", rows3.get(0).toString());
-        // REMOVE_END
-
-
-        // STEP_START agg4
-        AggregationResult res4 = jedis.ftAggregate("idx:bicycle",
-            new AggregationBuilder("*")
-                    .load("__key")
-                    .groupBy("@condition",
-                        Reducers.to_list("__key").as("bicycles"))
-        );
-
-        List<Row> rows4 = res4.getRows();
-        System.out.println(rows4.size());   // >>> 3
-
-        for (int i = 0; i < rows4.size(); i++) {
-            System.out.println(rows4.get(i));
-        }
-        // >>> {condition=refurbished, bicycles=[bicycle:9]}
-        // >>> {condition=used, bicycles=[bicycle:3, bicycle:4, bicycle:1, bicycle:2]}
-        // >>> {condition=new, bicycles=[bicycle:7, bicycle:0, bicycle:5, bicycle:6, bicycle:8]}
-        // STEP_END
-
-        // Tests for 'agg4' step.
-        // REMOVE_START
-        Assert.assertEquals(3, rows4.size());
-
-        Row test4Row = rows4.get(0);
-        Assert.assertEquals("refurbished", test4Row.getString("condition"));
-
-        ArrayList<String> test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        Assert.assertEquals(1, test4Bikes.size());
-        Assert.assertTrue(test4Bikes.contains("bicycle:9"));
-
-        test4Row = rows4.get(1);
-        Assert.assertEquals("used", test4Row.getString("condition"));
-        
-        test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        Assert.assertEquals(4, test4Bikes.size());
-        Assert.assertTrue(test4Bikes.contains("bicycle:1"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:2"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:3"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:4"));
-        
-        test4Row = rows4.get(2);
-        Assert.assertEquals("new", test4Row.getString("condition"));
-
-        test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        Assert.assertEquals(5, test4Bikes.size());
-        Assert.assertTrue(test4Bikes.contains("bicycle:0"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:5"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:6"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:7"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:8"));
-        // REMOVE_END
-
-// HIDE_START
-        jedis.close();
+    for (int i = 0; i < bicycleJsons.length; i++) {
+      jedis.jsonSet("bicycle:" + i, new Path2("$"), bicycleJsons[i]);
     }
+
+    // STEP_START agg1
+    AggregationResult res1 = jedis.ftAggregate("idx:bicycle", new AggregationBuilder(
+        "@condition:{new}").load("__key", "price").apply("@price - (@price * 0.1)", "discounted"));
+
+    List<Row> rows1 = res1.getRows();
+    System.out.println(rows1.size()); // >>> 5
+
+    for (int i = 0; i < rows1.size(); i++) {
+      System.out.println(rows1.get(i));
+    }
+    // >>> {__key=bicycle:0, discounted=243, price=270}
+    // >>> {__key=bicycle:5, discounted=729, price=810}
+    // >>> {__key=bicycle:6, discounted=2070, price=2300}
+    // >>> {__key=bicycle:7, discounted=387, price=430}
+    // >>> {__key=bicycle:8, discounted=1080, price=1200}
+    // STEP_END
+
+    // Tests for 'agg1' step.
+    // REMOVE_START
+    Assert.assertEquals(5, rows1.size());
+    Assert.assertEquals("{__key=bicycle:0, discounted=243, price=270}", rows1.get(0).toString());
+    Assert.assertEquals("{__key=bicycle:5, discounted=729, price=810}", rows1.get(1).toString());
+    Assert.assertEquals("{__key=bicycle:6, discounted=2070, price=2300}", rows1.get(2).toString());
+    Assert.assertEquals("{__key=bicycle:7, discounted=387, price=430}", rows1.get(3).toString());
+    Assert.assertEquals("{__key=bicycle:8, discounted=1080, price=1200}", rows1.get(4).toString());
+    // REMOVE_END
+
+    // STEP_START agg2
+    AggregationResult res2 = jedis.ftAggregate(
+      "idx:bicycle",
+      new AggregationBuilder("*").load("price").apply("@price<1000", "price_category")
+          .groupBy("@condition", Reducers.sum("@price_category").as("num_affordable")));
+
+    List<Row> rows2 = res2.getRows();
+    System.out.println(rows2.size()); // >>> 3
+
+    for (int i = 0; i < rows2.size(); i++) {
+      System.out.println(rows2.get(i));
+    }
+    // >>> {condition=refurbished, num_affordable=1}
+    // >>> {condition=used, num_affordable=1}
+    // >>> {condition=new, num_affordable=3}
+    // STEP_END
+
+    // Tests for 'agg2' step.
+    // REMOVE_START
+    Assert.assertEquals(3, rows2.size());
+    Assert.assertEquals("{condition=refurbished, num_affordable=1}", rows2.get(0).toString());
+    Assert.assertEquals("{condition=used, num_affordable=1}", rows2.get(1).toString());
+    Assert.assertEquals("{condition=new, num_affordable=3}", rows2.get(2).toString());
+    // REMOVE_END
+
+    // STEP_START agg3
+    AggregationResult res3 = jedis.ftAggregate(
+      "idx:bicycle",
+      new AggregationBuilder("*").apply("'bicycle'", "type").groupBy("@type",
+        Reducers.count().as("num_total")));
+
+    List<Row> rows3 = res3.getRows();
+    System.out.println(rows3.size()); // >>> 1
+
+    for (int i = 0; i < rows3.size(); i++) {
+      System.out.println(rows3.get(i));
+    }
+    // >>> {type=bicycle, num_total=10}
+    // STEP_END
+
+    // Tests for 'agg3' step.
+    // REMOVE_START
+    Assert.assertEquals(1, rows3.size());
+    Assert.assertEquals("{type=bicycle, num_total=10}", rows3.get(0).toString());
+    // REMOVE_END
+
+    // STEP_START agg4
+    AggregationResult res4 = jedis.ftAggregate(
+      "idx:bicycle",
+      new AggregationBuilder("*").load("__key").groupBy("@condition",
+        Reducers.to_list("__key").as("bicycles")));
+
+    List<Row> rows4 = res4.getRows();
+    System.out.println(rows4.size()); // >>> 3
+
+    for (int i = 0; i < rows4.size(); i++) {
+      System.out.println(rows4.get(i));
+    }
+    // >>> {condition=refurbished, bicycles=[bicycle:9]}
+    // >>> {condition=used, bicycles=[bicycle:3, bicycle:4, bicycle:1, bicycle:2]}
+    // >>> {condition=new, bicycles=[bicycle:7, bicycle:0, bicycle:5, bicycle:6, bicycle:8]}
+    // STEP_END
+
+    // Tests for 'agg4' step.
+    // REMOVE_START
+    Assert.assertEquals(3, rows4.size());
+
+    Row test4Row = rows4.get(0);
+    Assert.assertEquals("refurbished", test4Row.getString("condition"));
+
+    ArrayList<String> test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
+    Assert.assertEquals(1, test4Bikes.size());
+    Assert.assertTrue(test4Bikes.contains("bicycle:9"));
+
+    test4Row = rows4.get(1);
+    Assert.assertEquals("used", test4Row.getString("condition"));
+
+    test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
+    Assert.assertEquals(4, test4Bikes.size());
+    Assert.assertTrue(test4Bikes.contains("bicycle:1"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:2"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:3"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:4"));
+
+    test4Row = rows4.get(2);
+    Assert.assertEquals("new", test4Row.getString("condition"));
+
+    test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
+    Assert.assertEquals(5, test4Bikes.size());
+    Assert.assertTrue(test4Bikes.contains("bicycle:0"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:5"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:6"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:7"));
+    Assert.assertTrue(test4Bikes.contains("bicycle:8"));
+    // REMOVE_END
+
+    // HIDE_START
+    jedis.close();
+  }
 }
 // HIDE_END
 

@@ -154,8 +154,7 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
 
     IndexOptions indexOptions = IndexOptions.defaultOptions().setDefinition(indexDefinition);
 
-    Schema schema = new Schema()
-        .addField(new Schema.Field("$.title", Schema.FieldType.TEXT))
+    Schema schema = new Schema().addField(new Schema.Field("$.title", Schema.FieldType.TEXT))
         .addField(new Schema.Field("$.price", Schema.FieldType.NUMERIC));
 
     String create = exec(commandObjects.ftCreate(indexName, indexOptions, schema));
@@ -166,7 +165,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     hash.put("price", 17.99);
     hash.put("author", "John Doe");
 
-    String jsonSet = exec(commandObjects.jsonSet("books:1000", Path2.ROOT_PATH, new JSONObject(hash)));
+    String jsonSet = exec(commandObjects.jsonSet("books:1000", Path2.ROOT_PATH,
+      new JSONObject(hash)));
     assertThat(jsonSet, equalTo("OK"));
 
     Map<String, Object> hash2 = new HashMap<>();
@@ -174,7 +174,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     hash2.put("price", 19.99);
     hash2.put("author", "Jane Doe");
 
-    String jsonSet2 = exec(commandObjects.jsonSet("books:1200", Path2.ROOT_PATH, new JSONObject(hash2)));
+    String jsonSet2 = exec(commandObjects.jsonSet("books:1200", Path2.ROOT_PATH, new JSONObject(
+        hash2)));
     assertThat(jsonSet2, equalTo("OK"));
 
     SearchResult searchResult = exec(commandObjects.ftSearch(indexName, "Action"));
@@ -184,23 +185,22 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
 
     Document document = searchResult.getDocuments().get(0);
     assertThat(document.getId(), equalTo("books:1000"));
-    assertThat(document.get("$"), equalTo("{\"title\":\"Redis in Action\",\"price\":17.99,\"author\":\"John Doe\"}"));
+    assertThat(document.get("$"),
+      equalTo("{\"title\":\"Redis in Action\",\"price\":17.99,\"author\":\"John Doe\"}"));
   }
 
   @Test
   public void testFtCreateWithParams() {
     String indexName = "booksIndex";
 
-    SchemaField[] schema = {
-        TextField.of("$.title").as("title"),
-        NumericField.of("$.price").as("price")
-    };
+    SchemaField[] schema = { TextField.of("$.title").as("title"),
+        NumericField.of("$.price").as("price") };
 
-    FTCreateParams createParams = FTCreateParams.createParams()
-        .on(IndexDataType.JSON)
+    FTCreateParams createParams = FTCreateParams.createParams().on(IndexDataType.JSON)
         .addPrefix("books:");
 
-    String createResult = exec(commandObjects.ftCreate(indexName, createParams, Arrays.asList(schema)));
+    String createResult = exec(commandObjects.ftCreate(indexName, createParams,
+      Arrays.asList(schema)));
     assertThat(createResult, equalTo("OK"));
 
     JSONObject bookRedisInAction = new JSONObject();
@@ -216,7 +216,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     bookRedisEssentials.put("price", 19.99);
     bookRedisEssentials.put("author", "Jane Doe");
 
-    String jsonSet2 = exec(commandObjects.jsonSet("books:1200", Path2.ROOT_PATH, bookRedisEssentials));
+    String jsonSet2 = exec(commandObjects.jsonSet("books:1200", Path2.ROOT_PATH,
+      bookRedisEssentials));
     assertThat(jsonSet2, equalTo("OK"));
 
     SearchResult searchResult = exec(commandObjects.ftSearch(indexName, "Action"));
@@ -240,8 +241,7 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     schema.add(TextField.of("$.title").as("title"));
     schema.add(NumericField.of("$.price").as("price"));
 
-    FTCreateParams createParams = FTCreateParams.createParams()
-        .on(IndexDataType.JSON)
+    FTCreateParams createParams = FTCreateParams.createParams().on(IndexDataType.JSON)
         .addPrefix("books:");
 
     String createResult = exec(commandObjects.ftCreate(indexName, createParams, schema));
@@ -260,7 +260,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     bookRedisEssentials.put("price", 19.99);
     bookRedisEssentials.put("author", "Jane Doe");
 
-    String jsonSet2 = exec(commandObjects.jsonSet("books:1200", Path2.ROOT_PATH, bookRedisEssentials));
+    String jsonSet2 = exec(commandObjects.jsonSet("books:1200", Path2.ROOT_PATH,
+      bookRedisEssentials));
     assertThat(jsonSet2, equalTo("OK"));
 
     SearchResult searchNotInIndex = exec(commandObjects.ftSearch(indexName, "John"));
@@ -293,12 +294,12 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
   public void testFtExplain() {
     String indexName = "booksIndex";
 
-    IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.HASH).setPrefixes("books:");
+    IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.HASH)
+        .setPrefixes("books:");
 
     IndexOptions indexOptions = IndexOptions.defaultOptions().setDefinition(indexDefinition);
 
-    Schema schema = new Schema()
-        .addField(new Schema.Field("title", Schema.FieldType.TEXT))
+    Schema schema = new Schema().addField(new Schema.Field("title", Schema.FieldType.TEXT))
         .addField(new Schema.Field("price", Schema.FieldType.NUMERIC));
 
     String createResult = exec(commandObjects.ftCreate(indexName, indexOptions, schema));
@@ -327,12 +328,12 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
   public void testFtAggregate() {
     String indexName = "booksIndex";
 
-    IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.HASH).setPrefixes("books:");
+    IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.HASH)
+        .setPrefixes("books:");
 
     IndexOptions indexOptions = IndexOptions.defaultOptions().setDefinition(indexDefinition);
 
-    Schema schema = new Schema()
-        .addField(new Schema.Field("title", Schema.FieldType.TEXT))
+    Schema schema = new Schema().addField(new Schema.Field("title", Schema.FieldType.TEXT))
         .addField(new Schema.Field("price", Schema.FieldType.NUMERIC))
         .addField(new Schema.Field("genre", Schema.FieldType.TAG));
 
@@ -359,9 +360,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     exec(commandObjects.hsetObject(book2Id, book2Fields));
 
     // Aggregation: average price of books in the 'Technology' genre
-    AggregationBuilder aggr = new AggregationBuilder()
-        .groupBy("@genre", Reducers.avg("@price").as("avgPrice"))
-        .filter("@genre=='Technology'");
+    AggregationBuilder aggr = new AggregationBuilder().groupBy("@genre",
+      Reducers.avg("@price").as("avgPrice")).filter("@genre=='Technology'");
 
     AggregationResult aggregationResult = exec(commandObjects.ftAggregate(indexName, aggr));
 
@@ -379,11 +379,15 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     String indexName = "techArticles";
 
     List<SchemaField> schemaFields = Collections.singletonList(TextField.of("$.technology"));
-    exec(commandObjects.ftCreate(indexName, FTCreateParams.createParams().on(IndexDataType.JSON), schemaFields));
+    exec(commandObjects.ftCreate(indexName, FTCreateParams.createParams().on(IndexDataType.JSON),
+      schemaFields));
 
-    exec(commandObjects.jsonSet("articles:02", Path2.ROOT_PATH, new JSONObject().put("technology", "Flutter")));
-    exec(commandObjects.jsonSet("articles:03", Path2.ROOT_PATH, new JSONObject().put("technology", "Rust")));
-    exec(commandObjects.jsonSet("articles:04", Path2.ROOT_PATH, new JSONObject().put("technology", "Angular")));
+    exec(commandObjects.jsonSet("articles:02", Path2.ROOT_PATH,
+      new JSONObject().put("technology", "Flutter")));
+    exec(commandObjects.jsonSet("articles:03", Path2.ROOT_PATH,
+      new JSONObject().put("technology", "Rust")));
+    exec(commandObjects.jsonSet("articles:04", Path2.ROOT_PATH,
+      new JSONObject().put("technology", "Angular")));
 
     SearchResult searchInIndex = exec(commandObjects.ftSearch(indexName, "Flutter"));
     assertThat(searchInIndex.getTotalResults(), equalTo(1L));
@@ -405,15 +409,18 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     // Spellcheck based on index and dictionary
     FTSpellCheckParams paramsWithDict = new FTSpellCheckParams().includeTerm(dictionary);
 
-    Map<String, Map<String, Double>> indexAndDictionary = exec(commandObjects.ftSpellCheck(indexName, query, paramsWithDict));
+    Map<String, Map<String, Double>> indexAndDictionary = exec(commandObjects.ftSpellCheck(
+      indexName, query, paramsWithDict));
     assertThat(indexAndDictionary.get("fluter"), hasKey(equalToIgnoringCase("Flutter")));
     assertThat(indexAndDictionary.get("javascrit"), hasKey("JavaScript"));
     assertThat(indexAndDictionary.get("pyhton"), anEmptyMap());
 
     // Increase Levenshtein distance, to allow for misspelled letter
-    FTSpellCheckParams paramsWithDictAndDist = new FTSpellCheckParams().includeTerm(dictionary).distance(2);
+    FTSpellCheckParams paramsWithDictAndDist = new FTSpellCheckParams().includeTerm(dictionary)
+        .distance(2);
 
-    Map<String, Map<String, Double>> indexAndDictionaryWithDist = exec(commandObjects.ftSpellCheck(indexName, query, paramsWithDictAndDist));
+    Map<String, Map<String, Double>> indexAndDictionaryWithDist = exec(commandObjects.ftSpellCheck(
+      indexName, query, paramsWithDictAndDist));
     assertThat(indexAndDictionaryWithDist.get("fluter"), hasKey(equalToIgnoringCase("Flutter")));
     assertThat(indexAndDictionaryWithDist.get("javascrit"), hasKey("JavaScript"));
     assertThat(indexAndDictionaryWithDist.get("pyhton"), hasKey("Python"));
@@ -423,7 +430,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
   public void testFtDictAddDelAndDump() {
     String dictionary = "programmingLanguages";
 
-    Long addResult = exec(commandObjects.ftDictAdd(dictionary, "Java", "Python", "JavaScript", "Rust"));
+    Long addResult = exec(commandObjects.ftDictAdd(dictionary, "Java", "Python", "JavaScript",
+      "Rust"));
     assertThat(addResult, equalTo(4L));
 
     Set<String> dumpResultAfterAdd = exec(commandObjects.ftDictDump(dictionary));
@@ -442,7 +450,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
 
     String dictionary = "programmingLanguages";
 
-    Long addResult = exec(commandObjects.ftDictAddBySampleKey(index, dictionary, "Java", "Python", "JavaScript", "Rust"));
+    Long addResult = exec(commandObjects.ftDictAddBySampleKey(index, dictionary, "Java", "Python",
+      "JavaScript", "Rust"));
     assertThat(addResult, equalTo(4L));
 
     Set<String> dumpResultAfterAdd = exec(commandObjects.ftDictDumpBySampleKey(index, dictionary));
@@ -459,16 +468,14 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
   public void testFtTags() {
     String indexName = "booksIndex";
 
-    SchemaField[] schema = {
-        TextField.of("$.title"),
-        TagField.of("$.genre").as("genre").separator(',')
-    };
+    SchemaField[] schema = { TextField.of("$.title"),
+        TagField.of("$.genre").as("genre").separator(',') };
 
-    FTCreateParams createParams = FTCreateParams.createParams()
-        .on(IndexDataType.JSON)
+    FTCreateParams createParams = FTCreateParams.createParams().on(IndexDataType.JSON)
         .addPrefix("books:");
 
-    String createResult = exec(commandObjects.ftCreate(indexName, createParams, Arrays.asList(schema)));
+    String createResult = exec(commandObjects.ftCreate(indexName, createParams,
+      Arrays.asList(schema)));
     assertThat(createResult, equalTo("OK"));
 
     JSONObject bookDune = new JSONObject();
@@ -486,15 +493,18 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     assertThat(jsonSet2, equalTo("OK"));
 
     Set<String> tagVals = exec(commandObjects.ftTagVals(indexName, "genre"));
-    assertThat(tagVals, containsInAnyOrder(
-        "science fiction", "fantasy", "adventure", "technical", "novel", "essential"));
+    assertThat(
+      tagVals,
+      containsInAnyOrder("science fiction", "fantasy", "adventure", "technical", "novel",
+        "essential"));
 
     SearchResult searchSimple = exec(commandObjects.ftSearch(indexName, "Fantasy"));
 
     assertThat(searchSimple.getTotalResults(), equalTo(0L));
     assertThat(searchSimple.getDocuments(), empty());
 
-    SearchResult searchSpecialSyntax = exec(commandObjects.ftSearch(indexName, "@genre:{ fantasy }"));
+    SearchResult searchSpecialSyntax = exec(commandObjects
+        .ftSearch(indexName, "@genre:{ fantasy }"));
 
     assertThat(searchSpecialSyntax.getTotalResults(), equalTo(1L));
     assertThat(searchSpecialSyntax.getDocuments(), hasSize(1));
@@ -511,16 +521,14 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
   public void testFtInfo() {
     String indexName = "booksIndex";
 
-    SchemaField[] schema = {
-        TextField.of("$.title"),
-        TagField.of("$.genre").as("genre").separator(',')
-    };
+    SchemaField[] schema = { TextField.of("$.title"),
+        TagField.of("$.genre").as("genre").separator(',') };
 
-    FTCreateParams createParams = FTCreateParams.createParams()
-        .on(IndexDataType.JSON)
+    FTCreateParams createParams = FTCreateParams.createParams().on(IndexDataType.JSON)
         .addPrefix("books:");
 
-    String createResult = exec(commandObjects.ftCreate(indexName, createParams, Arrays.asList(schema)));
+    String createResult = exec(commandObjects.ftCreate(indexName, createParams,
+      Arrays.asList(schema)));
     assertThat(createResult, equalTo("OK"));
 
     JSONObject bookDune = new JSONObject();
@@ -553,8 +561,7 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     assertThat(suggestionsOneOption, contains("Redis"));
 
     List<Tuple> suggestionsWithScoresOneOption = exec(commandObjects.ftSugGetWithScores(key, "Re"));
-    assertThat(suggestionsWithScoresOneOption, contains(
-        new Tuple("Redis", 1.0)));
+    assertThat(suggestionsWithScoresOneOption, contains(new Tuple("Redis", 1.0)));
 
     // Round 2: two suggestions with weights 2.0 and 1.0
     Long sugAdd2 = exec(commandObjects.ftSugAdd(key, "Redux", 1.0));
@@ -564,9 +571,8 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     assertThat(suggestionsTwoOptions, contains("Redis", "Redux"));
 
     List<Tuple> suggestionsWithScoresTwoOptions = exec(commandObjects.ftSugGetWithScores(key, "Re"));
-    assertThat(suggestionsWithScoresTwoOptions, contains(
-        new Tuple("Redis", 1.0),
-        new Tuple("Redux", 0.5)));
+    assertThat(suggestionsWithScoresTwoOptions,
+      contains(new Tuple("Redis", 1.0), new Tuple("Redux", 0.5)));
 
     // Round 2: same two suggestions with weights 2.0 and 3.0
     Long sugAddIncr = exec(commandObjects.ftSugAddIncr(key, "Redux", 2.0));
@@ -575,10 +581,10 @@ public class CommandObjectsSearchAndQueryCommandsTest extends CommandObjectsModu
     List<String> suggestionsAfterScoreChange = exec(commandObjects.ftSugGet(key, "Re"));
     assertThat(suggestionsAfterScoreChange, contains("Redux", "Redis"));
 
-    List<Tuple> suggestionsWithScoresAfterChange = exec(commandObjects.ftSugGetWithScores(key, "Re"));
-    assertThat(suggestionsWithScoresAfterChange, contains(
-        new Tuple("Redux", 1.5),
-        new Tuple("Redis", 1.0)));
+    List<Tuple> suggestionsWithScoresAfterChange = exec(commandObjects
+        .ftSugGetWithScores(key, "Re"));
+    assertThat(suggestionsWithScoresAfterChange,
+      contains(new Tuple("Redux", 1.5), new Tuple("Redis", 1.0)));
   }
 
 }

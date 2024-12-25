@@ -40,7 +40,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsAddWithTimestampAndParams() {
     TSCreateParams createParams = TSCreateParams.createParams();
 
-    when(commandObjects.tsAdd("myTimeSeries", 1000L, 42.0, createParams)).thenReturn(longCommandObject);
+    when(commandObjects.tsAdd("myTimeSeries", 1000L, 42.0, createParams)).thenReturn(
+      longCommandObject);
 
     Response<Long> response = pipeliningBase.tsAdd("myTimeSeries", 1000L, 42.0, createParams);
 
@@ -52,7 +53,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsAddWithParams() {
     TSAddParams addParams = mock(TSAddParams.class);
 
-    when(commandObjects.tsAdd("myTimeSeries", 1000L, 42.0, addParams)).thenReturn(longCommandObject);
+    when(commandObjects.tsAdd("myTimeSeries", 1000L, 42.0, addParams))
+        .thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.tsAdd("myTimeSeries", 1000L, 42.0, addParams);
 
@@ -99,9 +101,13 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     AggregationType aggregationType = AggregationType.AVG;
     long timeBucket = 60;
 
-    when(commandObjects.tsCreateRule("sourceTimeSeries", "destTimeSeries", aggregationType, timeBucket)).thenReturn(stringCommandObject);
+    when(
+      commandObjects
+          .tsCreateRule("sourceTimeSeries", "destTimeSeries", aggregationType, timeBucket))
+        .thenReturn(stringCommandObject);
 
-    Response<String> response = pipeliningBase.tsCreateRule("sourceTimeSeries", "destTimeSeries", aggregationType, timeBucket);
+    Response<String> response = pipeliningBase.tsCreateRule("sourceTimeSeries", "destTimeSeries",
+      aggregationType, timeBucket);
 
     assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -113,9 +119,12 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     long bucketDuration = 60;
     long alignTimestamp = 0;
 
-    when(commandObjects.tsCreateRule("sourceTimeSeries", "destTimeSeries", aggregationType, bucketDuration, alignTimestamp)).thenReturn(stringCommandObject);
+    when(
+      commandObjects.tsCreateRule("sourceTimeSeries", "destTimeSeries", aggregationType,
+        bucketDuration, alignTimestamp)).thenReturn(stringCommandObject);
 
-    Response<String> response = pipeliningBase.tsCreateRule("sourceTimeSeries", "destTimeSeries", aggregationType, bucketDuration, alignTimestamp);
+    Response<String> response = pipeliningBase.tsCreateRule("sourceTimeSeries", "destTimeSeries",
+      aggregationType, bucketDuration, alignTimestamp);
 
     assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -164,7 +173,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
 
   @Test
   public void testTsDeleteRule() {
-    when(commandObjects.tsDeleteRule("sourceTimeSeries", "destTimeSeries")).thenReturn(stringCommandObject);
+    when(commandObjects.tsDeleteRule("sourceTimeSeries", "destTimeSeries")).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.tsDeleteRule("sourceTimeSeries", "destTimeSeries");
 
@@ -247,8 +257,10 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
 
   @Test
   public void testTsMAdd() {
-    Map.Entry<String, TSElement> entry1 = new AbstractMap.SimpleEntry<>("ts1", new TSElement(1000L, 1.0));
-    Map.Entry<String, TSElement> entry2 = new AbstractMap.SimpleEntry<>("ts2", new TSElement(2000L, 2.0));
+    Map.Entry<String, TSElement> entry1 = new AbstractMap.SimpleEntry<>("ts1", new TSElement(1000L,
+        1.0));
+    Map.Entry<String, TSElement> entry2 = new AbstractMap.SimpleEntry<>("ts2", new TSElement(2000L,
+        2.0));
 
     when(commandObjects.tsMAdd(entry1, entry2)).thenReturn(listLongCommandObject);
 
@@ -263,7 +275,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     TSMGetParams multiGetParams = TSMGetParams.multiGetParams();
     String[] filters = { "sensor_id=123" };
 
-    when(commandObjects.tsMGet(multiGetParams, filters)).thenReturn(mapStringTsmGetElementCommandObject);
+    when(commandObjects.tsMGet(multiGetParams, filters)).thenReturn(
+      mapStringTsmGetElementCommandObject);
 
     Response<Map<String, TSMGetElement>> response = pipeliningBase.tsMGet(multiGetParams, filters);
 
@@ -275,9 +288,11 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsMRange() {
     String[] filters = { "sensor_id=123" };
 
-    when(commandObjects.tsMRange(1000L, 2000L, filters)).thenReturn(mapStringTsmRangeElementsCommandObject);
+    when(commandObjects.tsMRange(1000L, 2000L, filters)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
 
-    Response<Map<String, TSMRangeElements>> response = pipeliningBase.tsMRange(1000L, 2000L, filters);
+    Response<Map<String, TSMRangeElements>> response = pipeliningBase.tsMRange(1000L, 2000L,
+      filters);
 
     assertThat(commands, contains(mapStringTsmRangeElementsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -287,7 +302,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsMRangeWithParams() {
     TSMRangeParams multiRangeParams = TSMRangeParams.multiRangeParams();
 
-    when(commandObjects.tsMRange(multiRangeParams)).thenReturn(mapStringTsmRangeElementsCommandObject);
+    when(commandObjects.tsMRange(multiRangeParams)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
 
     Response<Map<String, TSMRangeElements>> response = pipeliningBase.tsMRange(multiRangeParams);
 
@@ -299,9 +315,11 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsMRevRange() {
     String[] filters = { "sensor_id=123" };
 
-    when(commandObjects.tsMRevRange(1000L, 2000L, filters)).thenReturn(mapStringTsmRangeElementsCommandObject);
+    when(commandObjects.tsMRevRange(1000L, 2000L, filters)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
 
-    Response<Map<String, TSMRangeElements>> response = pipeliningBase.tsMRevRange(1000L, 2000L, filters);
+    Response<Map<String, TSMRangeElements>> response = pipeliningBase.tsMRevRange(1000L, 2000L,
+      filters);
 
     assertThat(commands, contains(mapStringTsmRangeElementsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -311,7 +329,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsMRevRangeWithParams() {
     TSMRangeParams multiRangeParams = TSMRangeParams.multiRangeParams();
 
-    when(commandObjects.tsMRevRange(multiRangeParams)).thenReturn(mapStringTsmRangeElementsCommandObject);
+    when(commandObjects.tsMRevRange(multiRangeParams)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
 
     Response<Map<String, TSMRangeElements>> response = pipeliningBase.tsMRevRange(multiRangeParams);
 
@@ -333,7 +352,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
 
   @Test
   public void testTsRange() {
-    when(commandObjects.tsRange("myTimeSeries", 1000L, 2000L)).thenReturn(listTsElementCommandObject);
+    when(commandObjects.tsRange("myTimeSeries", 1000L, 2000L)).thenReturn(
+      listTsElementCommandObject);
 
     Response<List<TSElement>> response = pipeliningBase.tsRange("myTimeSeries", 1000L, 2000L);
 
@@ -345,7 +365,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsRangeWithParams() {
     TSRangeParams rangeParams = TSRangeParams.rangeParams();
 
-    when(commandObjects.tsRange("myTimeSeries", rangeParams)).thenReturn(listTsElementCommandObject);
+    when(commandObjects.tsRange("myTimeSeries", rangeParams))
+        .thenReturn(listTsElementCommandObject);
 
     Response<List<TSElement>> response = pipeliningBase.tsRange("myTimeSeries", rangeParams);
 
@@ -355,7 +376,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
 
   @Test
   public void testTsRevRange() {
-    when(commandObjects.tsRevRange("myTimeSeries", 1000L, 2000L)).thenReturn(listTsElementCommandObject);
+    when(commandObjects.tsRevRange("myTimeSeries", 1000L, 2000L)).thenReturn(
+      listTsElementCommandObject);
 
     Response<List<TSElement>> response = pipeliningBase.tsRevRange("myTimeSeries", 1000L, 2000L);
 
@@ -367,7 +389,8 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   public void testTsRevRangeWithParams() {
     TSRangeParams rangeParams = TSRangeParams.rangeParams();
 
-    when(commandObjects.tsRevRange("myTimeSeries", rangeParams)).thenReturn(listTsElementCommandObject);
+    when(commandObjects.tsRevRange("myTimeSeries", rangeParams)).thenReturn(
+      listTsElementCommandObject);
 
     Response<List<TSElement>> response = pipeliningBase.tsRevRange("myTimeSeries", rangeParams);
 

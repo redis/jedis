@@ -119,8 +119,8 @@ public class AccessControlLogEntry implements Serializable {
   public String toString() {
     return "AccessControlLogEntry{" + "count=" + count + ", reason='" + reason + '\''
         + ", context='" + context + '\'' + ", object='" + object + '\'' + ", username='" + username
-        + '\'' + ", ageSeconds='" + ageSeconds + '\'' + ", clientInfo=" + clientInfo
-        + ", entryId=" + entryId + ", timestampCreated=" + timestampCreated
-        + ", timestampLastUpdated=" + timestampLastUpdated + '}';
+        + '\'' + ", ageSeconds='" + ageSeconds + '\'' + ", clientInfo=" + clientInfo + ", entryId="
+        + entryId + ", timestampCreated=" + timestampCreated + ", timestampLastUpdated="
+        + timestampLastUpdated + '}';
   }
 }

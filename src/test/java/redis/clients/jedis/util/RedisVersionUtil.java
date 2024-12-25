@@ -8,8 +8,8 @@ public class RedisVersionUtil {
   public static Integer getRedisMajorVersionNumber(EndpointConfig endpoint) {
     String completeVersion = null;
 
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .build())) {
       String info = jedis.info("server");
       String[] splitted = info.split("\\s+|:");
       for (int i = 0; i < splitted.length; i++) {

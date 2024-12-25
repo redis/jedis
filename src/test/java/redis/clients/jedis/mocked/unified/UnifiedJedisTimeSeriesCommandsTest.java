@@ -150,7 +150,8 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     long timeBucket = 60000L; // 1 minute
     String expectedResponse = "OK";
 
-    when(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket)).thenReturn(stringCommandObject);
+    when(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket)).thenReturn(
+      stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket);
@@ -170,15 +171,19 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     long alignTimestamp = 1582600000000L;
     String expectedResponse = "OK";
 
-    when(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp)).thenReturn(stringCommandObject);
+    when(
+      commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration,
+        alignTimestamp)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = jedis.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp);
+    String result = jedis.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration,
+      alignTimestamp);
 
     assertThat(result, sameInstance(expectedResponse));
 
     verify(commandExecutor).executeCommand(stringCommandObject);
-    verify(commandObjects).tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp);
+    verify(commandObjects).tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration,
+      alignTimestamp);
   }
 
   @Test
@@ -389,9 +394,12 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
 
   @Test
   public void testTsMAdd() {
-    Map.Entry<String, TSElement> entry1 = new AbstractMap.SimpleEntry<>("key1", new TSElement(1582605077000L, 123.45));
-    Map.Entry<String, TSElement> entry2 = new AbstractMap.SimpleEntry<>("key2", new TSElement(1582605078000L, 234.56));
-    List<Long> expectedResponse = Arrays.asList(1582605077000L, 1582605078000L); // Timestamps of the added values
+    Map.Entry<String, TSElement> entry1 = new AbstractMap.SimpleEntry<>("key1", new TSElement(
+        1582605077000L, 123.45));
+    Map.Entry<String, TSElement> entry2 = new AbstractMap.SimpleEntry<>("key2", new TSElement(
+        1582605078000L, 234.56));
+    List<Long> expectedResponse = Arrays.asList(1582605077000L, 1582605078000L); // Timestamps of
+                                                                                 // the added values
 
     when(commandObjects.tsMAdd(entry1, entry2)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
@@ -410,8 +418,10 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String[] filters = { "sensor=temperature" };
     Map<String, TSMGetElement> expectedResponse = new HashMap<>();
 
-    when(commandObjects.tsMGet(multiGetParams, filters)).thenReturn(mapStringTsmGetElementCommandObject);
-    when(commandExecutor.executeCommand(mapStringTsmGetElementCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.tsMGet(multiGetParams, filters)).thenReturn(
+      mapStringTsmGetElementCommandObject);
+    when(commandExecutor.executeCommand(mapStringTsmGetElementCommandObject)).thenReturn(
+      expectedResponse);
 
     Map<String, TSMGetElement> result = jedis.tsMGet(multiGetParams, filters);
 
@@ -428,8 +438,10 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String[] filters = { "sensor=temperature" };
     Map<String, TSMRangeElements> expectedResponse = new HashMap<>();
 
-    when(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters)).thenReturn(mapStringTsmRangeElementsCommandObject);
-    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
+    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(
+      expectedResponse);
 
     Map<String, TSMRangeElements> result = jedis.tsMRange(fromTimestamp, toTimestamp, filters);
 
@@ -441,11 +453,14 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
 
   @Test
   public void testTsMRangeWithParams() {
-    TSMRangeParams multiRangeParams = TSMRangeParams.multiRangeParams(1582600000000L, 1582605077000L).filter("sensor=temperature");
+    TSMRangeParams multiRangeParams = TSMRangeParams.multiRangeParams(1582600000000L,
+      1582605077000L).filter("sensor=temperature");
     Map<String, TSMRangeElements> expectedResponse = new HashMap<>();
 
-    when(commandObjects.tsMRange(multiRangeParams)).thenReturn(mapStringTsmRangeElementsCommandObject);
-    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.tsMRange(multiRangeParams)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
+    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(
+      expectedResponse);
 
     Map<String, TSMRangeElements> result = jedis.tsMRange(multiRangeParams);
 
@@ -462,8 +477,10 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String[] filters = { "sensor=temperature" };
     Map<String, TSMRangeElements> expectedResponse = new HashMap<>();
 
-    when(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters)).thenReturn(mapStringTsmRangeElementsCommandObject);
-    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
+    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(
+      expectedResponse);
 
     Map<String, TSMRangeElements> result = jedis.tsMRevRange(fromTimestamp, toTimestamp, filters);
 
@@ -475,12 +492,14 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
 
   @Test
   public void testTsMRevRangeWithParams() {
-    TSMRangeParams multiRangeParams =
-        TSMRangeParams.multiRangeParams(1582600000000L, 1582605077000L).filter("sensor=temperature");
+    TSMRangeParams multiRangeParams = TSMRangeParams.multiRangeParams(1582600000000L,
+      1582605077000L).filter("sensor=temperature");
     Map<String, TSMRangeElements> expectedResponse = new HashMap<>();
 
-    when(commandObjects.tsMRevRange(multiRangeParams)).thenReturn(mapStringTsmRangeElementsCommandObject);
-    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.tsMRevRange(multiRangeParams)).thenReturn(
+      mapStringTsmRangeElementsCommandObject);
+    when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(
+      expectedResponse);
 
     Map<String, TSMRangeElements> result = jedis.tsMRevRange(multiRangeParams);
 
@@ -511,9 +530,11 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String key = "testKey";
     long fromTimestamp = 1582600000000L;
     long toTimestamp = 1582605077000L;
-    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(fromTimestamp, 123.45));
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(fromTimestamp,
+        123.45));
 
-    when(commandObjects.tsRange(key, fromTimestamp, toTimestamp)).thenReturn(listTsElementCommandObject);
+    when(commandObjects.tsRange(key, fromTimestamp, toTimestamp)).thenReturn(
+      listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
 
     List<TSElement> result = jedis.tsRange(key, fromTimestamp, toTimestamp);
@@ -528,9 +549,8 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
   public void testTsRangeWithParams() {
     String key = "testKey";
     TSRangeParams rangeParams = TSRangeParams.rangeParams(1582600000000L, 1582605077000L);
-    List<TSElement> expectedResponse = Arrays.asList(
-        new TSElement(1582600000000L, 123.45),
-        new TSElement(1582605077000L, 234.56));
+    List<TSElement> expectedResponse = Arrays.asList(new TSElement(1582600000000L, 123.45),
+      new TSElement(1582605077000L, 234.56));
 
     when(commandObjects.tsRange(key, rangeParams)).thenReturn(listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
@@ -548,9 +568,11 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String key = "testKey";
     long fromTimestamp = 1582600000000L;
     long toTimestamp = 1582605077000L;
-    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(toTimestamp, 234.56));
+    List<TSElement> expectedResponse = Collections
+        .singletonList(new TSElement(toTimestamp, 234.56));
 
-    when(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp)).thenReturn(listTsElementCommandObject);
+    when(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp)).thenReturn(
+      listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
 
     List<TSElement> result = jedis.tsRevRange(key, fromTimestamp, toTimestamp);
@@ -565,9 +587,8 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
   public void testTsRevRangeWithParams() {
     String key = "testKey";
     TSRangeParams rangeParams = TSRangeParams.rangeParams(1582600000000L, 1582605077000L);
-    List<TSElement> expectedResponse = Arrays.asList(
-        new TSElement(1582605077000L, 234.56),
-        new TSElement(1582600000000L, 123.45));
+    List<TSElement> expectedResponse = Arrays.asList(new TSElement(1582605077000L, 234.56),
+      new TSElement(1582600000000L, 123.45));
 
     when(commandObjects.tsRevRange(key, rangeParams)).thenReturn(listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);

@@ -12,8 +12,10 @@ import redis.clients.jedis.JedisCluster;
 
 public class JedisClusterPrefixedKeysTest extends PrefixedKeysTest<JedisCluster> {
 
-  private static final JedisClientConfig CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("cluster").build();
-  private static final Set<HostAndPort> NODES = HostAndPorts.getStableClusterServers().stream().collect(Collectors.toSet());
+  private static final JedisClientConfig CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+      .password("cluster").build();
+  private static final Set<HostAndPort> NODES = HostAndPorts.getStableClusterServers().stream()
+      .collect(Collectors.toSet());
 
   @Override
   JedisCluster nonPrefixingJedis() {

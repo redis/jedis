@@ -439,7 +439,8 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testMgetBinary() {
     byte[][] keys = { "key1".getBytes(), "key2".getBytes(), "key3".getBytes() };
-    List<byte[]> expectedValues = Arrays.asList("value1".getBytes(), "value2".getBytes(), "value3".getBytes());
+    List<byte[]> expectedValues = Arrays.asList("value1".getBytes(), "value2".getBytes(),
+      "value3".getBytes());
 
     when(commandObjects.mget(keys)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedValues);
@@ -470,7 +471,8 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testMsetBinary() {
-    byte[][] keysvalues = { "key1".getBytes(), "value1".getBytes(), "key2".getBytes(), "value2".getBytes() };
+    byte[][] keysvalues = { "key1".getBytes(), "value1".getBytes(), "key2".getBytes(),
+        "value2".getBytes() };
     String expectedResponse = "OK";
 
     when(commandObjects.mset(keysvalues)).thenReturn(stringCommandObject);
@@ -502,7 +504,8 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testMsetnxBinary() {
-    byte[][] keysvalues = { "key1".getBytes(), "value1".getBytes(), "key2".getBytes(), "value2".getBytes() };
+    byte[][] keysvalues = { "key1".getBytes(), "value1".getBytes(), "key2".getBytes(),
+        "value2".getBytes() };
     long expectedResponse = 1L; // Assuming the keys were set successfully
 
     when(commandObjects.msetnx(keysvalues)).thenReturn(longCommandObject);

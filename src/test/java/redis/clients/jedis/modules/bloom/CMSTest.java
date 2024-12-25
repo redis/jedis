@@ -27,11 +27,12 @@ public class CMSTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public CMSTest(RedisProtocol protocol) {
     super(protocol);
@@ -86,7 +87,7 @@ public class CMSTest extends RedisModuleCommandsTestBase {
     itemIncrements.put("bar", 15L);
 
     List<Long> resp = client.cmsIncrBy("cms4", itemIncrements);
-//    assertArrayEquals(new Long[] { 15L, 10L }, resp.toArray(new Long[0]));
+    // assertArrayEquals(new Long[] { 15L, 10L }, resp.toArray(new Long[0]));
     assertEquals(Arrays.asList(10L, 15L), resp);
 
     Map<String, Object> info = client.cmsInfo("cms4");

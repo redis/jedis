@@ -42,8 +42,8 @@ public class JsonObjectMapperTestUtil {
         return new JsonPrimitive(format.format(src));
       }
     }
-    return new CustomGsonObjectMapper(
-        new GsonBuilder().registerTypeAdapter(Instant.class, new InstantAdapter()).create());
+    return new CustomGsonObjectMapper(new GsonBuilder().registerTypeAdapter(Instant.class,
+      new InstantAdapter()).create());
   }
 
   public static class CustomJacksonObjectMapper implements JsonObjectMapper {

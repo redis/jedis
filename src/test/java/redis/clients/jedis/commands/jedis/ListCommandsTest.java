@@ -914,7 +914,8 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
     jedis.lpush(mylist2, "one", "two", "three", "four", "five");
 
-    KeyValue<String, List<String>> elements = jedis.blmpop(1L, ListDirection.LEFT, mylist1, mylist2);
+    KeyValue<String, List<String>> elements = jedis
+        .blmpop(1L, ListDirection.LEFT, mylist1, mylist2);
     assertEquals(mylist1, elements.getKey());
     assertEquals(1, elements.getValue().size());
 

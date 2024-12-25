@@ -397,7 +397,8 @@ public class SSLSocketWrapper extends SSLSocket {
   }
 
   @Override
-  public void setHandshakeApplicationProtocolSelector(BiFunction<SSLSocket, List<String>, String> var1) {
+  public void setHandshakeApplicationProtocolSelector(
+      BiFunction<SSLSocket, List<String>, String> var1) {
     actual.setHandshakeApplicationProtocolSelector(var1);
   }
 

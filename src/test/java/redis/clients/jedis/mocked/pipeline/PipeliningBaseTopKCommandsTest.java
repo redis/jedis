@@ -94,7 +94,8 @@ public class PipeliningBaseTopKCommandsTest extends PipeliningBaseMockedTestBase
     long depth = 5L;
     double decay = 0.9;
 
-    when(commandObjects.topkReserve("myTopK", 3L, width, depth, decay)).thenReturn(stringCommandObject);
+    when(commandObjects.topkReserve("myTopK", 3L, width, depth, decay)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.topkReserve("myTopK", 3L, width, depth, decay);
 

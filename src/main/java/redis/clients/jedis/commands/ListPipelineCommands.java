@@ -68,13 +68,16 @@ public interface ListPipelineCommands {
 
   Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
+  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout);
 
   Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys);
 
   Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys);
 
-  Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, String... keys);
+  Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction,
+      String... keys);
 
-  Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, int count, String... keys);
+  Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction,
+      int count, String... keys);
 }

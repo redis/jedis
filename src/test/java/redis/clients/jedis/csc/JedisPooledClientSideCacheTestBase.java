@@ -11,7 +11,8 @@ import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
-public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisClientSideCacheTestBase {
+public abstract class JedisPooledClientSideCacheTestBase extends
+    UnifiedJedisClientSideCacheTestBase {
 
   protected static EndpointConfig endpoint;
 
@@ -22,7 +23,8 @@ public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisCli
 
   @Override
   protected JedisPooled createCachedJedis(CacheConfig cacheConfig) {
-    return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3().build(), cacheConfig);
+    return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3()
+        .build(), cacheConfig);
   }
 
   @Test
@@ -41,8 +43,10 @@ public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisCli
       }
       assertEquals(100, cache.getSize());
 
-      try (Jedis killer = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
-        killer.clientKill(ClientKillParams.clientKillParams().type(ClientType.NORMAL).skipMe(ClientKillParams.SkipMe.YES));
+      try (Jedis killer = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+          .build())) {
+        killer.clientKill(ClientKillParams.clientKillParams().type(ClientType.NORMAL)
+            .skipMe(ClientKillParams.SkipMe.YES));
       }
 
       try {

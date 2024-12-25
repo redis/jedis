@@ -111,14 +111,18 @@ public class ShardingTest {
 
   @Test
   public void checkKeyTags() {
-    assertNotNull(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MURMUR_HASH, SET).key("bar")).getKeyHash());
-    assertNotNull(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MD5, SET).key("bar")).getKeyHash());
+    assertNotNull(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MURMUR_HASH, SET)
+        .key("bar")).getKeyHash());
+    assertNotNull(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MD5, SET)
+        .key("bar")).getKeyHash());
     assertEquals(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MURMUR_HASH,
         JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("bar")).getKeyHash(),
-        ((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MURMUR_HASH,
-            JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("foo{bar}")).getKeyHash());
-    assertEquals(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MD5, JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("bar")).getKeyHash(),
-        ((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MD5, JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("foo{bar}")).getKeyHash());
+      ((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MURMUR_HASH,
+          JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("foo{bar}")).getKeyHash());
+    assertEquals(((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MD5,
+        JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("bar")).getKeyHash(),
+      ((ShardedCommandArguments) new ShardedCommandArguments(Hashing.MD5,
+          JedisSharding.DEFAULT_KEY_TAG_PATTERN, SET).key("foo{bar}")).getKeyHash());
   }
 
   @Test

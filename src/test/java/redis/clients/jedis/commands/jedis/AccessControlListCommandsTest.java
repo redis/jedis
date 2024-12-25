@@ -46,7 +46,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }
 
   public AccessControlListCommandsTest(RedisProtocol protocol) {
@@ -58,7 +58,8 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   public void tearDown() throws Exception {
     try {
       jedis.aclDelUser(USER_NAME);
-    } catch (Exception e) { }
+    } catch (Exception e) {
+    }
     super.tearDown();
   }
 
@@ -231,30 +232,37 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     assertEquals("OK", jedis.aclDryRun(USER_NAME, "SET", "key", "value"));
     assertThat(jedis.aclDryRun(USER_NAME, "GET", "key"),
-        endsWith(" has no permissions to run the 'get' command"));
+      endsWith(" has no permissions to run the 'get' command"));
 
-    assertEquals("OK", jedis.aclDryRun(USER_NAME,
+    assertEquals(
+      "OK",
+      jedis.aclDryRun(USER_NAME,
         new CommandArguments(Protocol.Command.SET).key("ca-key").add("value")));
-    assertThat(jedis.aclDryRun(USER_NAME, new CommandArguments(Protocol.Command.GET).key("ca-key")),
-        endsWith(" has no permissions to run the 'get' command"));
+    assertThat(
+      jedis.aclDryRun(USER_NAME, new CommandArguments(Protocol.Command.GET).key("ca-key")),
+      endsWith(" has no permissions to run the 'get' command"));
   }
 
   @Test
   public void aclDryRunBinary() {
     byte[] username = USER_NAME.getBytes();
 
-    jedis.aclSetUser(username, "nopass".getBytes(), "allkeys".getBytes(), "+set".getBytes(), "-get".getBytes());
+    jedis.aclSetUser(username, "nopass".getBytes(), "allkeys".getBytes(), "+set".getBytes(),
+      "-get".getBytes());
 
-    assertArrayEquals("OK".getBytes(), jedis.aclDryRunBinary(username,
-        "SET".getBytes(), "key".getBytes(), "value".getBytes()));
+    assertArrayEquals("OK".getBytes(),
+      jedis.aclDryRunBinary(username, "SET".getBytes(), "key".getBytes(), "value".getBytes()));
     assertThat(new String(jedis.aclDryRunBinary(username, "GET".getBytes(), "key".getBytes())),
-        endsWith(" has no permissions to run the 'get' command"));
+      endsWith(" has no permissions to run the 'get' command"));
 
-    assertArrayEquals("OK".getBytes(), jedis.aclDryRunBinary(username,
+    assertArrayEquals(
+      "OK".getBytes(),
+      jedis.aclDryRunBinary(username,
         new CommandArguments(Protocol.Command.SET).key("ca-key").add("value")));
-    assertThat(new String(jedis.aclDryRunBinary(username,
+    assertThat(
+      new String(jedis.aclDryRunBinary(username,
         new CommandArguments(Protocol.Command.GET).key("ca-key"))),
-        endsWith(" has no permissions to run the 'get' command"));
+      endsWith(" has no permissions to run the 'get' command"));
   }
 
   @Test
@@ -295,7 +303,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis2.auth(USER_NAME, USER_PASSWORD);
 
     final List<String> nopermKeys = Arrays.asList("NOPERM No permissions to access a key",
-        "NOPERM this user has no permissions to access one of the keys used as arguments");
+      "NOPERM this user has no permissions to access one of the keys used as arguments");
 
     try {
       jedis2.set("foo", "bar");
@@ -471,7 +479,8 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals("AUTH", aclEntries.get(0).getObject());
     assertTrue(aclEntries.get(0).getEntryId() >= 0);
     assertTrue(aclEntries.get(0).getTimestampCreated() > 0);
-    assertEquals(aclEntries.get(0).getTimestampCreated(), aclEntries.get(0).getTimestampLastUpdated());
+    assertEquals(aclEntries.get(0).getTimestampCreated(), aclEntries.get(0)
+        .getTimestampLastUpdated());
 
     // RESET
     String status = jedis.aclLogReset();
@@ -505,7 +514,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     jedis.aclSetUser(USER_NAME.getBytes(), "reset".getBytes(), "+@all".getBytes(), "~*".getBytes(),
       "-@string".getBytes(), "+incr".getBytes(), "-debug".getBytes(), "+debug|digest".getBytes(),
-            "resetchannels".getBytes(), "&testchannel:*".getBytes());
+      "resetchannels".getBytes(), "&testchannel:*".getBytes());
 
     AccessControlUser userInfo = jedis.aclGetUser(USER_NAME.getBytes());
 
@@ -519,10 +528,10 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.aclSetUser("TEST_USER".getBytes());
     jedis.aclSetUser("ANOTHER_TEST_USER".getBytes());
     jedis.aclSetUser("MORE_TEST_USERS".getBytes());
-    assertEquals(3L, jedis.aclDelUser(
-            "TEST_USER".getBytes(),
-            "ANOTHER_TEST_USER".getBytes(),
-            "MORE_TEST_USERS".getBytes()));
+    assertEquals(
+      3L,
+      jedis.aclDelUser("TEST_USER".getBytes(), "ANOTHER_TEST_USER".getBytes(),
+        "MORE_TEST_USERS".getBytes()));
   }
 
   @Test
@@ -531,7 +540,8 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       jedis.aclLoad();
       fail("Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
     } catch (JedisDataException e) {
-      assertThat(e.getMessage(), startsWith("ERR This Redis instance is not configured to use an ACL file."));
+      assertThat(e.getMessage(),
+        startsWith("ERR This Redis instance is not configured to use an ACL file."));
     }
 
     // TODO test with ACL file
@@ -543,7 +553,8 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       jedis.aclSave();
       fail("Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
     } catch (JedisDataException e) {
-      assertThat(e.getMessage(), startsWith("ERR This Redis instance is not configured to use an ACL file."));
+      assertThat(e.getMessage(),
+        startsWith("ERR This Redis instance is not configured to use an ACL file."));
     }
 
     // TODO test with ACL file

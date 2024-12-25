@@ -22,8 +22,8 @@ public class GeoValue extends Value {
 
   @Override
   public String toString() {
-    return "[" + lon + " " + lat + " " + radius
-        + " " + unit.name().toLowerCase(Locale.ENGLISH) + "]";
+    return "[" + lon + " " + lat + " " + radius + " " + unit.name().toLowerCase(Locale.ENGLISH)
+        + "]";
   }
 
   @Override

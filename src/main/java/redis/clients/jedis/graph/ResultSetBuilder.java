@@ -37,11 +37,11 @@ class ResultSetBuilder extends Builder<ResultSet> {
     if (rawResponse.get(rawResponse.size() - 1) instanceof JedisDataException) {
       throw (JedisDataException) rawResponse.get(rawResponse.size() - 1);
     }
-//
-//    HeaderImpl header = parseHeader(rawResponse.get(0));
-//    List<Record> records = parseRecords(header, rawResponse.get(1));
-//    StatisticsImpl statistics = parseStatistics(rawResponse.get(2));
-//    return new ResultSetImpl(header, records, statistics);
+    //
+    // HeaderImpl header = parseHeader(rawResponse.get(0));
+    // List<Record> records = parseRecords(header, rawResponse.get(1));
+    // StatisticsImpl statistics = parseStatistics(rawResponse.get(2));
+    // return new ResultSetImpl(header, records, statistics);
 
     final Object headerObject;
     final Object recordsObject;
@@ -148,18 +148,18 @@ class ResultSetBuilder extends Builder<ResultSet> {
         ResultSet.ColumnType objType = header.getSchemaTypes().get(i);
         // deserialize according to type and
         switch (objType) {
-          case NODE:
-            parsedRow.add(deserializeNode(obj));
-            break;
-          case RELATION:
-            parsedRow.add(deserializeEdge(obj));
-            break;
-          case SCALAR:
-            parsedRow.add(deserializeScalar(obj));
-            break;
-          default:
-            parsedRow.add(null);
-            break;
+        case NODE:
+          parsedRow.add(deserializeNode(obj));
+          break;
+        case RELATION:
+          parsedRow.add(deserializeEdge(obj));
+          break;
+        case SCALAR:
+          parsedRow.add(deserializeScalar(obj));
+          break;
+        default:
+          parsedRow.add(null);
+          break;
         }
       }
 
@@ -173,9 +173,9 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
   /**
    * @param rawNodeData - raw node object in the form of list of object rawNodeData.get(0) - id
-   * (long) rawNodeData.get(1) - a list y which contains the labels of this node. Each entry is a
-   * label id from the type of long rawNodeData.get(2) - a list which contains the properties of the
-   * node.
+   *          (long) rawNodeData.get(1) - a list y which contains the labels of this node. Each
+   *          entry is a label id from the type of long rawNodeData.get(2) - a list which contains
+   *          the properties of the node.
    * @return Node object
    */
   @SuppressWarnings("unchecked")
@@ -207,8 +207,8 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
   /**
    * @param rawEdgeData - a list of objects rawEdgeData[0] - edge id rawEdgeData[1] - edge
-   * relationship type rawEdgeData[2] - edge source rawEdgeData[3] - edge destination rawEdgeData[4]
-   * - edge properties
+   *          relationship type rawEdgeData[2] - edge source rawEdgeData[3] - edge destination
+   *          rawEdgeData[4] - edge properties
    * @return Edge object
    */
   @SuppressWarnings("unchecked")
@@ -219,7 +219,8 @@ class ResultSetBuilder extends Builder<ResultSet> {
     Edge edge = new Edge(rawProperties.size());
     deserializeGraphEntityId(edge, (Long) rawEdgeData.get(0));
 
-    String relationshipType = graphCache.getRelationshipType(((Long) rawEdgeData.get(1)).intValue());
+    String relationshipType = graphCache
+        .getRelationshipType(((Long) rawEdgeData.get(1)).intValue());
     edge.setRelationshipType(relationshipType);
 
     edge.setSource((long) rawEdgeData.get(2));
@@ -233,8 +234,8 @@ class ResultSetBuilder extends Builder<ResultSet> {
   /**
    * @param entity graph entity for adding the properties to
    * @param rawProperties raw representation of a list of graph entity properties. Each entry is a
-   * list (rawProperty) is a raw representation of property, as follows: rawProperty.get(0) -
-   * property key rawProperty.get(1) - property type rawProperty.get(2) - property value
+   *          list (rawProperty) is a raw representation of property, as follows: rawProperty.get(0)
+   *          - property key rawProperty.get(1) - property type rawProperty.get(2) - property value
    */
   private void deserializeGraphEntityProperties(GraphEntity entity, List<List<Object>> rawProperties) {
 
@@ -250,7 +251,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
   /**
    * @param rawScalarData - a list of object. list[0] is the scalar type, list[1] is the scalar
-   * value
+   *          value
    * @return value of the specific scalar type
    */
   @SuppressWarnings("unchecked")
@@ -259,31 +260,31 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
     Object obj = rawScalarData.get(1);
     switch (type) {
-      case NULL:
-        return null;
-      case BOOLEAN:
-        return Boolean.parseBoolean(SafeEncoder.encode((byte[]) obj));
-      case DOUBLE:
-        return BuilderFactory.DOUBLE.build(obj);
-      case INTEGER:
-        return (Long) obj;
-      case STRING:
-        return SafeEncoder.encode((byte[]) obj);
-      case ARRAY:
-        return deserializeArray(obj);
-      case NODE:
-        return deserializeNode((List<Object>) obj);
-      case EDGE:
-        return deserializeEdge((List<Object>) obj);
-      case PATH:
-        return deserializePath(obj);
-      case MAP:
-        return deserializeMap(obj);
-      case POINT:
-        return deserializePoint(obj);
-      case UNKNOWN:
-      default:
-        return obj;
+    case NULL:
+      return null;
+    case BOOLEAN:
+      return Boolean.parseBoolean(SafeEncoder.encode((byte[]) obj));
+    case DOUBLE:
+      return BuilderFactory.DOUBLE.build(obj);
+    case INTEGER:
+      return (Long) obj;
+    case STRING:
+      return SafeEncoder.encode((byte[]) obj);
+    case ARRAY:
+      return deserializeArray(obj);
+    case NODE:
+      return deserializeNode((List<Object>) obj);
+    case EDGE:
+      return deserializeEdge((List<Object>) obj);
+    case PATH:
+      return deserializePath(obj);
+    case MAP:
+      return deserializeMap(obj);
+    case POINT:
+      return deserializePoint(obj);
+    case UNKNOWN:
+    default:
+      return obj;
     }
   }
 
@@ -326,7 +327,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
   /**
    * Auxiliary function to retrieve scalar types
-   *
    * @param rawScalarType
    * @return scalar type
    */
@@ -335,18 +335,8 @@ class ResultSetBuilder extends Builder<ResultSet> {
   }
 
   private static enum ScalarType {
-    UNKNOWN,
-    NULL,
-    STRING,
-    INTEGER, // 64-bit long.
-    BOOLEAN,
-    DOUBLE,
-    ARRAY,
-    EDGE,
-    NODE,
-    PATH,
-    MAP,
-    POINT;
+    UNKNOWN, NULL, STRING, INTEGER, // 64-bit long.
+    BOOLEAN, DOUBLE, ARRAY, EDGE, NODE, PATH, MAP, POINT;
   }
 
   private static final ScalarType[] SCALAR_TYPES = ScalarType.values();
@@ -418,8 +408,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
         return false;
       }
       RecordImpl record = (RecordImpl) o;
-      return Objects.equals(header, record.header)
-          && Objects.equals(values, record.values);
+      return Objects.equals(header, record.header) && Objects.equals(values, record.values);
     }
 
     @Override
@@ -521,7 +510,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @param label the requested statistic label as key
      * @return a string with the value, if key exists, null otherwise
      */
@@ -530,7 +518,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @param label the requested statistic label as key
      * @return a string with the value, if key exists, 0 otherwise
      */
@@ -540,7 +527,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of nodes created after query execution
      */
     @Override
@@ -549,7 +535,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of nodes deleted after query execution
      */
     @Override
@@ -558,7 +543,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of indices added after query execution
      */
     @Override
@@ -572,7 +556,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of labels added after query execution
      */
     @Override
@@ -581,7 +564,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of relationship deleted after query execution
      */
     @Override
@@ -590,7 +572,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of relationship created after query execution
      */
     @Override
@@ -599,7 +580,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return number of properties set after query execution
      */
     @Override
@@ -608,7 +588,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
 
     /**
-     *
      * @return The execution plan was cached on RedisGraph.
      */
     @Override
@@ -653,5 +632,4 @@ class ResultSetBuilder extends Builder<ResultSet> {
         .collect(Collectors.toMap(sa -> sa[0], sa -> sa[1]));
     return new StatisticsImpl(map);
   }
-
 }

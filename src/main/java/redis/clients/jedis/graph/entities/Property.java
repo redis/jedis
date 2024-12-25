@@ -36,8 +36,7 @@ public class Property<T> {
     if (this == o) return true;
     if (!(o instanceof Property)) return false;
     Property<?> property = (Property<?>) o;
-    return Objects.equals(name, property.name)
-        && valueEquals(value, property.value);
+    return Objects.equals(name, property.name) && valueEquals(value, property.value);
   }
 
   @Override
@@ -47,7 +46,6 @@ public class Property<T> {
 
   /**
    * Default toString implementation
-   *
    * @return the String
    */
   @Override

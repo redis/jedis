@@ -78,9 +78,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   }
 
   /**
-   * Should be used only with XADD
-   *
-   * {@code XADD mystream * field1 value1}
+   * Should be used only with XADD {@code XADD mystream * field1 value1}
    */
   public static final StreamEntryID NEW_ENTRY = new StreamEntryID() {
 
@@ -93,9 +91,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
-   * Should be used only with XGROUP CREATE
-   *
-   * {@code XGROUP CREATE mystream consumer-group-name $}
+   * Should be used only with XGROUP CREATE {@code XGROUP CREATE mystream consumer-group-name $}
    */
   public static final StreamEntryID XGROUP_LAST_ENTRY = new StreamEntryID() {
 
@@ -109,15 +105,13 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   /**
    * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ENTRY} for XGROUP CREATE command or
-   * {@link StreamEntryID#XREAD_NEW_ENTRY} for XREAD command.
+   *             {@link StreamEntryID#XREAD_NEW_ENTRY} for XREAD command.
    */
   @Deprecated
   public static final StreamEntryID LAST_ENTRY = XGROUP_LAST_ENTRY;
 
   /**
-   * Should be used only with XREAD
-   *
-   * {@code XREAD BLOCK 5000 COUNT 100 STREAMS mystream $}
+   * Should be used only with XREAD {@code XREAD BLOCK 5000 COUNT 100 STREAMS mystream $}
    */
   public static final StreamEntryID XREAD_NEW_ENTRY = new StreamEntryID() {
 
@@ -177,9 +171,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
-   * Should be used only with XREAD
-   *
-   * {@code XREAD STREAMS mystream +}
+   * Should be used only with XREAD {@code XREAD STREAMS mystream +}
    */
   public static final StreamEntryID XREAD_LAST_ENTRY = new StreamEntryID() {
 

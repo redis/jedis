@@ -38,7 +38,8 @@ public class CommandObjectsHyperloglogCommandsTest extends CommandObjectsStandal
   public void testPfaddAndCountBinary() {
     byte[] key = "hyperloglogKey".getBytes();
 
-    Long add = exec(commandObjects.pfadd(key, "element1".getBytes(), "element2".getBytes(), "element3".getBytes()));
+    Long add = exec(commandObjects.pfadd(key, "element1".getBytes(), "element2".getBytes(),
+      "element3".getBytes()));
     assertThat(add, equalTo(1L));
 
     Long count = exec(commandObjects.pfcount(key));
@@ -63,7 +64,8 @@ public class CommandObjectsHyperloglogCommandsTest extends CommandObjectsStandal
     assertThat(countAfterMergeWithString, greaterThanOrEqualTo(4L));
 
     // binary
-    String mergeResultWithBytes = exec(commandObjects.pfmerge(destKeyBytes, key1.getBytes(), key2.getBytes()));
+    String mergeResultWithBytes = exec(commandObjects.pfmerge(destKeyBytes, key1.getBytes(),
+      key2.getBytes()));
     assertThat(mergeResultWithBytes, equalTo("OK"));
 
     Long countAfterMergeWithBytes = exec(commandObjects.pfcount(destKeyBytes));

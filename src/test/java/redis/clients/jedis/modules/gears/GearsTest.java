@@ -38,8 +38,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
 
   private static final String BAD_FUNCTION = "All Your Base Are Belong to Us";
 
-  private static final String[] LIBRARIES_ARRAY = new String[]{
-      "streamTriggers", "withFlags", "pingpong", "keyspaceTriggers", "hashitout", "withConfig"};
+  private static final String[] LIBRARIES_ARRAY = new String[] { "streamTriggers", "withFlags",
+      "pingpong", "keyspaceTriggers", "hashitout", "withConfig" };
 
   @BeforeClass
   public static void prepare() {
@@ -317,7 +317,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListNoCodeVerboseZero() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong"));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong"));
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertNull(libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -327,7 +328,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListNoCodeVerboseOne() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").verbose(1));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").verbose(1));
 
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
@@ -338,7 +340,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListNoCodeVerboseTwo() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").verbose(2));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").verbose(2));
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertEquals("You PING, we PONG", libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -348,7 +351,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListNoCodeVerboseThree() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").verbose(3));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").verbose(3));
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertEquals("You PING, we PONG", libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -358,7 +362,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListWithCodeVerboseZero() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").withCode());
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").withCode());
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertNull(libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -368,7 +373,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListWithCodeVerboseOne() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").withCode().verbose(1));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").withCode().verbose(1));
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertEquals("You PING, we PONG", libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -378,7 +384,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListWithCodeVerboseTwo() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").withCode().verbose(2));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").withCode().verbose(2));
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertEquals("You PING, we PONG", libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -388,7 +395,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testFunctionLibraryListWithCodeVerboseThree() throws IOException {
     loadAllLibraries();
-    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams().library("pingpong").withCode().verbose(3));
+    List<GearsLibraryInfo> libraryInfos = client.tFunctionList(TFunctionListParams.listParams()
+        .library("pingpong").withCode().verbose(3));
     assertEquals(1, libraryInfos.size());
     assertEquals("pingpong", libraryInfos.get(0).getName());
     assertEquals("You PING, we PONG", libraryInfos.get(0).getFunctions().get(0).getDescription());
@@ -407,7 +415,7 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   public void testLibraryCallStringResult() throws IOException {
     loadAllLibraries();
     Object result = client.tFunctionCall("pingpong", "playPingPong", Collections.emptyList(),
-        Collections.emptyList());
+      Collections.emptyList());
     assertEquals(String.class, result.getClass());
     assertEquals("PONG", result);
   }
@@ -415,8 +423,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testLibraryCallSetValueResult() throws IOException {
     loadAllLibraries();
-    Object result = client.tFunctionCall("withFlags", "my_set", Collections.singletonList("MY_KEY"),
-        Collections.singletonList("MY_VALUE"));
+    Object result = client.tFunctionCall("withFlags", "my_set",
+      Collections.singletonList("MY_KEY"), Collections.singletonList("MY_VALUE"));
     assertEquals(String.class, result.getClass());
     assertEquals("OK", result);
     assertEquals("MY_VALUE", client.get("MY_KEY"));
@@ -461,7 +469,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
     client.tFunctionCall("withConfig", "hset", Collections.emptyList(), argsBefore);
 
     String config = "{\"last_modified_field_name\":\"changed_on\"}";
-    client.tFunctionLoad(readLibrary("withConfig.js"), TFunctionLoadParams.loadParams().replace().config(config));
+    client.tFunctionLoad(readLibrary("withConfig.js"), TFunctionLoadParams.loadParams().replace()
+        .config(config));
 
     List<String> argsAfter = Arrays.asList("Dictionary2", "Gallina", "Hen");
     Object result = client.tFunctionCall("withConfig", "hset", Collections.emptyList(), argsAfter);
@@ -482,8 +491,8 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testLibraryCallSetValueResultAsync() throws IOException {
     loadAllLibraries();
-    Object result = client.tFunctionCallAsync("withFlags", "my_set", Collections.singletonList("KEY_TWO"),
-        Collections.singletonList("KEY_TWO_VALUE"));
+    Object result = client.tFunctionCallAsync("withFlags", "my_set",
+      Collections.singletonList("KEY_TWO"), Collections.singletonList("KEY_TWO_VALUE"));
     assertEquals(String.class, result.getClass());
     assertEquals("OK", result);
     assertEquals("KEY_TWO_VALUE", client.get("KEY_TWO"));

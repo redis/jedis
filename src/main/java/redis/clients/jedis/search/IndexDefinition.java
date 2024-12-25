@@ -11,8 +11,7 @@ import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 public class IndexDefinition implements IParams {
 
   public enum Type {
-    HASH,
-    JSON
+    HASH, JSON
   }
 
   private final Type type;

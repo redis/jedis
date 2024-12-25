@@ -39,7 +39,7 @@ public class GeoRadiusResponse {
 
   /**
    * @return The distance of the returned item from the specified center. The distance is returned
-   * in the same unit as the unit specified as the radius argument of the command.
+   *         in the same unit as the unit specified as the radius argument of the command.
    */
   public double getDistance() {
     return distance;
@@ -54,8 +54,8 @@ public class GeoRadiusResponse {
 
   /**
    * @return The raw geohash-encoded sorted set score of the item, in the form of a 52 bit unsigned
-   * integer. This is only useful for low level hacks or debugging and is otherwise of little
-   * interest for the general user.
+   *         integer. This is only useful for low level hacks or debugging and is otherwise of
+   *         little interest for the general user.
    */
   public long getRawScore() {
     return rawScore;
@@ -73,15 +73,17 @@ public class GeoRadiusResponse {
 
     GeoRadiusResponse response = (GeoRadiusResponse) obj;
     return Double.compare(distance, response.getDistance()) == 0
-            && rawScore == response.getRawScore() && coordinate.equals(response.coordinate)
-            && Arrays.equals(member, response.getMember());
+        && rawScore == response.getRawScore() && coordinate.equals(response.coordinate)
+        && Arrays.equals(member, response.getMember());
   }
 
   @Override
   public int hashCode() {
     int hash = 7;
     hash = 67 * hash + Arrays.hashCode(this.member);
-    hash = 67 * hash + (int) (Double.doubleToLongBits(this.distance) ^ (Double.doubleToLongBits(this.distance) >>> 32));
+    hash = 67
+        * hash
+        + (int) (Double.doubleToLongBits(this.distance) ^ (Double.doubleToLongBits(this.distance) >>> 32));
     hash = 67 * hash + Objects.hashCode(this.coordinate);
     hash = 67 * hash + (int) (this.rawScore ^ (this.rawScore >>> 32));
     return hash;

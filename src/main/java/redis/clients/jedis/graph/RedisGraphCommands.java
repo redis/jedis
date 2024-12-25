@@ -11,7 +11,6 @@ public interface RedisGraphCommands {
 
   /**
    * Execute a Cypher query.
-   *
    * @param name a graph to perform the query on
    * @param query Cypher query
    * @return a result set
@@ -22,7 +21,6 @@ public interface RedisGraphCommands {
 
   /**
    * Execute a Cypher read-only query.
-   *
    * @param name a graph to perform the query on
    * @param query Cypher query
    * @return a result set
@@ -33,7 +31,6 @@ public interface RedisGraphCommands {
 
   /**
    * Execute a Cypher query with timeout.
-   *
    * @param name a graph to perform the query on
    * @param query Cypher query
    * @param timeout
@@ -45,7 +42,6 @@ public interface RedisGraphCommands {
 
   /**
    * Execute a Cypher read-only query with timeout.
-   *
    * @param name a graph to perform the query on
    * @param query Cypher query
    * @param timeout
@@ -57,7 +53,6 @@ public interface RedisGraphCommands {
 
   /**
    * Executes a cypher query with parameters.
-   *
    * @param name a graph to perform the query on.
    * @param query Cypher query.
    * @param params parameters map.
@@ -69,7 +64,6 @@ public interface RedisGraphCommands {
 
   /**
    * Executes a cypher read-only query with parameters.
-   *
    * @param name a graph to perform the query on.
    * @param query Cypher query.
    * @param params parameters map.
@@ -81,7 +75,6 @@ public interface RedisGraphCommands {
 
   /**
    * Executes a cypher query with parameters and timeout.
-   *
    * @param name a graph to perform the query on.
    * @param query Cypher query.
    * @param params parameters map.
@@ -94,7 +87,6 @@ public interface RedisGraphCommands {
 
   /**
    * Executes a cypher read-only query with parameters and timeout.
-   *
    * @param name a graph to perform the query on.
    * @param query Cypher query.
    * @param params parameters map.
@@ -107,7 +99,6 @@ public interface RedisGraphCommands {
 
   /**
    * Deletes the entire graph
-   *
    * @param name graph to delete
    * @return delete running time statistics
    * @deprecated Redis Graph support is deprecated.
@@ -124,15 +115,16 @@ public interface RedisGraphCommands {
   List<String> graphList();
 
   /**
-   * Executes a query and produces an execution plan augmented with metrics for each operation's execution.
+   * Executes a query and produces an execution plan augmented with metrics for each operation's
+   * execution.
    * @deprecated Redis Graph support is deprecated.
    */
   @Deprecated
   List<String> graphProfile(String graphName, String query);
 
   /**
-   * Constructs a query execution plan but does not run it. Inspect this execution plan to better understand how your
-   * query will get executed.
+   * Constructs a query execution plan but does not run it. Inspect this execution plan to better
+   * understand how your query will get executed.
    * @deprecated Redis Graph support is deprecated.
    */
   @Deprecated

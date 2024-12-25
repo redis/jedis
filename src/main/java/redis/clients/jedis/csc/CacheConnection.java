@@ -19,7 +19,8 @@ public class CacheConnection extends Connection {
   private static final String REDIS = "redis";
   private static final String MIN_REDIS_VERSION = "7.4";
 
-  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
+  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
+      Cache cache) {
     super(socketFactory, clientConfig);
 
     if (protocol != RedisProtocol.RESP3) {
@@ -29,7 +30,8 @@ public class CacheConnection extends Connection {
       RedisVersion current = new RedisVersion(version);
       RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
       if (!REDIS.equals(server) || current.compareTo(required) < 0) {
-        throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
+        throw new JedisException(String.format(
+          "Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
       }
     }
     this.cache = Objects.requireNonNull(cache);
@@ -92,7 +94,7 @@ public class CacheConnection extends Connection {
     T value = super.executeCommand(commandObject);
     cacheEntry = new CacheEntry<>(cacheKey, value, this);
     cache.set(cacheKey, cacheEntry);
-    // this line actually provides a deep copy of cached object instance 
+    // this line actually provides a deep copy of cached object instance
     value = cacheEntry.getValue();
     return value;
   }

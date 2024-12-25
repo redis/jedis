@@ -147,7 +147,8 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisMockedTestBase {
     double decay = 0.9;
     String expectedResponse = "OK";
 
-    when(commandObjects.topkReserve(key, topk, width, depth, decay)).thenReturn(stringCommandObject);
+    when(commandObjects.topkReserve(key, topk, width, depth, decay))
+        .thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.topkReserve(key, topk, width, depth, decay);

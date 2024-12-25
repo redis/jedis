@@ -26,11 +26,11 @@ import java.util.TreeMap;
 @Deprecated
 public class ShardedConnectionProvider implements ConnectionProvider {
 
-  private final TreeMap<Long, HostAndPort>  nodes     = new TreeMap<>();
+  private final TreeMap<Long, HostAndPort> nodes = new TreeMap<>();
   private final Map<String, ConnectionPool> resources = new HashMap<>();
-  private final JedisClientConfig           clientConfig;
-  private final SimpleObjectPoolConfig      poolConfig;
-  private final Hashing                     algo;
+  private final JedisClientConfig clientConfig;
+  private final SimpleObjectPoolConfig poolConfig;
+  private final Hashing algo;
 
   public ShardedConnectionProvider(List<HostAndPort> shards) {
     this(shards, DefaultJedisClientConfig.builder().build());
@@ -41,20 +41,20 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                                   SimpleObjectPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this(shards, clientConfig, poolConfig, Hashing.MURMUR_HASH);
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                                   Hashing algo) {
+      Hashing algo) {
     this(shards, clientConfig, null, algo);
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                                   SimpleObjectPoolConfig poolConfig, Hashing algo) {
+      SimpleObjectPoolConfig poolConfig, Hashing algo) {
     this.clientConfig = clientConfig;
-    this.poolConfig   = poolConfig;
-    this.algo         = algo;
+    this.poolConfig = poolConfig;
+    this.algo = algo;
     initialize(shards);
   }
 
@@ -70,12 +70,12 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   }
 
   private ConnectionPool setupNodeIfNotExist(final HostAndPort node) {
-    String         nodeKey      = node.toString();
+    String nodeKey = node.toString();
     ConnectionPool existingPool = resources.get(nodeKey);
     if (existingPool != null) return existingPool;
 
     ConnectionPool nodePool = poolConfig == null ? new ConnectionPool(node, clientConfig)
-                                                 : new ConnectionPool(node, clientConfig, poolConfig);
+        : new ConnectionPool(node, clientConfig, poolConfig);
     resources.put(nodeKey, nodePool);
     return nodePool;
   }

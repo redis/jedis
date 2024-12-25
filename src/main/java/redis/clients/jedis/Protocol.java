@@ -92,18 +92,19 @@ public final class Protocol {
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
-      throw new JedisMovedDataException(message, HostAndPort.from(movedInfo[1]), Integer.parseInt(movedInfo[0]));
+      throw new JedisMovedDataException(message, HostAndPort.from(movedInfo[1]),
+          Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_PREFIX)) {
       String[] askInfo = parseTargetHostAndSlot(message);
-      throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]), Integer.parseInt(askInfo[0]));
+      throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]),
+          Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_PREFIX)) {
       throw new JedisBusyException(message);
     } else if (message.startsWith(NOSCRIPT_PREFIX)) {
       throw new JedisNoScriptException(message);
-    } else if (message.startsWith(NOAUTH_PREFIX)
-        || message.startsWith(WRONGPASS_PREFIX)
+    } else if (message.startsWith(NOAUTH_PREFIX) || message.startsWith(WRONGPASS_PREFIX)
         || message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
     }
@@ -131,35 +132,35 @@ public final class Protocol {
     final byte b = is.readByte();
     // System.out.println("BYTE: " + (char) b);
     switch (b) {
-      case PLUS_BYTE:
-        return is.readLineBytes();
-      case DOLLAR_BYTE:
-      case EQUAL_BYTE:
-        return processBulkReply(is);
-      case ASTERISK_BYTE:
-        return processMultiBulkReply(is);
-      case UNDERSCORE_BYTE:
-        return is.readNullCrLf();
-      case HASH_BYTE:
-        return is.readBooleanCrLf();
-      case COLON_BYTE:
-        return is.readLongCrLf();
-      case COMMA_BYTE:
-        return is.readDoubleCrLf();
-      case LEFT_BRACE_BYTE:
-        return is.readBigIntegerCrLf();
-      case PERCENT_BYTE: // TODO: currently just to start working with HELLO
-        return processMapKeyValueReply(is);
-      case TILDE_BYTE: // TODO:
-        return processMultiBulkReply(is);
-      case GREATER_THAN_BYTE:
-        return processMultiBulkReply(is);
-      case MINUS_BYTE:
-        processError(is);
-        return null;
+    case PLUS_BYTE:
+      return is.readLineBytes();
+    case DOLLAR_BYTE:
+    case EQUAL_BYTE:
+      return processBulkReply(is);
+    case ASTERISK_BYTE:
+      return processMultiBulkReply(is);
+    case UNDERSCORE_BYTE:
+      return is.readNullCrLf();
+    case HASH_BYTE:
+      return is.readBooleanCrLf();
+    case COLON_BYTE:
+      return is.readLongCrLf();
+    case COMMA_BYTE:
+      return is.readDoubleCrLf();
+    case LEFT_BRACE_BYTE:
+      return is.readBigIntegerCrLf();
+    case PERCENT_BYTE: // TODO: currently just to start working with HELLO
+      return processMapKeyValueReply(is);
+    case TILDE_BYTE: // TODO:
+      return processMultiBulkReply(is);
+    case GREATER_THAN_BYTE:
+      return processMultiBulkReply(is);
+    case MINUS_BYTE:
+      processError(is);
+      return null;
       // TODO: Blob error '!'
-      default:
-        throw new JedisConnectionException("Unknown reply: " + (char) b);
+    default:
+      throw new JedisConnectionException("Unknown reply: " + (char) b);
     }
   }
 
@@ -188,8 +189,7 @@ public final class Protocol {
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1)
-      return null;
+    if (num == -1) return null;
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
@@ -204,16 +204,16 @@ public final class Protocol {
   private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
     switch (num) {
-      case -1:
-        return null;
-      case 0:
-        return PROTOCOL_EMPTY_MAP;
-      default:
-        final List<KeyValue> ret = new ArrayList<>(num);
-        for (int i = 0; i < num; i++) {
-          ret.add(new KeyValue(process(is), process(is)));
-        }
-        return ret;
+    case -1:
+      return null;
+    case 0:
+      return PROTOCOL_EMPTY_MAP;
+    default:
+      final List<KeyValue> ret = new ArrayList<>(num);
+      for (int i = 0; i < num; i++) {
+        ret.add(new KeyValue(process(is), process(is)));
+      }
+      return ret;
     }
   }
 
@@ -228,7 +228,8 @@ public final class Protocol {
   }
 
   @Experimental
-  public static void readPushes(final RedisInputStream is, final Cache cache, boolean onlyPendingBuffer) {
+  public static void readPushes(final RedisInputStream is, final Cache cache,
+      boolean onlyPendingBuffer) {
     if (onlyPendingBuffer) {
       try {
         while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
@@ -278,35 +279,141 @@ public final class Protocol {
 
   public static enum Command implements ProtocolCommand {
 
-    PING, AUTH, HELLO, SET, GET, GETDEL, GETEX, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, FLUSHALL, MOVE,
-    KEYS, RANDOMKEY, RENAME, RENAMENX, DUMP, RESTORE, DBSIZE, SELECT, SWAPDB, MIGRATE, ECHO, //
-    EXPIRE, EXPIREAT, EXPIRETIME, PEXPIRE, PEXPIREAT, PEXPIRETIME, TTL, PTTL, // <-- key expiration
-    MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, SORT_RO, INFO, SHUTDOWN, MONITOR, CONFIG, LCS, //
-    GETSET, MGET, SETNX, SETEX, PSETEX, MSET, MSETNX, DECR, DECRBY, INCR, INCRBY, INCRBYFLOAT,
-    STRLEN, APPEND, SUBSTR, // <-- string
-    SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, BITCOUNT, BITOP, BITFIELD, BITFIELD_RO, // <-- bit (string)
-    HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HSTRLEN,
-    HEXPIRE, HPEXPIRE, HEXPIREAT, HPEXPIREAT, HTTL, HPTTL, HEXPIRETIME, HPEXPIRETIME, HPERSIST,
-    HRANDFIELD, HINCRBYFLOAT, // <-- hash
-    RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, BLPOP, BRPOP, LINSERT, LPOS,
-    RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, LMPOP, BLMPOP, LPUSHX, RPUSHX, // <-- list
-    SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE,
-    SDIFF, SDIFFSTORE, SISMEMBER, SMISMEMBER, SINTERCARD, // <-- set
+    PING, AUTH, HELLO, SET,
+    GET,
+    GETDEL,
+    GETEX,
+    EXISTS,
+    DEL,
+    UNLINK,
+    TYPE,
+    FLUSHDB,
+    FLUSHALL,
+    MOVE,
+    KEYS,
+    RANDOMKEY,
+    RENAME,
+    RENAMENX,
+    DUMP,
+    RESTORE,
+    DBSIZE,
+    SELECT,
+    SWAPDB,
+    MIGRATE,
+    ECHO, //
+    EXPIRE,
+    EXPIREAT,
+    EXPIRETIME,
+    PEXPIRE,
+    PEXPIREAT,
+    PEXPIRETIME,
+    TTL,
+    PTTL, // <-- key expiration
+    MULTI,
+    DISCARD,
+    EXEC,
+    WATCH,
+    UNWATCH,
+    SORT,
+    SORT_RO,
+    INFO,
+    SHUTDOWN,
+    MONITOR,
+    CONFIG,
+    LCS, //
+    GETSET,
+    MGET,
+    SETNX,
+    SETEX,
+    PSETEX,
+    MSET,
+    MSETNX,
+    DECR,
+    DECRBY,
+    INCR,
+    INCRBY,
+    INCRBYFLOAT,
+    STRLEN,
+    APPEND,
+    SUBSTR, // <-- string
+    SETBIT,
+    GETBIT,
+    BITPOS,
+    SETRANGE,
+    GETRANGE,
+    BITCOUNT,
+    BITOP,
+    BITFIELD,
+    BITFIELD_RO, // <-- bit (string)
+    HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL,
+    HSTRLEN,
+    HEXPIRE,
+    HPEXPIRE,
+    HEXPIREAT,
+    HPEXPIREAT,
+    HTTL,
+    HPTTL,
+    HEXPIRETIME,
+    HPEXPIRETIME,
+    HPERSIST,
+    HRANDFIELD,
+    HINCRBYFLOAT, // <-- hash
+    RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, BLPOP, BRPOP,
+    LINSERT,
+    LPOS,
+    RPOPLPUSH,
+    BRPOPLPUSH,
+    BLMOVE,
+    LMOVE,
+    LMPOP,
+    BLMPOP,
+    LPUSHX,
+    RPUSHX, // <-- list
+    SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER,
+    SINTER,
+    SINTERSTORE,
+    SUNION,
+    SUNIONSTORE,
+    SDIFF,
+    SDIFFSTORE,
+    SISMEMBER,
+    SMISMEMBER,
+    SINTERCARD, // <-- set
     ZADD, ZDIFF, ZDIFFSTORE, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZRANDMEMBER, ZCARD,
     ZSCORE, ZPOPMAX, ZPOPMIN, ZCOUNT, ZUNION, ZUNIONSTORE, ZINTER, ZINTERSTORE, ZRANGEBYSCORE,
     ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZLEXCOUNT, ZRANGEBYLEX, ZREVRANGEBYLEX,
-    ZREMRANGEBYLEX, ZMSCORE, ZRANGESTORE, ZINTERCARD, ZMPOP, BZMPOP, BZPOPMIN, BZPOPMAX, // <-- zset
-    GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEOSEARCH, GEOSEARCHSTORE,
-    GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, // <-- geo
-    PFADD, PFCOUNT, PFMERGE, // <-- hyper log log
-    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
-    XAUTOCLAIM, XINFO, // <-- stream
-    EVAL, EVALSHA, SCRIPT, EVAL_RO, EVALSHA_RO, FUNCTION, FCALL, FCALL_RO, // <-- program
+    ZREMRANGEBYLEX, ZMSCORE, ZRANGESTORE,
+    ZINTERCARD,
+    ZMPOP,
+    BZMPOP,
+    BZPOPMIN,
+    BZPOPMAX, // <-- zset
+    GEOADD, GEODIST, GEOHASH, GEOPOS,
+    GEORADIUS,
+    GEORADIUS_RO,
+    GEOSEARCH,
+    GEOSEARCHSTORE,
+    GEORADIUSBYMEMBER,
+    GEORADIUSBYMEMBER_RO, // <-- geo
+    PFADD,
+    PFCOUNT,
+    PFMERGE, // <-- hyper log log
+    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP,
+    XPENDING,
+    XCLAIM,
+    XAUTOCLAIM,
+    XINFO, // <-- stream
+    EVAL, EVALSHA, SCRIPT, EVAL_RO, EVALSHA_RO,
+    FUNCTION,
+    FCALL,
+    FCALL_RO, // <-- program
     SUBSCRIBE, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBLISH, PUBSUB,
-    SSUBSCRIBE, SUNSUBSCRIBE, SPUBLISH, // <-- pub sub
+    SSUBSCRIBE,
+    SUNSUBSCRIBE,
+    SPUBLISH, // <-- pub sub
     SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST, ROLE, FAILOVER, SLOWLOG, OBJECT, CLIENT, TIME,
-    SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF, COPY,
-    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF;
+    SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF,
+    COPY, SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF;
 
     private final byte[] raw;
 
@@ -324,17 +431,17 @@ public final class Protocol {
 
     AGGREGATE, ALPHA, BY, GET, LIMIT, NO, NOSORT, ONE, SET, STORE, WEIGHTS, WITHSCORE, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, LEN, HELP, SCHEDULE, MATCH, COUNT, TYPE, KEYS,
-    REFCOUNT, ENCODING, IDLETIME, FREQ, REPLACE, GETNAME, SETNAME, SETINFO, LIST, ID, KILL, PERSIST,
-    STREAMS, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, IDLE, TIME, BLOCK, NOACK,
-    RETRYCOUNT, STREAM, GROUPS, CONSUMERS, JUSTID, WITHVALUES, NOMKSTREAM, MINID, CREATECONSUMER,
-    SETUSER, GETUSER, DELUSER, WHOAMI, USERS, CAT, GENPASS, LOG, SAVE, DRYRUN, COPY, AUTH, AUTH2,
-    NX, XX, EX, PX, EXAT, PXAT, ABSTTL, KEEPTTL, INCR, LT, GT, CH, INFO, PAUSE, UNPAUSE, UNBLOCK,
-    REV, WITHCOORD, WITHDIST, WITHHASH, ANY, FROMMEMBER, FROMLONLAT, BYRADIUS, BYBOX, BYLEX, BYSCORE,
-    STOREDIST, TO, FORCE, TIMEOUT, DB, UNLOAD, ABORT, IDX, MINMATCHLEN, WITHMATCHLEN, FULL,
-    DELETE, LIBRARYNAME, WITHCODE, DESCRIPTION, GETKEYS, GETKEYSANDFLAGS, DOCS, FILTERBY, DUMP,
-    MODULE, ACLCAT, PATTERN, DOCTOR, LATEST, HISTORY, USAGE, SAMPLES, PURGE, STATS, LOADEX, CONFIG,
-    ARGS, RANK, NOW, VERSION, ADDR, SKIPME, USER, LADDR, FIELDS,
-    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE;
+    REFCOUNT, ENCODING, IDLETIME, FREQ, REPLACE, GETNAME, SETNAME, SETINFO, LIST, ID, KILL,
+    PERSIST, STREAMS, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, IDLE, TIME,
+    BLOCK, NOACK, RETRYCOUNT, STREAM, GROUPS, CONSUMERS, JUSTID, WITHVALUES, NOMKSTREAM, MINID,
+    CREATECONSUMER, SETUSER, GETUSER, DELUSER, WHOAMI, USERS, CAT, GENPASS, LOG, SAVE, DRYRUN,
+    COPY, AUTH, AUTH2, NX, XX, EX, PX, EXAT, PXAT, ABSTTL, KEEPTTL, INCR, LT, GT, CH, INFO, PAUSE,
+    UNPAUSE, UNBLOCK, REV, WITHCOORD, WITHDIST, WITHHASH, ANY, FROMMEMBER, FROMLONLAT, BYRADIUS,
+    BYBOX, BYLEX, BYSCORE, STOREDIST, TO, FORCE, TIMEOUT, DB, UNLOAD, ABORT, IDX, MINMATCHLEN,
+    WITHMATCHLEN, FULL, DELETE, LIBRARYNAME, WITHCODE, DESCRIPTION, GETKEYS, GETKEYSANDFLAGS, DOCS,
+    FILTERBY, DUMP, MODULE, ACLCAT, PATTERN, DOCTOR, LATEST, HISTORY, USAGE, SAMPLES, PURGE, STATS,
+    LOADEX, CONFIG, ARGS, RANK, NOW, VERSION, ADDR, SKIPME, USER, LADDR, FIELDS, CHANNELS, NUMPAT,
+    NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE;
 
     private final byte[] raw;
 
@@ -371,8 +478,8 @@ public final class Protocol {
 
   public static enum ResponseKeyword implements Rawable {
 
-    SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, MESSAGE, PMESSAGE, PONG,
-    SSUBSCRIBE, SUNSUBSCRIBE, SMESSAGE;
+    SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, MESSAGE, PMESSAGE, PONG, SSUBSCRIBE,
+    SUNSUBSCRIBE, SMESSAGE;
 
     private final byte[] raw;
 

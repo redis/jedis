@@ -317,7 +317,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     assertThat(lcs.getLen(), equalTo(0L));
     assertThat(lcs.getMatchString(), equalTo("abcdfg"));
 
-    LCSMatchResult lcsMatches = exec(commandObjects.lcs(keyA, keyB, new LCSParams().idx().withMatchLen()));
+    LCSMatchResult lcsMatches = exec(commandObjects.lcs(keyA, keyB, new LCSParams().idx()
+        .withMatchLen()));
     assertThat(lcsMatches.getLen(), equalTo(6L));
     assertThat(lcsMatches.getMatchString(), nullValue());
     assertThat(lcsMatches.getMatches(), hasSize(2));
@@ -357,7 +358,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     assertThat(lcs.getLen(), equalTo(0L));
     assertThat(lcs.getMatchString(), equalTo("abcdfg"));
 
-    LCSMatchResult lcsMatches = exec(commandObjects.lcs(keyA, keyB, new LCSParams().idx().withMatchLen()));
+    LCSMatchResult lcsMatches = exec(commandObjects.lcs(keyA, keyB, new LCSParams().idx()
+        .withMatchLen()));
     assertThat(lcsMatches.getLen(), equalTo(6L));
     assertThat(lcsMatches.getMatchString(), nullValue());
     assertThat(lcsMatches.getMatches(), hasSize(2));
@@ -430,7 +432,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     List<byte[]> mgetAfterDel = exec(commandObjects.mget(key1, key2));
     assertThat(mgetAfterDel, contains(nullValue(), nullValue()));
 
-    Long msetNxAfterDel = exec(commandObjects.msetnx(key1, "new1".getBytes(), key2, "new2".getBytes()));
+    Long msetNxAfterDel = exec(commandObjects.msetnx(key1, "new1".getBytes(), key2,
+      "new2".getBytes()));
     assertThat(msetNxAfterDel, equalTo(1L));
 
     List<byte[]> mgetAfterMsetNxAfterDel = exec(commandObjects.mget(key1, key2));

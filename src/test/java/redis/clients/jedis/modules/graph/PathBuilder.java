@@ -28,7 +28,8 @@ public final class PathBuilder {
   public PathBuilder append(Object object) {
     Class<? extends Object> c = object.getClass();
     if (!currentAppendClass.equals(c)) {
-      throw new IllegalArgumentException("Path Builder expected " + currentAppendClass.getSimpleName() + " but was " + c.getSimpleName());
+      throw new IllegalArgumentException("Path Builder expected "
+          + currentAppendClass.getSimpleName() + " but was " + c.getSimpleName());
     }
     if (c.equals(Node.class)) {
       return appendNode((Node) object);

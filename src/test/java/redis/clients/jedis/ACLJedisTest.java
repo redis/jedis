@@ -28,7 +28,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   @BeforeClass
   public static void prepare() throws Exception {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }
 
   public ACLJedisTest(RedisProtocol redisProtocol) {
@@ -45,11 +45,13 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), DefaultJedisClientConfig.builder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), DefaultJedisClientConfig.builder()
+        .build())) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -83,8 +85,8 @@ public class ACLJedisTest extends JedisCommandsTestBase {
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try (Jedis j2 = new Jedis(
-        endpoint.getURIBuilder().defaultCredentials().path("/2").build().toString())) {
+    try (Jedis j2 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build()
+        .toString())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }

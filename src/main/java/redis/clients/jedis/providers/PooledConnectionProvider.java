@@ -18,7 +18,7 @@ import java.util.Map;
 public class PooledConnectionProvider implements ConnectionProvider {
 
   private final Pool<Connection> pool;
-  private       Object           connectionMapKey = "";
+  private Object connectionMapKey = "";
 
   public PooledConnectionProvider(HostAndPort hostAndPort) {
     this(new ConnectionFactory(hostAndPort));
@@ -31,20 +31,21 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   @Experimental
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache) {
     this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache));
     this.connectionMapKey = hostAndPort;
   }
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-                                  SimpleObjectPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
 
   @Experimental
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-                                  SimpleObjectPoolConfig poolConfig) {
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
@@ -55,7 +56,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
-                                  SimpleObjectPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionPool(factory, poolConfig));
     this.connectionMapKey = factory;
   }

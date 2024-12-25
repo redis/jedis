@@ -25,7 +25,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                       SimpleObjectPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig));
     setProtocol(clientConfig);
   }
@@ -36,7 +36,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                       SimpleObjectPoolConfig poolConfig, Hashing algo) {
+      SimpleObjectPoolConfig poolConfig, Hashing algo) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo));
     setProtocol(clientConfig);
   }

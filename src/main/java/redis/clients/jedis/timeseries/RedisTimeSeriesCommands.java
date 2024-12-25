@@ -7,14 +7,12 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.CREATE key}
-   *
    * @param key
    */
   String tsCreate(String key);
 
   /**
    * {@code TS.CREATE key [RETENTION retentionTime] [ENCODING [UNCOMPRESSED|COMPRESSED]] [CHUNK_SIZE size] [DUPLICATE_POLICY policy] [LABELS label value..]}
-   *
    * @param key
    * @param createParams
    */
@@ -22,7 +20,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.DEL key fromTimestamp toTimestamp}
-   *
    * @param key
    * @param fromTimestamp
    * @param toTimestamp
@@ -32,7 +29,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.ALTER key [RETENTION retentionTime] [LABELS label value..]}
-   *
    * @param key
    * @param alterParams
    * @return OK
@@ -41,7 +37,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.ADD key * value}
-   *
    * @param key
    * @param value
    * @return timestamp
@@ -50,7 +45,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.ADD key timestamp value}
-   *
    * @param key
    * @param timestamp
    * @param value
@@ -64,7 +58,9 @@ public interface RedisTimeSeriesCommands {
    * @param value
    * @param createParams
    * @return timestamp
-   * @deprecated Use {@link RedisTimeSeriesCommands#tsAdd(java.lang.String, long, double, redis.clients.jedis.timeseries.TSAddParams)}.
+   * @deprecated Use
+   *             {@link RedisTimeSeriesCommands#tsAdd(java.lang.String, long, double, redis.clients.jedis.timeseries.TSAddParams)}
+   *             .
    */
   @Deprecated
   long tsAdd(String key, long timestamp, double value, TSCreateParams createParams);
@@ -77,7 +73,6 @@ public interface RedisTimeSeriesCommands {
    * [DUPLICATE_POLICY policy]
    * [ON_DUPLICATE policy_ovr]
    * [LABELS label value..]}
-   *
    * @param key
    * @param timestamp
    * @param value
@@ -88,7 +83,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.MADD key timestamp value [key timestamp value ...]}
-   *
    * @param entries key, timestamp, value
    * @return timestamps
    */
@@ -107,7 +101,6 @@ public interface RedisTimeSeriesCommands {
    * [DUPLICATE_POLICY policy]
    * [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
    * [LABELS [label value ...]]}
-   *
    * @param key
    * @param addend
    * @param incrByParams
@@ -128,7 +121,6 @@ public interface RedisTimeSeriesCommands {
    * [DUPLICATE_POLICY policy]
    * [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
    * [LABELS [label value ...]]}
-   *
    * @param key
    * @param subtrahend
    * @param decrByParams
@@ -138,7 +130,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.RANGE key fromTimestamp toTimestamp}
-   *
    * @param key
    * @param fromTimestamp
    * @param toTimestamp
@@ -153,7 +144,6 @@ public interface RedisTimeSeriesCommands {
    * [FILTER_BY_VALUE min max]
    * [COUNT count] 
    * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]}
-   *
    * @param key
    * @param rangeParams
    * @return range elements
@@ -162,7 +152,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.REVRANGE key fromTimestamp toTimestamp}
-   *
    * @param key
    * @param fromTimestamp
    * @param toTimestamp
@@ -177,7 +166,6 @@ public interface RedisTimeSeriesCommands {
    * [FILTER_BY_VALUE min max]
    * [COUNT count]
    * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]}
-   *
    * @param key
    * @param rangeParams
    * @return range elements
@@ -186,7 +174,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.MRANGE fromTimestamp toTimestamp FILTER filter...}
-   *
    * @param fromTimestamp
    * @param toTimestamp
    * @param filters
@@ -204,7 +191,6 @@ public interface RedisTimeSeriesCommands {
    * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]
    * FILTER filter...
    * [GROUPBY label REDUCE reducer]}
-   *
    * @param multiRangeParams
    * @return multi range elements
    */
@@ -212,7 +198,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.MREVRANGE fromTimestamp toTimestamp FILTER filter...}
-   *
    * @param fromTimestamp
    * @param toTimestamp
    * @param filters
@@ -230,7 +215,6 @@ public interface RedisTimeSeriesCommands {
    * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]
    * FILTER filter...
    * [GROUPBY label REDUCE reducer]}
-   *
    * @param multiRangeParams
    * @return multi range elements
    */
@@ -238,7 +222,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.GET key}
-   *
    * @param key the key
    * @return the element
    */
@@ -246,7 +229,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.GET key [LATEST]}
-   *
    * @param key the key
    * @param getParams optional arguments
    * @return the element
@@ -255,7 +237,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.MGET [LATEST] [ WITHLABELS | SELECTED_LABELS label...] FILTER filter...}
-   *
    * @param multiGetParams optional arguments
    * @param filters secondary indexes
    * @return multi get elements
@@ -264,28 +245,27 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType timeBucket}
-   *
    * @param sourceKey
    * @param destKey
    * @param aggregationType
    * @param timeBucket
    */
-  String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
+  String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
+      long timeBucket);
 
   /**
    * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType bucketDuration [alignTimestamp]}
-   *
    * @param sourceKey
    * @param destKey
    * @param aggregationType
    * @param bucketDuration
    * @param alignTimestamp
    */
-  String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp);
+  String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
+      long bucketDuration, long alignTimestamp);
 
   /**
    * {@code TS.DELETERULE sourceKey destKey}
-   *
    * @param sourceKey
    * @param destKey
    */
@@ -293,7 +273,6 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.QUERYINDEX filter...}
-   *
    * @param filters
    * @return list of timeseries keys
    */

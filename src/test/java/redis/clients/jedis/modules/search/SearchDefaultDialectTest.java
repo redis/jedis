@@ -44,11 +44,12 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     super.setUp();
     client.setDefaultSearchDialect(DEFAULT_DIALECT);
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   private void addDocument(Document doc) {
     String key = doc.getId();
@@ -66,7 +67,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     client.hset("2", "numval", "2");
     client.hset("3", "numval", "3");
 
-    Query query =  new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2);
+    Query query = new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2);
     assertEquals(2, client.ftSearch(INDEX, query).getTotalResults());
   }
 
@@ -78,13 +79,17 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     client.hset("2", "numval", "2");
     client.hset("3", "numval", "3");
 
-    assertEquals(2, client.ftSearch(INDEX, "@numval:[$min $max]",
+    assertEquals(
+      2,
+      client.ftSearch(INDEX, "@numval:[$min $max]",
         FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)).getTotalResults());
 
     Map<String, Object> paramValues = new HashMap<>();
     paramValues.put("min", 1);
     paramValues.put("max", 2);
-    assertEquals(2, client.ftSearch(INDEX, "@numval:[$min $max]",
+    assertEquals(
+      2,
+      client.ftSearch(INDEX, "@numval:[$min $max]",
         FTSearchParams.searchParams().params(paramValues)).getTotalResults());
   }
 
@@ -95,12 +100,8 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     attr.put("DIM", 2);
     attr.put("DISTANCE_METRIC", "L2");
 
-    Schema sc = new Schema()
-        .addFlatVectorField("v", attr)
-        .addTagField("title")
-        .addTextField("t1", 1.0)
-        .addTextField("t2", 1.0)
-        .addNumericField("num");
+    Schema sc = new Schema().addFlatVectorField("v", attr).addTagField("title")
+        .addTextField("t1", 1.0).addTextField("t2", 1.0).addNumericField("num");
     assertEquals("OK", client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
 
     client.hset("1", "t1", "hello");
@@ -126,12 +127,12 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     }
     query = new Query(q).addParam("hello", "hello"); // dialect=default=2
     assertTrue("Should contain 'UNION {\n  hello\n  +hello(expanded)\n}\n'",
-        client.ftExplain(INDEX, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
+      client.ftExplain(INDEX, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
 
     q = "@title:(@num:[0 10])";
     query = new Query(q).dialect(1);
     assertTrue("Should contain 'NUMERIC {0.000000 <= @num <= 10.000000}'",
-        client.ftExplain(INDEX, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
+      client.ftExplain(INDEX, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
     query = new Query(q); // dialect=default=2
     try {
       client.ftExplain(INDEX, query);
@@ -142,8 +143,10 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
     q = "@t1:@t2:@t3:hello";
     query = new Query(q).dialect(1);
-    assertTrue("Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
-        client.ftExplain(INDEX, query).contains("@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
+    assertTrue(
+      "Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
+      client.ftExplain(INDEX, query).contains(
+        "@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
     query = new Query(q); // dialect=default=2
     try {
       client.ftExplain(INDEX, query);
@@ -154,8 +157,8 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
     q = "@title:{foo}}}}}";
     query = new Query(q).dialect(1);
-    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'",
-        client.ftExplain(INDEX, query).contains("TAG:@title {\n  foo\n}\n"));
+    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'", client.ftExplain(INDEX, query)
+        .contains("TAG:@title {\n  foo\n}\n"));
     query = new Query(q); // dialect=default=2
     try {
       client.ftExplain(INDEX, query);
@@ -178,9 +181,8 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     Map<String, Object> params = new HashMap<>();
     params.put("name", "abc");
 
-    AggregationBuilder r = new AggregationBuilder("$name")
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
-            .params(params);
+    AggregationBuilder r = new AggregationBuilder("$name").groupBy("@name",
+      Reducers.sum("@count").as("sum")).params(params);
 
     AggregationResult res = client.ftAggregate(INDEX, r);
     assertEquals(1, res.getTotalResults());

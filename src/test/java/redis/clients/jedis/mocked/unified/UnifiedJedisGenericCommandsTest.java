@@ -52,8 +52,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testCopyBinary() {
-    byte[] srcKey = new byte[]{ 1, 2, 3 };
-    byte[] dstKey = new byte[]{ 4, 5, 6 };
+    byte[] srcKey = new byte[] { 1, 2, 3 };
+    byte[] dstKey = new byte[] { 4, 5, 6 };
     boolean replace = false;
 
     when(commandObjects.copy(srcKey, dstKey, replace)).thenReturn(booleanCommandObject);
@@ -84,7 +84,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testDelBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.del(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
@@ -114,7 +114,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testDelMultipleKeysBinary() {
-    byte[][] keys = { new byte[]{ 1, 2, 3 }, new byte[]{ 4, 5, 6 } };
+    byte[][] keys = { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
 
     when(commandObjects.del(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
@@ -132,11 +132,11 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     String key = "key1";
 
     when(commandObjects.dump(key)).thenReturn(bytesCommandObject);
-    when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(new byte[]{ 1, 2, 3 });
+    when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(new byte[] { 1, 2, 3 });
 
     byte[] result = jedis.dump(key);
 
-    assertThat(result, equalTo(new byte[]{ 1, 2, 3 }));
+    assertThat(result, equalTo(new byte[] { 1, 2, 3 }));
 
     verify(commandExecutor).executeCommand(bytesCommandObject);
     verify(commandObjects).dump(key);
@@ -144,14 +144,14 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testDumpBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.dump(key)).thenReturn(bytesCommandObject);
-    when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(new byte[]{ 4, 5, 6 });
+    when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(new byte[] { 4, 5, 6 });
 
     byte[] result = jedis.dump(key);
 
-    assertThat(result, equalTo(new byte[]{ 4, 5, 6 }));
+    assertThat(result, equalTo(new byte[] { 4, 5, 6 }));
 
     verify(commandExecutor).executeCommand(bytesCommandObject);
     verify(commandObjects).dump(key);
@@ -174,7 +174,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExistsBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.exists(key)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(true);
@@ -204,7 +204,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExistsMultipleKeysBinary() {
-    byte[][] keys = { new byte[]{ 1, 2, 3 }, new byte[]{ 4, 5, 6 } };
+    byte[][] keys = { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
 
     when(commandObjects.exists(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
@@ -235,7 +235,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExpireBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long seconds = 60L;
 
     when(commandObjects.expire(key, seconds)).thenReturn(longCommandObject);
@@ -268,7 +268,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExpireWithExpiryOptionBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long seconds = 60L;
     ExpiryOption expiryOption = ExpiryOption.NX;
 
@@ -301,7 +301,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExpireAtBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long unixTime = 1633072800L;
 
     when(commandObjects.expireAt(key, unixTime)).thenReturn(longCommandObject);
@@ -334,7 +334,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExpireAtWithExpiryOptionBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long unixTime = 1633072800L;
     ExpiryOption expiryOption = ExpiryOption.NX;
 
@@ -366,7 +366,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testExpireTimeBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.expireTime(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1234567890L);
@@ -634,7 +634,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPersistBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.persist(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
@@ -665,7 +665,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPexpireBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long milliseconds = 1000L;
 
     when(commandObjects.pexpire(key, milliseconds)).thenReturn(longCommandObject);
@@ -698,7 +698,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPexpireWithExpiryOptionBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long milliseconds = 1000L;
     ExpiryOption expiryOption = ExpiryOption.NX;
 
@@ -731,7 +731,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPexpireAtBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long millisecondsTimestamp = 1633072800123L;
 
     when(commandObjects.pexpireAt(key, millisecondsTimestamp)).thenReturn(longCommandObject);
@@ -751,7 +751,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     long millisecondsTimestamp = 1633072800123L;
     ExpiryOption expiryOption = ExpiryOption.NX;
 
-    when(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption)).thenReturn(longCommandObject);
+    when(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption)).thenReturn(
+      longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
 
     long result = jedis.pexpireAt(key, millisecondsTimestamp, expiryOption);
@@ -764,11 +765,12 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPexpireAtWithExpiryOptionBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long millisecondsTimestamp = 1633072800123L;
     ExpiryOption expiryOption = ExpiryOption.NX;
 
-    when(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption)).thenReturn(longCommandObject);
+    when(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption)).thenReturn(
+      longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
 
     long result = jedis.pexpireAt(key, millisecondsTimestamp, expiryOption);
@@ -796,7 +798,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPexpireTimeBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.pexpireTime(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1234567890123L);
@@ -826,7 +828,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testPttlBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.pttl(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(120000L);
@@ -888,8 +890,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testRenameBinary() {
-    byte[] oldkey = new byte[]{ 1, 2, 3 };
-    byte[] newkey = new byte[]{ 4, 5, 6 };
+    byte[] oldkey = new byte[] { 1, 2, 3 };
+    byte[] newkey = new byte[] { 4, 5, 6 };
     String expectedStatus = "OK";
 
     when(commandObjects.rename(oldkey, newkey)).thenReturn(stringCommandObject);
@@ -922,8 +924,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testRenamenxBinary() {
-    byte[] oldkey = new byte[]{ 1, 2, 3 };
-    byte[] newkey = new byte[]{ 4, 5, 6 };
+    byte[] oldkey = new byte[] { 1, 2, 3 };
+    byte[] newkey = new byte[] { 4, 5, 6 };
     long expected = 1L;
 
     when(commandObjects.renamenx(oldkey, newkey)).thenReturn(longCommandObject);
@@ -941,7 +943,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
   public void testRestore() {
     String key = "key1";
     long ttl = 0L;
-    byte[] serializedValue = new byte[]{ 1, 2, 3 };
+    byte[] serializedValue = new byte[] { 1, 2, 3 };
 
     when(commandObjects.restore(key, ttl, serializedValue)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
@@ -956,9 +958,9 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testRestoreBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long ttl = 1000L;
-    byte[] serializedValue = new byte[]{ 4, 5, 6 };
+    byte[] serializedValue = new byte[] { 4, 5, 6 };
 
     when(commandObjects.restore(key, ttl, serializedValue)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
@@ -975,7 +977,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
   public void testRestoreWithParams() {
     String key = "key1";
     long ttl = 0L;
-    byte[] serializedValue = new byte[]{ 1, 2, 3 };
+    byte[] serializedValue = new byte[] { 1, 2, 3 };
     RestoreParams params = new RestoreParams();
 
     when(commandObjects.restore(key, ttl, serializedValue, params)).thenReturn(stringCommandObject);
@@ -992,9 +994,9 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testRestoreWithParamsBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     long ttl = 1000L;
-    byte[] serializedValue = new byte[]{ 4, 5, 6 };
+    byte[] serializedValue = new byte[] { 4, 5, 6 };
     RestoreParams params = new RestoreParams();
 
     when(commandObjects.restore(key, ttl, serializedValue, params)).thenReturn(stringCommandObject);
@@ -1014,7 +1016,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     ScanResult<String> expectedScanResult = new ScanResult<>(cursor, Arrays.asList("key1", "key2"));
 
     when(commandObjects.scan(cursor)).thenReturn(scanResultStringCommandObject);
-    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<String> result = jedis.scan(cursor);
 
@@ -1027,10 +1030,12 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
   @Test
   public void testScanBinary() {
     byte[] cursor = "0".getBytes();
-    ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+    ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, Arrays.asList(
+      "key1".getBytes(), "key2".getBytes()));
 
     when(commandObjects.scan(cursor)).thenReturn(scanResultBytesCommandObject);
-    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<byte[]> result = jedis.scan(cursor);
 
@@ -1047,7 +1052,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     ScanResult<String> expectedScanResult = new ScanResult<>(cursor, Arrays.asList("key1", "key2"));
 
     when(commandObjects.scan(cursor, params)).thenReturn(scanResultStringCommandObject);
-    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<String> result = jedis.scan(cursor, params);
 
@@ -1061,10 +1067,12 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
   public void testScanWithParamsBinary() {
     byte[] cursor = "0".getBytes();
     ScanParams params = new ScanParams().match("*".getBytes()).count(10);
-    ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+    ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, Arrays.asList(
+      "key1".getBytes(), "key2".getBytes()));
 
     when(commandObjects.scan(cursor, params)).thenReturn(scanResultBytesCommandObject);
-    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<byte[]> result = jedis.scan(cursor, params);
 
@@ -1082,7 +1090,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     ScanResult<String> expectedScanResult = new ScanResult<>(cursor, Arrays.asList("key1", "key2"));
 
     when(commandObjects.scan(cursor, params, type)).thenReturn(scanResultStringCommandObject);
-    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<String> result = jedis.scan(cursor, params, type);
 
@@ -1097,10 +1106,12 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     byte[] cursor = "0".getBytes();
     ScanParams params = new ScanParams().match("*".getBytes()).count(10);
     byte[] type = "string".getBytes();
-    ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+    ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, Arrays.asList(
+      "key1".getBytes(), "key2".getBytes()));
 
     when(commandObjects.scan(cursor, params, type)).thenReturn(scanResultBytesCommandObject);
-    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<byte[]> result = jedis.scan(cursor, params, type);
 
@@ -1117,8 +1128,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     String key2 = "key2";
 
     Connection connection = mock(Connection.class);
-    when(connection.executeCommand(any(CommandArguments.class)))
-        .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
+    when(connection.executeCommand(any(CommandArguments.class))).thenReturn(
+      Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
 
     when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
@@ -1143,8 +1154,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     String key2 = "key2";
 
     Connection connection = mock(Connection.class);
-    when(connection.executeCommand(any(CommandArguments.class)))
-        .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
+    when(connection.executeCommand(any(CommandArguments.class))).thenReturn(
+      Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
 
     when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
@@ -1180,8 +1191,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testSortBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
-    List<byte[]> expected = Arrays.asList(new byte[]{ 4 }, new byte[]{ 5 }, new byte[]{ 6 });
+    byte[] key = new byte[] { 1, 2, 3 };
+    List<byte[]> expected = Arrays.asList(new byte[] { 4 }, new byte[] { 5 }, new byte[] { 6 });
 
     when(commandObjects.sort(key)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
@@ -1213,9 +1224,9 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testSortWithParamsBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     SortingParams sortingParams = new SortingParams().asc();
-    List<byte[]> expected = Arrays.asList(new byte[]{ 4 }, new byte[]{ 6 }, new byte[]{ 5 });
+    List<byte[]> expected = Arrays.asList(new byte[] { 4 }, new byte[] { 6 }, new byte[] { 5 });
 
     when(commandObjects.sort(key, sortingParams)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
@@ -1246,8 +1257,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testSortStoreBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
-    byte[] dstkey = new byte[]{ 7, 8, 9 };
+    byte[] key = new byte[] { 1, 2, 3 };
+    byte[] dstkey = new byte[] { 7, 8, 9 };
 
     when(commandObjects.sort(key, dstkey)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(3L);
@@ -1279,9 +1290,9 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testSortStoreWithParamsBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     SortingParams sortingParams = new SortingParams().asc();
-    byte[] dstkey = new byte[]{ 7, 8, 9 };
+    byte[] dstkey = new byte[] { 7, 8, 9 };
 
     when(commandObjects.sort(key, sortingParams, dstkey)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(3L);
@@ -1313,9 +1324,9 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testSortReadonlyBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     SortingParams sortingParams = new SortingParams().asc();
-    List<byte[]> expected = Arrays.asList(new byte[]{ 4 }, new byte[]{ 6 }, new byte[]{ 5 });
+    List<byte[]> expected = Arrays.asList(new byte[] { 4 }, new byte[] { 6 }, new byte[] { 5 });
 
     when(commandObjects.sortReadonly(key, sortingParams)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
@@ -1345,7 +1356,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testTouchBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.touch(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
@@ -1375,7 +1386,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testTouchMultipleKeysBinary() {
-    byte[][] keys = { new byte[]{ 1, 2, 3 }, new byte[]{ 4, 5, 6 } };
+    byte[][] keys = { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
 
     when(commandObjects.touch(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
@@ -1405,7 +1416,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testTtlBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.ttl(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(120L);
@@ -1435,7 +1446,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testTypeBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.type(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("string");
@@ -1465,7 +1476,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testUnlinkBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
 
     when(commandObjects.unlink(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
@@ -1495,7 +1506,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testUnlinkMultipleKeysBinary() {
-    byte[][] keys = { new byte[]{ 1, 2, 3 }, new byte[]{ 4, 5, 6 } };
+    byte[][] keys = { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
 
     when(commandObjects.unlink(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
@@ -1550,8 +1561,10 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     long timeout = 10000L;
     KeyValue<Long, Long> expectedResponse = new KeyValue<>(numLocal, numReplicas);
 
-    when(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout)).thenReturn(keyValueLongLongCommandObject);
-    when(commandExecutor.executeCommand(keyValueLongLongCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout)).thenReturn(
+      keyValueLongLongCommandObject);
+    when(commandExecutor.executeCommand(keyValueLongLongCommandObject))
+        .thenReturn(expectedResponse);
 
     KeyValue<Long, Long> result = jedis.waitAOF(sampleKey, numLocal, numReplicas, timeout);
 
@@ -1568,8 +1581,10 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     long timeout = 10000L;
     KeyValue<Long, Long> expectedResponse = new KeyValue<>(numLocal, numReplicas);
 
-    when(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout)).thenReturn(keyValueLongLongCommandObject);
-    when(commandExecutor.executeCommand(keyValueLongLongCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout)).thenReturn(
+      keyValueLongLongCommandObject);
+    when(commandExecutor.executeCommand(keyValueLongLongCommandObject))
+        .thenReturn(expectedResponse);
 
     KeyValue<Long, Long> result = jedis.waitAOF(sampleKey, numLocal, numReplicas, timeout);
 

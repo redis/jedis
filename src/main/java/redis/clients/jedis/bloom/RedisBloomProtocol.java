@@ -8,16 +8,9 @@ public class RedisBloomProtocol {
 
   public enum BloomFilterCommand implements ProtocolCommand {
 
-    RESERVE("BF.RESERVE"),
-    ADD("BF.ADD"),
-    MADD("BF.MADD"),
-    EXISTS("BF.EXISTS"),
-    MEXISTS("BF.MEXISTS"),
-    INSERT("BF.INSERT"),
-    SCANDUMP("BF.SCANDUMP"),
-    LOADCHUNK("BF.LOADCHUNK"),
-    CARD("BF.CARD"),
-    INFO("BF.INFO");
+    RESERVE("BF.RESERVE"), ADD("BF.ADD"), MADD("BF.MADD"), EXISTS("BF.EXISTS"), MEXISTS(
+        "BF.MEXISTS"), INSERT("BF.INSERT"), SCANDUMP("BF.SCANDUMP"), LOADCHUNK("BF.LOADCHUNK"),
+    CARD("BF.CARD"), INFO("BF.INFO");
 
     private final byte[] raw;
 
@@ -81,12 +74,8 @@ public class RedisBloomProtocol {
 
   public enum TopKCommand implements ProtocolCommand {
 
-    RESERVE("TOPK.RESERVE"),
-    ADD("TOPK.ADD"),
-    INCRBY("TOPK.INCRBY"),
-    QUERY("TOPK.QUERY"),
-    LIST("TOPK.LIST"),
-    INFO("TOPK.INFO");
+    RESERVE("TOPK.RESERVE"), ADD("TOPK.ADD"), INCRBY("TOPK.INCRBY"), QUERY("TOPK.QUERY"), LIST(
+        "TOPK.LIST"), INFO("TOPK.INFO");
 
     private final byte[] raw;
 
@@ -102,8 +91,8 @@ public class RedisBloomProtocol {
 
   public enum TDigestCommand implements ProtocolCommand {
 
-    CREATE, INFO, ADD, RESET, MERGE, CDF, QUANTILE, MIN, MAX, TRIMMED_MEAN,
-    RANK, REVRANK, BYRANK, BYREVRANK;
+    CREATE, INFO, ADD, RESET, MERGE, CDF, QUANTILE, MIN, MAX, TRIMMED_MEAN, RANK, REVRANK, BYRANK,
+    BYREVRANK;
 
     private final byte[] raw;
 

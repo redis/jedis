@@ -53,7 +53,8 @@ public class RetryableCommandExecutor implements CommandExecutor {
         ++consecutiveConnectionFailures;
         log.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
-        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures,
+          deadline);
         if (reset) {
           consecutiveConnectionFailures = 0;
         }
@@ -73,8 +74,8 @@ public class RetryableCommandExecutor implements CommandExecutor {
   }
 
   /**
-   * WARNING: This method is accessible for the purpose of testing.
-   * This should not be used or overriden.
+   * WARNING: This method is accessible for the purpose of testing. This should not be used or
+   * overriden.
    */
   @VisibleForTesting
   protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
@@ -83,14 +84,14 @@ public class RetryableCommandExecutor implements CommandExecutor {
 
   /**
    * Related values should be reset if <code>TRUE</code> is returned.
-   *
    * @param attemptsLeft
    * @param consecutiveConnectionFailures
    * @param doneDeadline
-   * @return true - if some actions are taken
-   * <br /> false - if no actions are taken
+   * @return true - if some actions are taken <br />
+   *         false - if no actions are taken
    */
-  private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures, Instant doneDeadline) {
+  private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures,
+      Instant doneDeadline) {
 
     if (consecutiveConnectionFailures < 2) {
       return false;
@@ -114,8 +115,8 @@ public class RetryableCommandExecutor implements CommandExecutor {
   }
 
   /**
-   * WARNING: This method is accessible for the purpose of testing.
-   * This should not be used or overriden.
+   * WARNING: This method is accessible for the purpose of testing. This should not be used or
+   * overriden.
    */
   @VisibleForTesting
   protected void sleep(long sleepMillis) {

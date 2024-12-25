@@ -59,14 +59,10 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
 
-    assertThat(jedis.zunion(params, "{:}foo", "{:}bar"),
-        containsInAnyOrder("a", "b"));
+    assertThat(jedis.zunion(params, "{:}foo", "{:}bar"), containsInAnyOrder("a", "b"));
 
     assertThat(jedis.zunionWithScores(params, "{:}foo", "{:}bar"),
-        containsInAnyOrder(
-            new Tuple("b", new Double(9)),
-            new Tuple("a", new Double(7))
-        ));
+      containsInAnyOrder(new Tuple("b", new Double(9)), new Tuple("a", new Double(7))));
   }
 
   @Test
@@ -115,11 +111,10 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     ZParams params = new ZParams();
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
-    assertThat(jedis.zinter(params, "foo{:}", "bar{:}"),
-        containsInAnyOrder("a"));
+    assertThat(jedis.zinter(params, "foo{:}", "bar{:}"), containsInAnyOrder("a"));
 
-    assertThat(jedis.zinterWithScores(params, "foo{:}", "bar{:}"),
-        containsInAnyOrder(new Tuple("a", new Double(7))));
+    assertThat(jedis.zinterWithScores(params, "foo{:}", "bar{:}"), containsInAnyOrder(new Tuple(
+        "a", new Double(7))));
   }
 
   @Test
@@ -132,7 +127,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     assertEquals(1, jedis.zinterstore("dst{:}", "foo{:}", "bar{:}"));
 
     assertEquals(Collections.singletonList(new Tuple("a", new Double(3))),
-        jedis.zrangeWithScores("dst{:}", 0, 100));
+      jedis.zrangeWithScores("dst{:}", 0, 100));
   }
 
   @Test
@@ -149,7 +144,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     assertEquals(1, jedis.zinterstore("dst{:}", params, "foo{:}", "bar{:}"));
 
     assertEquals(Collections.singletonList(new Tuple("a", new Double(7))),
-        jedis.zrangeWithScores("dst{:}", 0, 100));
+      jedis.zrangeWithScores("dst{:}", 0, 100));
   }
 
   @Test
@@ -160,7 +155,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     jedis.zadd("f{:}oo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("f{:}oo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("b{:}ar", 0.1d, "c", ZAddParams.zAddParams().nx());
-    assertEquals(new KeyValue<>("f{:}oo", new Tuple("b", 10d)), jedis.bzpopmax(0, "f{:}oo", "b{:}ar"));
+    assertEquals(new KeyValue<>("f{:}oo", new Tuple("b", 10d)),
+      jedis.bzpopmax(0, "f{:}oo", "b{:}ar"));
   }
 
   @Test
@@ -171,7 +167,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     jedis.zadd("fo{:}o", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("fo{:}o", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("ba{:}r", 0.1d, "c", ZAddParams.zAddParams().nx());
-    assertEquals(new KeyValue<>("ba{:}r", new Tuple("c", 0.1d)), jedis.bzpopmin(0, "ba{:}r", "fo{:}o"));
+    assertEquals(new KeyValue<>("ba{:}r", new Tuple("c", 0.1d)),
+      jedis.bzpopmin(0, "ba{:}r", "fo{:}o"));
   }
 
   @Test
@@ -183,11 +180,9 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(0, jedis.zdiff("{bar}1", "{bar}2").size());
 
-    assertThat(jedis.zdiff("{:}foo", "{:}bar"),
-        containsInAnyOrder("b"));
+    assertThat(jedis.zdiff("{:}foo", "{:}bar"), containsInAnyOrder("b"));
 
-    assertThat(jedis.zdiffWithScores("{:}foo", "{:}bar"),
-        containsInAnyOrder(new Tuple("b", 2.0d)));
+    assertThat(jedis.zdiffWithScores("{:}foo", "{:}bar"), containsInAnyOrder(new Tuple("b", 2.0d)));
   }
 
   @Test
@@ -223,7 +218,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bstored = jedis.zrangestore(bfoo_same_hashslot, bfoo, ZRangeParams.zrangeParams(0, 1).rev());
+    long bstored = jedis.zrangestore(bfoo_same_hashslot, bfoo, ZRangeParams.zrangeParams(0, 1)
+        .rev());
     assertEquals(2, bstored);
 
     List<byte[]> brange = jedis.zrevrange(bfoo_same_hashslot, 0, 1);

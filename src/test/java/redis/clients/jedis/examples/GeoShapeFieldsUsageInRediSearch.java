@@ -21,15 +21,15 @@ import redis.clients.jedis.search.schemafields.GeoShapeField;
  * <p>
  * Notes:
  * <ul>
- *   <li>As of RediSearch 2.8.4, only POLYGON and POINT objects are supported.</li>
- *   <li>As of RediSearch 2.8.4, only WITHIN and CONTAINS conditions are supported.</li>
- *   <li>As of RedisStack 7.4.0, support for INTERSECTS and DISJOINT conditions are added.</li>
+ * <li>As of RediSearch 2.8.4, only POLYGON and POINT objects are supported.</li>
+ * <li>As of RediSearch 2.8.4, only WITHIN and CONTAINS conditions are supported.</li>
+ * <li>As of RedisStack 7.4.0, support for INTERSECTS and DISJOINT conditions are added.</li>
  * </ul>
- *
- * Any object/library producing a <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">
- * well-known text (WKT)</a> in {@code toString()} method can be used.
- *
- * This example uses the <a href="https://github.com/locationtech/jts">JTS</a> library.
+ * Any object/library producing a <a
+ * href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry"> well-known text
+ * (WKT)</a> in {@code toString()} method can be used. This example uses the <a
+ * href="https://github.com/locationtech/jts">JTS</a> library.
+ * 
  * <pre>
  * {@code
  * <dependency>
@@ -52,49 +52,49 @@ public class GeoShapeFieldsUsageInRediSearch {
     final HostAndPort address = new HostAndPort(host, port);
 
     UnifiedJedis client = new JedisPooled(address);
-    // client.setDefaultSearchDialect(3); // we can set default search dialect for the client (UnifiedJedis) object
-                                          // to avoid setting dialect in every query.
+    // client.setDefaultSearchDialect(3); // we can set default search dialect for the client
+    // (UnifiedJedis) object
+    // to avoid setting dialect in every query.
 
     // creating index
     client.ftCreate("geometry-index",
-        GeoShapeField.of("geometry", GeoShapeField.CoordinateSystem.SPHERICAL) // 'SPHERICAL' is for geographic (lon, lat).
-                                                   // 'FLAT' coordinate system also available for cartesian (X,Y).
-    );
+      GeoShapeField.of("geometry", GeoShapeField.CoordinateSystem.SPHERICAL) // 'SPHERICAL' is for
+                                                                             // geographic (lon,
+                                                                             // lat).
+        // 'FLAT' coordinate system also available for cartesian (X,Y).
+        );
 
     // preparing data
-    final Polygon small = factory.createPolygon(
-        new Coordinate[]{new Coordinate(34.9001, 29.7001),
-        new Coordinate(34.9001, 29.7100), new Coordinate(34.9100, 29.7100),
-        new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)}
-    );
+    final Polygon small = factory.createPolygon(new Coordinate[] {
+        new Coordinate(34.9001, 29.7001), new Coordinate(34.9001, 29.7100),
+        new Coordinate(34.9100, 29.7100), new Coordinate(34.9100, 29.7001),
+        new Coordinate(34.9001, 29.7001) });
 
-    // client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geometry", small))); // setting data
+    // client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geometry",
+    // small))); // setting data
     // client.hset("small", "geometry", small.toString()); // simplified setting data
     client.hsetObject("small", "geometry", small); // more simplified setting data
 
-    final Polygon large = factory.createPolygon(
-        new Coordinate[]{new Coordinate(34.9001, 29.7001),
-        new Coordinate(34.9001, 29.7200), new Coordinate(34.9200, 29.7200),
-        new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)}
-    );
+    final Polygon large = factory.createPolygon(new Coordinate[] {
+        new Coordinate(34.9001, 29.7001), new Coordinate(34.9001, 29.7200),
+        new Coordinate(34.9200, 29.7200), new Coordinate(34.9200, 29.7001),
+        new Coordinate(34.9001, 29.7001) });
 
-    // client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geometry", large))); // setting data
+    // client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geometry",
+    // large))); // setting data
     // client.hset("large", "geometry", large.toString()); // simplified setting data
     client.hsetObject("large", "geometry", large); // more simplified setting data
 
     // searching
-    final Polygon within = factory.createPolygon(
-        new Coordinate[]{new Coordinate(34.9000, 29.7000),
-        new Coordinate(34.9000, 29.7150), new Coordinate(34.9150, 29.7150),
-        new Coordinate(34.9150, 29.7000), new Coordinate(34.9000, 29.7000)}
-    );
+    final Polygon within = factory.createPolygon(new Coordinate[] {
+        new Coordinate(34.9000, 29.7000), new Coordinate(34.9000, 29.7150),
+        new Coordinate(34.9150, 29.7150), new Coordinate(34.9150, 29.7000),
+        new Coordinate(34.9000, 29.7000) });
 
-    SearchResult res = client.ftSearch("geometry-index",
-        "@geometry:[within $poly]",     // query string
-        FTSearchParams.searchParams()
-            .addParam("poly", within)
-            .dialect(3)                 // DIALECT '3' is required for this query
-    ); 
+    SearchResult res = client.ftSearch("geometry-index", "@geometry:[within $poly]", // query string
+      FTSearchParams.searchParams().addParam("poly", within).dialect(3) // DIALECT '3' is required
+                                                                        // for this query
+        );
     Assert.assertEquals(1, res.getTotalResults());
     Assert.assertEquals(1, res.getDocuments().size());
 

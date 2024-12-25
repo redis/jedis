@@ -20,7 +20,8 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
     itemIncrements.put("item1", 1L);
     itemIncrements.put("item2", 2L);
 
-    when(commandObjects.cmsIncrBy("myCountMinSketch", itemIncrements)).thenReturn(listLongCommandObject);
+    when(commandObjects.cmsIncrBy("myCountMinSketch", itemIncrements)).thenReturn(
+      listLongCommandObject);
 
     Response<List<Long>> response = pipeliningBase.cmsIncrBy("myCountMinSketch", itemIncrements);
 
@@ -40,7 +41,8 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
 
   @Test
   public void testCmsInitByDim() {
-    when(commandObjects.cmsInitByDim("myCountMinSketch", 1000L, 5L)).thenReturn(stringCommandObject);
+    when(commandObjects.cmsInitByDim("myCountMinSketch", 1000L, 5L))
+        .thenReturn(stringCommandObject);
 
     Response<String> response = pipeliningBase.cmsInitByDim("myCountMinSketch", 1000L, 5L);
 
@@ -53,9 +55,11 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
     double error = 0.01;
     double probability = 0.99;
 
-    when(commandObjects.cmsInitByProb("myCountMinSketch", error, probability)).thenReturn(stringCommandObject);
+    when(commandObjects.cmsInitByProb("myCountMinSketch", error, probability)).thenReturn(
+      stringCommandObject);
 
-    Response<String> response = pipeliningBase.cmsInitByProb("myCountMinSketch", error, probability);
+    Response<String> response = pipeliningBase
+        .cmsInitByProb("myCountMinSketch", error, probability);
 
     assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -63,7 +67,8 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
 
   @Test
   public void testCmsMerge() {
-    when(commandObjects.cmsMerge("mergedCountMinSketch", "cms1", "cms2")).thenReturn(stringCommandObject);
+    when(commandObjects.cmsMerge("mergedCountMinSketch", "cms1", "cms2")).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.cmsMerge("mergedCountMinSketch", "cms1", "cms2");
 
@@ -77,7 +82,8 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
     keysAndWeights.put("cms1", 1L);
     keysAndWeights.put("cms2", 2L);
 
-    when(commandObjects.cmsMerge("mergedCountMinSketch", keysAndWeights)).thenReturn(stringCommandObject);
+    when(commandObjects.cmsMerge("mergedCountMinSketch", keysAndWeights)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.cmsMerge("mergedCountMinSketch", keysAndWeights);
 
@@ -87,7 +93,8 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
 
   @Test
   public void testCmsQuery() {
-    when(commandObjects.cmsQuery("myCountMinSketch", "item1", "item2")).thenReturn(listLongCommandObject);
+    when(commandObjects.cmsQuery("myCountMinSketch", "item1", "item2")).thenReturn(
+      listLongCommandObject);
 
     Response<List<Long>> response = pipeliningBase.cmsQuery("myCountMinSketch", "item1", "item2");
 

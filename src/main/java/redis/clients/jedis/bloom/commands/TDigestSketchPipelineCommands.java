@@ -15,7 +15,8 @@ public interface TDigestSketchPipelineCommands {
 
   Response<String> tdigestMerge(String destinationKey, String... sourceKeys);
 
-  Response<String> tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys);
+  Response<String> tdigestMerge(TDigestMergeParams mergeParams, String destinationKey,
+      String... sourceKeys);
 
   Response<Map<String, Object>> tdigestInfo(String key);
 

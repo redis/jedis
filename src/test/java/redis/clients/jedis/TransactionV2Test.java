@@ -32,11 +32,11 @@ public class TransactionV2Test {
 
   @Before
   public void setUp() throws Exception {
-    conn = new Connection(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+    conn = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .timeoutMillis(500).build());
 
-    nj = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+    nj = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().timeoutMillis(500)
+        .build());
 
     nj.flushAll();
   }
@@ -355,7 +355,7 @@ public class TransactionV2Test {
 
     t = new Transaction(conn);
     Response<List<byte[]>> brange2 = t.zrevrangeByScore(bfoo, SafeEncoder.encode("+inf"),
-        SafeEncoder.encode("(2"));
+      SafeEncoder.encode("(2"));
     t.exec();
 
     bexpected = new ArrayList<byte[]>();

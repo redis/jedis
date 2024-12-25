@@ -37,8 +37,8 @@ public class SearchResult {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{Total results:" + totalResults
-        + ", Documents:" + documents + "}";
+    return getClass().getSimpleName() + "{Total results:" + totalResults + ", Documents:"
+        + documents + "}";
   }
 
   public static class SearchResultBuilder extends Builder<SearchResult> {
@@ -94,10 +94,10 @@ public class SearchResult {
     }
   }
 
-  /// RESP3 -->
+  // / RESP3 -->
   // TODO: final
-  public static Builder<SearchResult> SEARCH_RESULT_BUILDER
-      = new PerFieldDecoderSearchResultBuilder(Document.SEARCH_DOCUMENT);
+  public static Builder<SearchResult> SEARCH_RESULT_BUILDER = new PerFieldDecoderSearchResultBuilder(
+      Document.SEARCH_DOCUMENT);
 
   @Internal
   public static final class PerFieldDecoderSearchResultBuilder extends Builder<SearchResult> {
@@ -136,5 +136,5 @@ public class SearchResult {
       return new SearchResult(totalResults, results);
     }
   };
-  /// <-- RESP3
+  // / <-- RESP3
 }

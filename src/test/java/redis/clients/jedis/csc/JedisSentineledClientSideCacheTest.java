@@ -17,11 +17,14 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
   protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 
-  private static final Set<HostAndPort> sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
+  private static final Set<HostAndPort> sentinels = new HashSet<>(Arrays.asList(sentinel1,
+    sentinel2));
 
-  private static final JedisClientConfig masterClientConfig = DefaultJedisClientConfig.builder().resp3().password("foobared").build();
+  private static final JedisClientConfig masterClientConfig = DefaultJedisClientConfig.builder()
+      .resp3().password("foobared").build();
 
-  private static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder().resp3().build();
+  private static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder()
+      .resp3().build();
 
   @Override
   protected JedisSentineled createRegularJedis() {
@@ -30,7 +33,8 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
 
   @Override
   protected JedisSentineled createCachedJedis(CacheConfig cacheConfig) {
-    return new JedisSentineled(MASTER_NAME, masterClientConfig, cacheConfig, sentinels, sentinelClientConfig);
+    return new JedisSentineled(MASTER_NAME, masterClientConfig, cacheConfig, sentinels,
+        sentinelClientConfig);
   }
 
 }

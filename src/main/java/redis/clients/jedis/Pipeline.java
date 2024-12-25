@@ -18,7 +18,8 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
   private final boolean closeConnection;
-  //private final CommandObjects commandObjects;
+
+  // private final CommandObjects commandObjects;
 
   public Pipeline(Jedis jedis) {
     this(jedis.getConnection(), false);
@@ -119,23 +120,26 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
   }
 
   public Response<List<String>> time() {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.TIME), BuilderFactory.STRING_LIST));
+    return appendCommand(new CommandObject<>(
+        commandObjects.commandArguments(Protocol.Command.TIME), BuilderFactory.STRING_LIST));
   }
 
   @Override
   public Response<String> select(final int index) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SELECT).add(index), BuilderFactory.STRING));
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(
+      Protocol.Command.SELECT).add(index), BuilderFactory.STRING));
   }
 
   @Override
   public Response<Long> dbSize() {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.DBSIZE), BuilderFactory.LONG));
+    return appendCommand(new CommandObject<>(
+        commandObjects.commandArguments(Protocol.Command.DBSIZE), BuilderFactory.LONG));
   }
 
   @Override
   public Response<String> swapDB(final int index1, final int index2) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SWAPDB)
-        .add(index1).add(index2), BuilderFactory.STRING));
+    return appendCommand(new CommandObject<>(commandObjects
+        .commandArguments(Protocol.Command.SWAPDB).add(index1).add(index2), BuilderFactory.STRING));
   }
 
   @Override
@@ -171,12 +175,14 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
   }
 
   @Override
-  public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys) {
+  public Response<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, byte[]... keys) {
     return appendCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override
-  public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys) {
+  public Response<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, String... keys) {
     return appendCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 }

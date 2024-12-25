@@ -21,11 +21,12 @@ public class TopKTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public TopKTest(RedisProtocol protocol) {
     super(protocol);

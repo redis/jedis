@@ -6,11 +6,8 @@ import redis.clients.jedis.json.commands.RedisJsonPipelineCommands;
 import redis.clients.jedis.search.RediSearchPipelineCommands;
 import redis.clients.jedis.timeseries.RedisTimeSeriesPipelineCommands;
 
-public interface RedisModulePipelineCommands extends
-    RediSearchPipelineCommands,
-    RedisJsonPipelineCommands,
-    RedisTimeSeriesPipelineCommands,
-    RedisBloomPipelineCommands,
+public interface RedisModulePipelineCommands extends RediSearchPipelineCommands,
+    RedisJsonPipelineCommands, RedisTimeSeriesPipelineCommands, RedisBloomPipelineCommands,
     RedisGraphPipelineCommands {
 
 }

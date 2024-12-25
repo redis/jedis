@@ -43,7 +43,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     String foo = "foo";
 
     jedis.set(foo, String.valueOf(0));
-    //  string "0" with bits: 0011 0000
+    // string "0" with bits: 0011 0000
 
     jedis.setbit(foo, 3, true);
     jedis.setbit(foo, 7, true);
@@ -51,8 +51,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     jedis.setbit(foo, 39, true);
 
     /*
-     * bit:  00110001 / 00000100 / 00000000 / 00000000 / 00000001
-     * byte: 0          1          2          3          4
+     * bit: 00110001 / 00000100 / 00000000 / 00000000 / 00000001 byte: 0 1 2 3 4
      */
     long offset = jedis.bitpos(foo, true);
     assertEquals(2, offset);
@@ -87,8 +86,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     jedis.setbit(bfoo, 39, true);
 
     /*
-     * bit:  00110001 / 00000100 / 00000000 / 00000000 / 00000001
-     * byte: 0          1          2          3          4
+     * bit: 00110001 / 00000100 / 00000000 / 00000000 / 00000001 byte: 0 1 2 3 4
      */
     long offset = jedis.bitpos(bfoo, true);
     assertEquals(2, offset);
@@ -119,8 +117,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     }
 
     /*
-     * bit:  11111111
-     * byte: 0
+     * bit: 11111111 byte: 0
      */
     long offset = jedis.bitpos(foo, false);
     // offset should be last index + 1
@@ -137,8 +134,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     }
 
     /*
-     * bit:  11111111 / 11111111 / 11111111 / 11111111 / 11111111
-     * byte: 0          1          2          3          4
+     * bit: 11111111 / 11111111 / 11111111 / 11111111 / 11111111 byte: 0 1 2 3 4
      */
     long offset = jedis.bitpos(foo, false, new BitPosParams(2, 3));
     // offset should be -1
@@ -153,10 +149,14 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, jedis.bitpos("mykey", true, BitPosParams.bitPosParams()));
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2)));
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)));
-    assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)
-        .modifier(BitCountOption.BYTE)));
-    assertEquals(9, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(7).end(15)
-        .modifier(BitCountOption.BIT)));
+    assertEquals(
+      18,
+      jedis.bitpos("mykey", true,
+        BitPosParams.bitPosParams().start(2).end(-1).modifier(BitCountOption.BYTE)));
+    assertEquals(
+      9,
+      jedis.bitpos("mykey", true,
+        BitPosParams.bitPosParams().start(7).end(15).modifier(BitCountOption.BIT)));
   }
 
   @Test
@@ -220,25 +220,25 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void bitOpBinary() {
-    byte[] dest = {0x0};
-    byte[] key1 = {0x1};
-    byte[] key2 = {0x2};
+    byte[] dest = { 0x0 };
+    byte[] key1 = { 0x1 };
+    byte[] key2 = { 0x2 };
 
-    jedis.set(key1, new byte[]{0x6});
-    jedis.set(key2, new byte[]{0x3});
+    jedis.set(key1, new byte[] { 0x6 });
+    jedis.set(key2, new byte[] { 0x3 });
 
     jedis.bitop(BitOP.AND, dest, key1, key2);
-    assertArrayEquals(new byte[]{0x2}, jedis.get(dest));
+    assertArrayEquals(new byte[] { 0x2 }, jedis.get(dest));
 
     jedis.bitop(BitOP.OR, dest, key1, key2);
-    assertArrayEquals(new byte[]{0x7}, jedis.get(dest));
+    assertArrayEquals(new byte[] { 0x7 }, jedis.get(dest));
 
     jedis.bitop(BitOP.XOR, dest, key1, key2);
-    assertArrayEquals(new byte[]{0x5}, jedis.get(dest));
+    assertArrayEquals(new byte[] { 0x5 }, jedis.get(dest));
 
     jedis.setbit(key1, 0, true);
     jedis.bitop(BitOP.NOT, dest, key1);
-    assertArrayEquals(new byte[]{0x79}, jedis.get(dest));
+    assertArrayEquals(new byte[] { 0x79 }, jedis.get(dest));
   }
 
   @Test(expected = JedisDataException.class)

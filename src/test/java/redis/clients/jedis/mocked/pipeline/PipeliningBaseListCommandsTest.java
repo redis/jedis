@@ -22,7 +22,8 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     ListDirection to = ListDirection.RIGHT;
     double timeout = 1.0;
 
-    when(commandObjects.blmove("srcKey", "dstKey", from, to, timeout)).thenReturn(stringCommandObject);
+    when(commandObjects.blmove("srcKey", "dstKey", from, to, timeout)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.blmove("srcKey", "dstKey", from, to, timeout);
 
@@ -51,9 +52,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     double timeout = 1.0;
     ListDirection direction = ListDirection.LEFT;
 
-    when(commandObjects.blmpop(timeout, direction, "key1", "key2")).thenReturn(keyValueStringListStringCommandObject);
+    when(commandObjects.blmpop(timeout, direction, "key1", "key2")).thenReturn(
+      keyValueStringListStringCommandObject);
 
-    Response<KeyValue<String, List<String>>> response = pipeliningBase.blmpop(timeout, direction, "key1", "key2");
+    Response<KeyValue<String, List<String>>> response = pipeliningBase.blmpop(timeout, direction,
+      "key1", "key2");
 
     assertThat(commands, contains(keyValueStringListStringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -66,9 +69,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     byte[] key1 = "key1".getBytes();
     byte[] key2 = "key2".getBytes();
 
-    when(commandObjects.blmpop(timeout, direction, key1, key2)).thenReturn(keyValueBytesListBytesCommandObject);
+    when(commandObjects.blmpop(timeout, direction, key1, key2)).thenReturn(
+      keyValueBytesListBytesCommandObject);
 
-    Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.blmpop(timeout, direction, key1, key2);
+    Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.blmpop(timeout, direction,
+      key1, key2);
 
     assertThat(commands, contains(keyValueBytesListBytesCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -80,9 +85,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     ListDirection direction = ListDirection.LEFT;
     int count = 2;
 
-    when(commandObjects.blmpop(timeout, direction, count, "key1", "key2")).thenReturn(keyValueStringListStringCommandObject);
+    when(commandObjects.blmpop(timeout, direction, count, "key1", "key2")).thenReturn(
+      keyValueStringListStringCommandObject);
 
-    Response<KeyValue<String, List<String>>> response = pipeliningBase.blmpop(timeout, direction, count, "key1", "key2");
+    Response<KeyValue<String, List<String>>> response = pipeliningBase.blmpop(timeout, direction,
+      count, "key1", "key2");
 
     assertThat(commands, contains(keyValueStringListStringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -96,9 +103,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     byte[] key1 = "key1".getBytes();
     byte[] key2 = "key2".getBytes();
 
-    when(commandObjects.blmpop(timeout, direction, count, key1, key2)).thenReturn(keyValueBytesListBytesCommandObject);
+    when(commandObjects.blmpop(timeout, direction, count, key1, key2)).thenReturn(
+      keyValueBytesListBytesCommandObject);
 
-    Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.blmpop(timeout, direction, count, key1, key2);
+    Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.blmpop(timeout, direction,
+      count, key1, key2);
 
     assertThat(commands, contains(keyValueBytesListBytesCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -368,9 +377,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
   public void testLmpop() {
     ListDirection direction = ListDirection.LEFT;
 
-    when(commandObjects.lmpop(direction, "key1", "key2")).thenReturn(keyValueStringListStringCommandObject);
+    when(commandObjects.lmpop(direction, "key1", "key2")).thenReturn(
+      keyValueStringListStringCommandObject);
 
-    Response<KeyValue<String, List<String>>> response = pipeliningBase.lmpop(direction, "key1", "key2");
+    Response<KeyValue<String, List<String>>> response = pipeliningBase.lmpop(direction, "key1",
+      "key2");
 
     assertThat(commands, contains(keyValueStringListStringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -382,7 +393,8 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     byte[] key1 = "key1".getBytes();
     byte[] key2 = "key2".getBytes();
 
-    when(commandObjects.lmpop(direction, key1, key2)).thenReturn(keyValueBytesListBytesCommandObject);
+    when(commandObjects.lmpop(direction, key1, key2)).thenReturn(
+      keyValueBytesListBytesCommandObject);
 
     Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.lmpop(direction, key1, key2);
 
@@ -395,9 +407,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     ListDirection direction = ListDirection.LEFT;
     int count = 2;
 
-    when(commandObjects.lmpop(direction, count, "key1", "key2")).thenReturn(keyValueStringListStringCommandObject);
+    when(commandObjects.lmpop(direction, count, "key1", "key2")).thenReturn(
+      keyValueStringListStringCommandObject);
 
-    Response<KeyValue<String, List<String>>> response = pipeliningBase.lmpop(direction, count, "key1", "key2");
+    Response<KeyValue<String, List<String>>> response = pipeliningBase.lmpop(direction, count,
+      "key1", "key2");
 
     assertThat(commands, contains(keyValueStringListStringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -410,9 +424,11 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     byte[] key1 = "key1".getBytes();
     byte[] key2 = "key2".getBytes();
 
-    when(commandObjects.lmpop(direction, count, key1, key2)).thenReturn(keyValueBytesListBytesCommandObject);
+    when(commandObjects.lmpop(direction, count, key1, key2)).thenReturn(
+      keyValueBytesListBytesCommandObject);
 
-    Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.lmpop(direction, count, key1, key2);
+    Response<KeyValue<byte[], List<byte[]>>> response = pipeliningBase.lmpop(direction, count,
+      key1, key2);
 
     assertThat(commands, contains(keyValueBytesListBytesCommandObject));
     assertThat(response, is(predefinedResponse));

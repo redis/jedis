@@ -195,7 +195,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisMockedTest
   public void testCfLoadChunk() {
     String key = "testCuckooFilter";
     long iterator = 1L;
-    byte[] data = new byte[]{ 1, 2, 3 };
+    byte[] data = new byte[] { 1, 2, 3 };
     String expectedResponse = "OK";
 
     when(commandObjects.cfLoadChunk(key, iterator, data)).thenReturn(stringCommandObject);
@@ -265,7 +265,8 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisMockedTest
   public void testCfScanDump() {
     String key = "testCuckooFilter";
     long iterator = 0L;
-    Map.Entry<Long, byte[]> expectedResponse = new AbstractMap.SimpleEntry<>(1L, new byte[]{ 1, 2, 3 });
+    Map.Entry<Long, byte[]> expectedResponse = new AbstractMap.SimpleEntry<>(1L, new byte[] { 1, 2,
+        3 });
 
     when(commandObjects.cfScanDump(key, iterator)).thenReturn(entryLongBytesCommandObject);
     when(commandExecutor.executeCommand(entryLongBytesCommandObject)).thenReturn(expectedResponse);

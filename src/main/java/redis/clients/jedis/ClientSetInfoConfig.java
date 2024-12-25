@@ -19,7 +19,8 @@ public final class ClientSetInfoConfig {
   }
 
   /**
-   * @param libNameSuffix must not have braces ({@code ()[]{}}) and spaces will be replaced with hyphens
+   * @param libNameSuffix must not have braces ({@code ()[] ) and spaces will be replaced with
+   *          hyphens
    */
   public ClientSetInfoConfig(String libNameSuffix) {
     this(false, libNameSuffix);
@@ -30,7 +31,8 @@ public final class ClientSetInfoConfig {
     this.libNameSuffix = validateLibNameSuffix(libNameSuffix);
   }
 
-  private static final HashSet<Character> BRACES = new HashSet<>(Arrays.asList('(', ')', '[', ']', '{', '}'));
+  private static final HashSet<Character> BRACES = new HashSet<>(Arrays.asList('(', ')', '[', ']',
+    '{', '}'));
 
   private static String validateLibNameSuffix(String suffix) {
     if (suffix == null || suffix.trim().isEmpty()) {
@@ -61,7 +63,7 @@ public final class ClientSetInfoConfig {
   public static final ClientSetInfoConfig DISABLED = new ClientSetInfoConfig(true);
 
   /**
-   * @param suffix must not have braces ({@code ()[]{}}) and spaces will be replaced with hyphens
+   * @param suffix must not have braces ({@code ()[] ) and spaces will be replaced with hyphens
    * @return config
    */
   public static ClientSetInfoConfig withLibNameSuffix(String suffix) {

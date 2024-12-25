@@ -3,9 +3,7 @@ package redis.clients.jedis.search.querybuilder;
 import redis.clients.jedis.search.Query;
 
 /**
- * Created by mnunberg on 2/23/18.
- *
- * Base node interface
+ * Created by mnunberg on 2/23/18. Base node interface
  */
 public interface Node {
 
@@ -33,7 +31,6 @@ public interface Node {
 
   /**
    * Returns the string form of this node.
-   *
    * @param mode Whether the string should be encapsulated in parentheses {@code (...)}
    * @return The string query.
    */
@@ -42,7 +39,6 @@ public interface Node {
   /**
    * Returns the string form of this node. This may be passed to
    * {@link redis.clients.jedis.UnifiedJedis#ftSearch(String, Query)}
-   *
    * @return The query string.
    */
   @Override

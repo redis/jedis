@@ -4,9 +4,8 @@ import java.util.List;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 
 /**
- * Created by mnunberg on 2/22/18.
- *
- * This class is normally received via one of the subclasses or via Reducers
+ * Created by mnunberg on 2/22/18. This class is normally received via one of the subclasses or via
+ * Reducers
  */
 public abstract class Reducer {
 

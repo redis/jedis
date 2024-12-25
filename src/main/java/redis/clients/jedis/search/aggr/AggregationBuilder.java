@@ -83,10 +83,9 @@ public class AggregationBuilder implements IParams {
   }
 
   /**
-   * {@link AggregationBuilder#sortBy(redis.clients.jedis.search.aggr.SortedField...)}
-   * (or {@link AggregationBuilder#sortByAsc(java.lang.String)}
-   * or {@link AggregationBuilder#sortByDesc(java.lang.String)})
-   * MUST BE called JUST BEFORE this.
+   * {@link AggregationBuilder#sortBy(redis.clients.jedis.search.aggr.SortedField...)} (or
+   * {@link AggregationBuilder#sortByAsc(java.lang.String)} or
+   * {@link AggregationBuilder#sortByDesc(java.lang.String)}) MUST BE called JUST BEFORE this.
    * @param max limit
    * @return this
    */

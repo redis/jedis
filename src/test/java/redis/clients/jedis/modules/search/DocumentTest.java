@@ -40,8 +40,8 @@ public class DocumentTest {
     assertEquals(score, read.getScore(), 0d);
 
     // use english language to make sure the decimal separator is the same as the toString
-    String exp = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
-        id, score, "[string=c, float=12.0]");
+    String exp = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s", id, score,
+      "[string=c, float=12.0]");
     assertEquals(exp, read.toString());
     assertEquals("c", read.getString("string"));
     assertEquals(Double.valueOf(12d), read.get("float"));
@@ -57,8 +57,8 @@ public class DocumentTest {
     Document document = new Document(id, map, score);
 
     // use english language to make sure the decimal separator is the same as the toString
-    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
-        id, score, "[string=c, float=12.0]");
+    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s", id, score,
+      "[string=c, float=12.0]");
     assertEquals(expected, document.toString());
   }
 }

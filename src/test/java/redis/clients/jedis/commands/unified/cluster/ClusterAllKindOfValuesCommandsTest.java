@@ -231,7 +231,6 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     int page2Count = scanResult.getResult().size();
     assertEquals(4, page1Count + page2Count);
 
-
     scanResult = jedis.scan(SCAN_POINTER_START, noCount, "hash");
     assertEquals(Collections.singletonList("{+}b"), scanResult.getResult());
     scanResult = jedis.scan(SCAN_POINTER_START, noCount, "set");

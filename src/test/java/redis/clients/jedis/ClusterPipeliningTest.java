@@ -46,8 +46,8 @@ public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";
 
-  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
-      = DefaultJedisClientConfig.builder().password("cluster").build();
+  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG = DefaultJedisClientConfig
+      .builder().password("cluster").build();
 
   private static Jedis node1;
   private static Jedis node2;
@@ -144,7 +144,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void constructorPoolConfig() {
-    try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG, new ConnectionPoolConfig())) {
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG,
+        new ConnectionPoolConfig())) {
       Response<String> r1 = pipe.set("key1", "value1");
       Response<String> r2 = pipe.set("key2", "value2");
       Response<String> r3 = pipe.set("key3", "value3");
@@ -164,8 +165,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void constructorConnectionProvider() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-        ClusterPipeline pipeline = new ClusterPipeline(provider)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG); ClusterPipeline pipeline = new ClusterPipeline(provider)) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
       Response<String> r2 = pipeline.set("key2", "value2");
@@ -243,7 +244,8 @@ public class ClusterPipeliningTest {
       Response<String> r2 = pipeline.set("key2", "value2");
       Response<String> r3 = pipeline.set("key3", "value3");
 
-      for (int i = 0; i < 100; i++) pipeline.sync();
+      for (int i = 0; i < 100; i++)
+        pipeline.sync();
 
       assertEquals("OK", r1.get());
       assertEquals("OK", r2.get());
@@ -253,7 +255,8 @@ public class ClusterPipeliningTest {
       Response<String> r5 = pipeline.get("key2");
       Response<String> r6 = pipeline.get("key3");
 
-      for (int i = 0; i < 100; i++) pipeline.sync();
+      for (int i = 0; i < 100; i++)
+        pipeline.sync();
 
       assertEquals("value1", r4.get());
       assertEquals("value2", r5.get());
@@ -270,11 +273,12 @@ public class ClusterPipeliningTest {
       jc.zadd("zset", 1, "foo");
       jc.sadd("set", "foo");
       jc.setrange("setrange", 0, "0123456789");
-      byte[] bytesForSetRange = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+      byte[] bytesForSetRange = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
       jc.setrange("setrangebytes".getBytes(), 0, bytesForSetRange);
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
 
       Response<String> string = p.get("string");
@@ -308,7 +312,7 @@ public class ClusterPipeliningTest {
       assertEquals(1, smembers.get().size());
       assertEquals(1, zrangeWithScores.get().size());
       assertEquals("123", getrange.get());
-      byte[] expectedGetRangeBytes = {6, 7, 8};
+      byte[] expectedGetRangeBytes = { 6, 7, 8 };
       assertArrayEquals(expectedGetRangeBytes, getrangeBytes.get());
     }
   }
@@ -320,11 +324,13 @@ public class ClusterPipeliningTest {
       jc.hset("key".getBytes(), "f22".getBytes(), "v2222".getBytes());
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<Map<byte[], byte[]>> fmap = p.hgetAll("key".getBytes());
       Response<Set<byte[]>> fkeys = p.hkeys("key".getBytes());
-      Response<List<byte[]>> fordered = p.hmget("key".getBytes(), "f22".getBytes(), "f1".getBytes());
+      Response<List<byte[]>> fordered = p
+          .hmget("key".getBytes(), "f22".getBytes(), "f1".getBytes());
       Response<List<byte[]>> fvals = p.hvals("key".getBytes());
       p.sync();
 
@@ -371,7 +377,8 @@ public class ClusterPipeliningTest {
 
   @Test(expected = IllegalStateException.class)
   public void pipelineResponseWithinPipeline() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<String> string = p.get("string");
       string.get();
@@ -381,7 +388,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineWithPubSub() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline pipelined = new ClusterPipeline(provider);
       Response<Long> p1 = pipelined.publish("foo", "bar");
       Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
@@ -393,7 +401,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void canRetrieveUnsetKey() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<String> shouldNotExist = p.get(UUID.randomUUID().toString());
       p.sync();
@@ -403,7 +412,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void piplineWithError() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       p.set("foo", "bar");
       Response<Set<String>> error = p.smembers("foo");
@@ -481,8 +491,11 @@ public class ClusterPipeliningTest {
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
 
-    Response<Long> r1 = p.lpush("my{list}", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
-    Response<Long> r2 = p.rpush("my{newlist}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
+    Response<Long> r1 = p.lpush("my{list}", "hello", "hello", "foo", "foo"); // ["foo", "foo",
+                                                                             // "hello", "hello"]
+    Response<Long> r2 = p.rpush("my{newlist}", "hello", "hello", "foo", "foo"); // ["hello",
+                                                                                // "hello", "foo",
+                                                                                // "foo"]
     Response<Long> r3 = p.lpos("my{list}", "foo");
     Response<Long> r4 = p.lpos("my{list}", "foo", new LPosParams().maxlen(1));
     Response<List<Long>> r5 = p.lpos("my{list}", "foo", new LPosParams().maxlen(1), 2);
@@ -495,11 +508,13 @@ public class ClusterPipeliningTest {
     Response<String> r12 = p.rpop("my{newlist}"); // ["hello", "hello", "foo"]
     Response<List<String>> r13 = p.lpop("my{list}", 1); // ["foobar"]
     Response<List<String>> r14 = p.rpop("my{newlist}", 2); // ["hello"]
-    Response<Long> r15 = p.linsert("my{newlist}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
+    Response<Long> r15 = p.linsert("my{newlist}", ListPosition.AFTER, "hello", "world"); // ["hello",
+                                                                                         // "world"]
     Response<Long> r16 = p.lpushx("myother{newlist}", "foo", "bar");
     Response<Long> r17 = p.rpushx("myother{newlist}", "foo", "bar");
     Response<String> r18 = p.rpoplpush("my{newlist}", "myother{newlist}");
-    Response<String> r19 = p.lmove("my{newlist}", "myother{newlist}", ListDirection.LEFT, ListDirection.RIGHT);
+    Response<String> r19 = p.lmove("my{newlist}", "myother{newlist}", ListDirection.LEFT,
+      ListDirection.RIGHT);
 
     p.sync();
     assertEquals(Long.valueOf(4), r1.get());
@@ -561,7 +576,7 @@ public class ClusterPipeliningTest {
     Response<Long> r15 = p.scard("my{set}");
     Response<String> r16 = p.srandmember("my{set}");
     Response<List<String>> r17 = p.srandmember("my{set}", 2);
-//    Response<Long> r18 = p.smove("my{set}", "mynew{set}", "hello");
+    // Response<Long> r18 = p.smove("my{set}", "mynew{set}", "hello");
 
     p.sync();
     assertEquals(Long.valueOf(4), r1.get());
@@ -582,7 +597,7 @@ public class ClusterPipeliningTest {
     assertEquals(Long.valueOf(2), r15.get());
     assertTrue(union.contains(r16.get()));
     assertTrue(union.containsAll(r17.get()));
-//    assertEquals(Long.valueOf(1), r18.get());
+    // assertEquals(Long.valueOf(1), r18.get());
   }
 
   @Test
@@ -739,16 +754,25 @@ public class ClusterPipeliningTest {
     Response<List<String>> r4 = p.geohash("barcelona", "place1", "place2", "place3");
     Response<List<GeoCoordinate>> r5 = p.geopos("barcelona", "place1", "place2");
     Response<List<GeoRadiusResponse>> r6 = p.georadius("barcelona", 2.191, 41.433, 1000, GeoUnit.M);
-    Response<List<GeoRadiusResponse>> r7 = p.georadiusReadonly("barcelona", 2.191, 41.433, 1000, GeoUnit.M);
-    Response<List<GeoRadiusResponse>> r8 = p.georadius("barcelona", 2.191, 41.433, 1, GeoUnit.KM, params);
-    Response<List<GeoRadiusResponse>> r9 = p.georadiusReadonly("barcelona", 2.191, 41.433, 1, GeoUnit.KM, params);
-    Response<Long> r10 = p.georadiusStore("barcelona{#}", 2.191, 41.433, 1000, GeoUnit.M, params2, storeParams);
+    Response<List<GeoRadiusResponse>> r7 = p.georadiusReadonly("barcelona", 2.191, 41.433, 1000,
+      GeoUnit.M);
+    Response<List<GeoRadiusResponse>> r8 = p.georadius("barcelona", 2.191, 41.433, 1, GeoUnit.KM,
+      params);
+    Response<List<GeoRadiusResponse>> r9 = p.georadiusReadonly("barcelona", 2.191, 41.433, 1,
+      GeoUnit.KM, params);
+    Response<Long> r10 = p.georadiusStore("barcelona{#}", 2.191, 41.433, 1000, GeoUnit.M, params2,
+      storeParams);
     Response<List<String>> r11 = p.zrange("radius{#}", 0, -1);
-    Response<List<GeoRadiusResponse>> r12 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM);
-    Response<List<GeoRadiusResponse>> r13 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM);
-    Response<List<GeoRadiusResponse>> r14 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM, params2);
-    Response<List<GeoRadiusResponse>> r15 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM, params2);
-    Response<Long> r16 = p.georadiusByMemberStore("barcelona{#}", "place1", 4, GeoUnit.KM, params2, storeParams);
+    Response<List<GeoRadiusResponse>> r12 = p.georadiusByMember("barcelona", "place1", 4,
+      GeoUnit.KM);
+    Response<List<GeoRadiusResponse>> r13 = p.georadiusByMemberReadonly("barcelona", "place1", 4,
+      GeoUnit.KM);
+    Response<List<GeoRadiusResponse>> r14 = p.georadiusByMember("barcelona", "place1", 4,
+      GeoUnit.KM, params2);
+    Response<List<GeoRadiusResponse>> r15 = p.georadiusByMemberReadonly("barcelona", "place1", 4,
+      GeoUnit.KM, params2);
+    Response<Long> r16 = p.georadiusByMemberStore("barcelona{#}", "place1", 4, GeoUnit.KM, params2,
+      storeParams);
     Response<List<String>> r17 = p.zrange("radius{#}", 0, -1);
 
     p.sync();
@@ -807,7 +831,8 @@ public class ClusterPipeliningTest {
     Response<Long> r5 = p.bitcount("my{otherkey}", 1, 1);
     Response<Long> r6 = p.bitpos("{mykey}", true);
     Response<Long> r7 = p.bitpos("{mykey}", false, new BitPosParams(1, 2));
-    Response<List<Long>> r8 = p.bitfield("mynew{key}", "INCRBY", "i5", "100", "1", "GET", "u4", "0");
+    Response<List<Long>> r8 = p
+        .bitfield("mynew{key}", "INCRBY", "i5", "100", "1", "GET", "u4", "0");
     Response<List<Long>> r9 = p.bitfieldReadonly("hello", "GET", "i8", "17");
     p.set("myother{mykey}", "abcdef");
     Response<Long> r10 = p.bitop(BitOP.AND, "dest{mykey}", "{mykey}", "myother{mykey}");
@@ -845,7 +870,9 @@ public class ClusterPipeliningTest {
     ClusterPipeline p = new ClusterPipeline(provider);
 
     Response<StreamEntryID> r1 = p.xadd("mystream", streamId1, hm);
-    Response<StreamEntryID> r2 = p.xadd("mystream", new XAddParams().id(new StreamEntryID("1638277959731-0")).maxLen(2).approximateTrimming(), hm);
+    Response<StreamEntryID> r2 = p
+        .xadd("mystream", new XAddParams().id(new StreamEntryID("1638277959731-0")).maxLen(2)
+            .approximateTrimming(), hm);
     Response<Long> r3 = p.xlen("mystream");
     Response<List<StreamEntry>> r4 = p.xrange("mystream", streamId1, streamId2);
     Response<List<StreamEntry>> r5 = p.xrange("mystream", streamId1, streamId2, 1);
@@ -859,12 +886,10 @@ public class ClusterPipeliningTest {
     assertEquals(streamId1, r1.get());
     assertEquals(streamId2, r2.get());
     assertEquals(Long.valueOf(2), r3.get());
-    assertTrue(r4.get().size() == 2
-        && r4.get().get(0).getID().compareTo(streamId1) == 0
+    assertTrue(r4.get().size() == 2 && r4.get().get(0).getID().compareTo(streamId1) == 0
         && r4.get().get(1).getID().compareTo(streamId2) == 0);
     assertTrue(r5.get().size() == 1 && r5.get().get(0).getID().compareTo(streamId1) == 0);
-    assertTrue(r6.get().size() == 2
-        && r6.get().get(1).getID().compareTo(streamId1) == 0
+    assertTrue(r6.get().size() == 2 && r6.get().get(1).getID().compareTo(streamId1) == 0
         && r6.get().get(0).getID().compareTo(streamId2) == 0);
     assertTrue(r7.get().size() == 1 && r7.get().get(0).getID().compareTo(streamId2) == 0);
     assertEquals("OK", r8.get());
@@ -875,7 +900,8 @@ public class ClusterPipeliningTest {
   public void testEval() {
     String script = "return 'success!'";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<Object> result = p.eval(script);
       p.sync();
@@ -888,7 +914,8 @@ public class ClusterPipeliningTest {
   public void testEvalWithBinary() {
     String script = "return 'success!'";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<Object> result = p.eval(SafeEncoder.encode(script));
       p.sync();
@@ -903,7 +930,8 @@ public class ClusterPipeliningTest {
     String arg = "3";
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       p.set(key, "0");
       Response<Object> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
@@ -923,9 +951,11 @@ public class ClusterPipeliningTest {
     // binary
     byte[] bKey = SafeEncoder.encode("test");
     byte[] bArg = SafeEncoder.encode("3");
-    byte[] bScript = SafeEncoder.encode("redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])");
+    byte[] bScript = SafeEncoder
+        .encode("redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])");
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline bP = new ClusterPipeline(provider);
       bP.set(bKey, SafeEncoder.encode("0"));
       Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
@@ -944,7 +974,8 @@ public class ClusterPipeliningTest {
   public void testEvalNestedLists() {
     String script = "return { {KEYS[1]} , {2} }";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<Object> result = p.eval(script, 1, "key1");
       p.sync();
@@ -960,7 +991,8 @@ public class ClusterPipeliningTest {
     byte[] bScript = SafeEncoder.encode("return { {KEYS[1]} , {2} }");
     byte[] bKey = SafeEncoder.encode("key1");
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<Object> result = p.eval(bScript, 1, bKey);
       p.sync();
@@ -980,7 +1012,8 @@ public class ClusterPipeliningTest {
       assertTrue(jc.scriptExists(sha1, "sampleKey"));
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<Object> result = p.evalsha(sha1, 1, "sampleKey");
       p.sync();
@@ -1000,7 +1033,8 @@ public class ClusterPipeliningTest {
       assertTrue(jc.scriptExists(sha1, key));
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       p.set(key, "0");
       Response<Object> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
@@ -1027,7 +1061,8 @@ public class ClusterPipeliningTest {
       assertTrue(jc.scriptExists(bSha1, bKey));
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes,
+        DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       p.set(bKey, SafeEncoder.encode("0"));
       Response<Object> result0 = p.evalsha(bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
@@ -1099,7 +1134,8 @@ public class ClusterPipeliningTest {
     final int maxTotal = 100;
     var poolConfig = ConnectionPoolConfig.builder();
     poolConfig.maxPoolSize(maxTotal);
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig.build())) {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5,
+        poolConfig.build())) {
       for (int i = 0; i < maxTotal; i++) {
         assertThreadsCount();
         String s = Integer.toString(i);

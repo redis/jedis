@@ -33,7 +33,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXack() {
-    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"), new StreamEntryID("1526999352406-1") };
+    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"),
+        new StreamEntryID("1526999352406-1") };
 
     when(commandObjects.xack("key", "group", ids)).thenReturn(longCommandObject);
 
@@ -112,8 +113,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     when(commandObjects.xautoclaim("key", "group", "consumerName", 10000L, start, params))
         .thenReturn(entryStreamEntryIdListStreamEntryCommandObject);
 
-    Response<Map.Entry<StreamEntryID, List<StreamEntry>>> response = pipeliningBase
-        .xautoclaim("key", "group", "consumerName", 10000L, start, params);
+    Response<Map.Entry<StreamEntryID, List<StreamEntry>>> response = pipeliningBase.xautoclaim(
+      "key", "group", "consumerName", 10000L, start, params);
 
     assertThat(commands, contains(entryStreamEntryIdListStreamEntryCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -128,9 +129,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] start = "startId".getBytes();
     XAutoClaimParams params = new XAutoClaimParams();
 
-    when(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params)).thenReturn(listObjectCommandObject);
+    when(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params))
+        .thenReturn(listObjectCommandObject);
 
-    Response<List<Object>> response = pipeliningBase.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
+    Response<List<Object>> response = pipeliningBase.xautoclaim(key, groupName, consumerName,
+      minIdleTime, start, params);
 
     assertThat(commands, contains(listObjectCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -160,9 +163,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] start = "startId".getBytes();
     XAutoClaimParams params = new XAutoClaimParams();
 
-    when(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params)).thenReturn(listObjectCommandObject);
+    when(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params))
+        .thenReturn(listObjectCommandObject);
 
-    Response<List<Object>> response = pipeliningBase.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+    Response<List<Object>> response = pipeliningBase.xautoclaimJustId(key, groupName, consumerName,
+      minIdleTime, start, params);
 
     assertThat(commands, contains(listObjectCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -170,14 +175,15 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXclaim() {
-    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"), new StreamEntryID("1526999352406-1") };
+    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"),
+        new StreamEntryID("1526999352406-1") };
     XClaimParams params = new XClaimParams().idle(10000L);
 
-    when(commandObjects.xclaim("key", "group", "consumerName", 10000L, params, ids))
-        .thenReturn(listStreamEntryCommandObject);
+    when(commandObjects.xclaim("key", "group", "consumerName", 10000L, params, ids)).thenReturn(
+      listStreamEntryCommandObject);
 
-    Response<List<StreamEntry>> response = pipeliningBase
-        .xclaim("key", "group", "consumerName", 10000L, params, ids);
+    Response<List<StreamEntry>> response = pipeliningBase.xclaim("key", "group", "consumerName",
+      10000L, params, ids);
 
     assertThat(commands, contains(listStreamEntryCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -193,9 +199,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] id1 = "id1".getBytes();
     byte[] id2 = "id2".getBytes();
 
-    when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, id1, id2)).thenReturn(listBytesCommandObject);
+    when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, id1, id2))
+        .thenReturn(listBytesCommandObject);
 
-    Response<List<byte[]>> response = pipeliningBase.xclaim(key, group, consumerName, minIdleTime, params, id1, id2);
+    Response<List<byte[]>> response = pipeliningBase.xclaim(key, group, consumerName, minIdleTime,
+      params, id1, id2);
 
     assertThat(commands, contains(listBytesCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -203,14 +211,15 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXclaimJustId() {
-    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"), new StreamEntryID("1526999352406-1") };
+    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"),
+        new StreamEntryID("1526999352406-1") };
     XClaimParams params = new XClaimParams().idle(10000L);
 
     when(commandObjects.xclaimJustId("key", "group", "consumerName", 10000L, params, ids))
         .thenReturn(listStreamEntryIdCommandObject);
 
-    Response<List<StreamEntryID>> response = pipeliningBase
-        .xclaimJustId("key", "group", "consumerName", 10000L, params, ids);
+    Response<List<StreamEntryID>> response = pipeliningBase.xclaimJustId("key", "group",
+      "consumerName", 10000L, params, ids);
 
     assertThat(commands, contains(listStreamEntryIdCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -226,9 +235,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] id1 = "id1".getBytes();
     byte[] id2 = "id2".getBytes();
 
-    when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, id1, id2)).thenReturn(listBytesCommandObject);
+    when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, id1, id2))
+        .thenReturn(listBytesCommandObject);
 
-    Response<List<byte[]>> response = pipeliningBase.xclaimJustId(key, group, consumerName, minIdleTime, params, id1, id2);
+    Response<List<byte[]>> response = pipeliningBase.xclaimJustId(key, group, consumerName,
+      minIdleTime, params, id1, id2);
 
     assertThat(commands, contains(listBytesCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -236,7 +247,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXdel() {
-    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"), new StreamEntryID("1526999352406-1") };
+    StreamEntryID[] ids = { new StreamEntryID("1526999352406-0"),
+        new StreamEntryID("1526999352406-1") };
 
     when(commandObjects.xdel("key", ids)).thenReturn(longCommandObject);
 
@@ -279,7 +291,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] id = "id".getBytes();
     boolean makeStream = true;
 
-    when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(stringCommandObject);
+    when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.xgroupCreate(key, groupName, id, makeStream);
 
@@ -289,10 +302,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXgroupCreateConsumer() {
-    when(commandObjects.xgroupCreateConsumer("key", "groupName", "consumerName"))
-        .thenReturn(booleanCommandObject);
+    when(commandObjects.xgroupCreateConsumer("key", "groupName", "consumerName")).thenReturn(
+      booleanCommandObject);
 
-    Response<Boolean> response = pipeliningBase.xgroupCreateConsumer("key", "groupName", "consumerName");
+    Response<Boolean> response = pipeliningBase.xgroupCreateConsumer("key", "groupName",
+      "consumerName");
 
     assertThat(commands, contains(booleanCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -304,7 +318,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] groupName = "group".getBytes();
     byte[] consumerName = "consumer".getBytes();
 
-    when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(booleanCommandObject);
+    when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(
+      booleanCommandObject);
 
     Response<Boolean> response = pipeliningBase.xgroupCreateConsumer(key, groupName, consumerName);
 
@@ -314,8 +329,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXgroupDelConsumer() {
-    when(commandObjects.xgroupDelConsumer("key", "groupName", "consumerName"))
-        .thenReturn(longCommandObject);
+    when(commandObjects.xgroupDelConsumer("key", "groupName", "consumerName")).thenReturn(
+      longCommandObject);
 
     Response<Long> response = pipeliningBase.xgroupDelConsumer("key", "groupName", "consumerName");
 
@@ -329,7 +344,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] groupName = "group".getBytes();
     byte[] consumerName = "consumer".getBytes();
 
-    when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(longCommandObject);
+    when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(
+      longCommandObject);
 
     Response<Long> response = pipeliningBase.xgroupDelConsumer(key, groupName, consumerName);
 
@@ -388,7 +404,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXinfoConsumers() {
-    when(commandObjects.xinfoConsumers("key", "group")).thenReturn(listStreamConsumersInfoCommandObject);
+    when(commandObjects.xinfoConsumers("key", "group")).thenReturn(
+      listStreamConsumersInfoCommandObject);
 
     Response<List<StreamConsumersInfo>> response = pipeliningBase.xinfoConsumers("key", "group");
 
@@ -411,7 +428,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testXinfoConsumers2() {
-    when(commandObjects.xinfoConsumers2("key", "group")).thenReturn(listStreamConsumerInfoCommandObject);
+    when(commandObjects.xinfoConsumers2("key", "group")).thenReturn(
+      listStreamConsumerInfoCommandObject);
 
     Response<List<StreamConsumerInfo>> response = pipeliningBase.xinfoConsumers2("key", "group");
 
@@ -558,9 +576,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
   public void testXpendingWithParams() {
     XPendingParams params = new XPendingParams();
 
-    when(commandObjects.xpending("key", "groupName", params)).thenReturn(listStreamPendingEntryCommandObject);
+    when(commandObjects.xpending("key", "groupName", params)).thenReturn(
+      listStreamPendingEntryCommandObject);
 
-    Response<List<StreamPendingEntry>> response = pipeliningBase.xpending("key", "groupName", params);
+    Response<List<StreamPendingEntry>> response = pipeliningBase.xpending("key", "groupName",
+      params);
 
     assertThat(commands, contains(listStreamPendingEntryCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -671,9 +691,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     streams.put("key1", new StreamEntryID("0-0"));
     streams.put("key2", new StreamEntryID("0-0"));
 
-    when(commandObjects.xread(xReadParams, streams)).thenReturn(listEntryStringListStreamEntryCommandObject);
+    when(commandObjects.xread(xReadParams, streams)).thenReturn(
+      listEntryStringListStreamEntryCommandObject);
 
-    Response<List<Map.Entry<String, List<StreamEntry>>>> response = pipeliningBase.xread(xReadParams, streams);
+    Response<List<Map.Entry<String, List<StreamEntry>>>> response = pipeliningBase.xread(
+      xReadParams, streams);
 
     assertThat(commands, contains(listEntryStringListStreamEntryCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -682,7 +704,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
   @Test
   public void testXreadBinary() {
     XReadParams xReadParams = new XReadParams();
-    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleImmutableEntry<>("stream1".getBytes(), "id1".getBytes());
+    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleImmutableEntry<>(
+        "stream1".getBytes(), "id1".getBytes());
 
     when(commandObjects.xread(xReadParams, stream1)).thenReturn(listObjectCommandObject);
 
@@ -699,11 +722,11 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     Map<String, StreamEntryID> streams = new HashMap<>();
     streams.put("stream1", new StreamEntryID("0-0"));
 
-    when(commandObjects.xreadGroup("groupName", "consumer", xReadGroupParams, streams))
-        .thenReturn(listEntryStringListStreamEntryCommandObject);
+    when(commandObjects.xreadGroup("groupName", "consumer", xReadGroupParams, streams)).thenReturn(
+      listEntryStringListStreamEntryCommandObject);
 
-    Response<List<Map.Entry<String, List<StreamEntry>>>> response = pipeliningBase
-        .xreadGroup("groupName", "consumer", xReadGroupParams, streams);
+    Response<List<Map.Entry<String, List<StreamEntry>>>> response = pipeliningBase.xreadGroup(
+      "groupName", "consumer", xReadGroupParams, streams);
 
     assertThat(commands, contains(listEntryStringListStreamEntryCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -714,11 +737,14 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     byte[] groupName = "group".getBytes();
     byte[] consumer = "consumer".getBytes();
     XReadGroupParams xReadGroupParams = new XReadGroupParams();
-    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleImmutableEntry<>("stream1".getBytes(), "id1".getBytes());
+    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleImmutableEntry<>(
+        "stream1".getBytes(), "id1".getBytes());
 
-    when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, stream1)).thenReturn(listObjectCommandObject);
+    when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, stream1)).thenReturn(
+      listObjectCommandObject);
 
-    Response<List<Object>> response = pipeliningBase.xreadGroup(groupName, consumer, xReadGroupParams, stream1);
+    Response<List<Object>> response = pipeliningBase.xreadGroup(groupName, consumer,
+      xReadGroupParams, stream1);
 
     assertThat(commands, contains(listObjectCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -757,7 +783,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     String start = "-";
     int count = 10;
 
-    when(commandObjects.xrevrange("key", end, start, count)).thenReturn(listStreamEntryCommandObject);
+    when(commandObjects.xrevrange("key", end, start, count)).thenReturn(
+      listStreamEntryCommandObject);
 
     Response<List<StreamEntry>> response = pipeliningBase.xrevrange("key", end, start, count);
 
@@ -799,7 +826,8 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     StreamEntryID start = new StreamEntryID("0-0");
     int count = 10;
 
-    when(commandObjects.xrevrange("key", end, start, count)).thenReturn(listStreamEntryCommandObject);
+    when(commandObjects.xrevrange("key", end, start, count)).thenReturn(
+      listStreamEntryCommandObject);
 
     Response<List<StreamEntry>> response = pipeliningBase.xrevrange("key", end, start, count);
 

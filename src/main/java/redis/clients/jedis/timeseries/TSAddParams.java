@@ -67,7 +67,6 @@ public class TSAddParams implements IParams {
 
   /**
    * Set label-value pairs
-   *
    * @param labels label-value pairs
    * @return the object itself
    */
@@ -137,12 +136,11 @@ public class TSAddParams implements IParams {
     }
 
     TSAddParams that = (TSAddParams) o;
-    return ignore == that.ignore && ignoreMaxTimediff == that.ignoreMaxTimediff &&
-        Double.compare(ignoreMaxValDiff, that.ignoreMaxValDiff) == 0 &&
-        Objects.equals(retentionPeriod, that.retentionPeriod) &&
-        encoding == that.encoding && Objects.equals(chunkSize, that.chunkSize) &&
-        duplicatePolicy == that.duplicatePolicy && onDuplicate == that.onDuplicate &&
-        Objects.equals(labels, that.labels);
+    return ignore == that.ignore && ignoreMaxTimediff == that.ignoreMaxTimediff
+        && Double.compare(ignoreMaxValDiff, that.ignoreMaxValDiff) == 0
+        && Objects.equals(retentionPeriod, that.retentionPeriod) && encoding == that.encoding
+        && Objects.equals(chunkSize, that.chunkSize) && duplicatePolicy == that.duplicatePolicy
+        && onDuplicate == that.onDuplicate && Objects.equals(labels, that.labels);
   }
 
   @Override

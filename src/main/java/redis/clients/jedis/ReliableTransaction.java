@@ -16,7 +16,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
- * A transaction where commands are immediately sent to Redis server and the {@code QUEUED} reply checked.
+ * A transaction where commands are immediately sent to Redis server and the {@code QUEUED} reply
+ * checked.
  */
 public class ReliableTransaction extends TransactionBase {
 
@@ -31,9 +32,8 @@ public class ReliableTransaction extends TransactionBase {
   private boolean inMulti = false;
 
   /**
-   * Creates a new transaction.
-   * 
-   * A MULTI command will be executed. WATCH/UNWATCH/MULTI commands must not be called with this object.
+   * Creates a new transaction. A MULTI command will be executed. WATCH/UNWATCH/MULTI commands must
+   * not be called with this object.
    * @param connection connection
    */
   public ReliableTransaction(Connection connection) {
@@ -41,11 +41,8 @@ public class ReliableTransaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
+   * Creates a new transaction. A user wanting to WATCH/UNWATCH keys followed by a call to MULTI (
+   * {@link #multi()}) it should be {@code doMulti=false}.
    * @param connection connection
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
@@ -54,11 +51,8 @@ public class ReliableTransaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
+   * Creates a new transaction. A user wanting to WATCH/UNWATCH keys followed by a call to MULTI (
+   * {@link #multi()}) it should be {@code doMulti=false}.
    * @param connection connection
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
@@ -68,11 +62,8 @@ public class ReliableTransaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
+   * Creates a new transaction. A user wanting to WATCH/UNWATCH keys followed by a call to MULTI (
+   * {@link #multi()}) it should be {@code doMulti=false}.
    * @param connection connection
    * @param commandObjects command objects
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
@@ -150,7 +141,8 @@ public class ReliableTransaction extends TransactionBase {
     }
   }
 
-  @Deprecated // TODO: private
+  @Deprecated
+  // TODO: private
   public final void clear() {
     if (broken) {
       return;

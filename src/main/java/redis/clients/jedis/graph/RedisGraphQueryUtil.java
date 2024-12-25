@@ -22,7 +22,6 @@ public class RedisGraphQueryUtil {
 
   /**
    * Prepare and formats a query and query arguments
-   *
    * @param query - query
    * @param params - query parameters
    * @return query with parameters header
@@ -32,11 +31,7 @@ public class RedisGraphQueryUtil {
   public static String prepareQuery(String query, Map<String, Object> params) {
     StringBuilder sb = new StringBuilder("CYPHER ");
     for (Map.Entry<String, Object> entry : params.entrySet()) {
-      sb
-          .append(entry.getKey())
-          .append('=')
-          .append(valueToString(entry.getValue()))
-          .append(' ');
+      sb.append(entry.getKey()).append('=').append(valueToString(entry.getValue())).append(' ');
     }
     sb.append(query);
     return sb.toString();
@@ -72,10 +67,11 @@ public class RedisGraphQueryUtil {
   }
 
   private static String arrayToString(Object[] arr) {
-//    StringBuilder sb = new StringBuilder().append('[');
-//    sb.append(String.join(", ", Arrays.stream(arr).map(RedisGraphQueryUtil::valueToString).collect(Collectors.toList())));
-//    sb.append(']');
-//    return sb.toString();
+    // StringBuilder sb = new StringBuilder().append('[');
+    // sb.append(String.join(", ",
+    // Arrays.stream(arr).map(RedisGraphQueryUtil::valueToString).collect(Collectors.toList())));
+    // sb.append(']');
+    // return sb.toString();
     return arrayToString(Arrays.asList(arr));
   }
 
@@ -85,28 +81,28 @@ public class RedisGraphQueryUtil {
     sb.append(']');
     return sb.toString();
   }
-
-//  public static String prepareProcedure(String procedure, List<String> args, Map<String, List<String>> kwargs) {
-//    args = args.stream().map(RedisGraphQueryUtil::quoteString).collect(Collectors.toList());
-//    StringBuilder queryStringBuilder = new StringBuilder();
-//    queryStringBuilder.append("CALL ").append(procedure).append('(');
-//    int i = 0;
-//    for (; i < args.size() - 1; i++) {
-//      queryStringBuilder.append(args.get(i)).append(',');
-//    }
-//    if (i == args.size() - 1) {
-//      queryStringBuilder.append(args.get(i));
-//    }
-//    queryStringBuilder.append(')');
-//    List<String> kwargsList = kwargs.getOrDefault("y", null);
-//    if (kwargsList != null) {
-//      i = 0;
-//      for (; i < kwargsList.size() - 1; i++) {
-//        queryStringBuilder.append(kwargsList.get(i)).append(',');
-//
-//      }
-//      queryStringBuilder.append(kwargsList.get(i));
-//    }
-//    return queryStringBuilder.toString();
-//  }
+  // public static String prepareProcedure(String procedure, List<String> args, Map<String,
+  // List<String>> kwargs) {
+  // args = args.stream().map(RedisGraphQueryUtil::quoteString).collect(Collectors.toList());
+  // StringBuilder queryStringBuilder = new StringBuilder();
+  // queryStringBuilder.append("CALL ").append(procedure).append('(');
+  // int i = 0;
+  // for (; i < args.size() - 1; i++) {
+  // queryStringBuilder.append(args.get(i)).append(',');
+  // }
+  // if (i == args.size() - 1) {
+  // queryStringBuilder.append(args.get(i));
+  // }
+  // queryStringBuilder.append(')');
+  // List<String> kwargsList = kwargs.getOrDefault("y", null);
+  // if (kwargsList != null) {
+  // i = 0;
+  // for (; i < kwargsList.size() - 1; i++) {
+  // queryStringBuilder.append(kwargsList.get(i)).append(',');
+  //
+  // }
+  // queryStringBuilder.append(kwargsList.get(i));
+  // }
+  // return queryStringBuilder.toString();
+  // }
 }

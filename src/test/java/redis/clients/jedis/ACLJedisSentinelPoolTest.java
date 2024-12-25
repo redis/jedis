@@ -34,7 +34,7 @@ public class ACLJedisSentinelPoolTest {
   public static void prepare() throws Exception {
     EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone2-primary");
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-                                RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }
 
   private static Set<String> toStrings(Set<HostAndPort> hostAndPorts) {
@@ -57,8 +57,9 @@ public class ACLJedisSentinelPoolTest {
     for (int i = 0; i < 20; ++i) {
       var config = JedisPoolConfig.builder();
 
-      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels), config.build(), 1000, 1000,
-                                                     "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel", "foobared", null);
+      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels),
+          config.build(), 1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel",
+          "foobared", null);
       pool.getResource().close();
       pool.destroy();
     }
@@ -72,14 +73,15 @@ public class ACLJedisSentinelPoolTest {
       var poolConfig = JedisPoolConfig.builder();
 
       JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-                                                               .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2)
-                                                               .user("acljedis").password("fizzbuzz").build();
+          .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
+          .password("fizzbuzz").build();
 
       JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-                                                                 .connectionTimeoutMillis(1000).socketTimeoutMillis(1000)
-                                                                 .user("sentinel").password("foobared").build();
+          .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("sentinel")
+          .password("foobared").build();
 
-      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig.build(), masterConfig, sentinelConfig);
+      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig.build(),
+          masterConfig, sentinelConfig);
       pool.getResource().close();
       pool.destroy();
     }
@@ -91,14 +93,15 @@ public class ACLJedisSentinelPoolTest {
     var poolConfig = JedisPoolConfig.builder();
 
     JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-                                                             .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2)
-                                                             .user("acljedis").password("fizzbuzz").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
+        .password("fizzbuzz").build();
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-                                                               .connectionTimeoutMillis(1000).socketTimeoutMillis(1000)
-                                                               .user("default").password("foobared").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("default")
+        .password("foobared").build();
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig.build(), masterConfig, sentinelConfig);
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig.build(),
+        masterConfig, sentinelConfig);
     pool.getResource().close();
     pool.destroy();
   }
@@ -109,14 +112,15 @@ public class ACLJedisSentinelPoolTest {
     var poolConfig = JedisPoolConfig.builder();
 
     JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-                                                             .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2)
-                                                             .user("acljedis").password("fizzbuzz").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
+        .password("fizzbuzz").build();
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-                                                               .connectionTimeoutMillis(1000).socketTimeoutMillis(1000)
-                                                               .user("sentinel").password("foobared").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("sentinel")
+        .password("foobared").build();
 
-    JedisSentinelPool pool = new JedisSentinelPool("wrongMasterName", sentinels, poolConfig.build(), masterConfig, sentinelConfig);
+    JedisSentinelPool pool = new JedisSentinelPool("wrongMasterName", sentinels,
+        poolConfig.build(), masterConfig, sentinelConfig);
     pool.getResource().close();
     pool.destroy();
   }
@@ -125,8 +129,9 @@ public class ACLJedisSentinelPoolTest {
   public void checkCloseableConnections() throws Exception {
     var config = JedisPoolConfig.builder();
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels), config.build(),
-                                                   1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel", "foobared", null);
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels),
+        config.build(), 1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel",
+        "foobared", null);
     try (Jedis jedis = pool.getResource()) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -141,8 +146,9 @@ public class ACLJedisSentinelPoolTest {
     config.maxPoolSize(1);
     config.waitingForObjectTimeout(Duration.ZERO);
 
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels), config.build(),
-                                                        1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel", "foobared", null)) {
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels),
+        config.build(), 1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel",
+        "foobared", null)) {
       Jedis jedis;
       try (Jedis jedis1 = pool.getResource()) {
         jedis = jedis1;
@@ -164,8 +170,9 @@ public class ACLJedisSentinelPoolTest {
     var config = JedisPoolConfig.builder();
     config.maxPoolSize(1);
     config.waitingForObjectTimeout(Duration.ZERO);
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels), config.build(),
-                                                        1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel", "foobared", null)) {
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels),
+        config.build(), 1000, 1000, "acljedis", "fizzbuzz", 2, null, 1000, 1000, "sentinel",
+        "foobared", null)) {
 
       Jedis jedis;
       try (Jedis jedis1 = pool.getResource()) {
@@ -184,9 +191,9 @@ public class ACLJedisSentinelPoolTest {
     var config = JedisPoolConfig.builder();
     config.maxPoolSize(1);
     config.waitingForObjectTimeout(Duration.ZERO);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels), config.build(),
-                                                   1000, 1000, "acljedis", "fizzbuzz", 0, "my_shiny_master_client",
-                                                   1000, 1000, "sentinel", "foobared", "my_shiny_sentinel_client");
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, toStrings(sentinels),
+        config.build(), 1000, 1000, "acljedis", "fizzbuzz", 0, "my_shiny_master_client", 1000,
+        1000, "sentinel", "foobared", "my_shiny_sentinel_client");
 
     try (Jedis jedis = pool.getResource()) {
       assertEquals("my_shiny_master_client", jedis.clientGetname());

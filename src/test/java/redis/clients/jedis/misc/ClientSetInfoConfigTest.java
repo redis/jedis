@@ -13,8 +13,8 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void replaceSpacesWithHyphens() {
-    assertEquals("Redis-Java-client",
-        ClientSetInfoConfig.withLibNameSuffix("Redis Java client").getLibNameSuffix());
+    assertEquals("Redis-Java-client", ClientSetInfoConfig.withLibNameSuffix("Redis Java client")
+        .getLibNameSuffix());
   }
 
   @Test

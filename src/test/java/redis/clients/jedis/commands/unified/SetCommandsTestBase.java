@@ -550,7 +550,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     List<String> members = jedis.srandmember("foo", 2);
     members.sort(Comparator.naturalOrder());
-    assertEquals( Arrays.asList("a", "b"), members);
+    assertEquals(Arrays.asList("a", "b"), members);
 
     member = jedis.srandmember("bar");
     assertNull(member);

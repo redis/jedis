@@ -108,20 +108,20 @@ public class ClusterBinaryValuesCommandsTest extends ClusterJedisCommandsTestBas
 
   @Test
   public void georadiusStoreBinary() {
-      // prepare datas
-      Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
-      bcoordinateMap.put("Palermo".getBytes(), new GeoCoordinate(13.361389, 38.115556));
-      bcoordinateMap.put("Catania".getBytes(), new GeoCoordinate(15.087269, 37.502669));
-      cluster.geoadd("{Sicily}".getBytes(), bcoordinateMap);
+    // prepare datas
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    bcoordinateMap.put("Palermo".getBytes(), new GeoCoordinate(13.361389, 38.115556));
+    bcoordinateMap.put("Catania".getBytes(), new GeoCoordinate(15.087269, 37.502669));
+    cluster.geoadd("{Sicily}".getBytes(), bcoordinateMap);
 
-      long size = cluster.georadiusStore("{Sicily}".getBytes(), 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
-      assertEquals(2, size);
-      List<byte[]> bexpected = new ArrayList<byte[]>();
-      bexpected.add("Palermo".getBytes());
-      bexpected.add("Catania".getBytes());
-      assertByteArrayListEquals(bexpected, cluster.zrange("{Sicily}Store".getBytes(), 0, -1));
+    long size = cluster.georadiusStore("{Sicily}".getBytes(), 15, 37, 200, GeoUnit.KM,
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
+    assertEquals(2, size);
+    List<byte[]> bexpected = new ArrayList<byte[]>();
+    bexpected.add("Palermo".getBytes());
+    bexpected.add("Catania".getBytes());
+    assertByteArrayListEquals(bexpected, cluster.zrange("{Sicily}Store".getBytes(), 0, -1));
   }
 
   @Test

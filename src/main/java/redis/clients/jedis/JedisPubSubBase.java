@@ -108,7 +108,7 @@ public abstract class JedisPubSubBase<T> {
 
   protected abstract T encode(byte[] raw);
 
-//  private void process(Client client) {
+  // private void process(Client client) {
   private void process() {
 
     do {

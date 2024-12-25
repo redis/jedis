@@ -21,19 +21,17 @@ public class SchemaTest {
 
   @Test
   public void printSchemaTest() throws Exception {
-    Schema sc = new Schema()
-        .addTextField(TITLE, 5.0)
-        .addSortableTextField(PLOT, 1.0)
-        .addSortableTagField(GENRE, ",")
-        .addSortableNumericField(RELEASE_YEAR)
-        .addSortableNumericField(RATING)
-        .addSortableNumericField(VOTES)
+    Schema sc = new Schema().addTextField(TITLE, 5.0).addSortableTextField(PLOT, 1.0)
+        .addSortableTagField(GENRE, ",").addSortableNumericField(RELEASE_YEAR)
+        .addSortableNumericField(RATING).addSortableNumericField(VOTES)
         .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, Collections.emptyMap());
 
     String schemaPrint = sc.toString();
     assertThat(schemaPrint, Matchers.startsWith("Schema{fields=[TextField{name='title'"));
-    assertThat(schemaPrint, Matchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
-    assertThat(schemaPrint, Matchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
+    assertThat(schemaPrint,
+      Matchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
+    assertThat(schemaPrint,
+      Matchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
   }
 
   @Test

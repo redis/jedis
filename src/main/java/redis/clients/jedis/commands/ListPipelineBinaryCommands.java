@@ -60,13 +60,16 @@ public interface ListPipelineBinaryCommands {
 
   Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
+  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout);
 
   Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys);
 
   Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys);
 
-  Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, byte[]... keys);
+  Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction,
+      byte[]... keys);
 
-  Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys);
+  Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction,
+      int count, byte[]... keys);
 }

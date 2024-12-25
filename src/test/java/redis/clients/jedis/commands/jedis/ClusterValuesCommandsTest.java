@@ -28,7 +28,7 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void nullKeys() {
-    byte[] bfoo = new byte[]{0x0b, 0x0f, 0x00, 0x00};
+    byte[] bfoo = new byte[] { 0x0b, 0x0f, 0x00, 0x00 };
 
     try {
       cluster.exists((byte[]) null);
@@ -71,8 +71,8 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     cluster.geoadd("{Sicily}", coordinateMap);
 
     long size = cluster.georadiusStore("{Sicily}", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
     assertEquals(2, size);
     List<String> expected = new ArrayList<String>();
     expected.add("Palermo");
@@ -118,8 +118,8 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void rawPingBroadcast() {
-    String reply = cluster.broadcastCommand(
-        new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
+    String reply = cluster.broadcastCommand(new CommandObject<>(new CommandArguments(
+        Protocol.Command.PING), BuilderFactory.STRING));
     assertEquals("PONG", reply);
   }
 

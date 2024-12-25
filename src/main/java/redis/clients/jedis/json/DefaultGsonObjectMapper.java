@@ -3,9 +3,10 @@ package redis.clients.jedis.json;
 import com.google.gson.Gson;
 
 /**
- * Use the default {@link Gson} configuration for serialization and deserialization JSON
- * operations.
- * <p>When none is explicitly set, this will be set.</p>
+ * Use the default {@link Gson} configuration for serialization and deserialization JSON operations.
+ * <p>
+ * When none is explicitly set, this will be set.
+ * </p>
  * @see JsonObjectMapper Create a custom JSON serializer/deserializer
  */
 public class DefaultGsonObjectMapper implements JsonObjectMapper {

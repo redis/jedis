@@ -26,7 +26,8 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisMo
     List<String> args = Arrays.asList("arg1", "arg2");
     Object expectedResponse = "result";
 
-    when(commandObjects.tFunctionCall(library, function, keys, args)).thenReturn(objectCommandObject);
+    when(commandObjects.tFunctionCall(library, function, keys, args)).thenReturn(
+      objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
     Object result = jedis.tFunctionCall(library, function, keys, args);
@@ -45,7 +46,8 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisMo
     List<String> args = Arrays.asList("arg1", "arg2");
     Object expectedResponse = "result";
 
-    when(commandObjects.tFunctionCallAsync(library, function, keys, args)).thenReturn(objectCommandObject);
+    when(commandObjects.tFunctionCallAsync(library, function, keys, args)).thenReturn(
+      objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
     Object result = jedis.tFunctionCallAsync(library, function, keys, args);
@@ -79,7 +81,8 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisMo
     expectedResponse.add(mock(GearsLibraryInfo.class));
 
     when(commandObjects.tFunctionList(params)).thenReturn(listGearsLibraryInfoCommandObject);
-    when(commandExecutor.executeCommand(listGearsLibraryInfoCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(listGearsLibraryInfoCommandObject)).thenReturn(
+      expectedResponse);
 
     List<GearsLibraryInfo> result = jedis.tFunctionList(params);
 
@@ -101,7 +104,7 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisMo
     String result = jedis.tFunctionLoad(libraryCode, params);
 
     assertThat(result, sameInstance(expectedResponse));
-    
+
     verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).tFunctionLoad(libraryCode, params);
   }

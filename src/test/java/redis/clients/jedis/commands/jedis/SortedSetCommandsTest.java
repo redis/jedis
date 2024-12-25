@@ -96,7 +96,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertNull(jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().nx()));
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
     // incr: update elements that already exist.
-    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d,"b", ZAddParams.zAddParams().xx()));
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().xx()));
     assertEquals(Double.valueOf(3d), jedis.zscore("foo", "b"));
 
     // binary
@@ -253,7 +253,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     bExpected.add(bb);
 
     // with LIMIT
-    assertByteArrayListEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
+    assertByteArrayListEquals(bExpected,
+      jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
   }
 
   @Test
@@ -1016,7 +1017,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     List<byte[]> bExpected = new ArrayList<byte[]>();
     bExpected.add(bb);
 
-    assertByteArrayListEquals(bExpected, jedis.zrange(bfoo, ZRangeParams.zrangeByLexParams(bExclusiveC, bInclusiveB).rev()));
+    assertByteArrayListEquals(bExpected,
+      jedis.zrange(bfoo, ZRangeParams.zrangeByLexParams(bExclusiveC, bInclusiveB).rev()));
     assertNotNull(jedis.zrangeWithScores(bfoo, ZRangeParams.zrangeByScoreParams(0, 1).limit(0, 3)));
   }
 

@@ -314,9 +314,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
   public void testHrandfieldWithValues() {
     long count = 2;
 
-    when(commandObjects.hrandfieldWithValues("key", count)).thenReturn(listEntryStringStringCommandObject);
+    when(commandObjects.hrandfieldWithValues("key", count)).thenReturn(
+      listEntryStringStringCommandObject);
 
-    Response<List<Map.Entry<String, String>>> response = pipeliningBase.hrandfieldWithValues("key", count);
+    Response<List<Map.Entry<String, String>>> response = pipeliningBase.hrandfieldWithValues("key",
+      count);
 
     assertThat(commands, contains(listEntryStringStringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -327,9 +329,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     byte[] key = "hash".getBytes();
     long count = 2;
 
-    when(commandObjects.hrandfieldWithValues(key, count)).thenReturn(listEntryBytesBytesCommandObject);
+    when(commandObjects.hrandfieldWithValues(key, count)).thenReturn(
+      listEntryBytesBytesCommandObject);
 
-    Response<List<Map.Entry<byte[], byte[]>>> response = pipeliningBase.hrandfieldWithValues(key, count);
+    Response<List<Map.Entry<byte[], byte[]>>> response = pipeliningBase.hrandfieldWithValues(key,
+      count);
 
     assertThat(commands, contains(listEntryBytesBytesCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -340,9 +344,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     String cursor = "0";
     ScanParams params = new ScanParams();
 
-    when(commandObjects.hscan("key", cursor, params)).thenReturn(scanResultEntryStringStringCommandObject);
+    when(commandObjects.hscan("key", cursor, params)).thenReturn(
+      scanResultEntryStringStringCommandObject);
 
-    Response<ScanResult<Map.Entry<String, String>>> response = pipeliningBase.hscan("key", cursor, params);
+    Response<ScanResult<Map.Entry<String, String>>> response = pipeliningBase.hscan("key", cursor,
+      params);
 
     assertThat(commands, contains(scanResultEntryStringStringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -354,9 +360,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     byte[] cursor = "0".getBytes();
     ScanParams params = new ScanParams().match("*").count(10);
 
-    when(commandObjects.hscan(key, cursor, params)).thenReturn(scanResultEntryBytesBytesCommandObject);
+    when(commandObjects.hscan(key, cursor, params)).thenReturn(
+      scanResultEntryBytesBytesCommandObject);
 
-    Response<ScanResult<Map.Entry<byte[], byte[]>>> response = pipeliningBase.hscan(key, cursor, params);
+    Response<ScanResult<Map.Entry<byte[], byte[]>>> response = pipeliningBase.hscan(key, cursor,
+      params);
 
     assertThat(commands, contains(scanResultEntryBytesBytesCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -367,7 +375,8 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     String cursor = "0";
     ScanParams params = new ScanParams();
 
-    when(commandObjects.hscanNoValues("key", cursor, params)).thenReturn(scanResultStringCommandObject);
+    when(commandObjects.hscanNoValues("key", cursor, params)).thenReturn(
+      scanResultStringCommandObject);
 
     Response<ScanResult<String>> response = pipeliningBase.hscanNoValues("key", cursor, params);
 
@@ -381,7 +390,8 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     byte[] cursor = "0".getBytes();
     ScanParams params = new ScanParams().match("*").count(10);
 
-    when(commandObjects.hscanNoValues(key, cursor, params)).thenReturn(scanResultBytesCommandObject);
+    when(commandObjects.hscanNoValues(key, cursor, params))
+        .thenReturn(scanResultBytesCommandObject);
 
     Response<ScanResult<byte[]>> response = pipeliningBase.hscanNoValues(key, cursor, params);
 
@@ -555,9 +565,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
 
-    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
 
-    assertThat(pipeliningBase.hpexpire(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(pipeliningBase.hpexpire(key, milliseconds, condition, fields),
+      is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
   }
 
@@ -580,7 +592,8 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
 
-    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(
+      listLongCommandObject);
 
     assertThat(pipeliningBase.hexpireAt(key, seconds, condition, fields), is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
@@ -605,9 +618,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
 
-    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
 
-    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, condition, fields),
+      is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
   }
 
@@ -710,9 +725,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
 
-    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
 
-    assertThat(pipeliningBase.hpexpire(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(pipeliningBase.hpexpire(key, milliseconds, condition, fields),
+      is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
   }
 
@@ -735,7 +752,8 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
 
-    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(
+      listLongCommandObject);
 
     assertThat(pipeliningBase.hexpireAt(key, seconds, condition, fields), is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
@@ -760,9 +778,11 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
 
-    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
 
-    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, condition, fields),
+      is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
   }
 

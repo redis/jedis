@@ -10,7 +10,8 @@ public interface BloomFilterPipelineCommands {
 
   Response<String> bfReserve(String key, double errorRate, long capacity);
 
-  Response<String> bfReserve(String key, double errorRate, long capacity, BFReserveParams reserveParams);
+  Response<String> bfReserve(String key, double errorRate, long capacity,
+      BFReserveParams reserveParams);
 
   Response<Boolean> bfAdd(String key, String item);
 

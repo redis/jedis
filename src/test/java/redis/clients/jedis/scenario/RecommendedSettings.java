@@ -27,6 +27,4 @@ public class RecommendedSettings {
 
   public static int DEFAULT_TIMEOUT_MS = 5000;
 
-
-
 }

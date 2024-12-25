@@ -46,38 +46,38 @@ public class ShardedConnectionTest {
     }
   }
 
-  //  @Test
-  //  public void checkPoolWhenJedisIsBroken() {
-  //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-  //    poolConfig.maxPoolSize(1);
-  //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
-  //      jedis.sendCommand(Protocol.Command.QUIT);
-  //      jedis.incr("foo");
-  //    } catch (JedisConnectionException jce) {
-  //    }
-  //  }
+  // @Test
+  // public void checkPoolWhenJedisIsBroken() {
+  // GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+  // poolConfig.maxPoolSize(1);
+  // try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+  // jedis.sendCommand(Protocol.Command.QUIT);
+  // jedis.incr("foo");
+  // } catch (JedisConnectionException jce) {
+  // }
+  // }
   //
-  //  @Test
-  //  public void checkPoolTestOnBorrowWhenJedisIsBroken() {
-  //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-  //    poolConfig.maxPoolSize(1);
-  //    poolConfig.setTestOnBorrow(true);
-  //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
-  //      jedis.sendCommand(Protocol.Command.QUIT);
-  //      jedis.incr("foo");
-  //    }
-  //  }
+  // @Test
+  // public void checkPoolTestOnBorrowWhenJedisIsBroken() {
+  // GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+  // poolConfig.maxPoolSize(1);
+  // poolConfig.setTestOnBorrow(true);
+  // try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+  // jedis.sendCommand(Protocol.Command.QUIT);
+  // jedis.incr("foo");
+  // }
+  // }
   //
-  //  @Test
-  //  public void checkPoolTestOnReturnWhenJedisIsBroken() {
-  //    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-  //    poolConfig.maxPoolSize(1);
-  //    poolConfig.setTestOnReturn(true);
-  //    try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
-  //      jedis.sendCommand(Protocol.Command.QUIT);
-  //      jedis.incr("foo");
-  //    }
-  //  }
+  // @Test
+  // public void checkPoolTestOnReturnWhenJedisIsBroken() {
+  // GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+  // poolConfig.maxPoolSize(1);
+  // poolConfig.setTestOnReturn(true);
+  // try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig)) {
+  // jedis.sendCommand(Protocol.Command.QUIT);
+  // jedis.incr("foo");
+  // }
+  // }
 
   @Test
   public void checkFailedJedisServer() {
@@ -96,7 +96,7 @@ public class ShardedConnectionTest {
     var poolConfig = JedisPoolConfig.builder();
     poolConfig.maxPoolSize(1);
     // poolconfig.setBlockWhenExhausted(false);
-poolConfig.waitingForObjectTimeout(Duration.ZERO);
+    poolConfig.waitingForObjectTimeout(Duration.ZERO);
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig, poolConfig.build())) {
       jedis.set("hello", "jedis");
     }

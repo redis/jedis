@@ -31,7 +31,8 @@ public abstract class JedisCommandIterationBase<B, D> {
   private boolean roundRobinCompleted;
   private boolean iterationCompleted;
 
-  protected JedisCommandIterationBase(ConnectionProvider connectionProvider, Builder<B> responseBuilder) {
+  protected JedisCommandIterationBase(ConnectionProvider connectionProvider,
+      Builder<B> responseBuilder) {
     Map connectionMap = connectionProvider.getConnectionMap();
     ArrayList<Map.Entry> connectionList = new ArrayList<>(connectionMap.entrySet());
     Collections.shuffle(connectionList);

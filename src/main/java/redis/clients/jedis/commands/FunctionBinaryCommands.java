@@ -9,28 +9,29 @@ import java.util.List;
 
 public interface FunctionBinaryCommands {
 
-/**
+  /**
    * Invoke a function.
    * @param name
    * @param keys
    * @param args
-   * @return 
+   * @return
    */
   Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
 
   Object fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args);
 
   /**
-   * This command deletes the library called library-name and all functions in it.
-   * If the library doesn't exist, the server returns an error.
+   * This command deletes the library called library-name and all functions in it. If the library
+   * doesn't exist, the server returns an error.
    * @param libraryName
    * @return OK
    */
   String functionDelete(byte[] libraryName);
 
   /**
-   * Return the serialized payload of loaded libraries. You can restore the
-   * serialized payload later with the {@link FunctionBinaryCommands#functionRestore(byte[], FunctionRestorePolicy) FUNCTION RESTORE} command.
+   * Return the serialized payload of loaded libraries. You can restore the serialized payload later
+   * with the {@link FunctionBinaryCommands#functionRestore(byte[], FunctionRestorePolicy) FUNCTION
+   * RESTORE} command.
    * @return the serialized payload
    */
   byte[] functionDump();
@@ -51,8 +52,8 @@ public interface FunctionBinaryCommands {
   String functionFlush(FlushMode mode);
 
   /**
-   * Kill a function that is currently executing. The command can be used only on functions
-   * that did not modify the dataset during their execution.
+   * Kill a function that is currently executing. The command can be used only on functions that did
+   * not modify the dataset during their execution.
    * @return OK
    */
   String functionKill();
@@ -71,8 +72,8 @@ public interface FunctionBinaryCommands {
   List<Object> functionList(byte[] libraryNamePattern);
 
   /**
-   * Similar to {@link FunctionCommands#functionList() FUNCTION LIST} but include the
-   * libraries source implementation in the reply.
+   * Similar to {@link FunctionCommands#functionList() FUNCTION LIST} but include the libraries
+   * source implementation in the reply.
    * @see FunctionCommands#functionList()
    * @return {@link LibraryInfo}
    */
@@ -93,7 +94,6 @@ public interface FunctionBinaryCommands {
    * The library payload must start with Shebang statement that provides a metadata about the
    * library (like the engine to use and the library name). Shebang format:
    * {@code #!<engine name> name=<library name>}. Currently engine name must be lua.
-   *
    * @param functionCode the source code.
    * @return The library name that was loaded
    */
@@ -122,8 +122,8 @@ public interface FunctionBinaryCommands {
   String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy);
 
   /**
-   * Return information about the function that's currently running and information
-   * about the available execution engines.
+   * Return information about the function that's currently running and information about the
+   * available execution engines.
    * @return {@link FunctionStats}
    */
   Object functionStatsBinary();

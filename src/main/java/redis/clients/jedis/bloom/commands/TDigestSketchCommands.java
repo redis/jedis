@@ -8,7 +8,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.CREATE key}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @return OK
    */
@@ -16,16 +15,15 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.CREATE key [compression]}
-   *
    * @param key The name of the sketch (a t-digest data structure)
-   * @param compression The compression parameter. 100 is a common value for normal uses. 1000 is extremely large.
+   * @param compression The compression parameter. 100 is a common value for normal uses. 1000 is
+   *          extremely large.
    * @return OK
    */
   String tdigestCreate(String key, int compression);
 
   /**
    * {@code TDIGEST.RESET key}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @return OK
    */
@@ -33,7 +31,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.MERGE destination-key numkeys source-key [source-key ...]}
-   *
    * @param destinationKey Sketch to copy observation values to (a t-digest data structure)
    * @param sourceKeys Sketch(es) to copy observation values from (a t-digest data structure)
    * @return OK
@@ -43,7 +40,6 @@ public interface TDigestSketchCommands {
   /**
    * {@code TDIGEST.MERGE destination-key numkeys source-key [source-key ...]
    * [COMPRESSION compression] [OVERRIDE]}
-   *
    * @param mergeParams compression and override options
    * @param destinationKey Sketch to copy observation values to (a t-digest data structure)
    * @param sourceKeys Sketch(es) to copy observation values from (a t-digest data structure)
@@ -53,7 +49,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.INFO key}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @return information about the sketch
    */
@@ -61,7 +56,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.ADD key value weight [ value weight ...]}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @param values The value of the observation (floating-point)
    * @return OK
@@ -70,16 +64,15 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.CDF key value [value ...]}
-   *
    * @param key The name of the sketch (a t-digest data structure)
-   * @param values upper limit of observation value, for which the fraction of all observations added which are &le; value
+   * @param values upper limit of observation value, for which the fraction of all observations
+   *          added which are &le; value
    * @return estimation of the fraction of all observations added which are &le; value
    */
   List<Double> tdigestCDF(String key, double... values);
 
   /**
    * {@code TDIGEST.QUANTILE key quantile [quantile ...]}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @param quantiles The desired fraction(s) (between 0 and 1 inclusively)
    * @return results
@@ -88,7 +81,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.MIN key}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @return minimum observation value from the sketch
    */
@@ -96,7 +88,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.MAX key}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @return maximum observation value from the sketch
    */
@@ -104,7 +95,6 @@ public interface TDigestSketchCommands {
 
   /**
    * {@code TDIGEST.TRIMMED_MEAN key low_cut_quantile high_cut_quantile}
-   *
    * @param key The name of the sketch (a t-digest data structure)
    * @param lowCutQuantile Exclude observation values lower than this quantile
    * @param highCutQuantile Exclude observation values higher than this quantile

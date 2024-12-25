@@ -11,9 +11,8 @@ import java.io.OutputStream;
  */
 public final class RedisOutputStream extends FilterOutputStream {
 
-  private static final int OUTPUT_BUFFER_SIZE = Integer.parseInt(
-      System.getProperty("jedis.bufferSize.output",
-          System.getProperty("jedis.bufferSize", "8192")));
+  private static final int OUTPUT_BUFFER_SIZE = Integer.parseInt(System.getProperty(
+    "jedis.bufferSize.output", System.getProperty("jedis.bufferSize", "8192")));
 
   protected final byte[] buf;
 

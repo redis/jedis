@@ -51,13 +51,13 @@ public class FaultInjectionClient {
         return Duration.between(completedAt, Instant.now()).compareTo(delayAfter) >= 0;
       }
 
-      if (firstRequestAt != null && Duration.between(firstRequestAt, Instant.now())
-          .compareTo(timeout) >= 0) {
+      if (firstRequestAt != null
+          && Duration.between(firstRequestAt, Instant.now()).compareTo(timeout) >= 0) {
         throw new RuntimeException("Timeout");
       }
 
-      if (lastRequestTime == null || Duration.between(lastRequestTime, Instant.now())
-          .compareTo(checkInterval) >= 0) {
+      if (lastRequestTime == null
+          || Duration.between(lastRequestTime, Instant.now()).compareTo(checkInterval) >= 0) {
         lastRequestTime = Instant.now();
 
         if (firstRequestAt == null) {
@@ -92,14 +92,13 @@ public class FaultInjectionClient {
         .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
         .setResponseTimeout(5000, TimeUnit.MILLISECONDS).build();
 
-    return HttpClientBuilder.create()
-        .setDefaultRequestConfig(requestConfig).build();
+    return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
   }
 
   public TriggerActionResponse triggerAction(String actionType, HashMap<String, Object> parameters)
       throws IOException {
     Gson gson = new GsonBuilder().setFieldNamingPolicy(
-        FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+      FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
     HashMap<String, Object> payload = new HashMap<>();
     payload.put("type", actionType);

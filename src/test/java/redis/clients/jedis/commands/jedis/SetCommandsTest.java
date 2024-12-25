@@ -553,11 +553,11 @@ public class SetCommandsTest extends JedisCommandsTestBase {
 
     List<String> members = jedis.srandmember("foo", 2);
     members.sort(Comparator.naturalOrder());
-    assertEquals( Arrays.asList("a", "b"), members);
+    assertEquals(Arrays.asList("a", "b"), members);
 
     member = jedis.srandmember("bar");
     assertNull(member);
-    
+
     members = jedis.srandmember("bar", 2);
     assertEquals(0, members.size());
 
@@ -569,13 +569,13 @@ public class SetCommandsTest extends JedisCommandsTestBase {
 
     assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
     assertEquals(2, jedis.smembers(bfoo).size());
-    
+
     List<byte[]> bmembers = jedis.srandmember(bfoo, 2);
     assertEquals(2, bmembers.size());
 
     bmember = jedis.srandmember(bbar);
     assertNull(bmember);
-    
+
     members = jedis.srandmember("bbar", 2);
     assertEquals(0, members.size());
   }

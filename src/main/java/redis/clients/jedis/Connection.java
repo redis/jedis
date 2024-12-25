@@ -95,8 +95,8 @@ public class Connection implements Closeable, PoolObject {
     SocketAddress remoteAddr = socket.getRemoteSocketAddress();
     SocketAddress localAddr = socket.getLocalSocketAddress();
     if (remoteAddr != null) {
-      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id,
-          localAddr, (broken ? '!' : '-'), remoteAddr);
+      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id, localAddr, (broken ? '!'
+          : '-'), remoteAddr);
     } else if (localAddr != null) {
       strVal = String.format("%s{id: 0x%X, L:%s}", className, id, localAddr);
     } else {
@@ -227,7 +227,7 @@ public class Connection implements Closeable, PoolObject {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); //?
+        soTimeout = socket.getSoTimeout(); // ?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -431,7 +431,6 @@ public class Connection implements Closeable, PoolObject {
 
   /**
    * Check if the client name libname, libver, characters are legal
-   *
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -471,7 +470,8 @@ public class Connection implements Closeable, PoolObject {
 
       String clientName = config.getClientName();
       if (clientName != null && validateClientInfo(clientName)) {
-        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(
+          clientName));
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
@@ -527,7 +527,8 @@ public class Connection implements Closeable, PoolObject {
     if (protocol != null && credentials != null && credentials.getUser() != null) {
       byte[] rawPass = encodeToBytes(credentials.getPassword());
       try {
-        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
+        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(),
+          encode(credentials.getUser()), rawPass);
       } finally {
         Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }

@@ -258,7 +258,8 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testHkeysBinary() {
     byte[] key = "hashKey".getBytes();
-    Set<byte[]> expectedKeys = new HashSet<>(Arrays.asList("field1".getBytes(), "field2".getBytes(), "field3".getBytes()));
+    Set<byte[]> expectedKeys = new HashSet<>(Arrays.asList("field1".getBytes(),
+      "field2".getBytes(), "field3".getBytes()));
 
     when(commandObjects.hkeys(key)).thenReturn(setBytesCommandObject);
     when(commandExecutor.executeCommand(setBytesCommandObject)).thenReturn(expectedKeys);
@@ -449,8 +450,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     expectedEntries.add(new AbstractMap.SimpleEntry<>("field1", "value1"));
     expectedEntries.add(new AbstractMap.SimpleEntry<>("field2", "value2"));
 
-    when(commandObjects.hrandfieldWithValues(key, count)).thenReturn(listEntryStringStringCommandObject);
-    when(commandExecutor.executeCommand(listEntryStringStringCommandObject)).thenReturn(expectedEntries);
+    when(commandObjects.hrandfieldWithValues(key, count)).thenReturn(
+      listEntryStringStringCommandObject);
+    when(commandExecutor.executeCommand(listEntryStringStringCommandObject)).thenReturn(
+      expectedEntries);
 
     List<Map.Entry<String, String>> result = jedis.hrandfieldWithValues(key, count);
 
@@ -469,8 +472,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     expectedEntries.add(new AbstractMap.SimpleEntry<>("field1".getBytes(), "value1".getBytes()));
     expectedEntries.add(new AbstractMap.SimpleEntry<>("field2".getBytes(), "value2".getBytes()));
 
-    when(commandObjects.hrandfieldWithValues(key, count)).thenReturn(listEntryBytesBytesCommandObject);
-    when(commandExecutor.executeCommand(listEntryBytesBytesCommandObject)).thenReturn(expectedEntries);
+    when(commandObjects.hrandfieldWithValues(key, count)).thenReturn(
+      listEntryBytesBytesCommandObject);
+    when(commandExecutor.executeCommand(listEntryBytesBytesCommandObject)).thenReturn(
+      expectedEntries);
 
     List<Map.Entry<byte[], byte[]>> result = jedis.hrandfieldWithValues(key, count);
 
@@ -488,10 +493,13 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     List<Map.Entry<String, String>> scanResultData = new ArrayList<>();
     scanResultData.add(new AbstractMap.SimpleEntry<>("field1", "value1"));
     scanResultData.add(new AbstractMap.SimpleEntry<>("field2", "value2"));
-    ScanResult<Map.Entry<String, String>> expectedScanResult = new ScanResult<>(cursor, scanResultData);
+    ScanResult<Map.Entry<String, String>> expectedScanResult = new ScanResult<>(cursor,
+        scanResultData);
 
-    when(commandObjects.hscan(key, cursor, params)).thenReturn(scanResultEntryStringStringCommandObject);
-    when(commandExecutor.executeCommand(scanResultEntryStringStringCommandObject)).thenReturn(expectedScanResult);
+    when(commandObjects.hscan(key, cursor, params)).thenReturn(
+      scanResultEntryStringStringCommandObject);
+    when(commandExecutor.executeCommand(scanResultEntryStringStringCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<Map.Entry<String, String>> result = jedis.hscan(key, cursor, params);
 
@@ -509,10 +517,13 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     List<Map.Entry<byte[], byte[]>> scanResultData = new ArrayList<>();
     scanResultData.add(new AbstractMap.SimpleEntry<>("field1".getBytes(), "value1".getBytes()));
     scanResultData.add(new AbstractMap.SimpleEntry<>("field2".getBytes(), "value2".getBytes()));
-    ScanResult<Map.Entry<byte[], byte[]>> expectedScanResult = new ScanResult<>(cursor, scanResultData);
+    ScanResult<Map.Entry<byte[], byte[]>> expectedScanResult = new ScanResult<>(cursor,
+        scanResultData);
 
-    when(commandObjects.hscan(key, cursor, params)).thenReturn(scanResultEntryBytesBytesCommandObject);
-    when(commandExecutor.executeCommand(scanResultEntryBytesBytesCommandObject)).thenReturn(expectedScanResult);
+    when(commandObjects.hscan(key, cursor, params)).thenReturn(
+      scanResultEntryBytesBytesCommandObject);
+    when(commandExecutor.executeCommand(scanResultEntryBytesBytesCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<Map.Entry<byte[], byte[]>> result = jedis.hscan(key, cursor, params);
 
@@ -530,8 +541,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     List<String> scanResultData = Arrays.asList("field1", "field2");
     ScanResult<String> expectedScanResult = new ScanResult<>(cursor, scanResultData);
 
-    when(commandObjects.hscanNoValues(key, cursor, params)).thenReturn(scanResultStringCommandObject);
-    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expectedScanResult);
+    when(commandObjects.hscanNoValues(key, cursor, params)).thenReturn(
+      scanResultStringCommandObject);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<String> result = jedis.hscanNoValues(key, cursor, params);
 
@@ -549,8 +562,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     List<byte[]> scanResultData = Arrays.asList("field1".getBytes(), "field2".getBytes());
     ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, scanResultData);
 
-    when(commandObjects.hscanNoValues(key, cursor, params)).thenReturn(scanResultBytesCommandObject);
-    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expectedScanResult);
+    when(commandObjects.hscanNoValues(key, cursor, params))
+        .thenReturn(scanResultBytesCommandObject);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<byte[]> result = jedis.hscanNoValues(key, cursor, params);
 
@@ -760,7 +775,8 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testHvalsBinary() {
     byte[] key = "hashKey".getBytes();
-    List<byte[]> expectedValues = Arrays.asList("value1".getBytes(), "value2".getBytes(), "value3".getBytes());
+    List<byte[]> expectedValues = Arrays.asList("value1".getBytes(), "value2".getBytes(),
+      "value3".getBytes());
 
     when(commandObjects.hvals(key)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedValues);
@@ -778,7 +794,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "hash";
     long seconds = 100;
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hexpire(key, seconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -795,7 +811,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long seconds = 100;
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hexpire(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -811,7 +827,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "hash";
     long milliseconds = 10000;
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 100L, 200L, 300L );
+    List<Long> expected = asList(100L, 200L, 300L);
 
     when(commandObjects.hpexpire(key, milliseconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -828,9 +844,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long milliseconds = 10000;
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 100L, 200L, 300L );
+    List<Long> expected = asList(100L, 200L, 300L);
 
-    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
 
     assertThat(jedis.hpexpire(key, milliseconds, condition, fields), equalTo(expected));
@@ -844,7 +861,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "hash";
     long seconds = 100;
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hexpireAt(key, seconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -861,9 +878,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long seconds = 100;
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
-    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(
+      listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
 
     assertThat(jedis.hexpireAt(key, seconds, condition, fields), equalTo(expected));
@@ -877,7 +895,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "hash";
     long milliseconds = 10000;
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hpexpireAt(key, milliseconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -894,9 +912,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long milliseconds = 100;
     ExpiryOption condition = mock(ExpiryOption.class);
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
-    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
 
     assertThat(jedis.hpexpireAt(key, milliseconds, condition, fields), equalTo(expected));
@@ -909,7 +928,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hexpireTime() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 10L, 20L, 30L );
+    List<Long> expected = asList(10L, 20L, 30L);
 
     when(commandObjects.hexpireTime(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -924,7 +943,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpexpireTime() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1000L, 2000L, 3000L );
+    List<Long> expected = asList(1000L, 2000L, 3000L);
 
     when(commandObjects.hpexpireTime(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -939,7 +958,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void httl() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 10L, 20L, 30L );
+    List<Long> expected = asList(10L, 20L, 30L);
 
     when(commandObjects.httl(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -954,7 +973,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpttl() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1000L, 2000L, 3000L );
+    List<Long> expected = asList(1000L, 2000L, 3000L);
 
     when(commandObjects.hpttl(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -969,7 +988,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpersist() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -985,7 +1004,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = bfoo;
     long seconds = 100;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hexpire(key, seconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1002,7 +1021,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long seconds = 100;
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hexpire(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1018,7 +1037,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = bfoo;
     long milliseconds = 10000;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 100L, 200L, 300L );
+    List<Long> expected = asList(100L, 200L, 300L);
 
     when(commandObjects.hpexpire(key, milliseconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1035,9 +1054,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long milliseconds = 10000;
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 100L, 200L, 300L );
+    List<Long> expected = asList(100L, 200L, 300L);
 
-    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
 
     assertThat(jedis.hpexpire(key, milliseconds, condition, fields), equalTo(expected));
@@ -1051,7 +1071,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = bfoo;
     long seconds = 100;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hexpireAt(key, seconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1068,9 +1088,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long seconds = 100;
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
-    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(
+      listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
 
     assertThat(jedis.hexpireAt(key, seconds, condition, fields), equalTo(expected));
@@ -1084,7 +1105,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = bfoo;
     long milliseconds = 10000;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hpexpireAt(key, milliseconds, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1101,9 +1122,10 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
     long milliseconds = 100;
     ExpiryOption condition = mock(ExpiryOption.class);
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
-    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(
+      listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
 
     assertThat(jedis.hpexpireAt(key, milliseconds, condition, fields), equalTo(expected));
@@ -1116,7 +1138,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hexpireTimeBinary() {
     byte[] key = bfoo;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 10L, 20L, 30L );
+    List<Long> expected = asList(10L, 20L, 30L);
 
     when(commandObjects.hexpireTime(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1131,7 +1153,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpexpireTimeBinary() {
     byte[] key = bfoo;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1000L, 2000L, 3000L );
+    List<Long> expected = asList(1000L, 2000L, 3000L);
 
     when(commandObjects.hpexpireTime(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1146,7 +1168,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void httlBinary() {
     byte[] key = bfoo;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 10L, 20L, 30L );
+    List<Long> expected = asList(10L, 20L, 30L);
 
     when(commandObjects.httl(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1161,7 +1183,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpttlBinary() {
     byte[] key = bfoo;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1000L, 2000L, 3000L );
+    List<Long> expected = asList(1000L, 2000L, 3000L);
 
     when(commandObjects.hpttl(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
@@ -1176,7 +1198,7 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpersistBinary() {
     byte[] key = bfoo;
     byte[][] fields = { bbar1, bbar2, bbar3 };
-    List<Long> expected = asList( 1L, 2L, 3L );
+    List<Long> expected = asList(1L, 2L, 3L);
 
     when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);

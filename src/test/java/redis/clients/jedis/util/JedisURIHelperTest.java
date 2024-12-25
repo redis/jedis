@@ -70,7 +70,9 @@ public class JedisURIHelperTest {
   public void shouldGetProtocolFromDefinition() {
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/?protocol=3")));
-    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
-    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
+    assertEquals(RedisProtocol.RESP3,
+      getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
+    assertEquals(RedisProtocol.RESP3,
+      getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
   }
 }

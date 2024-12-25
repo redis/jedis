@@ -197,6 +197,7 @@ public abstract class AbstractCache implements Cache {
   public boolean compatibilityMode() {
     return false;
   }
+
   // End of Cache interface methods
 
   // abstract methods to be implemented by the concrete classes

@@ -31,7 +31,8 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
   public void testGraphReadonlyQuery() {
     String query = "MATCH (n) RETURN n";
 
-    when(graphCommandObjects.graphReadonlyQuery("myGraph", query)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphReadonlyQuery("myGraph", query)).thenReturn(
+      resultSetCommandObject);
 
     Response<ResultSet> response = pipeliningBase.graphReadonlyQuery("myGraph", query);
 
@@ -43,7 +44,8 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
   public void testGraphQueryWithTimeout() {
     String query = "MATCH (n) RETURN n";
 
-    when(graphCommandObjects.graphQuery("myGraph", query, 1000L)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphQuery("myGraph", query, 1000L))
+        .thenReturn(resultSetCommandObject);
 
     Response<ResultSet> response = pipeliningBase.graphQuery("myGraph", query, 1000L);
 
@@ -55,7 +57,8 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
   public void testGraphReadonlyQueryWithTimeout() {
     String query = "MATCH (n) RETURN n";
 
-    when(graphCommandObjects.graphReadonlyQuery("myGraph", query, 1000L)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphReadonlyQuery("myGraph", query, 1000L)).thenReturn(
+      resultSetCommandObject);
 
     Response<ResultSet> response = pipeliningBase.graphReadonlyQuery("myGraph", query, 1000L);
 
@@ -68,7 +71,8 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
     String query = "MATCH (n) WHERE n.name = $name RETURN n";
     Map<String, Object> params = Collections.singletonMap("name", "Alice");
 
-    when(graphCommandObjects.graphQuery("myGraph", query, params)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphQuery("myGraph", query, params)).thenReturn(
+      resultSetCommandObject);
 
     Response<ResultSet> response = pipeliningBase.graphQuery("myGraph", query, params);
 
@@ -81,7 +85,8 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
     String query = "MATCH (n) WHERE n.name = $name RETURN n";
     Map<String, Object> params = Collections.singletonMap("name", "Alice");
 
-    when(graphCommandObjects.graphReadonlyQuery("myGraph", query, params)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphReadonlyQuery("myGraph", query, params)).thenReturn(
+      resultSetCommandObject);
 
     Response<ResultSet> response = pipeliningBase.graphReadonlyQuery("myGraph", query, params);
 
@@ -94,7 +99,8 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
     String query = "MATCH (n) WHERE n.name = $name RETURN n";
     Map<String, Object> params = Collections.singletonMap("name", "Alice");
 
-    when(graphCommandObjects.graphQuery("myGraph", query, params, 1000L)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphQuery("myGraph", query, params, 1000L)).thenReturn(
+      resultSetCommandObject);
 
     Response<ResultSet> response = pipeliningBase.graphQuery("myGraph", query, params, 1000L);
 
@@ -107,9 +113,11 @@ public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBas
     String query = "MATCH (n) WHERE n.name = $name RETURN n";
     Map<String, Object> params = Collections.singletonMap("name", "Alice");
 
-    when(graphCommandObjects.graphReadonlyQuery("myGraph", query, params, 1000L)).thenReturn(resultSetCommandObject);
+    when(graphCommandObjects.graphReadonlyQuery("myGraph", query, params, 1000L)).thenReturn(
+      resultSetCommandObject);
 
-    Response<ResultSet> response = pipeliningBase.graphReadonlyQuery("myGraph", query, params, 1000L);
+    Response<ResultSet> response = pipeliningBase.graphReadonlyQuery("myGraph", query, params,
+      1000L);
 
     assertThat(commands, contains(resultSetCommandObject));
     assertThat(response, is(predefinedResponse));

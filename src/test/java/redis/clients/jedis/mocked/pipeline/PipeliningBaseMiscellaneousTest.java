@@ -20,7 +20,8 @@ import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 
 /**
- * {@link redis.clients.jedis.PipeliningBase} tests that don't really fall into any category of commands.
+ * {@link redis.clients.jedis.PipeliningBase} tests that don't really fall into any category of
+ * commands.
  */
 public class PipeliningBaseMiscellaneousTest extends PipeliningBaseMockedTestBase {
 
@@ -71,7 +72,8 @@ public class PipeliningBaseMiscellaneousTest extends PipeliningBaseMockedTestBas
   @Test
   public void testExecuteCommand() {
     CommandArguments commandArguments = new CommandArguments(Protocol.Command.GET).key("key1");
-    CommandObject<String> commandObject = new CommandObject<>(commandArguments, BuilderFactory.STRING);
+    CommandObject<String> commandObject = new CommandObject<>(commandArguments,
+        BuilderFactory.STRING);
 
     Response<String> response = pipeliningBase.executeCommand(commandObject);
 
@@ -87,10 +89,7 @@ public class PipeliningBaseMiscellaneousTest extends PipeliningBaseMockedTestBas
     Response<Boolean> result1 = pipeliningBase.exists("key1");
     Response<Boolean> result2 = pipeliningBase.exists("key2");
 
-    assertThat(commands, contains(
-        booleanCommandObject,
-        booleanCommandObject
-    ));
+    assertThat(commands, contains(booleanCommandObject, booleanCommandObject));
 
     assertThat(result1, is(predefinedResponse));
     assertThat(result2, is(predefinedResponse));

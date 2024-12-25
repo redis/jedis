@@ -77,7 +77,8 @@ public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMocked
 
   @Test
   public void testCfInsert() {
-    when(commandObjects.cfInsert("myCuckooFilter", "item1", "item2")).thenReturn(listBooleanCommandObject);
+    when(commandObjects.cfInsert("myCuckooFilter", "item1", "item2")).thenReturn(
+      listBooleanCommandObject);
 
     Response<List<Boolean>> response = pipeliningBase.cfInsert("myCuckooFilter", "item1", "item2");
 
@@ -89,9 +90,11 @@ public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMocked
   public void testCfInsertWithParams() {
     CFInsertParams insertParams = new CFInsertParams().capacity(10000L).noCreate();
 
-    when(commandObjects.cfInsert("myCuckooFilter", insertParams, "item1", "item2")).thenReturn(listBooleanCommandObject);
+    when(commandObjects.cfInsert("myCuckooFilter", insertParams, "item1", "item2")).thenReturn(
+      listBooleanCommandObject);
 
-    Response<List<Boolean>> response = pipeliningBase.cfInsert("myCuckooFilter", insertParams, "item1", "item2");
+    Response<List<Boolean>> response = pipeliningBase.cfInsert("myCuckooFilter", insertParams,
+      "item1", "item2");
 
     assertThat(commands, contains(listBooleanCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -99,9 +102,11 @@ public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMocked
 
   @Test
   public void testCfInsertNx() {
-    when(commandObjects.cfInsertNx("myCuckooFilter", "item1", "item2")).thenReturn(listBooleanCommandObject);
+    when(commandObjects.cfInsertNx("myCuckooFilter", "item1", "item2")).thenReturn(
+      listBooleanCommandObject);
 
-    Response<List<Boolean>> response = pipeliningBase.cfInsertNx("myCuckooFilter", "item1", "item2");
+    Response<List<Boolean>> response = pipeliningBase
+        .cfInsertNx("myCuckooFilter", "item1", "item2");
 
     assertThat(commands, contains(listBooleanCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -111,9 +116,11 @@ public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMocked
   public void testCfInsertNxWithParams() {
     CFInsertParams insertParams = new CFInsertParams().capacity(10000L).noCreate();
 
-    when(commandObjects.cfInsertNx("myCuckooFilter", insertParams, "item1", "item2")).thenReturn(listBooleanCommandObject);
+    when(commandObjects.cfInsertNx("myCuckooFilter", insertParams, "item1", "item2")).thenReturn(
+      listBooleanCommandObject);
 
-    Response<List<Boolean>> response = pipeliningBase.cfInsertNx("myCuckooFilter", insertParams, "item1", "item2");
+    Response<List<Boolean>> response = pipeliningBase.cfInsertNx("myCuckooFilter", insertParams,
+      "item1", "item2");
 
     assertThat(commands, contains(listBooleanCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -133,9 +140,11 @@ public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMocked
 
   @Test
   public void testCfMExists() {
-    when(commandObjects.cfMExists("myCuckooFilter", "item1", "item2", "item3")).thenReturn(listBooleanCommandObject);
+    when(commandObjects.cfMExists("myCuckooFilter", "item1", "item2", "item3")).thenReturn(
+      listBooleanCommandObject);
 
-    Response<List<Boolean>> response = pipeliningBase.cfMExists("myCuckooFilter", "item1", "item2", "item3");
+    Response<List<Boolean>> response = pipeliningBase.cfMExists("myCuckooFilter", "item1", "item2",
+      "item3");
 
     assertThat(commands, contains(listBooleanCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -153,9 +162,11 @@ public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMocked
 
   @Test
   public void testCfReserveWithParams() {
-    CFReserveParams reserveParams = new CFReserveParams().bucketSize(2).maxIterations(500).expansion(2);
+    CFReserveParams reserveParams = new CFReserveParams().bucketSize(2).maxIterations(500)
+        .expansion(2);
 
-    when(commandObjects.cfReserve("myCuckooFilter", 10000L, reserveParams)).thenReturn(stringCommandObject);
+    when(commandObjects.cfReserve("myCuckooFilter", 10000L, reserveParams)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.cfReserve("myCuckooFilter", 10000L, reserveParams);
 

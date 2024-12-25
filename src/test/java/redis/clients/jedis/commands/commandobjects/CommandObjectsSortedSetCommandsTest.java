@@ -227,8 +227,10 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
     List<byte[]> randomMembersBinary = exec(commandObjects.zrandmember(key.getBytes(), 2));
 
-    assertThat(randomMembersBinary.get(0), anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
-    assertThat(randomMembersBinary.get(1), anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
+    assertThat(randomMembersBinary.get(0),
+      anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
+    assertThat(randomMembersBinary.get(1),
+      anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
   }
 
   @Test
@@ -245,17 +247,23 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<Tuple> randomMembersWithScores = exec(commandObjects.zrandmemberWithScores(key, 2));
 
     assertThat(randomMembersWithScores, hasSize(2));
-    assertThat(randomMembersWithScores, containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2)));
+    assertThat(randomMembersWithScores,
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2)));
 
-    List<Tuple> randomMembersWithScoresBinary = exec(commandObjects.zrandmemberWithScores(key.getBytes(), 2));
+    List<Tuple> randomMembersWithScoresBinary = exec(commandObjects.zrandmemberWithScores(
+      key.getBytes(), 2));
 
     assertThat(randomMembersWithScoresBinary, hasSize(2));
 
-    assertThat(randomMembersWithScoresBinary.get(0).getBinaryElement(), anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
-    assertThat(randomMembersWithScoresBinary.get(0).getScore(), anyOf(equalTo(score1), equalTo(score2)));
+    assertThat(randomMembersWithScoresBinary.get(0).getBinaryElement(),
+      anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
+    assertThat(randomMembersWithScoresBinary.get(0).getScore(),
+      anyOf(equalTo(score1), equalTo(score2)));
 
-    assertThat(randomMembersWithScoresBinary.get(1).getBinaryElement(), anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
-    assertThat(randomMembersWithScoresBinary.get(1).getScore(), anyOf(equalTo(score1), equalTo(score2)));
+    assertThat(randomMembersWithScoresBinary.get(1).getBinaryElement(),
+      anyOf(equalTo(member1.getBytes()), equalTo(member2.getBytes())));
+    assertThat(randomMembersWithScoresBinary.get(1).getScore(),
+      anyOf(equalTo(score1), equalTo(score2)));
   }
 
   @Test
@@ -287,7 +295,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<Double> scores = exec(commandObjects.zmscore(key, member1, member2));
     assertThat(scores, contains(score1, score2));
 
-    List<Double> scoresBinary = exec(commandObjects.zmscore(key.getBytes(), member1.getBytes(), member2.getBytes()));
+    List<Double> scoresBinary = exec(commandObjects.zmscore(key.getBytes(), member1.getBytes(),
+      member2.getBytes()));
     assertThat(scoresBinary, contains(score1, score2));
   }
 
@@ -346,27 +355,33 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(rankWithScoreMember2.getKey(), equalTo(1L));
     assertThat(rankWithScoreMember2.getValue(), equalTo(score2));
 
-    KeyValue<Long, Double> rankWithScoreMember1Binary = exec(commandObjects.zrankWithScore(key.getBytes(), member1.getBytes()));
+    KeyValue<Long, Double> rankWithScoreMember1Binary = exec(commandObjects.zrankWithScore(
+      key.getBytes(), member1.getBytes()));
     assertThat(rankWithScoreMember1Binary.getKey(), equalTo(0L));
     assertThat(rankWithScoreMember1Binary.getValue(), equalTo(score1));
 
-    KeyValue<Long, Double> rankWithScoreMember2Binary = exec(commandObjects.zrankWithScore(key.getBytes(), member2.getBytes()));
+    KeyValue<Long, Double> rankWithScoreMember2Binary = exec(commandObjects.zrankWithScore(
+      key.getBytes(), member2.getBytes()));
     assertThat(rankWithScoreMember2Binary.getKey(), equalTo(1L));
     assertThat(rankWithScoreMember2Binary.getValue(), equalTo(score2));
 
-    KeyValue<Long, Double> revRankWithScoreMember1 = exec(commandObjects.zrevrankWithScore(key, member1));
+    KeyValue<Long, Double> revRankWithScoreMember1 = exec(commandObjects.zrevrankWithScore(key,
+      member1));
     assertThat(revRankWithScoreMember1.getKey(), equalTo(1L));
     assertThat(revRankWithScoreMember1.getValue(), equalTo(score1));
 
-    KeyValue<Long, Double> revRankWithScoreMember2 = exec(commandObjects.zrevrankWithScore(key, member2));
+    KeyValue<Long, Double> revRankWithScoreMember2 = exec(commandObjects.zrevrankWithScore(key,
+      member2));
     assertThat(revRankWithScoreMember2.getKey(), equalTo(0L));
     assertThat(revRankWithScoreMember2.getValue(), equalTo(score2));
 
-    KeyValue<Long, Double> revRankWithScoreMember1Binary = exec(commandObjects.zrevrankWithScore(key.getBytes(), member1.getBytes()));
+    KeyValue<Long, Double> revRankWithScoreMember1Binary = exec(commandObjects.zrevrankWithScore(
+      key.getBytes(), member1.getBytes()));
     assertThat(revRankWithScoreMember1Binary.getKey(), equalTo(1L));
     assertThat(revRankWithScoreMember1Binary.getValue(), equalTo(score1));
 
-    KeyValue<Long, Double> revRankWithScoreMember2Binary = exec(commandObjects.zrevrankWithScore(key.getBytes(), member2.getBytes()));
+    KeyValue<Long, Double> revRankWithScoreMember2Binary = exec(commandObjects.zrevrankWithScore(
+      key.getBytes(), member2.getBytes()));
     assertThat(revRankWithScoreMember2Binary.getKey(), equalTo(0L));
     assertThat(revRankWithScoreMember2Binary.getValue(), equalTo(score2));
   }
@@ -408,7 +423,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(poppedMaxBinary.getScore(), equalTo(score2));
 
     List<Tuple> poppedMaxMultipleBinary = exec(commandObjects.zpopmax(key, 2));
-    assertThat(poppedMaxMultipleBinary, hasSize(1)); // Since we already popped the max, only one remains
+    assertThat(poppedMaxMultipleBinary, hasSize(1)); // Since we already popped the max, only one
+                                                     // remains
     assertThat(poppedMaxMultipleBinary.get(0).getBinaryElement(), equalTo(member1.getBytes()));
     assertThat(poppedMaxMultipleBinary.get(0).getScore(), equalTo(score1));
   }
@@ -450,7 +466,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(poppedMinBinary.getScore(), equalTo(score1));
 
     List<Tuple> poppedMinMultipleBinary = exec(commandObjects.zpopmin(key, 2));
-    assertThat(poppedMinMultipleBinary, hasSize(1)); // Since we already popped the min, only one remains
+    assertThat(poppedMinMultipleBinary, hasSize(1)); // Since we already popped the min, only one
+                                                     // remains
     assertThat(poppedMinMultipleBinary.get(0).getBinaryElement(), equalTo(member2.getBytes()));
     assertThat(poppedMinMultipleBinary.get(0).getScore(), equalTo(score2));
   }
@@ -522,7 +539,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     Long countInNumericRangeBinary = exec(commandObjects.zcount(key.getBytes(), 1.5, 2.5));
     assertThat(countInNumericRangeBinary, equalTo(1L));
 
-    Long countInBinaryRange = exec(commandObjects.zcount(key.getBytes(), "(1".getBytes(), "3".getBytes()));
+    Long countInBinaryRange = exec(commandObjects.zcount(key.getBytes(), "(1".getBytes(),
+      "3".getBytes()));
     assertThat(countInBinaryRange, equalTo(2L));
   }
 
@@ -590,7 +608,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(rangeWithScoresParams.get(1).getElement(), equalTo(member2));
     assertThat(rangeWithScoresParams.get(1).getScore(), equalTo(score2));
 
-    List<Tuple> rangeWithScoresParamsBinary = exec(commandObjects.zrangeWithScores(key.getBytes(), zRangeParams));
+    List<Tuple> rangeWithScoresParamsBinary = exec(commandObjects.zrangeWithScores(key.getBytes(),
+      zRangeParams));
 
     assertThat(rangeWithScoresParamsBinary, hasSize(2));
     assertThat(rangeWithScoresParamsBinary.get(0).getBinaryElement(), equalTo(member1.getBytes()));
@@ -686,7 +705,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(revRangeWithScores.get(1).getElement(), equalTo(member1));
     assertThat(revRangeWithScores.get(1).getScore(), equalTo(score1));
 
-    List<Tuple> revRangeWithScoresBinary = exec(commandObjects.zrevrangeWithScores(key.getBytes(), 0, -1));
+    List<Tuple> revRangeWithScoresBinary = exec(commandObjects.zrevrangeWithScores(key.getBytes(),
+      0, -1));
 
     assertThat(revRangeWithScoresBinary, hasSize(2));
     assertThat(revRangeWithScoresBinary.get(0).getBinaryElement(), equalTo(member2.getBytes()));
@@ -718,10 +738,12 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<String> stringRange = exec(commandObjects.zrangeByScore(key, smin, smax));
     assertThat(stringRange, contains("one", "two", "three"));
 
-    List<String> numericRangeOffsetCount = exec(commandObjects.zrangeByScore(key, min, max, offset, count));
+    List<String> numericRangeOffsetCount = exec(commandObjects.zrangeByScore(key, min, max, offset,
+      count));
     assertThat(numericRangeOffsetCount, contains("one"));
 
-    List<String> stringRangeOffsetCount = exec(commandObjects.zrangeByScore(key, smin, smax, offset, count));
+    List<String> stringRangeOffsetCount = exec(commandObjects.zrangeByScore(key, smin, smax,
+      offset, count));
     assertThat(stringRangeOffsetCount, contains("one"));
 
     List<byte[]> numericRangeBinary = exec(commandObjects.zrangeByScore(key.getBytes(), min, max));
@@ -732,10 +754,12 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<byte[]> stringRangeBinary = exec(commandObjects.zrangeByScore(key.getBytes(), bmin, bmax));
     assertThat(stringRangeBinary, contains("one".getBytes(), "two".getBytes(), "three".getBytes()));
 
-    List<byte[]> numericRangeOffsetCountBinary = exec(commandObjects.zrangeByScore(key.getBytes(), min, max, offset, count));
+    List<byte[]> numericRangeOffsetCountBinary = exec(commandObjects.zrangeByScore(key.getBytes(),
+      min, max, offset, count));
     assertThat(numericRangeOffsetCountBinary.get(0), equalTo("one".getBytes()));
 
-    List<byte[]> stringRangeOffsetCountBinary = exec(commandObjects.zrangeByScore(key.getBytes(), bmin, bmax, offset, count));
+    List<byte[]> stringRangeOffsetCountBinary = exec(commandObjects.zrangeByScore(key.getBytes(),
+      bmin, bmax, offset, count));
     assertThat(stringRangeOffsetCountBinary, contains("one".getBytes()));
   }
 
@@ -762,22 +786,30 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<String> stringRevrange = exec(commandObjects.zrevrangeByScore(key, smax, smin));
     assertThat(stringRevrange, contains("three", "two", "one"));
 
-    List<String> numericRevrangeOffsetCount = exec(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    List<String> numericRevrangeOffsetCount = exec(commandObjects.zrevrangeByScore(key, max, min,
+      offset, count));
     assertThat(numericRevrangeOffsetCount, contains("three"));
 
-    List<String> stringRevrangeOffsetCount = exec(commandObjects.zrevrangeByScore(key, smax, smin, offset, count));
+    List<String> stringRevrangeOffsetCount = exec(commandObjects.zrevrangeByScore(key, smax, smin,
+      offset, count));
     assertThat(stringRevrangeOffsetCount, contains("three"));
 
-    List<byte[]> numericRevrangeBinary = exec(commandObjects.zrevrangeByScore(key.getBytes(), max, min));
-    assertThat(numericRevrangeBinary, contains("three".getBytes(), "two".getBytes(), "one".getBytes()));
+    List<byte[]> numericRevrangeBinary = exec(commandObjects.zrevrangeByScore(key.getBytes(), max,
+      min));
+    assertThat(numericRevrangeBinary,
+      contains("three".getBytes(), "two".getBytes(), "one".getBytes()));
 
-    List<byte[]> stringRevrangeBinary = exec(commandObjects.zrevrangeByScore(key.getBytes(), bmax, bmin));
-    assertThat(stringRevrangeBinary, contains("three".getBytes(), "two".getBytes(), "one".getBytes()));
+    List<byte[]> stringRevrangeBinary = exec(commandObjects.zrevrangeByScore(key.getBytes(), bmax,
+      bmin));
+    assertThat(stringRevrangeBinary,
+      contains("three".getBytes(), "two".getBytes(), "one".getBytes()));
 
-    List<byte[]> numericRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScore(key.getBytes(), max, min, offset, count));
+    List<byte[]> numericRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScore(
+      key.getBytes(), max, min, offset, count));
     assertThat(numericRevrangeOffsetCountBinary.get(0), equalTo("three".getBytes()));
 
-    List<byte[]> stringRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScore(key.getBytes(), bmax, bmin, offset, count));
+    List<byte[]> stringRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScore(
+      key.getBytes(), bmax, bmin, offset, count));
     assertThat(stringRevrangeOffsetCountBinary, contains("three".getBytes()));
   }
 
@@ -798,48 +830,44 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key, 3, "three"));
 
     List<Tuple> numericRange = exec(commandObjects.zrangeByScoreWithScores(key, min, max));
-    assertThat(numericRange, contains(
-        new Tuple("one", 1d),
-        new Tuple("two", 2d),
-        new Tuple("three", 3d)));
+    assertThat(numericRange,
+      contains(new Tuple("one", 1d), new Tuple("two", 2d), new Tuple("three", 3d)));
 
     List<Tuple> stringRange = exec(commandObjects.zrangeByScoreWithScores(key, smin, smax));
-    assertThat(stringRange, contains(
-        new Tuple("one", 1d),
-        new Tuple("two", 2d),
-        new Tuple("three", 3d)));
+    assertThat(stringRange,
+      contains(new Tuple("one", 1d), new Tuple("two", 2d), new Tuple("three", 3d)));
 
-    List<Tuple> numericRangeOffsetCount = exec(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
-    assertThat(numericRangeOffsetCount, contains(
-        new Tuple("one", 1d),
-        new Tuple("two", 2d)));
+    List<Tuple> numericRangeOffsetCount = exec(commandObjects.zrangeByScoreWithScores(key, min,
+      max, offset, count));
+    assertThat(numericRangeOffsetCount, contains(new Tuple("one", 1d), new Tuple("two", 2d)));
 
-    List<Tuple> stringRangeOffsetCount = exec(commandObjects.zrangeByScoreWithScores(key, smin, smax, offset, count));
-    assertThat(stringRangeOffsetCount, contains(
-        new Tuple("one", 1d),
-        new Tuple("two", 2d)));
+    List<Tuple> stringRangeOffsetCount = exec(commandObjects.zrangeByScoreWithScores(key, smin,
+      smax, offset, count));
+    assertThat(stringRangeOffsetCount, contains(new Tuple("one", 1d), new Tuple("two", 2d)));
 
-    List<Tuple> numericRangeBinary = exec(commandObjects.zrangeByScoreWithScores(key.getBytes(), min, max));
-    assertThat(numericRangeBinary, contains(
-        new Tuple("one".getBytes(), 1d),
-        new Tuple("two".getBytes(), 2d),
+    List<Tuple> numericRangeBinary = exec(commandObjects.zrangeByScoreWithScores(key.getBytes(),
+      min, max));
+    assertThat(
+      numericRangeBinary,
+      contains(new Tuple("one".getBytes(), 1d), new Tuple("two".getBytes(), 2d),
         new Tuple("three".getBytes(), 3d)));
 
-    List<Tuple> stringRangeBinary = exec(commandObjects.zrangeByScoreWithScores(key.getBytes(), bmin, bmax));
-    assertThat(stringRangeBinary, contains(
-        new Tuple("one".getBytes(), 1d),
-        new Tuple("two".getBytes(), 2d),
+    List<Tuple> stringRangeBinary = exec(commandObjects.zrangeByScoreWithScores(key.getBytes(),
+      bmin, bmax));
+    assertThat(
+      stringRangeBinary,
+      contains(new Tuple("one".getBytes(), 1d), new Tuple("two".getBytes(), 2d),
         new Tuple("three".getBytes(), 3d)));
 
-    List<Tuple> numericRangeOffsetCountBinary = exec(commandObjects.zrangeByScoreWithScores(key.getBytes(), min, max, offset, count));
-    assertThat(numericRangeOffsetCountBinary, contains(
-        new Tuple("one".getBytes(), 1d),
-        new Tuple("two".getBytes(), 2d)));
+    List<Tuple> numericRangeOffsetCountBinary = exec(commandObjects.zrangeByScoreWithScores(
+      key.getBytes(), min, max, offset, count));
+    assertThat(numericRangeOffsetCountBinary,
+      contains(new Tuple("one".getBytes(), 1d), new Tuple("two".getBytes(), 2d)));
 
-    List<Tuple> stringRangeOffsetCountBinary = exec(commandObjects.zrangeByScoreWithScores(key.getBytes(), bmin, bmax, offset, count));
-    assertThat(stringRangeOffsetCountBinary, contains(
-        new Tuple("one".getBytes(), 1d),
-        new Tuple("two".getBytes(), 2d)));
+    List<Tuple> stringRangeOffsetCountBinary = exec(commandObjects.zrangeByScoreWithScores(
+      key.getBytes(), bmin, bmax, offset, count));
+    assertThat(stringRangeOffsetCountBinary,
+      contains(new Tuple("one".getBytes(), 1d), new Tuple("two".getBytes(), 2d)));
   }
 
   @Test
@@ -859,48 +887,44 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key, 1, "one"));
 
     List<Tuple> numericRevrange = exec(commandObjects.zrevrangeByScoreWithScores(key, max, min));
-    assertThat(numericRevrange, contains(
-        new Tuple("three", 3d),
-        new Tuple("two", 2d),
-        new Tuple("one", 1d)));
+    assertThat(numericRevrange,
+      contains(new Tuple("three", 3d), new Tuple("two", 2d), new Tuple("one", 1d)));
 
     List<Tuple> stringRevrange = exec(commandObjects.zrevrangeByScoreWithScores(key, smax, smin));
-    assertThat(stringRevrange, contains(
-        new Tuple("three", 3d),
-        new Tuple("two", 2d),
-        new Tuple("one", 1d)));
+    assertThat(stringRevrange,
+      contains(new Tuple("three", 3d), new Tuple("two", 2d), new Tuple("one", 1d)));
 
-    List<Tuple> numericRevrangeOffsetCount = exec(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
-    assertThat(numericRevrangeOffsetCount, contains(
-        new Tuple("three", 3d),
-        new Tuple("two", 2d)));
+    List<Tuple> numericRevrangeOffsetCount = exec(commandObjects.zrevrangeByScoreWithScores(key,
+      max, min, offset, count));
+    assertThat(numericRevrangeOffsetCount, contains(new Tuple("three", 3d), new Tuple("two", 2d)));
 
-    List<Tuple> stringRevrangeOffsetCount = exec(commandObjects.zrevrangeByScoreWithScores(key, smax, smin, offset, count));
-    assertThat(stringRevrangeOffsetCount, contains(
-        new Tuple("three", 3d),
-        new Tuple("two", 2d)));
+    List<Tuple> stringRevrangeOffsetCount = exec(commandObjects.zrevrangeByScoreWithScores(key,
+      smax, smin, offset, count));
+    assertThat(stringRevrangeOffsetCount, contains(new Tuple("three", 3d), new Tuple("two", 2d)));
 
-    List<Tuple> numericRevrangeBinary = exec(commandObjects.zrevrangeByScoreWithScores(key.getBytes(), max, min));
-    assertThat(numericRevrangeBinary, contains(
-        new Tuple("three".getBytes(), 3d),
-        new Tuple("two".getBytes(), 2d),
+    List<Tuple> numericRevrangeBinary = exec(commandObjects.zrevrangeByScoreWithScores(
+      key.getBytes(), max, min));
+    assertThat(
+      numericRevrangeBinary,
+      contains(new Tuple("three".getBytes(), 3d), new Tuple("two".getBytes(), 2d),
         new Tuple("one".getBytes(), 1d)));
 
-    List<Tuple> stringRevrangeBinary = exec(commandObjects.zrevrangeByScoreWithScores(key.getBytes(), bmax, bmin));
-    assertThat(stringRevrangeBinary, contains(
-        new Tuple("three".getBytes(), 3d),
-        new Tuple("two".getBytes(), 2d),
+    List<Tuple> stringRevrangeBinary = exec(commandObjects.zrevrangeByScoreWithScores(
+      key.getBytes(), bmax, bmin));
+    assertThat(
+      stringRevrangeBinary,
+      contains(new Tuple("three".getBytes(), 3d), new Tuple("two".getBytes(), 2d),
         new Tuple("one".getBytes(), 1d)));
 
-    List<Tuple> numericRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScoreWithScores(key.getBytes(), max, min, offset, count));
-    assertThat(numericRevrangeOffsetCountBinary, contains(
-        new Tuple("three".getBytes(), 3d),
-        new Tuple("two".getBytes(), 2d)));
+    List<Tuple> numericRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScoreWithScores(
+      key.getBytes(), max, min, offset, count));
+    assertThat(numericRevrangeOffsetCountBinary,
+      contains(new Tuple("three".getBytes(), 3d), new Tuple("two".getBytes(), 2d)));
 
-    List<Tuple> stringRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScoreWithScores(key.getBytes(), bmax, bmin, offset, count));
-    assertThat(stringRevrangeOffsetCountBinary, contains(
-        new Tuple("three".getBytes(), 3d),
-        new Tuple("two".getBytes(), 2d)));
+    List<Tuple> stringRevrangeOffsetCountBinary = exec(commandObjects.zrevrangeByScoreWithScores(
+      key.getBytes(), bmax, bmin, offset, count));
+    assertThat(stringRevrangeOffsetCountBinary,
+      contains(new Tuple("three".getBytes(), 3d), new Tuple("two".getBytes(), 2d)));
   }
 
   @Test
@@ -1005,7 +1029,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     Long count = exec(commandObjects.zlexcount(key, min, max));
     assertThat(count, equalTo(2L));
 
-    Long countBinary = exec(commandObjects.zlexcount(key.getBytes(), min.getBytes(), max.getBytes()));
+    Long countBinary = exec(commandObjects
+        .zlexcount(key.getBytes(), min.getBytes(), max.getBytes()));
     assertThat(countBinary, equalTo(2L));
   }
 
@@ -1028,10 +1053,12 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<String> limitedRange = exec(commandObjects.zrangeByLex(key, min, max, offset, count));
     assertThat(limitedRange, contains("abc", "bcd"));
 
-    List<byte[]> rangeBinary = exec(commandObjects.zrangeByLex(key.getBytes(), min.getBytes(), max.getBytes()));
+    List<byte[]> rangeBinary = exec(commandObjects.zrangeByLex(key.getBytes(), min.getBytes(),
+      max.getBytes()));
     assertThat(rangeBinary, contains("abc".getBytes(), "bcd".getBytes()));
 
-    List<byte[]> limitedRangeBinary = exec(commandObjects.zrangeByLex(key.getBytes(), min.getBytes(), max.getBytes(), offset, count));
+    List<byte[]> limitedRangeBinary = exec(commandObjects.zrangeByLex(key.getBytes(),
+      min.getBytes(), max.getBytes(), offset, count));
     assertThat(limitedRangeBinary, contains("abc".getBytes(), "bcd".getBytes()));
   }
 
@@ -1054,12 +1081,14 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<String> limitedRevRange = exec(commandObjects.zrevrangeByLex(key, max, min, offset, count));
     assertThat(limitedRevRange, contains("cde", "bcd"));
 
-    List<byte[]> revRangeBinary = exec(commandObjects.zrevrangeByLex(key.getBytes(), max.getBytes(), min.getBytes()));
+    List<byte[]> revRangeBinary = exec(commandObjects.zrevrangeByLex(key.getBytes(),
+      max.getBytes(), min.getBytes()));
     assertThat(revRangeBinary.get(0), equalTo("cde".getBytes()));
     assertThat(revRangeBinary.get(1), equalTo("bcd".getBytes()));
     assertThat(revRangeBinary.get(2), equalTo("abc".getBytes()));
 
-    List<byte[]> limitedRevRangeBinary = exec(commandObjects.zrevrangeByLex(key.getBytes(), max.getBytes(), min.getBytes(), offset, count));
+    List<byte[]> limitedRevRangeBinary = exec(commandObjects.zrevrangeByLex(key.getBytes(),
+      max.getBytes(), min.getBytes(), offset, count));
     assertThat(limitedRevRangeBinary.get(0), equalTo("cde".getBytes()));
     assertThat(limitedRevRangeBinary.get(1), equalTo("bcd".getBytes()));
   }
@@ -1112,14 +1141,13 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key, score2, member2));
 
     ScanResult<Tuple> result = exec(commandObjects.zscan(key, cursor, params));
-    assertThat(result.getResult(), containsInAnyOrder(
-        new Tuple(member1, score1),
-        new Tuple(member2, score2)));
+    assertThat(result.getResult(),
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2)));
 
-    ScanResult<Tuple> resultBinar = exec(commandObjects.zscan(key.getBytes(), cursor.getBytes(), params));
-    assertThat(resultBinar.getResult(), containsInAnyOrder(
-        new Tuple(member1, score1),
-        new Tuple(member2, score2)));
+    ScanResult<Tuple> resultBinar = exec(commandObjects.zscan(key.getBytes(), cursor.getBytes(),
+      params));
+    assertThat(resultBinar.getResult(),
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2)));
   }
 
   @Test
@@ -1144,7 +1172,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<byte[]> diffBinary = exec(commandObjects.zdiff(key1.getBytes(), key2.getBytes()));
     assertThat(diffBinary, containsInAnyOrder(member2.getBytes()));
 
-    List<Tuple> diffWithScoresBinary = exec(commandObjects.zdiffWithScores(key1.getBytes(), key2.getBytes()));
+    List<Tuple> diffWithScoresBinary = exec(commandObjects.zdiffWithScores(key1.getBytes(),
+      key2.getBytes()));
     assertThat(diffWithScoresBinary, containsInAnyOrder(new Tuple(member2.getBytes(), score2)));
   }
 
@@ -1209,8 +1238,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(inter, containsInAnyOrder("member1"));
 
     List<Tuple> interWithScores = exec(commandObjects.zinterWithScores(params, "set1", "set2"));
-    assertThat(interWithScores, containsInAnyOrder(
-        new Tuple("member1", 5.0)));
+    assertThat(interWithScores, containsInAnyOrder(new Tuple("member1", 5.0)));
 
     Long card = exec(commandObjects.zintercard("set1", "set2"));
     assertThat(card, equalTo(1L));
@@ -1218,17 +1246,19 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     Long cardLimited = exec(commandObjects.zintercard(1L, "set1", "set2"));
     assertThat(cardLimited, equalTo(1L));
 
-    List<byte[]> interBinary = exec(commandObjects.zinter(params, "set1".getBytes(), "set2".getBytes()));
+    List<byte[]> interBinary = exec(commandObjects.zinter(params, "set1".getBytes(),
+      "set2".getBytes()));
     assertThat(interBinary, containsInAnyOrder("member1".getBytes()));
 
-    List<Tuple> interWithScoresBinary = exec(commandObjects.zinterWithScores(params, "set1".getBytes(), "set2".getBytes()));
-    assertThat(interWithScoresBinary, hasItem(
-        new Tuple("member1".getBytes(), 5.0)));
+    List<Tuple> interWithScoresBinary = exec(commandObjects.zinterWithScores(params,
+      "set1".getBytes(), "set2".getBytes()));
+    assertThat(interWithScoresBinary, hasItem(new Tuple("member1".getBytes(), 5.0)));
 
     Long cardBinary = exec(commandObjects.zintercard("set1".getBytes(), "set2".getBytes()));
     assertThat(cardBinary, equalTo(1L));
 
-    Long cardLimitedBinary = exec(commandObjects.zintercard(1L, "set1".getBytes(), "set2".getBytes()));
+    Long cardLimitedBinary = exec(commandObjects.zintercard(1L, "set1".getBytes(),
+      "set2".getBytes()));
     assertThat(cardLimitedBinary, equalTo(1L));
   }
 
@@ -1304,7 +1334,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     List<Tuple> dstSetParamsContent = exec(commandObjects.zrangeWithScores(dstKey, 0, -1));
     assertThat(dstSetParamsContent, hasSize(1));
     assertThat(dstSetParamsContent.get(0).getBinaryElement(), equalTo(member2));
-    assertThat(dstSetParamsContent.get(0).getScore(), equalTo(score2 * 2)); // Score aggregated as SUM
+    assertThat(dstSetParamsContent.get(0).getScore(), equalTo(score2 * 2)); // Score aggregated as
+                                                                            // SUM
   }
 
   @Test
@@ -1327,17 +1358,17 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(zunion, containsInAnyOrder(member1, member2));
 
     List<Tuple> zunionWithScores = exec(commandObjects.zunionWithScores(params, key1, key2));
-    assertThat(zunionWithScores, containsInAnyOrder(
-        new Tuple(member1, score1 + score2),
-        new Tuple(member2, score2)));
+    assertThat(zunionWithScores,
+      containsInAnyOrder(new Tuple(member1, score1 + score2), new Tuple(member2, score2)));
 
-    List<byte[]> zunionBinary = exec(commandObjects.zunion(params, key1.getBytes(), key2.getBytes()));
+    List<byte[]> zunionBinary = exec(commandObjects
+        .zunion(params, key1.getBytes(), key2.getBytes()));
     assertThat(zunionBinary, containsInAnyOrder(member1.getBytes(), member2.getBytes()));
 
-    List<Tuple> zunionWithScoresBinary = exec(commandObjects.zunionWithScores(params, key1.getBytes(), key2.getBytes()));
-    assertThat(zunionWithScoresBinary, containsInAnyOrder(
-        new Tuple(member1, score1 + score2),
-        new Tuple(member2, score2)));
+    List<Tuple> zunionWithScoresBinary = exec(commandObjects.zunionWithScores(params,
+      key1.getBytes(), key2.getBytes()));
+    assertThat(zunionWithScoresBinary,
+      containsInAnyOrder(new Tuple(member1, score1 + score2), new Tuple(member2, score2)));
   }
 
   @Test
@@ -1364,19 +1395,19 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(zunionStore, equalTo(3L));
 
     List<Tuple> dstSetContent = exec(commandObjects.zrangeWithScores(dstKey, 0, -1));
-    assertThat(dstSetContent, containsInAnyOrder(
-        new Tuple(member1, score1),
-        new Tuple(member2, score2),
-        new Tuple(member3, score3 * 2)));
+    assertThat(
+      dstSetContent,
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2), new Tuple(member3,
+          score3 * 2)));
 
     Long zunionStoreParams = exec(commandObjects.zunionstore(dstKey, params, set1, set2));
     assertThat(zunionStoreParams, equalTo(3L));
 
     List<Tuple> dstSetContentParams = exec(commandObjects.zrangeWithScores(dstKey, 0, -1));
-    assertThat(dstSetContentParams, containsInAnyOrder(
-        new Tuple(member1, score1),
-        new Tuple(member2, score2),
-        new Tuple(member3, score3)));
+    assertThat(
+      dstSetContentParams,
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2), new Tuple(member3,
+          score3)));
   }
 
   @Test
@@ -1403,19 +1434,19 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     assertThat(zunionStore, equalTo(3L));
 
     List<Tuple> dstSetContent = exec(commandObjects.zrangeWithScores(dstKey, 0, -1));
-    assertThat(dstSetContent, containsInAnyOrder(
-        new Tuple(member1, score1),
-        new Tuple(member2, score2),
-        new Tuple(member3, score3 * 2)));
+    assertThat(
+      dstSetContent,
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2), new Tuple(member3,
+          score3 * 2)));
 
     Long zunionStoreParams = exec(commandObjects.zunionstore(dstKey, params, set1, set2));
     assertThat(zunionStoreParams, equalTo(3L));
 
     List<Tuple> dstSetContentParams = exec(commandObjects.zrangeWithScores(dstKey, 0, -1));
-    assertThat(dstSetContentParams, containsInAnyOrder(
-        new Tuple(member1, score1),
-        new Tuple(member2, score2),
-        new Tuple(member3, score3)));
+    assertThat(
+      dstSetContentParams,
+      containsInAnyOrder(new Tuple(member1, score1), new Tuple(member2, score2), new Tuple(member3,
+          score3)));
   }
 
   @Test
@@ -1430,13 +1461,15 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key1, score1, member1));
     exec(commandObjects.zadd(key2, score2, member2));
 
-    KeyValue<String, List<Tuple>> zmpop = exec(commandObjects.zmpop(SortedSetOption.MAX, key1, key2));
+    KeyValue<String, List<Tuple>> zmpop = exec(commandObjects
+        .zmpop(SortedSetOption.MAX, key1, key2));
 
     assertThat(zmpop, notNullValue());
     assertThat(zmpop.getKey(), either(equalTo(key1)).or(equalTo(key2)));
     assertThat(zmpop.getValue(), hasSize(1));
 
-    KeyValue<String, List<Tuple>> zmpopCount = exec(commandObjects.zmpop(SortedSetOption.MIN, 2, key1, key2));
+    KeyValue<String, List<Tuple>> zmpopCount = exec(commandObjects.zmpop(SortedSetOption.MIN, 2,
+      key1, key2));
 
     assertThat(zmpopCount, notNullValue());
     assertThat(zmpopCount.getKey(), either(equalTo(key1)).or(equalTo(key2)));
@@ -1455,13 +1488,15 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key1, score1, member1));
     exec(commandObjects.zadd(key2, score2, member2));
 
-    KeyValue<byte[], List<Tuple>> zmpopBinary = exec(commandObjects.zmpop(SortedSetOption.MAX, key1, key2));
+    KeyValue<byte[], List<Tuple>> zmpopBinary = exec(commandObjects.zmpop(SortedSetOption.MAX,
+      key1, key2));
 
     assertThat(zmpopBinary, notNullValue());
     assertThat(zmpopBinary.getKey(), either(equalTo(key1)).or(equalTo(key2)));
     assertThat(zmpopBinary.getValue(), hasSize(1));
 
-    KeyValue<byte[], List<Tuple>> zmpopCountBinary = exec(commandObjects.zmpop(SortedSetOption.MIN, 2, key1, key2));
+    KeyValue<byte[], List<Tuple>> zmpopCountBinary = exec(commandObjects.zmpop(SortedSetOption.MIN,
+      2, key1, key2));
 
     assertThat(zmpopCountBinary, notNullValue());
     assertThat(zmpopCountBinary.getKey(), either(equalTo(key1)).or(equalTo(key2)));
@@ -1484,12 +1519,14 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key2, score1, member1));
     exec(commandObjects.zadd(key2, score2, member2));
 
-    KeyValue<String, List<Tuple>> bzmpopMax = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX, key1, key2));
+    KeyValue<String, List<Tuple>> bzmpopMax = exec(commandObjects.bzmpop(timeout,
+      SortedSetOption.MAX, key1, key2));
     assertThat(bzmpopMax, notNullValue());
     assertThat(bzmpopMax.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(bzmpopMax.getValue(), contains(new Tuple(member2, score2)));
 
-    KeyValue<String, List<Tuple>> bzmpopMin = exec(commandObjects.bzmpop(timeout, SortedSetOption.MIN, key1, key2));
+    KeyValue<String, List<Tuple>> bzmpopMin = exec(commandObjects.bzmpop(timeout,
+      SortedSetOption.MIN, key1, key2));
     assertThat(bzmpopMin, notNullValue());
     assertThat(bzmpopMin.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(bzmpopMin.getValue(), contains(new Tuple(member1, score1)));
@@ -1511,12 +1548,14 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key2, score1, member1));
     exec(commandObjects.zadd(key2, score2, member2));
 
-    KeyValue<byte[], List<Tuple>> bzmpopMax = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX, key1, key2));
+    KeyValue<byte[], List<Tuple>> bzmpopMax = exec(commandObjects.bzmpop(timeout,
+      SortedSetOption.MAX, key1, key2));
     assertThat(bzmpopMax, notNullValue());
     assertThat(bzmpopMax.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(bzmpopMax.getValue(), contains(new Tuple(member2, score2)));
 
-    KeyValue<byte[], List<Tuple>> bzmpopMin = exec(commandObjects.bzmpop(timeout, SortedSetOption.MIN, key1, key2));
+    KeyValue<byte[], List<Tuple>> bzmpopMin = exec(commandObjects.bzmpop(timeout,
+      SortedSetOption.MIN, key1, key2));
     assertThat(bzmpopMin, notNullValue());
     assertThat(bzmpopMin.getKey(), anyOf(equalTo(key1), equalTo(key2)));
     assertThat(bzmpopMin.getValue(), contains(new Tuple(member1, score1)));
@@ -1535,7 +1574,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key1, score1, member1));
     exec(commandObjects.zadd(key2, score2, member2));
 
-    KeyValue<String, List<Tuple>> bzmpop = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX, 1, key1, key2));
+    KeyValue<String, List<Tuple>> bzmpop = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX,
+      1, key1, key2));
     assertThat(bzmpop, notNullValue());
     assertThat(bzmpop.getKey(), either(equalTo(key1)).or(equalTo(key2)));
     assertThat(bzmpop.getValue(), hasSize(1));
@@ -1554,7 +1594,8 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     exec(commandObjects.zadd(key1, score1, member1));
     exec(commandObjects.zadd(key2, score2, member2));
 
-    KeyValue<byte[], List<Tuple>> bzmpopBinary = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX, 1, key1, key2));
+    KeyValue<byte[], List<Tuple>> bzmpopBinary = exec(commandObjects.bzmpop(timeout,
+      SortedSetOption.MAX, 1, key1, key2));
     assertThat(bzmpopBinary, notNullValue());
     assertThat(bzmpopBinary.getKey(), either(equalTo(key1)).or(equalTo(key2)));
     assertThat(bzmpopBinary.getValue(), hasSize(1));

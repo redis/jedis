@@ -3,7 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 
-//Legacy
+// Legacy
 public interface SentinelCommands {
 
   String sentinelMyId();

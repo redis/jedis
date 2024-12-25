@@ -26,7 +26,8 @@ public class CommandDocument {
   private final List<String> history;
 
   @Deprecated
-  public CommandDocument(String summary, String since, String group, String complexity, List<String> history) {
+  public CommandDocument(String summary, String since, String group, String complexity,
+      List<String> history) {
     this.summary = summary;
     this.since = since;
     this.group = group;

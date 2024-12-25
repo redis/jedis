@@ -18,7 +18,8 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
   @Test
   public void none() {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createConfig(new AllowAndDenyListWithStringKeys(null, null, null, null)), singleConnectionPoolConfig.get())) {
+        createConfig(new AllowAndDenyListWithStringKeys(null, null, null, null)),
+        singleConnectionPoolConfig.get())) {
       Cache cache = jedis.getCache();
       control.set("foo", "bar");
       assertEquals(0, cache.getSize());
@@ -30,8 +31,8 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
   @Test
   public void whiteListCommand() {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createConfig(new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
-        singleConnectionPoolConfig.get())) {
+        createConfig(new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null,
+            null, null)), singleConnectionPoolConfig.get())) {
       Cache cache = jedis.getCache();
       control.set("foo", "bar");
       assertEquals(0, cache.getSize());
@@ -43,8 +44,8 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
   @Test
   public void blackListCommand() {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createConfig(new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
-        singleConnectionPoolConfig.get())) {
+        createConfig(new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET),
+            null, null)), singleConnectionPoolConfig.get())) {
       Cache cache = jedis.getCache();
       control.set("foo", "bar");
       assertEquals(0, cache.getSize());
@@ -56,7 +57,8 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
   @Test
   public void whiteListKey() {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createConfig(new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)), singleConnectionPoolConfig.get())) {
+        createConfig(new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
+        singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       Cache cache = jedis.getCache();
       assertEquals(0, cache.getSize());
@@ -68,7 +70,8 @@ public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
   @Test
   public void blackListKey() {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createConfig(new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))), singleConnectionPoolConfig.get())) {
+        createConfig(new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
+        singleConnectionPoolConfig.get())) {
       Cache cache = jedis.getCache();
       control.set("foo", "bar");
       assertEquals(0, cache.getSize());

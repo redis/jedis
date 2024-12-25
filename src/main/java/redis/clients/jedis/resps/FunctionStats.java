@@ -40,17 +40,17 @@ public class FunctionStats {
 
         for (KeyValue kv : (List<KeyValue>) list) {
           switch (BuilderFactory.STRING.build(kv.getKey())) {
-            case "running_script":
-              runningScriptMap = BuilderFactory.ENCODED_OBJECT_MAP.build(kv.getValue());
-              break;
-            case "engines":
-              List<KeyValue> ilist = (List<KeyValue>) kv.getValue();
-              enginesMap = new LinkedHashMap<>(ilist.size());
-              for (KeyValue ikv : (List<KeyValue>) kv.getValue()) {
-                enginesMap.put(BuilderFactory.STRING.build(ikv.getKey()),
-                    BuilderFactory.ENCODED_OBJECT_MAP.build(ikv.getValue()));
-              }
-              break;
+          case "running_script":
+            runningScriptMap = BuilderFactory.ENCODED_OBJECT_MAP.build(kv.getValue());
+            break;
+          case "engines":
+            List<KeyValue> ilist = (List<KeyValue>) kv.getValue();
+            enginesMap = new LinkedHashMap<>(ilist.size());
+            for (KeyValue ikv : (List<KeyValue>) kv.getValue()) {
+              enginesMap.put(BuilderFactory.STRING.build(ikv.getKey()),
+                BuilderFactory.ENCODED_OBJECT_MAP.build(ikv.getValue()));
+            }
+            break;
           }
         }
 
@@ -65,7 +65,7 @@ public class FunctionStats {
       Map<String, Map<String, Object>> enginesMap = new LinkedHashMap<>(enginesList.size() / 2);
       for (int i = 0; i < enginesList.size(); i += 2) {
         enginesMap.put(BuilderFactory.STRING.build(enginesList.get(i)),
-            BuilderFactory.ENCODED_OBJECT_MAP.build(enginesList.get(i + 1)));
+          BuilderFactory.ENCODED_OBJECT_MAP.build(enginesList.get(i + 1)));
       }
 
       return new FunctionStats(runningScriptMap, enginesMap);

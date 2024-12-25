@@ -4,8 +4,9 @@ import java.util.Map;
 
 /**
  * This class holds information about a node of the cluster with command {@code CLUSTER SHARDS}.
- * They can be accessed via getters. There is also {@link ClusterShardNodeInfo#getClusterShardNodeInfo()}
- * method that returns a generic {@link Map} in case more info are returned from the server.
+ * They can be accessed via getters. There is also
+ * {@link ClusterShardNodeInfo#getClusterShardNodeInfo()} method that returns a generic {@link Map}
+ * in case more info are returned from the server.
  */
 public class ClusterShardNodeInfo {
 

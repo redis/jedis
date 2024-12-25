@@ -142,7 +142,8 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testBitfieldBinary() {
     byte[] key = "key".getBytes();
-    byte[][] arguments = { "INCRBY".getBytes(), "mykey".getBytes(), "1".getBytes(), "1000".getBytes() };
+    byte[][] arguments = { "INCRBY".getBytes(), "mykey".getBytes(), "1".getBytes(),
+        "1000".getBytes() };
     List<Long> expectedResults = Arrays.asList(1000L, 2000L);
 
     when(commandObjects.bitfield(key, arguments)).thenReturn(listLongCommandObject);

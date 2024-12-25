@@ -67,8 +67,8 @@ public class TSMGetParams implements IParams {
     }
 
     TSMGetParams that = (TSMGetParams) o;
-    return latest == that.latest && withLabels == that.withLabels &&
-        Arrays.equals(selectedLabels, that.selectedLabels);
+    return latest == that.latest && withLabels == that.withLabels
+        && Arrays.equals(selectedLabels, that.selectedLabels);
   }
 
   @Override

@@ -11,7 +11,8 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.RedisProtocol;
 
 /**
- * Tests related to <a href="https://redis.io/commands/?group=server">Server management</a> commands.
+ * Tests related to <a href="https://redis.io/commands/?group=server">Server management</a>
+ * commands.
  */
 public class CommandObjectsServerManagementCommandsTest extends CommandObjectsStandaloneTestBase {
 
@@ -41,7 +42,8 @@ public class CommandObjectsServerManagementCommandsTest extends CommandObjectsSt
     CommandObject<Long> memoryUsageBinary = commandObjects.memoryUsage(key.getBytes());
     assertThat(exec(memoryUsageBinary), greaterThan(0L));
 
-    CommandObject<Long> memoryUsageBinaryWithSamples = commandObjects.memoryUsage(key.getBytes(), samples);
+    CommandObject<Long> memoryUsageBinaryWithSamples = commandObjects.memoryUsage(key.getBytes(),
+      samples);
     assertThat(exec(memoryUsageBinaryWithSamples), greaterThan(0L));
   }
 

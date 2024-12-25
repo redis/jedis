@@ -70,7 +70,8 @@ public class BitPosParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     BitPosParams that = (BitPosParams) o;
-    return Objects.equals(start, that.start) && Objects.equals(end, that.end) && Objects.equals(modifier, that.modifier);
+    return Objects.equals(start, that.start) && Objects.equals(end, that.end)
+        && Objects.equals(modifier, that.modifier);
   }
 
   @Override

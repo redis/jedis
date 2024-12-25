@@ -217,7 +217,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertNull(jedis.randomKey());
 
     for (int i = 0; i < 100; i++) {
-      jedis.set("foo" + i, "bar"+i);
+      jedis.set("foo" + i, "bar" + i);
     }
 
     String key = jedis.randomKey();
@@ -449,7 +449,8 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertEquals("a", jedis.get("foo"));
     assertTrue(jedis.pttl("foo") <= 1000);
 
-    jedis.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
+    jedis.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams
+        .restoreParams().replace().absTtl());
     assertTrue(jedis.pttl("bar") <= 1000);
 
     jedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
@@ -641,7 +642,6 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     int page2Count = scanResult.getResult().size();
     assertEquals(4, page1Count + page2Count);
 
-
     scanResult = jedis.scan(SCAN_POINTER_START, noParams, "hash");
     assertEquals(Collections.singletonList("b"), scanResult.getResult());
     scanResult = jedis.scan(SCAN_POINTER_START, noParams, "set");
@@ -674,11 +674,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertEquals(4, page1Count + page2Count);
 
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, hash);
-    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{98}), binaryResult.getResult());
+    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[] { 98 }),
+      binaryResult.getResult());
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, set);
-    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{100}), binaryResult.getResult());
+    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[] { 100 }),
+      binaryResult.getResult());
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, zset);
-    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{102}), binaryResult.getResult());
+    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[] { 102 }),
+      binaryResult.getResult());
   }
 
   @Test
@@ -863,7 +866,6 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertEquals(entryAsList, ((List) findValueFromMapAsList(encodeObj, "last-entry")).get(1));
   }
 
-
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
     Assume.assumeTrue(protocol == RedisProtocol.RESP3);
@@ -886,8 +888,10 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     entryAsList.add("foo");
     entryAsList.add("bar");
 
-    assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "first-entry")).get(1));
-    assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "last-entry")).get(1));
+    assertEquals(entryAsList,
+      ((List) findValueFromMapAsKeyValueList(encodeObj, "first-entry")).get(1));
+    assertEquals(entryAsList,
+      ((List) findValueFromMapAsKeyValueList(encodeObj, "last-entry")).get(1));
   }
 
   private Object findValueFromMapAsList(List list, Object key) {

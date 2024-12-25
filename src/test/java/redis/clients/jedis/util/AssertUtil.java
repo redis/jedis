@@ -20,7 +20,8 @@ public class AssertUtil {
     assertEquals("OK", str);
   }
 
-  public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2, Object expectedResp3, Object actual) {
+  public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2,
+      Object expectedResp3, Object actual) {
     if (protocol != RedisProtocol.RESP3) {
       assertEquals(expectedResp2, actual);
     } else {
@@ -125,14 +126,14 @@ public class AssertUtil {
         assertPipelineSyncAll((List) expObj, (List) actObj);
       } else if (expObj instanceof Set) {
         if (!(actObj instanceof Set)) {
-          throw new ComparisonFailure(n + "'th element is not a set",
-              expObj.getClass().toString(), actObj.getClass().toString());
+          throw new ComparisonFailure(n + "'th element is not a set", expObj.getClass().toString(),
+              actObj.getClass().toString());
         }
         assertPipelineSyncAllSet((Set) expObj, (Set) actObj);
       } else if (expObj instanceof byte[]) {
         if (!(actObj instanceof byte[])) {
-          throw new ComparisonFailure(n + "'th element is not byte array",
-              expObj.getClass().toString(), actObj.getClass().toString());
+          throw new ComparisonFailure(n + "'th element is not byte array", expObj.getClass()
+              .toString(), actObj.getClass().toString());
         }
         assertArrayEquals((byte[]) expObj, (byte[]) actObj);
       } else {

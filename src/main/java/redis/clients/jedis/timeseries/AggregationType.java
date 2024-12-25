@@ -6,11 +6,8 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public enum AggregationType implements Rawable {
 
-  AVG, SUM, MIN, MAX,
-  RANGE, COUNT, FIRST, LAST,
-  STD_P("STD.P"), STD_S("STD.S"),
-  VAR_P("VAR.P"), VAR_S("VAR.S"),
-  TWA;
+  AVG, SUM, MIN, MAX, RANGE, COUNT, FIRST, LAST, STD_P("STD.P"), STD_S("STD.S"), VAR_P("VAR.P"),
+  VAR_S("VAR.S"), TWA;
 
   private final byte[] raw;
 

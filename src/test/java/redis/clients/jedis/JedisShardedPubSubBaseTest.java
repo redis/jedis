@@ -14,7 +14,7 @@ import static redis.clients.jedis.Protocol.ResponseKeyword.SSUBSCRIBE;
 
 public class JedisShardedPubSubBaseTest extends TestCase {
 
-    public void testProceed_givenThreadInterrupt_exitLoop() throws InterruptedException {
+  public void testProceed_givenThreadInterrupt_exitLoop() throws InterruptedException {
         // setup
         final JedisShardedPubSubBase<String> pubSub = new JedisShardedPubSubBase<String>() {
 

@@ -125,7 +125,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisMockedTestB
   public void testBfLoadChunk() {
     String key = "testBloom";
     long iterator = 1L;
-    byte[] data = new byte[]{ 1, 2, 3 };
+    byte[] data = new byte[] { 1, 2, 3 };
     String expectedResponse = "OK";
 
     when(commandObjects.bfLoadChunk(key, iterator, data)).thenReturn(stringCommandObject);
@@ -199,7 +199,8 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisMockedTestB
     BFReserveParams reserveParams = new BFReserveParams().expansion(2);
     String expectedResponse = "OK";
 
-    when(commandObjects.bfReserve(key, errorRate, capacity, reserveParams)).thenReturn(stringCommandObject);
+    when(commandObjects.bfReserve(key, errorRate, capacity, reserveParams)).thenReturn(
+      stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.bfReserve(key, errorRate, capacity, reserveParams);
@@ -214,7 +215,8 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisMockedTestB
   public void testBfScanDump() {
     String key = "testBloom";
     long iterator = 0L;
-    Map.Entry<Long, byte[]> expectedResponse = new AbstractMap.SimpleEntry<>(1L, new byte[]{ 1, 2, 3 });
+    Map.Entry<Long, byte[]> expectedResponse = new AbstractMap.SimpleEntry<>(1L, new byte[] { 1, 2,
+        3 });
 
     when(commandObjects.bfScanDump(key, iterator)).thenReturn(entryLongBytesCommandObject);
     when(commandExecutor.executeCommand(entryLongBytesCommandObject)).thenReturn(expectedResponse);

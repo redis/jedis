@@ -30,11 +30,11 @@ public class ReliableTransactionTest {
 
   @Before
   public void setUp() throws Exception {
-    conn = new Connection(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+    conn = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .timeoutMillis(500).build());
 
-    nj = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+    nj = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().timeoutMillis(500)
+        .build());
     nj.flushAll();
   }
 

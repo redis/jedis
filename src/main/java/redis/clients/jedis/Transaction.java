@@ -38,10 +38,8 @@ public class Transaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   * 
-   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
-   * called with this object.
+   * Creates a new transaction. A MULTI command will be added to be sent to server.
+   * WATCH/UNWATCH/MULTI commands must not be called with this object.
    * @param connection connection
    */
   public Transaction(Connection connection) {
@@ -49,11 +47,8 @@ public class Transaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
+   * Creates a new transaction. A user wanting to WATCH/UNWATCH keys followed by a call to MULTI (
+   * {@link #multi()}) it should be {@code doMulti=false}.
    * @param connection connection
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
@@ -62,11 +57,8 @@ public class Transaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
+   * Creates a new transaction. A user wanting to WATCH/UNWATCH keys followed by a call to MULTI (
+   * {@link #multi()}) it should be {@code doMulti=false}.
    * @param connection connection
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
@@ -76,11 +68,8 @@ public class Transaction extends TransactionBase {
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
+   * Creates a new transaction. A user wanting to WATCH/UNWATCH keys followed by a call to MULTI (
+   * {@link #multi()}) it should be {@code doMulti=false}.
    * @param connection connection
    * @param commandObjects command objects
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
@@ -152,7 +141,8 @@ public class Transaction extends TransactionBase {
     }
   }
 
-  @Deprecated // TODO: private
+  @Deprecated
+  // TODO: private
   public final void clear() {
     if (broken) {
       return;

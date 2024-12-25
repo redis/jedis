@@ -32,10 +32,9 @@ public class UnavailableConnectionTest {
 
   public static void setupAvoidQuitInDestroyObject() {
     var config = JedisPoolConfig.builder();
-    config.maxPoolSize(1)
-        .testOnBorrow(false);
+    config.maxPoolSize(1).testOnBorrow(false);
     poolForBrokenJedis1 = new JedisPool(config.build(), unavailableNode.getHost(),
-                                        unavailableNode.getPort());
+        unavailableNode.getPort());
     brokenJedis1 = poolForBrokenJedis1.getResource();
     threadForBrokenJedis1 = new Thread(new Runnable() {
       @Override

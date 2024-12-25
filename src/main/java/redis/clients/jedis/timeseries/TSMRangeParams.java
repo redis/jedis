@@ -80,7 +80,7 @@ public class TSMRangeParams implements IParams {
   }
 
   public TSMRangeParams filterByValues(double min, double max) {
-    this.filterByValues = new double[] {min, max};
+    this.filterByValues = new double[] { min, max };
     return this;
   }
 
@@ -273,19 +273,17 @@ public class TSMRangeParams implements IParams {
     }
 
     TSMRangeParams that = (TSMRangeParams) o;
-    return latest == that.latest && withLabels == that.withLabels &&
-        bucketDuration == that.bucketDuration && empty == that.empty &&
-        Objects.equals(fromTimestamp, that.fromTimestamp) &&
-        Objects.equals(toTimestamp, that.toTimestamp) &&
-        Arrays.equals(filterByTimestamps, that.filterByTimestamps) &&
-        Arrays.equals(filterByValues, that.filterByValues) &&
-        Arrays.equals(selectedLabels, that.selectedLabels) &&
-        Objects.equals(count, that.count) && Arrays.equals(align, that.align) &&
-        aggregationType == that.aggregationType &&
-        Arrays.equals(bucketTimestamp, that.bucketTimestamp) &&
-        Arrays.equals(filters, that.filters) &&
-        Objects.equals(groupByLabel, that.groupByLabel) &&
-        Objects.equals(groupByReduce, that.groupByReduce);
+    return latest == that.latest && withLabels == that.withLabels
+        && bucketDuration == that.bucketDuration && empty == that.empty
+        && Objects.equals(fromTimestamp, that.fromTimestamp)
+        && Objects.equals(toTimestamp, that.toTimestamp)
+        && Arrays.equals(filterByTimestamps, that.filterByTimestamps)
+        && Arrays.equals(filterByValues, that.filterByValues)
+        && Arrays.equals(selectedLabels, that.selectedLabels) && Objects.equals(count, that.count)
+        && Arrays.equals(align, that.align) && aggregationType == that.aggregationType
+        && Arrays.equals(bucketTimestamp, that.bucketTimestamp)
+        && Arrays.equals(filters, that.filters) && Objects.equals(groupByLabel, that.groupByLabel)
+        && Objects.equals(groupByReduce, that.groupByReduce);
   }
 
   @Override

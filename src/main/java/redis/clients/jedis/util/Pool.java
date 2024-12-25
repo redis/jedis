@@ -16,13 +16,11 @@ public class Pool<T extends PoolObject> extends SimpleObjectPool<T> {
   }
 
   public Pool(final PooledObjectFactory<T> factory, final SimpleObjectPoolConfig poolConfig) {
-    super(poolConfig,
-          factory);
+    super(poolConfig, factory);
   }
 
   public Pool(final PooledObjectFactory<T> factory) {
-    super(defaultPoolConfig,
-          factory);
+    super(defaultPoolConfig, factory);
   }
 
   @Override

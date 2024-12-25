@@ -11,7 +11,7 @@ public class ResponsesToStringTest {
 
   @Test
   public void GeoRadiusResponse() {
-    byte[] member = {0x01, 0x02, 0x03, 0x04};
+    byte[] member = { 0x01, 0x02, 0x03, 0x04 };
 
     GeoRadiusResponse response = new GeoRadiusResponse(member);
     response.setDistance(5);

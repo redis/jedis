@@ -18,7 +18,8 @@ import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 
 /**
- * Tests related to <a href="https://redis.io/commands/?group=triggers_and_functions">Triggers and functions</a> commands.
+ * Tests related to <a href="https://redis.io/commands/?group=triggers_and_functions">Triggers and
+ * functions</a> commands.
  */
 @Ignore
 public class CommandObjectsTriggersAndFunctionsCommandsTest extends CommandObjectsModulesTestBase {
@@ -31,32 +32,36 @@ public class CommandObjectsTriggersAndFunctionsCommandsTest extends CommandObjec
   public void tearDown() throws Exception {
     try {
       exec(commandObjects.tFunctionDelete("lib"));
-    } catch (JedisDataException de) { }
+    } catch (JedisDataException de) {
+    }
   }
 
   @Test
   public void testTFunctionLoadAndCall() {
-    String libraryCode = "#!js api_version=1.0 name=lib\n" +
-        "redis.registerFunction('hello', ()=>{return 42;})";
+    String libraryCode = "#!js api_version=1.0 name=lib\n"
+        + "redis.registerFunction('hello', ()=>{return 42;})";
 
     TFunctionLoadParams params = new TFunctionLoadParams().replace();
 
     String load = exec(commandObjects.tFunctionLoad(libraryCode, params));
     assertThat(load, equalTo("OK"));
 
-    Object call = exec(commandObjects.tFunctionCall("lib", "hello", new ArrayList<>(), new ArrayList<>()));
+    Object call = exec(commandObjects.tFunctionCall("lib", "hello", new ArrayList<>(),
+      new ArrayList<>()));
     assertThat(call.toString(), equalTo("42"));
 
-    Object callAsync = exec(commandObjects.tFunctionCallAsync("lib", "hello", new ArrayList<>(), new ArrayList<>()));
+    Object callAsync = exec(commandObjects.tFunctionCallAsync("lib", "hello", new ArrayList<>(),
+      new ArrayList<>()));
     assertThat(callAsync.toString(), equalTo("42"));
   }
 
   @Test
   public void testTFunctionDeleteAndList() {
-    String libraryCode = "#!js api_version=1.0 name=lib\n" +
-        "redis.registerFunction('hello', ()=>{return 42;})";
+    String libraryCode = "#!js api_version=1.0 name=lib\n"
+        + "redis.registerFunction('hello', ()=>{return 42;})";
 
-    String load = exec(commandObjects.tFunctionLoad(libraryCode, new TFunctionLoadParams().replace()));
+    String load = exec(commandObjects.tFunctionLoad(libraryCode,
+      new TFunctionLoadParams().replace()));
     assertThat(load, equalTo("OK"));
 
     TFunctionListParams params = new TFunctionListParams().library("lib");

@@ -129,14 +129,16 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   public void setAndPxat() {
     assertEquals("OK", jedis.set(bfoo, binaryValue,
-        setParams().nx().pxAt(System.currentTimeMillis() + expireMillis)));
+      setParams().nx().pxAt(System.currentTimeMillis() + expireMillis)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
 
   @Test
   public void setAndExat() {
-    assertEquals("OK", jedis.set(bfoo, binaryValue,
+    assertEquals(
+      "OK",
+      jedis.set(bfoo, binaryValue,
         setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
@@ -170,11 +172,13 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
     ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 10 && ttl <= 20);
 
-    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    assertArrayEquals(bbar,
+      jedis.getEx(bfoo, GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
     ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    assertArrayEquals(bbar,
+      jedis.getEx(bfoo, GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
     ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 30 && ttl <= 40);
 

@@ -73,9 +73,9 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertNotNull(log1);
     assertNotNull(blog1);
 
-//    assertEquals(7, jedis.slowlogLen());
+    // assertEquals(7, jedis.slowlogLen());
     assertThat(jedis.slowlogLen(),
-        Matchers.allOf(Matchers.greaterThanOrEqualTo(6L), Matchers.lessThanOrEqualTo(13L)));
+      Matchers.allOf(Matchers.greaterThanOrEqualTo(6L), Matchers.lessThanOrEqualTo(13L)));
     assertThat(jedis.slowlogGet().toString(), Matchers.containsString("SLOWLOG"));
   }
 
@@ -87,8 +87,9 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     jedis.configSet(SLOWLOG_TIME_PARAM, ZERO_STRING);
 
     List<Slowlog> logs = jedis.slowlogGet(); // Get only 'CONFIG SET', or including 'SLOWLOG RESET'
-    //assertEquals(1, logs.size());
-    assertThat(logs.size(), Matchers.allOf(Matchers.greaterThanOrEqualTo(1), Matchers.lessThanOrEqualTo(2)));
+    // assertEquals(1, logs.size());
+    assertThat(logs.size(),
+      Matchers.allOf(Matchers.greaterThanOrEqualTo(1), Matchers.lessThanOrEqualTo(2)));
     Slowlog log = logs.get(0);
     assertThat(log.getId(), Matchers.greaterThan(0L));
     assertThat(log.getTimeStamp(), Matchers.greaterThan(0L));
@@ -110,9 +111,11 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     jedis.slowlogReset();
     jedis.configSet(SafeEncoder.encode(SLOWLOG_TIME_PARAM), SafeEncoder.encode(ZERO_STRING));
 
-    List<Object> logs = jedis.slowlogGetBinary(); // Get only 'CONFIG SET', or including 'SLOWLOG RESET'
-    //assertEquals(1, logs.size());
-    assertThat(logs.size(), Matchers.allOf(Matchers.greaterThanOrEqualTo(1), Matchers.lessThanOrEqualTo(2)));
+    List<Object> logs = jedis.slowlogGetBinary(); // Get only 'CONFIG SET', or including 'SLOWLOG
+                                                  // RESET'
+    // assertEquals(1, logs.size());
+    assertThat(logs.size(),
+      Matchers.allOf(Matchers.greaterThanOrEqualTo(1), Matchers.lessThanOrEqualTo(2)));
     List<Object> log = (List<Object>) logs.get(0);
     assertThat((Long) log.get(0), Matchers.greaterThan(0L));
     assertThat((Long) log.get(1), Matchers.greaterThan(0L));
@@ -123,7 +126,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(Protocol.Keyword.SET.getRaw(), (byte[]) args.get(1));
     assertArrayEquals(SafeEncoder.encode(SLOWLOG_TIME_PARAM), (byte[]) args.get(2));
     assertArrayEquals(Protocol.toByteArray(0), (byte[]) args.get(3));
-//    assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
+    // assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
     assertThat(((byte[]) log.get(4)).length, Matchers.greaterThanOrEqualTo(10)); // 'IP:PORT'
     assertArrayEquals(clientName, (byte[]) log.get(5));
   }

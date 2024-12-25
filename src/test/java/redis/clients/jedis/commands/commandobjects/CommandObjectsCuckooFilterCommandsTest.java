@@ -51,20 +51,19 @@ public class CommandObjectsCuckooFilterCommandsTest extends CommandObjectsModule
   public void testCuckooFilterReserveInsertAndCount() {
     String key = "testCuckooFilterAdvanced";
 
-    CFReserveParams reserveParams = new CFReserveParams()
-        .bucketSize(4).maxIterations(500).expansion(1);
+    CFReserveParams reserveParams = new CFReserveParams().bucketSize(4).maxIterations(500)
+        .expansion(1);
 
     String reserve = exec(commandObjects.cfReserve(key, 5000, reserveParams));
     assertThat(reserve, equalTo("OK"));
 
-    List<Boolean> insert = exec(commandObjects.cfInsert(
-        key, "apple", "banana", "carrot", "date"));
+    List<Boolean> insert = exec(commandObjects.cfInsert(key, "apple", "banana", "carrot", "date"));
     assertThat(insert, everyItem(equalTo(true)));
 
     CFInsertParams insertParams = new CFInsertParams().noCreate();
 
-    List<Boolean> insertWithParams = exec(commandObjects.cfInsert(
-        key, insertParams, "eggplant", "fig", "grape", "apple"));
+    List<Boolean> insertWithParams = exec(commandObjects.cfInsert(key, insertParams, "eggplant",
+      "fig", "grape", "apple"));
     assertThat(insertWithParams, everyItem(equalTo(true)));
 
     Long countApple = exec(commandObjects.cfCount(key, "apple"));
@@ -127,8 +126,8 @@ public class CommandObjectsCuckooFilterCommandsTest extends CommandObjectsModule
 
     exec(commandObjects.cfInsert(key, "item1", "item2", "item3"));
 
-    List<Boolean> mExists = exec(commandObjects.cfMExists(
-        key, "item1", "item2", "item3", "item4", "item5"));
+    List<Boolean> mExists = exec(commandObjects.cfMExists(key, "item1", "item2", "item3", "item4",
+      "item5"));
 
     assertThat(mExists, contains(true, true, true, false, false));
   }
@@ -137,8 +136,8 @@ public class CommandObjectsCuckooFilterCommandsTest extends CommandObjectsModule
   public void testCuckooFilterScanDumpAndLoadChunk() {
     long capacity = 5000;
 
-    CFReserveParams reserveParams = new CFReserveParams()
-        .bucketSize(4).maxIterations(500).expansion(1);
+    CFReserveParams reserveParams = new CFReserveParams().bucketSize(4).maxIterations(500)
+        .expansion(1);
 
     String key = "testCf";
 

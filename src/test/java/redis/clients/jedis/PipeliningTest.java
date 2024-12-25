@@ -232,7 +232,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
     p.select(1);
     p.get("foo");
-    assertEquals(Arrays.<Object>asList(null, "OK", "bar"), p.syncAndReturnAll());
+    assertEquals(Arrays.<Object> asList(null, "OK", "bar"), p.syncAndReturnAll());
   }
 
   @Test
@@ -365,7 +365,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
   public void setGetBinary() {
     Pipeline p = jedis.pipelined();
     Response<String> _ok = p.set("hello".getBytes(), "world".getBytes());
-    Response<byte[]> _world = p.setGet("hello".getBytes(), "jedis".getBytes(), SetParams.setParams());
+    Response<byte[]> _world = p.setGet("hello".getBytes(), "jedis".getBytes(),
+      SetParams.setParams());
     Response<byte[]> _jedis = p.get("hello".getBytes());
     Response<byte[]> _null = p.setGet("key".getBytes(), "value".getBytes(), SetParams.setParams());
     p.sync();
@@ -567,10 +568,10 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
     p.time();
 
-    // we get back one result, with two components: the seconds, and the microseconds, but encoded as strings
+    // we get back one result, with two components: the seconds, and the microseconds, but encoded
+    // as strings
     Matcher timeResponseMatcher = hasItems(matchesPattern("\\d+"), matchesPattern("\\d+"));
-    assertThat(p.syncAndReturnAll(),
-        hasItems(timeResponseMatcher));
+    assertThat(p.syncAndReturnAll(), hasItems(timeResponseMatcher));
   }
 
   @Test
@@ -581,8 +582,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.set("foo", "bar");
     p.dbSize();
 
-    assertThat(p.syncAndReturnAll(),
-        hasItems(0L, "OK", 1L));
+    assertThat(p.syncAndReturnAll(), hasItems(0L, "OK", 1L));
   }
 
   @Test
@@ -596,8 +596,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.select(1);
     p.get("foo");
 
-    assertThat(p.syncAndReturnAll(),
-        hasItems(0L, "OK", 1L, null, "OK", "bar"));
+    assertThat(p.syncAndReturnAll(), hasItems(0L, "OK", 1L, null, "OK", "bar"));
   }
 
   @Test
@@ -611,8 +610,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.select(1);
     p.get(bfoo);
 
-    assertThat(p.syncAndReturnAll(),
-        hasItems(0L, "OK", 1L, null, "OK", bbar));
+    assertThat(p.syncAndReturnAll(), hasItems(0L, "OK", 1L, null, "OK", bbar));
   }
 
   @Test
@@ -630,7 +628,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "bar", "OK", null, "OK", "OK", null, "OK", "bar"));
+      hasItems("OK", "bar", "OK", null, "OK", "OK", null, "OK", "bar"));
   }
 
   @Test
@@ -651,13 +649,12 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.get("foo-copy");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems(false, "OK", true, "bar", "OK", "bar", "OK", "OK", false, "baz", "bar"));
+      hasItems(false, "OK", true, "bar", "OK", "bar", "OK", "OK", false, "baz", "bar"));
   }
 
   @Test
   public void copyToAnotherDbBinary() {
     Pipeline p = jedis.pipelined();
-
 
     p.copy(bfoo, bfoo1, 1, false);
     p.set(bfoo, bbar);
@@ -673,7 +670,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo1);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems(false, "OK", true, bbar, "OK", bbar, "OK", "OK", false, bbaz, bbar));
+      hasItems(false, "OK", true, bbar, "OK", bbar, "OK", "OK", false, bbaz, bbar));
   }
 
   enum Foo implements ProtocolCommand {
@@ -687,8 +684,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
   @Test
   public void errorInTheMiddle() {
-    CommandObject<String> invalidCommand =
-        new CommandObject<>(new CommandObjects().commandArguments(Foo.FOO), BuilderFactory.STRING);
+    CommandObject<String> invalidCommand = new CommandObject<>(
+        new CommandObjects().commandArguments(Foo.FOO), BuilderFactory.STRING);
 
     Pipeline p = jedis.pipelined();
 
@@ -697,11 +694,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems(
-            equalTo("OK"),
-            instanceOf(JedisDataException.class),
-            equalTo("bar")
-        ));
+      hasItems(equalTo("OK"), instanceOf(JedisDataException.class), equalTo("bar")));
   }
 
 }

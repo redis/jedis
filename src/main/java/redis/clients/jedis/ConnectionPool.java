@@ -13,7 +13,8 @@ public class ConnectionPool extends Pool<Connection> {
   }
 
   @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
   }
 
@@ -22,18 +23,17 @@ public class ConnectionPool extends Pool<Connection> {
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-                        SimpleObjectPoolConfig poolConfig) {
+      SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
   @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-                        SimpleObjectPoolConfig poolConfig) {
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, SimpleObjectPoolConfig poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
   }
 
-  public ConnectionPool(PooledObjectFactory<Connection> factory,
-                        SimpleObjectPoolConfig poolConfig) {
+  public ConnectionPool(PooledObjectFactory<Connection> factory, SimpleObjectPoolConfig poolConfig) {
     super(factory, poolConfig);
   }
 

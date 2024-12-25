@@ -140,12 +140,16 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     XAutoClaimParams params = new XAutoClaimParams();
     StreamEntryID nextStart = new StreamEntryID("0-1");
     List<StreamEntry> claimedEntries = new ArrayList<>();
-    AbstractMap.SimpleImmutableEntry<StreamEntryID, List<StreamEntry>> expectedResponse = new AbstractMap.SimpleImmutableEntry<>(nextStart, claimedEntries);
+    AbstractMap.SimpleImmutableEntry<StreamEntryID, List<StreamEntry>> expectedResponse = new AbstractMap.SimpleImmutableEntry<>(
+        nextStart, claimedEntries);
 
-    when(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params)).thenReturn(entryStreamEntryIdListStreamEntryCommandObject);
-    when(commandExecutor.executeCommand(entryStreamEntryIdListStreamEntryCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params))
+        .thenReturn(entryStreamEntryIdListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(entryStreamEntryIdListStreamEntryCommandObject))
+        .thenReturn(expectedResponse);
 
-    Map.Entry<StreamEntryID, List<StreamEntry>> result = jedis.xautoclaim(key, group, consumerName, minIdleTime, start, params);
+    Map.Entry<StreamEntryID, List<StreamEntry>> result = jedis.xautoclaim(key, group, consumerName,
+      minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -163,10 +167,13 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     XAutoClaimParams params = new XAutoClaimParams();
     List<Object> expectedAutoClaimResult = new ArrayList<>();
 
-    when(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedAutoClaimResult);
+    when(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params))
+        .thenReturn(listObjectCommandObject);
+    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(
+      expectedAutoClaimResult);
 
-    List<Object> result = jedis.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
+    List<Object> result = jedis
+        .xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedAutoClaimResult));
 
@@ -183,13 +190,18 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     StreamEntryID start = new StreamEntryID("0-0");
     XAutoClaimParams params = new XAutoClaimParams();
     StreamEntryID nextStart = new StreamEntryID("0-1");
-    List<StreamEntryID> claimedEntryIds = Arrays.asList(new StreamEntryID("0-0"), new StreamEntryID("0-1"));
-    AbstractMap.SimpleImmutableEntry<StreamEntryID, List<StreamEntryID>> expectedResponse = new AbstractMap.SimpleImmutableEntry<>(nextStart, claimedEntryIds);
+    List<StreamEntryID> claimedEntryIds = Arrays.asList(new StreamEntryID("0-0"),
+      new StreamEntryID("0-1"));
+    AbstractMap.SimpleImmutableEntry<StreamEntryID, List<StreamEntryID>> expectedResponse = new AbstractMap.SimpleImmutableEntry<>(
+        nextStart, claimedEntryIds);
 
-    when(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params)).thenReturn(entryStreamEntryIdListStreamEntryIdCommandObject);
-    when(commandExecutor.executeCommand(entryStreamEntryIdListStreamEntryIdCommandObject)).thenReturn(expectedResponse);
+    when(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params))
+        .thenReturn(entryStreamEntryIdListStreamEntryIdCommandObject);
+    when(commandExecutor.executeCommand(entryStreamEntryIdListStreamEntryIdCommandObject))
+        .thenReturn(expectedResponse);
 
-    Map.Entry<StreamEntryID, List<StreamEntryID>> result = jedis.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
+    Map.Entry<StreamEntryID, List<StreamEntryID>> result = jedis.xautoclaimJustId(key, group,
+      consumerName, minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -207,15 +219,19 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     XAutoClaimParams params = new XAutoClaimParams();
     List<Object> expectedAutoClaimResult = new ArrayList<>();
 
-    when(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedAutoClaimResult);
+    when(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params))
+        .thenReturn(listObjectCommandObject);
+    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(
+      expectedAutoClaimResult);
 
-    List<Object> result = jedis.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+    List<Object> result = jedis.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start,
+      params);
 
     assertThat(result, equalTo(expectedAutoClaimResult));
 
     verify(commandExecutor).executeCommand(listObjectCommandObject);
-    verify(commandObjects).xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+    verify(commandObjects).xautoclaimJustId(key, groupName, consumerName, minIdleTime, start,
+      params);
   }
 
   @Test
@@ -228,7 +244,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     StreamEntryID[] ids = { new StreamEntryID("0-0"), new StreamEntryID("0-1") };
     List<StreamEntry> expectedEntries = new ArrayList<>();
 
-    when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listStreamEntryCommandObject);
+    when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids)).thenReturn(
+      listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
     List<StreamEntry> result = jedis.xclaim(key, group, consumerName, minIdleTime, params, ids);
@@ -249,7 +266,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[][] ids = { "0-0".getBytes(), "0-1".getBytes() };
     List<byte[]> expectedClaimedIds = Arrays.asList("0-0".getBytes(), "0-1".getBytes());
 
-    when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listBytesCommandObject);
+    when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids)).thenReturn(
+      listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedClaimedIds);
 
     List<byte[]> result = jedis.xclaim(key, group, consumerName, minIdleTime, params, ids);
@@ -270,10 +288,13 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     StreamEntryID[] ids = { new StreamEntryID("0-0"), new StreamEntryID("0-1") };
     List<StreamEntryID> expectedEntryIds = Arrays.asList(ids);
 
-    when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listStreamEntryIdCommandObject);
-    when(commandExecutor.executeCommand(listStreamEntryIdCommandObject)).thenReturn(expectedEntryIds);
+    when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids))
+        .thenReturn(listStreamEntryIdCommandObject);
+    when(commandExecutor.executeCommand(listStreamEntryIdCommandObject)).thenReturn(
+      expectedEntryIds);
 
-    List<StreamEntryID> result = jedis.xclaimJustId(key, group, consumerName, minIdleTime, params, ids);
+    List<StreamEntryID> result = jedis.xclaimJustId(key, group, consumerName, minIdleTime, params,
+      ids);
 
     assertThat(result, equalTo(expectedEntryIds));
 
@@ -291,7 +312,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[][] ids = { "0-0".getBytes(), "0-1".getBytes() };
     List<byte[]> expectedClaimedIds = Arrays.asList("0-0".getBytes(), "0-1".getBytes());
 
-    when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listBytesCommandObject);
+    when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids))
+        .thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedClaimedIds);
 
     List<byte[]> result = jedis.xclaimJustId(key, group, consumerName, minIdleTime, params, ids);
@@ -344,7 +366,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     boolean makeStream = true;
     String expectedResponse = "OK";
 
-    when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(stringCommandObject);
+    when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(
+      stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.xgroupCreate(key, groupName, id, makeStream);
@@ -363,7 +386,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     boolean makeStream = true;
     String expectedResponse = "OK";
 
-    when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(stringCommandObject);
+    when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(
+      stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.xgroupCreate(key, groupName, id, makeStream);
@@ -381,7 +405,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     String consumerName = "myconsumer";
     boolean expectedResponse = true; // Assuming the consumer was successfully created
 
-    when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(booleanCommandObject);
+    when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(
+      booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
     boolean result = jedis.xgroupCreateConsumer(key, groupName, consumerName);
@@ -399,7 +424,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] consumerName = "myconsumer".getBytes();
     boolean expectedResponse = true;
 
-    when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(booleanCommandObject);
+    when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(
+      booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
     boolean result = jedis.xgroupCreateConsumer(key, groupName, consumerName);
@@ -417,7 +443,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     String consumerName = "myconsumer";
     long expectedDeletedCount = 1L; // Assuming the consumer was successfully deleted
 
-    when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(longCommandObject);
+    when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(
+      longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDeletedCount);
 
     long result = jedis.xgroupDelConsumer(key, groupName, consumerName);
@@ -435,7 +462,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] consumerName = "myconsumer".getBytes();
     long expectedDeleted = 1L;
 
-    when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(longCommandObject);
+    when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(
+      longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDeleted);
 
     long result = jedis.xgroupDelConsumer(key, groupName, consumerName);
@@ -520,10 +548,13 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   public void testXinfoConsumers() {
     String key = "mystream";
     String group = "mygroup";
-    List<StreamConsumersInfo> expectedConsumers = Collections.singletonList(mock(StreamConsumersInfo.class));
+    List<StreamConsumersInfo> expectedConsumers = Collections
+        .singletonList(mock(StreamConsumersInfo.class));
 
-    when(commandObjects.xinfoConsumers(key, group)).thenReturn(listStreamConsumersInfoCommandObject);
-    when(commandExecutor.executeCommand(listStreamConsumersInfoCommandObject)).thenReturn(expectedConsumers);
+    when(commandObjects.xinfoConsumers(key, group))
+        .thenReturn(listStreamConsumersInfoCommandObject);
+    when(commandExecutor.executeCommand(listStreamConsumersInfoCommandObject)).thenReturn(
+      expectedConsumers);
 
     List<StreamConsumersInfo> result = jedis.xinfoConsumers(key, group);
 
@@ -554,10 +585,13 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   public void testXinfoConsumers2() {
     String key = "mystream";
     String group = "mygroup";
-    List<StreamConsumerInfo> expectedConsumerInfos = Collections.singletonList(mock(StreamConsumerInfo.class));
+    List<StreamConsumerInfo> expectedConsumerInfos = Collections
+        .singletonList(mock(StreamConsumerInfo.class));
 
-    when(commandObjects.xinfoConsumers2(key, group)).thenReturn(listStreamConsumerInfoCommandObject);
-    when(commandExecutor.executeCommand(listStreamConsumerInfoCommandObject)).thenReturn(expectedConsumerInfos);
+    when(commandObjects.xinfoConsumers2(key, group))
+        .thenReturn(listStreamConsumerInfoCommandObject);
+    when(commandExecutor.executeCommand(listStreamConsumerInfoCommandObject)).thenReturn(
+      expectedConsumerInfos);
 
     List<StreamConsumerInfo> result = jedis.xinfoConsumers2(key, group);
 
@@ -573,7 +607,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     List<StreamGroupInfo> expectedGroups = Collections.singletonList(mock(StreamGroupInfo.class));
 
     when(commandObjects.xinfoGroups(key)).thenReturn(listStreamGroupInfoCommandObject);
-    when(commandExecutor.executeCommand(listStreamGroupInfoCommandObject)).thenReturn(expectedGroups);
+    when(commandExecutor.executeCommand(listStreamGroupInfoCommandObject)).thenReturn(
+      expectedGroups);
 
     List<StreamGroupInfo> result = jedis.xinfoGroups(key);
 
@@ -637,7 +672,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     StreamFullInfo expectedStreamFullInfo = mock(StreamFullInfo.class);
 
     when(commandObjects.xinfoStreamFull(key)).thenReturn(streamFullInfoCommandObject);
-    when(commandExecutor.executeCommand(streamFullInfoCommandObject)).thenReturn(expectedStreamFullInfo);
+    when(commandExecutor.executeCommand(streamFullInfoCommandObject)).thenReturn(
+      expectedStreamFullInfo);
 
     StreamFullInfo result = jedis.xinfoStreamFull(key);
 
@@ -670,7 +706,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     StreamFullInfo expectedStreamFullInfo = mock(StreamFullInfo.class);
 
     when(commandObjects.xinfoStreamFull(key, count)).thenReturn(streamFullInfoCommandObject);
-    when(commandExecutor.executeCommand(streamFullInfoCommandObject)).thenReturn(expectedStreamFullInfo);
+    when(commandExecutor.executeCommand(streamFullInfoCommandObject)).thenReturn(
+      expectedStreamFullInfo);
 
     StreamFullInfo result = jedis.xinfoStreamFull(key, count);
 
@@ -733,11 +770,12 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   public void testXpending() {
     String key = "mystream";
     String groupName = "mygroup";
-    StreamPendingSummary expectedSummary = new StreamPendingSummary(10L,
-        new StreamEntryID("0-0"), new StreamEntryID("0-1"), Collections.emptyMap());
+    StreamPendingSummary expectedSummary = new StreamPendingSummary(10L, new StreamEntryID("0-0"),
+        new StreamEntryID("0-1"), Collections.emptyMap());
 
     when(commandObjects.xpending(key, groupName)).thenReturn(streamPendingSummaryCommandObject);
-    when(commandExecutor.executeCommand(streamPendingSummaryCommandObject)).thenReturn(expectedSummary);
+    when(commandExecutor.executeCommand(streamPendingSummaryCommandObject)).thenReturn(
+      expectedSummary);
 
     StreamPendingSummary result = jedis.xpending(key, groupName);
 
@@ -771,8 +809,10 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     XPendingParams params = new XPendingParams();
     List<StreamPendingEntry> expectedPendingEntries = new ArrayList<>();
 
-    when(commandObjects.xpending(key, groupName, params)).thenReturn(listStreamPendingEntryCommandObject);
-    when(commandExecutor.executeCommand(listStreamPendingEntryCommandObject)).thenReturn(expectedPendingEntries);
+    when(commandObjects.xpending(key, groupName, params)).thenReturn(
+      listStreamPendingEntryCommandObject);
+    when(commandExecutor.executeCommand(listStreamPendingEntryCommandObject)).thenReturn(
+      expectedPendingEntries);
 
     List<StreamPendingEntry> result = jedis.xpending(key, groupName, params);
 
@@ -808,7 +848,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-1"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-1"), hash));
 
     when(commandObjects.xrange(key, start, end)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
@@ -826,9 +867,9 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "mystream".getBytes();
     byte[] start = "0-0".getBytes();
     byte[] end = "+".getBytes();
-    List<Object> expectedRange = Arrays.asList(
-        new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")),
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
+    List<Object> expectedRange = Arrays.asList(new StreamEntry(new StreamEntryID("0-0"),
+        Collections.singletonMap("field1", "value1")), new StreamEntry(new StreamEntryID("0-1"),
+        Collections.singletonMap("field2", "value2")));
 
     when(commandObjects.xrange(key, start, end)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedRange);
@@ -850,7 +891,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-1"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-1"), hash));
 
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
@@ -869,9 +911,9 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] start = "0-0".getBytes();
     byte[] end = "+".getBytes();
     int count = 2;
-    List<Object> expectedRange = Arrays.asList(
-        new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")),
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
+    List<Object> expectedRange = Arrays.asList(new StreamEntry(new StreamEntryID("0-0"),
+        Collections.singletonMap("field1", "value1")), new StreamEntry(new StreamEntryID("0-1"),
+        Collections.singletonMap("field2", "value2")));
 
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedRange);
@@ -915,7 +957,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-1"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-1"), hash));
 
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
@@ -931,11 +974,14 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testXread() {
     XReadParams xReadParams = new XReadParams().count(2).block(0);
-    Map<String, StreamEntryID> streams = Collections.singletonMap("mystream", new StreamEntryID("0-0"));
+    Map<String, StreamEntryID> streams = Collections.singletonMap("mystream", new StreamEntryID(
+        "0-0"));
     List<Map.Entry<String, List<StreamEntry>>> expectedEntries = new ArrayList<>();
 
-    when(commandObjects.xread(xReadParams, streams)).thenReturn(listEntryStringListStreamEntryCommandObject);
-    when(commandExecutor.executeCommand(listEntryStringListStreamEntryCommandObject)).thenReturn(expectedEntries);
+    when(commandObjects.xread(xReadParams, streams)).thenReturn(
+      listEntryStringListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(listEntryStringListStreamEntryCommandObject)).thenReturn(
+      expectedEntries);
 
     List<Map.Entry<String, List<StreamEntry>>> result = jedis.xread(xReadParams, streams);
 
@@ -947,7 +993,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testXreadBinary() {
     XReadParams xReadParams = new XReadParams().count(2).block(0);
-    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleEntry<>("mystream".getBytes(), "0-0".getBytes());
+    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleEntry<>("mystream".getBytes(),
+        "0-0".getBytes());
     List<Object> expectedReadResult = new ArrayList<>();
 
     when(commandObjects.xread(xReadParams, stream1)).thenReturn(listObjectCommandObject);
@@ -964,11 +1011,14 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testXreadAsMap() {
     XReadParams xReadParams = new XReadParams().count(2).block(0);
-    Map<String, StreamEntryID> stream = Collections.singletonMap("mystream", new StreamEntryID("0-0"));
+    Map<String, StreamEntryID> stream = Collections.singletonMap("mystream", new StreamEntryID(
+        "0-0"));
     Map<String, List<StreamEntry>> expectedResult = new HashMap<>();
 
-    when(commandObjects.xreadAsMap(xReadParams, stream)).thenReturn(mapStringListStreamEntryCommandObject);
-    when(commandExecutor.executeCommand(mapStringListStreamEntryCommandObject)).thenReturn(expectedResult);
+    when(commandObjects.xreadAsMap(xReadParams, stream)).thenReturn(
+      mapStringListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(mapStringListStreamEntryCommandObject)).thenReturn(
+      expectedResult);
 
     Map<String, List<StreamEntry>> result = jedis.xreadAsMap(xReadParams, stream);
 
@@ -982,13 +1032,17 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     String groupName = "mygroup";
     String consumer = "myconsumer";
     XReadGroupParams xReadGroupParams = new XReadGroupParams().count(2).block(0);
-    Map<String, StreamEntryID> streams = Collections.singletonMap("mystream", new StreamEntryID("0-0"));
+    Map<String, StreamEntryID> streams = Collections.singletonMap("mystream", new StreamEntryID(
+        "0-0"));
     List<Map.Entry<String, List<StreamEntry>>> expectedEntries = new ArrayList<>();
 
-    when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams)).thenReturn(listEntryStringListStreamEntryCommandObject);
-    when(commandExecutor.executeCommand(listEntryStringListStreamEntryCommandObject)).thenReturn(expectedEntries);
+    when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams)).thenReturn(
+      listEntryStringListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(listEntryStringListStreamEntryCommandObject)).thenReturn(
+      expectedEntries);
 
-    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xreadGroup(groupName, consumer, xReadGroupParams, streams);
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xreadGroup(groupName, consumer,
+      xReadGroupParams, streams);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -1001,11 +1055,14 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] groupName = "mygroup".getBytes();
     byte[] consumer = "myconsumer".getBytes();
     XReadGroupParams xReadGroupParams = new XReadGroupParams().count(2).block(0);
-    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleEntry<>("mystream".getBytes(), "0-0".getBytes());
+    Map.Entry<byte[], byte[]> stream1 = new AbstractMap.SimpleEntry<>("mystream".getBytes(),
+        "0-0".getBytes());
     List<Object> expectedReadGroupResult = new ArrayList<>();
 
-    when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, stream1)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReadGroupResult);
+    when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, stream1)).thenReturn(
+      listObjectCommandObject);
+    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(
+      expectedReadGroupResult);
 
     List<Object> result = jedis.xreadGroup(groupName, consumer, xReadGroupParams, stream1);
 
@@ -1023,10 +1080,13 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, StreamEntryID> stream1 = Collections.singletonMap("mystream", new StreamEntryID());
     Map<String, List<StreamEntry>> expectedReadGroupAsMapResult = new HashMap<>();
 
-    when(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, stream1)).thenReturn(mapStringListStreamEntryCommandObject);
-    when(commandExecutor.executeCommand(mapStringListStreamEntryCommandObject)).thenReturn(expectedReadGroupAsMapResult);
+    when(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, stream1))
+        .thenReturn(mapStringListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(mapStringListStreamEntryCommandObject)).thenReturn(
+      expectedReadGroupAsMapResult);
 
-    Map<String, List<StreamEntry>> result = jedis.xreadGroupAsMap(groupName, consumer, xReadGroupParams, stream1);
+    Map<String, List<StreamEntry>> result = jedis.xreadGroupAsMap(groupName, consumer,
+      xReadGroupParams, stream1);
 
     assertThat(result, sameInstance(expectedReadGroupAsMapResult));
 
@@ -1042,7 +1102,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-0"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-0"), hash));
 
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
@@ -1060,9 +1121,9 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "mystream".getBytes();
     byte[] end = "+".getBytes();
     byte[] start = "0-0".getBytes();
-    List<Object> expectedReverseRange = Arrays.asList(
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")),
-        new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")));
+    List<Object> expectedReverseRange = Arrays.asList(new StreamEntry(new StreamEntryID("0-1"),
+        Collections.singletonMap("field2", "value2")), new StreamEntry(new StreamEntryID("0-0"),
+        Collections.singletonMap("field1", "value1")));
 
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReverseRange);
@@ -1084,7 +1145,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-0"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-0"), hash));
 
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
@@ -1103,8 +1165,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] end = "+".getBytes();
     byte[] start = "0-0".getBytes();
     int count = 1;
-    List<Object> expectedReverseRange = Collections.singletonList(
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
+    List<Object> expectedReverseRange = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
 
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReverseRange);
@@ -1125,7 +1187,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-0"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-0"), hash));
 
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
@@ -1147,7 +1210,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     Map<String, String> hash = new HashMap<>();
     hash.put("field1", "value1");
     hash.put("field2", "value2");
-    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(new StreamEntryID("0-0"), hash));
+    List<StreamEntry> expectedEntries = Collections.singletonList(new StreamEntry(
+        new StreamEntryID("0-0"), hash));
 
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);

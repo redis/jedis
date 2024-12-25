@@ -183,5 +183,4 @@ public class ActiveActiveFailoverTest {
 
     client.close();
   }
-
 }

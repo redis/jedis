@@ -14,8 +14,8 @@ import redis.clients.jedis.mocked.MockedCommandObjectsTestBase;
 import redis.clients.jedis.providers.ConnectionProvider;
 
 /**
- * Base class for {@link UnifiedJedis} mocked unit tests. Exposes a {@link UnifiedJedis} instance that
- * uses mocked executors, providers and command objects, which can be asserted upon.
+ * Base class for {@link UnifiedJedis} mocked unit tests. Exposes a {@link UnifiedJedis} instance
+ * that uses mocked executors, providers and command objects, which can be asserted upon.
  */
 public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTestBase {
 
@@ -25,9 +25,9 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
   protected UnifiedJedis jedis;
 
   /**
-   * Mocked {@link CommandExecutor} instance. Instead of going to the wire and exchanging data
-   * with a real Redis server, this instance is trained to returned pre-packaged response data,
-   * depending on what is being tested.
+   * Mocked {@link CommandExecutor} instance. Instead of going to the wire and exchanging data with
+   * a real Redis server, this instance is trained to returned pre-packaged response data, depending
+   * on what is being tested.
    */
   @Mock
   protected CommandExecutor commandExecutor;
@@ -40,8 +40,8 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
   protected ConnectionProvider connectionProvider;
 
   /**
-   * {@link CommandObjects} instance used by the {@link UnifiedJedis} under-test. Depending on
-   * the test case, it is trained to return one of the mock {@link CommandObject} instances inherited
+   * {@link CommandObjects} instance used by the {@link UnifiedJedis} under-test. Depending on the
+   * test case, it is trained to return one of the mock {@link CommandObject} instances inherited
    * from the superclass.
    */
   @Mock

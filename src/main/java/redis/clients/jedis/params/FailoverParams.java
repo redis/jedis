@@ -29,8 +29,8 @@ public class FailoverParams implements IParams {
 
   /**
    * Both TO ({@link FailoverParams#to(redis.clients.jedis.HostAndPort)} or
-   * {@link FailoverParams#to(java.lang.String, int)}) and
-   * {@link FailoverParams#timeout(long) TIMEOUT} must be set in order for FORCE option.
+   * {@link FailoverParams#to(java.lang.String, int)}) and {@link FailoverParams#timeout(long)
+   * TIMEOUT} must be set in order for FORCE option.
    */
   public FailoverParams force() {
     this.force = true;
@@ -51,7 +51,8 @@ public class FailoverParams implements IParams {
 
     if (force) {
       if (to == null || timeout == null) {
-        throw new IllegalArgumentException("FAILOVER with force option requires both a timeout and target HOST and IP.");
+        throw new IllegalArgumentException(
+            "FAILOVER with force option requires both a timeout and target HOST and IP.");
       }
       args.add(Keyword.FORCE);
     }
@@ -67,7 +68,8 @@ public class FailoverParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     FailoverParams that = (FailoverParams) o;
-    return force == that.force && Objects.equals(to, that.to) && Objects.equals(timeout, that.timeout);
+    return force == that.force && Objects.equals(to, that.to)
+        && Objects.equals(timeout, that.timeout);
   }
 
   @Override

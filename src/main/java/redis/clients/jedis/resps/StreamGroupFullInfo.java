@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class holds information about a stream group with command {@code xinfo stream mystream full}.
- * They can be accessed via getters. There is also {@link StreamGroupFullInfo#getGroupFullInfo()}
+ * This class holds information about a stream group with command {@code xinfo stream mystream full}
+ * . They can be accessed via getters. There is also {@link StreamGroupFullInfo#getGroupFullInfo()}
  * method that returns a generic {@link Map} in case more info are returned from the server.
  */
 public class StreamGroupFullInfo implements Serializable {

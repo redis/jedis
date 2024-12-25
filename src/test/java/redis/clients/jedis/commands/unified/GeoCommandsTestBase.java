@@ -234,20 +234,20 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(2, members.size());
 
     // sort
-    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertEquals("Catania", members.get(0).getMemberByString());
     assertEquals("Palermo", members.get(1).getMemberByString());
 
     // sort, count 1
-    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1));
+    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending().count(1));
     assertEquals(1, members.size());
 
     // sort, count 1, withdist, withcoord
-    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
     assertEquals(56.4413, response.getDistance(), EPSILON);
@@ -318,20 +318,20 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(2, members.size());
 
     // sort
-    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bB, members.get(0).getMember());
     assertArrayEquals(bA, members.get(1).getMember());
 
     // sort, count 1
-    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1));
+    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending().count(1));
     assertEquals(1, members.size());
 
     // sort, count 1, withdist, withcoord
-    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
     assertEquals(56.4413, response.getDistance(), EPSILON);
@@ -418,14 +418,14 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     List<GeoRadiusResponse> members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bA, members.get(0).getMember());
     assertArrayEquals(bB, members.get(1).getMember());
 
-    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);
@@ -442,8 +442,8 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.geoadd(bfoo, 15.087269, 37.502669, bC);
 
     assertEquals(2, jedis.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore")));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore")));
     List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
@@ -459,14 +459,14 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     List<GeoRadiusResponse> members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bA, members.get(0).getMember());
     assertArrayEquals(bB, members.get(1).getMember());
 
-    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);
@@ -483,24 +483,25 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.geoadd("barcelona", 2.583333d, 41.316667d, "place3");
 
     // FROMLONLAT and BYRADIUS
-    List<GeoRadiusResponse> members = jedis.geosearch("barcelona",
-            new GeoCoordinate(2.191d,41.433d), 1000, GeoUnit.M);
+    List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoCoordinate(2.191d,
+        41.433d), 1000, GeoUnit.M);
     assertEquals(1, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
 
     // using Params
     members = jedis.geosearch("barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M)
-            .fromLonLat(2.191d,41.433d).desc());
+        .fromLonLat(2.191d, 41.433d).desc());
     assertEquals(2, members.size());
     assertEquals("place2", members.get(0).getMemberByString());
 
     // FROMMEMBER and BYRADIUS
-    members = jedis.geosearch("barcelona","place3", 100, GeoUnit.KM);
+    members = jedis.geosearch("barcelona", "place3", 100, GeoUnit.KM);
     assertEquals(3, members.size());
 
     // using Params
-    members = jedis.geosearch("barcelona", new GeoSearchParam().fromMember("place1")
-            .byRadius(100, GeoUnit.KM).withDist().withCoord().withHash().count(2));
+    members = jedis.geosearch("barcelona",
+      new GeoSearchParam().fromMember("place1").byRadius(100, GeoUnit.KM).withDist().withCoord()
+          .withHash().count(2));
 
     assertEquals(2, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
@@ -510,57 +511,60 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(new GeoCoordinate(2.187376320362091, 41.40634178640635), res2.getCoordinate());
 
     // FROMMEMBER and BYBOX
-    members = jedis.geosearch("barcelona","place3", 100, 100, GeoUnit.KM);
+    members = jedis.geosearch("barcelona", "place3", 100, 100, GeoUnit.KM);
     assertEquals(3, members.size());
 
     // using Params
-    members = jedis.geosearch("barcelona", new GeoSearchParam().fromMember("place3")
-            .byBox(100, 100, GeoUnit.KM).asc().count(1, true));
+    members = jedis.geosearch("barcelona",
+      new GeoSearchParam().fromMember("place3").byBox(100, 100, GeoUnit.KM).asc().count(1, true));
     assertEquals(1, members.size());
 
     // FROMLONLAT and BYBOX
-    members = jedis.geosearch("barcelona", new GeoCoordinate(2.191, 41.433),
-            1, 1, GeoUnit.KM);
+    members = jedis.geosearch("barcelona", new GeoCoordinate(2.191, 41.433), 1, 1, GeoUnit.KM);
     assertEquals(1, members.size());
 
     // using Params
-    members = jedis.geosearch("barcelona", new GeoSearchParam().byBox(1,1, GeoUnit.KM)
-            .fromLonLat(2.191, 41.433).withDist().withCoord());
+    members = jedis
+        .geosearch("barcelona",
+          new GeoSearchParam().byBox(1, 1, GeoUnit.KM).fromLonLat(2.191, 41.433).withDist()
+              .withCoord());
     assertEquals(1, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
-    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
+    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0)
+        .getCoordinate());
   }
 
   @Test
   public void geosearchNegative() {
     // combine byradius and bybox
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-          .byRadius(3000, GeoUnit.M)
-          .byBox(300, 300, GeoUnit.M));
+      jedis.geosearch("barcelona",
+        new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
       fail();
-    } catch (IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) {
+    }
 
     // without byradius and without bybox
     try {
       jedis.geosearch("barcelona", new GeoSearchParam().fromMember("foobar"));
       fail();
-    } catch (IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) {
+    }
 
     // combine frommember and fromlonlat
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-          .fromMember("foobar")
-          .fromLonLat(10,10));
+      jedis.geosearch("barcelona", new GeoSearchParam().fromMember("foobar").fromLonLat(10, 10));
       fail();
-    } catch (IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) {
+    }
 
     // without frommember and without fromlonlat
     try {
       jedis.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI));
       fail();
-    } catch (IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) {
+    }
   }
 
   @Test
@@ -570,30 +574,30 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.geoadd("barcelona", 2.583333d, 41.316667d, "place3");
 
     // FROMLONLAT and BYRADIUS
-    long members = jedis.geosearchStore("tel-aviv", "barcelona", new GeoCoordinate(2.191d,41.433d),
-            1000, GeoUnit.M);
+    long members = jedis.geosearchStore("tel-aviv", "barcelona",
+      new GeoCoordinate(2.191d, 41.433d), 1000, GeoUnit.M);
     assertEquals(1, members);
     List<String> expected = new ArrayList<>();
     expected.add("place1");
     assertEquals(expected, jedis.zrange("tel-aviv", 0, -1));
 
-    members = jedis.geosearchStore("tel-aviv","barcelona", new GeoSearchParam()
-            .byRadius(3000, GeoUnit.M)
-            .fromLonLat(new GeoCoordinate(2.191d,41.433d)));
+    members = jedis
+        .geosearchStore("tel-aviv", "barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M)
+            .fromLonLat(new GeoCoordinate(2.191d, 41.433d)));
     assertEquals(2, members);
     assertEquals(2, members);
 
     // FROMMEMBER and BYRADIUS
-    members = jedis.geosearchStore("tel-aviv", "barcelona","place3", 100, GeoUnit.KM);
+    members = jedis.geosearchStore("tel-aviv", "barcelona", "place3", 100, GeoUnit.KM);
     assertEquals(3, members);
 
     // FROMMEMBER and BYBOX
-    members = jedis.geosearchStore("tel-aviv","barcelona","place3", 100, 100, GeoUnit.KM);
+    members = jedis.geosearchStore("tel-aviv", "barcelona", "place3", 100, 100, GeoUnit.KM);
     assertEquals(3, members);
 
     // FROMLONLAT and BYBOX
-    members = jedis.geosearchStore("tel-aviv","barcelona", new GeoCoordinate(2.191, 41.433),
-            1, 1, GeoUnit.KM);
+    members = jedis.geosearchStore("tel-aviv", "barcelona", new GeoCoordinate(2.191, 41.433), 1, 1,
+      GeoUnit.KM);
     assertEquals(1, members);
   }
 
@@ -602,8 +606,8 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.geoadd("barcelona", 2.1909389952632d, 41.433791470673d, "place1");
     jedis.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");
 
-    long members = jedis.geosearchStoreStoreDist("tel-aviv","barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M)
-            .fromLonLat(2.191d,41.433d));
+    long members = jedis.geosearchStoreStoreDist("tel-aviv", "barcelona", new GeoSearchParam()
+        .byRadius(3000, GeoUnit.M).fromLonLat(2.191d, 41.433d));
 
     assertEquals(2, members);
     assertEquals(88.05060698409301, jedis.zscore("tel-aviv", "place1"), 5);

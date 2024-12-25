@@ -33,7 +33,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   @Experimental
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache) {
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      Cache clientSideCache) {
     this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
@@ -45,22 +46,24 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   @Experimental
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
-      SimpleObjectPoolConfig poolConfig) {
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      Cache clientSideCache, SimpleObjectPoolConfig poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-                                   SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
-    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshPeriod);
+      SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
+    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes,
+        topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
   @Experimental
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
-      SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
-    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes, topologyRefreshPeriod);
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      Cache clientSideCache, SimpleObjectPoolConfig poolConfig, Duration topologyRefreshPeriod) {
+    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes,
+        topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
@@ -88,8 +91,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     if (System.getProperty(INIT_NO_ERROR_PROPERTY) != null) {
       return;
     }
-    JedisClusterOperationException uninitializedException
-        = new JedisClusterOperationException("Could not initialize cluster slots cache.");
+    JedisClusterOperationException uninitializedException = new JedisClusterOperationException(
+        "Could not initialize cluster slots cache.");
     uninitializedException.addSuppressed(firstException);
     throw uninitializedException;
   }
@@ -159,7 +162,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       }
     }
 
-    JedisClusterOperationException noReachableNode = new JedisClusterOperationException("No reachable node in cluster.");
+    JedisClusterOperationException noReachableNode = new JedisClusterOperationException(
+        "No reachable node in cluster.");
     if (suppressed != null) {
       noReachableNode.addSuppressed(suppressed);
     }

@@ -67,10 +67,10 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     Map<String, String> map1 = new HashMap<>();
     pipe.xadd("stream1", (StreamEntryID) null, map1);
 
-    assertThat(pipe.syncAndReturnAll(),
-        contains(
-            both(instanceOf(JedisDataException.class)).and(hasToString(containsString("wrong number of arguments")))
-        ));
+    assertThat(
+      pipe.syncAndReturnAll(),
+      contains(both(instanceOf(JedisDataException.class)).and(
+        hasToString(containsString("wrong number of arguments")))));
   }
 
   @Test
@@ -86,13 +86,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<?> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class)
-    ));
+    assertThat(results, contains(instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class)));
 
-    assertThat((StreamEntryID) results.get(1),
-        greaterThan((StreamEntryID) results.get(0)));
+    assertThat((StreamEntryID) results.get(1), greaterThan((StreamEntryID) results.get(0)));
   }
 
   @Test
@@ -119,19 +115,14 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<?> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        equalTo(idIn),
-        instanceOf(StreamEntryID.class),
-        equalTo(2L),
-        instanceOf(StreamEntryID.class),
-        equalTo(2L)
-    ));
+    assertThat(
+      results,
+      contains(equalTo(idIn), instanceOf(StreamEntryID.class), equalTo(2L),
+        instanceOf(StreamEntryID.class), equalTo(2L)));
 
-    assertThat((StreamEntryID) results.get(1),
-        greaterThan((StreamEntryID) results.get(0)));
+    assertThat((StreamEntryID) results.get(1), greaterThan((StreamEntryID) results.get(0)));
 
-    assertThat((StreamEntryID) results.get(3),
-        greaterThan((StreamEntryID) results.get(1)));
+    assertThat((StreamEntryID) results.get(3), greaterThan((StreamEntryID) results.get(1)));
   }
 
   @Test
@@ -139,11 +130,13 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.xadd("stream1", new HashMap<>(), XAddParams.xAddParams());
     pipe.xadd("stream1", XAddParams.xAddParams(), new HashMap<>());
 
-    assertThat(pipe.syncAndReturnAll(),
-        contains(
-            both(instanceOf(JedisDataException.class)).and(hasToString(containsString("wrong number of arguments"))),
-            both(instanceOf(JedisDataException.class)).and(hasToString(containsString("wrong number of arguments")))
-        ));
+    assertThat(
+      pipe.syncAndReturnAll(),
+      contains(
+        both(instanceOf(JedisDataException.class)).and(
+          hasToString(containsString("wrong number of arguments"))),
+        both(instanceOf(JedisDataException.class)).and(
+          hasToString(containsString("wrong number of arguments")))));
   }
 
   @Test
@@ -157,13 +150,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<?> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class)
-    ));
+    assertThat(results, contains(instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class)));
 
-    assertThat((StreamEntryID) results.get(1),
-        greaterThan((StreamEntryID) results.get(0)));
+    assertThat((StreamEntryID) results.get(1), greaterThan((StreamEntryID) results.get(0)));
   }
 
   @Test
@@ -196,30 +185,22 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<?> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        equalTo(idIn),
-        equalTo(idIn2),
-        instanceOf(StreamEntryID.class),
-        equalTo(3L),
-        instanceOf(StreamEntryID.class),
-        equalTo(3L)
-    ));
+    assertThat(
+      results,
+      contains(equalTo(idIn), equalTo(idIn2), instanceOf(StreamEntryID.class), equalTo(3L),
+        instanceOf(StreamEntryID.class), equalTo(3L)));
 
-    assertThat((StreamEntryID) results.get(2),
-        greaterThan((StreamEntryID) results.get(1)));
+    assertThat((StreamEntryID) results.get(2), greaterThan((StreamEntryID) results.get(1)));
 
-    assertThat((StreamEntryID) results.get(4),
-        greaterThan((StreamEntryID) results.get(2)));
+    assertThat((StreamEntryID) results.get(4), greaterThan((StreamEntryID) results.get(2)));
   }
 
   @Test
   public void xaddWithParamsNoMkStream() {
-    pipe.xadd("xadd-stream3", XAddParams.xAddParams().noMkStream().maxLen(3).exactTrimming(), singletonMap("f1", "v1"));
+    pipe.xadd("xadd-stream3", XAddParams.xAddParams().noMkStream().maxLen(3).exactTrimming(),
+      singletonMap("f1", "v1"));
 
-    assertThat(pipe.syncAndReturnAll(),
-        contains(
-            nullValue()
-        ));
+    assertThat(pipe.syncAndReturnAll(), contains(nullValue()));
 
     assertFalse(jedis.exists("xadd-stream3"));
   }
@@ -242,12 +223,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<?> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        equalTo(id),
-        equalTo(1L),
-        equalTo(id1),
-        equalTo(0L)
-    ));
+    assertThat(results, contains(equalTo(id), equalTo(1L), equalTo(id1), equalTo(0L)));
   }
 
   @Test
@@ -264,17 +240,13 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<Object> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        equalTo(new StreamEntryID(0, 1)),
-        equalTo(new StreamEntryID(2, 3)),
-        equalTo(new StreamEntryID(4, 0)),
-        equalTo(new StreamEntryID(5, 6)),
-        equalTo(new StreamEntryID(7, 8)),
-        instanceOf(StreamEntryID.class)
-    ));
+    assertThat(
+      results,
+      contains(equalTo(new StreamEntryID(0, 1)), equalTo(new StreamEntryID(2, 3)),
+        equalTo(new StreamEntryID(4, 0)), equalTo(new StreamEntryID(5, 6)),
+        equalTo(new StreamEntryID(7, 8)), instanceOf(StreamEntryID.class)));
 
-    assertThat((StreamEntryID) results.get(5),
-        greaterThan((StreamEntryID) results.get(4)));
+    assertThat((StreamEntryID) results.get(5), greaterThan((StreamEntryID) results.get(4)));
   }
 
   @Test
@@ -287,10 +259,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     List<Object> results = pipe.syncAndReturnAll();
 
-    assertThat(results, contains(
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class)
-    ));
+    assertThat(results, contains(instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class)));
 
     StreamEntryID id1 = (StreamEntryID) results.get(1);
 
@@ -298,11 +267,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.xdel("xdel-stream", id1);
     pipe.xlen("xdel-stream");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        2L,
-        1L,
-        1L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(2L, 1L, 1L));
   }
 
   @Test
@@ -319,13 +284,10 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xlen("xlen-stream");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        equalTo(0L),
-        instanceOf(StreamEntryID.class),
-        equalTo(1L),
-        instanceOf(StreamEntryID.class),
-        equalTo(2L)
-    ));
+    assertThat(
+      pipe.syncAndReturnAll(),
+      contains(equalTo(0L), instanceOf(StreamEntryID.class), equalTo(1L),
+        instanceOf(StreamEntryID.class), equalTo(2L)));
   }
 
   @Test
@@ -507,16 +469,11 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xlen("xtrim-stream");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        equalTo(5L),
-        equalTo(2L),
-        equalTo(3L)
-    ));
+    assertThat(
+      pipe.syncAndReturnAll(),
+      contains(instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class),
+        instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class),
+        instanceOf(StreamEntryID.class), equalTo(5L), equalTo(2L), equalTo(3L)));
   }
 
   @Test
@@ -538,18 +495,12 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xlen("xtrim-stream");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        instanceOf(StreamEntryID.class),
-        equalTo(5L),
-        equalTo(2L),
-        equalTo(3L),
-        equalTo(1L),
-        equalTo(2L)
-    ));
+    assertThat(
+      pipe.syncAndReturnAll(),
+      contains(instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class),
+        instanceOf(StreamEntryID.class), instanceOf(StreamEntryID.class),
+        instanceOf(StreamEntryID.class), equalTo(5L), equalTo(2L), equalTo(3L), equalTo(1L),
+        equalTo(2L)));
   }
 
   @Test
@@ -622,22 +573,15 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xgroupCreate("xgroup-stream", "consumer-group-name", null, false);
     pipe.xgroupSetID("xgroup-stream", "consumer-group-name", id1);
-    pipe.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.XGROUP_LAST_ENTRY, false);
+    pipe.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.XGROUP_LAST_ENTRY,
+      false);
 
     pipe.xgroupDestroy("xgroup-stream", "consumer-group-name");
     pipe.xgroupDelConsumer("xgroup-stream", "consumer-group-name1", "myconsumer1");
     pipe.xgroupCreateConsumer("xgroup-stream", "consumer-group-name1", "myconsumer2");
     pipe.xgroupDelConsumer("xgroup-stream", "consumer-group-name1", "myconsumer2");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        "OK",
-        "OK",
-        "OK",
-        1L,
-        0L,
-        true,
-        0L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains("OK", "OK", "OK", 1L, 0L, true, 0L));
   }
 
   @Test
@@ -1155,7 +1099,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     Thread.sleep(1);
 
     Response<List<StreamGroupInfo>> groupInfoResponse = pipe.xinfoGroups(STREAM_NAME);
-    Response<List<StreamConsumersInfo>> consumersInfoResponse = pipe.xinfoConsumers(STREAM_NAME, G1);
+    Response<List<StreamConsumersInfo>> consumersInfoResponse = pipe
+        .xinfoConsumers(STREAM_NAME, G1);
     Response<List<StreamConsumerInfo>> consumerInfoResponse = pipe.xinfoConsumers2(STREAM_NAME, G1);
 
     pipe.sync();
@@ -1167,8 +1112,10 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(1L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS));
     assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES));
     assertEquals(0L, streamInfo.getStreamInfo().get(StreamInfo.GROUPS));
-    assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY)).getFields().get(F1));
-    assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY)).getFields().get(F1));
+    assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY))
+        .getFields().get(F1));
+    assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY))
+        .getFields().get(F1));
     assertEquals(id2, streamInfo.getStreamInfo().get(StreamInfo.LAST_GENERATED_ID));
 
     // Using getters
@@ -1199,8 +1146,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Consumers info test
     List<StreamConsumersInfo> consumersInfo = consumersInfoResponse.get();
 
-    assertEquals(MY_CONSUMER,
-        consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.NAME));
+    assertEquals(MY_CONSUMER, consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.NAME));
     assertEquals(0L, consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.PENDING));
     assertTrue((Long) consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.IDLE) > 0);
 
@@ -1213,8 +1159,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Consumer info test
     List<StreamConsumerInfo> consumerInfo = consumerInfoResponse.get();
 
-    assertEquals(MY_CONSUMER,
-        consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.NAME));
+    assertEquals(MY_CONSUMER, consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.NAME));
     assertEquals(0L, consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.PENDING));
     assertTrue((Long) consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.IDLE) > 0);
 
@@ -1231,8 +1176,10 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.xreadGroup(G2, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQuery1);
 
     Response<List<StreamGroupInfo>> manyGroupsInfoResponse = pipe.xinfoGroups(STREAM_NAME);
-    Response<List<StreamConsumersInfo>> manyConsumersInfoResponse = pipe.xinfoConsumers(STREAM_NAME, G2);
-    Response<List<StreamConsumerInfo>> manyConsumerInfoResponse = pipe.xinfoConsumers2(STREAM_NAME, G2);
+    Response<List<StreamConsumersInfo>> manyConsumersInfoResponse = pipe.xinfoConsumers(
+      STREAM_NAME, G2);
+    Response<List<StreamConsumerInfo>> manyConsumerInfoResponse = pipe.xinfoConsumers2(STREAM_NAME,
+      G2);
     Response<StreamFullInfo> streamInfoFullResponse = pipe.xinfoStreamFull(STREAM_NAME);
     Response<StreamFullInfo> streamInfoFull10Response = pipe.xinfoStreamFull(STREAM_NAME, 10);
 
@@ -1269,9 +1216,10 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Not existing key - redis cli return error so we expect exception
     pipe.xinfoStream("random");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        both(instanceOf(JedisDataException.class)).and(hasToString(containsString("ERR no such key")))
-    ));
+    assertThat(
+      pipe.syncAndReturnAll(),
+      contains(both(instanceOf(JedisDataException.class)).and(
+        hasToString(containsString("ERR no such key")))));
   }
 
   @Test
@@ -1281,9 +1229,10 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     StreamEntryID id2 = jedis.xadd("streamfull2", (StreamEntryID) null, map);
     jedis.xgroupCreate("streamfull2", "xreadGroup-group", null, false);
 
-    Map<String, StreamEntryID> streamQeury1 = singletonMap("streamfull2", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
-    Response<List<Entry<String, List<StreamEntry>>>> pending = pipe.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
-        XReadGroupParams.xReadGroupParams().count(1), streamQeury1);
+    Map<String, StreamEntryID> streamQeury1 = singletonMap("streamfull2",
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    Response<List<Entry<String, List<StreamEntry>>>> pending = pipe.xreadGroup("xreadGroup-group",
+      "xreadGroup-consumer", XReadGroupParams.xReadGroupParams().count(1), streamQeury1);
 
     Response<StreamFullInfo> fullResult = pipe.xinfoStreamFull("streamfull2");
 

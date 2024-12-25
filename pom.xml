@@ -11,9 +11,9 @@
     <packaging>jar</packaging>
     <groupId>today.bonfire.oss</groupId>
     <artifactId>jedis</artifactId>
-    <version>5.2.0-SNAPSHOT</version>
+    <version>5.2.0</version>
     <name>Jedis</name>
-    <description>Jedis is a blazingly small and sane Redis java client.</description>
+    <description>Modified Jedis library to support java 21 and uses a simple object pool. This is a blazingly small and sane Redis java client.</description>
     <url>https://github.com/BonfireTrunk/jedis</url>
 
     <licenses>

@@ -104,12 +104,13 @@ public class ClusterCommandsTest {
     String nodes = node1.clusterNodes();
     assertTrue(nodes.split("\n").length > 0);
   }
-//
-//  @Test
-//  public void clusterMeet() {
-//    String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-//    assertEquals("OK", status);
-//  }
+
+  //
+  // @Test
+  // public void clusterMeet() {
+  // String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+  // assertEquals("OK", status);
+  // }
 
   @Test
   public void clusterAddSlotsAndDelSlots() {
@@ -245,12 +246,9 @@ public class ClusterCommandsTest {
     // It assumes JedisClusterCRC16 is correctly implemented
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
       node1.clusterKeySlot("{user1000}.following"));
-    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
-        node1.clusterKeySlot("foo{bar}{zap}"));
-    assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
-        node1.clusterKeySlot("foo{}{bar}"));
-    assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"),
-        node1.clusterKeySlot("foo{{bar}}zap"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), node1.clusterKeySlot("foo{bar}{zap}"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), node1.clusterKeySlot("foo{}{bar}"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"), node1.clusterKeySlot("foo{{bar}}zap"));
   }
 
   @Test
@@ -265,7 +263,8 @@ public class ClusterCommandsTest {
 
   @Test
   public void clusterMyShardId() {
-    MatcherAssert.assertThat(node1.clusterMyShardId(), Matchers.not(Matchers.isEmptyOrNullString()));
+    MatcherAssert
+        .assertThat(node1.clusterMyShardId(), Matchers.not(Matchers.isEmptyOrNullString()));
   }
 
   @Test
@@ -273,13 +272,16 @@ public class ClusterCommandsTest {
     try {
       assertEquals("OK", node1.clusterSetConfigEpoch(1));
     } catch (JedisDataException jde) {
-      assertEquals("ERR The user can assign a config epoch only when the node does not know any other node.", jde.getMessage());
+      assertEquals(
+        "ERR The user can assign a config epoch only when the node does not know any other node.",
+        jde.getMessage());
     }
   }
 
   @Test
   public void ClusterBumpEpoch() {
-    MatcherAssert.assertThat(node1.clusterBumpEpoch(), Matchers.matchesPattern("^BUMPED|STILL [0-9]+$"));
+    MatcherAssert.assertThat(node1.clusterBumpEpoch(),
+      Matchers.matchesPattern("^BUMPED|STILL [0-9]+$"));
   }
 
 }

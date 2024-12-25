@@ -18,7 +18,8 @@ public class FailoverCommandsTest {
   private static final int INVALID_PORT = 6000;
 
   private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9");
-  private static final EndpointConfig node2 = HostAndPorts.getRedisEndpoint("standalone10-replica-of-standalone9");
+  private static final EndpointConfig node2 = HostAndPorts
+      .getRedisEndpoint("standalone10-replica-of-standalone9");
 
   private HostAndPort masterAddress;
   private HostAndPort replicaAddress;
@@ -49,7 +50,7 @@ public class FailoverCommandsTest {
     try (Jedis master = new Jedis(masterAddress)) {
       assertEquals("OK", master.failover());
       Thread.sleep(250);
-//      assertEquals("slave", master.role().get(0));
+      // assertEquals("slave", master.role().get(0));
       // Above test has a tendency to get stuck. So, doing following 'not so ideal' test.
       if ("slave".equals(master.role().get(0))) {
         // ok
@@ -64,7 +65,7 @@ public class FailoverCommandsTest {
     try (Jedis replica = new Jedis(replicaAddress)) {
       replica.failover();
       fail("FAILOVER is not valid when server is a replica.");
-    } catch(JedisDataException ex) {
+    } catch (JedisDataException ex) {
       assertEquals("ERR FAILOVER is not valid when server is a replica.", ex.getMessage());
     }
   }
@@ -72,16 +73,17 @@ public class FailoverCommandsTest {
   @Test(expected = IllegalArgumentException.class)
   public void failoverForceWithoutToFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
-      assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .timeout(100).force()));
+      assertEquals("OK", master.failover(FailoverParams.failoverParams().timeout(100).force()));
     }
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void failoverForceWithoutTimeoutFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
-      assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", INVALID_PORT)).force()));
+      assertEquals(
+        "OK",
+        master.failover(FailoverParams.failoverParams()
+            .to(new HostAndPort("127.0.0.1", INVALID_PORT)).force()));
     }
   }
 
@@ -90,7 +92,7 @@ public class FailoverCommandsTest {
     try (Jedis master = new Jedis(masterAddress)) {
       master.failover(FailoverParams.failoverParams().to("127.0.0.1", INVALID_PORT));
       fail("FAILOVER target HOST and PORT is not a replica.");
-    } catch(JedisDataException ex) {
+    } catch (JedisDataException ex) {
       assertEquals("ERR FAILOVER target HOST and PORT is not a replica.", ex.getMessage());
     }
   }
@@ -100,7 +102,7 @@ public class FailoverCommandsTest {
     try (Jedis master = new Jedis(masterAddress)) {
       master.failover(FailoverParams.failoverParams().to("127.0.0.1", INVALID_PORT).timeout(1000));
       fail("FAILOVER target HOST and PORT is not a replica.");
-    } catch(JedisDataException ex) {
+    } catch (JedisDataException ex) {
       assertEquals("ERR FAILOVER target HOST and PORT is not a replica.", ex.getMessage());
     }
   }
@@ -109,7 +111,7 @@ public class FailoverCommandsTest {
   public void abortMaster() {
     try (Jedis master = new Jedis(masterAddress)) {
       master.failoverAbort();
-    } catch(JedisDataException ex) {
+    } catch (JedisDataException ex) {
       assertEquals("ERR No failover in progress.", ex.getMessage());
     }
   }
@@ -118,7 +120,7 @@ public class FailoverCommandsTest {
   public void abortReplica() {
     try (Jedis replica = new Jedis(replicaAddress)) {
       replica.failoverAbort();
-    } catch(JedisDataException ex) {
+    } catch (JedisDataException ex) {
       assertEquals("ERR No failover in progress.", ex.getMessage());
     }
   }

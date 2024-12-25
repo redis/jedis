@@ -14,16 +14,15 @@ public abstract class GraphEntity {
   protected final Map<String, Property<?>> propertyMap;
 
   public GraphEntity() {
-      propertyMap = new HashMap<>();
+    propertyMap = new HashMap<>();
   }
 
   /**
-   * Use this constructor to reduce memory allocations 
-   * when properties are added to the edge
+   * Use this constructor to reduce memory allocations when properties are added to the edge
    * @param propertiesCapacity preallocate the capacity for the properties
    */
   public GraphEntity(int propertiesCapacity) {
-      propertyMap = new HashMap<>(propertiesCapacity);
+    propertyMap = new HashMap<>(propertiesCapacity);
   }
 
   /**
@@ -42,7 +41,6 @@ public abstract class GraphEntity {
 
   /**
    * Adds a property to the entity, by composing name, type and value to a property object
-   *
    * @param name
    * @param value
    */
@@ -59,7 +57,6 @@ public abstract class GraphEntity {
 
   /**
    * Add a property to the entity
-   *
    * @param property
    */
   public void addProperty(Property property) {
@@ -97,8 +94,7 @@ public abstract class GraphEntity {
       return false;
     }
     GraphEntity that = (GraphEntity) o;
-    return id == that.id
-        && Objects.equals(propertyMap, that.propertyMap);
+    return id == that.id && Objects.equals(propertyMap, that.propertyMap);
   }
 
   @Override

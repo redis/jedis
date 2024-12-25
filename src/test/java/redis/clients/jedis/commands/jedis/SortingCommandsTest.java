@@ -86,14 +86,14 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
     expected.add("1");
 
     assertEquals(expected, result);
-    
+
     // Sort to dest key
     Long resultCount = jedis.sort("foo", sp, "foodest");
     assertEquals(3L, resultCount.longValue());
 
     result = jedis.lpop("foodest", 5);
     assertEquals(expected, result);
-    
+
     // Binary
     jedis.lpush(bfoo, b2);
     jedis.lpush(bfoo, b3);
@@ -114,7 +114,7 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
     bexpected.add(b1);
 
     assertByteArrayListEquals(bexpected, bresult);
-    
+
     // Sort to dest key
     resultCount = jedis.sort(bfoo, sp, bfoodest);
     assertEquals(3L, resultCount.longValue());

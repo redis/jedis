@@ -19,7 +19,8 @@ public class TSMRangeElements extends KeyValue<String, List<TSElement>> {
     this.sources = null;
   }
 
-  public TSMRangeElements(String key, Map<String, String> labels, List<AggregationType> aggregators, List<TSElement> value) {
+  public TSMRangeElements(String key, Map<String, String> labels,
+      List<AggregationType> aggregators, List<TSElement> value) {
     super(key, value);
     this.labels = labels;
     this.aggregators = aggregators;
@@ -27,7 +28,8 @@ public class TSMRangeElements extends KeyValue<String, List<TSElement>> {
     this.sources = null;
   }
 
-  public TSMRangeElements(String key, Map<String, String> labels, List<String> reducers, List<String> sources, List<TSElement> value) {
+  public TSMRangeElements(String key, Map<String, String> labels, List<String> reducers,
+      List<String> sources, List<TSElement> value) {
     super(key, value);
     this.labels = labels;
     this.aggregators = null;
@@ -57,8 +59,8 @@ public class TSMRangeElements extends KeyValue<String, List<TSElement>> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder().append(getClass().getSimpleName())
-        .append("{key=").append(getKey()).append(", labels=").append(labels);
+    StringBuilder sb = new StringBuilder().append(getClass().getSimpleName()).append("{key=")
+        .append(getKey()).append(", labels=").append(labels);
     if (aggregators != null) {
       sb.append(", aggregators=").append(aggregators);
     }

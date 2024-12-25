@@ -64,7 +64,7 @@ public abstract class JedisShardedPubSubBase<T> {
 
   protected abstract T encode(byte[] raw);
 
-//  private void process(Client client) {
+  // private void process(Client client) {
   private void process() {
 
     do {
@@ -101,7 +101,7 @@ public abstract class JedisShardedPubSubBase<T> {
       }
     } while (!Thread.currentThread().isInterrupted() && isSubscribed());
 
-//    /* Invalidate instance since this thread is no longer listening */
-//    this.client = null;
+    // /* Invalidate instance since this thread is no longer listening */
+    // this.client = null;
   }
 }

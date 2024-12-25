@@ -15,10 +15,10 @@ import static org.junit.Assert.assertTrue;
 
 public class JedisSentinelPoolTest {
 
-  protected static final HostAndPort sentinel1   = HostAndPorts.getSentinelServers().get(1);
-  protected static final HostAndPort sentinel2   = HostAndPorts.getSentinelServers().get(3);
-  private static final   String      MASTER_NAME = "mymaster";
-  protected final        Set<String> sentinels   = new HashSet<>();
+  protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
+  protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
+  private static final String MASTER_NAME = "mymaster";
+  protected final Set<String> sentinels = new HashSet<>();
 
   @Before
   public void setUp() throws Exception {
@@ -35,7 +35,7 @@ public class JedisSentinelPoolTest {
       var config = JedisPoolConfig.builder();
 
       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
-                                                     "foobared", 2);
+          "foobared", 2);
       pool.getResource().close();
       pool.destroy();
     }
@@ -53,8 +53,8 @@ public class JedisSentinelPoolTest {
 
   @Test(expected = JedisException.class)
   public void initializeWithNotMonitoredMasterNameShouldThrowException() {
-    final String      wrongMasterName = "wrongMasterName";
-    JedisSentinelPool pool            = new JedisSentinelPool(wrongMasterName, sentinels);
+    final String wrongMasterName = "wrongMasterName";
+    JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName, sentinels);
     pool.destroy();
   }
 
@@ -63,7 +63,7 @@ public class JedisSentinelPoolTest {
     var config = JedisPoolConfig.builder();
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
-                                                   "foobared", 2);
+        "foobared", 2);
     Jedis jedis = pool.getResource();
     jedis.auth("foobared");
     jedis.set("foo", "bar");
@@ -78,8 +78,8 @@ public class JedisSentinelPoolTest {
     var config = JedisPoolConfig.builder();
     config.maxPoolSize(1);
     config.waitingForObjectTimeout(Duration.ZERO);
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
-                                                        "foobared", 2)) {
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(),
+        1000, "foobared", 2)) {
 
       Jedis jedis = null;
       try (Jedis jedis1 = pool.getResource()) {
@@ -102,7 +102,7 @@ public class JedisSentinelPoolTest {
     config.maxPoolSize(1);
     config.waitingForObjectTimeout(Duration.ZERO);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
-                                                   "foobared", 2);
+        "foobared", 2);
 
     Jedis jedis = pool.getResource();
     try {
@@ -125,7 +125,7 @@ public class JedisSentinelPoolTest {
     config.maxPoolSize(1);
     config.waitingForObjectTimeout(Duration.ZERO);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config.build(), 1000,
-                                                   "foobared", 0, "my_shiny_client_name");
+        "foobared", 0, "my_shiny_client_name");
 
     Jedis jedis = pool.getResource();
 

@@ -538,7 +538,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     List<LibraryInfo> expectedLibraryInfoList = new ArrayList<>();
 
     when(commandObjects.functionList()).thenReturn(listLibraryInfoCommandObject);
-    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
+    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(
+      expectedLibraryInfoList);
 
     List<LibraryInfo> result = jedis.functionList();
 
@@ -553,7 +554,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     List<Object> expectedFunctionListBinary = new ArrayList<>();
 
     when(commandObjects.functionListBinary()).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionListBinary);
+    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(
+      expectedFunctionListBinary);
 
     List<Object> result = jedis.functionListBinary();
 
@@ -569,7 +571,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     List<LibraryInfo> expectedLibraryInfoList = new ArrayList<>();
 
     when(commandObjects.functionList(libraryNamePattern)).thenReturn(listLibraryInfoCommandObject);
-    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
+    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(
+      expectedLibraryInfoList);
 
     List<LibraryInfo> result = jedis.functionList(libraryNamePattern);
 
@@ -600,7 +603,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     List<LibraryInfo> expectedLibraryInfoList = new ArrayList<>();
 
     when(commandObjects.functionListWithCode()).thenReturn(listLibraryInfoCommandObject);
-    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
+    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(
+      expectedLibraryInfoList);
 
     List<LibraryInfo> result = jedis.functionListWithCode();
 
@@ -615,7 +619,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     List<Object> expectedFunctionListWithCodeBinary = new ArrayList<>();
 
     when(commandObjects.functionListWithCodeBinary()).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionListWithCodeBinary);
+    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(
+      expectedFunctionListWithCodeBinary);
 
     List<Object> result = jedis.functionListWithCodeBinary();
 
@@ -630,8 +635,10 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     String libraryNamePattern = "mylib*";
     List<LibraryInfo> expectedLibraryInfoList = new ArrayList<>();
 
-    when(commandObjects.functionListWithCode(libraryNamePattern)).thenReturn(listLibraryInfoCommandObject);
-    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
+    when(commandObjects.functionListWithCode(libraryNamePattern)).thenReturn(
+      listLibraryInfoCommandObject);
+    when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(
+      expectedLibraryInfoList);
 
     List<LibraryInfo> result = jedis.functionListWithCode(libraryNamePattern);
 
@@ -646,8 +653,10 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     byte[] libraryNamePattern = "mylib*".getBytes();
     List<Object> expectedFunctionListWithCode = new ArrayList<>();
 
-    when(commandObjects.functionListWithCode(libraryNamePattern)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionListWithCode);
+    when(commandObjects.functionListWithCode(libraryNamePattern)).thenReturn(
+      listObjectCommandObject);
+    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(
+      expectedFunctionListWithCode);
 
     List<Object> result = jedis.functionListWithCode(libraryNamePattern);
 
@@ -759,7 +768,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     FunctionStats expectedFunctionStats = mock(FunctionStats.class);
 
     when(commandObjects.functionStats()).thenReturn(functionStatsCommandObject);
-    when(commandExecutor.executeCommand(functionStatsCommandObject)).thenReturn(expectedFunctionStats);
+    when(commandExecutor.executeCommand(functionStatsCommandObject)).thenReturn(
+      expectedFunctionStats);
 
     FunctionStats result = jedis.functionStats();
 
@@ -774,7 +784,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     Object expectedFunctionStatsBinary = new Object();
 
     when(commandObjects.functionStatsBinary()).thenReturn(objectCommandObject);
-    when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedFunctionStatsBinary);
+    when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(
+      expectedFunctionStatsBinary);
 
     Object result = jedis.functionStatsBinary();
 
@@ -807,7 +818,8 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     Boolean expectedResponse = true;
 
     when(commandObjects.scriptExists(sampleKey, sha1)).thenReturn(listBooleanCommandObject);
-    when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(Collections.singletonList(expectedResponse));
+    when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(
+      Collections.singletonList(expectedResponse));
 
     Boolean result = jedis.scriptExists(sha1, sampleKey);
 
@@ -823,15 +835,17 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisM
     byte[] sampleKey = "myKey".getBytes();
     Boolean expectedResponse = true;
 
-    when(commandObjects.scriptExists(sampleKey, new byte[][]{ sha1 })).thenReturn(listBooleanCommandObject);
-    when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(Collections.singletonList(expectedResponse));
+    when(commandObjects.scriptExists(sampleKey, new byte[][] { sha1 })).thenReturn(
+      listBooleanCommandObject);
+    when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(
+      Collections.singletonList(expectedResponse));
 
     Boolean result = jedis.scriptExists(sha1, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
     verify(commandExecutor).executeCommand(listBooleanCommandObject);
-    verify(commandObjects).scriptExists(sampleKey, new byte[][]{ sha1 });
+    verify(commandObjects).scriptExists(sampleKey, new byte[][] { sha1 });
   }
 
   @Test

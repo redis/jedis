@@ -67,9 +67,7 @@ public class Document implements Serializable {
 
   /**
    * return the property value inside a key
-   *
    * @param key key of the property
-   *
    * @return the property value
    */
   public Object get(String key) {
@@ -78,9 +76,7 @@ public class Document implements Serializable {
 
   /**
    * return the property value inside a key
-   *
    * @param key key of the property
-   *
    * @return the property value
    */
   public String getString(String key) {
@@ -108,7 +104,6 @@ public class Document implements Serializable {
 
   /**
    * Set the document's score
-   *
    * @param score new score to set
    * @return the document itself
    * @deprecated
@@ -121,11 +116,11 @@ public class Document implements Serializable {
 
   @Override
   public String toString() {
-    return "id:" + this.getId() + ", score: " + this.getScore() +
-            ", properties:" + this.getProperties();
+    return "id:" + this.getId() + ", score: " + this.getScore() + ", properties:"
+        + this.getProperties();
   }
 
-  /// RESP2 -->
+  // / RESP2 -->
   public static Document load(String id, double score, byte[] payload, List<byte[]> fields) {
     return Document.load(id, score, fields, true);
   }
@@ -152,16 +147,17 @@ public class Document implements Serializable {
         byte[] rawValue = fields.get(i + 1);
         String key = SafeEncoder.encode(rawKey);
         Object value = rawValue == null ? null
-            : (decode && (isFieldDecode == null || !Boolean.FALSE.equals(isFieldDecode.get(key))))
-            ? SafeEncoder.encode(rawValue) : rawValue;
+            : (decode && (isFieldDecode == null || !Boolean.FALSE.equals(isFieldDecode.get(key)))) ? SafeEncoder
+                .encode(rawValue) : rawValue;
         ret.set(key, value);
       }
     }
     return ret;
   }
-  /// <-- RESP2
 
-  /// RESP3 -->
+  // / <-- RESP2
+
+  // / RESP3 -->
   // TODO: final
   static Builder<Document> SEARCH_DOCUMENT = new PerFieldDecoderDocumentBuilder((Map) null);
 
@@ -186,15 +182,15 @@ public class Document implements Serializable {
       for (KeyValue kv : list) {
         String key = BuilderFactory.STRING.build(kv.getKey());
         switch (key) {
-          case ID_STR:
-            id = BuilderFactory.STRING.build(kv.getValue());
-            break;
-          case SCORE_STR:
-            score = BuilderFactory.DOUBLE.build(kv.getValue());
-            break;
-          case FIELDS_STR:
-            fields = makeFieldsMap(isFieldDecode, kv.getValue());
-            break;
+        case ID_STR:
+          id = BuilderFactory.STRING.build(kv.getValue());
+          break;
+        case SCORE_STR:
+          score = BuilderFactory.DOUBLE.build(kv.getValue());
+          break;
+        case FIELDS_STR:
+          fields = makeFieldsMap(isFieldDecode, kv.getValue());
+          break;
         }
       }
       return new Document(id, score, fields);
@@ -216,5 +212,5 @@ public class Document implements Serializable {
         });
     return map;
   }
-  /// <-- RESP3
+  // / <-- RESP3
 }

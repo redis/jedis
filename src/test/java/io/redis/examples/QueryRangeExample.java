@@ -20,11 +20,9 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.args.SortingOrder;
 // HIDE_END
 
-
-
 // HIDE_START
 public class QueryRangeExample {
-    @Test
+  @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 

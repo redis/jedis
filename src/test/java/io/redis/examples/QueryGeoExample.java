@@ -19,7 +19,7 @@ import redis.clients.jedis.json.Path2;
 
 // HIDE_START
 public class QueryGeoExample {
-    @Test
+  @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 

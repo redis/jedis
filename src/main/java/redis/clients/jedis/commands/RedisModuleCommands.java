@@ -7,12 +7,7 @@ import redis.clients.jedis.json.commands.RedisJsonCommands;
 import redis.clients.jedis.search.RediSearchCommands;
 import redis.clients.jedis.timeseries.RedisTimeSeriesCommands;
 
-public interface RedisModuleCommands extends
-    RediSearchCommands,
-    RedisJsonCommands,
-    RedisTimeSeriesCommands,
-    RedisBloomCommands,
-    RedisGraphCommands,
-    RedisGearsCommands {
+public interface RedisModuleCommands extends RediSearchCommands, RedisJsonCommands,
+    RedisTimeSeriesCommands, RedisBloomCommands, RedisGraphCommands, RedisGearsCommands {
 
 }

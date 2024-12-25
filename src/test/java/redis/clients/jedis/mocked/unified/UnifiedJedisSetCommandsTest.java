@@ -85,7 +85,14 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSdiff() {
     String[] keys = { "setKey1", "setKey2" };
-    Set<String> expectedDifference = new HashSet<>(Arrays.asList("member1", "member3")); // Assuming these members are in setKey1 but not in setKey2
+    Set<String> expectedDifference = new HashSet<>(Arrays.asList("member1", "member3")); // Assuming
+                                                                                         // these
+                                                                                         // members
+                                                                                         // are in
+                                                                                         // setKey1
+                                                                                         // but not
+                                                                                         // in
+                                                                                         // setKey2
 
     when(commandObjects.sdiff(keys)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedDifference);
@@ -101,7 +108,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSdiffBinary() {
     byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
-    Set<byte[]> expectedDifference = new HashSet<>(Arrays.asList("member1".getBytes(), "member3".getBytes())); // Assuming these members are in setKey1 but not in setKey2
+    Set<byte[]> expectedDifference = new HashSet<>(Arrays.asList("member1".getBytes(),
+      "member3".getBytes())); // Assuming these members are in setKey1 but not in setKey2
 
     when(commandObjects.sdiff(keys)).thenReturn(setBytesCommandObject);
     when(commandExecutor.executeCommand(setBytesCommandObject)).thenReturn(expectedDifference);
@@ -151,7 +159,15 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSinter() {
     String[] keys = { "setKey1", "setKey2" };
-    Set<String> expectedIntersection = new HashSet<>(Arrays.asList("member2", "member4")); // Assuming these members are common to setKey1 and setKey2
+    Set<String> expectedIntersection = new HashSet<>(Arrays.asList("member2", "member4")); // Assuming
+                                                                                           // these
+                                                                                           // members
+                                                                                           // are
+                                                                                           // common
+                                                                                           // to
+                                                                                           // setKey1
+                                                                                           // and
+                                                                                           // setKey2
 
     when(commandObjects.sinter(keys)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedIntersection);
@@ -167,7 +183,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSinterBinary() {
     byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
-    Set<byte[]> expectedIntersection = new HashSet<>(Arrays.asList("member2".getBytes(), "member4".getBytes())); // Assuming these members are common to setKey1 and setKey2
+    Set<byte[]> expectedIntersection = new HashSet<>(Arrays.asList("member2".getBytes(),
+      "member4".getBytes())); // Assuming these members are common to setKey1 and setKey2
 
     when(commandObjects.sinter(keys)).thenReturn(setBytesCommandObject);
     when(commandExecutor.executeCommand(setBytesCommandObject)).thenReturn(expectedIntersection);
@@ -216,7 +233,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSintercardWithLimit() {
     int limit = 1;
     String[] keys = { "setKey1", "setKey2" };
-    long expectedCardinality = 1L; // Assuming the limit is set to 1 and there is at least one common member
+    long expectedCardinality = 1L; // Assuming the limit is set to 1 and there is at least one
+                                   // common member
 
     when(commandObjects.sintercard(limit, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
@@ -233,7 +251,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSintercardWithLimitBinary() {
     int limit = 1;
     byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
-    long expectedCardinality = 1L; // Assuming the limit is set to 1 and there is at least one common member
+    long expectedCardinality = 1L; // Assuming the limit is set to 1 and there is at least one
+                                   // common member
 
     when(commandObjects.sintercard(limit, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
@@ -333,7 +352,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSmembersBinary() {
     byte[] key = "setKey".getBytes();
-    Set<byte[]> expectedMembers = new HashSet<>(Arrays.asList("member1".getBytes(), "member2".getBytes()));
+    Set<byte[]> expectedMembers = new HashSet<>(Arrays.asList("member1".getBytes(),
+      "member2".getBytes()));
 
     when(commandObjects.smembers(key)).thenReturn(setBytesCommandObject);
     when(commandExecutor.executeCommand(setBytesCommandObject)).thenReturn(expectedMembers);
@@ -350,7 +370,9 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSmismember() {
     String key = "setKey";
     String[] members = { "member1", "member2", "member3" };
-    List<Boolean> expectedMembership = Arrays.asList(true, false, true); // Assuming the first and last members are part of the set
+    List<Boolean> expectedMembership = Arrays.asList(true, false, true); // Assuming the first and
+                                                                         // last members are part of
+                                                                         // the set
 
     when(commandObjects.smismember(key, members)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedMembership);
@@ -367,7 +389,9 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSmismemberBinary() {
     byte[] key = "setKey".getBytes();
     byte[][] members = { "member1".getBytes(), "member2".getBytes(), "member3".getBytes() };
-    List<Boolean> expectedMembership = Arrays.asList(true, false, true); // Assuming the first and last members are part of the set
+    List<Boolean> expectedMembership = Arrays.asList(true, false, true); // Assuming the first and
+                                                                         // last members are part of
+                                                                         // the set
 
     when(commandObjects.smismember(key, members)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedMembership);
@@ -452,7 +476,10 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSpopCount() {
     String key = "setKey";
     long count = 2;
-    Set<String> expectedPopped = new HashSet<>(Arrays.asList("member1", "member2")); // Assuming these members were popped
+    Set<String> expectedPopped = new HashSet<>(Arrays.asList("member1", "member2")); // Assuming
+                                                                                     // these
+                                                                                     // members were
+                                                                                     // popped
 
     when(commandObjects.spop(key, count)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedPopped);
@@ -469,7 +496,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSpopCountBinary() {
     byte[] key = "setKey".getBytes();
     long count = 2;
-    Set<byte[]> expectedPopped = new HashSet<>(Arrays.asList("member1".getBytes(), "member2".getBytes())); // Assuming these members were popped
+    Set<byte[]> expectedPopped = new HashSet<>(Arrays.asList("member1".getBytes(),
+      "member2".getBytes())); // Assuming these members were popped
 
     when(commandObjects.spop(key, count)).thenReturn(setBytesCommandObject);
     when(commandExecutor.executeCommand(setBytesCommandObject)).thenReturn(expectedPopped);
@@ -517,7 +545,9 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSrandmemberCount() {
     String key = "setKey";
     int count = 2;
-    List<String> expectedRandomMembers = Arrays.asList("member1", "member2"); // Assuming these members are randomly selected
+    List<String> expectedRandomMembers = Arrays.asList("member1", "member2"); // Assuming these
+                                                                              // members are
+                                                                              // randomly selected
 
     when(commandObjects.srandmember(key, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedRandomMembers);
@@ -534,7 +564,12 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   public void testSrandmemberCountBinary() {
     byte[] key = "setKey".getBytes();
     int count = 2;
-    List<byte[]> expectedRandomMembers = Arrays.asList("member1".getBytes(), "member2".getBytes()); // Assuming these members are randomly selected
+    List<byte[]> expectedRandomMembers = Arrays.asList("member1".getBytes(), "member2".getBytes()); // Assuming
+                                                                                                    // these
+                                                                                                    // members
+                                                                                                    // are
+                                                                                                    // randomly
+                                                                                                    // selected
 
     when(commandObjects.srandmember(key, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedRandomMembers);
@@ -590,7 +625,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
     ScanResult<String> expectedScanResult = new ScanResult<>(cursor, scanResultData);
 
     when(commandObjects.sscan(key, cursor, params)).thenReturn(scanResultStringCommandObject);
-    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<String> result = jedis.sscan(key, cursor, params);
 
@@ -605,11 +641,13 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "setKey".getBytes();
     byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
     ScanParams params = new ScanParams().match("*".getBytes()).count(10);
-    List<byte[]> scanResultData = Arrays.asList("member1".getBytes(), "member2".getBytes(), "member3".getBytes());
+    List<byte[]> scanResultData = Arrays.asList("member1".getBytes(), "member2".getBytes(),
+      "member3".getBytes());
     ScanResult<byte[]> expectedScanResult = new ScanResult<>(cursor, scanResultData);
 
     when(commandObjects.sscan(key, cursor, params)).thenReturn(scanResultBytesCommandObject);
-    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expectedScanResult);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(
+      expectedScanResult);
 
     ScanResult<byte[]> result = jedis.sscan(key, cursor, params);
 
@@ -622,7 +660,8 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSunion() {
     String[] keys = { "setKey1", "setKey2" };
-    Set<String> expectedUnion = new HashSet<>(Arrays.asList("member1", "member2", "member3", "member4")); // Assuming these members are in either setKey1 or setKey2
+    Set<String> expectedUnion = new HashSet<>(Arrays.asList("member1", "member2", "member3",
+      "member4")); // Assuming these members are in either setKey1 or setKey2
 
     when(commandObjects.sunion(keys)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedUnion);
@@ -638,7 +677,10 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testSunionBinary() {
     byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
-    Set<byte[]> expectedUnion = new HashSet<>(Arrays.asList("member1".getBytes(), "member2".getBytes(), "member3".getBytes(), "member4".getBytes())); // Assuming these members are in either setKey1 or setKey2
+    Set<byte[]> expectedUnion = new HashSet<>(Arrays.asList("member1".getBytes(),
+      "member2".getBytes(), "member3".getBytes(), "member4".getBytes())); // Assuming these members
+                                                                          // are in either setKey1
+                                                                          // or setKey2
 
     when(commandObjects.sunion(keys)).thenReturn(setBytesCommandObject);
     when(commandExecutor.executeCommand(setBytesCommandObject)).thenReturn(expectedUnion);

@@ -1,4 +1,4 @@
-//EXAMPLE: geo_tutorial
+// EXAMPLE: geo_tutorial
 package io.redis.examples;
 
 // REMOVE_START

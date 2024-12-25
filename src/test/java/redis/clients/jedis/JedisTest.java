@@ -56,12 +56,13 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), DefaultJedisClientConfig.builder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), DefaultJedisClientConfig.builder()
+        .build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -109,8 +110,8 @@ public class JedisTest extends JedisCommandsTestBase {
   public void timeoutConnection() throws Exception {
     final String TIMEOUT_STR = "timeout";
 
-    Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(15000).build());
+    Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .timeoutMillis(15000).build());
 
     // read current config
     final String timeout = jedis.configGet(TIMEOUT_STR).get(TIMEOUT_STR);
@@ -156,15 +157,16 @@ public class JedisTest extends JedisCommandsTestBase {
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
     Jedis j = new Jedis(new URI("localhost:6380"));
   }
-//
-//  @Test
-//  public void shouldReconnectToSameDB() throws IOException {
-//    jedis.select(1);
-//    jedis.set("foo", "bar");
-//    jedis.getClient().getSocket().shutdownInput();
-//    jedis.getClient().getSocket().shutdownOutput();
-//    assertEquals("bar", jedis.get("foo"));
-//  }
+
+  //
+  // @Test
+  // public void shouldReconnectToSameDB() throws IOException {
+  // jedis.select(1);
+  // jedis.set("foo", "bar");
+  // jedis.getClient().getSocket().shutdownInput();
+  // jedis.getClient().getSocket().shutdownOutput();
+  // assertEquals("bar", jedis.get("foo"));
+  // }
 
   @Test
   public void connectWithUrl() {
@@ -175,8 +177,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis j2 = new Jedis(
-        endpoint.getURIBuilder().defaultCredentials().path("/2").build().toString())) {
+    try (Jedis j2 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build()
+        .toString())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -191,8 +193,7 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis jedis = new Jedis(
-        endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+    try (Jedis jedis = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
     }
@@ -208,8 +209,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis j2 = new Jedis(
-        endpoint.getURIBuilder().defaultCredentials().path("/2?protocol=3").build().toString())) {
+    try (Jedis j2 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2?protocol=3")
+        .build().toString())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -225,8 +226,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis jedis = new Jedis(
-        endpoint.getURIBuilder().defaultCredentials().path("/2?protocol=3").build())) {
+    try (Jedis jedis = new Jedis(endpoint.getURIBuilder().defaultCredentials()
+        .path("/2?protocol=3").build())) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
     }
@@ -251,15 +252,15 @@ public class JedisTest extends JedisCommandsTestBase {
 
     try (Jedis j1 = new Jedis(endpointStandalone1.getURI().toString())) {
       j1.auth(endpointStandalone1.getPassword());
-//      assertEquals("localhost", j1.getClient().getHost());
-//      assertEquals(6380, j1.getClient().getPort());
+      // assertEquals("localhost", j1.getClient().getHost());
+      // assertEquals(6380, j1.getClient().getPort());
       assertEquals(0, j1.getDB());
     }
 
     try (Jedis j2 = new Jedis(endpointStandalone1.getURI().toString())) {
       j2.auth(endpointStandalone1.getPassword());
-//      assertEquals("localhost", j2.getClient().getHost());
-//      assertEquals(6380, j2.getClient().getPort());
+      // assertEquals("localhost", j2.getClient().getHost());
+      // assertEquals(6380, j2.getClient().getPort());
       assertEquals(0, j2.getDB());
     }
   }
@@ -337,7 +338,8 @@ public class JedisTest extends JedisCommandsTestBase {
         .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
-      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + '(' + libNameSuffix + ')'));
+      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + '(' + libNameSuffix
+          + ')'));
       assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion()));
     }
   }

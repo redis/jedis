@@ -25,9 +25,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  */
 public class RedisInputStream extends FilterInputStream {
 
-  private static final int INPUT_BUFFER_SIZE = Integer.parseInt(
-      System.getProperty("jedis.bufferSize.input",
-          System.getProperty("jedis.bufferSize", "8192")));
+  private static final int INPUT_BUFFER_SIZE = Integer.parseInt(System.getProperty(
+    "jedis.bufferSize.input", System.getProperty("jedis.bufferSize", "8192")));
 
   protected final byte[] buf;
 
@@ -47,7 +46,8 @@ public class RedisInputStream extends FilterInputStream {
 
   @Experimental
   public boolean peek(byte b) throws JedisConnectionException {
-    ensureFill(); // in current design, at least one reply is expected. so ensureFillSafe() is not necessary.
+    ensureFill(); // in current design, at least one reply is expected. so ensureFillSafe() is not
+                  // necessary.
     return buf[count] == b;
   }
 
@@ -184,12 +184,12 @@ public class RedisInputStream extends FilterInputStream {
 
     ensureCrLf();
     switch (b) {
-      case 't':
-        return true;
-      case 'f':
-        return false;
-      default:
-        throw new JedisConnectionException("Unexpected character!");
+    case 't':
+      return true;
+    case 'f':
+      return false;
+    default:
+      throw new JedisConnectionException("Unexpected character!");
     }
   }
 

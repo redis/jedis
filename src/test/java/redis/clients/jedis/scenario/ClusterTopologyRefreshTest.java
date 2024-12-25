@@ -27,7 +27,8 @@ public class ClusterTopologyRefreshTest {
   @BeforeClass
   public static void beforeClass() {
     try {
-      ClusterTopologyRefreshTest.endpoint = HostAndPorts.getRedisEndpoint("re-single-shard-oss-cluster");
+      ClusterTopologyRefreshTest.endpoint = HostAndPorts
+          .getRedisEndpoint("re-single-shard-oss-cluster");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       org.junit.Assume.assumeTrue(false);
@@ -96,5 +97,4 @@ public class ClusterTopologyRefreshTest {
       verify(spyProvider, atLeast(2)).renewSlotCache(any(Connection.class));
     }
   }
-
 }

@@ -72,7 +72,7 @@ public class TSRangeParams implements IParams {
   }
 
   public TSRangeParams filterByValues(double min, double max) {
-    this.filterByValues = new double[]{min, max};
+    this.filterByValues = new double[] { min, max };
     return this;
   }
 
@@ -218,14 +218,13 @@ public class TSRangeParams implements IParams {
     }
 
     TSRangeParams that = (TSRangeParams) o;
-    return latest == that.latest && bucketDuration == that.bucketDuration && empty == that.empty &&
-        Objects.equals(fromTimestamp, that.fromTimestamp) &&
-        Objects.equals(toTimestamp, that.toTimestamp) &&
-        Arrays.equals(filterByTimestamps, that.filterByTimestamps) &&
-        Arrays.equals(filterByValues, that.filterByValues) &&
-        Objects.equals(count, that.count) && Arrays.equals(align, that.align) &&
-        aggregationType == that.aggregationType &&
-        Arrays.equals(bucketTimestamp, that.bucketTimestamp);
+    return latest == that.latest && bucketDuration == that.bucketDuration && empty == that.empty
+        && Objects.equals(fromTimestamp, that.fromTimestamp)
+        && Objects.equals(toTimestamp, that.toTimestamp)
+        && Arrays.equals(filterByTimestamps, that.filterByTimestamps)
+        && Arrays.equals(filterByValues, that.filterByValues) && Objects.equals(count, that.count)
+        && Arrays.equals(align, that.align) && aggregationType == that.aggregationType
+        && Arrays.equals(bucketTimestamp, that.bucketTimestamp);
   }
 
   @Override

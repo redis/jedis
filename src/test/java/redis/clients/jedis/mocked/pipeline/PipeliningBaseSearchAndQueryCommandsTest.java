@@ -151,7 +151,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
     FTCreateParams createParams = FTCreateParams.createParams();
     Iterable<SchemaField> schemaFields = Collections.singletonList(new TextField("myField"));
 
-    when(commandObjects.ftCreate("myIndex", createParams, schemaFields)).thenReturn(stringCommandObject);
+    when(commandObjects.ftCreate("myIndex", createParams, schemaFields)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.ftCreate("myIndex", createParams, schemaFields);
 
@@ -175,7 +176,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
   public void testFtDictAddBySampleKey() {
     String[] terms = { "term1", "term2" };
 
-    when(commandObjects.ftDictAddBySampleKey("myIndex", "myDict", terms)).thenReturn(longCommandObject);
+    when(commandObjects.ftDictAddBySampleKey("myIndex", "myDict", terms)).thenReturn(
+      longCommandObject);
 
     Response<Long> response = pipeliningBase.ftDictAddBySampleKey("myIndex", "myDict", terms);
 
@@ -199,7 +201,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
   public void testFtDictDelBySampleKey() {
     String[] terms = { "term1", "term2" };
 
-    when(commandObjects.ftDictDelBySampleKey("myIndex", "myDict", terms)).thenReturn(longCommandObject);
+    when(commandObjects.ftDictDelBySampleKey("myIndex", "myDict", terms)).thenReturn(
+      longCommandObject);
 
     Response<Long> response = pipeliningBase.ftDictDelBySampleKey("myIndex", "myDict", terms);
 
@@ -219,7 +222,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
 
   @Test
   public void testFtDictDumpBySampleKey() {
-    when(commandObjects.ftDictDumpBySampleKey("myIndex", "myDict")).thenReturn(setStringCommandObject);
+    when(commandObjects.ftDictDumpBySampleKey("myIndex", "myDict")).thenReturn(
+      setStringCommandObject);
 
     Response<Set<String>> response = pipeliningBase.ftDictDumpBySampleKey("myIndex", "myDict");
 
@@ -298,7 +302,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
     String query = "hello world";
     FTSearchParams searchParams = FTSearchParams.searchParams().limit(0, 10);
 
-    when(commandObjects.ftSearch("myIndex", query, searchParams)).thenReturn(searchResultCommandObject);
+    when(commandObjects.ftSearch("myIndex", query, searchParams)).thenReturn(
+      searchResultCommandObject);
 
     Response<SearchResult> response = pipeliningBase.ftSearch("myIndex", query, searchParams);
 
@@ -335,9 +340,11 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
   public void testFtSpellCheck() {
     String query = "hello world";
 
-    when(commandObjects.ftSpellCheck("myIndex", query)).thenReturn(mapStringMapStringDoubleCommandObject);
+    when(commandObjects.ftSpellCheck("myIndex", query)).thenReturn(
+      mapStringMapStringDoubleCommandObject);
 
-    Response<Map<String, Map<String, Double>>> response = pipeliningBase.ftSpellCheck("myIndex", query);
+    Response<Map<String, Map<String, Double>>> response = pipeliningBase.ftSpellCheck("myIndex",
+      query);
 
     assertThat(commands, contains(mapStringMapStringDoubleCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -348,9 +355,11 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
     String query = "hello world";
     FTSpellCheckParams spellCheckParams = new FTSpellCheckParams().distance(1);
 
-    when(commandObjects.ftSpellCheck("myIndex", query, spellCheckParams)).thenReturn(mapStringMapStringDoubleCommandObject);
+    when(commandObjects.ftSpellCheck("myIndex", query, spellCheckParams)).thenReturn(
+      mapStringMapStringDoubleCommandObject);
 
-    Response<Map<String, Map<String, Double>>> response = pipeliningBase.ftSpellCheck("myIndex", query, spellCheckParams);
+    Response<Map<String, Map<String, Double>>> response = pipeliningBase.ftSpellCheck("myIndex",
+      query, spellCheckParams);
 
     assertThat(commands, contains(mapStringMapStringDoubleCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -371,7 +380,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
     String synonymGroupId = "group1";
     String[] terms = { "term1", "term2" };
 
-    when(commandObjects.ftSynUpdate("myIndex", synonymGroupId, terms)).thenReturn(stringCommandObject);
+    when(commandObjects.ftSynUpdate("myIndex", synonymGroupId, terms)).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.ftSynUpdate("myIndex", synonymGroupId, terms);
 
@@ -451,7 +461,8 @@ public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMock
 
   @Test
   public void testFtSugGetWithScoresFuzzyMax() {
-    when(commandObjects.ftSugGetWithScores("mySug", "he", true, 10)).thenReturn(listTupleCommandObject);
+    when(commandObjects.ftSugGetWithScores("mySug", "he", true, 10)).thenReturn(
+      listTupleCommandObject);
 
     Response<List<Tuple>> response = pipeliningBase.ftSugGetWithScores("mySug", "he", true, 10);
 

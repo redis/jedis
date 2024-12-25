@@ -3,8 +3,8 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Reset type for command cluster reset. Before reset cluster status you should make true no data in Redis.
- * It is generally used to create/expand clusters.
+ * Reset type for command cluster reset. Before reset cluster status you should make true no data in
+ * Redis. It is generally used to create/expand clusters.
  */
 public enum ClusterResetType implements Rawable {
 

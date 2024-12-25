@@ -54,18 +54,12 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "a");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        1L,
-        0L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(1L, 0L));
 
     pipe.sadd(bfoo, ba);
     pipe.sadd(bfoo, ba);
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        1L,
-        0L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(1L, 0L));
   }
 
   @Test
@@ -250,10 +244,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.scard("foo");
     pipe.scard("bar");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        2L,
-        0L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(2L, 0L));
 
     // Binary
     pipe.sadd(bfoo, ba);
@@ -263,10 +254,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.scard(bfoo);
     pipe.scard(bbar);
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        2L,
-        0L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(2L, 0L));
   }
 
   @Test
@@ -278,10 +266,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.sismember("foo", "a");
     pipe.sismember("foo", "c");
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        true,
-        false
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(true, false));
 
     // Binary
     pipe.sadd(bfoo, ba);
@@ -291,10 +276,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.sismember(bfoo, ba);
     pipe.sismember(bfoo, bc);
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        true,
-        false
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(true, false));
   }
 
   @Test

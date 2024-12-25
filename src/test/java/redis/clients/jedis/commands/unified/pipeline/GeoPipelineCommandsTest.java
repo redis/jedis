@@ -69,14 +69,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.geoadd(bfoo, bcoordinateMap);
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        1L,
-        0L,
-        2L,
-        1L,
-        0L,
-        2L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(1L, 0L, 2L, 1L, 0L, 2L));
   }
 
   @Test
@@ -108,18 +101,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.geoadd(bfoo, GeoAddParams.geoAddParams().xx(), bcoordinateMap);
     pipe.geoadd(bfoo, GeoAddParams.geoAddParams().nx(), bcoordinateMap);
 
-    assertThat(pipe.syncAndReturnAll(), contains(
-        1L,
-        0L,
-        1L,
-        0L,
-        1L,
-        1L,
-        0L,
-        1L,
-        0L,
-        1L
-    ));
+    assertThat(pipe.syncAndReturnAll(), contains(1L, 0L, 1L, 0L, 1L, 1L, 0L, 1L, 0L, 1L));
   }
 
   @Test
@@ -158,17 +140,10 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.sync();
 
-    assertThat(hashes.get(), contains(
-        "s0dnu20t9j0",
-        "s093jd0k720",
-        null
-    ));
+    assertThat(hashes.get(), contains("s0dnu20t9j0", "s093jd0k720", null));
 
-    assertThat(bhashes.get(), contains(
-        SafeEncoder.encode("s0dnu20t9j0"),
-        SafeEncoder.encode("s093jd0k720"),
-        null
-    ));
+    assertThat(bhashes.get(),
+      contains(SafeEncoder.encode("s0dnu20t9j0"), SafeEncoder.encode("s093jd0k720"), null));
   }
 
   @Test
@@ -180,17 +155,9 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.sync();
 
-    assertThat(coordinates.get(), contains(
-        atCoordinates(3.0, 4.0),
-        atCoordinates(2.0, 3.0),
-        null
-    ));
+    assertThat(coordinates.get(), contains(atCoordinates(3.0, 4.0), atCoordinates(2.0, 3.0), null));
 
-    assertThat(bcoordinates.get(), contains(
-        atCoordinates(3.0, 4.0),
-        atCoordinates(2.0, 3.0),
-        null
-    ));
+    assertThat(bcoordinates.get(), contains(atCoordinates(3.0, 4.0), atCoordinates(2.0, 3.0), null));
   }
 
   @Test
@@ -289,8 +256,8 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     jedis.geoadd("Sicily", coordinateMap);
 
     Response<Long> size = pipe.georadiusStore("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
 
     Response<List<String>> items = pipe.zrange("SicilyStore", 0, -1);
 
@@ -431,8 +398,8 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     jedis.geoadd(bfoo, bcoordinateMap);
 
     Response<Long> size = pipe.georadiusStore(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
 
     Response<List<byte[]>> items = pipe.zrange("SicilyStore".getBytes(), 0, -1);
 
@@ -555,8 +522,8 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     jedis.geoadd("Sicily", 15.087269, 37.502669, "Catania");
 
     Response<Long> size = pipe.georadiusByMemberStore("Sicily", "Agrigento", 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
 
     Response<List<String>> items = pipe.zrange("SicilyStore", 0, -1);
 
@@ -662,8 +629,8 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     jedis.geoadd(bfoo, 15.087269, 37.502669, bC);
 
     Response<Long> size = pipe.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
 
     Response<List<byte[]>> items = pipe.zrange("SicilyStore".getBytes(), 0, -1);
 
@@ -810,7 +777,8 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test(expected = IllegalArgumentException.class)
   public void geosearchSearchParamCombineByRadiousAndByBox() {
-    pipe.geosearch("barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
+    pipe.geosearch("barcelona",
+      new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -825,24 +793,26 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     jedis.geoadd("barcelona", 2.583333d, 41.316667d, "place3");
 
     // FROMLONLAT and BYRADIUS
-    Response<Long> membersCount1 = pipe.geosearchStore("tel-aviv", "barcelona",
-        new GeoCoordinate(2.191d, 41.433d), 1000, GeoUnit.M);
+    Response<Long> membersCount1 = pipe.geosearchStore("tel-aviv", "barcelona", new GeoCoordinate(
+        2.191d, 41.433d), 1000, GeoUnit.M);
 
     Response<List<String>> members1 = pipe.zrange("tel-aviv", 0, -1);
 
-    Response<Long> membersCount2 = pipe.geosearchStore("tel-aviv", "barcelona", new GeoSearchParam()
-        .byRadius(3000, GeoUnit.M)
-        .fromLonLat(new GeoCoordinate(2.191d, 41.433d)));
+    Response<Long> membersCount2 = pipe
+        .geosearchStore("tel-aviv", "barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M)
+            .fromLonLat(new GeoCoordinate(2.191d, 41.433d)));
 
     // FROMMEMBER and BYRADIUS
-    Response<Long> membersCount3 = pipe.geosearchStore("tel-aviv", "barcelona", "place3", 100, GeoUnit.KM);
+    Response<Long> membersCount3 = pipe.geosearchStore("tel-aviv", "barcelona", "place3", 100,
+      GeoUnit.KM);
 
     // FROMMEMBER and BYBOX
-    Response<Long> membersCount4 = pipe.geosearchStore("tel-aviv", "barcelona", "place3", 100, 100, GeoUnit.KM);
+    Response<Long> membersCount4 = pipe.geosearchStore("tel-aviv", "barcelona", "place3", 100, 100,
+      GeoUnit.KM);
 
     // FROMLONLAT and BYBOX
-    Response<Long> membersCount5 = pipe.geosearchStore("tel-aviv", "barcelona",
-        new GeoCoordinate(2.191, 41.433), 1, 1, GeoUnit.KM);
+    Response<Long> membersCount5 = pipe.geosearchStore("tel-aviv", "barcelona", new GeoCoordinate(
+        2.191, 41.433), 1, 1, GeoUnit.KM);
 
     pipe.sync();
 
@@ -860,7 +830,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     jedis.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");
 
     Response<Long> members = pipe.geosearchStoreStoreDist("tel-aviv", "barcelona",
-        new GeoSearchParam().byRadius(3000, GeoUnit.M).fromLonLat(2.191d, 41.433d));
+      new GeoSearchParam().byRadius(3000, GeoUnit.M).fromLonLat(2.191d, 41.433d));
 
     Response<Double> score = pipe.zscore("tel-aviv", "place1");
 

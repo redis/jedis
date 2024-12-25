@@ -291,16 +291,12 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     assertThat(setCharlieRoot, equalTo("OK"));
 
     List<JSONArray> getNames = exec(commandObjects.jsonMGet(Path2.of("name"), keyBob, keyCharlie));
-    assertThat(getNames, contains(
-        jsonEquals(new JSONArray().put("Bob")),
-        jsonEquals(new JSONArray().put("Charlie"))
-    ));
+    assertThat(getNames,
+      contains(jsonEquals(new JSONArray().put("Bob")), jsonEquals(new JSONArray().put("Charlie"))));
 
     List<JSONArray> getRoots = exec(commandObjects.jsonMGet(Path2.ROOT_PATH, keyBob, keyCharlie));
-    assertThat(getRoots, contains(
-        jsonEquals(new JSONArray().put(bob)),
-        jsonEquals(new JSONArray().put(charlie))
-    ));
+    assertThat(getRoots,
+      contains(jsonEquals(new JSONArray().put(bob)), jsonEquals(new JSONArray().put(charlie))));
   }
 
   @Test
@@ -323,14 +319,13 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String setCharlieRoot = exec(commandObjects.jsonSet(keyCharlie, Path2.ROOT_PATH, charlie));
     assertThat(setCharlieRoot, equalTo("OK"));
 
-    List<String> getNamesTyped = exec(commandObjects.jsonMGet(Path.of("name"), String.class, keyBob, keyCharlie));
+    List<String> getNamesTyped = exec(commandObjects.jsonMGet(Path.of("name"), String.class,
+      keyBob, keyCharlie));
     assertThat(getNamesTyped, contains("Bob", "Charlie"));
 
-    List<Person> getPersonsTyped = exec(commandObjects.jsonMGet(Path.ROOT_PATH, Person.class, keyBob, keyCharlie));
-    assertThat(getPersonsTyped, contains(
-        new Person("Bob", 30),
-        new Person("Charlie", 25)
-    ));
+    List<Person> getPersonsTyped = exec(commandObjects.jsonMGet(Path.ROOT_PATH, Person.class,
+      keyBob, keyCharlie));
+    assertThat(getPersonsTyped, contains(new Person("Bob", 30), new Person("Charlie", 25)));
   }
 
   @Test
@@ -633,7 +628,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     String key = "user:1001";
 
-    String setRoot = exec(commandObjects.jsonSetWithPlainString(key, Path.ROOT_PATH, "\"Hello World\""));
+    String setRoot = exec(commandObjects.jsonSetWithPlainString(key, Path.ROOT_PATH,
+      "\"Hello World\""));
     assertThat(setRoot, equalTo("OK"));
 
     Long strLen = exec(commandObjects.jsonStrLen(key));
@@ -695,26 +691,20 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrAppendWithEscape() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("Elixir")
-        .put("Swift");
+    JSONArray data = new JSONArray().put("Elixir").put("Swift");
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
     Object preCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
     assertThat(preCheck, jsonEquals(new JSONArray().put(data)));
 
-    List<Long> arrAppend = exec(commandObjects.jsonArrAppendWithEscape(
-        key, Path2.ROOT_PATH, "Kotlin", "TypeScript"));
+    List<Long> arrAppend = exec(commandObjects.jsonArrAppendWithEscape(key, Path2.ROOT_PATH,
+      "Kotlin", "TypeScript"));
     assertThat(arrAppend, contains(4L));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put("Elixir")
-        .put("Swift")
-        .put("Kotlin")
-        .put("TypeScript");
+    JSONArray expected = new JSONArray().put("Elixir").put("Swift").put("Kotlin").put("TypeScript");
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -722,26 +712,20 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrAppend() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("Java")
-        .put("Python");
+    JSONArray data = new JSONArray().put("Java").put("Python");
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
     JSONObject person = new JSONObject();
     person.put("name", "John");
 
-    List<Long> arrAppend = exec(commandObjects.jsonArrAppend(key, Path2.ROOT_PATH,
-        "\"C++\"", "\"JavaScript\"", person));
+    List<Long> arrAppend = exec(commandObjects.jsonArrAppend(key, Path2.ROOT_PATH, "\"C++\"",
+      "\"JavaScript\"", person));
     assertThat(arrAppend, contains(5L));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put("Java")
-        .put("Python")
-        .put("C++")
-        .put("JavaScript")
+    JSONArray expected = new JSONArray().put("Java").put("Python").put("C++").put("JavaScript")
         .put(person);
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
@@ -751,32 +735,20 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrAppendOldPath() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put(new JSONArray()
-            .put("Java")
-            .put("Python"))
-        .put(1);
+    JSONArray data = new JSONArray().put(new JSONArray().put("Java").put("Python")).put(1);
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
     Person person = new Person("John", 45);
 
-    Long arrAppend = exec(
-        commandObjects.jsonArrAppend(key, Path.of(".[0]"), "Swift", "Go", person));
+    Long arrAppend = exec(commandObjects.jsonArrAppend(key, Path.of(".[0]"), "Swift", "Go", person));
     assertThat(arrAppend, equalTo(5L));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put(new JSONArray()
-            .put("Java")
-            .put("Python")
-            .put("Swift")
-            .put("Go")
-            .put(new JSONObject()
-                .put("name", "John")
-                .put("age", 45)))
-        .put(1);
+    JSONArray expected = new JSONArray().put(
+      new JSONArray().put("Java").put("Python").put("Swift").put("Go")
+          .put(new JSONObject().put("name", "John").put("age", 45))).put(1);
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -784,10 +756,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrIndex() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("Java")
-        .put("Python")
-        .put("Java"); // duplicate
+    JSONArray data = new JSONArray().put("Java").put("Python").put("Java"); // duplicate
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -802,17 +771,15 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrIndexWithEscape() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("Java")
-        .put("Python")
-        .put("Java"); // duplicate
+    JSONArray data = new JSONArray().put("Java").put("Python").put("Java"); // duplicate
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
     List<Long> arrIndex = exec(commandObjects.jsonArrIndexWithEscape(key, Path2.ROOT_PATH, "Java"));
     assertThat(arrIndex, contains(0L));
 
-    List<Long> arrIndexNotFound = exec(commandObjects.jsonArrIndexWithEscape(key, Path2.ROOT_PATH, "Go"));
+    List<Long> arrIndexNotFound = exec(commandObjects.jsonArrIndexWithEscape(key, Path2.ROOT_PATH,
+      "Go"));
     assertThat(arrIndexNotFound, contains(-1L));
   }
 
@@ -821,11 +788,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrIndexDeprecated() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put(new JSONArray()
-            .put("Java")
-            .put("Python")
-            .put("Java")); // duplicate
+    JSONArray data = new JSONArray().put(new JSONArray().put("Java").put("Python").put("Java")); // duplicate
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -840,25 +803,19 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrInsert() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("Java")
-        .put("Python");
+    JSONArray data = new JSONArray().put("Java").put("Python");
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
     Object preCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
     assertThat(preCheck, jsonEquals(new JSONArray().put(data)));
 
-    List<Long> arrInsert = exec(
-        commandObjects.jsonArrInsert(key, Path2.ROOT_PATH, 1, "\"C++\""));
+    List<Long> arrInsert = exec(commandObjects.jsonArrInsert(key, Path2.ROOT_PATH, 1, "\"C++\""));
     assertThat(arrInsert, contains(3L));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put("Java")
-        .put("C++")
-        .put("Python");
+    JSONArray expected = new JSONArray().put("Java").put("C++").put("Python");
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -866,24 +823,20 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrInsertWithEscape() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("Java")
-        .put("Python");
+    JSONArray data = new JSONArray().put("Java").put("Python");
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
     Object preCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
     assertThat(preCheck, jsonEquals(new JSONArray().put(data)));
 
-    List<Long> arrInsert = exec(commandObjects.jsonArrInsertWithEscape(key, Path2.ROOT_PATH, 1, "Go"));
+    List<Long> arrInsert = exec(commandObjects.jsonArrInsertWithEscape(key, Path2.ROOT_PATH, 1,
+      "Go"));
     assertThat(arrInsert, contains(3L));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put("Java")
-        .put("Go")
-        .put("Python");
+    JSONArray expected = new JSONArray().put("Java").put("Go").put("Python");
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -892,11 +845,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrInsertOldPath() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put(1)
-        .put(new JSONArray()
-            .put("Scala")
-            .put("Kotlin"));
+    JSONArray data = new JSONArray().put(1).put(new JSONArray().put("Scala").put("Kotlin"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -908,12 +857,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put(1)
-        .put(new JSONArray()
-            .put("Scala")
-            .put("Swift")
-            .put("Kotlin"));
+    JSONArray expected = new JSONArray().put(1).put(
+      new JSONArray().put("Scala").put("Swift").put("Kotlin"));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -922,10 +867,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopRoot() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("apple")
-        .put("banana")
-        .put("cherry");
+    JSONArray data = new JSONArray().put("apple").put("banana").put("cherry");
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -937,9 +879,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put("apple")
-        .put("banana");
+    JSONArray expected = new JSONArray().put("apple").put("banana");
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -947,11 +887,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopWithPath2() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana")
-            .put("cherry"));
+    JSONObject data = new JSONObject().put("fruits", new JSONArray().put("apple").put("banana")
+        .put("cherry"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -964,9 +901,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
     JSONObject expected = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana"));
+        .put("fruits", new JSONArray().put("apple").put("banana"));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -975,11 +910,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopOldPath() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana")
-            .put("cherry"));
+    JSONObject data = new JSONObject().put("fruits", new JSONArray().put("apple").put("banana")
+        .put("cherry"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -992,9 +924,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
     JSONObject expected = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana"));
+        .put("fruits", new JSONArray().put("apple").put("banana"));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1003,10 +933,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopRootWithType() {
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put(1)
-        .put(2)
-        .put(3);
+    JSONArray data = new JSONArray().put(1).put(2).put(3);
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1018,9 +945,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONArray expected = new JSONArray()
-        .put(1)
-        .put(2);
+    JSONArray expected = new JSONArray().put(1).put(2);
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1029,11 +954,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopWithOldPathAndType() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(20)
-            .put(30));
+    JSONObject data = new JSONObject().put("numbers", new JSONArray().put(10).put(20).put(30));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1045,10 +966,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONObject expected = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(20));
+    JSONObject expected = new JSONObject().put("numbers", new JSONArray().put(10).put(20));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1057,11 +975,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopWithOldPathTypeAndIndex() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(20)
-            .put(30));
+    JSONObject data = new JSONObject().put("numbers", new JSONArray().put(10).put(20).put(30));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1073,10 +987,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONObject expected = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(30));
+    JSONObject expected = new JSONObject().put("numbers", new JSONArray().put(10).put(30));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1084,11 +995,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopWithPathAndIndex() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(20)
-            .put(30));
+    JSONObject data = new JSONObject().put("numbers", new JSONArray().put(10).put(20).put(30));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1100,10 +1007,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONObject expected = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(30));
+    JSONObject expected = new JSONObject().put("numbers", new JSONArray().put(10).put(30));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1112,11 +1016,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrPopOldPathAndIndex() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(20)
-            .put(30));
+    JSONObject data = new JSONObject().put("numbers", new JSONArray().put(10).put(20).put(30));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1128,10 +1028,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONObject expected = new JSONObject()
-        .put("numbers", new JSONArray()
-            .put(10)
-            .put(30));
+    JSONObject expected = new JSONObject().put("numbers", new JSONArray().put(10).put(30));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1139,13 +1036,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrTrimWithPath() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana")
-            .put("cherry")
-            .put("date")
-            .put("fig"));
+    JSONObject data = new JSONObject().put("fruits", new JSONArray().put("apple").put("banana")
+        .put("cherry").put("date").put("fig"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1157,11 +1049,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONObject expected = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("banana")
-            .put("cherry")
-            .put("date"));
+    JSONObject expected = new JSONObject().put("fruits", new JSONArray().put("banana")
+        .put("cherry").put("date"));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1170,13 +1059,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrTrimOldPath() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana")
-            .put("cherry")
-            .put("date")
-            .put("fig"));
+    JSONObject data = new JSONObject().put("fruits", new JSONArray().put("apple").put("banana")
+        .put("cherry").put("date").put("fig"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1188,11 +1072,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 
-    JSONObject expected = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("banana")
-            .put("cherry")
-            .put("date"));
+    JSONObject expected = new JSONObject().put("fruits", new JSONArray().put("banana")
+        .put("cherry").put("date"));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
   }
 
@@ -1203,11 +1084,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     String key = "json";
 
-    JSONArray data = new JSONArray()
-        .put("apple")
-        .put("banana")
-        .put("cherry")
-        .put("date")
+    JSONArray data = new JSONArray().put("apple").put("banana").put("cherry").put("date")
         .put("fig");
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
@@ -1220,13 +1097,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrLenWithPath() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana")
-            .put("cherry")
-            .put("date")
-            .put("fig"));
+    JSONObject data = new JSONObject().put("fruits", new JSONArray().put("apple").put("banana")
+        .put("cherry").put("date").put("fig"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1239,13 +1111,8 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   public void testJsonArrLenOldPath() {
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("fruits", new JSONArray()
-            .put("apple")
-            .put("banana")
-            .put("cherry")
-            .put("date")
-            .put("fig"));
+    JSONObject data = new JSONObject().put("fruits", new JSONArray().put("apple").put("banana")
+        .put("cherry").put("date").put("fig"));
 
     exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
 
@@ -1277,9 +1144,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "json";
 
     JSONObject data = new JSONObject().put("user",
-        new JSONObject()
-            .put("name", "John")
-            .put("age", 30));
+      new JSONObject().put("name", "John").put("age", 30));
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));
@@ -1293,9 +1158,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "json";
 
     JSONObject data = new JSONObject().put("user",
-        new JSONObject()
-            .put("name", "John")
-            .put("age", 30));
+      new JSONObject().put("name", "John").put("age", 30));
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));
@@ -1328,9 +1191,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "json";
 
     JSONObject data = new JSONObject().put("user",
-        new JSONObject()
-            .put("name", "John")
-            .put("age", 30));
+      new JSONObject().put("name", "John").put("age", 30));
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));
@@ -1344,9 +1205,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "json";
 
     JSONObject data = new JSONObject().put("user",
-        new JSONObject()
-            .put("name", "John")
-            .put("age", 30));
+      new JSONObject().put("name", "John").put("age", 30));
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));
@@ -1361,9 +1220,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
     String key = "json";
 
-    JSONObject data = new JSONObject()
-        .put("name", "John")
-        .put("age", 30);
+    JSONObject data = new JSONObject().put("name", "John").put("age", 30);
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));
@@ -1379,9 +1236,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "json";
 
     JSONObject data = new JSONObject().put("user",
-        new JSONObject()
-            .put("name", "John")
-            .put("age", 30));
+      new JSONObject().put("name", "John").put("age", 30));
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));
@@ -1396,9 +1251,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "json";
 
     JSONObject data = new JSONObject().put("user",
-        new JSONObject()
-            .put("name", "John")
-            .put("age", 30));
+      new JSONObject().put("name", "John").put("age", 30));
 
     String setResponse = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
     assertThat(setResponse, equalTo("OK"));

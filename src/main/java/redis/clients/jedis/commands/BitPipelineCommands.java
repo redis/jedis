@@ -23,9 +23,9 @@ public interface BitPipelineCommands {
 
   Response<Long> bitpos(String key, boolean value, BitPosParams params);
 
-  Response<List<Long>> bitfield(String key, String...arguments);
+  Response<List<Long>> bitfield(String key, String... arguments);
 
-  Response<List<Long>> bitfieldReadonly(String key, String...arguments);
+  Response<List<Long>> bitfieldReadonly(String key, String... arguments);
 
   Response<Long> bitop(BitOP op, String destKey, String... srcKeys);
 }

@@ -22,8 +22,7 @@ public class ClusterInitErrorTest {
   public void initError() {
     Assert.assertNull(System.getProperty(INIT_NO_ERROR_PROPERTY));
     EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
-    try (JedisCluster cluster = new JedisCluster(
-        Collections.singleton(endpoint.getHostAndPort()),
+    try (JedisCluster cluster = new JedisCluster(Collections.singleton(endpoint.getHostAndPort()),
         endpoint.getClientConfigBuilder().build())) {
       throw new IllegalStateException("should not reach here");
     }

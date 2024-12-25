@@ -25,11 +25,12 @@ public class SuggestionTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public SuggestionTest(RedisProtocol protocol) {
     super(protocol);
@@ -40,20 +41,21 @@ public class SuggestionTest extends RedisModuleCommandsTestBase {
     String suggestion = "ANOTHER_WORD";
     String noMatch = "_WORD MISSED";
 
-    assertTrue(suggestion + " should of inserted at least 1", client.ftSugAdd(key, suggestion, 1d) > 0);
+    assertTrue(suggestion + " should of inserted at least 1",
+      client.ftSugAdd(key, suggestion, 1d) > 0);
     assertTrue(noMatch + " should of inserted at least 1", client.ftSugAdd(key, noMatch, 1d) > 0);
 
     // test that with a partial part of that string will have the entire word returned
-    assertEquals(suggestion + " did not get a match with 3 characters",
-        1, client.ftSugGet(key, suggestion.substring(0, 3), true, 5).size());
+    assertEquals(suggestion + " did not get a match with 3 characters", 1,
+      client.ftSugGet(key, suggestion.substring(0, 3), true, 5).size());
 
     // turn off fuzzy start at second word no hit
-    assertEquals(noMatch + " no fuzzy and starting at 1, should not match",
-        0, client.ftSugGet(key, noMatch.substring(1, 6), false, 5).size());
+    assertEquals(noMatch + " no fuzzy and starting at 1, should not match", 0,
+      client.ftSugGet(key, noMatch.substring(1, 6), false, 5).size());
 
     // my attempt to trigger the fuzzy by 1 character
-    assertEquals(noMatch + " fuzzy is on starting at 1 position should match",
-        1, client.ftSugGet(key, noMatch.substring(1, 6), true, 5).size());
+    assertEquals(noMatch + " fuzzy is on starting at 1 position should match", 1,
+      client.ftSugGet(key, noMatch.substring(1, 6), true, 5).size());
   }
 
   @Test
@@ -61,7 +63,8 @@ public class SuggestionTest extends RedisModuleCommandsTestBase {
     String suggestion = "TOPIC OF WORDS";
 
     // test can add a suggestion string
-    assertTrue(suggestion + " insert should of returned at least 1", client.ftSugAddIncr(key, suggestion, 1d) > 0);
+    assertTrue(suggestion + " insert should of returned at least 1",
+      client.ftSugAddIncr(key, suggestion, 1d) > 0);
 
     // test that the partial part of that string will be returned using fuzzy
     assertEquals(suggestion, client.ftSugGet(key, suggestion.substring(0, 3)).get(0));
@@ -112,7 +115,8 @@ public class SuggestionTest extends RedisModuleCommandsTestBase {
     assertFalse("Delete suggestion should succeed.", client.ftSugDel(key, "ANOTHER ENTRY"));
     assertEquals(1L, client.ftSugLen(key));
 
-    assertFalse("Delete suggestion should succeed.", client.ftSugDel(key, "ANOTHER ENTRY THAT IS NOT PRESENT"));
+    assertFalse("Delete suggestion should succeed.",
+      client.ftSugDel(key, "ANOTHER ENTRY THAT IS NOT PRESENT"));
     assertEquals(1L, client.ftSugLen(key));
 
     client.ftSugAdd(key, "LAST ENTRY", 1);

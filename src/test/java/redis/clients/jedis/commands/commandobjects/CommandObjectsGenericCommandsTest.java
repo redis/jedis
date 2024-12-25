@@ -55,7 +55,8 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
     Boolean existsSingleByte = exec(commandObjects.exists(key1.getBytes()));
     assertThat(existsSingleByte, equalTo(true));
 
-    Long existsMultipleByte = exec(commandObjects.exists(key1.getBytes(), key2.getBytes(), "nonExistingKey".getBytes()));
+    Long existsMultipleByte = exec(commandObjects.exists(key1.getBytes(), key2.getBytes(),
+      "nonExistingKey".getBytes()));
     assertThat(existsMultipleByte, equalTo(2L));
 
     Boolean existsNonExisting = exec(commandObjects.exists("nonExistingKey"));
@@ -552,15 +553,18 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
     assertThat(pexpireTimeAfterNx, equalTo(futureTimestampMillis));
 
     // Updating with XX
-    long laterFutureTimestampMillis = futureTimestampMillis + 10000; // Further 10 seconds in the future
-    Long pexpireAtXx = exec(commandObjects.pexpireAt(key, laterFutureTimestampMillis, ExpiryOption.XX));
+    long laterFutureTimestampMillis = futureTimestampMillis + 10000; // Further 10 seconds in the
+                                                                     // future
+    Long pexpireAtXx = exec(commandObjects.pexpireAt(key, laterFutureTimestampMillis,
+      ExpiryOption.XX));
     assertThat(pexpireAtXx, equalTo(1L));
 
     Long pexpireTimeAfterXx = exec(commandObjects.pexpireTime(key));
     assertThat(pexpireTimeAfterXx, equalTo(laterFutureTimestampMillis));
 
     // Updating with NX fails
-    Long pexpireAtNxAgain = exec(commandObjects.pexpireAt(key, futureTimestampMillis, ExpiryOption.NX));
+    Long pexpireAtNxAgain = exec(commandObjects.pexpireAt(key, futureTimestampMillis,
+      ExpiryOption.NX));
     assertThat(pexpireAtNxAgain, equalTo(0L));
 
     Long pexpireTimeAfterNxAgain = exec(commandObjects.pexpireTime(key));
@@ -584,15 +588,18 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
     assertThat(pexpireTimeAfterNx, equalTo(futureTimestampMillis));
 
     // Updating with XX
-    long laterFutureTimestampMillis = futureTimestampMillis + 10000; // Further 10 seconds in the future
-    Long pexpireAtXx = exec(commandObjects.pexpireAt(key, laterFutureTimestampMillis, ExpiryOption.XX));
+    long laterFutureTimestampMillis = futureTimestampMillis + 10000; // Further 10 seconds in the
+                                                                     // future
+    Long pexpireAtXx = exec(commandObjects.pexpireAt(key, laterFutureTimestampMillis,
+      ExpiryOption.XX));
     assertThat(pexpireAtXx, equalTo(1L));
 
     Long pexpireTimeAfterXx = exec(commandObjects.pexpireTime(key));
     assertThat(pexpireTimeAfterXx, equalTo(laterFutureTimestampMillis));
 
     // Updating with NX fails
-    Long pexpireAtNxAgain = exec(commandObjects.pexpireAt(key, futureTimestampMillis, ExpiryOption.NX));
+    Long pexpireAtNxAgain = exec(commandObjects.pexpireAt(key, futureTimestampMillis,
+      ExpiryOption.NX));
     assertThat(pexpireAtNxAgain, equalTo(0L));
 
     Long pexpireTimeAfterNxAgain = exec(commandObjects.pexpireTime(key));
@@ -1064,8 +1071,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
     Boolean existsAfterSet = exec(commandObjects.exists(srcKey));
     assertThat(existsAfterSet, equalTo(true));
 
-    Boolean copy = exec(commandObjects.copy(
-        srcKey.getBytes(), dstKey.getBytes(), dstDB, true));
+    Boolean copy = exec(commandObjects.copy(srcKey.getBytes(), dstKey.getBytes(), dstDB, true));
     assertThat(copy, equalTo(true));
 
     assertKeyExists(dstDB, dstKey, "initialValue");
@@ -1074,7 +1080,8 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
     exec(commandObjects.set(srcKey, "newValue"));
 
     // Copy again without replace, it will fail
-    Boolean secondCopy = exec(commandObjects.copy(srcKey.getBytes(), dstKey.getBytes(), dstDB, false));
+    Boolean secondCopy = exec(commandObjects.copy(srcKey.getBytes(), dstKey.getBytes(), dstDB,
+      false));
     assertThat(secondCopy, equalTo(false));
 
     assertKeyExists(dstDB, dstKey, "initialValue");

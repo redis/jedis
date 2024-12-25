@@ -136,10 +136,12 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     Double distanceWithUnit = exec(commandObjects.geodist(key, CATANIA, PALERMO, GeoUnit.KM));
     assertThat(distanceWithUnit, closeTo(distance / 1000, 0.001));
 
-    Double binaryDistance = exec(commandObjects.geodist(binaryKey, CATANIA.getBytes(), PALERMO.getBytes()));
+    Double binaryDistance = exec(commandObjects.geodist(binaryKey, CATANIA.getBytes(),
+      PALERMO.getBytes()));
     assertThat(binaryDistance, closeTo(distance, 0.001));
 
-    Double binaryDistanceWithUnit = exec(commandObjects.geodist(binaryKey, CATANIA.getBytes(), PALERMO.getBytes(), GeoUnit.KM));
+    Double binaryDistanceWithUnit = exec(commandObjects.geodist(binaryKey, CATANIA.getBytes(),
+      PALERMO.getBytes(), GeoUnit.KM));
     assertThat(binaryDistanceWithUnit, closeTo(distance / 1000, 0.001));
   }
 
@@ -154,7 +156,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     List<String> hashes = exec(commandObjects.geohash(key, CATANIA, PALERMO));
     assertThat(hashes, contains(notNullValue(), notNullValue()));
 
-    List<byte[]> binaryHashes = exec(commandObjects.geohash(binaryKey, CATANIA.getBytes(), PALERMO.getBytes()));
+    List<byte[]> binaryHashes = exec(commandObjects.geohash(binaryKey, CATANIA.getBytes(),
+      PALERMO.getBytes()));
     assertThat(binaryHashes, contains(hashes.get(0).getBytes(), hashes.get(1).getBytes()));
   }
 
@@ -177,7 +180,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     assertThat(positions.get(1).getLongitude(), closeTo(PALERMO_LONGITUDE, 0.001));
     assertThat(positions.get(1).getLatitude(), closeTo(PALERMO_LATITUDE, 0.001));
 
-    List<GeoCoordinate> binaryPositions = exec(commandObjects.geopos(binaryKey, CATANIA.getBytes(), PALERMO.getBytes()));
+    List<GeoCoordinate> binaryPositions = exec(commandObjects.geopos(binaryKey, CATANIA.getBytes(),
+      PALERMO.getBytes()));
     assertThat(binaryPositions.size(), equalTo(2));
 
     assertThat(binaryPositions.get(0), notNullValue());
@@ -432,17 +436,21 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     exec(commandObjects.geoadd(key, PALERMO_LONGITUDE, PALERMO_LATITUDE, PALERMO));
     exec(commandObjects.geoadd(key, CATANIA_LONGITUDE, CATANIA_LATITUDE, CATANIA));
 
-    GeoRadiusStoreParam storeParam = GeoRadiusStoreParam.geoRadiusStoreParam().store(destinationKey);
+    GeoRadiusStoreParam storeParam = GeoRadiusStoreParam.geoRadiusStoreParam()
+        .store(destinationKey);
 
-    Long store = exec(commandObjects.georadiusStore(key, PALERMO_LONGITUDE, PALERMO_LATITUDE, 200, GeoUnit.KM, param, storeParam));
+    Long store = exec(commandObjects.georadiusStore(key, PALERMO_LONGITUDE, PALERMO_LATITUDE, 200,
+      GeoUnit.KM, param, storeParam));
     assertThat(store, equalTo(2L));
 
     List<String> destination = exec(commandObjects.zrange(destinationKey, 0, -1));
     assertThat(destination, containsInAnyOrder(PALERMO, CATANIA));
 
-    GeoRadiusStoreParam storeParamForBinary = GeoRadiusStoreParam.geoRadiusStoreParam().store(binaryDestinationKey);
+    GeoRadiusStoreParam storeParamForBinary = GeoRadiusStoreParam.geoRadiusStoreParam().store(
+      binaryDestinationKey);
 
-    Long storeBinary = exec(commandObjects.georadiusStore(binaryKey, PALERMO_LONGITUDE, PALERMO_LATITUDE, 200, GeoUnit.KM, param, storeParamForBinary));
+    Long storeBinary = exec(commandObjects.georadiusStore(binaryKey, PALERMO_LONGITUDE,
+      PALERMO_LATITUDE, 200, GeoUnit.KM, param, storeParamForBinary));
     assertThat(storeBinary, equalTo(2L));
 
     destination = exec(commandObjects.zrange(binaryDestinationKey, 0, -1));
@@ -462,17 +470,21 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     exec(commandObjects.geoadd(key, PALERMO_LONGITUDE, PALERMO_LATITUDE, PALERMO));
     exec(commandObjects.geoadd(key, CATANIA_LONGITUDE, CATANIA_LATITUDE, CATANIA));
 
-    GeoRadiusStoreParam storeParam = GeoRadiusStoreParam.geoRadiusStoreParam().store(destinationKey);
+    GeoRadiusStoreParam storeParam = GeoRadiusStoreParam.geoRadiusStoreParam()
+        .store(destinationKey);
 
-    Long store = exec(commandObjects.georadiusByMemberStore(key, PALERMO, 200, GeoUnit.KM, param, storeParam));
+    Long store = exec(commandObjects.georadiusByMemberStore(key, PALERMO, 200, GeoUnit.KM, param,
+      storeParam));
     assertThat(store, equalTo(2L));
 
     List<String> storedResults = exec(commandObjects.zrange(destinationKey, 0, -1));
     assertThat(storedResults, containsInAnyOrder(PALERMO, CATANIA));
 
-    GeoRadiusStoreParam storeParamForBinary = GeoRadiusStoreParam.geoRadiusStoreParam().store(binaryDestinationKey);
+    GeoRadiusStoreParam storeParamForBinary = GeoRadiusStoreParam.geoRadiusStoreParam().store(
+      binaryDestinationKey);
 
-    Long storeBinary = exec(commandObjects.georadiusByMemberStore(binaryKey, PALERMO.getBytes(), 200, GeoUnit.KM, param, storeParamForBinary));
+    Long storeBinary = exec(commandObjects.georadiusByMemberStore(binaryKey, PALERMO.getBytes(),
+      200, GeoUnit.KM, param, storeParamForBinary));
     assertThat(storeBinary, equalTo(2L));
 
     storedResults = exec(commandObjects.zrange(binaryDestinationKey, 0, -1));
@@ -573,7 +585,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     exec(commandObjects.geoadd(srcKey, PALERMO_LONGITUDE, PALERMO_LATITUDE, PALERMO));
     exec(commandObjects.geoadd(srcKey, CATANIA_LONGITUDE, CATANIA_LATITUDE, CATANIA));
 
-    Long storeByMember = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO, 200, GeoUnit.KM));
+    Long storeByMember = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO, 200,
+      GeoUnit.KM));
     assertThat(storeByMember, equalTo(2L));
 
     List<String> storedResultsByMember = exec(commandObjects.zrange(destKey, 0, -1));
@@ -582,7 +595,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     // Reset
     exec(commandObjects.del(destKey));
 
-    Long storeByCoord = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200, GeoUnit.KM));
+    Long storeByCoord = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200,
+      GeoUnit.KM));
     assertThat(storeByCoord, equalTo(2L));
 
     List<String> storedResultsByCoord = exec(commandObjects.zrange(destKey, 0, -1));
@@ -590,7 +604,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    Long storeByMemberBox = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO, 200, 200, GeoUnit.KM));
+    Long storeByMemberBox = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO, 200, 200,
+      GeoUnit.KM));
     assertThat(storeByMemberBox, equalTo(1L));
 
     List<String> storedResultsByMemberBox = exec(commandObjects.zrange(destKey, 0, -1));
@@ -598,7 +613,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    Long storeByCoordBox = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200, 200, GeoUnit.KM));
+    Long storeByCoordBox = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200,
+      200, GeoUnit.KM));
     assertThat(storeByCoordBox, equalTo(1L));
 
     List<String> storedResultsByCoordBox = exec(commandObjects.zrange(destKey, 0, -1));
@@ -606,8 +622,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    GeoSearchParam params = GeoSearchParam.geoSearchParam()
-        .byRadius(200, GeoUnit.KM).fromMember(PALERMO);
+    GeoSearchParam params = GeoSearchParam.geoSearchParam().byRadius(200, GeoUnit.KM)
+        .fromMember(PALERMO);
 
     Long storeWithParams = exec(commandObjects.geosearchStore(destKey, srcKey, params));
     assertThat(storeWithParams, equalTo(2L));
@@ -626,7 +642,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     exec(commandObjects.geoadd(srcKey, PALERMO_LONGITUDE, PALERMO_LATITUDE, PALERMO.getBytes()));
     exec(commandObjects.geoadd(srcKey, CATANIA_LONGITUDE, CATANIA_LATITUDE, CATANIA.getBytes()));
 
-    Long storeByMember = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO.getBytes(), 200, GeoUnit.KM));
+    Long storeByMember = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO.getBytes(),
+      200, GeoUnit.KM));
     assertThat(storeByMember, equalTo(2L));
 
     List<byte[]> storedResultsByMember = exec(commandObjects.zrange(destKey, 0, -1));
@@ -635,7 +652,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     // Reset
     exec(commandObjects.del(destKey));
 
-    Long storeByCoord = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200, GeoUnit.KM));
+    Long storeByCoord = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200,
+      GeoUnit.KM));
     assertThat(storeByCoord, equalTo(2L));
 
     List<byte[]> storedResultsByCoord = exec(commandObjects.zrange(destKey, 0, -1));
@@ -643,7 +661,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    Long storeByMemberBox = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO.getBytes(), 200, 200, GeoUnit.KM));
+    Long storeByMemberBox = exec(commandObjects.geosearchStore(destKey, srcKey, PALERMO.getBytes(),
+      200, 200, GeoUnit.KM));
     assertThat(storeByMemberBox, equalTo(1L));
 
     List<byte[]> storedResultsByMemberBox = exec(commandObjects.zrange(destKey, 0, -1));
@@ -651,7 +670,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    Long storeByCoordBox = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200, 200, GeoUnit.KM));
+    Long storeByCoordBox = exec(commandObjects.geosearchStore(destKey, srcKey, palermoCoord, 200,
+      200, GeoUnit.KM));
     assertThat(storeByCoordBox, equalTo(1L));
 
     List<byte[]> storedResultsByCoordBox = exec(commandObjects.zrange(destKey, 0, -1));
@@ -659,8 +679,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    GeoSearchParam params = GeoSearchParam.geoSearchParam()
-        .byRadius(200, GeoUnit.KM).fromMember(PALERMO);
+    GeoSearchParam params = GeoSearchParam.geoSearchParam().byRadius(200, GeoUnit.KM)
+        .fromMember(PALERMO);
 
     Long storeWithParams = exec(commandObjects.geosearchStore(destKey, srcKey, params));
     assertThat(storeWithParams, equalTo(2L));
@@ -681,8 +701,7 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
     exec(commandObjects.geoadd(srcKey, CATANIA_LONGITUDE, CATANIA_LATITUDE, CATANIA));
     exec(commandObjects.geoadd(srcKey, SYRACUSE_LONGITUDE, SYRACUSE_LATITUDE, SYRACUSE));
 
-    GeoSearchParam params = new GeoSearchParam()
-        .byRadius(100, GeoUnit.KM).fromLonLat(15, 37);
+    GeoSearchParam params = new GeoSearchParam().byRadius(100, GeoUnit.KM).fromLonLat(15, 37);
 
     Long store = exec(commandObjects.geosearchStoreStoreDist(destKey, srcKey, params));
     assertThat(store, equalTo(2L));
@@ -692,7 +711,8 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
 
     exec(commandObjects.del(destKey));
 
-    Long storeWithBytes = exec(commandObjects.geosearchStoreStoreDist(destKeyBytes, srcKeyBytes, params));
+    Long storeWithBytes = exec(commandObjects.geosearchStoreStoreDist(destKeyBytes, srcKeyBytes,
+      params));
     assertThat(storeWithBytes, equalTo(2L));
 
     List<byte[]> dstContentWithBytes = exec(commandObjects.zrange(destKeyBytes, 0, -1));

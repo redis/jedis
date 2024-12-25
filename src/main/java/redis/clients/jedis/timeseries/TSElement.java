@@ -30,8 +30,7 @@ public class TSElement {
     if (!(obj instanceof TSElement)) return false;
 
     TSElement other = (TSElement) obj;
-    return this.timestamp == other.timestamp
-        && this.value == other.value;
+    return this.timestamp == other.timestamp && this.value == other.value;
   }
 
   @Override

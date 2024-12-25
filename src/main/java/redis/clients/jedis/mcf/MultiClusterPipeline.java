@@ -14,7 +14,8 @@ import redis.clients.jedis.util.KeyValue;
 
 /**
  * This is high memory dependent solution as all the appending commands will be hold in memory until
- * {@link MultiClusterPipeline#sync() SYNC} (or {@link MultiClusterPipeline#close() CLOSE}) gets called.
+ * {@link MultiClusterPipeline#sync() SYNC} (or {@link MultiClusterPipeline#close() CLOSE}) gets
+ * called.
  */
 @Experimental
 public class MultiClusterPipeline extends PipelineBase implements Closeable {
@@ -34,7 +35,8 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
     }
   }
 
-  public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider, CommandObjects commandObjects) {
+  public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider,
+      CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
   }
@@ -54,8 +56,9 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
   }
 
   /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to get return values
-   * from pipelined commands, capture the different Response&lt;?&gt; of the commands you execute.
+   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
+   * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
+   * commands you execute.
    */
   @Override
   public void sync() {
@@ -106,17 +109,20 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
   }
 
   @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
+  public Response<ResultSet> graphReadonlyQuery(String name, String query,
+      Map<String, Object> params) {
     throw new UnsupportedOperationException("Graph commands are not supported.");
   }
 
   @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
+  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params,
+      long timeout) {
     throw new UnsupportedOperationException("Graph commands are not supported.");
   }
 
   @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
+  public Response<ResultSet> graphReadonlyQuery(String name, String query,
+      Map<String, Object> params, long timeout) {
     throw new UnsupportedOperationException("Graph commands are not supported.");
   }
 

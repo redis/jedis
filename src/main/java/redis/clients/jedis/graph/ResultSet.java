@@ -8,10 +8,7 @@ package redis.clients.jedis.graph;
 public interface ResultSet extends Iterable<Record> {
 
   public enum ColumnType {
-    UNKNOWN,
-    SCALAR,
-    NODE,
-    RELATION
+    UNKNOWN, SCALAR, NODE, RELATION
   }
 
   int size();

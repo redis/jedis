@@ -14,7 +14,8 @@ public class ShardingBenchmark {
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {
-    try (JedisSharding jedis = new JedisSharding(Arrays.asList(endpointStandalone0.getHostAndPort(), endpointStandalone1.getHostAndPort()),
+    try (JedisSharding jedis = new JedisSharding(Arrays.asList(
+      endpointStandalone0.getHostAndPort(), endpointStandalone1.getHostAndPort()),
         endpointStandalone0.getClientConfigBuilder().build())) {
 
       long begin = Calendar.getInstance().getTimeInMillis();

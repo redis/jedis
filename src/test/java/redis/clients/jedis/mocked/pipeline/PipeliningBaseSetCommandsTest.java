@@ -245,7 +245,8 @@ public class PipeliningBaseSetCommandsTest extends PipeliningBaseMockedTestBase 
 
   @Test
   public void testSmismember() {
-    when(commandObjects.smismember("key", "member1", "member2")).thenReturn(listBooleanCommandObject);
+    when(commandObjects.smismember("key", "member1", "member2")).thenReturn(
+      listBooleanCommandObject);
 
     Response<List<Boolean>> response = pipeliningBase.smismember("key", "member1", "member2");
 

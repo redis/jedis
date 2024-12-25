@@ -46,11 +46,12 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public AggregationTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
@@ -75,16 +76,15 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     sc.addSortableTextField("name", 1.0);
     sc.addSortableNumericField("count");
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-//    client.addDocument(new Document("data1").set("name", "abc").set("count", 10));
-//    client.addDocument(new Document("data2").set("name", "def").set("count", 5));
-//    client.addDocument(new Document("data3").set("name", "def").set("count", 25));
+    // client.addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    // client.addDocument(new Document("data2").set("name", "def").set("count", 5));
+    // client.addDocument(new Document("data3").set("name", "def").set("count", 25));
     addDocument(new Document("data1").set("name", "abc").set("count", 10));
     addDocument(new Document("data2").set("name", "def").set("count", 5));
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
-    AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"));
+    AggregationBuilder r = new AggregationBuilder().groupBy("@name",
+      Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"));
 
     // actual search
     AggregationResult res = client.ftAggregate(index, r);
@@ -117,9 +117,8 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data2").set("name", "def").set("count", 5));
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
-    AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"));
+    AggregationBuilder r = new AggregationBuilder().groupBy("@name",
+      Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"));
 
     // actual search
     AggregationResult res = client.ftAggregate(index, r);
@@ -193,8 +192,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     AggregationResult res = client.ftAggregate(index, r);
     assertEquals(1, res.getTotalResults());
 
-    r = new AggregationBuilder("kitti")
-            .verbatim();
+    r = new AggregationBuilder("kitti").verbatim();
 
     res = client.ftAggregate(index, r);
     assertEquals(0, res.getTotalResults());
@@ -227,9 +225,8 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data2").set("name", "def").set("count", 5));
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
-    AggregationBuilder r = new AggregationBuilder()
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
-            .timeout(5000);
+    AggregationBuilder r = new AggregationBuilder().groupBy("@name",
+      Reducers.sum("@count").as("sum")).timeout(5000);
 
     AggregationResult res = client.ftAggregate(index, r);
     assertEquals(2, res.getTotalResults());
@@ -249,9 +246,13 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     params.put("name", "abc");
 
     AggregationBuilder r = new AggregationBuilder("$name")
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
-            .params(params)
-            .dialect(2); // From documentation - To use PARAMS, DIALECT must be set to 2
+        .groupBy("@name", Reducers.sum("@count").as("sum")).params(params).dialect(2); // From
+                                                                                       // documentation
+                                                                                       // - To use
+                                                                                       // PARAMS,
+                                                                                       // DIALECT
+                                                                                       // must be
+                                                                                       // set to 2
 
     AggregationResult res = client.ftAggregate(index, r);
     assertEquals(1, res.getTotalResults());
@@ -269,12 +270,18 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     sc.addSortableNumericField("subj1");
     sc.addSortableNumericField("subj2");
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-//    client.addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
-//    client.addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
-//    client.addDocument(new Document("data3").set("name", "ghi").set("subj1", 50).set("subj2", 80));
-//    client.addDocument(new Document("data4").set("name", "abc").set("subj1", 30).set("subj2", 20));
-//    client.addDocument(new Document("data5").set("name", "def").set("subj1", 65).set("subj2", 45));
-//    client.addDocument(new Document("data6").set("name", "ghi").set("subj1", 70).set("subj2", 70));
+    // client.addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2",
+    // 70));
+    // client.addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2",
+    // 40));
+    // client.addDocument(new Document("data3").set("name", "ghi").set("subj1", 50).set("subj2",
+    // 80));
+    // client.addDocument(new Document("data4").set("name", "abc").set("subj1", 30).set("subj2",
+    // 20));
+    // client.addDocument(new Document("data5").set("name", "def").set("subj1", 65).set("subj2",
+    // 45));
+    // client.addDocument(new Document("data6").set("name", "ghi").set("subj1", 70).set("subj2",
+    // 70));
     addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
     addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
     addDocument(new Document("data3").set("name", "ghi").set("subj1", 50).set("subj2", 80));
@@ -283,8 +290,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data6").set("name", "ghi").set("subj1", 70).set("subj2", 70));
 
     AggregationBuilder r = new AggregationBuilder().apply("(@subj1+@subj2)/2", "attemptavg")
-        .groupBy("@name", Reducers.avg("@attemptavg").as("avgscore"))
-        .filter("@avgscore>=50")
+        .groupBy("@name", Reducers.avg("@attemptavg").as("avgscore")).filter("@avgscore>=50")
         .sortBy(10, SortedField.asc("@name"));
 
     // actual search
@@ -309,8 +315,10 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     sc.addSortableNumericField("subj1");
     sc.addSortableNumericField("subj2");
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-//    client.addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
-//    client.addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
+    // client.addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2",
+    // 70));
+    // client.addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2",
+    // 40));
     addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
     addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
 
@@ -333,8 +341,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
     addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
 
-    AggregationBuilder builder = new AggregationBuilder()
-        .loadAll()
+    AggregationBuilder builder = new AggregationBuilder().loadAll()
         .apply("(@subj1+@subj2)/2", "avg").sortByDesc("@avg");
 
     AggregationResult result = client.ftAggregate(index, builder);
@@ -348,16 +355,15 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     sc.addSortableTextField("name", 1.0);
     sc.addSortableNumericField("count");
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-//    client.addDocument(new Document("data1").set("name", "abc").set("count", 10));
-//    client.addDocument(new Document("data2").set("name", "def").set("count", 5));
-//    client.addDocument(new Document("data3").set("name", "def").set("count", 25));
+    // client.addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    // client.addDocument(new Document("data2").set("name", "def").set("count", 5));
+    // client.addDocument(new Document("data3").set("name", "def").set("count", 25));
     addDocument(new Document("data1").set("name", "abc").set("count", 10));
     addDocument(new Document("data2").set("name", "def").set("count", 5));
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"))
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"))
         .cursor(1, 3000);
 
     // actual search
@@ -400,8 +406,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data5").set("name", "jkl").set("count", 20));
 
     AggregationBuilder agg = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"))
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
     FtAggregateIteration rr = client.ftAggregateIteration(index, agg);
@@ -426,8 +431,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data5").set("name", "jkl").set("count", 20));
 
     AggregationBuilder agg = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"))
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
     assertEquals(4, client.ftAggregateIteration(index, agg).collect(new ArrayList<>()).size());
@@ -435,11 +439,8 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testWrongAggregation() throws InterruptedException {
-    Schema sc = new Schema()
-        .addTextField("title", 5.0)
-        .addTextField("body", 1.0)
-        .addTextField("state", 1.0)
-        .addNumericField("price");
+    Schema sc = new Schema().addTextField("title", 5.0).addTextField("body", 1.0)
+        .addTextField("state", 1.0).addNumericField("price");
 
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
 
@@ -449,21 +450,19 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     fields.put("state", "NY");
     fields.put("body", "lorem ipsum");
     fields.put("price", "1337");
-//    client.addDocument("doc1", fields);
+    // client.addDocument("doc1", fields);
     addDocument("doc1", fields);
 
     // wrong aggregation query
-    AggregationBuilder builder = new AggregationBuilder("hello")
-        .apply("@price/1000", "k")
-        .groupBy("@state", Reducers.avg("@k").as("avgprice"))
-        .filter("@avgprice>=2")
+    AggregationBuilder builder = new AggregationBuilder("hello").apply("@price/1000", "k")
+        .groupBy("@state", Reducers.avg("@k").as("avgprice")).filter("@avgprice>=2")
         .sortBy(10, SortedField.asc("@state"));
 
     try {
       client.ftAggregate(index, builder);
       fail();
     } catch (JedisDataException e) {
-      // should throw JedisDataException on wrong aggregation query 
+      // should throw JedisDataException on wrong aggregation query
     }
   }
 }

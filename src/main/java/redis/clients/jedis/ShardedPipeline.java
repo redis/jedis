@@ -10,14 +10,13 @@ import java.util.regex.Pattern;
 
 /**
  * WARNING: RESP3 is not properly implemented for ShardedPipeline.
- *
  * @deprecated Sharding/Sharded feature will be removed in next major release.
  */
 @Deprecated
 public class ShardedPipeline extends MultiNodePipelineBase {
 
   private final ShardedConnectionProvider provider;
-  private       AutoCloseable             closeable = null;
+  private AutoCloseable closeable = null;
 
   public ShardedPipeline(List<HostAndPort> shards, JedisClientConfig clientConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig));
@@ -30,7 +29,7 @@ public class ShardedPipeline extends MultiNodePipelineBase {
   }
 
   public ShardedPipeline(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                         SimpleObjectPoolConfig poolConfig, Hashing algo, Pattern tagPattern) {
+      SimpleObjectPoolConfig poolConfig, Hashing algo, Pattern tagPattern) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo), tagPattern);
     this.closeable = this.provider;
   }

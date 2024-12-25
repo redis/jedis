@@ -48,8 +48,8 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
     jedis.geoadd("Sicily {ITA}", coordinateMap);
 
     long size = jedis.georadiusStore("Sicily {ITA}", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
     assertEquals(2, size);
     List<String> expected = new ArrayList<>();
     expected.add("Palermo");
@@ -70,8 +70,8 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
     jedis.geoadd("Sicily {ITA}", 15.087269, 37.502669, "Catania");
 
     long size = jedis.georadiusByMemberStore("Sicily {ITA}", "Agrigento", 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(),
-        GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
     assertEquals(2, size);
     List<String> expected = new ArrayList<>();
     expected.add("Agrigento");

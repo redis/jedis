@@ -99,8 +99,8 @@ public class PipeliningBaseTDigestCommandsTest extends PipeliningBaseMockedTestB
     when(commandObjects.tdigestMerge("destinationTDigest", "sourceTDigest1", "sourceTDigest2"))
         .thenReturn(stringCommandObject);
 
-    Response<String> response =
-        pipeliningBase.tdigestMerge("destinationTDigest", "sourceTDigest1", "sourceTDigest2");
+    Response<String> response = pipeliningBase.tdigestMerge("destinationTDigest", "sourceTDigest1",
+      "sourceTDigest2");
 
     assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -110,11 +110,12 @@ public class PipeliningBaseTDigestCommandsTest extends PipeliningBaseMockedTestB
   public void testTdigestMergeWithParams() {
     TDigestMergeParams mergeParams = new TDigestMergeParams().compression(100);
 
-    when(commandObjects.tdigestMerge(mergeParams, "destinationTDigest", "sourceTDigest1", "sourceTDigest2"))
-        .thenReturn(stringCommandObject);
+    when(
+      commandObjects.tdigestMerge(mergeParams, "destinationTDigest", "sourceTDigest1",
+        "sourceTDigest2")).thenReturn(stringCommandObject);
 
-    Response<String> response =
-        pipeliningBase.tdigestMerge(mergeParams, "destinationTDigest", "sourceTDigest1", "sourceTDigest2");
+    Response<String> response = pipeliningBase.tdigestMerge(mergeParams, "destinationTDigest",
+      "sourceTDigest1", "sourceTDigest2");
 
     assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));

@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PoolBenchmark {
 
-  private static final int            TOTAL_OPERATIONS = 100000;
-  private static       EndpointConfig endpoint         = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final int TOTAL_OPERATIONS = 100000;
+  private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
 
   public static void main(String[] args) throws Exception {
     Jedis j = new Jedis(endpoint.getHostAndPort());
@@ -30,14 +30,14 @@ public class PoolBenchmark {
 
   private static void withPool() throws Exception {
     final JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(),
-                                         endpoint.getPort(), 2000, endpoint.getPassword());
+        endpoint.getPort(), 2000, endpoint.getPassword());
     List<Thread> tds = new ArrayList<Thread>();
 
     final AtomicInteger ind = new AtomicInteger();
     for (int i = 0; i < 50; i++) {
       Thread hj = new Thread(new Runnable() {
         public void run() {
-          for (int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS; ) {
+          for (int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS;) {
             try {
               Jedis j = pool.getResource();
               final String key = "foo" + i;

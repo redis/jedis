@@ -48,12 +48,12 @@ public abstract class ClusterJedisCommandsTestBase {
     node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
 
     // split available slots across the three nodes
-//    int slotsPerNode = JedisCluster.HASHSLOTS / 3;
+    // int slotsPerNode = JedisCluster.HASHSLOTS / 3;
     int slotsPerNode = CLUSTER_HASHSLOTS / 3;
     int[] node1Slots = new int[slotsPerNode];
     int[] node2Slots = new int[slotsPerNode + 1];
     int[] node3Slots = new int[slotsPerNode];
-//    for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < JedisCluster.HASHSLOTS; i++) {
+    // for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < JedisCluster.HASHSLOTS; i++) {
     for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < CLUSTER_HASHSLOTS; i++) {
       if (i < slotsPerNode) {
         node1Slots[slot1++] = i;
@@ -71,8 +71,10 @@ public abstract class ClusterJedisCommandsTestBase {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-//    cluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
-//    cluster = new JedisCluster(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
+    // cluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new
+    // JedisPoolConfig());
+    // cluster = new JedisCluster(jedisClusterNode,
+    // DefaultJedisClientConfig.builder().password("cluster").build(), 5);
     cluster = new JedisCluster(jedisClusterNode, null, "cluster");
 
   }
@@ -90,9 +92,9 @@ public abstract class ClusterJedisCommandsTestBase {
   @After
   public void tearDown() {
     // clear all slots
-//    int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
+    // int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
     int[] slotsToDelete = new int[CLUSTER_HASHSLOTS];
-//    for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
+    // for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
     for (int i = 0; i < CLUSTER_HASHSLOTS; i++) {
       slotsToDelete[i] = i;
     }

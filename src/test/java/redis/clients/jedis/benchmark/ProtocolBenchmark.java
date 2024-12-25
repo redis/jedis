@@ -94,7 +94,7 @@ public class ProtocolBenchmark {
     for (int n = 0; n <= TOTAL_OPERATIONS; n++) {
       RedisOutputStream out = new RedisOutputStream(new ByteArrayOutputStream(8192));
       long start = System.nanoTime();
-//      Protocol.sendCommand(out, Protocol.Command.SET, KEY, VAL);
+      // Protocol.sendCommand(out, Protocol.Command.SET, KEY, VAL);
       Protocol.sendCommand(out, new CommandArguments(Protocol.Command.SET).key(KEY).add(VAL));
       duration += (System.nanoTime() - start);
     }

@@ -26,13 +26,15 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   @Test
   public void subscribe() throws InterruptedException {
     cluster.ssubscribe(new JedisShardedPubSub() {
-      @Override public void onSMessage(String channel, String message) {
+      @Override
+      public void onSMessage(String channel, String message) {
         assertEquals("foo", channel);
         assertEquals("exit", message);
         sunsubscribe();
       }
 
-      @Override public void onSSubscribe(String channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(String channel, int subscribedChannels) {
         assertEquals("foo", channel);
         assertEquals(1, subscribedChannels);
 
@@ -40,7 +42,8 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
         publishOne("foo", "exit");
       }
 
-      @Override public void onSUnsubscribe(String channel, int subscribedChannels) {
+      @Override
+      public void onSUnsubscribe(String channel, int subscribedChannels) {
         assertEquals("foo", channel);
         assertEquals(0, subscribedChannels);
       }
@@ -50,11 +53,13 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   @Test
   public void subscribeMany() {
     cluster.ssubscribe(new JedisShardedPubSub() {
-      @Override public void onSMessage(String channel, String message) {
+      @Override
+      public void onSMessage(String channel, String message) {
         sunsubscribe(channel);
       }
 
-      @Override public void onSSubscribe(String channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(String channel, int subscribedChannels) {
         publishOne(channel, "exit");
       }
 
@@ -66,14 +71,15 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
 
-      @Override public void onSSubscribe(String channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(String channel, int subscribedChannels) {
         count++;
         // All channels are subscribed
         if (count == 3) {
-          try (Connection conn = cluster.getConnectionFromSlot(JedisClusterCRC16.getSlot("testchan"));
-              Jedis jedis = new Jedis(conn)) {
+          try (Connection conn = cluster.getConnectionFromSlot(JedisClusterCRC16
+              .getSlot("testchan")); Jedis jedis = new Jedis(conn)) {
             assertThat(jedis.pubsubShardChannels(),
-                hasItems("{testchan}1", "{testchan}2", "{testchan}3"));
+              hasItems("{testchan}1", "{testchan}2", "{testchan}3"));
           }
           sunsubscribe();
         }
@@ -86,14 +92,15 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
 
-      @Override public void onSSubscribe(String channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(String channel, int subscribedChannels) {
         count++;
         // All channels are subscribed
         if (count == 3) {
-          try (Connection conn = cluster.getConnectionFromSlot(JedisClusterCRC16.getSlot("testchan"));
-              Jedis otherJedis = new Jedis(conn)) {
+          try (Connection conn = cluster.getConnectionFromSlot(JedisClusterCRC16
+              .getSlot("testchan")); Jedis otherJedis = new Jedis(conn)) {
             assertThat(otherJedis.pubsubShardChannels("*testchan*"),
-                hasItems("{testchan}1", "{testchan}2", "{testchan}3"));
+              hasItems("{testchan}1", "{testchan}2", "{testchan}3"));
           }
           sunsubscribe();
         }
@@ -110,12 +117,14 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
     cluster.ssubscribe(new JedisShardedPubSub() {
       private int count = 0;
 
-      @Override public void onSSubscribe(String channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(String channel, int subscribedChannels) {
         count++;
         if (count == 2) {
-          try (Connection conn = cluster.getConnectionFromSlot(JedisClusterCRC16.getSlot("testchannel"));
-              Jedis otherJedis = new Jedis(conn)) {
-            Map<String, Long> numSub = otherJedis.pubsubShardNumSub("{testchannel}1", "{testchannel}2");
+          try (Connection conn = cluster.getConnectionFromSlot(JedisClusterCRC16
+              .getSlot("testchannel")); Jedis otherJedis = new Jedis(conn)) {
+            Map<String, Long> numSub = otherJedis.pubsubShardNumSub("{testchannel}1",
+              "{testchannel}2");
             assertEquals(expectedNumSub, numSub);
           }
           sunsubscribe();
@@ -127,19 +136,22 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   @Test
   public void binarySubscribe() {
     cluster.ssubscribe(new BinaryJedisShardedPubSub() {
-      @Override public void onSMessage(byte[] channel, byte[] message) {
+      @Override
+      public void onSMessage(byte[] channel, byte[] message) {
         assertArrayEquals(SafeEncoder.encode("foo"), channel);
         assertArrayEquals(SafeEncoder.encode("exit"), message);
         sunsubscribe();
       }
 
-      @Override public void onSSubscribe(byte[] channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(byte[] channel, int subscribedChannels) {
         assertArrayEquals(SafeEncoder.encode("foo"), channel);
         assertEquals(1, subscribedChannels);
         publishOne(SafeEncoder.encode(channel), "exit");
       }
 
-      @Override public void onSUnsubscribe(byte[] channel, int subscribedChannels) {
+      @Override
+      public void onSUnsubscribe(byte[] channel, int subscribedChannels) {
         assertArrayEquals(SafeEncoder.encode("foo"), channel);
         assertEquals(0, subscribedChannels);
       }
@@ -149,11 +161,13 @@ public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisComm
   @Test
   public void binarySubscribeMany() {
     cluster.ssubscribe(new BinaryJedisShardedPubSub() {
-      @Override public void onSMessage(byte[] channel, byte[] message) {
+      @Override
+      public void onSMessage(byte[] channel, byte[] message) {
         sunsubscribe(channel);
       }
 
-      @Override public void onSSubscribe(byte[] channel, int subscribedChannels) {
+      @Override
+      public void onSSubscribe(byte[] channel, int subscribedChannels) {
         publishOne(SafeEncoder.encode(channel), "exit");
       }
     }, SafeEncoder.encode("{foo}"), SafeEncoder.encode("{foo}bar"));

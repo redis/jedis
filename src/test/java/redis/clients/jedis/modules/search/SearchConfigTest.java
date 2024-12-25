@@ -21,11 +21,12 @@ public class SearchConfigTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  //
+  // @AfterClass
+  // public static void tearDown() {
+  // // RedisModuleCommandsTestBase.tearDown();
+  // }
 
   public SearchConfigTest(RedisProtocol protocol) {
     super(protocol);
@@ -64,11 +65,13 @@ public class SearchConfigTest extends RedisModuleCommandsTestBase {
   @Test
   public void dialectConfig() {
     // confirm default
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
+    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"),
+      client.ftConfigGet("DEFAULT_DIALECT"));
 
     try {
       assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-      assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
+      assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"),
+        client.ftConfigGet("DEFAULT_DIALECT"));
 
     } finally {
       // restore to default

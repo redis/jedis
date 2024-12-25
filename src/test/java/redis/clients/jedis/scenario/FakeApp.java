@@ -49,9 +49,9 @@ public class FakeApp implements Runnable {
     int checkEachSeconds = 5;
     int timeoutSeconds = 120;
 
-    while (actionResponse == null || !actionResponse.isCompleted(
-        Duration.ofSeconds(checkEachSeconds), Duration.ofSeconds(keepExecutingForSeconds),
-        Duration.ofSeconds(timeoutSeconds))) {
+    while (actionResponse == null
+        || !actionResponse.isCompleted(Duration.ofSeconds(checkEachSeconds),
+          Duration.ofSeconds(keepExecutingForSeconds), Duration.ofSeconds(timeoutSeconds))) {
       try {
         boolean success = action.run(client);
 

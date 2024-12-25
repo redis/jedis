@@ -81,7 +81,8 @@ public class PipeliningBaseHyperloglogCommandsTest extends PipeliningBaseMockedT
 
   @Test
   public void testPfmerge() {
-    when(commandObjects.pfmerge("destkey", "sourcekey1", "sourcekey2")).thenReturn(stringCommandObject);
+    when(commandObjects.pfmerge("destkey", "sourcekey1", "sourcekey2")).thenReturn(
+      stringCommandObject);
 
     Response<String> response = pipeliningBase.pfmerge("destkey", "sourcekey1", "sourcekey2");
 

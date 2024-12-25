@@ -78,11 +78,11 @@ public class RediSearchUtil {
   }
 
   private static final Set<Character> ESCAPE_CHARS = new HashSet<>(Arrays.asList(//
-      ',', '.', '<', '>', '{', '}', '[', //
-      ']', '"', '\'', ':', ';', '!', '@', //
-      '#', '$', '%', '^', '&', '*', '(', //
-      ')', '-', '+', '=', '~', '|' //
-  ));
+    ',', '.', '<', '>', '{', '}', '[', //
+    ']', '"', '\'', ':', ';', '!', '@', //
+    '#', '$', '%', '^', '&', '*', '(', //
+    ')', '-', '+', '=', '~', '|' //
+      ));
 
   public static String escape(String text) {
     return escape(text, false);
@@ -97,8 +97,7 @@ public class RediSearchUtil {
 
     StringBuilder sb = new StringBuilder();
     for (char ch : chars) {
-      if (ESCAPE_CHARS.contains(ch)
-          || (querying && ch == ' ')) {
+      if (ESCAPE_CHARS.contains(ch) || (querying && ch == ' ')) {
         sb.append("\\");
       }
       sb.append(ch);

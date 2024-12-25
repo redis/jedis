@@ -169,7 +169,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.set("foo", "bar");
     jedis.eval("return redis.call('get','foo')");
     String result = (String) jedis.evalshaReadonly("6b1bf486c81ceb7edf3c093f4c48582e38c0e791",
-            Collections.emptyList(), Collections.emptyList());
+      Collections.emptyList(), Collections.emptyList());
 
     assertEquals("bar", result);
   }
@@ -188,8 +188,9 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   public void evalshaReadonlyBinary() {
     jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
     jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
-    byte[] result = (byte[]) jedis.evalshaReadonly(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"),
-            Collections.emptyList(), Collections.emptyList());
+    byte[] result = (byte[]) jedis.evalshaReadonly(
+      SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"), Collections.emptyList(),
+      Collections.emptyList());
 
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }
@@ -289,7 +290,8 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
     String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
     String sha = jedis.scriptLoad(script);
-    List<String> results = (List<String>) jedis.evalsha(sha, Arrays.asList("foo", "foobar"), Arrays.asList("foo1", "foo2"));
+    List<String> results = (List<String>) jedis.evalsha(sha, Arrays.asList("foo", "foobar"),
+      Arrays.asList("foo1", "foo2"));
     assertEquals(2, results.size());
     assertEquals("bar1", results.get(0));
     assertEquals("bar2", results.get(1));
@@ -300,9 +302,11 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.hset(bfoo, bfoo1, bbar1);
     jedis.hset(bfoobar, bfoo2, bbar2);
 
-    byte[] script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}".getBytes();
+    byte[] script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}"
+        .getBytes();
     byte[] sha = jedis.scriptLoad(script);
-    List<byte[]> results = (List<byte[]>) jedis.evalsha(sha, Arrays.asList(bfoo, bfoobar), Arrays.asList(bfoo1, bfoo2));
+    List<byte[]> results = (List<byte[]>) jedis.evalsha(sha, Arrays.asList(bfoo, bfoobar),
+      Arrays.asList(bfoo1, bfoo2));
     assertEquals(2, results.size());
     assertArrayEquals(bbar1, results.get(0));
     assertArrayEquals(bbar2, results.get(1));
@@ -465,29 +469,32 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertNull(stats.getRunningScript());
     assertEquals(1, stats.getEngines().size());
   }
-//
-//  @Test
-//  public void functionStatsWithRunning() throws InterruptedException {
-//    jedis.functionFlush();
-//    function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
-//
-//    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
-//    jedis.fcall("myfunc", new ArrayList<>(), new ArrayList<>());
-//    stats = jedis.functionStats();
-//    assertNotNull(stats.getScript());
-//    assertEquals("myfunc", stats.getScript().getName());
-//  }
-//
-//  @Test
-//  public void functionKill() {
-//    String engine = "Lua";
-//    String library = "mylib";
-//    String function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
-//
-//    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
-//    jedis.fcall("myfunc", Collections.emptyList(), Collections.emptyList());
-//    assertEquals("OK", jedis.functionKill());
-//  }
+
+  //
+  // @Test
+  // public void functionStatsWithRunning() throws InterruptedException {
+  // jedis.functionFlush();
+  // function =
+  // "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
+  //
+  // jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
+  // jedis.fcall("myfunc", new ArrayList<>(), new ArrayList<>());
+  // stats = jedis.functionStats();
+  // assertNotNull(stats.getScript());
+  // assertEquals("myfunc", stats.getScript().getName());
+  // }
+  //
+  // @Test
+  // public void functionKill() {
+  // String engine = "Lua";
+  // String library = "mylib";
+  // String function =
+  // "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
+  //
+  // jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
+  // jedis.fcall("myfunc", Collections.emptyList(), Collections.emptyList());
+  // assertEquals("OK", jedis.functionKill());
+  // }
 
   @Test
   public void functionKillWithoutRunningFunction() {
@@ -523,7 +530,8 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
     jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
     List<byte[]> bargs = Arrays.asList("hello".getBytes());
-    assertArrayEquals("hello".getBytes(), (byte[]) jedis.fcall("myfunc".getBytes(), Collections.emptyList(), bargs));
+    assertArrayEquals("hello".getBytes(),
+      (byte[]) jedis.fcall("myfunc".getBytes(), Collections.emptyList(), bargs));
   }
 
   @Test
@@ -533,9 +541,11 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String function = "redis.register_function{function_name='noop', callback=function() return 1 end, flags={ 'no-writes' }}";
     jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
 
-    assertEquals(Long.valueOf(1), jedis.fcallReadonly("noop", Collections.emptyList(), Collections.emptyList()));
+    assertEquals(Long.valueOf(1),
+      jedis.fcallReadonly("noop", Collections.emptyList(), Collections.emptyList()));
 
     // Binary
-    assertEquals(Long.valueOf(1), jedis.fcallReadonly("noop".getBytes(), Collections.emptyList(), Collections.emptyList()));
+    assertEquals(Long.valueOf(1),
+      jedis.fcallReadonly("noop".getBytes(), Collections.emptyList(), Collections.emptyList()));
   }
 }

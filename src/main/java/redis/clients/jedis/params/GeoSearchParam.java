@@ -28,9 +28,12 @@ public class GeoSearchParam implements IParams {
   private boolean any = false;
   private SortingOrder sortingOrder = null;
 
-  public GeoSearchParam() { }
+  public GeoSearchParam() {
+  }
 
-  public static GeoSearchParam geoSearchParam() { return new GeoSearchParam(); }
+  public static GeoSearchParam geoSearchParam() {
+    return new GeoSearchParam();
+  }
 
   public GeoSearchParam fromMember(String member) {
     this.fromMember = true;
@@ -50,15 +53,14 @@ public class GeoSearchParam implements IParams {
     return this;
   }
 
-
-  public GeoSearchParam byRadius(double radius, GeoUnit unit){
+  public GeoSearchParam byRadius(double radius, GeoUnit unit) {
     this.byRadius = true;
     this.radius = radius;
     this.unit = unit;
     return this;
   }
 
-  public GeoSearchParam byBox(double width, double height, GeoUnit unit){
+  public GeoSearchParam byBox(double width, double height, GeoUnit unit) {
     this.byBox = true;
     this.width = width;
     this.height = height;

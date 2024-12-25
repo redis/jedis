@@ -52,7 +52,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private static final EndpointConfig lfuEndpoint = HostAndPorts
+      .getRedisEndpoint("standalone7-with-lfu-policy");
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
@@ -625,15 +626,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals("a", jedis2.get("foo"));
     assertTrue(jedis2.pttl("foo") <= 1000);
 
-    jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
+    jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams
+        .restoreParams().replace().absTtl());
     assertTrue(jedis2.pttl("bar") <= 1000);
 
-    jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
+    jedis2
+        .restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
     assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
     jedis2.close();
 
-    Jedis lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(), lfuEndpoint.getClientConfigBuilder().timeoutMillis(500).build());;
-    lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
+    Jedis lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(), lfuEndpoint.getClientConfigBuilder()
+        .timeoutMillis(500).build());
+    ;
+    lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace()
+        .frequency(90));
     assertEquals(90, lfuJedis.objectFreq("bar1").longValue());
     lfuJedis.close();
   }
@@ -823,7 +829,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     int page2Count = scanResult.getResult().size();
     assertEquals(4, page1Count + page2Count);
 
-
     scanResult = jedis.scan(SCAN_POINTER_START, noParams, "hash");
     assertEquals(Collections.singletonList("b"), scanResult.getResult());
     scanResult = jedis.scan(SCAN_POINTER_START, noParams, "set");
@@ -856,11 +861,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(4, page1Count + page2Count);
 
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, hash);
-    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{98}), binaryResult.getResult());
+    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[] { 98 }),
+      binaryResult.getResult());
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, set);
-    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{100}), binaryResult.getResult());
+    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[] { 100 }),
+      binaryResult.getResult());
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, zset);
-    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{102}), binaryResult.getResult());
+    AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[] { 102 }),
+      binaryResult.getResult());
   }
 
   @Test
@@ -1067,8 +1075,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     entryAsList.add("foo");
     entryAsList.add("bar");
 
-    assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "first-entry")).get(1));
-    assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "last-entry")).get(1));
+    assertEquals(entryAsList,
+      ((List) findValueFromMapAsKeyValueList(encodeObj, "first-entry")).get(1));
+    assertEquals(entryAsList,
+      ((List) findValueFromMapAsKeyValueList(encodeObj, "last-entry")).get(1));
   }
 
   private Object findValueFromMapAsList(List list, Object key) {

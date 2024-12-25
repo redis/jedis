@@ -24,7 +24,8 @@ public class PooledBenchmark {
   }
 
   private static void withPool() throws Exception {
-    final JedisPooled j = new JedisPooled(endpoint.getHost(), endpoint.getPort(), null, endpoint.getPassword());
+    final JedisPooled j = new JedisPooled(endpoint.getHost(), endpoint.getPort(), null,
+        endpoint.getPassword());
     List<Thread> tds = new ArrayList<>();
 
     final AtomicInteger ind = new AtomicInteger();

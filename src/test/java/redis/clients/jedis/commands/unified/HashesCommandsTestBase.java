@@ -636,9 +636,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset("foo", "bared", "cared");
     assertEquals(asList(0L, 1L), jedis.hexpire("foo", seconds2, ExpiryOption.NX, "bar", "bared"));
 
-    assertThat(jedis.httl("foo", "bar", "bare", "bared"),
-        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      jedis.httl("foo", "bar", "bare", "bared"),
+      contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L), both(lessThanOrEqualTo(seconds2))
+          .and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -653,9 +654,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar3, bcar);
     assertEquals(asList(0L, 1L), jedis.hexpire(bfoo, seconds2, ExpiryOption.NX, bbar1, bbar3));
 
-    assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
-        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      jedis.httl(bfoo, bbar1, bbar2, bbar3),
+      contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L), both(lessThanOrEqualTo(seconds2))
+          .and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -669,8 +671,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset("foo", "bared", "cared");
     assertEquals(asList(1L, 0L), jedis.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared"));
 
-    assertThat(jedis.hpttl("foo", "bar", "bare", "bared"),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+    assertThat(
+      jedis.hpttl("foo", "bar", "bare", "bared"),
+      contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L),
+        equalTo(-1L)));
   }
 
   @Test
@@ -684,8 +688,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar3, bcar);
     assertEquals(asList(1L, 0L), jedis.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3));
 
-    assertThat(jedis.hpttl(bfoo, bbar1, bbar2, bbar3),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+    assertThat(
+      jedis.hpttl(bfoo, bbar1, bbar2, bbar3),
+      contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L),
+        equalTo(-1L)));
   }
 
   @Test
@@ -701,9 +707,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset("foo", "bared", "cared");
     assertEquals(asList(1L, 1L), jedis.hexpireAt("foo", seconds2, ExpiryOption.LT, "bar", "bared"));
 
-    assertThat(jedis.hexpireTime("foo", "bar", "bare", "bared"),
-        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      jedis.hexpireTime("foo", "bar", "bare", "bared"),
+      contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)),
+        equalTo(-1L), both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -719,9 +726,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar3, bcar);
     assertEquals(asList(1L, 1L), jedis.hexpireAt(bfoo, seconds2, ExpiryOption.LT, bbar1, bbar3));
 
-    assertThat(jedis.hexpireTime(bfoo, bbar1, bbar2, bbar3),
-        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
-            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+    assertThat(
+      jedis.hexpireTime(bfoo, bbar1, bbar2, bbar3),
+      contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)),
+        equalTo(-1L), both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
   }
 
   @Test
@@ -733,10 +741,11 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals(asList(1L, -2L), jedis.hpexpireAt("foo", unixMillis - 100, "bar", "bared"));
 
     jedis.hset("foo", "bared", "cared");
-    assertEquals(asList(1L, 0L), jedis.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared"));
+    assertEquals(asList(1L, 0L),
+      jedis.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared"));
 
     assertThat(jedis.hpexpireTime("foo", "bar", "bare", "bared"),
-        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+      contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -751,7 +760,7 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals(asList(1L, 0L), jedis.hpexpireAt(bfoo, unixMillis, ExpiryOption.GT, bbar1, bbar3));
 
     assertThat(jedis.hpexpireTime(bfoo, bbar1, bbar2, bbar3),
-        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+      contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -765,7 +774,7 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals(asList(1L, -1L, -2L), jedis.hpersist("foo", "bar", "bare", "bared"));
 
     assertThat(jedis.httl("foo", "bar", "bare", "bared"),
-        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+      contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 
   @Test
@@ -779,6 +788,6 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals(asList(1L, -1L, -2L), jedis.hpersist(bfoo, bbar1, bbar2, bbar3));
 
     assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
-        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+      contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 }

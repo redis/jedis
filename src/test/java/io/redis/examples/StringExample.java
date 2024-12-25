@@ -1,10 +1,10 @@
 // EXAMPLE: set_tutorial
 package io.redis.examples;
 
-//REMOVE_START
+// REMOVE_START
 import org.junit.Test;
 import static org.junit.Assert.*;
-//REMOVE_END
+// REMOVE_END
 
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.params.SetParams;
@@ -34,7 +34,8 @@ public class StringExample {
       Long res3 = jedis.setnx("bike:1", "bike");
       System.out.println(res3); // 0 (because key already exists)
       System.out.println(jedis.get("bike:1")); // Deimos (value is unchanged)
-      String res4 = jedis.set("bike:1", "bike", SetParams.setParams().xx()); // set the value to "bike" if it
+      String res4 = jedis.set("bike:1", "bike", SetParams.setParams().xx()); // set the value to
+                                                                             // "bike" if it
       // already
       // exists
       System.out.println(res4); // OK

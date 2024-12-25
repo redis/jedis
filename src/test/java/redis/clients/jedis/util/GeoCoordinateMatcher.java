@@ -22,13 +22,13 @@ public class GeoCoordinateMatcher extends TypeSafeMatcher<GeoCoordinate> {
 
   @Override
   protected boolean matchesSafely(GeoCoordinate item) {
-    return item != null &&
-        Math.abs(longitude - item.getLongitude()) < EPSILON &&
-        Math.abs(latitude - item.getLatitude()) < EPSILON;
+    return item != null && Math.abs(longitude - item.getLongitude()) < EPSILON
+        && Math.abs(latitude - item.getLatitude()) < EPSILON;
   }
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("matches " + longitude + " longitude " + latitude + " latitude with precision " + EPSILON);
+    description.appendText("matches " + longitude + " longitude " + latitude
+        + " latitude with precision " + EPSILON);
   }
 }

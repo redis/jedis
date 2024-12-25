@@ -20,9 +20,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public abstract class RedisModuleCommandsTestBase {
 
   /**
-   * Input data for parameterized tests. In principle all subclasses of this
-   * class should be parameterized tests, to run with several versions of RESP.
-   *
+   * Input data for parameterized tests. In principle all subclasses of this class should be
+   * parameterized tests, to run with several versions of RESP.
    * @see CommandsTestsParameters#respVersions()
    */
   @Parameters
@@ -30,19 +29,18 @@ public abstract class RedisModuleCommandsTestBase {
     return CommandsTestsParameters.respVersions();
   }
 
-  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
+  private static final String address = System.getProperty("modulesDocker",
+    Protocol.DEFAULT_HOST + ':' + 6479);
   protected static final HostAndPort hnp = HostAndPort.from(address);
   protected final RedisProtocol protocol;
 
   protected UnifiedJedis client;
 
   /**
-   * The RESP protocol is to be injected by the subclasses, usually via JUnit
-   * parameterized tests, because most of the subclassed tests are meant to be
-   * executed against multiple RESP versions. For the special cases where a single
-   * RESP version is relevant, we still force the subclass to be explicit and
-   * call this constructor.
-   *
+   * The RESP protocol is to be injected by the subclasses, usually via JUnit parameterized tests,
+   * because most of the subclassed tests are meant to be executed against multiple RESP versions.
+   * For the special cases where a single RESP version is relevant, we still force the subclass to
+   * be explicit and call this constructor.
    * @param protocol The RESP protocol to use during the tests.
    */
   public RedisModuleCommandsTestBase(RedisProtocol protocol) {
@@ -70,12 +68,12 @@ public abstract class RedisModuleCommandsTestBase {
   public void tearDown() throws Exception {
     client.close();
   }
-//
-//  public static void tearDown() {
-//    client.close();
-//  }
-//
-//  protected static Connection createConnection() {
-//    return new Connection(hnp);
-//  }
+  //
+  // public static void tearDown() {
+  // client.close();
+  // }
+  //
+  // protected static Connection createConnection() {
+  // return new Connection(hnp);
+  // }
 }

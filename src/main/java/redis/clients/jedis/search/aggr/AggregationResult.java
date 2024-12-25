@@ -99,21 +99,21 @@ public class AggregationResult {
         for (KeyValue kv : kvList) {
           String key = BuilderFactory.STRING.build(kv.getKey());
           switch (key) {
-            case TOTAL_RESULTS_STR:
-              totalResults = BuilderFactory.LONG.build(kv.getValue());
-              break;
-            case RESULTS_STR:
-              List<List<KeyValue>> resList = (List<List<KeyValue>>) kv.getValue();
-              results = new ArrayList<>(resList.size());
-              for (List<KeyValue> rikv : resList) {
-                for (KeyValue ikv : rikv) {
-                  if (FIELDS_STR.equals(BuilderFactory.STRING.build(ikv.getKey()))) {
-                    results.add(BuilderFactory.ENCODED_OBJECT_MAP.build(ikv.getValue()));
-                    break;
-                  }
+          case TOTAL_RESULTS_STR:
+            totalResults = BuilderFactory.LONG.build(kv.getValue());
+            break;
+          case RESULTS_STR:
+            List<List<KeyValue>> resList = (List<List<KeyValue>>) kv.getValue();
+            results = new ArrayList<>(resList.size());
+            for (List<KeyValue> rikv : resList) {
+              for (KeyValue ikv : rikv) {
+                if (FIELDS_STR.equals(BuilderFactory.STRING.build(ikv.getKey()))) {
+                  results.add(BuilderFactory.ENCODED_OBJECT_MAP.build(ikv.getValue()));
+                  break;
                 }
               }
-              break;
+            }
+            break;
           }
         }
         return new AggregationResult(totalResults, results);

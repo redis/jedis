@@ -49,7 +49,8 @@ public class CommandObjectsCountMinSketchCommandsTest extends CommandObjectsModu
     assertThat(query.get(0), greaterThanOrEqualTo(30L)); // apple
     assertThat(query.get(1), greaterThanOrEqualTo(20L)); // banana
     assertThat(query.get(2), greaterThanOrEqualTo(10L)); // carrot
-    assertThat(query.get(3), lessThanOrEqualTo(1L)); // date, in practice, could be >0 due to estimation error
+    assertThat(query.get(3), lessThanOrEqualTo(1L)); // date, in practice, could be >0 due to
+                                                     // estimation error
   }
 
   @Test
@@ -67,7 +68,8 @@ public class CommandObjectsCountMinSketchCommandsTest extends CommandObjectsModu
     List<Long> incrBy = exec(commandObjects.cmsIncrBy(key, itemIncrements));
     assertThat(incrBy, containsInAnyOrder(3L, 5L, 8L));
 
-    List<Long> query = exec(commandObjects.cmsQuery(key, "apple", "banana", "carrot", "dragonfruit"));
+    List<Long> query = exec(commandObjects
+        .cmsQuery(key, "apple", "banana", "carrot", "dragonfruit"));
 
     assertThat(query, notNullValue());
     assertThat(query.size(), equalTo(4));
@@ -75,7 +77,8 @@ public class CommandObjectsCountMinSketchCommandsTest extends CommandObjectsModu
     assertThat(query.get(0), greaterThanOrEqualTo(5L)); // apple
     assertThat(query.get(1), greaterThanOrEqualTo(3L)); // banana
     assertThat(query.get(2), greaterThanOrEqualTo(8L)); // carrot
-    // "dragonfruit" was not incremented, its count should be minimal, but due to the probabilistic nature of CMS, it might not be exactly 0.
+    // "dragonfruit" was not incremented, its count should be minimal, but due to the probabilistic
+    // nature of CMS, it might not be exactly 0.
     assertThat(query.get(3), lessThanOrEqualTo(1L));
   }
 
@@ -114,7 +117,8 @@ public class CommandObjectsCountMinSketchCommandsTest extends CommandObjectsModu
     String merge = exec(commandObjects.cmsMerge(cmsDestKey, cmsKey1, cmsKey2));
     assertThat(merge, equalTo("OK"));
 
-    List<Long> query = exec(commandObjects.cmsQuery(cmsDestKey, "apple", "banana", "carrot", "date"));
+    List<Long> query = exec(commandObjects
+        .cmsQuery(cmsDestKey, "apple", "banana", "carrot", "date"));
 
     assertThat(query, notNullValue());
     assertThat(query.size(), equalTo(4));
@@ -165,7 +169,8 @@ public class CommandObjectsCountMinSketchCommandsTest extends CommandObjectsModu
     String merge = exec(commandObjects.cmsMerge(cmsDestKey, keysAndWeights));
     assertThat(merge, equalTo("OK"));
 
-    List<Long> query = exec(commandObjects.cmsQuery(cmsDestKey, "apple", "banana", "carrot", "date"));
+    List<Long> query = exec(commandObjects
+        .cmsQuery(cmsDestKey, "apple", "banana", "carrot", "date"));
 
     assertThat(query, notNullValue());
     assertThat(query.size(), equalTo(4));

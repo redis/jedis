@@ -101,7 +101,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
 
   @Test
   public void testMemoryUsageBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     Long expectedMemoryUsage = 512L;
 
     when(commandObjects.memoryUsage(key)).thenReturn(longCommandObject);
@@ -117,7 +117,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
 
   @Test
   public void testMemoryUsageWithSamplesBinary() {
-    byte[] key = new byte[]{ 1, 2, 3 };
+    byte[] key = new byte[] { 1, 2, 3 };
     int samples = 5;
     Long expectedMemoryUsage = 1024L;
 

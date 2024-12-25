@@ -52,7 +52,8 @@ public class CommandObjectsBloomFilterCommandsTest extends CommandObjectsModules
 
     BFInsertParams insertParams = new BFInsertParams().noCreate().capacity(1000);
 
-    List<Boolean> insertWithParams = exec(commandObjects.bfInsert(key, insertParams, "item1", "item2"));
+    List<Boolean> insertWithParams = exec(commandObjects.bfInsert(key, insertParams, "item1",
+      "item2"));
     assertThat(insertWithParams, contains(false, false));
 
     assertThat(exec(commandObjects.bfExists(key, "item1")), equalTo(true));

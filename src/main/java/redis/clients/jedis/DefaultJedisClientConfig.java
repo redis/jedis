@@ -28,9 +28,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean readOnlyForRedisClusterReplicas;
 
-  private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
-      int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
-      String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+  private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis,
+      int soTimeoutMillis, int blockingSocketTimeoutMillis,
+      Supplier<RedisCredentials> credentialsProvider, int database, String clientName, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
       ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForRedisClusterReplicas) {
     this.redisProtocol = protocol;
@@ -164,18 +165,19 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public DefaultJedisClientConfig build() {
       if (credentialsProvider == null) {
-        credentialsProvider = new DefaultRedisCredentialsProvider(
-            new DefaultRedisCredentials(user, password));
+        credentialsProvider = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user,
+            password));
       }
 
-      return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis, socketTimeoutMillis,
-          blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
-          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig,
-          readOnlyForRedisClusterReplicas);
+      return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis,
+          socketTimeoutMillis, blockingSocketTimeoutMillis, credentialsProvider, database,
+          clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper,
+          clientSetInfoConfig, readOnlyForRedisClusterReplicas);
     }
 
     /**
-     * Shortcut to {@link Builder#protocol(redis.clients.jedis.RedisProtocol)} with {@link RedisProtocol#RESP3}.
+     * Shortcut to {@link Builder#protocol(redis.clients.jedis.RedisProtocol)} with
+     * {@link RedisProtocol#RESP3}.
      */
     public Builder resp3() {
       return protocol(RedisProtocol.RESP3);
@@ -274,22 +276,22 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
-      int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    return new DefaultJedisClientConfig(null,
-        connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
-        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
-        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null,
-        false);
+      int blockingSocketTimeoutMillis, String user, String password, int database,
+      String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
+      HostAndPortMapper hostAndPortMapper) {
+    return new DefaultJedisClientConfig(null, connectionTimeoutMillis, soTimeoutMillis,
+        blockingSocketTimeoutMillis, new DefaultRedisCredentialsProvider(
+            new DefaultRedisCredentials(user, password)), database, clientName, ssl,
+        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null, false);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(copy.getRedisProtocol(),
-        copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),
-        copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
-        copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
-        copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper(),
-        copy.getClientSetInfoConfig(), copy.isReadOnlyForRedisClusterReplicas());
+    return new DefaultJedisClientConfig(copy.getRedisProtocol(), copy.getConnectionTimeoutMillis(),
+        copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(),
+        copy.getCredentialsProvider(), copy.getDatabase(), copy.getClientName(), copy.isSsl(),
+        copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
+        copy.getHostAndPortMapper(), copy.getClientSetInfoConfig(),
+        copy.isReadOnlyForRedisClusterReplicas());
   }
 }

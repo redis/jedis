@@ -12,7 +12,9 @@ public class LCSParams implements IParams {
   private Long minMatchLen;
   private boolean withMatchLen = false;
 
-  public static LCSParams LCSParams() { return new LCSParams(); }
+  public static LCSParams LCSParams() {
+    return new LCSParams();
+  }
 
   /**
    * When LEN is given the command returns the length of the longest common substring.
@@ -24,9 +26,8 @@ public class LCSParams implements IParams {
   }
 
   /**
-   * When IDX is given the command returns an array with the LCS length
-   * and all the ranges in both the strings, start and end offset for
-   * each string, where there are matches.
+   * When IDX is given the command returns an array with the LCS length and all the ranges in both
+   * the strings, start and end offset for each string, where there are matches.
    * @return LCSParams
    */
   public LCSParams idx() {
@@ -44,7 +45,8 @@ public class LCSParams implements IParams {
   }
 
   /**
-   * When WITHMATCHLEN is given each array representing a match will also have the length of the match.
+   * When WITHMATCHLEN is given each array representing a match will also have the length of the
+   * match.
    * @return LCSParams
    */
   public LCSParams withMatchLen() {
@@ -73,7 +75,8 @@ public class LCSParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     LCSParams lcsParams = (LCSParams) o;
-    return len == lcsParams.len && idx == lcsParams.idx && withMatchLen == lcsParams.withMatchLen && Objects.equals(minMatchLen, lcsParams.minMatchLen);
+    return len == lcsParams.len && idx == lcsParams.idx && withMatchLen == lcsParams.withMatchLen
+        && Objects.equals(minMatchLen, lcsParams.minMatchLen);
   }
 
   @Override

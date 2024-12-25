@@ -169,7 +169,8 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisMockedTestBase 
     String[] sourceKeys = { "sourceTDigest1", "sourceTDigest2" };
     String expectedResponse = "OK";
 
-    when(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys)).thenReturn(stringCommandObject);
+    when(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys)).thenReturn(
+      stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.tdigestMerge(mergeParams, destinationKey, sourceKeys);
@@ -264,7 +265,8 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisMockedTestBase 
     double highCutQuantile = 0.9;
     double expectedResponse = 5.0;
 
-    when(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile)).thenReturn(doubleCommandObject);
+    when(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile)).thenReturn(
+      doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedResponse);
 
     double result = jedis.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile);

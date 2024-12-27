@@ -19,7 +19,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.authentication.core.IdentityProvider;
 import redis.clients.authentication.core.IdentityProviderConfig;
@@ -29,13 +32,29 @@ import redis.clients.authentication.entraid.EntraIDTokenAuthConfigBuilder;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisClusterTestBase;
 
-public class TokenBasedAuthenticationClusterIntegrationTests extends JedisClusterTestBase {
+public class TokenBasedAuthenticationClusterIntegrationTests {
+    private static final Logger log = LoggerFactory
+            .getLogger(TokenBasedAuthenticationClusterIntegrationTests.class);
+
+    private static EndpointConfig endpointConfig;
+    private static HostAndPort hnp;
+
+    @BeforeClass
+    public static void before() {
+        try {
+            endpointConfig = HostAndPorts.getRedisEndpoint("cluster-entraid-acl");
+            hnp = endpointConfig.getHostAndPort();
+        } catch (IllegalArgumentException e) {
+            log.warn("Skipping test because no Redis endpoint is configured");
+            org.junit.Assume.assumeTrue(false);
+        }
+    }
 
     @Test
     public void testClusterInitWithAuthXManager() {
@@ -55,12 +74,11 @@ public class TokenBasedAuthenticationClusterIntegrationTests extends JedisCluste
         AuthXManager manager = new AuthXManager(EntraIDTokenAuthConfigBuilder.builder()
                 .lowerRefreshBoundMillis(1000).identityProviderConfig(idpConfig).build());
 
-        HostAndPort hp = HostAndPorts.getClusterServers().get(0);
         int defaultDirections = 5;
         JedisClientConfig config = DefaultJedisClientConfig.builder().authXManager(manager).build();
 
         ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
-        try (JedisCluster jc = new JedisCluster(hp, config, defaultDirections,
+        try (JedisCluster jc = new JedisCluster(hnp, config, defaultDirections,
                 DEFAULT_POOL_CONFIG)) {
 
             assertEquals("OK", jc.set("foo", "bar"));
@@ -98,13 +116,12 @@ public class TokenBasedAuthenticationClusterIntegrationTests extends JedisCluste
             return result;
         }).when(authXManager).addConnection(any(Connection.class));
 
-        HostAndPort hp = HostAndPorts.getClusterServers().get(0);
         JedisClientConfig config = DefaultJedisClientConfig.builder().authXManager(authXManager)
                 .build();
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(1);
-        try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), config)) {
+        try (JedisCluster jc = new JedisCluster(Collections.singleton(hnp), config)) {
             Runnable task = () -> {
                 while (latch.getCount() > 0) {
                     assertEquals("OK", jc.set("foo", "bar"));

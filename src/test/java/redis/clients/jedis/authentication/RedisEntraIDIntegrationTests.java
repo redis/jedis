@@ -323,7 +323,7 @@ public class RedisEntraIDIntegrationTests {
 
   // T.3.4
   // Verify handling of reconnection and re-authentication after a network partition. (use cached token)
-  // @Test
+  @Test
   public void networkPartitionEvictionTest() {
     TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
         .clientId(testCtx.getClientId()).secret(testCtx.getClientSecret())

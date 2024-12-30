@@ -25,9 +25,6 @@ import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.gears.TFunctionListParams;
-import redis.clients.jedis.gears.TFunctionLoadParams;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
@@ -5052,38 +5049,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.graphConfigGet(configName));
   }
   // RedisGraph commands
-
-  // RedisGears commands
-  @Deprecated
-  @Override
-  public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
-  }
-
-  @Deprecated
-  @Override
-  public String tFunctionDelete(String libraryName) {
-    return executeCommand(commandObjects.tFunctionDelete(libraryName));
-  }
-
-  @Deprecated
-  @Override
-  public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
-    return executeCommand(commandObjects.tFunctionList(params));
-  }
-
-  @Deprecated
-  @Override
-  public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
-  }
-
-  @Deprecated
-  @Override
-  public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));
-  }
-  // RedisGears commands
 
   /**
    * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.

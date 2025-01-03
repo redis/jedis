@@ -2,8 +2,11 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
@@ -22,6 +25,11 @@ public abstract class JedisClusterTestBase {
   protected static HostAndPort nodeInfoSlave2 = HostAndPorts.getClusterServers().get(4);
 
   protected static final String LOCAL_IP = "127.0.0.1";
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1,DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() throws InterruptedException {

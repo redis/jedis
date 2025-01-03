@@ -7,21 +7,28 @@ import static org.junit.Assert.assertThrows;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import redis.clients.jedis.AbstractPipeline;
-import redis.clients.jedis.AbstractTransaction;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.Response;
+import redis.clients.jedis.*;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 @RunWith(Parameterized.class)
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(PooledCommandsTestHelper.nodeInfo);
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(PooledCommandsTestHelper.nodeInfo);
 
   public PooledMiscellaneousTest(RedisProtocol protocol) {
     super(protocol);
@@ -148,6 +155,7 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void broadcastWithError() {
     JedisDataException error = assertThrows(JedisDataException.class,
         () -> jedis.functionDelete("xyz"));

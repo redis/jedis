@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.net.URISyntaxException;
 import org.junit.BeforeClass;
@@ -9,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
-import redis.clients.jedis.util.RedisVersionUtil;
+import io.redis.test.utils.RedisVersion;
 
 /**
  * This test class is a copy of {@link JedisTest}.
@@ -28,7 +29,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   @BeforeClass
   public static void prepare() throws Exception {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+            getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.of("6.0.0")));
   }
 
   public ACLJedisTest(RedisProtocol redisProtocol) {

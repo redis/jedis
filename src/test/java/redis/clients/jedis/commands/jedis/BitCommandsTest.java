@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -153,13 +155,20 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, jedis.bitpos("mykey", true, BitPosParams.bitPosParams()));
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2)));
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)));
-    assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)
-        .modifier(BitCountOption.BYTE)));
-    assertEquals(9, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(7).end(15)
-        .modifier(BitCountOption.BIT)));
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "7.0.0 Added the BYTE|BIT option.")
+  public void bitposModifierByte() {
+    jedis.set("mykey", "\\x00\\xff\\xf0");
+    assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)
+            .modifier(BitCountOption.BYTE)));
+    assertEquals(9, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(7).end(15)
+            .modifier(BitCountOption.BIT)));
+  }
+
+  @Test
+  @SinceRedisVersion("7.0.0")
   public void setAndgetrange() {
     jedis.set("key1", "Hello World");
     assertEquals(11, jedis.setrange("key1", 6, "Jedis"));
@@ -182,6 +191,15 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L));
+  }
+
+  @Test
+  @SinceRedisVersion("7.0.0")
+  public void bitCountByteOptions() {
+    jedis.setbit("foo", 16, true);
+    jedis.setbit("foo", 24, true);
+    jedis.setbit("foo", 40, true);
+    jedis.setbit("foo", 56, true);
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L, BitCountOption.BYTE));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BYTE));

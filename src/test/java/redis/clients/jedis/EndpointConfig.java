@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.TlsUtil;
 
 import java.io.FileReader;
 import java.net.URI;
@@ -17,14 +18,16 @@ public class EndpointConfig {
     private final String password;
     private final int bdbId;
     private final List<URI> endpoints;
+    private final String environment;
 
-    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls) {
+    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String environment) {
         this.tls = tls;
         this.username = username;
         this.password = password;
         this.bdbId = 0;
         this.endpoints = Collections.singletonList(
             URI.create(getURISchema(tls) + hnp.getHost() + ":" + hnp.getPort()));
+        this.environment = environment;
     }
 
     public HostAndPort getHostAndPort() {
@@ -51,10 +54,18 @@ public class EndpointConfig {
         return getHostAndPort().getPort();
     }
 
+    public Boolean isTls() {
+        return tls;
+    }
+
     public int getBdbId() { return bdbId; }
 
     public URI getURI() {
         return endpoints.get(0);
+    }
+
+    public String getEnvironment() {
+        return environment;
     }
 
     public class EndpointURIBuilder {
@@ -111,6 +122,10 @@ public class EndpointConfig {
     public DefaultJedisClientConfig.Builder getClientConfigBuilder() {
       DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder()
           .password(password).ssl(tls);
+
+        if (tls && environment != null) {
+          builder.sslSocketFactory(TlsUtil.sslSocketFactoryForEnv(environment));
+        }
 
         if (username != null) {
           return builder.user(username);

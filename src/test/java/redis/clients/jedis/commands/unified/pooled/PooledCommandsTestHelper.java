@@ -4,7 +4,7 @@ import redis.clients.jedis.*;
 
 public class PooledCommandsTestHelper {
 
-  private static final EndpointConfig nodeInfo = HostAndPorts.getRedisEndpoint("standalone0");
+  public static final EndpointConfig nodeInfo = HostAndPorts.getRedisEndpoint("standalone0");
 
   public static JedisPooled getPooled(RedisProtocol redisProtocol) {
     return new JedisPooled(nodeInfo.getHostAndPort(), nodeInfo.getClientConfigBuilder()

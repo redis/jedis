@@ -1,7 +1,10 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
+import static redis.clients.jedis.util.GeoRadiusResponseMatcher.isEqualToGeoRadiusResponse;
 
 import java.util.*;
 
@@ -21,6 +24,7 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -693,9 +697,6 @@ public class ClusterPipeliningTest {
     hm.put("place1", new GeoCoordinate(2.1909389952632, 41.433791470673));
     hm.put("place2", new GeoCoordinate(2.1873744593677, 41.406342043777));
 
-    List<GeoCoordinate> values = new ArrayList<>();
-    values.add(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
-    values.add(new GeoCoordinate(2.18737632036209106, 41.40634178640635099));
 
     List<String> hashValues = new ArrayList<>();
     hashValues.add("sp3e9yg3kd0");
@@ -705,11 +706,6 @@ public class ClusterPipeliningTest {
     GeoRadiusParam params = new GeoRadiusParam().withCoord().withHash().withDist();
     GeoRadiusParam params2 = new GeoRadiusParam().count(1, true);
     GeoRadiusStoreParam storeParams = new GeoRadiusStoreParam().store("radius{#}");
-
-    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
-    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
-    expectedResponse.setDistance(0.0881);
-    expectedResponse.setRawScore(3471609698139488L);
 
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
@@ -738,11 +734,21 @@ public class ClusterPipeliningTest {
     assertEquals(Double.valueOf(3067.4157), r2.get());
     assertEquals(Double.valueOf(3.0674), r3.get());
     assertEquals(hashValues, r4.get());
-    assertEquals(values, r5.get());
+    assertThat(r5.get(), contains(
+            GeoCoordinateMatcher.isEqualWithTolerance(2.19093829393386841, 41.43379028184083523),
+            GeoCoordinateMatcher.isEqualWithTolerance(2.18737632036209106, 41.40634178640635099))
+    );
     assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
     assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
-    assertEquals(expectedResponse, r8.get().get(0));
-    assertEquals(expectedResponse, r9.get().get(0));
+
+    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
+    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
+    expectedResponse.setDistance(0.0881);
+    expectedResponse.setRawScore(3471609698139488L);
+
+    assertThat(r8.get().get(0),isEqualToGeoRadiusResponse(expectedResponse));
+    assertThat(r9.get().get(0),isEqualToGeoRadiusResponse(expectedResponse));
+
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));
     assertTrue(r12.get().size() == 2 && r12.get().get(0).getMemberByString().equals("place2"));

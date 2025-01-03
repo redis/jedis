@@ -7,6 +7,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedisShardedPubSub;
@@ -16,6 +18,7 @@ import redis.clients.jedis.JedisShardedPubSub;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
 
+@SinceRedisVersion(value = "7.0.0", message = "Sharded Pub/Sub")
 public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisCommandsTestBase {
 
   private void publishOne(final String channel, final String message) {

@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -253,6 +254,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added the ability to pass multiple pattern parameters in one call")
   public void configGetSetMulti() {
     String[] params = new String[]{"hash-max-listpack-entries", "set-max-intset-entries", "zset-max-listpack-entries"};
     Map<String, String> info = jedis.configGet(params);
@@ -272,6 +274,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void waitAof() {
     assertEquals(KeyValue.of(0L, 0L), jedis.waitAOF(0L, 0L, 100L));
   }
@@ -379,12 +382,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clientNoTouch() {
     assertEquals("OK", jedis.clientNoTouchOn());
     assertEquals("OK", jedis.clientNoTouchOff());
@@ -475,6 +480,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandDocs() {
     Map<String, CommandDocument> docs = jedis.commandDocs("SORT", "SET");
 
@@ -492,6 +498,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandGetKeys() {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
@@ -501,8 +508,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, keySandFlags.get(0).getValue().size());
   }
 
-
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandNoArgs() {
     Map<String, CommandInfo> infos = jedis.command();
 
@@ -524,6 +531,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandInfo() {
     Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
 
@@ -543,6 +551,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test // GitHub Issue #4020
+  @SinceRedisVersion("7.0.0")
   public void commandInfoAcl() {
     Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
     assertThat(infos, Matchers.aMapWithSize(1));
@@ -564,6 +573,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandList() {
     List<String> commands = jedis.commandList();
     assertTrue(commands.size() > 100);

@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.ClassRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.Connection;
@@ -14,6 +17,7 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 
+@SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
   private static final Set<HostAndPort> hnp = new HashSet<>(HostAndPorts.getStableClusterServers());
@@ -27,6 +31,9 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
         poolConfig.setMaxTotal(1);
         return poolConfig;
       };
+
+  @ClassRule
+  public static RedisVersionRule versionRule = new RedisVersionRule(hnp.iterator().next(), clientConfig.get());
 
   @Override
   protected JedisCluster createRegularJedis() {

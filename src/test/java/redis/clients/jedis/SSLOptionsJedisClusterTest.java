@@ -2,20 +2,24 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
-import redis.clients.jedis.SSLJedisTest.BasicHostnameVerifier;
-import redis.clients.jedis.SSLJedisTest.LocalhostVerifier;
+import redis.clients.jedis.util.RedisVersionUtil;
+import redis.clients.jedis.util.TlsUtil;
 
+@SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
@@ -26,7 +30,6 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     int port = hostAndPort.getPort();
     if (host.equals("127.0.0.1")) {
       host = "localhost";
-      port = port + 1000;
     }
     return new HostAndPort(host, port);
   };
@@ -36,23 +39,38 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     if ("localhost".equals(hostAndPort.getHost())) {
       return hostAndPort;
     }
-    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() + 1000);
+    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() );
   };
+
+  @BeforeClass
+  public static void prepare() {
+    TlsUtil.createAndSaveEnvTruststore("cluster-unbound", "changeit");
+  }
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
-            .sslOptions(SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
+                .sslOptions(SslOptions.builder()
+                .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      /**
+       * In versions prior to Redis 7.x, Redis does not natively support automatic port switching between TLS and non-TLS ports for CLUSTER SLOTS.
+       * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
+       */
+      if (RedisVersionUtil.getRedisVersion(jc2.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
+        assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      } else {
+        assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:8380"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:8381"));
+      }
       jc2.get("foo");
     }
   }
@@ -60,25 +78,38 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testSSLWithoutPortMap() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
-        DefaultJedisClientConfig.builder().password("cluster")
-            .sslOptions(SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks").build())
-            .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+        DefaultJedisClientConfig.builder()
+                .password("cluster")
+                .sslOptions(SslOptions.builder()
+                        .truststore(envTruststore("cluster-unbound").toFile())
+                        .trustStoreType("jceks")
+                        .sslVerifyMode(SslVerifyMode.CA)
+                        .build())
+                .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      /**
+       * In versions prior to Redis 7.x, Redis does not natively support automatic port switching between TLS and non-TLS ports for CLUSTER SLOTS.
+       * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
+       */
+      if (RedisVersionUtil.getRedisVersion(jc.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
+        assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      } else {
+        assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:8380"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:8381"));
+      }
     }
   }
 
   @Test
   public void connectByIpAddress() {
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 7379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
-            .sslOptions(SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
+                .sslOptions(SslOptions.builder()
+                .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -95,7 +126,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
-                .truststore(new File("src/test/resources/truststore.jceks"))
+                .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -117,7 +148,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
-                .truststore(new File("src/test/resources/truststore.jceks"))
+                .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -134,7 +165,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
-                .truststore(new File("src/test/resources/truststore.jceks"))
+                .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -145,11 +176,11 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
 
   @Test
   public void connectWithCustomHostNameVerifier() {
-    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    HostnameVerifier localhostVerifier = new LocalhostVerifier();
+    HostnameVerifier hostnameVerifier = new TlsUtil.BasicHostnameVerifier();
+    HostnameVerifier localhostVerifier = new TlsUtil.LocalhostVerifier();
 
     SslOptions sslOptions = SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
+                .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks")
                 .sslVerifyMode(SslVerifyMode.CA).build();
 

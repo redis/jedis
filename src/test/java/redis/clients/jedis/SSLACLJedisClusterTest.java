@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.util.TlsUtil.*;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
@@ -50,7 +51,13 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
   @BeforeClass
   public static void prepare() {
-    TlsUtil.createAndSaveEnvTruststore("cluster-unbound", "changeit");
+    Path trustStorePath = createAndSaveEnvTruststore("cluster-unbound", "changeit");
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
+  }
+
+  @AfterClass
+  public static void teardownTrustStore() {
+    TlsUtil.restoreOriginalTrustStore();
   }
 
   @Test
@@ -58,7 +65,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
     DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
             .user("default")
             .password("cluster")
-            .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
             .ssl(true)
             .hostAndPortMapper(hostAndPortMap)
             .build();
@@ -90,7 +96,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
             DefaultJedisClientConfig.builder()
                     .user("default")
                     .password("cluster")
-                    .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                     .ssl(true)
                     .hostAndPortMapper(hostAndPortMap)
                     .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -110,7 +115,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
@@ -137,7 +141,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -154,7 +157,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .sslParameters(sslParameters)
                 .hostAndPortMapper(portMap)
@@ -177,7 +179,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .sslParameters(sslParameters)
                 .hostAndPortMapper(hostAndPortMap).build(),
@@ -195,7 +196,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -213,7 +213,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -229,7 +228,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -243,7 +241,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder()
                 .user("default")
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostnameVerifier(localhostVerifier)
                 .hostAndPortMapper(portMap).build(),

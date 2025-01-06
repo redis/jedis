@@ -6,6 +6,9 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.clients.jedis.util.TlsUtil;
+
+import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
 public class SSLOptionsJedisSentinelPoolTest {
 
@@ -20,7 +23,9 @@ public class SSLOptionsJedisSentinelPoolTest {
 
   @BeforeClass
   public static void prepare() {
-    sentinels.add(HostAndPorts.getSentinelServers().get(4));
+      TlsUtil.createAndSaveEnvTruststore("redis9-sentinel", "changeit");
+
+      sentinels.add(HostAndPorts.getSentinelServers().get(4));
   }
 
   @Test
@@ -29,9 +34,9 @@ public class SSLOptionsJedisSentinelPoolTest {
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
         .user("acljedis").password("fizzbuzz").clientName("master-client")
         .sslOptions(SslOptions.builder()
-            .truststore(new File("src/test/resources/truststore.jceks"))
-            .trustStoreType("jceks")
-            .sslVerifyMode(SslVerifyMode.CA).build())
+                .truststore(envTruststore("redis9-sentinel").toFile())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build())
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
@@ -56,9 +61,9 @@ public class SSLOptionsJedisSentinelPoolTest {
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .user("sentinel").password("foobared").clientName("sentinel-client")
         .sslOptions(SslOptions.builder()
-            .truststore(new File("src/test/resources/truststore.jceks"))
-            .trustStoreType("jceks")
-            .sslVerifyMode(SslVerifyMode.CA).build())
+                .truststore(envTruststore("redis9-sentinel").toFile())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build())
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
@@ -75,8 +80,8 @@ public class SSLOptionsJedisSentinelPoolTest {
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
     SslOptions sslOptions = SslOptions.builder()
-                .truststore(new File("src/test/resources/truststore.jceks"))
-                .trustStoreType("jceks")
+            .truststore(envTruststore("redis9-sentinel").toFile())
+            .trustStoreType("jceks")
             .sslVerifyMode(SslVerifyMode.CA).build();
 
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()

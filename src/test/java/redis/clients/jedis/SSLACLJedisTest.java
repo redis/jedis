@@ -7,8 +7,11 @@ import static redis.clients.jedis.util.TlsUtil.*;
 
 import java.nio.file.Path;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.AfterClass;
 import io.redis.test.utils.RedisVersion;
+import org.junit.ClassRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import redis.clients.jedis.util.TlsUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,20 +21,20 @@ import org.junit.Test;
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
+@SinceRedisVersion(value = "6.0.0", message = "Not running ACL test on this version of Redis")
 public class SSLACLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
 
   protected static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
+  @ClassRule
+  public static RedisVersionRule versionRule = new RedisVersionRule(endpoint);
 
   @BeforeClass
   public static void prepare() {
     Path trusStorePath = createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
     TlsUtil.setCustomTrustStore(trusStorePath, "changeit");
-    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    assumeTrue("Not running ACL test on this version of Redis",
-        getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.V6_0_0));
   }
 
   @AfterClass
@@ -41,11 +44,7 @@ public class SSLACLJedisTest {
 
   @Test
   public void connectWithSsl() {
-    try (Jedis jedis = new Jedis(endpoint.getHost(), endpoint.getPort(),
-            DefaultJedisClientConfig.builder()
-                    .sslSocketFactory(sslSocketFactoryForEnv("redis1-2-5-8-sentinel"))
-                    .ssl(true)
-                    .build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHost(), endpoint.getPort(), true)) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -54,9 +53,7 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithConfig() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder()
-                .sslSocketFactory(sslSocketFactoryForEnv("redis1-2-5-8-sentinel"))
-                .ssl(true).build())) {
+        DefaultJedisClientConfig.builder().ssl(true).build())) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -79,17 +76,10 @@ public class SSLACLJedisTest {
   public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis(
-            endpointWithDefaultUser.getURIBuilder()
-                    .defaultCredentials().build(),
-            DefaultJedisClientConfig.builder()
-                    .sslSocketFactory(sslSocketFactoryForEnv("redis1-2-5-8-sentinel"))
-                    .build())) {
+        endpointWithDefaultUser.getURIBuilder().defaultCredentials().build())) {
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(endpoint.getURIBuilder().defaultCredentials().build(),
-            DefaultJedisClientConfig.builder()
-                    .sslSocketFactory(sslSocketFactoryForEnv("redis1-2-5-8-sentinel"))
-                    .build())) {
+    try (Jedis jedis = new Jedis(endpoint.getURIBuilder().defaultCredentials().build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

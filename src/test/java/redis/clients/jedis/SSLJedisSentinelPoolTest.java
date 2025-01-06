@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,14 +25,15 @@ public class SSLJedisSentinelPoolTest {
 
   @BeforeClass
   public static void prepare() {
-    TlsUtil.createAndSaveEnvTruststore("redis9-sentinel", "changeit");
+    Path trustStorePath = TlsUtil.createAndSaveEnvTruststore("redis9-sentinel", "changeit");
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
     sentinels.add(HostAndPorts.getSentinelServers().get(4));
   }
 
   @AfterClass
-  public static void unprepare() {
-    SSLJedisTest.cleanupTrustStore();
+  public static void teardownTrustStore() {
+    TlsUtil.restoreOriginalTrustStore();
   }
 
   @Test
@@ -41,7 +43,6 @@ public class SSLJedisSentinelPoolTest {
             .user("acljedis")
             .password("fizzbuzz")
             .clientName("master-client")
-            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
             .ssl(true)
             .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
@@ -74,7 +75,6 @@ public class SSLJedisSentinelPoolTest {
             .user("sentinel")
             .password("foobared")
             .clientName("sentinel-client")
-            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
             .ssl(true)
             .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
@@ -95,7 +95,6 @@ public class SSLJedisSentinelPoolTest {
             .user("acljedis")
             .password("fizzbuzz")
             .clientName("master-client")
-            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
             .ssl(true)
             .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
@@ -103,7 +102,6 @@ public class SSLJedisSentinelPoolTest {
             .user("sentinel")
             .password("foobared")
             .clientName("sentinel-client")
-            .sslSocketFactory(TlsUtil.sslSocketFactoryForEnv("redis9-sentinel"))
             .ssl(true)
             .hostAndPortMapper(SSL_PORT_MAPPER).build();
 

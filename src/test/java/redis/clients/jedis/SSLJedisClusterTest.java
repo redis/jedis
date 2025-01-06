@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.util.TlsUtil.*;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
@@ -11,6 +12,7 @@ import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
+import org.junit.AfterClass;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
 import org.junit.Assert;
@@ -44,14 +46,19 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   @BeforeClass
   public static void prepare() {
-    TlsUtil.createAndSaveEnvTruststore("cluster-unbound", "changeit");
+    Path trustStorePath = createAndSaveEnvTruststore("cluster-unbound", "changeit");
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
+  }
+
+  @AfterClass
+  public static void teardownTrustStore() {
+    TlsUtil.restoreOriginalTrustStore();
   }
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
         DefaultJedisClientConfig.builder().password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
@@ -76,7 +83,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
       DefaultJedisClientConfig.builder()
               .password("cluster")
-              .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
               .ssl(true)
               .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
@@ -93,7 +99,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true).build(),
             DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
@@ -119,7 +124,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -135,7 +139,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .sslParameters(sslParameters).hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS,
         DEFAULT_POOL_CONFIG)) {
@@ -157,7 +160,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .sslParameters(sslParameters)
                 .hostAndPortMapper(hostAndPortMap).build(),
@@ -176,7 +178,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
                 .password("cluster")
                 .ssl(true)
                 .sslParameters(sslParameters)
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
     } catch (JedisClusterOperationException e) {
@@ -192,7 +193,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostnameVerifier(hostnameVerifier)
                 .hostAndPortMapper(portMap).build(),
@@ -209,7 +209,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostnameVerifier(hostnameVerifier)
                 .hostAndPortMapper(portMap).build(),
@@ -221,7 +220,6 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder()
                 .password("cluster")
-                .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
                 .ssl(true)
                 .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {

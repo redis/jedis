@@ -84,7 +84,7 @@ jobs:
           if [ -z "$TESTS" ]; then
             mvn clean compile test
           else
-            mvn -Dtest=$SPECIFIC_TEST clean compile test
+            mvn -Dtest=$TESTS clean compile test
           fi
         env:
           TESTS: ${{ github.event.inputs.specific_test || '' }}
@@ -105,7 +105,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v3
         with:
-           name: redis-env-work-logs
+           name: redis-env-work-logs-${{ matrix.redis_version }}
            path: ${{ env.REDIS_ENV_WORK_DIR }}
       # Bring down the Docker Compose test environment
       - name: Tear down Docker Compose environment

@@ -5,13 +5,20 @@ import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
 import java.io.File;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.clients.jedis.util.TlsUtil;
 
 public class SSLOptionsJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
   protected static final EndpointConfig aclEndpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
+
+  @BeforeClass
+  public static void prepare() {
+    TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
+  }
 
   @Test
   public void connectWithSsl() {

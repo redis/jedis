@@ -19,14 +19,9 @@ public class SSLOptionsJedisPooledTest {
 
   @BeforeClass
   public static void prepare() {
-    Path trusStorePath = TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
-    TlsUtil.setCustomTrustStore(trusStorePath, "changeit");
+    TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
   }
 
-  @AfterClass
-  public static void teardownTrustStore() {
-    TlsUtil.restoreOriginalTrustStore();
-  }
 
   @Test
   public void connectWithClientConfig() {

@@ -4,14 +4,29 @@ import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
 import java.io.File;
+import java.nio.file.Path;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.clients.jedis.util.TlsUtil;
 
 public class SSLOptionsJedisPooledTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
   protected static final EndpointConfig aclEndpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
+
+  @BeforeClass
+  public static void prepare() {
+    Path trusStorePath = TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
+    TlsUtil.setCustomTrustStore(trusStorePath, "changeit");
+  }
+
+  @AfterClass
+  public static void teardownTrustStore() {
+    TlsUtil.restoreOriginalTrustStore();
+  }
 
   @Test
   public void connectWithClientConfig() {

@@ -27,7 +27,7 @@ public class AggregationResult {
     this(totalResults, results, (List<String>) null);
   }
 
-  public AggregationResult(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
+  private AggregationResult(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
     this.totalResults = totalResults;
     this.results = results;
     this.warnings = warnings;

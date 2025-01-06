@@ -17,6 +17,8 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 
@@ -31,15 +33,35 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
+  @Experimental
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache) {
+    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, clusterNodes);
+    initializeSlotsCache(clusterNodes, clientConfig);
+  }
+
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
+  @Experimental
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes);
+    initializeSlotsCache(clusterNodes, clientConfig);
+  }
+
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshPeriod);
+    initializeSlotsCache(clusterNodes, clientConfig);
+  }
+
+  @Experimental
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
@@ -111,9 +133,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
 
   @Override
   public Connection getConnection() {
-    // In antirez's redis-rb-cluster implementation, getRandomConnection always
-    // return valid connection (able to ping-pong) or exception if all
-    // connections are invalid
+    // In antirez's redis-rb-cluster implementation, getRandomConnection always return
+    // valid connection (able to ping-pong) or exception if all connections are invalid
 
     List<ConnectionPool> pools = cache.getShuffledNodesPool();
 

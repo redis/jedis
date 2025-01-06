@@ -108,16 +108,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_POOL_CONFIG)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
-//      Collection<JedisPool> values = clusterNodes.values();
-//      for (JedisPool jedisPool : values) {
-//        Jedis jedis = jedisPool.getResource();
-//        try {
-//          assertEquals(clientName, jedis.clientGetname());
-//        } finally {
-//          jedis.close();
-//        }
-//      }
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -133,11 +123,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(hp),
         DefaultJedisClientConfig.builder().password("cluster").clientName(clientName).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-//      jc.getClusterNodes().values().forEach(jedisPool -> {
-//        try (Jedis jedis = jedisPool.getResource()) {
-//          assertEquals(clientName, jedis.clientGetname());
-//        }
-//      });
       jc.getClusterNodes().values().forEach(pool -> {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -513,7 +498,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-//  @Test(expected = JedisExhaustedPoolException.class)
   @Test(expected = JedisException.class)
   public void testIfPoolConfigAppliesToClusterPools() {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
@@ -560,12 +544,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, 4000, 4000, DEFAULT_REDIRECTIONS,
         "cluster", DEFAULT_POOL_CONFIG)) {
 
-//      for (JedisPool pool : jc.getClusterNodes().values()) {
-//        Jedis jedis = pool.getResource();
-//        assertEquals(4000, jedis.getClient().getConnectionTimeout());
-//        assertEquals(4000, jedis.getClient().getSoTimeout());
-//        jedis.close();
-//      }
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Connection conn = pool.getResource()) {
           assertEquals(4000, conn.getSoTimeout());
@@ -582,10 +560,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       jc.getClusterNodes().values().forEach(pool -> {
-//        try (Jedis jedis = pool.getResource()) {
-//          assertEquals(4000, jedis.getClient().getConnectionTimeout());
-//          assertEquals(4000, jedis.getClient().getSoTimeout());
-//        }
         try (Connection conn = pool.getResource()) {
           assertEquals(4000, conn.getSoTimeout());
         }
@@ -633,10 +607,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
 
-//      try (Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
-//        ClientKillerUtil.tagClient(j, "DEAD");
-//        ClientKillerUtil.killClient(j, "DEAD");
-//      }
       try (Connection c = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
         Jedis j = new Jedis(c);
         ClientKillerUtil.tagClient(j, "DEAD");
@@ -674,7 +644,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
@@ -691,7 +660,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     config.setMaxTotal(1);
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));

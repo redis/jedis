@@ -2006,7 +2006,7 @@ public class CommandObjects {
   }
 
   /**
-   * @deprecated Use {@link #zdiffstore(byte..., byte[]...)}.
+   * @deprecated Use {@link #zdiffstore(byte[], byte[][])}.
    */
   @Deprecated
   public final CommandObject<Long> zdiffStore(byte[] dstkey, byte[]... keys) {

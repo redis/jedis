@@ -40,7 +40,9 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Before
-  public void flushLibraries() {
+  @Override
+  public void setUp() {
+    super.setUp();
     if (RedisVersionUtil.getRedisVersion(endpoint)
             .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
       assertThat(

@@ -10,7 +10,6 @@ import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.csc.util.AllowAndDenyListWithStringKeys;
 
-@SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
 
   private static CacheConfig createConfig(Cacheable cacheable) {

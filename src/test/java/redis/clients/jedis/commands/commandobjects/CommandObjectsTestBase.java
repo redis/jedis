@@ -79,9 +79,7 @@ public abstract class CommandObjectsTestBase {
     commandExecutor = new DefaultCommandExecutor(connectionProvider);
 
     // Cleanup before each test.
-    assertThat(
-        commandExecutor.executeCommand(commandObjects.flushAll()),
-        equalTo("OK"));
+    assertThat(exec(commandObjects.flushAll()), equalTo("OK"));
   }
 
   /**

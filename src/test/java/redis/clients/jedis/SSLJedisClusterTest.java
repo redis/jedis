@@ -41,7 +41,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     if ("localhost".equals(hostAndPort.getHost())) {
       return hostAndPort;
     }
-    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() );
+    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort());
   };
 
   @BeforeClass

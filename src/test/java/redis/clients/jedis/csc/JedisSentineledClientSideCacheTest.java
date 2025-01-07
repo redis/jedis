@@ -35,7 +35,7 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
   }
 
     @BeforeClass
-    public static <sentinelClient> void prepare() {
+    public static void prepare() {
         try (JedisSentineled sentinelClient = new JedisSentineled(MASTER_NAME, masterClientConfig, sentinels, sentinelClientConfig);
              Jedis master = new Jedis(sentinelClient.getCurrentMaster(),masterClientConfig)) {
             assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",

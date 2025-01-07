@@ -52,13 +52,13 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
                 .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("cluster-unbound").toFile())
-                .trustStoreType("jceks").build())
-            .hostAndPortMapper(hostAndPortMap).build(),
+                        .truststore(envTruststore("cluster-unbound").toFile())
+                        .trustStoreType("jceks").build())
+                .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      /**
+      /*
        * In versions prior to Redis 7.x, Redis does not natively support automatic port switching between TLS and non-TLS ports for CLUSTER SLOTS.
        * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
        */

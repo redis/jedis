@@ -148,6 +148,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "7.0.0 Added the BYTE|BIT option.")
   public void bitposModifier() {
     jedis.set("mykey", "\\x00\\xff\\xf0");
     assertEquals(0, jedis.bitpos("mykey", false));
@@ -155,16 +156,10 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, jedis.bitpos("mykey", true, BitPosParams.bitPosParams()));
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2)));
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)));
-  }
-
-  @Test
-  @SinceRedisVersion(value = "7.0.0", message = "7.0.0 Added the BYTE|BIT option.")
-  public void bitposModifierByte() {
-    jedis.set("mykey", "\\x00\\xff\\xf0");
     assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)
-            .modifier(BitCountOption.BYTE)));
+        .modifier(BitCountOption.BYTE)));
     assertEquals(9, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(7).end(15)
-            .modifier(BitCountOption.BIT)));
+        .modifier(BitCountOption.BIT)));
   }
 
   @Test

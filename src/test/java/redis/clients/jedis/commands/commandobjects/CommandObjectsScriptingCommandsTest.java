@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
+import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.FlushMode;
@@ -26,6 +28,7 @@ import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
+import redis.clients.jedis.util.RedisVersionUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=scripting">Scripting</a> commands.
@@ -34,6 +37,16 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
 
   public CommandObjectsScriptingCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @Before
+  public void flushLibraries() {
+    if (RedisVersionUtil.getRedisVersion(endpoint)
+            .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      assertThat(
+              exec(commandObjects.functionFlush(FlushMode.SYNC)),
+              equalTo("OK"));
+    }
   }
 
   @Test

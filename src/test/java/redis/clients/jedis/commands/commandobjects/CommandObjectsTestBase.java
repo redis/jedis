@@ -5,13 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Collection;
 
-import io.redis.test.utils.RedisVersion;
-import redis.clients.jedis.util.RedisVersionUtil;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import redis.clients.jedis.*;
-import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.executors.DefaultCommandExecutor;
@@ -85,13 +82,6 @@ public abstract class CommandObjectsTestBase {
     assertThat(
         commandExecutor.executeCommand(commandObjects.flushAll()),
         equalTo("OK"));
-
-    if (RedisVersionUtil.getRedisVersion(endpoint)
-            .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
-      assertThat(
-              commandExecutor.executeCommand(commandObjects.functionFlush(FlushMode.SYNC)),
-              equalTo("OK"));
-    }
   }
 
   /**

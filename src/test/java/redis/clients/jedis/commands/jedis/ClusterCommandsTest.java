@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.EnabledOnCommandRule;
 import redis.clients.jedis.util.RedisVersionRule;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -37,8 +36,6 @@ public class ClusterCommandsTest {
 
   @Rule
   public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
-  @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() throws Exception {

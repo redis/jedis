@@ -16,11 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,10 +39,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private Jedis client;
 
-  @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
-  @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
 
   public ClientCommandsTest(RedisProtocol protocol) {
     super(protocol);

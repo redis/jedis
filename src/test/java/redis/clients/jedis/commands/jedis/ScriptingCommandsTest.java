@@ -42,8 +42,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    if ( RedisVersionUtil
-            .getRedisVersion(jedis)
+    if (RedisVersionUtil.getRedisVersion(jedis)
             .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
       jedis.functionFlush();
     }

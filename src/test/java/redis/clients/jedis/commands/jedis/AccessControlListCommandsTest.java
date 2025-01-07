@@ -116,7 +116,6 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertFalse(userInfo.getFlags().isEmpty());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
-
     assertEquals("~*", userInfo.getKeys());
 
     // create new user

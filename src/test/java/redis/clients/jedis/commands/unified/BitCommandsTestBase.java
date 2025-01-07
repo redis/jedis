@@ -21,7 +21,6 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
-
   public BitCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
   }

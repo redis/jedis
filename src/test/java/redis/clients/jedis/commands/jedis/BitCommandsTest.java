@@ -190,7 +190,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("7.0.0")
-  public void bitCountByteOptions() {
+  public void bitCountModifier() {
     jedis.setbit("foo", 16, true);
     jedis.setbit("foo", 24, true);
     jedis.setbit("foo", 40, true);

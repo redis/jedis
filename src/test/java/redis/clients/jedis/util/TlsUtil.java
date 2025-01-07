@@ -41,6 +41,33 @@ public class TlsUtil {
         } else {
             System.clearProperty(TRUST_STORE_PASSWORD_PROPERTY);
         }
+
+        reinitializeDefaultSSLContext();
+    }
+
+    public static void reinitializeDefaultSSLContext(){
+        String trustStorePath = System.getProperty(TRUST_STORE_PROPERTY);
+        String trustStorePassword =  System.getProperty(TRUST_STORE_PASSWORD_PROPERTY);
+        String trustStoreType = System.getProperty(TRUST_STORE_TYPE_PROPERTY, KeyStore.getDefaultType());
+        // Load the new truststore
+        KeyStore trustStore = null;
+        try {
+            trustStore = KeyStore.getInstance(trustStoreType);
+            try (java.io.FileInputStream trustStoreStream = new java.io.FileInputStream(trustStorePath)) {
+                trustStore.load(trustStoreStream, trustStorePassword.toCharArray());
+            } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(trustStore);
+
+            SSLContext newSslContext = SSLContext.getInstance("TLS");
+            newSslContext.init(null, tmf.getTrustManagers(), null);
+            SSLContext.setDefault(newSslContext);
+            } catch (KeyStoreException | KeyManagementException | NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
     }
 
     public static void restoreOriginalTrustStore() {
@@ -189,11 +216,11 @@ public class TlsUtil {
             }
 
             public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                throw new RuntimeException(new InvalidAlgorithmParameterException());
+                throw new RuntimeException("Using a trust manager that does not trust any certificates for test purposes!",new InvalidAlgorithmParameterException());
             }
 
             public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                throw new RuntimeException(new InvalidAlgorithmParameterException());
+                throw new RuntimeException("Using a trust manager that does not trust any certificates for test purposes!", new InvalidAlgorithmParameterException());
             }
         }};
         SSLContext sslContext = SSLContext.getInstance("TLS");

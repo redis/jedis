@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -80,9 +79,8 @@ public class SSLOptionsJedisSentinelPoolTest {
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
     SslOptions sslOptions = SslOptions.builder()
-            .truststore(envTruststore("redis9-sentinel").toFile())
-            .trustStoreType("jceks")
-            .sslVerifyMode(SslVerifyMode.CA).build();
+        .truststore(envTruststore("redis9-sentinel").toFile()).trustStoreType("jceks")
+        .sslVerifyMode(SslVerifyMode.CA).build();
 
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
         .user("acljedis").password("fizzbuzz").clientName("master-client").sslOptions(sslOptions)

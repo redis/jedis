@@ -50,11 +50,9 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster")
-                .sslOptions(SslOptions.builder()
-                        .truststore(envTruststore("cluster-unbound").toFile())
-                        .trustStoreType("jceks").build())
-                .hostAndPortMapper(hostAndPortMap).build(),
+        DefaultJedisClientConfig.builder().password("cluster").sslOptions(
+            SslOptions.builder().truststore(envTruststore("cluster-unbound").toFile())
+                .trustStoreType("jceks").build()).hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());

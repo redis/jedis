@@ -9,13 +9,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.RedisVersionRule;
 
 /**
  * This test class is a copy of {@link JedisPoolTest}.

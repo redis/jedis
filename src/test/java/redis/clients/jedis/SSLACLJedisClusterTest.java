@@ -101,7 +101,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-
   @Test
   public void testSSLWithoutPortMap() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
@@ -130,7 +129,8 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
   public void connectByIpAddress() {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().user("default").password("cluster").ssl(true)
-            .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(hostAndPortMap).build(),
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
     }
   }
@@ -230,7 +230,8 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().user("default").password("cluster").ssl(true)
             .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
-            .hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(portMap).build(),
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       assertEquals(3, jc.getClusterNodes().size());
     }
   }

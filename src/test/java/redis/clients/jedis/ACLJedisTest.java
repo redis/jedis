@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
+import io.redis.test.utils.RedisVersion;
 import java.net.URISyntaxException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
-import io.redis.test.utils.RedisVersion;
 
 /**
  * This test class is a copy of {@link JedisTest}.

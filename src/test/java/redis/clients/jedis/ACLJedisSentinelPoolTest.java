@@ -28,13 +28,8 @@ public class ACLJedisSentinelPoolTest {
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
-  @BeforeClass
-  public static void prepare() throws Exception {
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone2-primary");
-  }
   @ClassRule
   public static RedisVersionRule versionRule = new RedisVersionRule(HostAndPorts.getRedisEndpoint("standalone2-primary"));
-
 
   @Before
   public void setUp() throws Exception {

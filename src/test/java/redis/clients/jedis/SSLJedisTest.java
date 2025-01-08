@@ -45,11 +45,11 @@ public class SSLJedisTest {
   public void connectWithConfigInterface() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         new JedisClientConfig() {
-      @Override
-      public boolean isSsl() {
-        return true;
-      }
-    })) {
+          @Override
+          public boolean isSsl() {
+            return true;
+          }
+        })) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }

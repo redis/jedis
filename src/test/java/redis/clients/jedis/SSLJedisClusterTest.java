@@ -81,8 +81,8 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     }
 
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
-      DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-          .hostAndPortMapper(hostAndPortMap).build(),
+        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
@@ -134,8 +134,8 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslParameters(sslParameters).hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .sslParameters(sslParameters).hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS,
+        DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
       Assert.fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
@@ -223,7 +223,8 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
-            .hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(portMap).build(),
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       assertEquals(3, jc.getClusterNodes().size());
     }
   }

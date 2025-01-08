@@ -18,7 +18,6 @@ public class SSLOptionsJedisPooledTest {
     TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
   }
 
-
   @Test
   public void connectWithClientConfig() {
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(),

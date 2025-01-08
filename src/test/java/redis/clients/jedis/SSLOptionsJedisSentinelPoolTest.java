@@ -1,13 +1,13 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.util.TlsUtil.envTruststore;
+
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.util.TlsUtil;
-
-import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
 public class SSLOptionsJedisSentinelPoolTest {
 
@@ -79,7 +79,8 @@ public class SSLOptionsJedisSentinelPoolTest {
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
     SslOptions sslOptions = SslOptions.builder()
-        .truststore(envTruststore("redis9-sentinel").toFile()).trustStoreType("jceks")
+        .truststore(envTruststore("redis9-sentinel").toFile())
+        .trustStoreType("jceks")
         .sslVerifyMode(SslVerifyMode.CA).build();
 
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()

@@ -5,15 +5,19 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 import java.util.HashSet;
 import java.util.Set;
 
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-
 import org.junit.Rule;
-import redis.clients.jedis.*;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.util.EnabledOnCommandRule;
 import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.RedisVersionRule;
 
 public abstract class ClusterJedisCommandsTestBase {
 

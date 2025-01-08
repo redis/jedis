@@ -43,11 +43,8 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   @Override
   public void setUp() {
     super.setUp();
-    if (RedisVersionUtil.getRedisVersion(endpoint)
-            .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
-      assertThat(
-              exec(commandObjects.functionFlush(FlushMode.SYNC)),
-              equalTo("OK"));
+    if (RedisVersionUtil.getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      assertThat(exec(commandObjects.functionFlush(FlushMode.SYNC)), equalTo("OK"));
     }
   }
 

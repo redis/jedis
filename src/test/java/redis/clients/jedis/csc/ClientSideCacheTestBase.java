@@ -3,14 +3,12 @@ package redis.clients.jedis.csc;
 import java.util.function.Supplier;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.Before;
-
 import org.junit.Rule;
 import redis.clients.jedis.*;
+import redis.clients.jedis.util.RedisVersionRule;
 
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 public abstract class ClientSideCacheTestBase {

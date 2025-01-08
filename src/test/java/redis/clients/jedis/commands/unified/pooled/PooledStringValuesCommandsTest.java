@@ -1,7 +1,5 @@
 package redis.clients.jedis.commands.unified.pooled;
 
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -10,9 +8,12 @@ import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 
 @RunWith(Parameterized.class)
 public class PooledStringValuesCommandsTest extends StringValuesCommandsTestBase {
+
   @Rule
   public RedisVersionRule versionRule = new RedisVersionRule(PooledCommandsTestHelper.nodeInfo);
   @Rule

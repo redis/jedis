@@ -18,9 +18,7 @@ public class RedisVersionUtil {
     }
 
     try (Jedis jedis = new Jedis(conn)) {
-      Object response = SafeEncoder.encodeObject(jedis.sendCommand(Protocol.Command.INFO, "server"));
-      RedisInfo info = RedisInfo.parseInfoServer(response.toString());
-      return RedisVersion.of(info.getRedisVersion());
+      return getRedisVersion(jedis);
     }
   }
 
@@ -47,11 +45,9 @@ public class RedisVersionUtil {
     if (forcedVersion != null) {
       return forcedVersion;
     }
-    
-    DefaultJedisClientConfig.Builder builder = endpoint.getClientConfigBuilder();
-    DefaultJedisClientConfig clientConfig = builder.build();
 
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), clientConfig)) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
       return getRedisVersion(jedis);
     }
   }

@@ -10,7 +10,6 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -29,6 +28,7 @@ import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 @RunWith(Parameterized.class)

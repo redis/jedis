@@ -6,35 +6,21 @@ import redis.clients.jedis.GeoCoordinate;
 
 public class GeoCoordinateMatcher extends TypeSafeMatcher<GeoCoordinate> {
 
-  public static GeoCoordinateMatcher isEqualWithTolerance(GeoCoordinate expected, double tolerance) {
-    return new GeoCoordinateMatcher(expected, tolerance);
+  public static final double DEFAULT_TOLERANCE = 1e-14;
+
+  private final GeoCoordinate expected;
+  private final double tolerance = DEFAULT_TOLERANCE;
+
+  public GeoCoordinateMatcher(GeoCoordinate expected) {
+    this.expected = expected;
   }
 
   public static GeoCoordinateMatcher isEqualWithTolerance(GeoCoordinate expected) {
-    return new GeoCoordinateMatcher(expected, DEFAULT_TOLERANCE);
-  }
-
-  public static GeoCoordinateMatcher isEqualWithTolerance(double longitude, double latitude, double tolerance) {
-    return new GeoCoordinateMatcher(new GeoCoordinate(longitude, latitude), tolerance);
+    return new GeoCoordinateMatcher(expected);
   }
 
   public static GeoCoordinateMatcher isEqualWithTolerance(double longitude, double latitude) {
-    return new GeoCoordinateMatcher(new GeoCoordinate(longitude,latitude), latitude);
-  }
-
-  public static final double DEFAULT_TOLERANCE = 1e-14;
-
-  private final double tolerance;
-  private final GeoCoordinate expected;
-
-
-  public GeoCoordinateMatcher(GeoCoordinate expected, double tolerance) {
-    this.expected = expected;
-    this.tolerance = tolerance;
-  }
-
-  public GeoCoordinateMatcher(GeoCoordinate expected) {
-    this(expected, DEFAULT_TOLERANCE);
+    return isEqualWithTolerance(new GeoCoordinate(longitude, latitude));
   }
 
   @Override

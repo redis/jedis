@@ -1,12 +1,18 @@
 package redis.clients.jedis.csc;
 
+import io.redis.test.utils.RedisVersion;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.BeforeClass;
-import redis.clients.jedis.*;
-import io.redis.test.utils.RedisVersion;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisSentineled;
 
 import static org.junit.Assume.assumeTrue;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.*;
@@ -25,6 +24,7 @@ import redis.clients.jedis.resps.ClusterShardInfo;
 import redis.clients.jedis.resps.ClusterShardNodeInfo;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterTestUtil;
+import redis.clients.jedis.util.RedisVersionRule;
 
 public class ClusterCommandsTest {
 
@@ -35,7 +35,8 @@ public class ClusterCommandsTest {
   private static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+  public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1,
+      DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() throws Exception {

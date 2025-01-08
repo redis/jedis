@@ -7,20 +7,15 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
 public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse> {
+
     private final GeoRadiusResponse expected;
-    private final double coordinateTolerance;
+
+    public GeoRadiusResponseMatcher(GeoRadiusResponse expected) {
+        this.expected = expected;
+    }
 
     public static Matcher<GeoRadiusResponse> isEqualToGeoRadiusResponse(GeoRadiusResponse expected) {
-        return new GeoRadiusResponseMatcher(expected, GeoCoordinateMatcher.DEFAULT_TOLERANCE);
-    }
-
-    public static Matcher<GeoRadiusResponse> isEqualToGeoRadiusResponse(GeoRadiusResponse expected, double tolerance) {
-        return new GeoRadiusResponseMatcher(expected, tolerance);
-    }
-
-    public GeoRadiusResponseMatcher(GeoRadiusResponse expected, double coordinateTolerance) {
-        this.expected = expected;
-        this.coordinateTolerance = coordinateTolerance;
+        return new GeoRadiusResponseMatcher(expected);
     }
 
     @Override
@@ -28,7 +23,7 @@ public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse>
         // Check if coordinates match within the tolerance
         GeoCoordinate expectedCoord = expected.getCoordinate();
         GeoCoordinate actualCoord = actual.getCoordinate();
-        if (!GeoCoordinateMatcher.isEqualWithTolerance(expectedCoord, coordinateTolerance).matches(actualCoord)) {
+        if (!GeoCoordinateMatcher.isEqualWithTolerance(expectedCoord).matches(actualCoord)) {
             return false;
         }
 

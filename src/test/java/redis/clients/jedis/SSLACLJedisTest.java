@@ -1,20 +1,18 @@
 package redis.clients.jedis;
 
-import static org.junit.Assume.assumeTrue;
-import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.TlsUtil.*;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import java.nio.file.Path;
 
-import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.AfterClass;
-import io.redis.test.utils.RedisVersion;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Test;
+
 import redis.clients.jedis.util.RedisVersionRule;
 import redis.clients.jedis.util.TlsUtil;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * This test class is a copy of {@link SSLJedisTest}.

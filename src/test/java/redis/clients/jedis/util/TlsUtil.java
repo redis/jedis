@@ -9,8 +9,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import static org.junit.Assert.assertTrue;
-
 public class TlsUtil {
 
     private static final String TRUST_STORE_PROPERTY = "javax.net.ssl.trustStore";
@@ -91,7 +89,7 @@ public class TlsUtil {
         }
     }
 
-    public static Path envCa(String env) {
+    private static Path envCa(String env) {
         if (TestEnvUtil.isContainerEnv()) {
             return Paths.get(TEST_WORK_FOLDER, env, TEST_CA_CERT);
         } else {
@@ -113,7 +111,6 @@ public class TlsUtil {
      *
      * @param caCertPath Path to the CA certificate file (ca.crt).
      * @return Loaded X509Certificate.
-     * @throws Exception If there's an error reading the certificate.
      */
     public static X509Certificate loadCACertificate(String caCertPath) {
         File caCertFile = new File(caCertPath);
@@ -138,7 +135,7 @@ public class TlsUtil {
      * @return A KeyStore object containing the CA certificate.
      * @throws Exception If there's an error creating the truststore.
      */
-    public static KeyStore createTruststore(String caCertPath) throws Exception {
+    private static KeyStore createTruststore(String caCertPath) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         X509Certificate caCert = loadCACertificate(caCertPath);
 
         KeyStore trustStore = KeyStore.getInstance(TRUST_STORE_TYPE);
@@ -155,9 +152,8 @@ public class TlsUtil {
      * @param truststorePath     Path to save the generated truststore.
      * @param truststorePassword Password for the truststore.
      * @return Path to the saved truststore file.
-     * @throws Exception If there's an error creating or saving the truststore.
      */
-    public static Path createAndSaveTruststore(String caCertPath, String truststorePath, String truststorePassword) {
+    private static Path createAndSaveTruststore(String caCertPath, String truststorePath, String truststorePassword) {
         try {
             KeyStore trustStore = createTruststore(caCertPath);
 
@@ -186,7 +182,7 @@ public class TlsUtil {
     /**
      * Returns SSLSocketFactory configured with Truststore containing provided CA cert
      */
-    public static SSLSocketFactory sslSocketFactory(Path caCertPath){
+    private static SSLSocketFactory sslSocketFactory(Path caCertPath){
 
         KeyStore truststore = null;
         try {
@@ -228,16 +224,6 @@ public class TlsUtil {
         return sslContext.getSocketFactory();
     }
 
-    public static class LocalhostVerifier extends BasicHostnameVerifier {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            if (hostname.equals("127.0.0.1")) {
-                hostname = "localhost";
-            }
-            return super.verify(hostname, session);
-        }
-    }
-
     /**
      * Very basic hostname verifier implementation for testing. NOT recommended for production.
      */
@@ -270,29 +256,13 @@ public class TlsUtil {
         }
     }
 
-    public static SSLSocketFactory createTrustAllSslSocketFactory()  {
-        try {
-            TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return new X509Certificate[0];
-                        }
-
-                        public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                            // Trust all clients
-                        }
-
-                        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                            // Trust all servers
-                        }
-                    }
-            };
-
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustAllCerts, new SecureRandom());
-            return sslContext.getSocketFactory();
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException("Failed to create a trust-all SSL socket factory", e);
+    public static class LocalhostVerifier extends BasicHostnameVerifier {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            if (hostname.equals("127.0.0.1")) {
+                hostname = "localhost";
+            }
+            return super.verify(hostname, session);
         }
     }
 }

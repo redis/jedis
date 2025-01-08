@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.*;
 
 import static redis.clients.jedis.Protocol.Command.BLPOP;
@@ -39,6 +38,7 @@ import redis.clients.jedis.util.KeyValue;
 
 @RunWith(Parameterized.class)
 public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
+
   private static final long TIME_SKEW = Duration.ofMillis(5).toMillis();
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -635,7 +635,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis2.pttl("foo") <= 1000);
 
     jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
-    assertThat(jedis2.pttl("bar"), lessThanOrEqualTo(1000l + TIME_SKEW));
+    assertThat(jedis2.pttl("bar"), Matchers.lessThanOrEqualTo(1000l + TIME_SKEW));
 
 
     jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));

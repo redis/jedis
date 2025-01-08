@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
-import static redis.clients.jedis.util.GeoRadiusResponseMatcher.isEqualToGeoRadiusResponse;
 
 import java.util.*;
 
@@ -25,6 +24,7 @@ import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.GeoCoordinateMatcher;
+import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -697,7 +697,6 @@ public class ClusterPipeliningTest {
     hm.put("place1", new GeoCoordinate(2.1909389952632, 41.433791470673));
     hm.put("place2", new GeoCoordinate(2.1873744593677, 41.406342043777));
 
-
     List<String> hashValues = new ArrayList<>();
     hashValues.add("sp3e9yg3kd0");
     hashValues.add("sp3e9cbc3t0");
@@ -746,8 +745,8 @@ public class ClusterPipeliningTest {
     expectedResponse.setDistance(0.0881);
     expectedResponse.setRawScore(3471609698139488L);
 
-    assertThat(r8.get().get(0),isEqualToGeoRadiusResponse(expectedResponse));
-    assertThat(r9.get().get(0),isEqualToGeoRadiusResponse(expectedResponse));
+    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.isEqualToGeoRadiusResponse(expectedResponse));
+    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.isEqualToGeoRadiusResponse(expectedResponse));
 
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));

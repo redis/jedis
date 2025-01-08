@@ -3,7 +3,6 @@ package redis.clients.jedis.csc;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 
- import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
 import redis.clients.jedis.JedisPooled;

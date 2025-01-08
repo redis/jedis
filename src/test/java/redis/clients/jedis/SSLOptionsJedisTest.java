@@ -3,8 +3,6 @@ package redis.clients.jedis;
 import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
-import java.io.File;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.util.TlsUtil;
@@ -25,9 +23,9 @@ public class SSLOptionsJedisTest {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         DefaultJedisClientConfig.builder()
             .sslOptions(SslOptions.builder()
-                    .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                    .trustStoreType("jceks")
-                    .build()).build())) {
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -38,9 +36,9 @@ public class SSLOptionsJedisTest {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                    .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                    .trustStoreType("jceks")
-                    .build()).build())) {
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -61,10 +59,10 @@ public class SSLOptionsJedisTest {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                    .sslProtocol("SSL")
-                    .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                    .trustStoreType("jceks")
-                    .build()).build())) {
+                .sslProtocol("SSL")
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -74,9 +72,9 @@ public class SSLOptionsJedisTest {
     try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(),
         aclEndpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                    .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                    .trustStoreType("jceks")
-                    .build()).build())) {
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

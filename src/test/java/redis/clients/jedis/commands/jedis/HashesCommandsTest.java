@@ -32,8 +32,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,13 +45,14 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 
 @RunWith(Parameterized.class)
 public class HashesCommandsTest extends JedisCommandsTestBase {
 
   @Rule
   public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
-
   @Rule
   public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
 

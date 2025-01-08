@@ -3,10 +3,6 @@ package redis.clients.jedis;
 import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
-import java.io.File;
-import java.nio.file.Path;
-
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.util.TlsUtil;
@@ -27,10 +23,10 @@ public class SSLOptionsJedisPooledTest {
   public void connectWithClientConfig() {
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
-                .sslOptions(SslOptions.builder()
-                        .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                        .trustStoreType("jceks")
-                        .build()).build())) {
+            .sslOptions(SslOptions.builder()
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -52,9 +48,9 @@ public class SSLOptionsJedisPooledTest {
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
                 .sslProtocol("SSL")
-                    .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                    .trustStoreType("jceks")
-                    .build()).build())) {
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -64,9 +60,9 @@ public class SSLOptionsJedisPooledTest {
     try (JedisPooled jedis = new JedisPooled(aclEndpoint.getHostAndPort(),
         aclEndpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                    .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
-                    .trustStoreType("jceks")
-                    .build()).build())) {
+                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .trustStoreType("jceks")
+                .build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

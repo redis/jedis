@@ -1,12 +1,12 @@
 package redis.clients.jedis.csc;
 
-import org.junit.AfterClass;
-
-import redis.clients.jedis.Jedis;
 import io.redis.test.utils.RedisVersion;
-import redis.clients.jedis.util.TlsUtil;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.util.TlsUtil;
 
 import java.nio.file.Path;
 

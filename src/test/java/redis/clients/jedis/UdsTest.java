@@ -15,6 +15,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 import static org.junit.Assert.assertEquals;
 
 public class UdsTest {
+
   @BeforeClass
   public static void checkDockerEnvironment() {
     Assume.assumeFalse("Unix sockets tests not supported against dockerised test env yet!", TestEnvUtil.isContainerEnv());

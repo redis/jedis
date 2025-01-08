@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;

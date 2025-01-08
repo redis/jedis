@@ -1,21 +1,18 @@
 package redis.clients.jedis.util;
 
 import io.redis.test.annotations.EnabledOnCommand;
+import java.lang.reflect.Method;
+import java.util.Map;
+
 import org.junit.Assume;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.*;
 import redis.clients.jedis.resps.CommandInfo;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-
-
 public class EnabledOnCommandRule implements TestRule {
-    private static final Logger logger = LoggerFactory.getLogger(EnabledOnCommandRule.class);
 
     private final HostAndPort hostPort;
     private final JedisClientConfig config;

@@ -33,9 +33,9 @@ public class SSLOptionsJedisSentinelPoolTest {
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
         .user("acljedis").password("fizzbuzz").clientName("master-client")
         .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("redis9-sentinel").toFile())
-                .trustStoreType("jceks")
-                .sslVerifyMode(SslVerifyMode.CA).build())
+            .truststore(envTruststore("redis9-sentinel").toFile())
+            .trustStoreType("jceks")
+            .sslVerifyMode(SslVerifyMode.CA).build())
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
@@ -60,9 +60,9 @@ public class SSLOptionsJedisSentinelPoolTest {
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .user("sentinel").password("foobared").clientName("sentinel-client")
         .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("redis9-sentinel").toFile())
-                .trustStoreType("jceks")
-                .sslVerifyMode(SslVerifyMode.CA).build())
+            .truststore(envTruststore("redis9-sentinel").toFile())
+            .trustStoreType("jceks")
+            .sslVerifyMode(SslVerifyMode.CA).build())
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {

@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,12 +19,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.unified.ListCommandsTestBase;
+import redis.clients.jedis.util.EnabledOnCommandRule;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisVersionRule;
 
 @RunWith(Parameterized.class)
 public class ClusterListCommandsTest extends ListCommandsTestBase {

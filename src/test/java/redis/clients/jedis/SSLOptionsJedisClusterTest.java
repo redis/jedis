@@ -50,9 +50,11 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").sslOptions(
-            SslOptions.builder().truststore(envTruststore("cluster-unbound").toFile())
-                .trustStoreType("jceks").build()).hostAndPortMapper(hostAndPortMap).build(),
+        DefaultJedisClientConfig.builder().password("cluster")
+            .sslOptions(SslOptions.builder()
+                .truststore(envTruststore("cluster-unbound").toFile())
+                .trustStoreType("jceks").build())
+            .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
@@ -76,14 +78,11 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testSSLWithoutPortMap() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
-        DefaultJedisClientConfig.builder()
-                .password("cluster")
-                .sslOptions(SslOptions.builder()
-                        .truststore(envTruststore("cluster-unbound").toFile())
-                        .trustStoreType("jceks")
-                        .sslVerifyMode(SslVerifyMode.CA)
-                        .build())
-                .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+        DefaultJedisClientConfig.builder().password("cluster")
+            .sslOptions(SslOptions.builder()
+                .truststore(envTruststore("cluster-unbound").toFile())
+                .trustStoreType("jceks").build())
+            .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       /**
@@ -106,7 +105,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
   public void connectByIpAddress() {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
-                .sslOptions(SslOptions.builder()
+            .sslOptions(SslOptions.builder()
                 .truststore(envTruststore("cluster-unbound").toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),

@@ -16,9 +16,9 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
-
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after tests are fixed.")
@@ -49,7 +49,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
     }
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() /* + tlsPortOffset */);
   };
-
 
   @BeforeClass
   public static void prepare() {
@@ -142,8 +141,8 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().user("default").password("cluster").ssl(true)
-            .sslParameters(sslParameters).hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .sslParameters(sslParameters).hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS,
+        DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
       Assert.fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {

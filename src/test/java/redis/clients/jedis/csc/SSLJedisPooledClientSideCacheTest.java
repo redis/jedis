@@ -1,17 +1,15 @@
 package redis.clients.jedis.csc;
 
 import io.redis.test.utils.RedisVersion;
+import java.nio.file.Path;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
-
-import java.nio.file.Path;
-
-import static org.junit.Assume.assumeTrue;
-import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCacheTestBase {
 
@@ -23,8 +21,8 @@ public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCach
     endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
-      assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
-              getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4));
+      Assume.assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
+              RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4));
     }
   }
 

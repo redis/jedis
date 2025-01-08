@@ -58,8 +58,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   public void testSSLDiscoverNodesAutomatically() {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostAndPortMapper(hostAndPortMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       /**
@@ -82,8 +81,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostAndPortMapper(hostAndPortMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
@@ -246,8 +244,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(false)
-            .hostAndPortMapper(nullHostAndPortMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(nullHostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());

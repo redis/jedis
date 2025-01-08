@@ -16,7 +16,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.*;
+import redis.clients.jedis.AbstractPipeline;
+import redis.clients.jedis.AbstractTransaction;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.EnabledOnCommandRule;

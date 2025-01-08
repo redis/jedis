@@ -7,12 +7,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.util.RedisVersionRule;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.RedisVersionRule;
 
 /**
  * This test class is mostly a copy of {@link JedisSentinelPoolTest}.
@@ -35,10 +37,6 @@ public class ACLJedisSentinelPoolTest {
   public void setUp() throws Exception {
     sentinels.clear();
     sentinels.add(sentinel1);
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   private static Set<String> toStrings(Set<HostAndPort> hostAndPorts) {

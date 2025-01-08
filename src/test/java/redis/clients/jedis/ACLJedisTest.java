@@ -29,7 +29,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   @BeforeClass
   public static void prepare() throws Exception {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-            getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.of("6.0.0")));
+        getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.of("6.0.0")));
   }
 
   public ACLJedisTest(RedisProtocol redisProtocol) {

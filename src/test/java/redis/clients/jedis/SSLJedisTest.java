@@ -2,11 +2,12 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.file.Path;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.nio.file.Path;
 import redis.clients.jedis.util.TlsUtil;
 
 public class SSLJedisTest {

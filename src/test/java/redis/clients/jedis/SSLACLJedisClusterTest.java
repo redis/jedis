@@ -70,9 +70,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
             .build();
 
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
-            config,
-            DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)
-    ) {
+            config, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ConnectionPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
 
@@ -93,12 +91,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
     }
 
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
-            DefaultJedisClientConfig.builder()
-                    .user("default")
-                    .password("cluster")
-                    .ssl(true)
-                    .hostAndPortMapper(hostAndPortMap)
-                    .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            config, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));

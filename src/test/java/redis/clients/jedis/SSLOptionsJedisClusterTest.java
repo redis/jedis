@@ -81,7 +81,8 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .truststore(envTruststore("cluster-unbound").toFile())
-                .trustStoreType("jceks").build())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build())
             .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());

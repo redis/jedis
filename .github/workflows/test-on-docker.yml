@@ -103,7 +103,7 @@ jobs:
       # Upload logs as artifacts
       - name: Upload logs on failure
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
            name: redis-env-work-logs-${{ matrix.redis_version }}
            path: ${{ env.REDIS_ENV_WORK_DIR }}

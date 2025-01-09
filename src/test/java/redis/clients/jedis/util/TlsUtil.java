@@ -211,12 +211,14 @@ public class TlsUtil {
                 return new X509Certificate[0];
             }
 
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                throw new RuntimeException("Using a trust manager that does not trust any certificates for test purposes!",new InvalidAlgorithmParameterException());
+            public void checkClientTrusted(X509Certificate[] chain, String authType)
+                throws CertificateException {
+                throw new CertificateException("Using a trust manager that does not trust any certificates for test purposes!",new InvalidAlgorithmParameterException());
             }
 
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                throw new RuntimeException("Using a trust manager that does not trust any certificates for test purposes!", new InvalidAlgorithmParameterException());
+            public void checkServerTrusted(X509Certificate[] chain, String authType)
+                throws CertificateException {
+                throw new CertificateException("Using a trust manager that does not trust any certificates for test purposes!", new InvalidAlgorithmParameterException());
             }
         }};
         SSLContext sslContext = SSLContext.getInstance("TLS");

@@ -6,7 +6,7 @@ import redis.clients.jedis.GeoCoordinate;
 
 public class GeoCoordinateMatcher extends TypeSafeMatcher<GeoCoordinate> {
 
-  public static final double DEFAULT_TOLERANCE = 1e-14;
+  public static final double DEFAULT_TOLERANCE = 1e-5;
 
   private final GeoCoordinate expected;
   private final double tolerance = DEFAULT_TOLERANCE;

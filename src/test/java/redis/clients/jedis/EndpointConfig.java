@@ -3,12 +3,15 @@ package redis.clients.jedis;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.TlsUtil;
 
 import java.io.FileReader;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class EndpointConfig {
@@ -18,16 +21,17 @@ public class EndpointConfig {
     private final String password;
     private final int bdbId;
     private final List<URI> endpoints;
-    private final String environment;
+    @SerializedName("certificatesLocation")
+    private final String certificatesLocation;
 
-    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String environment) {
+    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String certificatesLocation) {
         this.tls = tls;
         this.username = username;
         this.password = password;
         this.bdbId = 0;
         this.endpoints = Collections.singletonList(
             URI.create(getURISchema(tls) + hnp.getHost() + ":" + hnp.getPort()));
-        this.environment = environment;
+        this.certificatesLocation = certificatesLocation;
     }
 
     public HostAndPort getHostAndPort() {
@@ -58,15 +62,16 @@ public class EndpointConfig {
         return tls;
     }
 
+    public Path getCertificatesLocation() {
+        return Paths.get(certificatesLocation);
+    }
+
     public int getBdbId() { return bdbId; }
 
     public URI getURI() {
         return endpoints.get(0);
     }
 
-    public String getEnvironment() {
-        return environment;
-    }
 
     public class EndpointURIBuilder {
         private boolean tls;
@@ -123,8 +128,8 @@ public class EndpointConfig {
       DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder()
           .password(password).ssl(tls);
 
-        if (tls && environment != null) {
-          builder.sslSocketFactory(TlsUtil.sslSocketFactoryForEnv(environment));
+        if (tls && certificatesLocation != null) {
+          builder.sslSocketFactory(TlsUtil.sslSocketFactoryForEnv(Paths.get(certificatesLocation)));
         }
 
         if (username != null) {

@@ -5,7 +5,9 @@ import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.util.TlsUtil.*;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -44,9 +46,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort());
   };
 
+  private static final String trustStoreName = SSLJedisClusterTest.class.getSimpleName();
+
   @BeforeClass
   public static void prepare() {
-    Path trustStorePath = createAndSaveEnvTruststore("cluster-unbound", "changeit");
+    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("cluster-unbound/work/tls"));
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
@@ -221,7 +227,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   public void connectWithCustomSocketFactory() throws Exception {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslSocketFactory(sslSocketFactoryForEnv("cluster-unbound"))
+            .sslSocketFactory(sslSocketFactoryForEnv(Paths.get("cluster-unbound/work/tls")))
             .hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       assertEquals(3, jc.getClusterNodes().size());

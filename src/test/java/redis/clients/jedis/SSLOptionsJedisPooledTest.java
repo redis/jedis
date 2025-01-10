@@ -1,11 +1,14 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
-import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.util.TlsUtil;
+
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 public class SSLOptionsJedisPooledTest {
 
@@ -13,9 +16,15 @@ public class SSLOptionsJedisPooledTest {
 
   protected static final EndpointConfig aclEndpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
 
+  private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
+  private static Path trustStorePath;
+
   @BeforeClass
   public static void prepare() {
-    TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
+    List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
+        aclEndpoint.getCertificatesLocation());
+    trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
+        "changeit");
   }
 
   @Test
@@ -23,7 +32,7 @@ public class SSLOptionsJedisPooledTest {
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks")
                 .build()).build())) {
       assertEquals("PONG", jedis.ping());
@@ -47,7 +56,7 @@ public class SSLOptionsJedisPooledTest {
         endpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
                 .sslProtocol("SSL")
-                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks")
                 .build()).build())) {
       assertEquals("PONG", jedis.ping());
@@ -59,7 +68,7 @@ public class SSLOptionsJedisPooledTest {
     try (JedisPooled jedis = new JedisPooled(aclEndpoint.getHostAndPort(),
         aclEndpoint.getClientConfigBuilder()
             .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("redis1-2-5-8-sentinel").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks")
                 .build()).build())) {
       assertEquals("PONG", jedis.ping());

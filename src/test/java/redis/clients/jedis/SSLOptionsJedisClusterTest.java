@@ -2,9 +2,11 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static redis.clients.jedis.util.TlsUtil.envTruststore;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -42,9 +44,13 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort());
   };
 
+  private static final String trustStoreName = SSLOptionsJedisClusterTest.class.getSimpleName();
+  private static Path trustStorePath;
+
   @BeforeClass
   public static void prepare() {
-    TlsUtil.createAndSaveEnvTruststore("cluster-unbound", "changeit");
+    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("cluster-unbound/work/tls"));
+    trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
   }
 
   @Test
@@ -52,7 +58,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -80,7 +86,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks")
                 .sslVerifyMode(SslVerifyMode.CA).build())
             .build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -107,7 +113,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -124,7 +130,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -146,7 +152,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -163,7 +169,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster")
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -178,7 +184,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
     HostnameVerifier localhostVerifier = new TlsUtil.LocalhostVerifier();
 
     SslOptions sslOptions = SslOptions.builder()
-                .truststore(envTruststore("cluster-unbound").toFile())
+                .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks")
                 .sslVerifyMode(SslVerifyMode.CA).build();
 

@@ -3,6 +3,8 @@ package redis.clients.jedis;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -14,10 +16,14 @@ public class SSLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
+  private static final String trustStoreName = SSLJedisTest.class.getSimpleName();
+
   @BeforeClass
   public static void prepare() {
-    Path trusStorePath = TlsUtil.createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
-    TlsUtil.setCustomTrustStore(trusStorePath, "changeit");
+    List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
   @AfterClass

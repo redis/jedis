@@ -1,10 +1,11 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.*;
-import static redis.clients.jedis.util.TlsUtil.*;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,10 +30,16 @@ public class SSLACLJedisTest {
   @ClassRule
   public static RedisVersionRule versionRule = new RedisVersionRule(endpoint);
 
+  private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
+
   @BeforeClass
   public static void prepare() {
-    Path trusStorePath = createAndSaveEnvTruststore("redis1-2-5-8-sentinel", "changeit");
-    TlsUtil.setCustomTrustStore(trusStorePath, "changeit");
+    List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
+        endpointWithDefaultUser.getCertificatesLocation());
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
+        "changeit");
+
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
   @AfterClass

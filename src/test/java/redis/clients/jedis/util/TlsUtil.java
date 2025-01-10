@@ -8,6 +8,9 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class TlsUtil {
 
@@ -24,13 +27,14 @@ public class TlsUtil {
 
     private static final String TEST_WORK_FOLDER = System.getenv().getOrDefault("TEST_WORK_FOLDER", "./redis-env/");
     private static final String TEST_TRUSTSTORE = System.getenv().getOrDefault("TEST_TRUSTSTORE", "truststore.jceks");
-    private static final String TEST_CA_CERT = System.getenv().getOrDefault("TEST_CA_CERT", "work/tls/ca.crt");
+    private static final String TEST_CA_CERT = System.getenv().getOrDefault("TEST_CA_CERT", "ca.crt");
+    private static final String TEST_SERVER_CERT = System.getenv().getOrDefault("TEST_SERVER_CERT", "redis.crt");
 
     public static void setCustomTrustStore(Path customTrustStorePath, String customTrustStorePassword) {
         // Store original properties
         originalTrustStore = System.getProperty(TRUST_STORE_PROPERTY);
         originalTrustStorePassword = System.getProperty(TRUST_STORE_PASSWORD_PROPERTY);
-        originalTrustStoreType = System.getProperty(TRUST_STORE_TYPE_PROPERTY, "JKS");
+        originalTrustStoreType = System.getProperty(TRUST_STORE_TYPE_PROPERTY);
         // Set new properties for the custom truststore
         System.setProperty(TRUST_STORE_PROPERTY, customTrustStorePath.toAbsolutePath().toString());
         System.setProperty(TRUST_STORE_TYPE_PROPERTY, TRUST_STORE_TYPE);
@@ -89,76 +93,106 @@ public class TlsUtil {
         }
     }
 
-    private static Path envCa(String env) {
+    private static Path envCa(Path certLocation) {
         if (TestEnvUtil.isContainerEnv()) {
-            return Paths.get(TEST_WORK_FOLDER, env, TEST_CA_CERT);
+            return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_CA_CERT);
         } else {
+            // Legacy test env uses same certificate & truststore for all tests
             return Paths.get("src/test/resources/private.crt");
         }
     }
 
-    public static Path envTruststore(String env) {
-
+    private static Path envServerCert(Path certLocation) {
         if (TestEnvUtil.isContainerEnv()) {
-            return Paths.get(TEST_WORK_FOLDER, env  + '-' + TEST_TRUSTSTORE);
+            return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_SERVER_CERT);
         } else {
+            // Legacy test env uses same certificate & truststore for all tests
+            return Paths.get("src/test/resources/private.crt");
+        }
+    }
+
+    public static Path testTruststorePath(String name) {
+        if (TestEnvUtil.isContainerEnv()) {
+            return Paths.get(TEST_WORK_FOLDER, name  + '-' + TEST_TRUSTSTORE);
+        } else {
+            // Legacy test env uses same certificate & truststore for all tests
             return Paths.get("src/test/resources/truststore.jceks");
         }
     }
 
-    /**
-     * Loads the CA certificate from the provided file path.
-     *
-     * @param caCertPath Path to the CA certificate file (ca.crt).
-     * @return Loaded X509Certificate.
-     */
-    public static X509Certificate loadCACertificate(String caCertPath) {
-        File caCertFile = new File(caCertPath);
-        try (FileInputStream fis = new FileInputStream(caCertFile)) {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance(CERTIFICATE_TYPE);
-            return (X509Certificate) certificateFactory.generateCertificate(fis);
-        } catch (CertificateException | IOException e) {
-            throw new RuntimeException(e);
+    public static Path createAndSaveTestTruststore(String trustStoreName, List<Path> certificateLocations, String truststorePassword) {
+        List<Path> trustedCertPaths = new ArrayList<>();
+
+        // Traverse each location in certificateLocations and add both CA and Server certificates
+        for (Path location : certificateLocations) {
+            trustedCertPaths.add(envCa(location).toAbsolutePath());
+            trustedCertPaths.add(envServerCert(location).toAbsolutePath());
         }
-    }
 
-    public static Path createAndSaveEnvTruststore(String env, String truststorePassword) {
-        String caPath = envCa(env).toAbsolutePath().toString();
-        String trustStorePath = envTruststore(env).toAbsolutePath().toString();
-        return createAndSaveTruststore(caPath, trustStorePath, truststorePassword);
+        Path trustStorePath = testTruststorePath(trustStoreName).toAbsolutePath();
+
+        return createAndSaveTruststore(trustedCertPaths, trustStorePath, truststorePassword);
     }
 
     /**
-     * Creates a truststore with the given CA certificate.
+     * Creates an empty truststore.
      *
-     * @param caCertPath Path to the CA certificate file (ca.crt).
-     * @return A KeyStore object containing the CA certificate.
-     * @throws Exception If there's an error creating the truststore.
+     * @return An empty KeyStore object.
+     * @throws KeyStoreException If there's an error initializing the truststore.
+     * @throws IOException        If there's an error loading the truststore.
+     * @throws NoSuchAlgorithmException If the algorithm used to check the integrity of the truststore cannot be found.
+     * @throws CertificateException If any of the certificates in the truststore could not be loaded.
      */
-    private static KeyStore createTruststore(String caCertPath) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
-        X509Certificate caCert = loadCACertificate(caCertPath);
-
+    private static KeyStore createTruststore() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         KeyStore trustStore = KeyStore.getInstance(TRUST_STORE_TYPE);
         trustStore.load(null, null);
-        trustStore.setCertificateEntry("ca-cert", caCert);
-
         return trustStore;
     }
 
     /**
-     * Creates a truststore with the given CA certificate and saves it to the specified path.
+     * Adds a trusted certificate to the given truststore.
      *
-     * @param caCertPath         Path to the CA certificate file (ca.crt).
+     * @param trustStore The KeyStore object.
+     * @param alias      Alias for the certificate.
+     * @param certPath   Path to the certificate file.
+     * @throws Exception If there's an error adding the certificate.
+     */
+    private static void addTrustedCertificate(KeyStore trustStore, String alias, Path certPath) throws Exception {
+        X509Certificate cert = loadCertificate(certPath);
+        trustStore.setCertificateEntry(alias, cert);
+    }
+
+    /**
+     * Loads an X.509 certificate from the given file path.
+     *
+     * @param certPath Path to the certificate file.
+     * @return An X509Certificate object.
+     * @throws Exception If there's an error loading the certificate.
+     */
+    private static X509Certificate loadCertificate(Path certPath) throws Exception {
+        try (FileInputStream fis = new FileInputStream(certPath.toFile())) {
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) certFactory.generateCertificate(fis);
+        }
+    }
+
+    /**
+     * Creates a truststore, adds multiple trusted certificates, and saves it to the specified path.
+     *
+     * @param trustedCertPaths   List of certificate file paths to add to the truststore.
      * @param truststorePath     Path to save the generated truststore.
      * @param truststorePassword Password for the truststore.
      * @return Path to the saved truststore file.
      */
-    private static Path createAndSaveTruststore(String caCertPath, String truststorePath, String truststorePassword) {
+    public static Path createAndSaveTruststore(List<Path> trustedCertPaths, Path truststorePath, String truststorePassword) {
         try {
-            KeyStore trustStore = createTruststore(caCertPath);
+            KeyStore trustStore = createTruststore();
 
-            // Save the truststore to the specified path
-            try (FileOutputStream fos = new FileOutputStream(truststorePath)) {
+            for (Path certPath : trustedCertPaths) {
+                addTrustedCertificate(trustStore, "trusted-cert-" + UUID.randomUUID(), certPath);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(truststorePath.toFile())) {
                 trustStore.store(fos, truststorePassword.toCharArray());
             } catch (IOException e) {
                 throw new RuntimeException("Failed to save truststore to " + truststorePath + ": " + e.getMessage(), e);
@@ -167,7 +201,7 @@ public class TlsUtil {
             throw new RuntimeException("Failed to create and save truststore: " + e.getMessage(), e);
         }
 
-        return Paths.get(truststorePath);
+        return truststorePath;
     }
 
 
@@ -175,29 +209,29 @@ public class TlsUtil {
      * Creates an SSLSocketFactory that trusts all certificates in truststore.jceks.
      * for given test environment
      */
-    public static SSLSocketFactory sslSocketFactoryForEnv(String envName){
-       return sslSocketFactory(envCa(envName));
+    public static SSLSocketFactory sslSocketFactoryForEnv(Path certLocations){
+       return sslSocketFactory(envCa(certLocations));
     }
 
     /**
      * Returns SSLSocketFactory configured with Truststore containing provided CA cert
      */
-    private static SSLSocketFactory sslSocketFactory(Path caCertPath){
+    private static SSLSocketFactory sslSocketFactory(Path trustedCertPath) {
 
-        KeyStore truststore = null;
+        KeyStore trustStore = null;
         try {
-            truststore = createTruststore(caCertPath.toAbsolutePath().toString());
-
+            trustStore = createTruststore();
+            addTrustedCertificate(trustStore, "trusted-cert-" + UUID.randomUUID(), trustedCertPath.toAbsolutePath());
 
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
-            trustManagerFactory.init(truststore);
+            trustManagerFactory.init(trustStore);
             TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustManagers, new SecureRandom());
             return sslContext.getSocketFactory();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialise SslSocketFactory for " + caCertPath, e);
+            throw new RuntimeException("Failed to initialise SslSocketFactory for " + trustedCertPath , e);
         }
 
     }

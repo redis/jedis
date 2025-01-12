@@ -11,7 +11,6 @@ import org.junit.BeforeClass;
 
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.SSLJedisSentinelPoolTest;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
 
@@ -29,8 +28,8 @@ public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCach
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
-      Assume.assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
-              RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4));
+        Assume.assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
+                RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4));
     }
   }
 

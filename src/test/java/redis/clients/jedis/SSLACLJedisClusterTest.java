@@ -33,19 +33,18 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
   // test env enables tls directly on Redis nodes and in this case tls_port is correctly reported
   // TODO : remove stunnel from legacy env
   // static int tlsPortOffset = 0;
-  HostAndPortMapper hostAndPortMap = (hostAndPort) -> {
+  private final HostAndPortMapper hostAndPortMap = (hostAndPort) -> {
     String host = hostAndPort.getHost();
     int port = hostAndPort.getPort();
 
     if ("127.0.0.1".equals(host)) {
       host = "localhost";
     }
-
     return new HostAndPort(host, port);
   };
 
   // don't map IP addresses so that we try to connect with host 127.0.0.1
-  HostAndPortMapper portMap = (hostAndPort) -> {
+  private final HostAndPortMapper portMap = (hostAndPort) -> {
     if ("localhost".equals(hostAndPort.getHost())) {
       return hostAndPort;
     }

@@ -72,7 +72,6 @@ public class EndpointConfig {
         return endpoints.get(0);
     }
 
-
     public class EndpointURIBuilder {
         private boolean tls;
 

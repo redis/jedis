@@ -1,5 +1,6 @@
 package redis.clients.jedis.util;
 
+import java.util.Arrays;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -19,15 +20,19 @@ public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse>
     @Override
     protected boolean matchesSafely(GeoRadiusResponse actual) {
         // Check if coordinates match within the tolerance
-        if (!GeoCoordinateMatcher.atCoordinates(expected.getCoordinate()).matches(actual.getCoordinate())) {
+        if (!GeoCoordinateMatcher.atCoordinates(expected.getCoordinate())
+                .matches(actual.getCoordinate())) {
             return false;
         }
 
-        // Check if distance and rawScore match exactly
+        // Check if other attributes match exactly
         if (Double.compare(expected.getDistance(), actual.getDistance()) != 0) {
             return false;
         }
-        return expected.getRawScore() == actual.getRawScore();
+        if (Long.compare(expected.getRawScore(), actual.getRawScore()) != 0) {
+            return false;
+        }
+        return Arrays.equals(expected.getMember(), actual.getMember());
     }
 
     @Override
@@ -36,8 +41,10 @@ public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse>
                 .appendValue(expected.getCoordinate())
                 .appendText(", distance ")
                 .appendValue(expected.getDistance())
-                .appendText(", and rawScore ")
-                .appendValue(expected.getRawScore());
+                .appendText(", rawScore ")
+                .appendValue(expected.getRawScore())
+                .appendText("and member ")
+                .appendValue(expected.getMemberByString());
     }
 
     @Override

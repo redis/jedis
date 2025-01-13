@@ -1,8 +1,8 @@
 PATH := ./redis-git/src:${PATH}
 
 # Supported test env versions
-SUPPORTED_TEST_ENV_VERSIONS := 8.0-M01 7.4.1 7.2.6 6.2.16
-DEFAULT_TEST_ENV_VERSION := 8.0-M01
+SUPPORTED_TEST_ENV_VERSIONS := 8.0-M02 7.4.1 7.2.6 6.2.16
+DEFAULT_TEST_ENV_VERSION := 8.0-M02
 
 define REDIS1_CONF
 daemonize yes

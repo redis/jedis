@@ -734,8 +734,8 @@ public class ClusterPipeliningTest {
     assertEquals(Double.valueOf(3.0674), r3.get());
     assertEquals(hashValues, r4.get());
     assertThat(r5.get(), contains(
-            GeoCoordinateMatcher.isEqualWithTolerance(2.19093829393386841, 41.43379028184083523),
-            GeoCoordinateMatcher.isEqualWithTolerance(2.18737632036209106, 41.40634178640635099))
+            GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523),
+            GeoCoordinateMatcher.atCoordinates(2.18737632036209106, 41.40634178640635099))
     );
     assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
     assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
@@ -745,8 +745,8 @@ public class ClusterPipeliningTest {
     expectedResponse.setDistance(0.0881);
     expectedResponse.setRawScore(3471609698139488L);
 
-    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.isEqualToGeoRadiusResponse(expectedResponse));
-    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.isEqualToGeoRadiusResponse(expectedResponse));
+    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.from(expectedResponse));
+    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.from(expectedResponse));
 
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));

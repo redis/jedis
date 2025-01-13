@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static redis.clients.jedis.util.GeoCoordinateMatcher.isEqualWithTolerance;
+import static redis.clients.jedis.util.GeoCoordinateMatcher.atCoordinates;
 
 import java.util.HashMap;
 import java.util.List;
@@ -179,15 +179,13 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.sync();
 
-    assertThat(coordinates.get(), contains(
-        isEqualWithTolerance(3.0, 4.0),
-        isEqualWithTolerance(2.0, 3.0),
+    assertThat(coordinates.get(), contains(atCoordinates(3.0, 4.0),
+        atCoordinates(2.0, 3.0),
         null
     ));
 
-    assertThat(bcoordinates.get(), contains(
-        isEqualWithTolerance(3.0, 4.0),
-        isEqualWithTolerance(2.0, 3.0),
+    assertThat(bcoordinates.get(), contains(atCoordinates(3.0, 4.0),
+        atCoordinates(2.0, 3.0),
         null
     ));
   }
@@ -256,7 +254,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members4.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(56.4413, EPSILON)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(15.087269, 37.502669)));
+        contains(atCoordinates(15.087269, 37.502669)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(3479447370796909L));
 
@@ -355,7 +353,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members4.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(56.4413, EPSILON)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(15.087269, 37.502669)));
+        contains(atCoordinates(15.087269, 37.502669)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -416,7 +414,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members4.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(56.4413, EPSILON)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(15.087269, 37.502669)));
+        contains(atCoordinates(15.087269, 37.502669)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -497,7 +495,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members4.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(56.4413, EPSILON)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(15.087269, 37.502669)));
+        contains(atCoordinates(15.087269, 37.502669)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -542,7 +540,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members3.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(0.0, EPSILON)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(13.583333, 37.316667)));
+        contains(atCoordinates(13.583333, 37.316667)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -605,7 +603,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members3.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(0.0, EPSILON)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(13.583333, 37.316667)));
+        contains(atCoordinates(13.583333, 37.316667)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -649,7 +647,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members3.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(0.0, EPSILON)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(13.583333, 37.316667)));
+        contains(atCoordinates(13.583333, 37.316667)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -711,7 +709,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members3.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(0.0, EPSILON)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(13.583333, 37.316667)));
+        contains(atCoordinates(13.583333, 37.316667)));
     assertThat(members3.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }
@@ -774,7 +772,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members4.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(0.0, EPSILON), closeTo(3.0674, EPSILON)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(2.1909389952632d, 41.433791470673d), isEqualWithTolerance(2.1873744593677d, 41.406342043777d)));
+        contains(atCoordinates(2.1909389952632d, 41.433791470673d), atCoordinates(2.1873744593677d, 41.406342043777d)));
     assertThat(members4.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(3471609698139488L, 3471609625421029L));
 
@@ -792,7 +790,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(members8.get().stream().map(GeoRadiusResponse::getDistance).collect(Collectors.toList()),
         contains(closeTo(0.0881, EPSILON)));
     assertThat(members8.get().stream().map(GeoRadiusResponse::getCoordinate).collect(Collectors.toList()),
-        contains(isEqualWithTolerance(2.1909389952632d, 41.433791470673d)));
+        contains(atCoordinates(2.1909389952632d, 41.433791470673d)));
     assertThat(members8.get().stream().map(GeoRadiusResponse::getRawScore).collect(Collectors.toList()),
         contains(0L));
   }

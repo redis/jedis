@@ -534,7 +534,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
     assertThat(members.get(0).getCoordinate(),
-        GeoCoordinateMatcher.isEqualWithTolerance(2.19093829393386841, 41.43379028184083523));
+        GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523));
   }
 
   @Test

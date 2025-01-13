@@ -1,12 +1,14 @@
 package redis.clients.jedis.util;
 
 import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
 public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse> {
+
+    public static GeoRadiusResponseMatcher from(GeoRadiusResponse expected) {
+        return new GeoRadiusResponseMatcher(expected);
+    }
 
     private final GeoRadiusResponse expected;
 
@@ -14,16 +16,10 @@ public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse>
         this.expected = expected;
     }
 
-    public static Matcher<GeoRadiusResponse> isEqualToGeoRadiusResponse(GeoRadiusResponse expected) {
-        return new GeoRadiusResponseMatcher(expected);
-    }
-
     @Override
     protected boolean matchesSafely(GeoRadiusResponse actual) {
         // Check if coordinates match within the tolerance
-        GeoCoordinate expectedCoord = expected.getCoordinate();
-        GeoCoordinate actualCoord = actual.getCoordinate();
-        if (!GeoCoordinateMatcher.isEqualWithTolerance(expectedCoord).matches(actualCoord)) {
+        if (!GeoCoordinateMatcher.atCoordinates(expected.getCoordinate()).matches(actual.getCoordinate())) {
             return false;
         }
 
@@ -46,8 +42,7 @@ public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse>
 
     @Override
     protected void describeMismatchSafely(GeoRadiusResponse actual, Description mismatchDescription) {
-        mismatchDescription.appendText("was ")
-                .appendValue(actual);
+        mismatchDescription.appendText("was ").appendValue(actual);
     }
 
 }

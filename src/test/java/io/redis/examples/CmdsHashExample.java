@@ -59,9 +59,9 @@ public class CmdsHashExample {
         Map<String, String> hGetAllResult2 = jedis.hgetAll("myhash");
         System.out.println(
             hGetAllResult2.entrySet().stream()
-                .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
-                .collect(toList())
-                .toString()
+                    .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
+                    .collect(toList())
+                    .toString()
         );
         // >>> [field1=Hello, field2=World]
         // STEP_END
@@ -70,9 +70,9 @@ public class CmdsHashExample {
         Assert.assertEquals(2, hGetAllResult1);
         Assert.assertEquals("[field1=Hello, field2=World]",
             hGetAllResult2.entrySet().stream()
-                .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
-                .collect(toList())
-                .toString()
+                    .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
+                    .collect(toList())
+                    .toString()
         );
         jedis.del("myhash");
         // REMOVE_END

@@ -7,7 +7,7 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 
 public class GeoRadiusResponseMatcher extends TypeSafeMatcher<GeoRadiusResponse> {
 
-    public static GeoRadiusResponseMatcher from(GeoRadiusResponse expected) {
+    public static GeoRadiusResponseMatcher ofResponse(GeoRadiusResponse expected) {
         return new GeoRadiusResponseMatcher(expected);
     }
 

@@ -745,8 +745,8 @@ public class ClusterPipeliningTest {
     expectedResponse.setDistance(0.0881);
     expectedResponse.setRawScore(3471609698139488L);
 
-    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.from(expectedResponse));
-    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.from(expectedResponse));
+    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.ofResponse(expectedResponse));
+    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.ofResponse(expectedResponse));
 
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));

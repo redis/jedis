@@ -5,8 +5,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Arrays;
-import java.util.List;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.*;
+
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -21,8 +24,6 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @RunWith(Parameterized.class)
 public class SlowlogCommandsTest extends JedisCommandsTestBase {
-
-  private static final List<String> LOCAL_IPS = Arrays.asList("127.0.0.1", "[::1]");
 
   private static final String SLOWLOG_TIME_PARAM = "slowlog-log-slower-than";
   private static final String ZERO_STRING = "0";
@@ -81,7 +82,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void slowlogObjectDetails() {
-    final String clientName = "slowlog-object-client";
+    final String clientName = "slowlog-object-client-" + UUID.randomUUID();
     jedis.clientSetname(clientName);
     jedis.slowlogReset();
     jedis.configSet(SLOWLOG_TIME_PARAM, ZERO_STRING);
@@ -90,6 +91,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     //assertEquals(1, logs.size());
     assertThat(logs.size(), Matchers.allOf(Matchers.greaterThanOrEqualTo(1), Matchers.lessThanOrEqualTo(2)));
     Slowlog log = logs.get(0);
+    assertEquals(clientName, log.getClientName());
     assertThat(log.getId(), Matchers.greaterThan(0L));
     assertThat(log.getTimeStamp(), Matchers.greaterThan(0L));
     assertThat(log.getExecutionTime(), Matchers.greaterThanOrEqualTo(0L));
@@ -98,9 +100,8 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertEquals(SafeEncoder.encode(Protocol.Keyword.SET.getRaw()), log.getArgs().get(1));
     assertEquals(SLOWLOG_TIME_PARAM, log.getArgs().get(2));
     assertEquals(ZERO_STRING, log.getArgs().get(3));
-    assertThat(log.getClientIpPort().getHost(), Matchers.in(LOCAL_IPS));
+    assertThat(log.getClientIpPort().getHost(), Matchers.in(getAllLocalIps()));
     assertThat(log.getClientIpPort().getPort(), Matchers.greaterThan(0));
-    assertEquals(clientName, log.getClientName());
   }
 
   @Test
@@ -126,5 +127,21 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
 //    assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
     assertThat(((byte[]) log.get(4)).length, Matchers.greaterThanOrEqualTo(10)); // 'IP:PORT'
     assertArrayEquals(clientName, (byte[]) log.get(5));
+  }
+
+  private static Set<String> getAllLocalIps()  {
+    Set<String> allLocalIps = new HashSet<>();
+      try {
+          for (NetworkInterface netIf : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+            for (InetAddress addr : Collections.list(netIf.getInetAddresses())) {
+              allLocalIps.add(addr.getHostAddress());
+            }
+          }
+      } catch (SocketException e) {
+          throw new RuntimeException(e);
+      }
+      //ipv6 loopback
+      allLocalIps.add("[::1]");
+      return allLocalIps;
   }
 }

@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -17,13 +20,13 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.Schema.*;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 @RunWith(Parameterized.class)
 public class SearchTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "testindex";
-
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
@@ -413,8 +416,10 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Query query =  new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2).dialect(2);
     assertEquals(2, client.ftSearch(index, query).getTotalResults());
 
-    query =  new Query("@numval:[$eq]").addParam("eq", 2).dialect(4);
-    assertEquals(1, client.ftSearch(index, query).getTotalResults());
+    if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V7_4) ) {
+      query = new Query("@numval:[$eq]").addParam("eq", 2).dialect(4);
+      assertEquals(1, client.ftSearch(index, query).getTotalResults());
+    }
   }
 
   @Test
@@ -540,9 +545,11 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, res.getTotalResults());
     assertEquals("king:1", res.getDocuments().get(0).getId());
 
-    res = client.ftSearch(index, new Query("@num:[42]").dialect(4));
-    assertEquals(1, res.getTotalResults());
-    assertEquals("king:1", res.getDocuments().get(0).getId());
+    if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V7_4) ) {
+      res = client.ftSearch(index, new Query("@num:[42]").dialect(4));
+      assertEquals(1, res.getTotalResults());
+      assertEquals("king:1", res.getDocuments().get(0).getId());
+    }
   }
 
   @Test

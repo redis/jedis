@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -146,6 +148,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "7.0.0 Added the BYTE|BIT option.")
   public void bitposModifier() {
     jedis.set("mykey", "\\x00\\xff\\xf0");
     assertEquals(0, jedis.bitpos("mykey", false));
@@ -160,6 +163,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void setAndgetrange() {
     jedis.set("key1", "Hello World");
     assertEquals(11, jedis.setrange("key1", 6, "Jedis"));
@@ -182,6 +186,15 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L));
+  }
+
+  @Test
+  @SinceRedisVersion("7.0.0")
+  public void bitCountModifier() {
+    jedis.setbit("foo", 16, true);
+    jedis.setbit("foo", 24, true);
+    jedis.setbit("foo", 40, true);
+    jedis.setbit("foo", 56, true);
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L, BitCountOption.BYTE));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BYTE));

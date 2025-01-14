@@ -39,7 +39,7 @@ import redis.clients.jedis.HostAndPort;
 public class TokenBasedAuthenticationUnitTests {
 
   private HostAndPort hnp = new HostAndPort("localhost", 6379);
-  private EndpointConfig endpoint = new EndpointConfig(hnp, null, null, false);
+  private EndpointConfig endpoint = new EndpointConfig(hnp, null, null, false, null);
 
   @Test
   public void testJedisAuthXManagerInstance() {

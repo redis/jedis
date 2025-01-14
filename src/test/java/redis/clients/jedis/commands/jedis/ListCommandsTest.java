@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -864,6 +865,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void lmpop() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";
@@ -889,6 +891,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void blmpopSimple() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";

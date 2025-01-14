@@ -4,14 +4,14 @@
     <parent>
         <groupId>today.bonfire.oss</groupId>
         <artifactId>bonfire-oss-parent</artifactId>
-        <version>1.1.5</version>
+        <version>1.1.8</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <groupId>today.bonfire.oss</groupId>
     <artifactId>jedis</artifactId>
-    <version>5.2.0</version>
+    <version>5.2.1</version>
     <name>Jedis</name>
     <description>Modified Jedis library to support java 21 and uses a simple object pool. This is a blazingly small and sane Redis java client.</description>
     <url>https://github.com/BonfireTrunk/jedis</url>
@@ -38,7 +38,7 @@
 
     <properties>
         <github.global.server>github</github.global.server>
-        <jedis.module.name>redis.clients.jedis</jedis.module.name>
+        <jedis.module.name>bonfire.oss.jedis</jedis.module.name>
         <resilience4j.version>1.7.1</resilience4j.version>
         <jackson.version>2.17.2</jackson.version>
         <maven.surefire.version>3.5.0</maven.surefire.version>
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>today.bonfire.oss</groupId>
             <artifactId>simple-object-pool</artifactId>
-            <version>2.2.0</version>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -227,7 +227,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
                 <configuration>
                     <release>${java.version}</release>
                 </configuration>
@@ -256,7 +255,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -269,7 +267,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.9</version>
                 <executions>
                     <execution>
                         <id>bundle-manifest</id>

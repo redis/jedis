@@ -17,7 +17,6 @@ public class CmdsSetExample {
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         //REMOVE_START
-        // Clear any keys here before using them in tests.
         jedis.del("myset");
         //REMOVE_END
 // HIDE_END
@@ -60,7 +59,6 @@ public class CmdsSetExample {
         Assert.assertEquals(2, sMembersResult1);
         Assert.assertArrayEquals(new String[] {"Hello", "World"}, sMembersResult2.stream().sorted().toArray());
         // REMOVE_END
-
         // HIDE_START
     }
 }

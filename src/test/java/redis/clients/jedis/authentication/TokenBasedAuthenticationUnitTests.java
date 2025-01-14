@@ -83,6 +83,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
         .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+    pool.close();
   }
 
   public void withLowerRefreshBounds_testJedisAuthXManagerTriggersEvict() throws Exception {
@@ -108,6 +109,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
         .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+    pool.close();
   }
 
   public static class TokenManagerConfigWrapper extends TokenManagerConfig {
@@ -229,6 +231,7 @@ public class TokenBasedAuthenticationUnitTests {
 
     manager.start();
     assertEquals(tokenHolder[0].getValue(), "tokenVal");
+    manager.stop();
   }
 
   @Test
@@ -300,6 +303,7 @@ public class TokenBasedAuthenticationUnitTests {
     verify(identityProvider, times(numberOfRetries)).requestToken();
     verify(listener, never()).onError(any());
     assertEquals("tokenValX", argument.getValue().getValue());
+    tokenManager.stop();
   }
 
   @Test
@@ -338,5 +342,6 @@ public class TokenBasedAuthenticationUnitTests {
     await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
       verify(manager, times(1)).authenticateConnections(any());
     });
+    manager.stop();
   }
 }

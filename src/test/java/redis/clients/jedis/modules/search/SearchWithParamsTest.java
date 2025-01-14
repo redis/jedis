@@ -271,18 +271,31 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     result = client.ftSearch(index, "*", FTSearchParams.searchParams().dialect(2));
     assertEquals(3, result.getTotalResults());
     assertEquals(3, result.getDocuments().size());
+  }
 
-    if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
-      result = client.ftSearch(index, "@body:''", FTSearchParams.searchParams().dialect(2));
-      assertEquals(1, result.getTotalResults());
-      assertEquals(1, result.getDocuments().size());
-      assertEquals("empty-doc", result.getDocuments().get(0).getId());
+  @Test
+  public void searchTextFieldsConditionEmpty() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(), TextField.of("title"),
+        TextField.of("body").indexMissing().indexEmpty()));
 
-      result = client.ftSearch(index, "ismissing(@body)", FTSearchParams.searchParams().dialect(2));
-      assertEquals(1, result.getTotalResults());
-      assertEquals(1, result.getDocuments().size());
-      assertEquals("missing-doc", result.getDocuments().get(0).getId());
-    }
+    Map<String, String> empty = new HashMap<>();
+    empty.put("title", "hello world");
+    empty.put("body", "");
+    client.hset("empty-doc", empty);
+
+    Map<String, String> missing = new HashMap<>();
+    missing.put("title", "hello world");
+    client.hset("missing-doc", missing);
+
+    SearchResult result = client.ftSearch(index, "@body:''", FTSearchParams.searchParams().dialect(2));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals("empty-doc", result.getDocuments().get(0).getId());
+
+    result = client.ftSearch(index, "ismissing(@body)", FTSearchParams.searchParams().dialect(2));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals("missing-doc", result.getDocuments().get(0).getId());
   }
 
   @Test

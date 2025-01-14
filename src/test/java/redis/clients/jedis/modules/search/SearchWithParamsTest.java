@@ -40,7 +40,6 @@ import redis.clients.jedis.util.RedisVersionUtil;
 @RunWith(Parameterized.class)
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
-
   private static final String index = "testindex";
 
   @BeforeClass
@@ -235,6 +234,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertOK(client.ftCreate("testindex-missing",
           TextField.of("title").indexMissing().indexEmpty().weight(2.5).noStem().phonetic("dm:en")
               .withSuffixTrie().sortable()));
+
       assertOK(client.ftCreate("testunfindex-missing",
           TextField.of("title").indexMissing().indexEmpty().weight(2.5).noStem().phonetic("dm:en")
               .withSuffixTrie().sortableUNF()));
@@ -246,9 +246,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "optional params since 7.4.0 are being tested")
   public void searchTextFieldsCondition() {
     assertOK(client.ftCreate(index, FTCreateParams.createParams(), TextField.of("title"),
-        TextField.of("body")));
+        TextField.of("body").indexMissing().indexEmpty()));
 
     Map<String, String> regular = new HashMap<>();
     regular.put("title", "hello world");
@@ -271,23 +272,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     result = client.ftSearch(index, "*", FTSearchParams.searchParams().dialect(2));
     assertEquals(3, result.getTotalResults());
     assertEquals(3, result.getDocuments().size());
-  }
 
-  @Test
-  public void searchTextFieldsConditionEmpty() {
-    assertOK(client.ftCreate(index, FTCreateParams.createParams(), TextField.of("title"),
-        TextField.of("body").indexMissing().indexEmpty()));
-
-    Map<String, String> empty = new HashMap<>();
-    empty.put("title", "hello world");
-    empty.put("body", "");
-    client.hset("empty-doc", empty);
-
-    Map<String, String> missing = new HashMap<>();
-    missing.put("title", "hello world");
-    client.hset("missing-doc", missing);
-
-    SearchResult result = client.ftSearch(index, "@body:''", FTSearchParams.searchParams().dialect(2));
+    result = client.ftSearch(index, "@body:''", FTSearchParams.searchParams().dialect(2));
     assertEquals(1, result.getTotalResults());
     assertEquals(1, result.getDocuments().size());
     assertEquals("empty-doc", result.getDocuments().get(0).getId());
@@ -446,12 +432,16 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void geoFieldParams() {
-    assertOK(client.ftCreate("testindex", TextField.of("title"), GeoField.of("location").as("loc").sortable()));
+    assertOK(client.ftCreate("testindex", TextField.of("title"),
+        GeoField.of("location").as("loc").sortable()));
 
     if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
-      assertOK(client.ftCreate("testindex-missing", TextField.of("title"), GeoField.of("location").as("loc").indexMissing().sortable()));
+      assertOK(client.ftCreate("testindex-missing", TextField.of("title"),
+          GeoField.of("location").as("loc").indexMissing().sortable()));
     }
-    assertOK(client.ftCreate("testnoindex", TextField.of("title"), GeoField.of("location").as("loc").sortable().noIndex()));
+
+    assertOK(client.ftCreate("testnoindex", TextField.of("title"),
+        GeoField.of("location").as("loc").sortable().noIndex()));
   }
 
   @Test
@@ -568,15 +558,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void geoShapeFieldParams() {
-    assertOK(client.ftCreate("testindex",
-        GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom")));
-
     if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
       assertOK(client.ftCreate("testindex-missing",
           GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").indexMissing()));
     }
 
-    assertOK(client.ftCreate("testnoindex", GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").noIndex()));
+    assertOK(client.ftCreate("testnoindex",
+        GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").noIndex()));
   }
 
   @Test
@@ -1266,17 +1254,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "no optional params before 7.4.0")
   public void vectorFieldParams() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
     attr.put("DIM", 2);
     attr.put("DISTANCE_METRIC", "L2");
 
-    assertOK(client.ftCreate("testindex", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec")));
-
-    if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
-      assertOK(client.ftCreate("testindex-missing", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").indexMissing()));
-    }
+    assertOK(client.ftCreate("testindex-missing", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").indexMissing()));
 
     // assertOK(client.ftCreate("testnoindex", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").noIndex()));
     // throws Field `NOINDEX` does not have a type

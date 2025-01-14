@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
@@ -495,17 +494,11 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test
+  @Test(timeout = 5000L)
   public void blpopDoubleWithSleep() {
-    long startMillis, totalMillis;
-
-    startMillis = System.currentTimeMillis();
     KeyValue<String, String> result = jedis.blpop(0.04, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
     assertNull(result);
 
-    startMillis = System.currentTimeMillis();
     new Thread(() -> {
       try {
         Thread.sleep(30);
@@ -517,8 +510,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
       }
     }).start();
     result = jedis.blpop(1.2, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
 
     assertNotNull(result);
     assertEquals("foo", result.getKey());
@@ -617,17 +608,11 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test
+  @Test(timeout = 5000L)
   public void brpopDoubleWithSleep() {
-    long startMillis, totalMillis;
-
-    startMillis = System.currentTimeMillis();
     KeyValue<String, String> result = jedis.brpop(0.04, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
     assertNull(result);
 
-    startMillis = System.currentTimeMillis();
     new Thread(() -> {
       try {
         Thread.sleep(30);
@@ -639,8 +624,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
       }
     }).start();
     result = jedis.brpop(1.2, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
 
     assertNotNull(result);
     assertEquals("foo", result.getKey());

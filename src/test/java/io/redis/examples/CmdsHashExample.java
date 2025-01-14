@@ -5,7 +5,6 @@ package io.redis.examples;
 import org.junit.Assert;
 import org.junit.Test;
 // REMOVE_END
-import static java.util.stream.Collectors.toList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +14,8 @@ import java.util.Collections;
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 // HIDE_END
+
+import static java.util.stream.Collectors.toList;
 
 // HIDE_START
 public class CmdsHashExample {

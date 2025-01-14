@@ -20,6 +20,7 @@ import java.util.*;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -606,6 +607,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @Ignore(value = "TODO: Regression in 8.0-M02 discarding restore idle time.")
   public void restoreParams() {
     // take a separate instance
     Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);

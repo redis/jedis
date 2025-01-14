@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -15,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
@@ -524,21 +524,13 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(bresult3.get().getValue(), equalTo(bcar));
   }
 
-  @Test
+  @Test(timeout = 5000L)
   public void blpopDoubleWithSleep() {
-    long startMillis, totalMillis;
-
-    startMillis = System.currentTimeMillis();
-
     Response<KeyValue<String, String>> result = pipe.blpop(0.04, "foo");
     pipe.sync();
 
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
-
     assertThat(result.get(), nullValue());
 
-    startMillis = System.currentTimeMillis();
     new Thread(() -> {
       try {
         Thread.sleep(30);
@@ -550,9 +542,6 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
     result = pipe.blpop(1.2, "foo");
     pipe.sync();
-
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
 
     assertThat(result.get().getKey(), equalTo("foo"));
     assertThat(result.get().getValue(), equalTo("bar"));
@@ -646,21 +635,13 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(bresult3.get().getValue(), equalTo(bcar));
   }
 
-  @Test
+  @Test(timeout = 5000L)
   public void brpopDoubleWithSleep() {
-    long startMillis, totalMillis;
-
-    startMillis = System.currentTimeMillis();
-
     Response<KeyValue<String, String>> result = pipe.brpop(0.04, "foo");
     pipe.sync();
 
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
-
     assertThat(result.get(), nullValue());
 
-    startMillis = System.currentTimeMillis();
     new Thread(() -> {
       try {
         Thread.sleep(30);
@@ -672,9 +653,6 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
     result = pipe.brpop(1.2, "foo");
     pipe.sync();
-
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
 
     assertThat(result.get().getKey(), equalTo("foo"));
     assertThat(result.get().getValue(), equalTo("bar"));

@@ -25,7 +25,7 @@ public class TlsUtil {
     private static final String TRUST_STORE_TYPE = "JCEKS";
     private static final String CERTIFICATE_TYPE = "X.509";
 
-    private static final String TEST_WORK_FOLDER = System.getenv().getOrDefault("TEST_WORK_FOLDER", "./redis-env/");
+    private static final String TEST_WORK_FOLDER = System.getenv().getOrDefault("TEST_WORK_FOLDER", "/tmp/redis-env-work");
     private static final String TEST_TRUSTSTORE = System.getenv().getOrDefault("TEST_TRUSTSTORE", "truststore.jceks");
     private static final String TEST_CA_CERT = System.getenv().getOrDefault("TEST_CA_CERT", "ca.crt");
     private static final String TEST_SERVER_CERT = System.getenv().getOrDefault("TEST_SERVER_CERT", "redis.crt");

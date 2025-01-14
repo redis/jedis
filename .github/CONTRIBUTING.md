@@ -47,20 +47,28 @@ To bring up the test environment for a specific Redis version (8.0-M02, 7.4.1, 7
 ```bash
 make start-test-env version=8.0-M02  # Replace with desired version
 ```
+To stop test environment:
+```bash
+make stop-test-env
+```
+To run tests using dockerized environment:
+```bash
+make test-on-docker
+```
 
 ## Option 2: Using docker compose commands directly
 Docker compose file can be found in `src/test/resources/env` folder.
-- **Redis  8.0-M02, 7.4.1, 7.2.6**
+- **Redis  8.0-M02**
 ```bash
 rm -rf /tmp/redis-env-work
 export REDIS_VERSION=8.0-M02
 docker compose up
 ```
-- **Redis 6.2.16**
-- **NOTE:** Redis 6.2.16 uses a dedicated `.env.v6.2.16`.
+- **Redis 7.4.1, 7.2.6, 6.2.16,**
 ```bash
 rm -rf /tmp/redis-env-work
-docker compose --env-file .env.v6.2.16 up
+export REDIS_VERSION=6.2.16
+docker compose --env-file .env --env-file .env.v6.2.16 up
 ```
 
 

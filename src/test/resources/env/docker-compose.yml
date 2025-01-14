@@ -145,10 +145,17 @@ services:
       - ${REDIS_ENV_WORK_DIR}/cluster-stable/work:/redis/work:rw
 
   jedis-stack:
-      image: redis/redis-stack-server:edge
-      container_name: jedis-stack
-      ports:
-        - "6479:6379"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_STACK_VERSION:-${REDIS_VERSION}}"
+    container_name: jedis-stack
+    environment:
+      - REDIS_CLUSTER=no
+      - PORT=6479
+    ports:
+      - "6479:6479"
+    volumes:
+      -  ${REDIS_ENV_WORK_DIR}/jedis-stack/work:/redis/work:rw
 #todo find a way to connect from mac os host to exposed unix socket in container
 #  redis_uds:
 #    image: redis:${REDIS_VERSION}

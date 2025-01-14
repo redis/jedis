@@ -64,11 +64,7 @@ jobs:
         run: |
           mkdir -m 777 $REDIS_ENV_WORK_DIR
           export REDIS_VERSION="${{ matrix.redis_version }}"
-          export COMPOSE_ENV_FILES="src/test/resources/env/.env"
-          if [[ "${{ matrix.redis_version }}" == "6.2.16" ]]; then
-           COMPOSE_ENV_FILES="src/test/resources/env/.env.v${{ matrix.redis_version }}"
-          fi
-          docker compose -f src/test/resources/env/docker-compose.yml up -d
+          make start-test-env version=$REDIS_VERSION
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline

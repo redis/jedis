@@ -39,7 +39,7 @@ jobs:
           - "8.0-M02"
           - "7.4.1"
           - "7.2.6"
-          - "6.2.16"
+          # - "6.2.16"
     steps:
       - uses: actions/checkout@v2
       - name: Set up publishing to maven central

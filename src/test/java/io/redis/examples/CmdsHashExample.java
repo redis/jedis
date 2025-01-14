@@ -5,12 +5,12 @@ package io.redis.examples;
 import org.junit.Assert;
 import org.junit.Test;
 // REMOVE_END
+import static java.util.stream.Collectors.toList;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
-import static java.util.stream.Collectors.*;
 
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;

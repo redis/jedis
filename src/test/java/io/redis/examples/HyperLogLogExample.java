@@ -37,5 +37,9 @@ public class HyperLogLogExample {
         long res5 = jedis.pfcount("all_bikes");
         System.out.println(res5); // >>> 6
         // STEP_END
+
+        // HIDE_START
+        jedis.close();
+        // HIDE_END
     }
 }

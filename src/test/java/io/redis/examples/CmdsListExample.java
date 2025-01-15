@@ -11,6 +11,7 @@ import java.util.List;
 import redis.clients.jedis.UnifiedJedis;
 
 public class CmdsListExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -142,7 +143,8 @@ public class CmdsListExample {
         jedis.del("mylist");
         // REMOVE_END
 
-        // HIDE_START
+// HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

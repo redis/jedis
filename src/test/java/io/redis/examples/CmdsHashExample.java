@@ -19,9 +19,11 @@ import static java.util.stream.Collectors.toList;
 
 // HIDE_START
 public class CmdsHashExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+
         //REMOVE_START
         // Clear any keys here before using them in tests.
         jedis.del("myhash");
@@ -141,8 +143,9 @@ public class CmdsHashExample {
         Assert.assertEquals("[Hello, World]", hValsResult2.toString());
         jedis.del("myhash");
         // REMOVE_END
+
 // HIDE_START
-        
+        jedis.close();
     }
 }
 // HIDE_END

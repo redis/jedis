@@ -13,6 +13,7 @@ import java.util.Set;
 import redis.clients.jedis.UnifiedJedis;
 
 public class CmdsSetExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -55,7 +56,9 @@ public class CmdsSetExample {
         Assert.assertEquals(2, sMembersResult1);
         Assert.assertArrayEquals(new String[] {"Hello", "World"}, sMembersResult2.stream().sorted().toArray());
         // REMOVE_END
-        // HIDE_START
+
+// HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

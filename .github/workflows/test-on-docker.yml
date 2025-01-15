@@ -83,7 +83,7 @@ jobs:
             mvn -Dtest=$TESTS clean compile test
           fi
         env:
-          JVM_OPTS: "-XX:+PrintFlagsFinal -XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
+          JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
           TESTS: ${{ github.event.inputs.specific_test || '' }}
       - name: Upload Heap Dumps
         if: failure()
@@ -91,6 +91,7 @@ jobs:
         with:
           name: heap-dumps-${{ matrix.redis_version }}
           path: ${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof
+          retention-days: 5
       - name: Upload Surefire Dump File
         uses: actions/upload-artifact@v3
         with:

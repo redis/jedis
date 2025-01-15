@@ -32,9 +32,7 @@ public class CmdsSetExample {
         System.out.println(sAddResult3); // >>> 0
 
         Set<String> sAddResult4 = jedis.smembers("myset");
-        System.out.println(
-            sAddResult4.stream().sorted().collect(toList()).toString()
-        );
+        System.out.println(sAddResult4.stream().sorted().collect(toList()));
         // >>> [Hello, World]
         // STEP_END
         // REMOVE_START
@@ -50,9 +48,7 @@ public class CmdsSetExample {
         System.out.println(sMembersResult1); // >>> 2
 
         Set<String> sMembersResult2 = jedis.smembers("myset");
-        System.out.println(
-            sMembersResult2.stream().sorted().collect(toList()).toString()
-        );
+        System.out.println(sMembersResult2.stream().sorted().collect(toList()));
         // >>> [Hello, World]
         // STEP_END
         // REMOVE_START

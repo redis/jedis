@@ -72,17 +72,18 @@ public class TokenBasedAuthenticationUnitTests {
     AuthXManager jedisAuthXManager = new AuthXManager(tokenManager);
 
     AtomicInteger numberOfEvictions = new AtomicInteger(0);
-    ConnectionPool pool = new ConnectionPool(hnp,
+
+    try (ConnectionPool pool = new ConnectionPool(hnp,
         endpoint.getClientConfigBuilder().authXManager(jedisAuthXManager).build()) {
       @Override
       public void evict() throws Exception {
         numberOfEvictions.incrementAndGet();
         super.evict();
       }
-    };
-
-    await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
-        .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+    }) {
+      await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
+          .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+    }
   }
 
   public void withLowerRefreshBounds_testJedisAuthXManagerTriggersEvict() throws Exception {
@@ -97,17 +98,18 @@ public class TokenBasedAuthenticationUnitTests {
     AuthXManager jedisAuthXManager = new AuthXManager(tokenManager);
 
     AtomicInteger numberOfEvictions = new AtomicInteger(0);
-    ConnectionPool pool = new ConnectionPool(endpoint.getHostAndPort(),
+
+    try (ConnectionPool pool = new ConnectionPool(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder().authXManager(jedisAuthXManager).build()) {
       @Override
       public void evict() throws Exception {
         numberOfEvictions.incrementAndGet();
         super.evict();
       }
-    };
-
-    await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
-        .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+    }) {
+      await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
+          .until(numberOfEvictions::get, Matchers.greaterThanOrEqualTo(1));
+    }
   }
 
   public static class TokenManagerConfigWrapper extends TokenManagerConfig {
@@ -227,8 +229,12 @@ public class TokenBasedAuthenticationUnitTests {
       return null;
     }).when(manager).authenticateConnections(any());
 
-    manager.start();
-    assertEquals(tokenHolder[0].getValue(), "tokenVal");
+    try {
+      manager.start();
+      assertEquals(tokenHolder[0].getValue(), "tokenVal");
+    } finally {
+      manager.stop();
+    }
   }
 
   @Test
@@ -292,14 +298,18 @@ public class TokenBasedAuthenticationUnitTests {
     TokenManager tokenManager = new TokenManager(identityProvider, new TokenManagerConfig(0.7F, 200,
         2000, new TokenManagerConfig.RetryPolicy(numberOfRetries - 1, 100)));
 
-    TokenListener listener = mock(TokenListener.class);
-    tokenManager.start(listener, false);
-    requesLatch.await();
-    await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
-        .untilAsserted(() -> verify(listener).onTokenRenewed(argument.capture()));
-    verify(identityProvider, times(numberOfRetries)).requestToken();
-    verify(listener, never()).onError(any());
-    assertEquals("tokenValX", argument.getValue().getValue());
+    try {
+      TokenListener listener = mock(TokenListener.class);
+      tokenManager.start(listener, false);
+      requesLatch.await();
+      await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
+          .untilAsserted(() -> verify(listener).onTokenRenewed(argument.capture()));
+      verify(identityProvider, times(numberOfRetries)).requestToken();
+      verify(listener, never()).onError(any());
+      assertEquals("tokenValX", argument.getValue().getValue());
+    } finally {
+      tokenManager.stop();
+    }
   }
 
   @Test
@@ -328,15 +338,19 @@ public class TokenBasedAuthenticationUnitTests {
         executionTimeout, new TokenManagerConfig.RetryPolicy(numberOfRetries, 100)));
 
     AuthXManager manager = spy(new AuthXManager(tokenManager));
-    AuthXEventListener listener = mock(AuthXEventListener.class);
-    manager.setListener(listener);
-    manager.start();
-    requesLatch.await();
-    verify(listener, never()).onIdentityProviderError(any());
-    verify(listener, never()).onConnectionAuthenticationError(any());
+    try {
+      AuthXEventListener listener = mock(AuthXEventListener.class);
+      manager.setListener(listener);
+      manager.start();
+      requesLatch.await();
+      verify(listener, never()).onIdentityProviderError(any());
+      verify(listener, never()).onConnectionAuthenticationError(any());
 
-    await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-      verify(manager, times(1)).authenticateConnections(any());
-    });
+      await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+        verify(manager, times(1)).authenticateConnections(any());
+      });
+    } finally {
+      manager.stop();
+    }
   }
 }

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.List;
 import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -53,6 +54,14 @@ public interface JedisClientConfig {
 
   default AuthXManager getAuthXManager() {
     return null;
+  }
+
+  default List<String> getTrackingPrefixList() {
+    return null;
+  }
+
+  default boolean getTrackingModeOnDefault() {
+    return true;
   }
 
   default int getDatabase() {

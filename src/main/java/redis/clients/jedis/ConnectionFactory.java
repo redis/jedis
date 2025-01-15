@@ -6,6 +6,11 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.annots.Experimental;
@@ -29,6 +34,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final Supplier<Connection> objectMaker;
 
   private final AuthXEventListener authXEventListener;
+  private CacheConnection trackingConnection = null;
+  private ScheduledExecutorService invalidationListeningExecutor = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this(hostAndPort, DefaultJedisClientConfig.builder().build(), null);
@@ -42,6 +49,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
       Cache csCache) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache);
+    if (!clientConfig.getTrackingModeOnDefault()) {
+      invalidationListeningExecutor = Executors.newSingleThreadScheduledExecutor();
+      // initialize tracking connection
+      initializeTrackingConnection();
+    }
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
@@ -66,6 +78,51 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       this.authXEventListener = authXManager.getListener();
       authXManager.start();
     }
+  }
+
+  @Experimental
+  private void initializeTrackingConnection() {
+    trackingConnection = new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
+    tracking();
+    startInvalidationListenerThread();
+  }
+
+  /**
+   * tracking on broadcasting mode
+   */
+  @Experimental
+  private void tracking() {
+    List<String> trackingPrefixList = clientConfig.getTrackingPrefixList();
+    // If no prefix is set, the prefix is ""
+    if (trackingPrefixList == null) {
+      trackingPrefixList = new ArrayList<>();
+      trackingPrefixList.add("");
+    }
+    trackingConnection.sendCommandWithTracking(Protocol.Command.CLIENT, trackingPrefixList, "TRACKING", "ON", "BCAST");
+    String reply = trackingConnection.getStatusCodeReply();
+    if (!"OK".equals(reply)) {
+      throw new JedisException("Could not enable client tracking. Reply: " + reply);
+    }
+  }
+
+  /**
+   * Start a scheduled task to listen for invalidation event
+   */
+  @Experimental
+  private void startInvalidationListenerThread() {
+    invalidationListeningExecutor.scheduleAtFixedRate(() -> {
+      if (trackingConnection.isBroken() || !trackingConnection.isConnected() || !trackingConnection.ping()) {
+        // flush cache(broadcasting mode only trackingConnection disconnect)
+        clientSideCache.flush();
+        try {
+          trackingConnection.connect();
+        } catch (Exception e) {
+          // TODO
+        }
+        tracking();
+      }
+      trackingConnection.readPushesWithCheckingBroken();
+    }, 2, 2, TimeUnit.SECONDS);
   }
 
   private Supplier<Connection> connectionSupplier() {

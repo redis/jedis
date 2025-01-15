@@ -297,16 +297,16 @@ public class TokenBasedAuthenticationUnitTests {
 
     TokenManager tokenManager = new TokenManager(identityProvider, new TokenManagerConfig(0.7F, 200,
         2000, new TokenManagerConfig.RetryPolicy(numberOfRetries - 1, 100)));
-    try {
 
-    TokenListener listener = mock(TokenListener.class);
-    tokenManager.start(listener, false);
-    requesLatch.await();
-    await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
-        .untilAsserted(() -> verify(listener).onTokenRenewed(argument.capture()));
-    verify(identityProvider, times(numberOfRetries)).requestToken();
-    verify(listener, never()).onError(any());
-    assertEquals("tokenValX", argument.getValue().getValue());
+    try {
+      TokenListener listener = mock(TokenListener.class);
+      tokenManager.start(listener, false);
+      requesLatch.await();
+      await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_HUNDRED_MILLISECONDS)
+          .untilAsserted(() -> verify(listener).onTokenRenewed(argument.capture()));
+      verify(identityProvider, times(numberOfRetries)).requestToken();
+      verify(listener, never()).onError(any());
+      assertEquals("tokenValX", argument.getValue().getValue());
     } finally {
       tokenManager.stop();
     }

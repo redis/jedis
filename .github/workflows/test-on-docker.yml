@@ -83,7 +83,20 @@ jobs:
             mvn -Dtest=$TESTS clean compile test
           fi
         env:
+          JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
           TESTS: ${{ github.event.inputs.specific_test || '' }}
+      - name: Upload Heap Dumps
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heap-dumps-${{ matrix.redis_version }}
+          path: ${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof
+          retention-days: 5
+      - name: Upload Surefire Dump File
+        uses: actions/upload-artifact@v3
+        with:
+          name: surefire-dumpstream
+          path: target/surefire-reports/*.dumpstream
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()

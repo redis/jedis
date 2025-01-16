@@ -93,7 +93,7 @@ jobs:
           path: ${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof
           retention-days: 5
       - name: Upload Surefire Dump File
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: surefire-dumpstream
           path: target/surefire-reports/*.dumpstream

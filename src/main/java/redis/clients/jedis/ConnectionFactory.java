@@ -34,7 +34,17 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final Supplier<Connection> objectMaker;
 
   private final AuthXEventListener authXEventListener;
+  /**
+   * Only one connection is maintained between a client and a server node for tracking and receiving invalidation messages.
+   * <p>
+   * This is done to avoid the server sending duplicate messages to multiple connections,
+   * thereby reducing the CPU consumption of the server.
+   */
   private CacheConnection trackingConnection = null;
+
+  /**
+   * The single thread executor for listening invalidation messages.
+   */
   private ScheduledExecutorService invalidationListeningExecutor = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
@@ -80,6 +90,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     }
   }
 
+  /**
+   * Create a "tracking" connection and start tracking and listen invalidation messages periodically.
+   */
   @Experimental
   private void initializeTrackingConnection() {
     trackingConnection = new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
@@ -88,12 +101,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   /**
-   * tracking on broadcasting mode
+   * Tracking on broadcasting mode.
    */
   @Experimental
   private void tracking() {
     List<String> trackingPrefixList = clientConfig.getTrackingPrefixList();
-    // If no prefix is set, the prefix is ""
+    // if no prefix is set, the prefix is "".
     if (trackingPrefixList == null) {
       trackingPrefixList = new ArrayList<>();
       trackingPrefixList.add("");
@@ -106,7 +119,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   /**
-   * Start a scheduled task to listen for invalidation event
+   * Start a scheduled task to listen for invalidation event.
    */
   @Experimental
   private void startInvalidationListenerThread() {
@@ -114,10 +127,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (trackingConnection.isBroken() || !trackingConnection.isConnected() || !trackingConnection.ping()) {
         // flush cache(broadcasting mode only trackingConnection disconnect)
         clientSideCache.flush();
+        // reconnect and enable tracking
         try {
           trackingConnection.connect();
         } catch (Exception e) {
-          // TODO
+          // do something
         }
         tracking();
       }

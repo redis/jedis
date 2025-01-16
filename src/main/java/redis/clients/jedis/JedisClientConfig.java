@@ -57,10 +57,16 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * @return tracking prefix list.
+   */
   default List<String> getTrackingPrefixList() {
     return null;
   }
 
+  /**
+   * @return {@code true} - default mode. {@code false} - broadcasting mode.
+   */
   default boolean getTrackingModeOnDefault() {
     return true;
   }

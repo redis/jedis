@@ -14,6 +14,9 @@ import redis.clients.jedis.util.RedisInputStream;
 
 public class CacheConnection extends Connection {
 
+  /**
+   * tracking mode(true:default; false:broadcast)
+   */
   private boolean isDefaultMode = true;
   private final Cache cache;
   private ReentrantLock lock;
@@ -34,6 +37,7 @@ public class CacheConnection extends Connection {
     }
     this.cache = Objects.requireNonNull(cache);
     this.isDefaultMode = clientConfig.getTrackingModeOnDefault();
+    // only default mode
     if (isDefaultMode) {
       initializeClientSideCache();
     }
@@ -86,7 +90,7 @@ public class CacheConnection extends Connection {
     CacheEntry<T> cacheEntry = cache.get(cacheKey);
     if (cacheEntry != null) { // (probable) CACHE HIT !!
       if (!isDefaultMode) {
-        // Broadcast mode returns directly
+        // broadcast mode returns directly
         cache.getStats().hit();
         return cacheEntry.getValue();
       }

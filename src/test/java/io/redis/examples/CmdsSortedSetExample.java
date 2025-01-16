@@ -4,10 +4,8 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 // REMOVE_END
-// HIDE_START
-// HIDE_END
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -17,6 +15,7 @@ import redis.clients.jedis.resps.Tuple;
 
 // HIDE_START
 public class CmdsSortedSetExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -474,6 +473,7 @@ public class CmdsSortedSetExample {
 
 
 // HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

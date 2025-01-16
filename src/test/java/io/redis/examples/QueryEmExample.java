@@ -8,7 +8,6 @@ import org.junit.Test;
 
 // HIDE_START
 import java.util.List;
-import java.util.stream.Stream;
 
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
@@ -17,6 +16,7 @@ import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class QueryEmExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");

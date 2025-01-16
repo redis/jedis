@@ -4,14 +4,15 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 // REMOVE_END
+
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 // HIDE_END
 
 // HIDE_START
 public class CmdsStringExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -42,6 +43,7 @@ public class CmdsStringExample {
         // REMOVE_END
 
 // HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

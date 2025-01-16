@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
@@ -115,6 +117,7 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void broadcastWithError() {
 
     JedisBroadcastException error = assertThrows(JedisBroadcastException.class, () -> cluster.functionDelete("xyz"));

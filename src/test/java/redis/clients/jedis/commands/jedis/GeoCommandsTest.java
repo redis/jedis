@@ -19,6 +19,7 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.SafeEncoder;
 
 @RunWith(Parameterized.class)
@@ -532,7 +533,8 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
-    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
+    assertThat(members.get(0).getCoordinate(),
+        GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523));
   }
 
   @Test

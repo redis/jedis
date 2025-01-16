@@ -292,10 +292,12 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig, final String host, int port,
-      final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
-      final String user, final String password, final int database, final String clientName) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.create(connectionTimeout, soTimeout,
-        infiniteSoTimeout, user, password, database, clientName, false, null, null, null, null, null, null, true),
+      final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout, final String user,
+      final String password, final int database, final String clientName) {
+    this(new HostAndPort(host, port),
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
+            .blockingSocketTimeoutMillis(infiniteSoTimeout).user(user).password(password).database(database)
+            .clientName(clientName).build(),
         poolConfig);
   }
 
@@ -304,9 +306,12 @@ public class JedisPooled extends UnifiedJedis {
       final String password, final int database, final String clientName, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.create(connectionTimeout, soTimeout,
-        infiniteSoTimeout, user, password, database, clientName, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier, null, null, null, true), poolConfig);
+    this(new HostAndPort(host, port),
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
+            .blockingSocketTimeoutMillis(infiniteSoTimeout).user(user).password(password).database(database)
+            .clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+            .hostnameVerifier(hostnameVerifier).build(),
+        poolConfig);
   }
 
   public JedisPooled(final URI uri) {

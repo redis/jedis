@@ -373,20 +373,20 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", client.tsCreate("seriesAdd2", TSCreateParams.createParams().retention(10000L).labels(labels)));
 
     long startTime = System.currentTimeMillis();
-    Thread.sleep(1);
+    Thread.sleep(2);
 //    long add1 = client.tsAdd("seriesAdd2", 1.1, 10000);
     long add1 = client.tsAdd("seriesAdd2", 1.1);
     assertTrue(add1 > startTime);
-    Thread.sleep(1);
+    Thread.sleep(2);
     long add2 = client.tsAdd("seriesAdd2", 3.2);
     assertTrue(add2 > add1);
-    Thread.sleep(1);
+    Thread.sleep(2);
     long add3 = client.tsAdd("seriesAdd2", 3.2);
     assertTrue(add3 > add2);
-    Thread.sleep(1);
+    Thread.sleep(2);
     long add4 = client.tsAdd("seriesAdd2", -1.2);
     assertTrue(add4 > add3);
-    Thread.sleep(1);
+    Thread.sleep(2);
     long endTime = System.currentTimeMillis();
     assertTrue(endTime > add4);
 

@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
 import redis.clients.jedis.RedisProtocol;
@@ -361,6 +362,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void sintercard() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");

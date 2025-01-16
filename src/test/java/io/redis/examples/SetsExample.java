@@ -17,6 +17,7 @@ public class SetsExample {
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // HIDE_END
+
         // REMOVE_START
         jedis.del("bikes:racing:france");
         jedis.del("bikes:racing:usa");

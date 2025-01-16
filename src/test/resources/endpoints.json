@@ -10,6 +10,7 @@
     "username": "default",
     "password": "foobared",
     "tls": true,
+    "certificatesLocation": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
     ]
@@ -26,6 +27,7 @@
     "username": "acljedis",
     "password": "fizzbuzz",
     "tls": true,
+    "certificatesLocation": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
     ]

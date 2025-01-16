@@ -9,6 +9,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class ListExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -319,5 +320,8 @@ public class ListExample {
         jedis.del("bikes:repairs");
         // REMOVE_END
 
+// HIDE_START
+        jedis.close();
     }
 }
+// HIDE_END

@@ -13,7 +13,6 @@ import redis.clients.jedis.search.schemafields.*;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-
 // REMOVE_END
 
 class Bicycle {

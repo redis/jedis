@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -201,6 +202,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.4.0", message="ADDSCORES")
   public void testAggregationBuilderAddScores() {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);

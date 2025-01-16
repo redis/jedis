@@ -45,5 +45,9 @@ public class BloomFilterExample {
                 "Windy City Wippet");
         System.out.println(res5); // >>> [True, True, True]
         // STEP_END
+
+// HIDE_START
+        jedis.close();
     }
 }
+// HIDE_END

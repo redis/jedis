@@ -17,7 +17,6 @@ public class BitMapsExample {
         jedis.del("pings:2024-01-01-00:00");
         // REMOVE_END
 
-
         // STEP_START ping
         boolean res1 = jedis.setbit("pings:2024-01-01-00:00", 123, true);
         System.out.println(res1); // >>> false
@@ -41,7 +40,11 @@ public class BitMapsExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.assertEquals(res4, 1);
+        Assert.assertEquals(1, res4);
         // REMOVE_END
+
+// HIDE_START
+        jedis.close();
     }
 }
+// HIDE_END

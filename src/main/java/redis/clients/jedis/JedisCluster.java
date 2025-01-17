@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -377,6 +378,10 @@ public class JedisCluster extends UnifiedJedis {
   @Override
   public ClusterPipeline pipelined() {
     return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
+  }
+
+  public ClusterPipeline pipelined(ExecutorService executorService) {
+    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects, executorService);
   }
 
   /**

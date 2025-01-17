@@ -31,6 +31,9 @@ public class GeoIndexExample {
         // Clear any keys here before using them in tests.
         try {
             jedis.ftDropIndex("productidx");
+        } catch (JedisDataException j) {}
+        
+        try {
             jedis.ftDropIndex("geomidx");
         } catch (JedisDataException j) {}
         

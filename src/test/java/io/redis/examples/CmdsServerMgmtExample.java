@@ -7,6 +7,7 @@ import org.junit.Test;
 // REMOVE_END
 import java.util.Set;
 
+import redis.clients.jedis.Jedis;
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 
@@ -33,11 +34,22 @@ public class CmdsServerMgmtExample {
         // REMOVE_END
 
         // STEP_START info
+        // Note: you must use the `Jedis` class to access the `info`
+        // command rather than `UnifiedJedis`.
+        Jedis jedis2 = new Jedis("redis://localhost:6379");
 
-        // Not currently supported by Jedis.
+        String infoResult = jedis2.info();
+        
+        // Check the first 8 characters of the result (the full `info` string
+        // is much longer than this).
+        System.out.println(infoResult.substring(0, 8)); // >>> # Server
 
+        jedis2.close();
         // STEP_END
-
+        // REMOVE_START
+        Assert.assertEquals("# Server", infoResult.substring(0, 8));
+        // REMOVE_END
+        
 // HIDE_END
     }
 }

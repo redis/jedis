@@ -15,6 +15,7 @@ public class CmdsServerMgmtExample {
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+// HIDE_END
 
         // STEP_START flushall
         // REMOVE_START
@@ -50,6 +51,8 @@ public class CmdsServerMgmtExample {
         Assert.assertEquals("# Server", infoResult.substring(0, 8));
         // REMOVE_END
         
-// HIDE_END
+// HIDE_START
+        jedis.close();
     }
 }
+// HIDE_END

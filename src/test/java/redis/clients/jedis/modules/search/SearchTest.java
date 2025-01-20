@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
@@ -1158,7 +1157,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
   }
 
-  @org.junit.Ignore
   @Test
   public void searchProfile() {
     Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
@@ -1169,31 +1167,20 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     hash.put("t2", "bar");
     client.hset("doc1", hash);
 
-    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
+    Map.Entry<SearchResult, ProfilingInfo> reply = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), new Query("foo"));
 
     SearchResult result = reply.getKey();
     assertEquals(1, result.getTotalResults());
     assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
 
-    Map<String, Object> profile = reply.getValue();
-    Map<String, Object> iteratorsProfile;
     if (protocol != RedisProtocol.RESP3) {
-      iteratorsProfile = (Map<String, Object>) profile.get("Iterators profile");
+      List<Object> profileResp2 = (List) reply.getValue().getProfilingInfo();
+      assertThat(profileResp2, Matchers.hasItems("Shards", "Coordinator"));
     } else {
-      List iteratorsProfileList = (List) profile.get("Iterators profile");
-      assertEquals(1, iteratorsProfileList.size());
-      iteratorsProfile = (Map<String, Object>) iteratorsProfileList.get(0);
+      Map<String, Object> profileResp3 = (Map) reply.getValue().getProfilingInfo();
+      assertThat(profileResp3.keySet(), Matchers.hasItems("Shards", "Coordinator"));
     }
-    assertEquals("TEXT", iteratorsProfile.get("Type"));
-    assertEquals("foo", iteratorsProfile.get("Term"));
-    assertEquals(1L, iteratorsProfile.get("Counter"));
-    assertEquals(1L, iteratorsProfile.get("Size"));
-    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
-
-    assertEquals(Arrays.asList("Index", "Scorer", "Sorter", "Loader"),
-        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
-            .map(map -> map.get("Type")).collect(Collectors.toList()));
   }
 
   @Test

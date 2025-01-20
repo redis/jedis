@@ -17,11 +17,11 @@ public class CmdsServerMgmtExample {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
         // STEP_START flushall
-        //REMOVE_START
+        // REMOVE_START
         jedis.set("testkey1", "1");
         jedis.set("testkey2", "2");
         jedis.set("testkey3", "3");
-        //REMOVE_END
+        // REMOVE_END
         String flushAllResult1 = jedis.flushAll();
         System.out.println(flushAllResult1); // >>> OK
 

@@ -4518,8 +4518,8 @@ public class CommandObjects {
           String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
           if (PROFILE_STR.equalsIgnoreCase(keyStr)) {
             profileRaw = keyValue.getValue();
-          } else if (RESULTS_STR.equalsIgnoreCase(keyStr)) { // Redis 8
-            resultsRaw = keyValue.getValue();
+//          } else if (RESULTS_STR.equalsIgnoreCase(keyStr)) { // Redis 8
+//            resultsRaw = keyValue.getValue();
           }
         }
         return KeyValue.of(resultsBuilder.build(resultsRaw),

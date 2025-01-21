@@ -10,9 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -93,7 +93,7 @@ public class RedisEntraIDClusterIntegrationTests {
 
         authXManager = spy(authXManager);
 
-        List<Connection> connections = new ArrayList<>();
+        List<Connection> connections = new CopyOnWriteArrayList<>();
         doAnswer(invocation -> {
             Connection connection = spy((Connection) invocation.getArgument(0));
             invocation.getArguments()[0] = connection;

@@ -24,11 +24,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.authentication.core.IdentityProvider;
-import redis.clients.authentication.core.IdentityProviderConfig;
-import redis.clients.authentication.core.SimpleToken;
-import redis.clients.authentication.core.Token;
 import redis.clients.authentication.core.TokenAuthConfig;
+import redis.clients.authentication.entraid.EntraIDTokenAuthConfigBuilder;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -38,17 +35,19 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 
-public class TokenBasedAuthenticationClusterIntegrationTests {
+public class RedisEntraIDClusterIntegrationTests {
     private static final Logger log = LoggerFactory
-            .getLogger(TokenBasedAuthenticationClusterIntegrationTests.class);
+            .getLogger(RedisEntraIDClusterIntegrationTests.class);
 
+    private static EntraIDTestContext testCtx;
     private static EndpointConfig endpointConfig;
     private static HostAndPort hnp;
 
     @BeforeClass
     public static void before() {
         try {
-            endpointConfig = HostAndPorts.getRedisEndpoint("cluster");
+            testCtx = EntraIDTestContext.DEFAULT;
+            endpointConfig = HostAndPorts.getRedisEndpoint("cluster-entraid-acl");
             hnp = endpointConfig.getHostAndPort();
         } catch (IllegalArgumentException e) {
             log.warn("Skipping test because no Redis endpoint is configured");
@@ -58,28 +57,14 @@ public class TokenBasedAuthenticationClusterIntegrationTests {
 
     @Test
     public void testClusterInitWithAuthXManager() {
-        IdentityProviderConfig idpConfig = new IdentityProviderConfig() {
-            @Override
-            public IdentityProvider getProvider() {
-                return new IdentityProvider() {
-                    @Override
-                    public Token requestToken() {
-                        return new SimpleToken(endpointConfig.getUsername(),
-                                endpointConfig.getPassword() == null ? ""
-                                        : endpointConfig.getPassword(),
-                                System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
-                                null);
-                    }
-                };
-            }
-        };
-
-        AuthXManager manager = new AuthXManager(TokenAuthConfig.builder()
-                .lowerRefreshBoundMillis(1000).tokenRequestExecTimeoutInMs(3000)
-                .identityProviderConfig(idpConfig).build());
+        TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+                .lowerRefreshBoundMillis(1000).clientId(testCtx.getClientId())
+                .secret(testCtx.getClientSecret()).authority(testCtx.getAuthority())
+                .scopes(testCtx.getRedisScopes()).build();
 
         int defaultDirections = 5;
-        JedisClientConfig config = DefaultJedisClientConfig.builder().authXManager(manager).build();
+        JedisClientConfig config = DefaultJedisClientConfig.builder()
+                .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
         ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
@@ -94,25 +79,17 @@ public class TokenBasedAuthenticationClusterIntegrationTests {
 
     @Test
     public void testClusterWithReAuth() throws InterruptedException, ExecutionException {
-        IdentityProviderConfig idpConfig = new IdentityProviderConfig() {
-            @Override
-            public IdentityProvider getProvider() {
-                return new IdentityProvider() {
-                    @Override
-                    public Token requestToken() {
-                        return new SimpleToken(endpointConfig.getUsername(),
-                                endpointConfig.getPassword() == null ? ""
-                                        : endpointConfig.getPassword(),
-                                System.currentTimeMillis() + 5 * 1000, System.currentTimeMillis(),
-                                null);
-                    }
-                };
-            }
-        };
+        TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+                // 0.00002F is to make it fit into 2 seconds, we need at least 2 attempt in 2 seconds
+                // to trigger re-authentication.
+                // For expiration time between 30 minutes to 12 hours 
+                // token renew will happen in from 36ms up to 864ms
+                // If the received token has more than 12 hours to expire, this test will probably fail, and need to be adjusted.
+                .expirationRefreshRatio(0.00002F).clientId(testCtx.getClientId())
+                .secret(testCtx.getClientSecret()).authority(testCtx.getAuthority())
+                .scopes(testCtx.getRedisScopes()).build();
 
-        AuthXManager authXManager = new AuthXManager(TokenAuthConfig.builder()
-                .lowerRefreshBoundMillis(4600).tokenRequestExecTimeoutInMs(3000)
-                .identityProviderConfig(idpConfig).build());
+        AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
 
         authXManager = spy(authXManager);
 

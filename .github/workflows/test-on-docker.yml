@@ -36,6 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         redis_version:
+          - "8.0-M03-pre"
           - "8.0-M02"
           - "7.4.1"
           - "7.2.6"

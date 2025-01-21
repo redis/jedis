@@ -1,5 +1,6 @@
 package redis.clients.jedis.modules.search;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 import java.util.*;
@@ -1174,12 +1175,17 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, result.getTotalResults());
     assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
 
+    Object profileObject = reply.getValue().getProfilingInfo();
     if (protocol != RedisProtocol.RESP3) {
-      List<Object> profileResp2 = (List) reply.getValue().getProfilingInfo();
-      assertThat(profileResp2, Matchers.hasItems("Shards", "Coordinator"));
+      assertThat(profileObject, Matchers.isA(List.class));
+      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
+      }
     } else {
-      Map<String, Object> profileResp3 = (Map) reply.getValue().getProfilingInfo();
-      assertThat(profileResp3.keySet(), Matchers.hasItems("Shards", "Coordinator"));
+      assertThat(profileObject, Matchers.isA(Map.class));
+      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+        assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
+      }
     }
   }
 
@@ -1205,21 +1211,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
-
-//    // @org.junit.Ignore
-//    // profile
-//    Map.Entry<SearchResult, Map<String, Object>> reply
-//        = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
-//    doc1 = reply.getKey().getDocuments().get(0);
-//    assertEquals("a", doc1.getId());
-//    assertEquals("0", doc1.get("__v_score"));
-//    if (protocol != RedisProtocol.RESP3) {
-//      assertEquals("VECTOR", ((Map<String, Object>) reply.getValue().get("Iterators profile")).get("Type"));
-//    } else {
-//      assertEquals(Arrays.asList("VECTOR"),
-//          ((List<Map<String, Object>>) reply.getValue().get("Iterators profile")).stream()
-//              .map(map -> map.get("Type")).collect(Collectors.toList()));
-//    }
   }
 
   @Test
@@ -1244,21 +1235,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
-
-//    // @org.junit.Ignore
-//    // profile
-//    Map.Entry<SearchResult, Map<String, Object>> reply
-//        = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
-//    doc1 = reply.getKey().getDocuments().get(0);
-//    assertEquals("a", doc1.getId());
-//    assertEquals("0", doc1.get("__v_score"));
-//    if (protocol != RedisProtocol.RESP3) {
-//      assertEquals("VECTOR", ((Map<String, Object>) reply.getValue().get("Iterators profile")).get("Type"));
-//    } else {
-//      assertEquals(Arrays.asList("VECTOR"),
-//          ((List<Map<String, Object>>) reply.getValue().get("Iterators profile")).stream()
-//              .map(map -> map.get("Type")).collect(Collectors.toList()));
-//    }
   }
 
   @Test

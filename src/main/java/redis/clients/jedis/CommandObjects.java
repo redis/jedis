@@ -4494,8 +4494,10 @@ public class CommandObjects {
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, ProfilingInfo>> {
 
-    private static final String PROFILE_STR = "profile";
-    private static final String RESULTS_STR = "results";
+    private static final String PROFILE_STR_REDIS7 = "profile";
+    private static final String PROFILE_STR_REDIS8 = "Profile";
+    private static final String RESULTS_STR_REDIS7 = "results";
+    private static final String RESULTS_STR_REDIS8 = "Results";
 
     private final Builder<T> resultsBuilder;
 
@@ -4512,22 +4514,32 @@ public class CommandObjects {
       System.out.println("<<<<<<<<<<<<<<<<<<<<DEBUG");
 
       if (list.get(0) instanceof KeyValue) { // RESP3
-        Object resultsRaw = data;
-        Object profileRaw = null;
+        Object resultsData = null, profileData = null;
+
         for (KeyValue keyValue : (List<KeyValue>) data) {
           String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
-          if (PROFILE_STR.equalsIgnoreCase(keyStr)) {
-            profileRaw = keyValue.getValue();
-//          } else if (RESULTS_STR.equalsIgnoreCase(keyStr)) { // Redis 8
-//            resultsRaw = keyValue.getValue();
+          switch (keyStr) {
+            case PROFILE_STR_REDIS7:
+            case PROFILE_STR_REDIS8:
+              profileData = keyValue.getValue();
+              break;
+            case RESULTS_STR_REDIS7:
+              resultsData = data;
+              break;
+            case RESULTS_STR_REDIS8:
+              resultsData = keyValue.getValue();
+              break;
           }
         }
-        return KeyValue.of(resultsBuilder.build(resultsRaw),
-                ProfilingInfo.PROFILING_INFO_BUILDER.build(profileRaw));
+
+        assert resultsData != null : "Could not detect Results data.";
+        assert profileData != null : "Could not detect Profile data.";
+        return KeyValue.of(resultsBuilder.build(resultsData),
+                ProfilingInfo.PROFILING_INFO_BUILDER.build(profileData));
       }
 
       return KeyValue.of(resultsBuilder.build(list.get(0)),
-          ProfilingInfo.PROFILING_INFO_BUILDER.build(list.get(1))); // RESP2
+          ProfilingInfo.PROFILING_INFO_BUILDER.build(list.get(1)));
     }
   }
 

@@ -4509,9 +4509,6 @@ public class CommandObjects {
     public Map.Entry<T, ProfilingInfo> build(Object data) {
       List list = (List) data;
       if (list == null || list.isEmpty()) return null;
-      System.out.println("DEBUG>>>>>>>>>>>>>>>>>>>>");
-      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
-      System.out.println("<<<<<<<<<<<<<<<<<<<<DEBUG");
 
       if (list.get(0) instanceof KeyValue) { // RESP3
         Object resultsData = null, profileData = null;

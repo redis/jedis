@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import java.util.Collections;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+@SinceRedisVersion(value = "8.0.0")
 @RunWith(Parameterized.class)
 public class RedisModulesConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase {
 

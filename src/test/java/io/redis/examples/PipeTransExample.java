@@ -13,9 +13,11 @@ import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.Response;
 
 public class PipeTransExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+
         // REMOVE_START
         for (int i = 0; i < 5; i++) {
             jedis.del(String.format("seat:%d", i));
@@ -111,7 +113,7 @@ public class PipeTransExample {
         Assert.assertEquals("OK", transResults.get(0).toString());
         // REMOVE_END
 
-        // HIDE_START
+// HIDE_START
         jedis.close();
     }   
 }

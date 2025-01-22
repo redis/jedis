@@ -8,6 +8,7 @@ import org.junit.Test;
 import redis.clients.jedis.UnifiedJedis;
 
 public class CuckooFilterExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -41,5 +42,9 @@ public class CuckooFilterExample {
         Assert.assertTrue(res5);
         // REMOVE_END
         // STEP_END
+
+// HIDE_START
+        jedis.close();
     }
 }
+// HIDE_END

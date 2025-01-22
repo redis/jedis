@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
@@ -328,6 +329,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0")
   public void testZrankWithScoreAndZrevrankWithScore() {
     String key = "zset";
     String member1 = "one";
@@ -1198,6 +1200,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0")
   public void testZinterAndZintercard() {
     ZParams params = new ZParams().aggregate(ZParams.Aggregate.SUM).weights(1, 2);
 
@@ -1419,6 +1422,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0")
   public void testZmpopAndZmpopWithCount() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1444,6 +1448,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0")
   public void testZmpopAndZmpopWithCountBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();
@@ -1469,6 +1474,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testBzmpop() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1496,6 +1502,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0")
   public void testBzmpopBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();
@@ -1523,6 +1530,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0")
   public void testBzmpopCount() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1542,6 +1550,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testBzmpopCountBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();

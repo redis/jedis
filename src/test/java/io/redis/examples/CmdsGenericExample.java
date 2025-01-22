@@ -4,8 +4,8 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 // REMOVE_END
+
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ExpiryOption;
@@ -13,13 +13,13 @@ import redis.clients.jedis.args.ExpiryOption;
 
 // HIDE_START
 public class CmdsGenericExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
         //REMOVE_START
         // Clear any keys here before using them in tests.
-
         //REMOVE_END
 // HIDE_END
 
@@ -106,8 +106,7 @@ public class CmdsGenericExample {
         // REMOVE_END
 
 // HIDE_START
-        
+        jedis.close();
     }
 }
 // HIDE_END
-

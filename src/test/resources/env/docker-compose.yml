@@ -1,0 +1,167 @@
+services:
+  redis1-2-5-8-sentinel:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis1-2-5-8-sentinel
+    #network_mode: host
+    environment:
+      - REDIS_CLUSTER=no
+      - REDIS_PASSWORD=foobared
+      - TLS_ENABLED=yes
+    ports:
+      - "6379:6379"
+      - "6380:6380"
+      - "6383:6383"
+      - "6386:6386"
+      - "6390:6390"
+      - "6391:6391"
+      - "26379:26379" # sentinel
+      - "36379:36379" # sentinel tls
+    command: ${ENABLE_MODULE_COMMAND_DIRECTIVE}
+    volumes:
+      -  ${REDIS_ENV_CONF_DIR}/redis1-2-5-8-sentinel/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/redis1-2-5-8-sentinel/work:/redis/work:rw
+  redis3-4-sentinel:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis3-4-sentinel
+    #network_mode: host
+    environment:
+      - REDIS_CLUSTER=no
+      - TLS_ENABLED=yes
+      - REDIS_PASSWORD=foobared
+    ports:
+      - "6381:6381"
+      - "16381:16381"
+      - "6382:6382"
+      - "16382:16382"
+      - "26380:26380" # sentinel
+      - "36380:36380" # sentinel tls
+      - "26382:26382" # sentinel
+      - "36382:36382" # sentinel tls
+    volumes:
+      -  ${REDIS_ENV_CONF_DIR}/redis3-4-sentinel/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/redis3-4-sentinel/work:/redis/work:rw
+
+  redis6-7-sentinel:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis6-7-sentinel
+    #network_mode: host
+    environment:
+      - REDIS_CLUSTER=no
+      - REDIS_PASSWORD=foobared
+    ports:
+      - "6384:6384"
+      - "6385:6385"
+      - "26381:26381" # sentinel
+      - "36381:36381" # sentinel tls
+    volumes:
+      -  ${REDIS_ENV_CONF_DIR}/redis6-7-sentinel/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/redis6-7-sentinel/work:/redis/work:rw
+  redis9-sentinel:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis9-sentinel
+    #network_mode: host
+    environment:
+      - REDIS_CLUSTER=no
+      - REDIS_CLIENT_USER=deploy
+      - REDIS_CLIENT_PASSWORD=verify
+      - TLS_ENABLED=yes
+    ports:
+      - "6387:6387"
+      - "16387:16387"
+      - "26383:26383"    # sentinel
+      - "36383:36383"    # sentinel tls
+    volumes:
+      -  ${REDIS_ENV_CONF_DIR}/redis9-sentinel/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/redis9-sentinel/work:/redis/work:rw
+
+  redis10-11:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis10-11
+    #network_mode: host
+    environment:
+      - REDIS_CLUSTER=no
+    ports:
+      - "6388:6388"
+      - "6389:6389"
+    volumes:
+      - ${REDIS_ENV_CONF_DIR}/redis10-11/config:/redis/config:r
+      - ${REDIS_ENV_WORK_DIR}/redis10-11/work:/redis/work:rw
+  redis-unavailable:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis-unavailable-1
+    #network_mode: host
+    environment:
+      - REDIS_CLUSTER=no
+      - PORT=6400
+    ports:
+      - "6400:6400"
+    volumes:
+      -  ${REDIS_ENV_WORK_DIR}/redis-unavailable/work:/redis/work:rw
+
+  cluster-unbound:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: cluster-unbound-1
+    environment:
+      - TLS_ENABLED=yes
+      - REDIS_PASSWORD=cluster
+    ports:
+      - "7379-7383:7379-7383"
+      - "8379-8383:8379-8383"
+    volumes:
+      - ${REDIS_ENV_CONF_DIR}/cluster-unbound/config:/redis/config:r
+      - ${REDIS_ENV_WORK_DIR}/cluster-unbound/work:/redis/work:rw
+
+  cluster-stable:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: cluster-stable-1
+    #network_mode: host
+    command: --cluster-announce-ip 127.0.0.1
+    environment:
+      - REDIS_CLUSTER=yes
+      - REDIS_PASSWORD=cluster
+      - PORT=7479
+      - NODES=3
+      - REPLICAS=0
+    ports:
+      - "7479-7481:7479-7481"
+    volumes:
+      - ${REDIS_ENV_CONF_DIR}/cluster-stable/config:/redis/config:r
+      - ${REDIS_ENV_WORK_DIR}/cluster-stable/work:/redis/work:rw
+
+  jedis-stack:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_STACK_VERSION:-${REDIS_VERSION}}"
+    container_name: jedis-stack
+    environment:
+      - REDIS_CLUSTER=no
+      - PORT=6479
+    ports:
+      - "6479:6479"
+    volumes:
+      -  ${REDIS_ENV_WORK_DIR}/jedis-stack/work:/redis/work:rw
+#todo find a way to connect from mac os host to exposed unix socket in container
+#  redis_uds:
+#    image: redis:${REDIS_VERSION}
+#    container_name: redis_uds
+#    #network_mode: host
+#    command: redis-server /etc/redis.conf
+#    volumes:
+#      - "./redis_uds/config/node-0/redis.conf:/etc/redis.conf"
+#      - "./work/redis_uds/work:/tmp/docker/"

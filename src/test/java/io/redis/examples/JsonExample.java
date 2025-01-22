@@ -6,15 +6,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
-
 // REMOVE_END
+
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 // HIDE_END
 
 // HIDE_START
@@ -506,4 +505,3 @@ public class JsonExample {
     }
 }
 // HIDE_END
-

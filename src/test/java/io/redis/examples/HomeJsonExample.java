@@ -19,12 +19,14 @@ import java.util.List;
 
 // HIDE_START
 public class HomeJsonExample {
+
     @Test
     public void run() {
 // HIDE_END
         // STEP_START connect
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // STEP_END
+
         //REMOVE_START
         // Clear the indexes and keys here before using them in tests.
         try {jedis.ftDropIndex("idx:users");} catch (JedisDataException j){}
@@ -146,8 +148,8 @@ public class HomeJsonExample {
                     .map(r -> r.getString("city") + " - " + r.getString("count"))
                     .sorted().toArray());
         // REMOVE_END
-// HIDE_START
 
+// HIDE_START
         jedis.close();
     }
 }

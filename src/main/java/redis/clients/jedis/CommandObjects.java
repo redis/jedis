@@ -57,7 +57,7 @@ public class CommandObjects {
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private Lock mapperLock = new ReentrantLock(true);    
   private volatile JsonObjectMapper jsonObjectMapper;
-  private final AtomicInteger searchDialect = new AtomicInteger(0);
+  private final AtomicInteger searchDialect = new AtomicInteger(2); // DEFAULT_SEARCH_DIALECT = 2;
 
   @Experimental
   void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {

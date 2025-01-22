@@ -1,7 +1,7 @@
 PATH := ./redis-git/src:${PATH}
 
 # Supported test env versions
-SUPPORTED_TEST_ENV_VERSIONS := 8.0-M03-pre, 8.0-M02 7.4.1 7.2.6 6.2.16
+SUPPORTED_TEST_ENV_VERSIONS := 8.0-M03, 8.0-M02 7.4.1 7.2.6 6.2.16
 DEFAULT_TEST_ENV_VERSION := 8.0-M02
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
 

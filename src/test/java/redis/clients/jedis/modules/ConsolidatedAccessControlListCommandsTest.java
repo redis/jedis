@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,22 +16,15 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
-import redis.clients.jedis.util.RedisVersionUtil;
 
+@SinceRedisVersion(value = "8.0.0")
 @RunWith(Parameterized.class)
-public class RedisModulesAccessControlListCommandsTest extends JedisCommandsTestBase {
+public class ConsolidatedAccessControlListCommandsTest extends JedisCommandsTestBase {
 
-  public static final String USER_NAME = "newuser";
+  public static final String USER_NAME = "moduser";
   public static final String USER_PASSWORD = "secret";
 
-  @BeforeClass
-  public static void prepare() throws Exception {
-    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(8, endpoint));
-  }
-
-  public RedisModulesAccessControlListCommandsTest(RedisProtocol protocol) {
+  public ConsolidatedAccessControlListCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 

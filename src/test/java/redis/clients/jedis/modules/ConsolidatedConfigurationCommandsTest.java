@@ -17,9 +17,9 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 @SinceRedisVersion(value = "8.0.0")
 @RunWith(Parameterized.class)
-public class RedisModulesConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase {
+public class ConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase {
 
-  public RedisModulesConsolidatedConfigurationCommandsTest(RedisProtocol redisProtocol) {
+  public ConsolidatedConfigurationCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
   }
 

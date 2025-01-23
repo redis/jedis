@@ -68,7 +68,7 @@ public class ConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase
   }
 
   @Test
-  public void getAllConigSettings() {
+  public void getAllConfigSettings() {
     assertThat(jedis.configGet("*").size(), Matchers.greaterThan(0));
   }
 }

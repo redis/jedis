@@ -3565,21 +3565,25 @@ public abstract class PipeliningBase
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String option) {
     return appendCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return appendCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(option, value));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }

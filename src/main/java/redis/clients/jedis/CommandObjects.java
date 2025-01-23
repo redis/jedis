@@ -3531,19 +3531,23 @@ public class CommandObjects {
         .add(fieldName), BuilderFactory.STRING_SET);
   }
 
+  @Deprecated
   public final CommandObject<Map<String, Object>> ftConfigGet(String option) {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option),
         protocol == RedisProtocol.RESP3 ? BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP : BuilderFactory.ENCODED_OBJECT_MAP_FROM_PAIRS);
   }
 
+  @Deprecated
   public final CommandObject<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return directSearchCommand(ftConfigGet(option), indexName);
   }
 
+  @Deprecated
   public final CommandObject<String> ftConfigSet(String option, String value) {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.SET).add(option).add(value), BuilderFactory.STRING);
   }
 
+  @Deprecated
   public final CommandObject<String> ftConfigSet(String indexName, String option, String value) {
     return directSearchCommand(ftConfigSet(option, value), indexName);
   }

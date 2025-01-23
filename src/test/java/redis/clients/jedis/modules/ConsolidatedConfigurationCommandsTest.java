@@ -15,7 +15,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-@SinceRedisVersion(value = "8.0.0")
+@SinceRedisVersion(value = "7.9.0")
 @RunWith(Parameterized.class)
 public class ConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase {
 

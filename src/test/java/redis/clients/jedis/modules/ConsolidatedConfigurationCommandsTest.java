@@ -23,13 +23,11 @@ public class ConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase
     super(redisProtocol);
   }
 
-  @org.junit.Ignore(value = "failing")
   @Test
   public void setSearchConfigGloballyTest() {
     final String configParam = "search-default-dialect";
-    // confirm default - Redis 8.0-M03 has no default dialect
-    //assertEquals(Collections.singletonMap(configParam, "1"), jedis.configGet(configParam));
-    assertEquals(Collections.emptyMap(), jedis.configGet(configParam));
+    // confirm default
+    assertEquals(Collections.singletonMap(configParam, "1"), jedis.configGet(configParam));
 
     try {
       assertEquals("OK", jedis.configSet(configParam, "2"));
@@ -49,7 +47,7 @@ public class ConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase
 
   @Test
   public void getSearchConfigSettingTest() {
-    assertThat(jedis.configGet("search-timeout"), aMapWithSize(0)); // Redis 8.0-M03 has no default value
+    assertThat(jedis.configGet("search-timeout"), aMapWithSize(1));
   }
 
   @Test

@@ -12,12 +12,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 @SinceRedisVersion(value = "7.9.0")
 @RunWith(Parameterized.class)
-public class ConsolidatedConfigurationCommandsTest extends JedisCommandsTestBase {
+public class ConsolidatedConfigurationCommandsTest extends RedisModuleCommandsTestBase {
 
   public ConsolidatedConfigurationCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);

@@ -74,6 +74,7 @@ public abstract class RedisModuleCommandsTestBase {
   @After
   public void tearDown() throws Exception {
     client.close();
+    jedis.close();
   }
 
 }

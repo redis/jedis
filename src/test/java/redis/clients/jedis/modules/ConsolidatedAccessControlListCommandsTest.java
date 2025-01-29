@@ -17,7 +17,6 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.search.SearchProtocol.SearchCommand;
@@ -27,7 +26,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @SinceRedisVersion(value = "7.9.0")
 @RunWith(Parameterized.class)
-public class ConsolidatedAccessControlListCommandsTest extends JedisCommandsTestBase {
+public class ConsolidatedAccessControlListCommandsTest extends RedisModuleCommandsTestBase {
 
   public static final String USER_NAME = "moduser";
   public static final String USER_PASSWORD = "secret";
@@ -139,7 +138,7 @@ public class ConsolidatedAccessControlListCommandsTest extends JedisCommandsTest
     jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD, "on", "~*");
 
     // client object with new user
-    try (UnifiedJedis client = new UnifiedJedis(endpoint.getHostAndPort(),
+    try (UnifiedJedis client = new UnifiedJedis(hnp,
         DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())) {
 
       // user can't execute commands
@@ -161,7 +160,7 @@ public class ConsolidatedAccessControlListCommandsTest extends JedisCommandsTest
     jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD, "on", "~*");
 
     // client object with new user
-    try (UnifiedJedis client = new UnifiedJedis(endpoint.getHostAndPort(),
+    try (UnifiedJedis client = new UnifiedJedis(hnp,
         DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())) {
 
       // user can't execute category commands

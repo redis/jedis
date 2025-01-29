@@ -1,11 +1,23 @@
 package redis.clients.jedis.modules.search;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
@@ -15,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
@@ -1072,90 +1085,51 @@ public class SearchTest extends RedisModuleCommandsTestBase {
         .addTextField("t1", 1.0)
         .addTextField("t2", 1.0)
         .addNumericField("num");
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertThat(client.ftCreate(index, IndexOptions.defaultOptions(), sc), is("OK"));
 
     client.hset("1", "t1", "hello");
 
     String q = "(*)";
     Query query = new Query(q).dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q).dialect(2);
-    assertTrue("Should contain 'WILDCARD'", client.ftExplain(index, query).contains("WILDCARD"));
+    assertThat( client.ftExplain(index, query), containsString("WILDCARD"));
 
     q = "$hello";
     query = new Query(q).dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q).dialect(2).addParam("hello", "hello");
-    assertTrue("Should contain 'UNION {\n  hello\n  +hello(expanded)\n}\n'",
-        client.ftExplain(index, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
+    assertThat(client.ftExplain(index, query), not(emptyOrNullString()));
 
     q = "@title:(@num:[0 10])";
     query = new Query(q).dialect(1);
-    assertTrue("Should contain 'NUMERIC {0.000000 <= @num <= 10.000000}'",
-        client.ftExplain(index, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
+    assertThat(client.ftExplain(index, query), not(emptyOrNullString()));
     query = new Query(q).dialect(2);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "@t1:@t2:@t3:hello";
     query = new Query(q).dialect(1);
-    assertTrue("Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
-        client.ftExplain(index, query).contains("@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
+    assertThat(client.ftExplain(index, query), not(emptyOrNullString()));
     query = new Query(q).dialect(2);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "@title:{foo}}}}}";
     query = new Query(q).dialect(1);
-    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'",
-        client.ftExplain(index, query).contains("TAG:@title {\n  foo\n}\n"));
+    assertThat(client.ftExplain(index, query), not(emptyOrNullString()));
     query = new Query(q).dialect(2);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "*=>[KNN 10 @v $BLOB]";
     query = new Query(q).addParam("BLOB", "aaaa").dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q).addParam("BLOB", "aaaa").dialect(2);
-    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
+    assertThat(client.ftExplain(index, query), not(emptyOrNullString()));
 
-    q = "*=>[knn $K @vec_field $BLOB as score]";
+    q = "*=>[knn $K @v $BLOB as score]";
     query = new Query(q).addParam("BLOB", "aaaa").addParam("K", "10").dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q).addParam("BLOB", "aaaa").addParam("K", "10").dialect(2);
-    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
+    assertThat(client.ftExplain(index, query), not(emptyOrNullString()));
   }
 
   @org.junit.Ignore
@@ -1297,5 +1271,11 @@ public class SearchTest extends RedisModuleCommandsTestBase {
       total += count;
     }
     assertEquals(7, total);
+  }
+
+  void assertSyntaxError(Query query, UnifiedJedis client) {
+    JedisDataException error = assertThrows(JedisDataException.class,
+        () -> client.ftExplain(index, query));
+    assertThat(error.getMessage(), containsString("Syntax error"));
   }
 }

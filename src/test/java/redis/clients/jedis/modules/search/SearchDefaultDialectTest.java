@@ -3,7 +3,6 @@ package redis.clients.jedis.modules.search;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -106,7 +105,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
         .addTextField("t1", 1.0)
         .addTextField("t2", 1.0)
         .addNumericField("num");
-    assertThat(client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc),is("OK"));
+    assertEquals("OK", client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
 
     client.hset("1", "t1", "hello");
 

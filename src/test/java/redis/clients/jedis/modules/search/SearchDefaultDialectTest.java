@@ -2,19 +2,15 @@ package redis.clients.jedis.modules.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,20 +123,20 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
 
     q = "@title:(@num:[0 10])";
-    query = new Query(q).dialect(1); //dialect=1 should return execution plan
+    query = new Query(q).dialect(1); // dialect=1 should return execution plan
     assertThat(client.ftExplain(INDEX, query), not(emptyString()));
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "@t1:@t2:@t3:hello";
-    query = new Query(q).dialect(1);//dialect=1 should return execution plan
+    query = new Query(q).dialect(1); // dialect=1 should return execution plan
     assertThat(client.ftExplain(INDEX, query), not(emptyString()));
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
 
 
     q = "@title:{foo}}}}}";
-    query = new Query(q).dialect(1);//dialect=1 should return execution plan
+    query = new Query(q).dialect(1); // dialect=1 should return execution plan
     assertThat(client.ftExplain(INDEX, query), not(emptyString()));
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
@@ -178,7 +174,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     JedisDataException error = assertThrows(JedisDataException.class,
         () -> client.ftSpellCheck(INDEX, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
-    MatcherAssert.assertThat(error.getMessage(), Matchers.containsString("DIALECT requires a non negative integer"));
+    assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
   }
 
   void assertSyntaxError(Query query, UnifiedJedis client) {

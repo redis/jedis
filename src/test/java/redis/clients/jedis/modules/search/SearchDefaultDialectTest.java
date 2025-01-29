@@ -3,6 +3,7 @@ package redis.clients.jedis.modules.search;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -105,7 +106,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
         .addTextField("t1", 1.0)
         .addTextField("t2", 1.0)
         .addNumericField("num");
-    assertEquals("OK", client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
+    assertThat(client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc),is("OK"));
 
     client.hset("1", "t1", "hello");
 
@@ -113,31 +114,31 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     Query query = new Query(q).dialect(1);
     assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q); // dialect=default=2 should return execution plan
-    assertTrue("Should contain 'WILDCARD'", client.ftExplain(INDEX, query).contains("WILDCARD"));
+    assertThat(client.ftExplain(INDEX, query), containsString("WILDCARD"));
 
     q = "$hello";
     query = new Query(q).dialect(1);
     assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q).addParam("hello", "hello"); // dialect=default=2 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyString()));
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
 
 
     q = "@title:(@num:[0 10])";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyString()));
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "@t1:@t2:@t3:hello";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyString()));
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
 
 
     q = "@title:{foo}}}}}";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyString()));
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
   }

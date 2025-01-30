@@ -12,6 +12,7 @@ import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -193,9 +194,10 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.9.0")
   public void warningMaxPrefixExpansions() {
     final String configParam = "search-max-prefix-expansions";
-    String configValue = jedis.configGet(configParam).get(configParam);
+    String defaultConfigValue = jedis.configGet(configParam).get(configParam);
     try {
       assertOK(client.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.HASH),
           TextField.of("t"), TagField.of("t2")));
@@ -215,7 +217,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
           Arrays.asList("Max prefix expansions limit was reached"),
           aggResult.getWarnings());
     } finally {
-      jedis.configSet(configParam, configValue);
+      jedis.configSet(configParam, defaultConfigValue);
     }
   }
 

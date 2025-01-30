@@ -1295,6 +1295,38 @@ public final class BuilderFactory {
     }
   };
 
+    public static final Builder<List<StreamEntryBinary>> STREAM_ENTRY_BINARY = new Builder<List<StreamEntryBinary>>() {
+      @Override
+      @SuppressWarnings("unchecked")
+      public List<StreamEntryBinary> build(Object data) {
+        List<StreamEntryBinary> result = new ArrayList<>();
+        if (data == null) {
+          return result;
+        }
+        List<Object> objectList = (List<Object>) data;
+
+        for (Object obj : objectList) {
+          List<Object> entry = (List<Object>) obj;
+          String entryIdString = SafeEncoder.encode((byte[]) entry.get(0));
+          StreamEntryID entryID = new StreamEntryID(entryIdString);
+          List<byte[]> hash = (List<byte[]>) entry.get(1);
+
+          Iterator<byte[]> hashIterator = hash.iterator();
+          Map<byte[], byte[]> map = new HashMap<>(hash.size() / 2, 1f);
+          while (hashIterator.hasNext()) {
+            map.put(hashIterator.next(), hashIterator.next());
+          }
+          result.add(new StreamEntryBinary(entryID, map));
+        }
+        return result;
+      }
+
+      @Override
+      public String toString() {
+        return "StreamEntryBinary";
+      }
+    };
+
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override
     @SuppressWarnings("unchecked")

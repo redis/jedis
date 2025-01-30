@@ -15,6 +15,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   private final Pattern pattern = Pattern.compile("\\bname=" + clientName + "\\b");
 
   private Jedis client;
+
 
   public ClientCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -73,6 +75,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clientSetInfoCommand() {
     String libName = "Jedis::A-Redis-Java-library";
     String libVersion = "999.999.999";
@@ -243,6 +246,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "MAXAGE (since Redis 7.4)")
   public void killMaxAge() throws InterruptedException {
     long maxAge = 2;
 

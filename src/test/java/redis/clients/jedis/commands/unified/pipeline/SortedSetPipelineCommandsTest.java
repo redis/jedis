@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -542,6 +543,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.2.0", message = "Starting with Redis version 7.2.0: Added the optional WITHSCORE argument.")
   public void zrankWithScore() {
     pipe.zadd("foo", 1d, "a");
     pipe.zadd("foo", 2d, "b");
@@ -1516,6 +1518,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zintercard() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1840,6 +1843,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zmpop() {
     pipe.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     pipe.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1863,6 +1867,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void bzmpopSimple() {
     pipe.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     pipe.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());

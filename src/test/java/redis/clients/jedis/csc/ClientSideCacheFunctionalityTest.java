@@ -1,5 +1,6 @@
 package redis.clients.jedis.csc;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
@@ -8,21 +9,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
@@ -508,7 +502,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   @Test
   public void testNullValue() throws InterruptedException {
     int MAX_SIZE = 20;
-    String nonExisting = "non-existing-key";
+    String nonExisting = "non-existing-key-"+ UUID.randomUUID().toString();
     control.del(nonExisting);
 
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), CacheConfig.builder().maxSize(MAX_SIZE).build())) {
@@ -529,8 +523,10 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(1, stats.getMissCount());
 
       control.set(nonExisting, "bar");
-      val = jedis.get(nonExisting);
-      assertEquals("bar", val);
+      await()
+              .atMost(5, TimeUnit.SECONDS)
+              .pollInterval(10, TimeUnit.MILLISECONDS)
+              .untilAsserted(() -> assertEquals("bar", jedis.get(nonExisting)));
       assertEquals(1, cache.getSize());
       assertEquals("bar", cache.getCacheEntries().iterator().next().getValue());
       assertEquals(1, stats.getHitCount());

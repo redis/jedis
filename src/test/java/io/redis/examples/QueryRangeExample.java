@@ -4,8 +4,8 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 // REMOVE_END
+
 // HIDE_START
 import java.util.List;
 // REMOVE_START
@@ -20,10 +20,9 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.args.SortingOrder;
 // HIDE_END
 
-
-
 // HIDE_START
 public class QueryRangeExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -295,8 +294,8 @@ public class QueryRangeExample {
         // REMOVE_START
         Assert.assertEquals(5, res3.getTotalResults());
         Assert.assertArrayEquals(
-            Stream.of("bicycle:1", "bicycle:4", "bicycle:6", "bicycle:3", "bicycle:8").sorted()
-                .toArray(),
+            Stream.of("bicycle:1", "bicycle:4", "bicycle:6", "bicycle:3", "bicycle:8")
+                .sorted().toArray(),
             docs3.stream().map(Document::getId).sorted().toArray());
         // REMOVE_END
 
@@ -327,7 +326,7 @@ public class QueryRangeExample {
         // REMOVE_START
         Assert.assertEquals(7, res4.getTotalResults());
         Assert.assertArrayEquals(
-            new String[] {"bicycle:0", "bicycle:2", "bicycle:5", "bicycle:7", "bicycle:9" },
+            new String[] {"bicycle:0", "bicycle:2", "bicycle:5", "bicycle:7", "bicycle:9"},
             docs4.stream().map(Document::getId).sorted().toArray()
         );
         // REMOVE_END

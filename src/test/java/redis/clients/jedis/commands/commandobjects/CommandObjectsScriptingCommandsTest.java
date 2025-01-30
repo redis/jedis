@@ -18,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
+import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.FlushMode;
@@ -25,6 +28,7 @@ import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
+import redis.clients.jedis.util.RedisVersionUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=scripting">Scripting</a> commands.
@@ -33,6 +37,15 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
 
   public CommandObjectsScriptingCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @Before
+  @Override
+  public void setUp() {
+    super.setUp();
+    if (RedisVersionUtil.getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      assertThat(exec(commandObjects.functionFlush(FlushMode.SYNC)), equalTo("OK"));
+    }
   }
 
   @Test
@@ -146,6 +159,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testEvalReadonlyWithScriptKeysAndArgsList() {
     exec(commandObjects.set("readonlyKey1", "readonlyValue1"));
     exec(commandObjects.set("readonlyKey2", "readonlyValue2"));
@@ -282,6 +296,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testEvalReadonlyWithScriptKeysAndArgsListSha() {
     exec(commandObjects.set("readonlyKey1", "readonlyValue1"));
     exec(commandObjects.set("readonlyKey2", "readonlyValue2"));
@@ -468,6 +483,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testSumValuesFunction() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args)\n" +
@@ -517,6 +533,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testSumValuesFunctionReadonly() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function{function_name='sumValues', callback=function(keys, args)\n" +
@@ -550,6 +567,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionDeletion() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args) return 42 end)";
@@ -572,6 +590,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionDeletionBinary() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args) return 42 end)";
@@ -594,6 +613,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionListing() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args) return 42 end)";
@@ -651,6 +671,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionReload() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('dummy', function(keys, args) return 42 end)";
@@ -672,6 +693,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionReloadBinary() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('dummy', function(keys, args) return 42 end)";
@@ -693,6 +715,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionStats() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('dummy', function(keys, args) return 42 end)";
@@ -719,6 +742,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionDumpFlushRestore() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args) return 42 end)";
@@ -752,6 +776,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionDumpFlushRestoreWithPolicy() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args) return 42 end)";
@@ -785,6 +810,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionFlushWithMode() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args) return 42 end)";
@@ -807,6 +833,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testFunctionKill() {
     JedisException e = assertThrows(JedisException.class,
         () -> exec(commandObjects.functionKill()));

@@ -3,17 +3,8 @@ package redis.clients.jedis.modules.search;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1085,7 +1076,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
         .addTextField("t1", 1.0)
         .addTextField("t2", 1.0)
         .addNumericField("num");
-    assertThat(client.ftCreate(index, IndexOptions.defaultOptions(), sc), is("OK"));
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
     client.hset("1", "t1", "hello");
 
@@ -1093,7 +1084,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Query query = new Query(q).dialect(1);
     assertSyntaxError(query, client); // dialect=1 throws syntax error
     query = new Query(q).dialect(2);
-    assertThat( client.ftExplain(index, query), containsString("WILDCARD"));
+    assertThat(client.ftExplain(index, query), containsString("WILDCARD"));
 
     q = "$hello";
     query = new Query(q).dialect(1);

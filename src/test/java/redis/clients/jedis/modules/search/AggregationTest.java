@@ -203,7 +203,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value="7.4.0", message="ADDSCORES")
+  @SinceRedisVersion(value = "7.4.0", message = "ADDSCORES")
   public void testAggregationBuilderAddScores() {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);
@@ -218,8 +218,8 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     AggregationResult res = client.ftAggregate(index, r);
     if (RedisConditions.of(client).moduleVersionIsGreatherThan("SEARCH", 79900)) {
       // Default scorer is BM25
-      assertEquals(0.6931, res.getRow(0).getDouble("__score"),0.0001);
-      assertEquals(69.31, res.getRow(0).getDouble("normalized_score"),0.01);
+      assertEquals(0.6931, res.getRow(0).getDouble("__score"), 0.0001);
+      assertEquals(69.31, res.getRow(0).getDouble("normalized_score"), 0.01);
     } else {
       // Default scorer is TF-IDF
       assertEquals(2, res.getRow(0).getLong("__score"));

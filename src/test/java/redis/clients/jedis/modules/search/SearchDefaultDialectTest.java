@@ -134,7 +134,6 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     query = new Query(q); // dialect=default=2
     assertSyntaxError(query, client); // dialect=2 throws syntax error
 
-
     q = "@title:{foo}}}}}";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
     assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
@@ -177,7 +176,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
   }
 
-  void assertSyntaxError(Query query, UnifiedJedis client) {
+  private void assertSyntaxError(Query query, UnifiedJedis client) {
     JedisDataException error = assertThrows(JedisDataException.class,
         () -> client.ftExplain(INDEX, query));
     assertThat(error.getMessage(), containsString("Syntax error"));

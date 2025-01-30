@@ -37,6 +37,7 @@ import redis.clients.jedis.search.FTProfileParams;
 import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
+import redis.clients.jedis.util.RedisConditions;
 
 @RunWith(Parameterized.class)
 public class AggregationTest extends RedisModuleCommandsTestBase {
@@ -202,7 +203,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value="7.4.0", message="ADDSCORES")
+  @SinceRedisVersion(value = "7.4.0", message = "ADDSCORES")
   public void testAggregationBuilderAddScores() {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);
@@ -215,8 +216,15 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
         .apply("@__score * 100", "normalized_score").dialect(3);
 
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(2, res.getRow(0).getLong("__score"));
-    assertEquals(200, res.getRow(0).getLong("normalized_score"));
+    if (RedisConditions.of(client).moduleVersionIsGreatherThan("SEARCH", 79900)) {
+      // Default scorer is BM25
+      assertEquals(0.6931, res.getRow(0).getDouble("__score"), 0.0001);
+      assertEquals(69.31, res.getRow(0).getDouble("normalized_score"), 0.01);
+    } else {
+      // Default scorer is TF-IDF
+      assertEquals(2, res.getRow(0).getLong("__score"));
+      assertEquals(200, res.getRow(0).getLong("normalized_score"));
+    }
   }
 
   @Test

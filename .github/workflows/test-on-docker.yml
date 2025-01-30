@@ -1,0 +1,137 @@
+---
+
+name: Build and Test using containerized environment
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
+    branches:
+      - master
+      - '[0-9].*'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].*'
+  schedule:
+    - cron: '0 1 * * *' # nightly build
+  workflow_dispatch:
+    inputs:
+      specific_test:
+        description: 'Run specific test(s) (optional)'
+        required: false
+        default: ''
+jobs:
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    env:
+      REDIS_ENV_WORK_DIR: ${{ github.workspace }}/redis-env-work
+      REDIS_ENV_CONF_DIR: ${{ github.workspace }}/src/test/resources/env
+      CLIENT_LIBS_IMAGE_PREFIX: "redislabs/client-libs-test"
+    strategy:
+      fail-fast: false
+      matrix:
+        redis_version:
+          - "8.0-M04-pre"
+          - "7.4.1"
+          - "7.2.6"
+          # - "6.2.16"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: System setup
+        run: |
+          sudo apt update
+          sudo apt install -y make
+          make compile-module
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      # Set up Docker Compose environment
+      - name: Set up Docker Compose environment
+        run: |
+          mkdir -m 777 $REDIS_ENV_WORK_DIR
+          export REDIS_VERSION="${{ matrix.redis_version }}"
+          make start-test-env version=$REDIS_VERSION
+      - name: Maven offline
+        run: |
+          mvn -q dependency:go-offline
+      - name: Build docs
+        run: |
+          mvn javadoc:jar
+      # Run Tests
+      - name: Run Maven tests
+        run: |
+          export TEST_ENV_PROVIDER=docker
+          export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
+          echo $TEST_WORK_FOLDER
+          if [ -z "$TESTS" ]; then
+            mvn clean compile test
+          else
+            mvn -Dtest=$TESTS clean compile test
+          fi
+        env:
+          JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
+          TESTS: ${{ github.event.inputs.specific_test || '' }}
+      - name: Upload Heap Dumps
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heap-dumps-${{ matrix.redis_version }}
+          path: ${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof
+          retention-days: 5
+      - name: Upload Surefire Dump File
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-dumpstream
+          path: target/surefire-reports/*.dumpstream
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            target/surefire-reports/**/*.xml
+      # Collect logs on failure
+      - name: Collect logs on failure
+        if: failure()  # This runs only if the previous steps failed
+        run: |
+           echo "Collecting logs from $WORK_DIR..."
+           ls -la $REDIS_ENV_WORK_DIR
+      # Upload logs as artifacts
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+           name: redis-env-work-logs-${{ matrix.redis_version }}
+           path: ${{ env.REDIS_ENV_WORK_DIR }}
+      # Bring down the Docker Compose test environment
+      - name: Tear down Docker Compose environment
+        if: always()
+        run: |
+          docker compose $COMPOSE_ENV_FILES -f src/test/resources/env/docker-compose.yml down
+        continue-on-error: true
+      # Upload code coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') || github.event_name == 'workflow_dispatch'}}
+        uses: codecov/test-results-action@v1
+        with:
+          fail_ci_if_error: false
+          files: ./target/surefire-reports/TEST*
+          token: ${{ secrets.CODECOV_TOKEN }}

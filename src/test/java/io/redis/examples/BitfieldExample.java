@@ -13,6 +13,7 @@ import redis.clients.jedis.UnifiedJedis;
 
 // HIDE_START
 public class BitfieldExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");

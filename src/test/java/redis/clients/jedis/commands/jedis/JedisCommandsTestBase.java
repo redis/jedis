@@ -4,11 +4,20 @@ import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.runners.Parameterized.Parameters;
+
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 
 public abstract class JedisCommandsTestBase {
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this

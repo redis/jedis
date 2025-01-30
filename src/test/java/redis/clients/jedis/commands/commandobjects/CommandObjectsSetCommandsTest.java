@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.not;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
@@ -228,6 +229,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testSinterAndSinterCard() {
     String key1 = "testSetInter1";
     String key2 = "testSetInter2";

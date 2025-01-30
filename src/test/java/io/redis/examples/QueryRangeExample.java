@@ -4,10 +4,14 @@ package io.redis.examples;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 // REMOVE_END
+
 // HIDE_START
 import java.util.List;
+// REMOVE_START
+import java.util.stream.Stream;
+// REMOVE_END
+
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
@@ -16,10 +20,9 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.args.SortingOrder;
 // HIDE_END
 
-
-
 // HIDE_START
 public class QueryRangeExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -212,25 +215,28 @@ public class QueryRangeExample {
 
 
         // STEP_START range1
-        SearchResult res1 = jedis.ftSearch("idx:bicycle", "@price:[500 1000]");
+        SearchResult res1 = jedis.ftSearch(
+            "idx:bicycle", "@price:[500 1000]",
+            FTSearchParams.searchParams().returnFields("price"));
         System.out.println(res1.getTotalResults()); // >>> 3
 
         List<Document> docs1 = res1.getDocuments();
 
-        for (int i = 0; i < docs1.size(); i++) {
-            System.out.println(docs1.get(i).getId());
+        for (Document document : docs1) {
+            System.out.println(document.getId() + " : price " + document.getString("price"));
         }
-        // >>> bicycle:2
-        // >>> bicycle:5
-        // >>> bicycle:9
+        // >>> bicycle:2 : price 815
+        // >>> bicycle:5 : price 810
+        // >>> bicycle:9 : price 815
         // STEP_END
 
         // Tests for 'range1' step.
         // REMOVE_START
         Assert.assertEquals(3, res1.getTotalResults());
-        Assert.assertEquals("bicycle:2", docs1.get(0).getId());
-        Assert.assertEquals("bicycle:5", docs1.get(1).getId());
-        Assert.assertEquals("bicycle:9", docs1.get(2).getId());
+        Assert.assertArrayEquals(
+            Stream.of("bicycle:5", "bicycle:9", "bicycle:2").sorted().toArray(),
+            docs1.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -238,26 +244,28 @@ public class QueryRangeExample {
         SearchResult res2 = jedis.ftSearch("idx:bicycle",
             "*",
             FTSearchParams.searchParams()
-                    .filter("price", 500, 1000)
+                .returnFields("price")
+                .filter("price", 500, 1000)
         );
         System.out.println(res2.getTotalResults()); // >>> 3
 
         List<Document> docs2 = res2.getDocuments();
 
-        for (int i = 0; i < docs2.size(); i++) {
-            System.out.println(docs2.get(i).getId());
+        for (Document document : docs2) {
+            System.out.println(document.getId() + " : price " + document.getString("price"));
         }
-        // >>> bicycle:2
-        // >>> bicycle:5
-        // >>> bicycle:9
+        // >>> bicycle:2 : price 815
+        // >>> bicycle:5 : price 810
+        // >>> bicycle:9 : price 815
         // STEP_END
 
         // Tests for 'range2' step.
         // REMOVE_START
         Assert.assertEquals(3, res2.getTotalResults());
-        Assert.assertEquals("bicycle:2", docs2.get(0).getId());
-        Assert.assertEquals("bicycle:5", docs2.get(1).getId());
-        Assert.assertEquals("bicycle:9", docs2.get(2).getId());
+        Assert.assertArrayEquals(
+            Stream.of("bicycle:5", "bicycle:9", "bicycle:2").sorted().toArray(),
+            docs2.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -265,30 +273,30 @@ public class QueryRangeExample {
         SearchResult res3 = jedis.ftSearch("idx:bicycle",
             "*",
             FTSearchParams.searchParams()
-                    .filter("price", 1000, true, Double.POSITIVE_INFINITY, false)  
+                .returnFields("price")
+                .filter("price", 1000, true, Double.POSITIVE_INFINITY, false)
         );
         System.out.println(res3.getTotalResults()); // >>> 5
 
         List<Document> docs3 = res3.getDocuments();
 
-        for (int i = 0; i < docs3.size(); i++) {
-            System.out.println(docs3.get(i).getId());
+        for (Document document : docs3) {
+            System.out.println(document.getId() + " : price " + document.getString("price"));
         }
-        // >>> bicycle:1
-        // >>> bicycle:4
-        // >>> bicycle:6
-        // >>> bicycle:3
-        // >>> bicycle:8
+        // >>> bicycle:1 : price 1200
+        // >>> bicycle:4 : price 3200
+        // >>> bicycle:6 : price 2300
+        // >>> bicycle:3 : price 3400
+        // >>> bicycle:8 : price 1200
         // STEP_END
 
         // Tests for 'range3' step.
         // REMOVE_START
         Assert.assertEquals(5, res3.getTotalResults());
-        Assert.assertEquals("bicycle:1", docs3.get(0).getId());
-        Assert.assertEquals("bicycle:4", docs3.get(1).getId());
-        Assert.assertEquals("bicycle:6", docs3.get(2).getId());
-        Assert.assertEquals("bicycle:3", docs3.get(3).getId());
-        Assert.assertEquals("bicycle:8", docs3.get(4).getId());
+        Assert.assertArrayEquals(
+            Stream.of("bicycle:1", "bicycle:4", "bicycle:6", "bicycle:3", "bicycle:8")
+                .sorted().toArray(),
+            docs3.stream().map(Document::getId).sorted().toArray());
         // REMOVE_END
 
 
@@ -296,6 +304,7 @@ public class QueryRangeExample {
         SearchResult res4 = jedis.ftSearch("idx:bicycle",
             "@price:[-inf 2000]",
             FTSearchParams.searchParams()
+                    .returnFields("price")
                     .sortBy("price", SortingOrder.ASC)
                     .limit(0, 5) 
         );
@@ -303,24 +312,23 @@ public class QueryRangeExample {
 
         List<Document> docs4 = res4.getDocuments();
 
-        for (int i = 0; i < docs4.size(); i++) {
-            System.out.println(docs4.get(i).getId());
+        for (Document document : docs4) {
+            System.out.println(document.getId() + " : price " + document.getString("price"));
         }
-        // >>> bicycle:0
-        // >>> bicycle:7
-        // >>> bicycle:5
-        // >>> bicycle:2
-        // >>> bicycle:9
+        // >>> bicycle:0 : price 270
+        // >>> bicycle:7 : price 430
+        // >>> bicycle:5 : price 810
+        // >>> bicycle:2 : price 815
+        // >>> bicycle:9 : price 815
         // STEP_END
 
         // Tests for 'range4' step.
         // REMOVE_START
         Assert.assertEquals(7, res4.getTotalResults());
-        Assert.assertEquals("bicycle:0", docs4.get(0).getId());
-        Assert.assertEquals("bicycle:7", docs4.get(1).getId());
-        Assert.assertEquals("bicycle:5", docs4.get(2).getId());
-        Assert.assertEquals("bicycle:2", docs4.get(3).getId());
-        Assert.assertEquals("bicycle:9", docs4.get(4).getId());
+        Assert.assertArrayEquals(
+            new String[] {"bicycle:0", "bicycle:2", "bicycle:5", "bicycle:7", "bicycle:9"},
+            docs4.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 // HIDE_START

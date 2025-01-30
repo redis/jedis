@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import redis.clients.jedis.*;
-import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.executors.DefaultCommandExecutor;
@@ -80,13 +79,7 @@ public abstract class CommandObjectsTestBase {
     commandExecutor = new DefaultCommandExecutor(connectionProvider);
 
     // Cleanup before each test.
-    assertThat(
-        commandExecutor.executeCommand(commandObjects.flushAll()),
-        equalTo("OK"));
-
-    assertThat(
-        commandExecutor.executeCommand(commandObjects.functionFlush(FlushMode.SYNC)),
-        equalTo("OK"));
+    assertThat(exec(commandObjects.flushAll()), equalTo("OK"));
   }
 
   /**

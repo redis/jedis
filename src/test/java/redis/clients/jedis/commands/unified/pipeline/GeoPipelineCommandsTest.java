@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.util.GeoCoordinateMatcher.atCoordinates;
@@ -19,11 +18,11 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.GeoUnit;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -180,14 +179,12 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.sync();
 
-    assertThat(coordinates.get(), contains(
-        atCoordinates(3.0, 4.0),
+    assertThat(coordinates.get(), contains(atCoordinates(3.0, 4.0),
         atCoordinates(2.0, 3.0),
         null
     ));
 
-    assertThat(bcoordinates.get(), contains(
-        atCoordinates(3.0, 4.0),
+    assertThat(bcoordinates.get(), contains(atCoordinates(3.0, 4.0),
         atCoordinates(2.0, 3.0),
         null
     ));

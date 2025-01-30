@@ -1,8 +1,8 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
-
 import static org.mockito.ArgumentMatchers.any;
+
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;

@@ -2,8 +2,11 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
@@ -15,13 +18,18 @@ public abstract class JedisClusterTestBase {
   protected static Jedis node4;
   protected static Jedis nodeSlave2;
 
-  protected HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  protected HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
-  protected HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
-  protected HostAndPort nodeInfo4 = HostAndPorts.getClusterServers().get(3);
-  protected HostAndPort nodeInfoSlave2 = HostAndPorts.getClusterServers().get(4);
+  protected static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
+  protected static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
+  protected static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
+  protected static HostAndPort nodeInfo4 = HostAndPorts.getClusterServers().get(3);
+  protected static HostAndPort nodeInfoSlave2 = HostAndPorts.getClusterServers().get(4);
 
   protected static final String LOCAL_IP = "127.0.0.1";
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1,DefaultJedisClientConfig.builder().password("cluster").build());
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() throws InterruptedException {

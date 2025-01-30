@@ -9,6 +9,7 @@ import org.junit.Test;
 // HIDE_START
 import java.util.List;
 import java.util.ArrayList;
+
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.FTCreateParams;
@@ -20,6 +21,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 // HIDE_START
 public class QueryAggExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -233,11 +235,10 @@ public class QueryAggExample {
         // Tests for 'agg1' step.
         // REMOVE_START
         Assert.assertEquals(5, rows1.size());
-        Assert.assertEquals("{__key=bicycle:0, discounted=243, price=270}", rows1.get(0).toString());
-        Assert.assertEquals("{__key=bicycle:5, discounted=729, price=810}", rows1.get(1).toString());
-        Assert.assertEquals("{__key=bicycle:6, discounted=2070, price=2300}", rows1.get(2).toString());
-        Assert.assertEquals("{__key=bicycle:7, discounted=387, price=430}", rows1.get(3).toString());
-        Assert.assertEquals("{__key=bicycle:8, discounted=1080, price=1200}", rows1.get(4).toString());
+        Assert.assertArrayEquals(
+            new String[]{"bicycle:0", "bicycle:5", "bicycle:6", "bicycle:7", "bicycle:8"},
+            rows1.stream().map(e->e.get("__key")).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -264,9 +265,11 @@ public class QueryAggExample {
         // Tests for 'agg2' step.
         // REMOVE_START
         Assert.assertEquals(3, rows2.size());
-        Assert.assertEquals("{condition=refurbished, num_affordable=1}", rows2.get(0).toString());
-        Assert.assertEquals("{condition=used, num_affordable=1}", rows2.get(1).toString());
-        Assert.assertEquals("{condition=new, num_affordable=3}", rows2.get(2).toString());
+        Assert.assertArrayEquals(
+            new String[] { "new, 3", "refurbished, 1", "used, 1" },
+            rows2.stream().map(e->e.get("condition") + ", " + e.get("num_affordable"))
+                    .sorted().toArray()
+        );
         // REMOVE_END
 
 

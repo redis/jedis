@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -253,6 +254,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added the ability to pass multiple pattern parameters in one call")
   public void configGetSetMulti() {
     String[] params = new String[]{"hash-max-listpack-entries", "set-max-intset-entries", "zset-max-listpack-entries"};
     Map<String, String> info = jedis.configGet(params);
@@ -272,6 +274,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void waitAof() {
     assertEquals(KeyValue.of(0L, 0L), jedis.waitAOF(0L, 0L, 100L));
   }
@@ -379,12 +382,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clientNoTouch() {
     assertEquals("OK", jedis.clientNoTouchOn());
     assertEquals("OK", jedis.clientNoTouchOff());
@@ -475,6 +480,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandDocs() {
     Map<String, CommandDocument> docs = jedis.commandDocs("SORT", "SET");
 
@@ -492,6 +498,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandGetKeys() {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
@@ -502,6 +509,29 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
+  public void commandNoArgs() {
+    Map<String, CommandInfo> infos = jedis.command();
+
+    assertThat(infos.size(), greaterThan(0));
+
+    CommandInfo getInfo = infos.get("get");
+    assertEquals(2, getInfo.getArity());
+    assertEquals(2, getInfo.getFlags().size());
+    assertEquals(1, getInfo.getFirstKey());
+    assertEquals(1, getInfo.getLastKey());
+    assertEquals(1, getInfo.getStep());
+
+    assertNull(infos.get("foo")); // non-existing command
+
+    CommandInfo setInfo = infos.get("set");
+    assertEquals(3, setInfo.getAclCategories().size());
+    assertEquals(0, setInfo.getTips().size());
+    assertEquals(0, setInfo.getSubcommands().size());
+  }
+
+  @Test
+  @SinceRedisVersion("7.0.0")
   public void commandInfo() {
     Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
 
@@ -520,7 +550,30 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, setInfo.getSubcommands().size());
   }
 
+  @Test // GitHub Issue #4020
+  @SinceRedisVersion("7.0.0")
+  public void commandInfoAcl() {
+    Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
+    assertThat(infos, Matchers.aMapWithSize(1));
+
+    CommandInfo aclInfo = infos.get("acl");
+    assertEquals(-2, aclInfo.getArity());
+    assertEquals(0, aclInfo.getFlags().size());
+    assertEquals(0, aclInfo.getFirstKey());
+    assertEquals(0, aclInfo.getLastKey());
+    assertEquals(0, aclInfo.getStep());
+    assertEquals(1, aclInfo.getAclCategories().size());
+    assertEquals(0, aclInfo.getTips().size());
+    assertThat(aclInfo.getSubcommands().size(), Matchers.greaterThanOrEqualTo(13));
+    aclInfo.getSubcommands().forEach((name, subcommand) -> {
+      assertThat(name, Matchers.startsWith("acl|"));
+      assertNotNull(subcommand);
+      assertEquals(name, subcommand.getName());
+    });
+  }
+
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandList() {
     List<String> commands = jedis.commandList();
     assertTrue(commands.size() > 100);

@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.runners.Parameterized.Parameters;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -16,8 +17,12 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.RedisVersionRule;
 
 public abstract class RedisModuleCommandsTestBase {
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(hnp, DefaultJedisClientConfig.builder().build());
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this
@@ -34,6 +39,7 @@ public abstract class RedisModuleCommandsTestBase {
   protected static final HostAndPort hnp = HostAndPort.from(address);
   protected final RedisProtocol protocol;
 
+  protected Jedis jedis;
   protected UnifiedJedis client;
 
   /**
@@ -60,22 +66,15 @@ public abstract class RedisModuleCommandsTestBase {
 
   @Before
   public void setUp() {
-    try (Jedis jedis = new Jedis(hnp)) {
-      jedis.flushAll();
-    }
+    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
+    jedis.flushAll();
     client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
   }
 
   @After
   public void tearDown() throws Exception {
     client.close();
+    jedis.close();
   }
-//
-//  public static void tearDown() {
-//    client.close();
-//  }
-//
-//  protected static Connection createConnection() {
-//    return new Connection(hnp);
-//  }
+
 }

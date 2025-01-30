@@ -10,4 +10,10 @@ public interface Rawable {
    * @return binary
    */
   byte[] getRaw();
+
+  @Override
+  int hashCode();
+
+  @Override
+  boolean equals(Object o);
 }

@@ -192,18 +192,17 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     assertThat(error.getMessage(), containsString("Syntax error"));
   }
 
-  @org.junit.Ignore
   @Test
   public void warningMaxPrefixExpansions() {
-    final String configParam = "MAXPREFIXEXPANSIONS";
-    String configValue = (String) client.ftConfigGet(configParam).get(configParam);
+    final String configParam = "search-max-prefix-expansions";
+    String configValue = jedis.configGet(configParam).get(configParam);
     try {
       assertOK(client.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.HASH),
           TextField.of("t"), TagField.of("t2")));
 
       client.hset("doc13", toMap("t", "foo", "t2", "foo"));
 
-      client.ftConfigSet(configParam, "1");
+      jedis.configSet(configParam, "1");
 
       SearchResult srcResult = client.ftSearch(INDEX, "fo*");
       assertEqualsByProtocol(protocol, null, Arrays.asList(), srcResult.getWarnings());
@@ -211,9 +210,12 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
       client.hset("doc23", toMap("t", "fooo", "t2", "fooo"));
 
       AggregationResult aggResult = client.ftAggregate(INDEX, new AggregationBuilder("fo*").loadAll());
-      assertEqualsByProtocol(protocol, null, Arrays.asList("Max prefix expansions limit was reached"), aggResult.getWarnings());
+      assertEqualsByProtocol(protocol,
+          /* resp2 */ null,
+          Arrays.asList("Max prefix expansions limit was reached"),
+          aggResult.getWarnings());
     } finally {
-      client.ftConfigSet(configParam, configValue);
+      jedis.configSet(configParam, configValue);
     }
   }
 

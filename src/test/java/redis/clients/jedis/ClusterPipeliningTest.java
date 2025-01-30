@@ -6,6 +6,9 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -1078,6 +1081,27 @@ public class ClusterPipeliningTest {
   public void transaction() {
     try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       assertThrows(UnsupportedOperationException.class, () -> cluster.multi());
+    }
+  }
+
+  @Test(timeout = 10_000L)
+  public void pipelineMergingWithExecutorService() {
+    final int maxTotal = 100;
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(maxTotal);
+    ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig)) {
+      ClusterPipeline pipeline = cluster.pipelined(executorService);
+      for (int i = 0; i < maxTotal; i++) {
+        String s = Integer.toString(i);
+        pipeline.set(s, s);
+      }
+      pipeline.close();
+      // The sync results in one pipeline per node needing closing.
+      assertEquals(nodes.size(), executorService.getTaskCount());
+      assertFalse(executorService.isShutdown());
+    } finally {
+      executorService.shutdown();
     }
   }
 

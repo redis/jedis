@@ -5,6 +5,7 @@ package io.redis.examples;
 import org.junit.Assert;
 import org.junit.Test;
 // REMOVE_END
+
 // HIDE_START
 import java.util.List;
 import java.util.stream.Stream;
@@ -19,6 +20,7 @@ import redis.clients.jedis.json.Path2;
 
 // HIDE_START
 public class QueryGeoExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");

@@ -20,8 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class StreamsExample {
 
   @Test
-  public void run(){
-
+  public void run() {
     //HIDE_START
     UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
     //HIDE_END
@@ -265,6 +264,10 @@ public class StreamsExample {
     List<StreamEntry> res42 = jedis.xrange("race:italy","-","+");
     System.out.println(res42); // >>> [1701771517639-1 {rider=Henshaw}]
     //STEP_END
+
+    //HIDE_START
+    jedis.close();
+    //HIDE_END
   }
 
 }

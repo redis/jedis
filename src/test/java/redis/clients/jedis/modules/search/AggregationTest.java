@@ -27,6 +27,7 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
+import redis.clients.jedis.util.RedisConditions;
 import redis.clients.jedis.util.RedisVersionUtil;
 
 @RunWith(Parameterized.class)
@@ -160,12 +161,12 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     Object profileObject = reply.getValue().getProfilingInfo();
     if (protocol != RedisProtocol.RESP3) {
       assertThat(profileObject, Matchers.isA(List.class));
-      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
         assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
       }
     } else {
       assertThat(profileObject, Matchers.isA(Map.class));
-      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
         assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
       }
     }
@@ -191,7 +192,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value="7.4.0", message="ADDSCORES")
+  @SinceRedisVersion(value = "7.4.0", message = "ADDSCORES")
   public void testAggregationBuilderAddScores() {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);
@@ -204,8 +205,15 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
         .apply("@__score * 100", "normalized_score").dialect(3);
 
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(2, res.getRow(0).getLong("__score"));
-    assertEquals(200, res.getRow(0).getLong("normalized_score"));
+    if (RedisConditions.of(client).moduleVersionIsGreatherThan("SEARCH", 79900)) {
+      // Default scorer is BM25
+      assertEquals(0.6931, res.getRow(0).getDouble("__score"), 0.0001);
+      assertEquals(69.31, res.getRow(0).getDouble("normalized_score"), 0.01);
+    } else {
+      // Default scorer is TF-IDF
+      assertEquals(2, res.getRow(0).getLong("__score"));
+      assertEquals(200, res.getRow(0).getLong("normalized_score"));
+    }
   }
 
   @Test

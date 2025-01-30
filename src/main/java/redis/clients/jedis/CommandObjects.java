@@ -22,7 +22,6 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.gears.*;
 import redis.clients.jedis.gears.RedisGearsProtocol.*;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.json.DefaultGsonObjectMapper;
@@ -4384,38 +4383,6 @@ public class CommandObjects {
         ranks), BuilderFactory.DOUBLE_LIST);
   }
   // RedisBloom commands
-
-  // RedisGraph commands
-  @Deprecated
-  public final CommandObject<List<String>> graphList() {
-    return new CommandObject<>(commandArguments(GraphCommand.LIST), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<String>> graphProfile(String graphName, String query) {
-    return new CommandObject<>(commandArguments(GraphCommand.PROFILE).key(graphName).add(query), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<String>> graphExplain(String graphName, String query) {
-    return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<List<Object>>> graphSlowlog(String graphName) {
-    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<String> graphConfigSet(String configName, Object value) {
-    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
-    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
-  }
-  // RedisGraph commands
 
   // RedisGears commands
   @Deprecated

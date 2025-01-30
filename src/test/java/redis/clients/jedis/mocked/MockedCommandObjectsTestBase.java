@@ -12,12 +12,10 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.ProfilingInfo;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.timeseries.TSElement;
-import redis.clients.jedis.timeseries.TSInfo;
-import redis.clients.jedis.timeseries.TSMGetElement;
-import redis.clients.jedis.timeseries.TSMRangeElements;
+import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
 /**
@@ -85,9 +83,9 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Tuple>> listTupleCommandObject;
   @Mock protected CommandObject<List<byte[]>> listBytesCommandObject;
   @Mock protected CommandObject<Long> longCommandObject;
-  @Mock protected CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> entryAggregationResultMapStringObjectCommandObject;
+  @Mock protected CommandObject<Map.Entry<AggregationResult, ProfilingInfo>> entryAggregationResultMapStringObjectCommandObject;
   @Mock protected CommandObject<Map.Entry<Long, byte[]>> entryLongBytesCommandObject;
-  @Mock protected CommandObject<Map.Entry<SearchResult, Map<String, Object>>> entrySearchResultMapStringObjectCommandObject;
+  @Mock protected CommandObject<Map.Entry<SearchResult, ProfilingInfo>> entrySearchResultMapStringObjectCommandObject;
   @Mock protected CommandObject<Map.Entry<StreamEntryID, List<StreamEntry>>> entryStreamEntryIdListStreamEntryCommandObject;
   @Mock protected CommandObject<Map.Entry<StreamEntryID, List<StreamEntryID>>> entryStreamEntryIdListStreamEntryIdCommandObject;
   @Mock protected CommandObject<Map<String, List<String>>> mapStringListStringCommandObject;

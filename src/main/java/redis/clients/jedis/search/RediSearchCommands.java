@@ -74,13 +74,13 @@ public interface RediSearchCommands {
 
   String ftCursorDel(String indexName, long cursorId);
 
-  Map.Entry<AggregationResult, Map<String, Object>> ftProfileAggregate(String indexName,
+  Map.Entry<AggregationResult, ProfilingInfo> ftProfileAggregate(String indexName,
       FTProfileParams profileParams, AggregationBuilder aggr);
 
-  Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, Query query);
 
-  Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams);
 
   String ftSynUpdate(String indexName, String synonymGroupId, String... terms);

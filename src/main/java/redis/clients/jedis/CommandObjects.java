@@ -3433,7 +3433,7 @@ public class CommandObjects {
         .key(indexName).add(cursorId), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> ftProfileAggregate(
+  public final CommandObject<Map.Entry<AggregationResult, ProfilingInfo>> ftProfileAggregate(
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
@@ -3442,7 +3442,7 @@ public class CommandObjects {
         : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
 
-  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, ProfilingInfo>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
@@ -3451,7 +3451,7 @@ public class CommandObjects {
             () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true))));
   }
 
-  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, ProfilingInfo>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
@@ -4428,32 +4428,51 @@ public class CommandObjects {
     this.searchDialect.set(dialect);
   }
 
-  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
+  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, ProfilingInfo>> {
 
-    private static final String PROFILE_STR = "profile";
+    private static final String PROFILE_STR_REDIS7 = "profile";
+    private static final String PROFILE_STR_REDIS8 = "Profile";
+    private static final String RESULTS_STR_REDIS7 = "results";
+    private static final String RESULTS_STR_REDIS8 = "Results";
 
-    private final Builder<T> replyBuilder;
+    private final Builder<T> resultsBuilder;
 
-    public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
-      this.replyBuilder = replyBuilder;
+    public SearchProfileResponseBuilder(Builder<T> resultsBuilder) {
+      this.resultsBuilder = resultsBuilder;
     }
 
     @Override
-    public Map.Entry<T, Map<String, Object>> build(Object data) {
+    public Map.Entry<T, ProfilingInfo> build(Object data) {
       List list = (List) data;
       if (list == null || list.isEmpty()) return null;
 
-      if (list.get(0) instanceof KeyValue) {
+      if (list.get(0) instanceof KeyValue) { // RESP3
+        Object resultsData = null, profileData = null;
+
         for (KeyValue keyValue : (List<KeyValue>) data) {
-          if (PROFILE_STR.equals(BuilderFactory.STRING.build(keyValue.getKey()))) {
-            return KeyValue.of(replyBuilder.build(data),
-                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(keyValue.getValue()));
+          String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
+          switch (keyStr) {
+            case PROFILE_STR_REDIS7:
+            case PROFILE_STR_REDIS8:
+              profileData = keyValue.getValue();
+              break;
+            case RESULTS_STR_REDIS7:
+              resultsData = data;
+              break;
+            case RESULTS_STR_REDIS8:
+              resultsData = keyValue.getValue();
+              break;
           }
         }
+
+        assert resultsData != null : "Could not detect Results data.";
+        assert profileData != null : "Could not detect Profile data.";
+        return KeyValue.of(resultsBuilder.build(resultsData),
+                ProfilingInfo.PROFILING_INFO_BUILDER.build(profileData));
       }
 
-      return KeyValue.of(replyBuilder.build(list.get(0)),
-          SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
+      return KeyValue.of(resultsBuilder.build(list.get(0)),
+          ProfilingInfo.PROFILING_INFO_BUILDER.build(list.get(1)));
     }
   }
 

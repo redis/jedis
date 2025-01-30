@@ -176,7 +176,7 @@ public class ListExample {
         // REMOVE_START
         assertEquals(5, res27);
         assertEquals("OK", res28);
-        assertEquals("[bike:5, bike:4, bike:3]", res29.toString());
+        assertEquals("[bike:1, bike:2, bike:3]", res29.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 

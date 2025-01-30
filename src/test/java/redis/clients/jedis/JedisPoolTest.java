@@ -2,12 +2,14 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
@@ -458,4 +460,30 @@ public class JedisPoolTest {
       }
     }
   }
+
+  @Test
+  public void testWithJedisDo() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort())) {
+      pool.withJedisDo(jedis -> {
+        jedis.auth("foobared");
+        assertEquals(jedis.getClient().getHostAndPort().getHost(), hnp.getHost());
+        assertEquals(jedis.getClient().getHostAndPort().getPort(), hnp.getPort());
+        assertNotNull(jedis.time());
+      });
+    }
+  }
+
+  @Test
+  public void testWithJedisGet() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort())) {
+      List<String> result = pool.withJedisGet(jedis -> {
+        jedis.auth("foobared");
+        assertEquals(jedis.getClient().getHostAndPort().getHost(), hnp.getHost());
+        assertEquals(jedis.getClient().getHostAndPort().getPort(), hnp.getPort());
+        return jedis.time();
+      });
+      assertNotNull(result);
+    }
+  }
+
 }

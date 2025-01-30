@@ -11,7 +11,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationResult;
@@ -63,7 +62,6 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Boolean>> listBooleanCommandObject;
   @Mock protected CommandObject<List<Class<?>>> listClassCommandObject;
   @Mock protected CommandObject<List<Double>> listDoubleCommandObject;
-  @Mock protected CommandObject<List<GearsLibraryInfo>> listGearsLibraryInfoCommandObject;
   @Mock protected CommandObject<List<GeoCoordinate>> listGeoCoordinateCommandObject;
   @Mock protected CommandObject<List<GeoRadiusResponse>> listGeoRadiusResponseCommandObject;
   @Mock protected CommandObject<List<JSONArray>> listJsonArrayCommandObject;

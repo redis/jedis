@@ -7,10 +7,12 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +23,7 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.NumericField;
+import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
@@ -59,6 +62,14 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     Map<String, String> map = new LinkedHashMap<>();
     doc.getProperties().forEach(entry -> map.put(entry.getKey(), String.valueOf(entry.getValue())));
     client.hset(key, map);
+  }
+
+  private static Map<String, String> toMap(String... values) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < values.length; i += 2) {
+      map.put(values[i], values[i + 1]);
+    }
+    return map;
   }
 
   @Test
@@ -181,4 +192,33 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
         () -> client.ftExplain(INDEX, query));
     assertThat(error.getMessage(), containsString("Syntax error"));
   }
+
+  @Test
+  @SinceRedisVersion(value = "7.9.0")
+  public void warningMaxPrefixExpansions() {
+    final String configParam = "search-max-prefix-expansions";
+    String defaultConfigValue = jedis.configGet(configParam).get(configParam);
+    try {
+      assertOK(client.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.HASH),
+          TextField.of("t"), TagField.of("t2")));
+
+      client.hset("doc13", toMap("t", "foo", "t2", "foo"));
+
+      jedis.configSet(configParam, "1");
+
+      SearchResult srcResult = client.ftSearch(INDEX, "fo*");
+      assertEqualsByProtocol(protocol, null, Arrays.asList(), srcResult.getWarnings());
+
+      client.hset("doc23", toMap("t", "fooo", "t2", "fooo"));
+
+      AggregationResult aggResult = client.ftAggregate(INDEX, new AggregationBuilder("fo*").loadAll());
+      assertEqualsByProtocol(protocol,
+          /* resp2 */ null,
+          Arrays.asList("Max prefix expansions limit was reached"),
+          aggResult.getWarnings());
+    } finally {
+      jedis.configSet(configParam, defaultConfigValue);
+    }
+  }
+
 }

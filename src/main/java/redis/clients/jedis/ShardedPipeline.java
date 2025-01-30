@@ -58,6 +58,11 @@ public class ShardedPipeline extends MultiNodePipelineBase {
     return provider.getConnection(nodeKey);
   }
 
+  @Override
+  protected void refreshConnection() {
+    // do nothing
+  }
+
   /**
    * This method must be called after constructor, if graph commands are going to be used.
    */

@@ -25,8 +25,6 @@ import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -56,7 +54,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
-  private final GraphCommandObjects graphCommandObjects;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
@@ -164,7 +161,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (proto != null) {
       this.commandObjects.setProtocol(proto);
     }
-    this.graphCommandObjects = new GraphCommandObjects(this);
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
     } else {
@@ -297,8 +293,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       this.commandObjects.setProtocol(protocol);
     }
 
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
     this.cache = cache;
   }
 
@@ -4961,98 +4955,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tdigestByRevRank(key, ranks));
   }
   // RedisBloom commands
-
-  // RedisGraph commands
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, long timeout) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, long timeout) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, Map<String, Object> params) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, params));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public String graphDelete(String name) {
-    return executeCommand(graphCommandObjects.graphDelete(name));
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphList() {
-    return executeCommand(commandObjects.graphList());
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphProfile(String graphName, String query) {
-    return executeCommand(commandObjects.graphProfile(graphName, query));
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphExplain(String graphName, String query) {
-    return executeCommand(commandObjects.graphExplain(graphName, query));
-  }
-
-  @Override
-  @Deprecated
-  public List<List<Object>> graphSlowlog(String graphName) {
-    return executeCommand(commandObjects.graphSlowlog(graphName));
-  }
-
-  @Override
-  @Deprecated
-  public String graphConfigSet(String configName, Object value) {
-    return executeCommand(commandObjects.graphConfigSet(configName, value));
-  }
-
-  @Override
-  @Deprecated
-  public Map<String, Object> graphConfigGet(String configName) {
-    return executeCommand(commandObjects.graphConfigGet(configName));
-  }
-  // RedisGraph commands
 
   /**
    * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.

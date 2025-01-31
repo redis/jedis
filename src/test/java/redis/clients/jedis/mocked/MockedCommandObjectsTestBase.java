@@ -11,7 +11,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.ProfilingInfo;
 import redis.clients.jedis.search.SearchResult;
@@ -100,7 +99,6 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
-  @Mock protected CommandObject<ResultSet> resultSetCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> scanResultEntryBytesBytesCommandObject;
   @Mock protected CommandObject<ScanResult<String>> scanResultStringCommandObject;

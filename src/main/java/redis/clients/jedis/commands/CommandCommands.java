@@ -47,6 +47,12 @@ public interface CommandCommands {
   Map<String, CommandInfo> commandInfo(String... commands);
 
   /**
+   * Return an array with details about every Redis command.
+   * @return list of {@link CommandInfo}
+   */
+  Map<String, CommandInfo> command();
+
+  /**
    * Return a list of the server's command names
    * @return commands list
    */

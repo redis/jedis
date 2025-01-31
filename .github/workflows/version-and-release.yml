@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: get version from tag
         id: get_version
@@ -19,7 +19,7 @@ jobs:
           echo "VERSION=$realversion" >> $GITHUB_OUTPUT
 
       - name: Set up publishing to maven central
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'

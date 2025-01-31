@@ -163,20 +163,20 @@ public class ListExample {
         // REMOVE_END
 
         // STEP_START ltrim
-        long res27 = jedis.lpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
+        long res27 = jedis.rpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
         System.out.println(res27);  // >>> 5
 
         String res28 = jedis.ltrim("bikes:repairs", 0, 2);
         System.out.println(res28);  // >>> OK
 
         List<String> res29 = jedis.lrange("bikes:repairs", 0, -1);
-        System.out.println(res29);  // >>> [bike:5, bike:4, bike:3]
+        System.out.println(res29);  // >>> [bike:1, bike:2, bike:3]
         // STEP_END
 
         // REMOVE_START
         assertEquals(5, res27);
         assertEquals("OK", res28);
-        assertEquals("[bike:5, bike:4, bike:3]", res29.toString());
+        assertEquals("[bike:1, bike:2, bike:3]", res29.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 

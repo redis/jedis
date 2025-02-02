@@ -25,7 +25,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.JedisBroadcastReplies;
 import redis.clients.jedis.util.RedisVersionRule;
 
 @RunWith(Parameterized.class)
@@ -169,15 +168,11 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  public void broadcastDifferentReplies() {
-    JedisBroadcastReplies infoReplies = jedis.info();
-    assertThat(infoReplies.getReplies(), Matchers.aMapWithSize(1));
-    Object infoValue = infoReplies.getReplies().values().stream().findFirst().get();
-    assertThat((String) infoValue, Matchers.notNullValue());
+  public void info() {
+    String info = jedis.info();
+    assertThat(info, Matchers.notNullValue());
 
-    infoReplies = jedis.info("server");
-    assertThat(infoReplies.getReplies(), Matchers.aMapWithSize(1));
-    infoValue = infoReplies.getReplies().values().stream().findFirst().get();
-    assertThat((String) infoValue, Matchers.notNullValue());
+    info = jedis.info("server");
+    assertThat(info, Matchers.notNullValue());
   }
 }

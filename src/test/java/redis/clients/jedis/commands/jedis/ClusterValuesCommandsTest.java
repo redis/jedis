@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -11,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
@@ -22,10 +22,10 @@ import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.util.JedisBroadcastReplies;
 
 public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
@@ -132,18 +132,10 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
   }
 
   @Test
-  public void broadcastDifferentReplies() {
-    JedisBroadcastReplies infoReplies = cluster.info();
-    assertThat(infoReplies.getReplies(), Matchers.aMapWithSize(3));
-    infoReplies.getReplies().values().forEach(infoValue -> {
-      assertThat((String) infoValue, Matchers.notNullValue());
-    });
+  public void info() {
+    assertThrows(JedisDataException.class, () -> cluster.info());
 
-    infoReplies = cluster.info("server");
-    assertThat(infoReplies.getReplies(), Matchers.aMapWithSize(3));
-    infoReplies.getReplies().values().forEach(infoValue -> {
-      assertThat((String) infoValue, Matchers.notNullValue());
-    });
+    assertThrows(JedisDataException.class, () -> cluster.info("server"));
   }
 
   @Test

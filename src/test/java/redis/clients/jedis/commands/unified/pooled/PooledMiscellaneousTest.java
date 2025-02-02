@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.pooled;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,6 +25,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.JedisBroadcastReplies;
 import redis.clients.jedis.util.RedisVersionRule;
 
 @RunWith(Parameterized.class)
@@ -163,5 +166,18 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
     JedisDataException error = assertThrows(JedisDataException.class,
         () -> jedis.functionDelete("xyz"));
     assertEquals("ERR Library not found", error.getMessage());
+  }
+
+  @Test
+  public void broadcastDifferentReplies() {
+    JedisBroadcastReplies infoReplies = jedis.info();
+    assertThat(infoReplies.getReplies(), Matchers.aMapWithSize(1));
+    Object infoValue = infoReplies.getReplies().values().stream().findFirst().get();
+    assertThat((String) infoValue, Matchers.notNullValue());
+
+    infoReplies = jedis.info("server");
+    assertThat(infoReplies.getReplies(), Matchers.aMapWithSize(1));
+    infoValue = infoReplies.getReplies().values().stream().findFirst().get();
+    assertThat((String) infoValue, Matchers.notNullValue());
   }
 }

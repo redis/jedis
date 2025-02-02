@@ -17,6 +17,7 @@ import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.JedisBroadcastReplies;
 
 public class ClusterCommandExecutor implements CommandExecutor {
 
@@ -69,6 +70,24 @@ public class ClusterCommandExecutor implements CommandExecutor {
       throw bcastError;
     }
     return reply;
+  }
+
+  @Override
+  public final JedisBroadcastReplies broadcastCommandDifferingReplies(CommandObject commandObject) {
+    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
+
+    JedisBroadcastReplies bcastReplies = new JedisBroadcastReplies(connectionMap.size());
+    for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
+      HostAndPort node = HostAndPort.from(entry.getKey());
+      ConnectionPool pool = entry.getValue();
+      try (Connection connection = pool.getResource()) {
+        Object aReply = execute(connection, commandObject);
+        bcastReplies.addReply(node, aReply);
+      } catch (Exception anError) {
+        bcastReplies.addReply(node, anError);
+      }
+    }
+    return bcastReplies;
   }
 
   @Override

@@ -19,10 +19,6 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.gears.*;
-import redis.clients.jedis.gears.RedisGearsProtocol.*;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.json.DefaultGsonObjectMapper;
@@ -3437,7 +3433,7 @@ public class CommandObjects {
         .key(indexName).add(cursorId), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> ftProfileAggregate(
+  public final CommandObject<Map.Entry<AggregationResult, ProfilingInfo>> ftProfileAggregate(
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
@@ -3446,7 +3442,7 @@ public class CommandObjects {
         : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
 
-  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, ProfilingInfo>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
@@ -3455,7 +3451,7 @@ public class CommandObjects {
             () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true))));
   }
 
-  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, ProfilingInfo>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
@@ -4385,70 +4381,6 @@ public class CommandObjects {
   }
   // RedisBloom commands
 
-  // RedisGraph commands
-  @Deprecated
-  public final CommandObject<List<String>> graphList() {
-    return new CommandObject<>(commandArguments(GraphCommand.LIST), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<String>> graphProfile(String graphName, String query) {
-    return new CommandObject<>(commandArguments(GraphCommand.PROFILE).key(graphName).add(query), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<String>> graphExplain(String graphName, String query) {
-    return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<List<Object>>> graphSlowlog(String graphName) {
-    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<String> graphConfigSet(String configName, Object value) {
-    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
-    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
-  }
-  // RedisGraph commands
-
-  // RedisGears commands
-  @Deprecated
-  public final CommandObject<String> tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LOAD)
-        .addParams(params).add(libraryCode), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<String> tFunctionDelete(String libraryName) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.DELETE)
-        .add(libraryName), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<List<GearsLibraryInfo>> tFunctionList(TFunctionListParams params) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LIST)
-        .addParams(params), GearsLibraryInfo.GEARS_LIBRARY_INFO_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFCALL).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
-  }
-
-  @Deprecated
-  public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFCALLASYNC).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
-  }
-  // RedisGears commands
-
   // Transaction commands
   public final CommandObject<String> watch(String... keys) {
     return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
@@ -4496,32 +4428,51 @@ public class CommandObjects {
     this.searchDialect.set(dialect);
   }
 
-  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
+  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, ProfilingInfo>> {
 
-    private static final String PROFILE_STR = "profile";
+    private static final String PROFILE_STR_REDIS7 = "profile";
+    private static final String PROFILE_STR_REDIS8 = "Profile";
+    private static final String RESULTS_STR_REDIS7 = "results";
+    private static final String RESULTS_STR_REDIS8 = "Results";
 
-    private final Builder<T> replyBuilder;
+    private final Builder<T> resultsBuilder;
 
-    public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
-      this.replyBuilder = replyBuilder;
+    public SearchProfileResponseBuilder(Builder<T> resultsBuilder) {
+      this.resultsBuilder = resultsBuilder;
     }
 
     @Override
-    public Map.Entry<T, Map<String, Object>> build(Object data) {
+    public Map.Entry<T, ProfilingInfo> build(Object data) {
       List list = (List) data;
       if (list == null || list.isEmpty()) return null;
 
-      if (list.get(0) instanceof KeyValue) {
+      if (list.get(0) instanceof KeyValue) { // RESP3
+        Object resultsData = null, profileData = null;
+
         for (KeyValue keyValue : (List<KeyValue>) data) {
-          if (PROFILE_STR.equals(BuilderFactory.STRING.build(keyValue.getKey()))) {
-            return KeyValue.of(replyBuilder.build(data),
-                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(keyValue.getValue()));
+          String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
+          switch (keyStr) {
+            case PROFILE_STR_REDIS7:
+            case PROFILE_STR_REDIS8:
+              profileData = keyValue.getValue();
+              break;
+            case RESULTS_STR_REDIS7:
+              resultsData = data;
+              break;
+            case RESULTS_STR_REDIS8:
+              resultsData = keyValue.getValue();
+              break;
           }
         }
+
+        assert resultsData != null : "Could not detect Results data.";
+        assert profileData != null : "Could not detect Profile data.";
+        return KeyValue.of(resultsBuilder.build(resultsData),
+                ProfilingInfo.PROFILING_INFO_BUILDER.build(profileData));
       }
 
-      return KeyValue.of(replyBuilder.build(list.get(0)),
-          SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
+      return KeyValue.of(resultsBuilder.build(list.get(0)),
+          ProfilingInfo.PROFILING_INFO_BUILDER.build(list.get(1)));
     }
   }
 

@@ -40,7 +40,8 @@ public class ConsolidatedConfigurationCommandsTest extends RedisModuleCommandsTe
 
   @Test
   public void setReadOnlySearchConfigTest() {
-    JedisDataException de = assertThrows(JedisDataException.class, () -> jedis.configSet("search-max-doctablesize", "10"));
+    JedisDataException de = assertThrows(JedisDataException.class,
+        () -> jedis.configSet("search-max-doctablesize", "10"));
     assertThat(de.getMessage(), Matchers.not(Matchers.emptyOrNullString()));
   }
 

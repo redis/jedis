@@ -1,10 +1,11 @@
 package io.redis.test.utils;
 
-public class RedisVersion implements  Comparable<RedisVersion>{
+public class RedisVersion implements Comparable<RedisVersion> {
     public static final RedisVersion V6_0_0 = RedisVersion.of("6.0.0");
     public static final RedisVersion V7_0_0 = RedisVersion.of("7.0.0");
     public static final RedisVersion V7_2_0 = RedisVersion.of("7.2.0");
     public static final RedisVersion V7_4 = RedisVersion.of("7.4");
+    public static final RedisVersion V8_0_0_PRE = RedisVersion.of("7.9.0");
     public static final RedisVersion V8_0_0 = RedisVersion.of("8.0.0");
 
     private final int major;

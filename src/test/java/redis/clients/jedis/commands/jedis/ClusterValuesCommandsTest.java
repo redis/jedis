@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -22,7 +21,6 @@ import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.args.GeoUnit;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.ScanResult;
@@ -133,9 +131,9 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void info() {
-    assertThrows(JedisDataException.class, () -> cluster.info());
+    assertThrows(UnsupportedOperationException.class, () -> cluster.info());
 
-    assertThrows(JedisDataException.class, () -> cluster.info("server"));
+    assertThrows(UnsupportedOperationException.class, () -> cluster.info("server"));
   }
 
   @Test

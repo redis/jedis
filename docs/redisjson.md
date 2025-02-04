@@ -1,6 +1,6 @@
 # RedisJSON Jedis Quick Start
 
-Jedis supports [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+Jedis supports [RedisJSON](https://redis.io/json/) and [RediSearch](https://oss.redis.com/redisearch/).
 
 The latest versions of RedisJSON let you store, manipulate, index, and query JSON.
 To use these features with Jedis, you'll need to use the `UnifiedJedis` interface or a sub-class of it.

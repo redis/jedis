@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -126,6 +127,13 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
   @Test
   public void pingBroadcast() {
     assertEquals("PONG", cluster.ping());
+  }
+
+  @Test
+  public void info() {
+    assertThrows(UnsupportedOperationException.class, () -> cluster.info());
+
+    assertThrows(UnsupportedOperationException.class, () -> cluster.info("server"));
   }
 
   @Test

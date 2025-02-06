@@ -1,6 +1,7 @@
 name: Java Format Check
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - '**/*.java' # Only trigger for Java file changes

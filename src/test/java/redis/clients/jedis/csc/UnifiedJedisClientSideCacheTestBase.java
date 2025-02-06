@@ -3,16 +3,21 @@ package redis.clients.jedis.csc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.awaitility.Awaitility.await;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
 
 public abstract class UnifiedJedisClientSideCacheTestBase {
@@ -222,4 +227,81 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
     }
   }
 
+  @Test
+  public void simplePubsubWithClientCache() {
+    String test_channel = "test_channel";
+    String test_message = "test message";
+
+    UnifiedJedis publisher = createCachedJedis(CacheConfig.builder().build());
+    Runnable command = () -> publisher.publish(test_channel, test_message + System.currentTimeMillis());
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    executor.scheduleAtFixedRate(command, 0, 100, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+    List<String> receivedMessages = new ArrayList<>();
+    try (UnifiedJedis subscriber = createCachedJedis(CacheConfig.builder().build())) {
+      JedisPubSub jedisPubSub = new JedisPubSub() {
+        private int count = 0;
+
+        @Override
+        public void onMessage(String channel, String message) {
+          receivedMessages.add(message);
+          if (message.startsWith(test_message) && count++ > 1) {
+            this.unsubscribe(test_channel);
+          }
+        }
+      };
+      subscriber.subscribe(jedisPubSub, test_channel);
+    }
+
+    executor.shutdown();
+    publisher.close();
+
+    assertTrue(receivedMessages.size() > 1);
+    receivedMessages.forEach(message -> assertTrue(message.startsWith(test_message)));
+  }
+
+  @Test
+  public void advancedPubsubWithClientCache() {
+    String test_channel = "test_channel";
+    String test_message = "test message";
+    String test_key = "test_key";
+    String test_value = "test_value";
+
+    UnifiedJedis publisher = createCachedJedis(CacheConfig.builder().build());
+    Runnable command = () -> publisher.publish(test_channel, test_message + System.currentTimeMillis());
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    executor.scheduleAtFixedRate(command, 0, 50, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+    int iteration = 0;
+    int totalIteration = 10;
+    while (iteration++ < totalIteration) {
+
+      List<String> receivedMessages = new ArrayList<>();
+      try (UnifiedJedis subscriber = createCachedJedis(CacheConfig.builder().build())) {
+
+        subscriber.set(test_key, test_value);
+        assertEquals(test_value, subscriber.get(test_key));
+        JedisPubSub jedisPubSub = new JedisPubSub() {
+          private int count = 0;
+
+          @Override
+          public void onMessage(String channel, String message) {
+            receivedMessages.add(message);
+            if (message.startsWith(test_message) && count++ > 1) {
+              this.unsubscribe(test_channel);
+            }
+          }
+        };
+        subscriber.subscribe(jedisPubSub, test_channel);
+        subscriber.set(test_key, test_value);
+        assertEquals(test_value, subscriber.get(test_key));
+      }
+
+      assertTrue(receivedMessages.size() > 1);
+      receivedMessages.forEach(message -> assertTrue(message.startsWith(test_message)));
+    }
+
+    executor.shutdown();
+    publisher.close();
+  }
 }

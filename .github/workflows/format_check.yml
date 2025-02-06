@@ -22,7 +22,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # Step 3: Get a list of changed Java files in the PR
+      # Step 3: Fetch latest changes
+      - name: Fetch latest changes
+        run: git fetch origin
+
+      # Step 4: Get a list of changed Java files in the PR
       - name: Get changed Java files
         id: changed_files
         run: |
@@ -31,7 +35,7 @@ jobs:
           echo "::endgroup::"
           echo "::set-output name=files::$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} | grep '\.java$' || true)"
 
-      # Step 4: Check formatting of the changed files
+      # Step 5: Check formatting of the changed files
       - name: Check Java file format
         run: |
           CHANGED_FILES="${{ steps.changed_files.outputs.files }}"

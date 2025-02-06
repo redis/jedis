@@ -223,8 +223,8 @@ public final class Protocol {
 
   @Experimental
   public static Object read(final RedisInputStream is, final Cache cache) {
-    Object unprocessedPush = readPushes(is, cache, false);
-    return unprocessedPush == null ? process(is) : unprocessedPush;
+    Object unhandledPush = readPushes(is, cache, false);
+    return unhandledPush == null ? process(is) : unhandledPush;
   }
 
   @Experimental

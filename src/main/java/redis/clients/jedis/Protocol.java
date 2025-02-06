@@ -223,34 +223,39 @@ public final class Protocol {
 
   @Experimental
   public static Object read(final RedisInputStream is, final Cache cache) {
-    readPushes(is, cache, false);
-    return process(is);
+    Object unprocessedPush = readPushes(is, cache, false);
+    return unprocessedPush == null ? process(is) : unprocessedPush;
   }
 
   @Experimental
-  public static void readPushes(final RedisInputStream is, final Cache cache, boolean onlyPendingBuffer) {
+  public static Object readPushes(final RedisInputStream is, final Cache cache,
+      boolean onlyPendingBuffer) {
+    Object unhandledPush = null;
     if (onlyPendingBuffer) {
       try {
-        while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
-          is.readByte();
-          processPush(is, cache);
+        while (unhandledPush == null && is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
+          unhandledPush = processPush(is, cache);
         }
       } catch (IOException e) {
         throw new JedisConnectionException("Failed to read pending buffer for push messages!", e);
       }
     } else {
-      while (is.peek(GREATER_THAN_BYTE)) {
-        is.readByte();
-        processPush(is, cache);
+      while (unhandledPush == null && is.peek(GREATER_THAN_BYTE)) {
+        unhandledPush = processPush(is, cache);
       }
     }
+    return unhandledPush;
   }
 
-  private static void processPush(final RedisInputStream is, Cache cache) {
+  private static Object processPush(final RedisInputStream is, Cache cache) {
+    is.readByte();
     List<Object> list = processMultiBulkReply(is);
     if (list.size() == 2 && list.get(0) instanceof byte[]
         && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
       cache.deleteByRedisKeys((List) list.get(1));
+      return null;
+    } else {
+      return list;
     }
   }
 

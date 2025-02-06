@@ -1,0 +1,6 @@
+name: Java Format Check
+
+on:
+  pull_request:
+    paths:
+      - '**/*.java' # Only trigger for Java file changes

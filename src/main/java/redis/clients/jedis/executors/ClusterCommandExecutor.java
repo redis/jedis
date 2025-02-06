@@ -105,7 +105,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
       } catch (JedisClusterOperationException jnrcne) {
         throw jnrcne;
       } catch (JedisConnectionException jce) {
-        lastException = jce;
+        lastException = new JedisConnectionException(
+            "Cluster retry failed to " + (connection != null ? connection.toString() : ""), jce);
         ++consecutiveConnectionFailures;
         log.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
@@ -131,7 +132,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
         IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
+        throw new JedisClusterOperationException(
+            "Cluster retry to " + (connection != null ? connection.toString() : "")
+                + " deadline exceeded.");
       }
     }
 

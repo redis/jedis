@@ -13,13 +13,14 @@ jobs:
     steps:
       # Step 1: Checkout the PR code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3 
 
       # Step 2: Set up Java (if needed for format check tools)
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          java-version: '11' # Use the version you need for your project
+          java-version: '11'
+          distribution: 'temurin'
 
       # Step 3: Get a list of changed Java files in the PR
       - name: Get changed Java files

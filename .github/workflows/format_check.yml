@@ -39,6 +39,6 @@ jobs:
             for FILE in $CHANGED_FILES; do
               echo "Checking $FILE"
               FILE_NAME=$(basename "$FILE")
-              mvn formatter:validate -f formatter-pom.xml "-Dformatter.includes=**/Pipeline.java" "$FILE"
+              mvn formatter:validate -f formatter-pom.xml "-Dformatter.includes=**/$FILE"
             done
           fi

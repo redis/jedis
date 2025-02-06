@@ -1,0 +1,44 @@
+name: Java Format Check
+
+on:
+  pull_request:
+    paths:
+      - '**/*.java' # Only trigger for Java file changes
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the PR code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Java (if needed for format check tools)
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11' # Use the version you need for your project
+
+      # Step 3: Get a list of changed Java files in the PR
+      - name: Get changed Java files
+        id: changed_files
+        run: |
+          echo "::group::Changed Java Files"
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }} | grep '\.java$' || true
+          echo "::endgroup::"
+          echo "::set-output name=files::$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} | grep '\.java$' || true)"
+
+      # Step 4: Check formatting of the changed files
+      - name: Check Java file format
+        run: |
+          CHANGED_FILES="${{ steps.changed_files.outputs.files }}"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No Java files changed."
+          else
+            for FILE in $CHANGED_FILES; do
+              echo "Checking $FILE"
+              FILE_NAME=$(basename "$FILE")
+              mvn formatter:validate -f formatter-pom.xml "-Dformatter.includes=**/Pipeline.java" "$FILE"
+            done
+          fi

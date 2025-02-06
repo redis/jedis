@@ -16,7 +16,6 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
 public class JedisPooled extends UnifiedJedis {
-
   public JedisPooled() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }

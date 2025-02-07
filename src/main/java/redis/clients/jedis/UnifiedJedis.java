@@ -25,11 +25,6 @@ import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.gears.TFunctionListParams;
-import redis.clients.jedis.gears.TFunctionLoadParams;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -59,7 +54,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
-  private final GraphCommandObjects graphCommandObjects;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
@@ -167,7 +161,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (proto != null) {
       this.commandObjects.setProtocol(proto);
     }
-    this.graphCommandObjects = new GraphCommandObjects(this);
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
     } else {
@@ -300,8 +293,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       this.commandObjects.setProtocol(protocol);
     }
 
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
     this.cache = cache;
   }
 
@@ -3988,19 +3979,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map.Entry<AggregationResult, Map<String, Object>> ftProfileAggregate(String indexName,
+  public Map.Entry<AggregationResult, ProfilingInfo> ftProfileAggregate(String indexName,
       FTProfileParams profileParams, AggregationBuilder aggr) {
     return executeCommand(commandObjects.ftProfileAggregate(indexName, profileParams, aggr));
   }
 
   @Override
-  public Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, Query query) {
     return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query));
   }
 
   @Override
-  public Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams));
   }
@@ -4067,21 +4058,25 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> ftConfigGet(String option) {
     return executeCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> ftConfigGet(String indexName, String option) {
     return executeCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
+  @Deprecated
   public String ftConfigSet(String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(option, value));
   }
 
   @Override
+  @Deprecated
   public String ftConfigSet(String indexName, String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
@@ -4960,130 +4955,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tdigestByRevRank(key, ranks));
   }
   // RedisBloom commands
-
-  // RedisGraph commands
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, long timeout) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, long timeout) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, Map<String, Object> params) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, params));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public String graphDelete(String name) {
-    return executeCommand(graphCommandObjects.graphDelete(name));
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphList() {
-    return executeCommand(commandObjects.graphList());
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphProfile(String graphName, String query) {
-    return executeCommand(commandObjects.graphProfile(graphName, query));
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphExplain(String graphName, String query) {
-    return executeCommand(commandObjects.graphExplain(graphName, query));
-  }
-
-  @Override
-  @Deprecated
-  public List<List<Object>> graphSlowlog(String graphName) {
-    return executeCommand(commandObjects.graphSlowlog(graphName));
-  }
-
-  @Override
-  @Deprecated
-  public String graphConfigSet(String configName, Object value) {
-    return executeCommand(commandObjects.graphConfigSet(configName, value));
-  }
-
-  @Override
-  @Deprecated
-  public Map<String, Object> graphConfigGet(String configName) {
-    return executeCommand(commandObjects.graphConfigGet(configName));
-  }
-  // RedisGraph commands
-
-  // RedisGears commands
-  @Deprecated
-  @Override
-  public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
-  }
-
-  @Deprecated
-  @Override
-  public String tFunctionDelete(String libraryName) {
-    return executeCommand(commandObjects.tFunctionDelete(libraryName));
-  }
-
-  @Deprecated
-  @Override
-  public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
-    return executeCommand(commandObjects.tFunctionList(params));
-  }
-
-  @Deprecated
-  @Override
-  public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
-  }
-
-  @Deprecated
-  @Override
-  public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));
-  }
-  // RedisGears commands
 
   /**
    * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.

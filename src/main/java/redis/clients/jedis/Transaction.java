@@ -12,7 +12,6 @@ import java.util.Queue;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
  * A transaction based on <a href="https://redis.io/docs/manual/pipelining/">pipelining</a>.
@@ -90,9 +89,6 @@ public class Transaction extends TransactionBase {
     super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
-    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
-    setGraphCommands(graphCommandObjects);
     if (doMulti) multi();
   }
 

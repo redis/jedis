@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
 public abstract class MultiNodePipelineBase extends PipelineBase {
@@ -40,6 +38,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     connections = new LinkedHashMap<>();
   }
 
+
   public MultiNodePipelineBase(CommandObjects commandObjects, ExecutorService executorService) {
     super(commandObjects);
     this.executorService = executorService;
@@ -56,7 +55,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
     super.setGraphCommands(graphCommandObjects);
   }
-
+  
   protected abstract HostAndPort getNodeKey(CommandArguments args);
 
   protected abstract Connection getConnection(HostAndPort nodeKey);

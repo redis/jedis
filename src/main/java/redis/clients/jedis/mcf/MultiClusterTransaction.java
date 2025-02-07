@@ -4,19 +4,16 @@ import static redis.clients.jedis.Protocol.Command.DISCARD;
 import static redis.clients.jedis.Protocol.Command.EXEC;
 import static redis.clients.jedis.Protocol.Command.MULTI;
 import static redis.clients.jedis.Protocol.Command.UNWATCH;
-import static redis.clients.jedis.Protocol.Command.WATCH;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
 
@@ -211,56 +208,4 @@ public class MultiClusterTransaction extends TransactionBase {
       inWatch = false;
     }
   }
-
-  // RedisGraph commands
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<String> graphDelete(String name) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-
-  @Override
-  public Response<List<String>> graphProfile(String graphName, String query) {
-    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
-  }
-  // RedisGraph commands
 }

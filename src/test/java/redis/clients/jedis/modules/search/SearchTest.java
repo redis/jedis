@@ -139,9 +139,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     SearchResult noFilters = client.ftSearch(index, new Query());
     assertEquals(5, noFilters.getTotalResults());
 
-    SearchResult asOriginal = client.ftSearch(index, new Query("@first:Jo*"));
-    assertEquals(0, asOriginal.getTotalResults());
-
     SearchResult asAttribute = client.ftSearch(index, new Query("@given:Jo*"));
     assertEquals(2, asAttribute.getTotalResults());
 

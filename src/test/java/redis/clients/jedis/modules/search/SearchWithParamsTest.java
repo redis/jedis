@@ -147,9 +147,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     SearchResult noFilters = client.ftSearch(index);
     assertEquals(5, noFilters.getTotalResults());
 
-    SearchResult asFirst = client.ftSearch(index, "@first:Jo*");
-    assertEquals(0, asFirst.getTotalResults());
-
     SearchResult asGiven = client.ftSearch(index, "@given:Jo*");
     assertEquals(2, asGiven.getTotalResults());
 

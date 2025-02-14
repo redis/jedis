@@ -42,6 +42,7 @@ import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.JedisBroadcastReplies;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 
@@ -333,6 +334,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
   }
 
+  public final JedisBroadcastReplies broadcastCommandDifferingReplies(CommandObject commandObject) {
+    return executor.broadcastCommandDifferingReplies(commandObject);
+  }
+
   public Cache getCache() {
     return cache;
   }
@@ -351,6 +356,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public String configSet(String parameter, String value) {
     return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+  }
+
+  public final JedisBroadcastReplies info() {
+    return executor.broadcastCommandDifferingReplies(new CommandObject(
+        new CommandArguments(Protocol.Command.INFO), BuilderFactory.STRING));
+  }
+
+  public final JedisBroadcastReplies info(String section) {
+    return executor.broadcastCommandDifferingReplies(new CommandObject(
+        new CommandArguments(Protocol.Command.INFO).add(section), BuilderFactory.STRING));
   }
 
   // Key commands

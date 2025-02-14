@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -9,6 +11,8 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -211,6 +215,23 @@ public class TransactionV2Test {
       // that is fine we should be here
     }
     assertEquals("bar", r.get());
+  }
+
+  @Test
+  public void transactionPropagatesErrorsBeforeExec() {
+    // A command may fail to be queued, so there may be an error before EXEC is called.
+    // For instance the command may be syntactically wrong (wrong number of arguments, wrong command name, ...)
+    CommandObject<String> invalidCommand =
+        new CommandObject<>(new CommandObjects().commandArguments(SET), BuilderFactory.STRING);
+
+    Transaction t = new Transaction(conn);
+    t.appendCommand(invalidCommand);
+    t.set("foo","bar");
+    JedisDataException exception = assertThrows(JedisDataException.class, t::exec);
+    Throwable[] suppressed = exception.getSuppressed();
+    assertNotNull("Suppressed exceptions should not be null", suppressed);
+    assertTrue("There should be at least one suppressed exception", suppressed.length > 0);
+    MatcherAssert.assertThat(suppressed[0].getMessage(), containsString("ERR wrong number of arguments"));
   }
 
   @Test

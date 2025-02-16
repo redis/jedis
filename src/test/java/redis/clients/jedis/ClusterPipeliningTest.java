@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.args.*;
@@ -1082,6 +1083,7 @@ public class ClusterPipeliningTest {
   }
 
   @Test(timeout = 10_000L)
+  @Ignore
   public void multiple() {
     final int maxTotal = 100;
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();

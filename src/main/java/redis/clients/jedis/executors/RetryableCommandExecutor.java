@@ -49,7 +49,8 @@ public class RetryableCommandExecutor implements CommandExecutor {
         return execute(connection, commandObject);
 
       } catch (JedisConnectionException jce) {
-        lastException = jce;
+        lastException = new JedisConnectionException(
+            "Retry failed to " + (connection != null ? connection.toString() : ""), jce);
         ++consecutiveConnectionFailures;
         log.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
@@ -63,7 +64,8 @@ public class RetryableCommandExecutor implements CommandExecutor {
         }
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisException("Retry deadline exceeded.");
+        throw new JedisException("Retry to " + (connection != null ? connection.toString() : "")
+            + " deadline exceeded.");
       }
     }
 

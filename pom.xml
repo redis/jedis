@@ -293,12 +293,22 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-				<artifactId>maven-java-formatter-plugin</artifactId>
-				<version>0.4</version>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>2.11.0</version>
 				<configuration>
 					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
+					<directories>
+						<directory>${project.basedir}/src/main/java/redis/clients/jedis/annots</directory>
+					</directories>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>

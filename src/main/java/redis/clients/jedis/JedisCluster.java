@@ -353,16 +353,6 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   // commands
-  @Override
-  public String info() {
-    throw new UnsupportedOperationException("INFO command is not supported from JedisCluster.");
-  }
-
-  @Override
-  public String info(String section) {
-    throw new UnsupportedOperationException("INFO command is not supported from JedisCluster.");
-  }
-
   public long spublish(String channel, String message) {
     return executeCommand(commandObjects.spublish(channel, message));
   }

@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands.unified.pooled;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -10,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -170,9 +170,9 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   @Test
   public void info() {
     String info = jedis.info();
-    assertThat(info, Matchers.notNullValue());
+    assertThat(info, notNullValue());
 
     info = jedis.info("server");
-    assertThat(info, Matchers.notNullValue());
+    assertThat(info, notNullValue());
   }
 }

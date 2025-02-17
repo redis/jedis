@@ -1,8 +1,9 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -131,9 +132,11 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void info() {
-    assertThrows(UnsupportedOperationException.class, () -> cluster.info());
+    String info = cluster.info();
+    assertThat(info, notNullValue());
 
-    assertThrows(UnsupportedOperationException.class, () -> cluster.info("server"));
+    info = cluster.info("server");
+    assertThat(info, notNullValue());
   }
 
   @Test

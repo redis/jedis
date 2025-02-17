@@ -92,7 +92,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO), BuilderFactory.STRING);
+  private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
+      BuilderFactory.STRING);
 
   public final CommandObject<String> info() {
     return INFO_COMMAND_OBJECT;

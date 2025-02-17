@@ -1,0 +1,69 @@
+name: Java Format Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**/*.java' # Only trigger for Java file changes
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the PR code
+      - name: Checkout code
+        uses: actions/checkout@v3 
+
+      # Step 2: Set up Java (if needed for format check tools)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      # Step 3: Fetch latest changes
+      - name: Fetch latest changes
+        run: git fetch origin
+
+      - name: Get changed Java files
+        id: changed_files
+        run: |
+          echo "::group::Changed Java Files"
+          echo Base Branch: ${{ github.event.pull_request.base.ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} | grep '\.java$' || true)
+          echo "$CHANGED_FILES"
+          echo "::endgroup::"
+          # Write the multiline content to a file
+          echo "$CHANGED_FILES" > changed_files.txt
+
+      # Step 4: Get a list of changed Java files in the PR
+      - name: Check Java file format
+        run: |
+          # Check if the changed_files.txt exists
+          if [ ! -f changed_files.txt ]; then
+            echo "No changed files found."
+            exit 0
+          fi
+
+          # Read the multiline content from the file
+          CHANGED_FILES=$(cat changed_files.txt)
+
+          # Ensure there are changed files
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No Java files changed."
+          else
+            echo "Processing the following changed Java files:"
+
+            # Iterate over the CHANGED_FILES variable, assuming files are separated by newlines
+            while IFS= read -r FILE; do
+              # Skip empty lines if any
+              if [ -n "$FILE" ]; then
+                FILE_NAME=$(basename "$FILE")
+                echo "Checking for $FILE_NAME"
+                
+                # Run your formatter validation for each file
+                mvn formatter:validate -f formatter-pom.xml "-Dformatter.includes=**/$FILE_NAME"
+              fi
+            done <<< "$CHANGED_FILES"
+          fi

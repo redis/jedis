@@ -77,11 +77,11 @@ jobs:
           export TEST_ENV_PROVIDER=docker
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
-          #if [ -z "$TESTS" ]; then
-          #  mvn clean compile test
-          #else
-          #  mvn -Dtest=$TESTS clean compile test
-          #fi
+          if [ -z "$TESTS" ]; then
+            mvn clean compile test
+          else
+            mvn -Dtest=$TESTS clean compile test
+          fi
         env:
           JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
           TESTS: ${{ github.event.inputs.specific_test || '' }}

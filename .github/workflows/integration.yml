@@ -77,9 +77,6 @@ jobs:
           export TEST_ENV_PROVIDER=docker
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
-          if [[ "${{ matrix.redis_version }}" == "7.4.1" ]]; then
-            exit 1;
-          fi
           #if [ -z "$TESTS" ]; then
           #  mvn clean compile test
           #else

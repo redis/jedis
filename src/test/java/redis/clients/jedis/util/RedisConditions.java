@@ -43,7 +43,8 @@ public class RedisConditions {
   private final Map<String, Integer> modules;
   private final Map<String, CommandInfo> commands;
 
-  private RedisConditions(RedisVersion version, Map< String, CommandInfo> commands, Map<String, Integer> modules) {
+  private RedisConditions(RedisVersion version, Map<String, CommandInfo> commands,
+      Map<String, Integer> modules) {
     this.version = version;
     this.commands = commands;
     this.modules = modules;
@@ -52,15 +53,14 @@ public class RedisConditions {
   public static RedisConditions of(UnifiedJedis jedis) {
     RedisVersion version = RedisVersionUtil.getRedisVersion(jedis);
 
-    CommandObject<Map<String, CommandInfo>> commandInfoCmd
-        = new CommandObject<>(new CommandArguments(COMMAND), CommandInfo.COMMAND_INFO_RESPONSE);
+    CommandObject<Map<String, CommandInfo>> commandInfoCmd = new CommandObject<>(
+        new CommandArguments(COMMAND), CommandInfo.COMMAND_INFO_RESPONSE);
     Map<String, CommandInfo> commands = jedis.executeCommand(commandInfoCmd);
 
-    CommandObject<List<Module>> moduleListCmd
-        = new CommandObject<>(new CommandArguments(MODULE).add(LIST), MODULE_LIST);
+    CommandObject<List<Module>> moduleListCmd = new CommandObject<>(
+        new CommandArguments(MODULE).add(LIST), MODULE_LIST);
 
-    Map<String, Integer> modules = jedis.executeCommand(moduleListCmd)
-        .stream()
+    Map<String, Integer> modules = jedis.executeCommand(moduleListCmd).stream()
         .collect(Collectors.toMap((m) -> m.getName().toUpperCase(), Module::getVersion));
 
     return new RedisConditions(version, commands, modules);
@@ -101,6 +101,8 @@ public class RedisConditions {
    * @return {@code true} if the module version is greater than or equal to the specified version.
    */
   public boolean moduleVersionIsGreaterThanOrEqual(ModuleVersion moduleVersion) {
-    return moduleVersionIsGreaterThanOrEqual(moduleVersion.getModuleName(), moduleVersion.getVersion());
+    return moduleVersionIsGreaterThanOrEqual(moduleVersion.getModuleName(),
+        moduleVersion.getVersion());
   }
+
 }

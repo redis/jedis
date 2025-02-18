@@ -26,7 +26,7 @@ on:
 jobs:
 
   build:
-    name: Build and Test
+    name: Build and Test (Matrix)
     runs-on: ubuntu-latest
     env:
       REDIS_ENV_WORK_DIR: ${{ github.workspace }}/redis-env-work
@@ -135,3 +135,11 @@ jobs:
           fail_ci_if_error: false
           files: ./target/surefire-reports/TEST*
           token: ${{ secrets.CODECOV_TOKEN }}
+build-summary:
+  name: Build and Test
+  runs-on: ubuntu-latest
+  needs: build
+  if: always()
+  steps:
+    - name: Report build summary
+      run: echo "All build and test jobs have completed."

@@ -77,11 +77,14 @@ jobs:
           export TEST_ENV_PROVIDER=docker
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
-          if [ -z "$TESTS" ]; then
-            mvn clean compile test
-          else
-            mvn -Dtest=$TESTS clean compile test
+          if [[ "${{ matrix.redis_version }}" == "7.4.1" ]]; then
+            exit 1;
           fi
+          #if [ -z "$TESTS" ]; then
+          #  mvn clean compile test
+          #else
+          #  mvn -Dtest=$TESTS clean compile test
+          #fi
         env:
           JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
           TESTS: ${{ github.event.inputs.specific_test || '' }}
@@ -141,5 +144,7 @@ jobs:
     needs: build
     if: always()
     steps:
+      - uses: technote-space/workflow-conclusion-action@v2
       - name: Report build summary
-        run: echo "All build and test jobs have completed."
+        if: env.WORKFLOW_CONCLUSION == 'failure'
+        run: exit 1

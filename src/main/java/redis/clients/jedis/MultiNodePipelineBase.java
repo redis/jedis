@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +29,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
+  private ExecutorService executorService;
   private volatile boolean syncing = false;
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
@@ -37,6 +38,24 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     connections = new LinkedHashMap<>();
   }
 
+
+  public MultiNodePipelineBase(CommandObjects commandObjects, ExecutorService executorService) {
+    super(commandObjects);
+    this.executorService = executorService;
+    pipelinedResponses = new LinkedHashMap<>();
+    connections = new LinkedHashMap<>();
+  }
+
+  /**
+   * Sub-classes must call this method, if graph commands are going to be used.
+   * @param connectionProvider connection provider
+   */
+  protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
+    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(connectionProvider);
+    graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    super.setGraphCommands(graphCommandObjects);
+  }
+  
   protected abstract HostAndPort getNodeKey(CommandArguments args);
 
   protected abstract Connection getConnection(HostAndPort nodeKey);
@@ -84,44 +103,47 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
       return;
     }
     syncing = true;
-
-    ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
-
-    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
-        = pipelinedResponses.entrySet().iterator();
-    while (pipelinedResponsesIterator.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
-      HostAndPort nodeKey = entry.getKey();
-      Queue<Response<?>> queue = entry.getValue();
-      Connection connection = connections.get(nodeKey);
-      executorService.submit(() -> {
-        try {
-          List<Object> unformatted = connection.getMany(queue.size());
-          for (Object o : unformatted) {
-            queue.poll().set(o);
-          }
-        } catch (JedisConnectionException jce) {
-          log.error("Error with connection to " + nodeKey, jce);
-          // cleanup the connection
-          pipelinedResponsesIterator.remove();
-          connections.remove(nodeKey);
-          IOUtils.closeQuietly(connection);
-        } finally {
-          countDownLatch.countDown();
-        }
-      });
-    }
-
+    ExecutorService executorService = getExecutorService();
+    CompletableFuture[] futures
+            = pipelinedResponses.entrySet().stream()
+            .map(e -> CompletableFuture.runAsync(() -> closeConnection(e), executorService))
+            .toArray(CompletableFuture[]::new);
+    CompletableFuture awaitAllCompleted = CompletableFuture.allOf(futures);
     try {
-      countDownLatch.await();
+        awaitAllCompleted.get();
+        if (executorService != this.executorService) {
+          executorService.shutdown();
+        }
+    } catch (ExecutionException e) {
+      log.error("Failed execution.", e);
     } catch (InterruptedException e) {
       log.error("Thread is interrupted during sync.", e);
+      Thread.currentThread().interrupt();
     }
-
-    executorService.shutdownNow();
-
     syncing = false;
+  }
+
+  private ExecutorService getExecutorService() {
+    if (executorService == null) {
+      return Executors.newFixedThreadPool(Math.min(this.pipelinedResponses.size(), MULTI_NODE_PIPELINE_SYNC_WORKERS));
+    }
+    return executorService;
+  }
+
+  private void closeConnection(Map.Entry<HostAndPort, Queue<Response<?>>> entry) {
+    HostAndPort nodeKey = entry.getKey();
+    Queue<Response<?>> queue = entry.getValue();
+    Connection connection = connections.get(nodeKey);
+    try {
+      List<Object> unformatted = connection.getMany(queue.size());
+      for (Object o : unformatted) {
+        queue.poll().set(o);
+      }
+    } catch (JedisConnectionException jce) {
+      log.error("Error with connection to " + nodeKey, jce);
+      connections.remove(nodeKey);
+      IOUtils.closeQuietly(connection);
+    }
   }
 
   @Deprecated

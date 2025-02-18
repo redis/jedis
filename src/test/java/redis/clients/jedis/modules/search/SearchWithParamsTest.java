@@ -49,7 +49,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
-
   @After
   public void cleanUp() {
     if (client.ftList().contains(index)) {
@@ -1257,30 +1256,26 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testFlatVectorSimilarityInt8() {
-    assumeTrue("INT8", RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
+    assumeTrue("INT8",
+        RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
     assertOK(client.ftCreate(index,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.FLAT)
-            .addAttribute("TYPE", "INT8")
-            .addAttribute("DIM", 2)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .build()
-    ));
+        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.FLAT)
+            .addAttribute("TYPE", "INT8").addAttribute("DIM", 2)
+            .addAttribute("DISTANCE_METRIC", "L2").build()));
 
-    byte[] a = {127, 1};
-    byte[] b = {127, 10};
-    byte[] c = {127, 100};
+    byte[] a = { 127, 1 };
+    byte[] b = { 127, 10 };
+    byte[] c = { 127, 100 };
 
     client.hset("a".getBytes(), "v".getBytes(), a);
     client.hset("b".getBytes(), "v".getBytes(), b);
     client.hset("c".getBytes(), "v".getBytes(), c);
 
-    FTSearchParams searchParams = FTSearchParams.searchParams()
-        .addParam("vec", a)
-        .sortBy("__v_score", SortingOrder.ASC)
-        .returnFields("__v_score");
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", a)
+        .sortBy("__v_score", SortingOrder.ASC).returnFields("__v_score");
 
-    Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
+    Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments()
+        .get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
   }
@@ -1325,26 +1320,22 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void int8StorageType() {
-    assumeTrue("INT8", RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
+    assumeTrue("INT8",
+        RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
     assertOK(client.ftCreate(index,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.HNSW)
-            .addAttribute("TYPE", "INT8")
-            .addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .build()));
+        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+            .addAttribute("TYPE", "INT8").addAttribute("DIM", 4)
+            .addAttribute("DISTANCE_METRIC", "L2").build()));
   }
 
   @Test
   public void uint8StorageType() {
-    assumeTrue("UINT8", RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
+    assumeTrue("UINT8",
+        RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
     assertOK(client.ftCreate(index,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.HNSW)
-            .addAttribute("TYPE", "UINT8")
-            .addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .build()));
+        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+            .addAttribute("TYPE", "UINT8").addAttribute("DIM", 4)
+            .addAttribute("DISTANCE_METRIC", "L2").build()));
   }
 
   @Test

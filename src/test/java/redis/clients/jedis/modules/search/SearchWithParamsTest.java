@@ -1257,6 +1257,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testFlatVectorSimilarityInt8() {
+    assumeTrue("INT8", RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
     assertOK(client.ftCreate(index,
         VectorField.builder().fieldName("v")
             .algorithm(VectorAlgorithm.FLAT)

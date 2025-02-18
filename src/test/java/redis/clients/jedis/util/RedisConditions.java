@@ -18,6 +18,27 @@ import static redis.clients.jedis.Protocol.Keyword.LIST;
 
 public class RedisConditions {
 
+  public enum ModuleVersion {
+
+    SEARCH_MOD_VER_80M3("SEARCH", 79903);
+
+    private final String moduleName;
+    private final int version;
+
+    ModuleVersion(String moduleName, int version) {
+      this.moduleName = moduleName;
+      this.version = version;
+    }
+
+    public String getModuleName() {
+      return moduleName;
+    }
+
+    public int getVersion() {
+      return version;
+    }
+  }
+
   private final RedisVersion version;
   private final Map<String, Integer> modules;
   private final Map<String, CommandInfo> commands;
@@ -68,10 +89,18 @@ public class RedisConditions {
   /**
    * @param module
    * @param version
-   * @return {@code true} if the module is present.
+   * @return {@code true} if the module with the requested minimum version is present.
    */
-  public boolean moduleVersionIsGreatherThan(String module, int version) {
+  public boolean moduleVersionIsGreaterThanOrEqual(String module, int version) {
     Integer moduleVersion = modules.get(module.toUpperCase());
-    return moduleVersion != null && moduleVersion > version;
+    return moduleVersion != null && moduleVersion >= version;
+  }
+
+  /**
+   * @param moduleVersion
+   * @return {@code true} if the module version is greater than or equal to the specified version.
+   */
+  public boolean moduleVersionIsGreaterThanOrEqual(ModuleVersion moduleVersion) {
+    return moduleVersionIsGreaterThanOrEqual(moduleVersion.getModuleName(), moduleVersion.getVersion());
   }
 }

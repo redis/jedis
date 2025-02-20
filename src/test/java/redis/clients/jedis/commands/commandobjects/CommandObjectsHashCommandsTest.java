@@ -25,6 +25,8 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -74,6 +76,110 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     byte[] get = exec(commandObjects.hget(key, field));
     assertThat(get, equalTo(value));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void testHgetex() {
+    String key = "hashKey";
+    String field = "name";
+    String value = "John";
+    long seconds = 20;
+
+    exec(commandObjects.hset(key, field, value));
+    List<String> fieldValues = exec(commandObjects.hgetex(key, new HGetExParams().ex(seconds), field));
+    assertThat(fieldValues, equalTo(value));
+
+    List<Long> ttlList = exec(commandObjects.httl(key, field));
+    Long ttl = ttlList.get(0);
+    assertThat(ttl, greaterThanOrEqualTo(seconds - 1));
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void testHgetexBinary() {
+    byte[] key = "hashKeyBytes".getBytes();
+    byte[] field = "name".getBytes();
+    byte[] value = "John".getBytes();
+    long seconds = 20;
+
+    List<byte[]> get = exec(commandObjects.hgetex(key, new HGetExParams().ex(seconds), field));
+    assertThat(get, equalTo(value));
+
+    List<Long> ttlList = exec(commandObjects.httl(key, field));
+    Long ttl = ttlList.get(0);
+    assertThat(ttl, greaterThanOrEqualTo(seconds - 1));
+    assertThat(ttl, greaterThanOrEqualTo(seconds - 1));
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void testHsetex() {
+    String key = "hashKey";
+    String field = "name";
+    String value = "John";
+    long seconds = 20;
+
+    Long set = exec(commandObjects.hsetex(key, new HSetExParams().ex(seconds), field, value));
+    assertThat(set, equalTo(1L));
+
+    String get = exec(commandObjects.hget(key, field));
+    assertThat(get, equalTo(value));
+
+    List<Long> ttlList = exec(commandObjects.httl(key, field));
+    Long ttl = ttlList.get(0);
+    assertThat(ttl, greaterThanOrEqualTo(seconds - 1));
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void testHsetexBinary() {
+    byte[] key = "hashKeyBytes".getBytes();
+    byte[] field = "name".getBytes();
+    byte[] value = "John".getBytes();
+    long seconds = 20;
+    Long set = exec(commandObjects.hsetex(key, new HSetExParams().ex(seconds), field, value));
+    assertThat(set, equalTo(1L));
+
+    byte[] get = exec(commandObjects.hget(key, field));
+    assertThat(get, equalTo(value));
+
+    List<Long> ttlList = exec(commandObjects.httl(key, field));
+    Long ttl = ttlList.get(0);
+    assertThat(ttl, greaterThanOrEqualTo(seconds - 1));
+    assertThat(ttl, greaterThanOrEqualTo(seconds - 1));
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void testHgetdel() {
+    String key = "hashKey";
+    String field = "name";
+    String value = "John";
+
+    exec(commandObjects.hset(key, field, value));
+
+    List<String> getDel = exec(commandObjects.hgetdel(key, field));
+    assertThat(getDel, equalTo(value));
+
+    String getAfterDel = exec(commandObjects.hget(key, field));
+    assertThat(getAfterDel, nullValue());
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void testHgetdelBinary() {
+    byte[] key = "hashKeyBytes".getBytes();
+    byte[] field = "field".getBytes();
+    byte[] value = "value".getBytes();
+
+    exec(commandObjects.hset(key, field, value));
+
+    List<byte[]> getDel = exec(commandObjects.hgetdel(key, field));
+    assertThat(getDel, equalTo(value));
+
+    byte[] getAfterDel = exec(commandObjects.hget(key, field));
+    assertThat(getAfterDel, nullValue());
   }
 
   @Test

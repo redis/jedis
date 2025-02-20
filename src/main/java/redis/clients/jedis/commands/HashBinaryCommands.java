@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -14,7 +16,15 @@ public interface HashBinaryCommands {
 
   long hset(byte[] key, Map<byte[], byte[]> hash);
 
+  long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value);
+
+  long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash);
+
   byte[] hget(byte[] key, byte[] field);
+
+  List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields);
+  
+  List<byte[]> hgetdel(byte[] key, byte[]... fields);
 
   long hsetnx(byte[] key, byte[] field, byte[] value);
 

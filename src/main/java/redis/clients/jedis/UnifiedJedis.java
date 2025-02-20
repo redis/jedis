@@ -1472,8 +1472,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long hsetex(String key, HSetExParams params, String field, String value) {
+   return executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+  
+  @Override
   public String hget(String key, String field) {
     return executeCommand(commandObjects.hget(key, field));
+  }
+  
+  @Override
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {
+    return executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+  
+  @Override
+  public List<String> hgetdel(String key, String... fields) {
+    return executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -1502,8 +1522,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+   return executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
+  @Override
   public byte[] hget(byte[] key, byte[] field) {
     return executeCommand(commandObjects.hget(key, field));
+  }
+
+  @Override
+  public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+  
+  @Override
+  public List<byte[]> hgetdel(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override

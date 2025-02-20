@@ -36,6 +36,8 @@ import org.junit.Test;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
@@ -46,7 +48,9 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
-
+  final byte[] bbare = { 0x05, 0x06, 0x07, 0x08, 0x09 };
+  final byte[] bcare = { 0x09, 0x0A, 0x0B, 0x0C, 0x0D };
+  
   final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
@@ -78,6 +82,123 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertNull(jedis.hget(bbar, bfoo));
     assertNull(jedis.hget(bfoo, bcar));
     assertArrayEquals(bcar, jedis.hget(bfoo, bbar));
+  }
+
+
+  @Test
+  public void hgetex() {
+    long seconds = 20;
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList("car"), jedis.hgetex("foo", HGetExParams.hGetExParams().ex(seconds), "bar"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList("car"), jedis.hgetex("foo", HGetExParams.hGetExParams().persist(), "bar"));
+    assertEquals(jedis.httl("foo", "bar").get(0), Long.valueOf(0));
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList("car", "care"), jedis.hgetex("foo", HGetExParams.hGetExParams().ex(seconds), "bar", "bare"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl("foo", "bare").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    // Binary
+    jedis.hset(bfoo, bbar, bcar);
+    assertEquals(asList(bcar), jedis.hgetex(bfoo, HGetExParams.hGetExParams().ex(seconds), bbar));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    jedis.hset(bfoo, bbar, bcar);
+    assertEquals(asList(bcar), jedis.hgetex(bfoo, HGetExParams.hGetExParams().persist(), bbar));
+    assertEquals(jedis.httl(bfoo, bbar).get(0), Long.valueOf(0));
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbare, bcare);
+    assertEquals(asList(bcar, bcare), jedis.hgetex(bfoo, HGetExParams.hGetExParams().ex(seconds), bbar, bbare));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl(bfoo, bbare).get(0), greaterThanOrEqualTo(seconds - 1));
+  }
+
+  @Test
+  public void hgetdel() {
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList("car"), jedis.hgetdel("foo", "bar"));
+    assertEquals(null, jedis.hget("foo", "bar"));
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList("car", "care"), jedis.hgetdel("foo", "bar", "bare"));
+    assertEquals(null, jedis.hget("foo", "bar"));
+    assertEquals(null, jedis.hget("foo", "bare"));
+
+    // Binary
+    jedis.hset(bfoo, bbar, bcar);
+    assertEquals(asList(bcar), jedis.hgetdel(bfoo, bbar));
+    assertEquals(null, jedis.hget(bfoo, bbar));
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbare, bcare);
+    assertEquals(asList(bcar, bcare), jedis.hgetdel(bfoo, bbar, bbare));
+    assertEquals(null, jedis.hget(bfoo, bbar));
+    assertEquals(null, jedis.hget(bfoo, bbare));
+  }
+
+  @Test
+  public void hsetex() {
+    long seconds = 20;
+    jedis.del("foo");
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().ex(seconds).fnx(), "bar", "car"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().keepTtl(), "bar", "car"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().fxx(), "bar", "car"));
+    assertEquals(Long.valueOf(0), jedis.httl("foo", "bar").get(0));
+
+    HashMap<String, String> hash = new HashMap<String, String>();
+    hash.put("bar", "car");
+    hash.put("bare", "care");
+    jedis.del("foo");
+
+    assertEquals(2, jedis.hsetex("foo", HSetExParams.hSetExParams().ex(seconds).fnx(), hash));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl("foo", "bare").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(2, jedis.hsetex("foo", HSetExParams.hSetExParams().keepTtl(), hash));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl("foo", "bare").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(2, jedis.hsetex("foo", HSetExParams.hSetExParams().fxx(), hash));
+    assertEquals(Long.valueOf(0), jedis.httl("foo", "bar").get(0));
+    assertEquals(Long.valueOf(0), jedis.httl("foo", "bare").get(0));
+
+    // Binary
+    jedis.del(bfoo);
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().ex(seconds).fnx(), bbar, bcar));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().keepTtl(), bbar, bcar));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().fxx(), bbar, bcar));
+    assertEquals(Long.valueOf(0), jedis.httl(bfoo, bbar).get(0));
+
+    HashMap<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
+    bhash.put(bbar, bcar);
+    bhash.put(bbare, bcare);
+
+    jedis.del(bfoo);
+    assertEquals(2, jedis.hsetex(bfoo, HSetExParams.hSetExParams().ex(seconds).fnx(), bhash));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl(bfoo, bbare).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(2, jedis.hsetex(bfoo, HSetExParams.hSetExParams().keepTtl(), bhash));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl(bfoo, bbare).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(2, jedis.hsetex(bfoo, HSetExParams.hSetExParams().fxx(), bhash));
+    assertEquals(Long.valueOf(0), jedis.httl(bfoo, bbar).get(0));
+    assertEquals(Long.valueOf(0), jedis.httl(bfoo, bbare).get(0));
   }
 
   @Test

@@ -53,7 +53,7 @@ public class CommandObjects {
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private Lock mapperLock = new ReentrantLock(true);    
   private volatile JsonObjectMapper jsonObjectMapper;
-  private final AtomicInteger searchDialect = new AtomicInteger(0);
+  private final AtomicInteger searchDialect = new AtomicInteger(2); // DEFAULT_SEARCH_DIALECT = 2;
 
   @Experimental
   void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
@@ -90,6 +90,17 @@ public class CommandObjects {
 
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
+      BuilderFactory.STRING);
+
+  public final CommandObject<String> info() {
+    return INFO_COMMAND_OBJECT;
+  }
+
+  public final CommandObject<String> info(String section) {
+    return new CommandObject<>(commandArguments(Command.INFO).add(section), BuilderFactory.STRING);
   }
 
   // Key commands

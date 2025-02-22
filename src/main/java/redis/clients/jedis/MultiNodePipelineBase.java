@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
@@ -24,12 +23,17 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
    * The number of processes for {@code sync()}. If you have enough cores for client (and you have
    * more than 3 cluster nodes), you may increase this number of workers.
    * Suggestion:&nbsp;&le;&nbsp;cluster&nbsp;nodes.
+   *
+   * @deprecated Client using this approach are paying the thread creation cost for every pipeline sync. Clients
+   * should use refer to {@link JedisClientConfig#getPipelineExecutorProvider()} to provide a single Executor for
+   * gain in performance.
    */
   public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
-  private ExecutorService executorService;
+  private ClusterPipelineExecutor clusterPipelineExecutor;
+  private boolean useSharedExecutor = false;
   private volatile boolean syncing = false;
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
@@ -38,24 +42,14 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     connections = new LinkedHashMap<>();
   }
 
-
-  public MultiNodePipelineBase(CommandObjects commandObjects, ExecutorService executorService) {
+  public MultiNodePipelineBase(CommandObjects commandObjects, ClusterPipelineExecutor executorService) {
     super(commandObjects);
-    this.executorService = executorService;
+    clusterPipelineExecutor = executorService;
+    useSharedExecutor = clusterPipelineExecutor != null;
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
   }
 
-  /**
-   * Sub-classes must call this method, if graph commands are going to be used.
-   * @param connectionProvider connection provider
-   */
-  protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
-    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(connectionProvider);
-    graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
-    super.setGraphCommands(graphCommandObjects);
-  }
-  
   protected abstract HostAndPort getNodeKey(CommandArguments args);
 
   protected abstract Connection getConnection(HostAndPort nodeKey);
@@ -103,15 +97,15 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
       return;
     }
     syncing = true;
-    ExecutorService executorService = getExecutorService();
+    ClusterPipelineExecutor executorService = getExecutorService();
     CompletableFuture[] futures
             = pipelinedResponses.entrySet().stream()
-            .map(e -> CompletableFuture.runAsync(() -> closeConnection(e), executorService))
+            .map(response -> CompletableFuture.runAsync(() -> readCommandResponse(response), executorService))
             .toArray(CompletableFuture[]::new);
     CompletableFuture awaitAllCompleted = CompletableFuture.allOf(futures);
     try {
         awaitAllCompleted.get();
-        if (executorService != this.executorService) {
+        if (!useSharedExecutor) {
           executorService.shutdown();
         }
     } catch (ExecutionException e) {
@@ -123,14 +117,15 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     syncing = false;
   }
 
-  private ExecutorService getExecutorService() {
-    if (executorService == null) {
-      return Executors.newFixedThreadPool(Math.min(this.pipelinedResponses.size(), MULTI_NODE_PIPELINE_SYNC_WORKERS));
+  private ClusterPipelineExecutor getExecutorService() {
+    if (useSharedExecutor) {
+      return clusterPipelineExecutor;
     }
-    return executorService;
+    return ClusterPipelineExecutor.from(
+            Executors.newFixedThreadPool(Math.min(this.pipelinedResponses.size(), MULTI_NODE_PIPELINE_SYNC_WORKERS)));
   }
 
-  private void closeConnection(Map.Entry<HostAndPort, Queue<Response<?>>> entry) {
+  private void readCommandResponse(Map.Entry<HostAndPort, Queue<Response<?>>> entry) {
     HostAndPort nodeKey = entry.getKey();
     Queue<Response<?>> queue = entry.getValue();
     Connection connection = connections.get(nodeKey);

@@ -33,6 +33,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
+  private final PipelineExecutorProvider pipelineExecutorProvider;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -50,6 +52,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
+    this.pipelineExecutorProvider = builder.pipelineExecutorProvider;
   }
 
   @Override
@@ -143,6 +146,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+  @Override
+  public PipelineExecutorProvider getPipelineExecutorProvider() {
+    return pipelineExecutorProvider;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -174,6 +182,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean readOnlyForRedisClusterReplicas = false;
 
     private AuthXManager authXManager = null;
+
+    private PipelineExecutorProvider pipelineExecutorProvider = PipelineExecutorProvider.DEFAULT;
 
     private Builder() {
     }
@@ -297,6 +307,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder pipelineExecutorProvider(PipelineExecutorProvider pipelineExecutorProvider) {
+      this.pipelineExecutorProvider = pipelineExecutorProvider;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -314,6 +329,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
+      this.pipelineExecutorProvider = instance.getPipelineExecutorProvider();
       return this;
     }
   }

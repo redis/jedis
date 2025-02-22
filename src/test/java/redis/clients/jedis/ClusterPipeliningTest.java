@@ -1087,18 +1087,23 @@ public class ClusterPipeliningTest {
   @Test(timeout = 10_000L)
   public void pipelineMergingWithExecutorService() {
     final int maxTotal = 100;
+    ExecutorService executorService = Executors.newFixedThreadPool(10);
+    PipelineExecutorProvider pipelineExecutorProvider
+            = new PipelineExecutorProvider(ClusterPipelineExecutor.from(executorService));
+    JedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+            .pipelineExecutorProvider(pipelineExecutorProvider)
+            .password("cluster").build();
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(maxTotal);
-    ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig)) {
-      ClusterPipeline pipeline = cluster.pipelined(executorService);
+    try (JedisCluster cluster = new JedisCluster(nodes, jedisClientConfig, 5, poolConfig)) {
+      ClusterPipeline pipeline = cluster.pipelined();
       for (int i = 0; i < maxTotal; i++) {
         String s = Integer.toString(i);
         pipeline.set(s, s);
       }
       pipeline.close();
       // The sync results in one pipeline per node needing closing.
-      assertEquals(nodes.size(), executorService.getTaskCount());
+      assertEquals(nodes.size(), ((ThreadPoolExecutor) executorService).getTaskCount());
       assertFalse(executorService.isShutdown());
     } finally {
       executorService.shutdown();

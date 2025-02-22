@@ -28,11 +28,14 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean readOnlyForRedisClusterReplicas;
 
+  private final PipelineExecutorProvider pipelineExecutorProvider;
+
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
-      ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForRedisClusterReplicas) {
+      ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForRedisClusterReplicas,
+                                   PipelineExecutorProvider pipelineExecutorProvider) {
     this.redisProtocol = protocol;
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
@@ -47,6 +50,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.hostAndPortMapper = hostAndPortMapper;
     this.clientSetInfoConfig = clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = readOnlyForRedisClusterReplicas;
+    this.pipelineExecutorProvider = pipelineExecutorProvider;
   }
 
   @Override
@@ -130,6 +134,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+  @Override
+  public PipelineExecutorProvider getPipelineExecutorProvider() {
+    return pipelineExecutorProvider;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -159,6 +168,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private boolean readOnlyForRedisClusterReplicas = false;
 
+    private PipelineExecutorProvider pipelineExecutorProvider = PipelineExecutorProvider.DEFAULT;
+
     private Builder() {
     }
 
@@ -171,7 +182,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis, socketTimeoutMillis,
           blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
           sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig,
-          readOnlyForRedisClusterReplicas);
+          readOnlyForRedisClusterReplicas, pipelineExecutorProvider);
     }
 
     /**
@@ -271,25 +282,63 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.readOnlyForRedisClusterReplicas = true;
       return this;
     }
+
+    public Builder pipelineExecutorProvider(PipelineExecutorProvider pipelineExecutorProvider) {
+      this.pipelineExecutorProvider = pipelineExecutorProvider;
+      return this;
+    }
   }
 
+  /**
+   * @deprecated Use {@link redis.clients.jedis.DefaultJedisClientConfig.Builder}.
+   */
+  @Deprecated
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    return new DefaultJedisClientConfig(null,
-        connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
-        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
-        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null,
-        false);
+    Builder builder = builder();
+    builder.connectionTimeoutMillis(connectionTimeoutMillis).socketTimeoutMillis(soTimeoutMillis)
+        .blockingSocketTimeoutMillis(blockingSocketTimeoutMillis);
+    if (user != null || password != null) {
+      // deliberately not handling 'user != null && password == null' here
+      builder.credentials(new DefaultRedisCredentials(user, password));
+    }
+    builder.database(database).clientName(clientName);
+    builder.ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters).hostnameVerifier(hostnameVerifier);
+    builder.hostAndPortMapper(hostAndPortMapper);
+    return builder.build();
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(copy.getRedisProtocol(),
-        copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),
-        copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
-        copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
-        copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper(),
-        copy.getClientSetInfoConfig(), copy.isReadOnlyForRedisClusterReplicas());
+    Builder builder = builder();
+    builder.protocol(copy.getRedisProtocol());
+    builder.connectionTimeoutMillis(copy.getConnectionTimeoutMillis());
+    builder.socketTimeoutMillis(copy.getSocketTimeoutMillis());
+    builder.blockingSocketTimeoutMillis(copy.getBlockingSocketTimeoutMillis());
+
+    Supplier<RedisCredentials> credentialsProvider = copy.getCredentialsProvider();
+    if (credentialsProvider != null) {
+      builder.credentialsProvider(credentialsProvider);
+    } else {
+      builder.user(copy.getUser());
+      builder.password(copy.getPassword());
+    }
+
+    builder.database(copy.getDatabase());
+    builder.clientName(copy.getClientName());
+
+    builder.ssl(copy.isSsl());
+    builder.sslSocketFactory(copy.getSslSocketFactory());
+    builder.sslParameters(copy.getSslParameters());
+    builder.hostnameVerifier(copy.getHostnameVerifier());
+    builder.hostAndPortMapper(copy.getHostAndPortMapper());
+
+    builder.clientSetInfoConfig(copy.getClientSetInfoConfig());
+    if (copy.isReadOnlyForRedisClusterReplicas()) {
+      builder.readOnlyForRedisClusterReplicas();
+    }
+
+    return builder.build();
   }
 }

@@ -13,6 +13,7 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
+import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
@@ -30,8 +31,16 @@ public class JedisCluster extends UnifiedJedis {
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
   /**
-   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
-   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * Executor used to close MultiNodePipeline in parallel. See {@link JedisClientConfig#getPipelineExecutorProvider()}
+   * for mor details on configuration.
+   */
+  private ClusterPipelineExecutor clusterPipelineExecutor;
+
+  /**
+   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.
+   * <p>
+   * Here, the default timeout of {@value redis.clients.jedis.JedisCluster#DEFAULT_TIMEOUT} ms is being used with
+   * {@value redis.clients.jedis.JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param node Node to first connect to.
    */
   public JedisCluster(HostAndPort node) {
@@ -39,8 +48,10 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
-   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.<br>
-   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.
+   * <p>
+   * Here, the default timeout of {@value redis.clients.jedis.JedisCluster#DEFAULT_TIMEOUT} ms is being used with
+   * {@value redis.clients.jedis.JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param node Node to first connect to.
    * @param timeout connection and socket timeout in milliseconds.
    */
@@ -243,6 +254,8 @@ public class JedisCluster extends UnifiedJedis {
       Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
         clientConfig.getRedisProtocol());
+    clientConfig.getPipelineExecutorProvider()
+            .getClusteredPipelineExecutor().ifPresent((executor) -> this.clusterPipelineExecutor = executor);
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
@@ -260,6 +273,8 @@ public class JedisCluster extends UnifiedJedis {
       Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration,
         clientConfig.getRedisProtocol());
+    clientConfig.getPipelineExecutorProvider()
+            .getClusteredPipelineExecutor().ifPresent((executor) -> this.clusterPipelineExecutor = executor);
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
@@ -267,6 +282,8 @@ public class JedisCluster extends UnifiedJedis {
       Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
         maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol());
+    clientConfig.getPipelineExecutorProvider()
+            .getClusteredPipelineExecutor().ifPresent((executor) -> this.clusterPipelineExecutor = executor);
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
@@ -326,6 +343,12 @@ public class JedisCluster extends UnifiedJedis {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
   }
 
+  @Override
+  public void close() {
+    super.close();
+    IOUtils.closeQuietly(this.clusterPipelineExecutor);
+  }
+
   /**
    * Returns all nodes that were configured to connect to in key-value pairs ({@link Map}).<br>
    * Key is the HOST:PORT and the value is the connection pool.
@@ -368,8 +391,13 @@ public class JedisCluster extends UnifiedJedis {
 
   @Override
   public ClusterPipeline pipelined() {
-    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
+    if (clusterPipelineExecutor == null) {
+      return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
+    }
+    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects,
+            clusterPipelineExecutor);
   }
+
 
   /**
    * @param doMulti param

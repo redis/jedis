@@ -23,3 +23,7 @@ jobs:
         stale-pr-label: "stale"
         operations-per-run: 10
         remove-stale-when-updated: false
+        only-labels: 'waiting-for-feedback'
+        exempt-issue-labels: 'feedback-provided'
+        exempt-pr-labels: 'feedback-provided'
+        exempt-all-milestones: true

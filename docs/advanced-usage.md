@@ -128,7 +128,7 @@ Starting with version 5.3.0 GA, Jedis supports token-based authentication. The [
 
 Additionally, support for Microsoft EntraID has been fully implemented and is now available as an extension for Azure Managed Redis (AMR) and Azure Cache for Redis(ACR).
 
-### Using Token-Based Authentication With Custom Identity Provider
+### Using With Custom Identity Provider
 Jedis provides a token-based authentication mechanism with a generic identity provider of your choice. 
 For custom use of this feature, you will need to provide an implementation of `IdentityProvider` and `IdentityProviderConfig` and configure it in the way Jedis expects. 
 
@@ -162,7 +162,7 @@ JedisClientConfig config = DefaultJedisClientConfig.builder()
                 .authXManager(new AuthXManager(tokenAuthConfig)).build();
 ...
 ```
-### Using Jedis with Microsoft EntraID
+### Using With Microsoft EntraID
 
 Extension for EntraID is fully integrated and ready to use with [Azure Managed Redis](https://azure.microsoft.com/en-us/products/managed-redis)(AMR) or [Azure Cache for Redis](https://azure.microsoft.com/en-us/products/cache/)(ACR). All you need is to add the EntraID dependency and code for configuration for chosen authentication type with Microsoft EntraID service.
 

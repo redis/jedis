@@ -136,6 +136,14 @@ Jedis supports retry and failover for your Redis deployments. This is useful whe
 
 For the complete failover configuration options and examples, see the [Jedis failover docs](docs/failover.md).
 
+## Token-Based Authentication
+
+Jedis starts to support Token-Based authentication (TBA) starting with 5.3.0 GA release. This feature is complemented by an extension library that enhances the developer experience as well as providing most of the components required for TBA functionality.
+
+Notably, the extension library includes built-in support for **Microsoft EntraID**, offering a seamless integration as part of the generic solution.
+
+For more details and examples, please refer to the [Advanced Usage](docs/advanced-usage.md) documentation.
+
 ## Documentation
 
 The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.

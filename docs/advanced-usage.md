@@ -166,7 +166,7 @@ JedisClientConfig config = DefaultJedisClientConfig.builder()
 
 Extension for EntraID is fully integrated and ready to use with [Azure Managed Redis](https://azure.microsoft.com/en-us/products/managed-redis)(AMR) or [Azure Cache for Redis](https://azure.microsoft.com/en-us/products/cache/)(ACR). All you need is to add the EntraID dependency and code for configuration for chosen authentication type with Microsoft EntraID service.
 
-To get started, add the `redis-authx-entraid` extension as depedency;
+To get started, add the `redis-authx-entraid` extension as dependency;
 
 ```
     <dependency>
@@ -194,7 +194,7 @@ After adding the dependency, configure it using `EntraIDTokenAuthConfigBuilder`:
 ...
 ```
 
-Here you will see the `AuthXManager` class that is built into Jedis. It basicly integrates the extension into Jedis and handles the authentication process.  
+Here you will see the `AuthXManager` class that is built into Jedis. Essentially it integrates the extension into Jedis and handles the authentication process.  
 For other available configurations, detailed information and usage of Jedis with Microsoft EntraID, please refer to the [official guide](https://redis.io/docs/latest/develop/clients/jedis/amr/)
 
 **Setting Up AMR or ACR with Microsoft EntraID:**

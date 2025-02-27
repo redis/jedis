@@ -92,6 +92,17 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
   }
 
+  private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
+      BuilderFactory.STRING);
+
+  public final CommandObject<String> info() {
+    return INFO_COMMAND_OBJECT;
+  }
+
+  public final CommandObject<String> info(String section) {
+    return new CommandObject<>(commandArguments(Command.INFO).add(section), BuilderFactory.STRING);
+  }
+
   // Key commands
   public final CommandObject<Boolean> exists(String key) {
     return new CommandObject<>(commandArguments(Command.EXISTS).key(key), BuilderFactory.BOOLEAN);

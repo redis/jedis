@@ -181,7 +181,7 @@ After adding the dependency, configure it using `EntraIDTokenAuthConfigBuilder`:
 ```java
 ...
     TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
-        .expirationRefreshRatio(0.00002F)
+        .expirationRefreshRatio(0.8F)
         .clientId("yourClientId")
         .secret("yourClientSecret")
         .authority("yourAuthority")

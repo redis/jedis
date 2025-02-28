@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -126,6 +128,15 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
   @Test
   public void pingBroadcast() {
     assertEquals("PONG", cluster.ping());
+  }
+
+  @Test
+  public void info() {
+    String info = cluster.info();
+    assertThat(info, notNullValue());
+
+    info = cluster.info("server");
+    assertThat(info, notNullValue());
   }
 
   @Test

@@ -336,3 +336,9 @@ zrevrangeByScore
 zrevrangeByScoreWithScores
 zrevrangeWithScores
 zunionstore
+authx
+entraid
+EntraID
+ACR
+AMR
+Entra

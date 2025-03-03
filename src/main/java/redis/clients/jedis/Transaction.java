@@ -173,11 +173,25 @@ public class Transaction extends TransactionBase {
     try {
       // ignore QUEUED (or ERROR)
       // processPipelinedResponses(pipelinedResponses.size());
-      connection.getMany(1 + pipelinedResponses.size());
+      List<Object> queuedCmdResponses = connection.getMany(1 + pipelinedResponses.size());
+
 
       connection.sendCommand(EXEC);
 
-      List<Object> unformatted = connection.getObjectMultiBulkReply();
+      List<Object> unformatted;
+      try {
+        unformatted = connection.getObjectMultiBulkReply();
+      } catch (JedisDataException jce) {
+        // A command may fail to be queued, so there may be an error before EXEC is called
+        // In this case, the server will discard all commands in the transaction and return the EXECABORT error.
+        // Enhance the final error with suppressed errors.
+        queuedCmdResponses.stream()
+            .filter(o -> o instanceof Exception)
+            .map(o -> (Exception) o)
+            .forEach(jce::addSuppressed);
+        throw jce;
+      }
+
       if (unformatted == null) {
         pipelinedResponses.clear();
         return null;

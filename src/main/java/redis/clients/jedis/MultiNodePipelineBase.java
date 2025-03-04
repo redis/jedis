@@ -1,13 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
@@ -24,15 +23,29 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
    * The number of processes for {@code sync()}. If you have enough cores for client (and you have
    * more than 3 cluster nodes), you may increase this number of workers.
    * Suggestion:&nbsp;&le;&nbsp;cluster&nbsp;nodes.
+   *
+   * @deprecated Client using this approach are paying the thread creation cost for every pipeline sync. Clients
+   * should use refer to {@link JedisClientConfig#getPipelineExecutorProvider()} to provide a single Executor for
+   * gain in performance.
    */
   public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
+  private ClusterPipelineExecutor clusterPipelineExecutor;
+  private boolean useSharedExecutor = false;
   private volatile boolean syncing = false;
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     super(commandObjects);
+    pipelinedResponses = new LinkedHashMap<>();
+    connections = new LinkedHashMap<>();
+  }
+
+  public MultiNodePipelineBase(CommandObjects commandObjects, ClusterPipelineExecutor executorService) {
+    super(commandObjects);
+    clusterPipelineExecutor = executorService;
+    useSharedExecutor = clusterPipelineExecutor != null;
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
   }
@@ -84,44 +97,48 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
       return;
     }
     syncing = true;
-
-    ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
-
-    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
-        = pipelinedResponses.entrySet().iterator();
-    while (pipelinedResponsesIterator.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
-      HostAndPort nodeKey = entry.getKey();
-      Queue<Response<?>> queue = entry.getValue();
-      Connection connection = connections.get(nodeKey);
-      executorService.submit(() -> {
-        try {
-          List<Object> unformatted = connection.getMany(queue.size());
-          for (Object o : unformatted) {
-            queue.poll().set(o);
-          }
-        } catch (JedisConnectionException jce) {
-          log.error("Error with connection to " + nodeKey, jce);
-          // cleanup the connection
-          pipelinedResponsesIterator.remove();
-          connections.remove(nodeKey);
-          IOUtils.closeQuietly(connection);
-        } finally {
-          countDownLatch.countDown();
-        }
-      });
-    }
-
+    ClusterPipelineExecutor executorService = getExecutorService();
+    CompletableFuture[] futures
+            = pipelinedResponses.entrySet().stream()
+            .map(response -> CompletableFuture.runAsync(() -> readCommandResponse(response), executorService))
+            .toArray(CompletableFuture[]::new);
+    CompletableFuture awaitAllCompleted = CompletableFuture.allOf(futures);
     try {
-      countDownLatch.await();
+        awaitAllCompleted.get();
+        if (!useSharedExecutor) {
+          executorService.shutdown();
+        }
+    } catch (ExecutionException e) {
+      log.error("Failed execution.", e);
     } catch (InterruptedException e) {
       log.error("Thread is interrupted during sync.", e);
+      Thread.currentThread().interrupt();
     }
-
-    executorService.shutdownNow();
-
     syncing = false;
+  }
+
+  private ClusterPipelineExecutor getExecutorService() {
+    if (useSharedExecutor) {
+      return clusterPipelineExecutor;
+    }
+    return ClusterPipelineExecutor.from(
+            Executors.newFixedThreadPool(Math.min(this.pipelinedResponses.size(), MULTI_NODE_PIPELINE_SYNC_WORKERS)));
+  }
+
+  private void readCommandResponse(Map.Entry<HostAndPort, Queue<Response<?>>> entry) {
+    HostAndPort nodeKey = entry.getKey();
+    Queue<Response<?>> queue = entry.getValue();
+    Connection connection = connections.get(nodeKey);
+    try {
+      List<Object> unformatted = connection.getMany(queue.size());
+      for (Object o : unformatted) {
+        queue.poll().set(o);
+      }
+    } catch (JedisConnectionException jce) {
+      log.error("Error with connection to " + nodeKey, jce);
+      connections.remove(nodeKey);
+      IOUtils.closeQuietly(connection);
+    }
   }
 
   @Deprecated

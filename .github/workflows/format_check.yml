@@ -122,8 +122,29 @@ jobs:
           comm -13 <(echo -e "$format_base") <(echo -e "$format_source") >diff_result.txt
 
           if [ -s diff_result.txt ]; then
+            
+            while read -r line; do
+              source_path=$(echo "$line" | awk '{print $1}')
+              source_index=$(echo "$line" | awk '{print $2}')
+              
+              base_line=$(grep "^$source_path " formatting_diff_base.txt)
+              # If the line does not exist, it means it is new in the source branch, and thus, any formatting changes there are treated as new issues.
+              if [ -z "$base_line" ]; then
+                echo "$source_path $source_index" >> new_formatting_issues.txt
+                continue
+              fi
+              
+              base_index=$(echo "$base_line" | awk '{print $2}')
+              if [ "$source_index" -gt "$base_index" ]; then
+                echo "$source_path $source_index" >> new_formatting_issues.txt
+              fi
+            done < diff_result.txt
+            
+          fi
+
+          if [ -s new_formatting_issues.txt ]; then
             echo "There are formatting issues introduced with this PR."
-            cat diff_result.txt
+            cat new_formatting_issues.txt
             exit 1  # Fail the workflow
           else
             echo "No new formatting issue detected."

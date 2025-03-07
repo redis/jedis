@@ -625,9 +625,25 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  public Response<Long> hsetex(String key, HSetExParams params, String field, String value) {
+    return appendCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  public Response<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return appendCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   @Override
   public Response<String> hget(String key, String field) {
     return appendCommand(commandObjects.hget(key, field));
+  }
+
+  public Response<List<String>> hgetex(String key, HGetExParams params, String... fields) {
+    return appendCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  public Response<List<String>> hgetdel(String key, String... fields) {
+    return appendCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -1971,9 +1987,25 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  public Response<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    return appendCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  public Response<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return appendCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   @Override
   public Response<byte[]> hget(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hget(key, field));
+  }
+  
+  public Response<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return appendCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  public Response<List<byte[]>> hgetdel(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override

@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -14,8 +16,16 @@ public interface HashCommands {
 
   long hset(String key, Map<String, String> hash);
 
+  long hsetex(String key, HSetExParams params, String field, String value);
+
+  long hsetex(String key, HSetExParams params, Map<String, String> hash);
+
   String hget(String key, String field);
 
+  List<String> hgetex(String key, HGetExParams params, String... fields);
+
+  List<String> hgetdel(String key, String... fields);
+  
   long hsetnx(String key, String field, String value);
 
   String hmset(String key, Map<String, String> hash);

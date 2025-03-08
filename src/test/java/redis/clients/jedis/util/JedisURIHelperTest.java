@@ -1,15 +1,14 @@
 package redis.clients.jedis.util;
 
+import static org.junit.Assert.*;
 import static redis.clients.jedis.util.JedisURIHelper.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisURIHelperTest {
 
@@ -72,5 +71,14 @@ public class JedisURIHelperTest {
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
+  }
+
+  @Test
+  public void shouldReturnNullIfURIDoesNotHavePassword() throws URISyntaxException {
+    URI uri = new URI("redis://user@host:9000/0");
+    JedisException jedisException = assertThrows(JedisException.class, () -> {
+      getPassword(uri);
+    });
+    assertEquals(jedisException.getMessage(), "AUTH error. Password not provided in uri");
   }
 }

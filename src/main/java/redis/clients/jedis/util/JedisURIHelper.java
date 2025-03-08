@@ -4,6 +4,7 @@ import java.net.URI;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.exceptions.JedisException;
 
 public final class JedisURIHelper {
 
@@ -33,7 +34,11 @@ public final class JedisURIHelper {
   public static String getPassword(URI uri) {
     String userInfo = uri.getUserInfo();
     if (userInfo != null) {
-      return userInfo.split(":", 2)[1];
+      String[] userAndPassword = userInfo.split(":", 2);
+      if (userAndPassword.length < 2) {
+        throw new JedisException("AUTH error. Password not provided in uri");
+      }
+      return userAndPassword[1];
     }
     return null;
   }

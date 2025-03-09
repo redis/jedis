@@ -72,17 +72,19 @@ public class JedisURIHelperTest {
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
   }
+
   @Test
   public void shouldReturnEmptyPassword() {
     // ensure we can provide an empty password for default user
-    assertThat( JedisURIHelper.getPassword(URI.create("redis://:@host:9000/0")),  emptyString());
+    assertThat(JedisURIHelper.getPassword(URI.create("redis://:@host:9000/0")), emptyString());
   }
 
   @Test
   public void shouldThrowIfNoPasswordInURI() throws URISyntaxException {
     // ensure we throw if user is provided but password is missing in URI
     URI uri = new URI("redis://user@host:9000/0");
-    IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> getPassword(uri));
+    IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+        () -> getPassword(uri));
     assertEquals("AUTH error. Password not provided in uri", illegalArgumentException.getMessage());
   }
 }

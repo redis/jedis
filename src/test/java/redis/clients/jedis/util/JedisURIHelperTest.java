@@ -6,7 +6,6 @@ import static redis.clients.jedis.util.JedisURIHelper.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import redis.clients.jedis.RedisProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
@@ -83,9 +82,7 @@ public class JedisURIHelperTest {
   public void shouldThrowIfNoPasswordInURI() throws URISyntaxException {
     // ensure we throw if user is provided but password is missing in URI
     URI uri = new URI("redis://user@host:9000/0");
-    IllegalArgumentException jedisException = assertThrows(IllegalArgumentException.class, () -> {
-      getPassword(uri);
-    });
-    assertEquals(jedisException.getMessage(), "Password not provided in the URI");
+    IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> getPassword(uri));
+    assertEquals("AUTH error. Password not provided in uri", illegalArgumentException.getMessage());
   }
 }

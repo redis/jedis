@@ -36,7 +36,7 @@ public final class JedisURIHelper {
     if (userInfo != null) {
       String[] userAndPassword = userInfo.split(":", 2);
       if (userAndPassword.length < 2) {
-        throw new JedisException("AUTH error. Password not provided in uri");
+        throw new IllegalArgumentException("AUTH error. Password not provided in uri");
       }
       return userAndPassword[1];
     }

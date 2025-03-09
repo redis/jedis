@@ -11,7 +11,7 @@ import redis.clients.jedis.RedisProtocol;
  * such as host, port, user, password, database index, and protocol.
  * It also includes methods to validate the URI and check its scheme.
  *
- * <h3>URI syntax</h3>
+ * <h2>URI syntax</h2>
  *
  * <blockquote>
  * <i>redis[s]</i><b>{@code ://}</b>[[<i>username</i>]<i>[{@code :}password</i>]@]
@@ -19,17 +19,17 @@ import redis.clients.jedis.RedisProtocol;
  * </blockquote>
  *
  *
- * <h3>Authentication</h3>
+ * <h2>Authentication</h2>
  * <p>Authentication details can be provided in the URI in the form of a username and password.
  * Redis URIs may contain authentication details that effectively lead to usernames with passwords,
- * password-only, or no authentication.
- * <h4>Examples:</h4>
+ * password-only, or no authentication.</p>
+ * <h3>Examples:</h3>
  * <ul>
  *   <li><b>Username and Password:</b> redis://username:password@host:port</li>
  *   <li><b>Password-only:</b> redis://:password@host:port</li>
  *   <li><b>Empty password:</b> redis://username:@host:port</li>
- *   <li><b>No Authentication:</b> redis://host:port</li>\
- * </ul>*
+ *   <li><b>No Authentication:</b> redis://host:port</li>
+ * </ul>
  */
 public final class JedisURIHelper {
 

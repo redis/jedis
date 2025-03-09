@@ -1,6 +1,7 @@
 package redis.clients.jedis.modules.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,9 +41,12 @@ public class DocumentTest {
     assertEquals(score, read.getScore(), 0d);
 
     // use english language to make sure the decimal separator is the same as the toString
-    String exp = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
+    String exp1 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
         id, score, "[string=c, float=12.0]");
-    assertEquals(exp, read.toString());
+    String exp2 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
+        id, score, "[float=12.0, string=c]");
+    String actual = read.toString();
+    assertTrue(actual.equals(exp1)||actual.equals(exp2));
     assertEquals("c", read.getString("string"));
     assertEquals(Double.valueOf(12d), read.get("float"));
   }
@@ -57,8 +61,11 @@ public class DocumentTest {
     Document document = new Document(id, map, score);
 
     // use english language to make sure the decimal separator is the same as the toString
-    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
+    String expected1 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
         id, score, "[string=c, float=12.0]");
-    assertEquals(expected, document.toString());
+    String expected2 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
+        id, score, "[float=12.0, string=c]");
+    String actual = document.toString();
+    assertTrue(actual.equals(expected1)||actual.equals(expected2));
   }
 }

@@ -5,6 +5,30 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 
+/**
+ * Utility class for handling Redis URIs.
+ * This class provides methods to extract various components from a Redis URI,
+ * such as host, port, user, password, database index, and protocol.
+ * It also includes methods to validate the URI and check its scheme.
+ *
+ * <h3>URI syntax</h3>
+ *
+ * <blockquote> <i>redis[s]</i><b>{@code ://}</b>[[<i>username</i>]<i>[{@code :}password@</i>]]<i>host</i>
+ * [<b>{@code :}</b><i>port</i>][<b>{@code /}</b><i>database</i>]
+ * </blockquote>
+ *
+ *
+ * <h3>Authentication</h3>
+ * <p>Authentication details can be provided in the URI in the form of a username and password.
+ * Redis URIs may contain authentication details that effectively lead to usernames with passwords,
+ * password-only, or no authentication.
+ * <h4>Examples:</h4>
+ * <ul>
+ *   <li><b>Username and Password:</b> redis://username:password@host:port</li>
+ *   <li><b>Password-only:</b> redis://:password@host:port</li>
+ *   <li><b>No Authentication:</b> redis://host:port</li>
+ * </ul>*
+ */
 public final class JedisURIHelper {
 
   private static final String REDIS = "redis";
@@ -18,6 +42,16 @@ public final class JedisURIHelper {
     return new HostAndPort(uri.getHost(), uri.getPort());
   }
 
+
+  /**
+   * Extracts the user from the given URI.
+   *
+   * <p>For details on the URI format and authentication examples, see the class-level documentation
+   * {@link JedisURIHelper JedisURIHelper}.</p>
+   *
+   * @param uri the URI to extract the user from
+   * @return the user as a String, or null if {@link URI#getUserInfo()} info is missing
+   */
   public static String getUser(URI uri) {
     String userInfo = uri.getUserInfo();
     if (userInfo != null) {
@@ -30,10 +64,24 @@ public final class JedisURIHelper {
     return null;
   }
 
+  /**
+   * Extracts the password from the given URI.
+   *
+   * <p>For details on the URI format and authentication examples, see the class-level documentation
+   * {@link JedisURIHelper JedisURIHelper}.</p>
+   *
+   * @param uri the URI to extract the password from
+   * @return the password as a String, or null if {@link URI#getUserInfo()} info is missing
+   * @throws IllegalArgumentException if {@link URI#getUserInfo()} is provided but does not contain a password (i.e., the URI does not contain a colon)
+   */
   public static String getPassword(URI uri) {
     String userInfo = uri.getUserInfo();
     if (userInfo != null) {
-      return userInfo.split(":", 2)[1];
+      String[] userAndPassword = userInfo.split(":", 2);
+      if (userAndPassword.length < 2) {
+        throw new IllegalArgumentException("AUTH error. Password not provided in uri");
+      }
+      return userAndPassword[1];
     }
     return null;
   }

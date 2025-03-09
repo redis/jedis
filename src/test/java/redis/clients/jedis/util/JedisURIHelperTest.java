@@ -1,15 +1,14 @@
 package redis.clients.jedis.util;
 
+import static org.junit.Assert.*;
 import static redis.clients.jedis.util.JedisURIHelper.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
 
 public class JedisURIHelperTest {
 
@@ -72,5 +71,20 @@ public class JedisURIHelperTest {
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
+  }
+
+  @Test
+  public void shouldReturnEmptyPassword() {
+    // ensure we can provide an empty password for default user
+    assertThat(JedisURIHelper.getPassword(URI.create("redis://:@host:9000/0")), emptyString());
+  }
+
+  @Test
+  public void shouldThrowIfNoPasswordInURI() throws URISyntaxException {
+    // ensure we throw if user is provided but password is missing in URI
+    URI uri = new URI("redis://user@host:9000/0");
+    IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+        () -> getPassword(uri));
+    assertEquals("AUTH error. Password not provided in uri", illegalArgumentException.getMessage());
   }
 }

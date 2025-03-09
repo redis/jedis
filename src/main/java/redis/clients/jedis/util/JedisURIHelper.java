@@ -13,8 +13,9 @@ import redis.clients.jedis.RedisProtocol;
  *
  * <h3>URI syntax</h3>
  *
- * <blockquote> <i>redis[s]</i><b>{@code ://}</b>[[<i>username</i>]<i>[{@code :}password@</i>]]<i>host</i>
- * [<b>{@code :}</b><i>port</i>][<b>{@code /}</b><i>database</i>]
+ * <blockquote>
+ * <i>redis[s]</i><b>{@code ://}</b>[[<i>username</i>]<i>[{@code :}password</i>]@]
+ * <i>host</i>[<b>{@code :}</b><i>port</i>][<b>{@code /}</b><i>database</i>]
  * </blockquote>
  *
  *
@@ -43,15 +44,13 @@ public final class JedisURIHelper {
     return new HostAndPort(uri.getHost(), uri.getPort());
   }
 
-
   /**
    * Extracts the user from the given URI.
-   *
-   * <p>For details on the URI format and authentication examples, see the class-level documentation
-   * {@link JedisURIHelper JedisURIHelper}.</p>
-   *
+   * <p>
+   * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
+   * </p>
    * @param uri the URI to extract the user from
-   * @return the user as a String, or null if {@link URI#getUserInfo()} info is missing
+   * @return the user as a String, or null if user is empty or {@link URI#getUserInfo()} info is missing
    */
   public static String getUser(URI uri) {
     String userInfo = uri.getUserInfo();
@@ -67,13 +66,13 @@ public final class JedisURIHelper {
 
   /**
    * Extracts the password from the given URI.
-   *
-   * <p>For details on the URI format and authentication examples, see the class-level documentation
-   * {@link JedisURIHelper JedisURIHelper}.</p>
-   *
+   * <p>
+   * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
+   * </p>
    * @param uri the URI to extract the password from
    * @return the password as a String, or null if {@link URI#getUserInfo()} info is missing
-   * @throws IllegalArgumentException if {@link URI#getUserInfo()} is provided but does not contain a password (i.e., the URI does not contain a colon)
+   * @throws IllegalArgumentException if {@link URI#getUserInfo()} is provided but does not contain
+   *           a password
    */
   public static String getPassword(URI uri) {
     String userInfo = uri.getUserInfo();

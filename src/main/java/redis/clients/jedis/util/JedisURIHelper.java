@@ -26,7 +26,8 @@ import redis.clients.jedis.RedisProtocol;
  * <ul>
  *   <li><b>Username and Password:</b> redis://username:password@host:port</li>
  *   <li><b>Password-only:</b> redis://:password@host:port</li>
- *   <li><b>No Authentication:</b> redis://host:port</li>
+ *   <li><b>Empty password:</b> redis://username:@host:port</li>
+ *   <li><b>No Authentication:</b> redis://host:port</li>\
  * </ul>*
  */
 public final class JedisURIHelper {
@@ -79,7 +80,7 @@ public final class JedisURIHelper {
     if (userInfo != null) {
       String[] userAndPassword = userInfo.split(":", 2);
       if (userAndPassword.length < 2) {
-        throw new IllegalArgumentException("AUTH error. Password not provided in uri");
+        throw new IllegalArgumentException("Password not provided in uri.");
       }
       return userAndPassword[1];
     }

@@ -74,9 +74,13 @@ public class JedisURIHelperTest {
   }
 
   @Test
-  public void shouldReturnEmptyPassword() {
+  public void emptyPassword() {
     // ensure we can provide an empty password for default user
     assertThat(JedisURIHelper.getPassword(URI.create("redis://:@host:9000/0")), emptyString());
+
+    // ensure we can provide an empty password for user
+    assertEquals(JedisURIHelper.getUser(URI.create("redis://username:@host:9000/0")), "username");
+    assertThat(JedisURIHelper.getPassword(URI.create("redis://username:@host:9000/0")), emptyString());
   }
 
   @Test
@@ -85,6 +89,6 @@ public class JedisURIHelperTest {
     URI uri = new URI("redis://user@host:9000/0");
     IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
         () -> getPassword(uri));
-    assertEquals("AUTH error. Password not provided in uri", illegalArgumentException.getMessage());
+    assertEquals("Password not provided in uri.", illegalArgumentException.getMessage());
   }
 }

@@ -8,7 +8,8 @@ import java.net.URISyntaxException;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.exceptions.JedisException;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
 
 public class JedisURIHelperTest {
 

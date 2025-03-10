@@ -6,6 +6,8 @@ import java.util.Set;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -15,8 +17,16 @@ public interface HashPipelineBinaryCommands {
 
   Response<Long> hset(byte[] key, Map<byte[], byte[]> hash);
 
+  Response<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value);
+
+  Response<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash);
+  
   Response<byte[]> hget(byte[] key, byte[] field);
 
+  Response<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields);
+  
+  Response<List<byte[]>> hgetdel(byte[] key, byte[]... fields);
+  
   Response<Long> hsetnx(byte[] key, byte[] field, byte[] value);
 
   Response<String> hmset(byte[] key, Map<byte[], byte[]> hash);

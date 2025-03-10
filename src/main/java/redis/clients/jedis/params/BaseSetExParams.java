@@ -5,7 +5,7 @@ import redis.clients.jedis.Protocol.Keyword;
 
 import java.util.Objects;
 
-public class BaseSetExParams<T extends BaseSetExParams> implements IParams {
+class BaseSetExParams<T extends BaseSetExParams> implements IParams {
 
   private Keyword expiration;
   private Long expirationValue;
@@ -53,10 +53,10 @@ public class BaseSetExParams<T extends BaseSetExParams> implements IParams {
   }
 
   /**
-   * Retain the time to live associated with the key.
+   * @deprecated Use {@link BaseSetExParams#keepTtl()}.
    * @return params object
    */
-  // TODO: deprecate?
+  @Deprecated
   public T keepttl() {
     return keepTtl();
   }

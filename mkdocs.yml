@@ -19,8 +19,9 @@ plugins:
 
 nav:
   - Home: index.md
-  - Migrating from older versions:
-      - 3 to 4:
+  - Migrating to newer versions:
+      - Jedis 5: breaking-5.md
+      - Jedis 4:
         - Breaking changes: 3to4.md
         - Primitives: 3to4-primitives.md
         - ZSET: 3to4-zset-list.md

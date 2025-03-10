@@ -5,6 +5,20 @@ import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+/**
+ * Abstract base class for setting expiration parameters for Redis GET commands.
+ * This class provides methods to set various expiration options such as EX, PX, EXAT, PXAT, and PERSIST.
+ *
+ * <ul>
+ *   <li>{@link #ex(long)} - Set the specified expire time, in seconds.</li>
+ *   <li>{@link #px(long)} - Set the specified expire time, in milliseconds.</li>
+ *   <li>{@link #exAt(long)} - Set the specified Unix time at which the key will expire, in seconds.</li>
+ *   <li>{@link #pxAt(long)} - Set the specified Unix time at which the key will expire, in milliseconds.</li>
+ *   <li>{@link #persist()} - Remove the time to live associated with the key.</li>
+ * </ul>
+ * 
+ * @param <T> the type of the subclass extending this base class
+ */
 abstract class BaseGetExParams<T extends BaseGetExParams> implements IParams {
 
   private Keyword expiration;

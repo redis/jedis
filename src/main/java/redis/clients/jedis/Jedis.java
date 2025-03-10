@@ -1167,12 +1167,41 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params additional parameters for the HSETEX command
+   * @param field the field in the hash
+   * @param value the value to set
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * @throws IllegalStateException if the command is executed in a transaction or pipeline context
+   * 
+   * @see HSetExParams
+   */
   @Override
   public long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
   }
-
+  
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSETEX command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * @throws IllegalStateException if the command is executed in a transaction or pipeline context
+   * 
+   * @see HSetExParams
+   */
   @Override
   public long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash){
     checkIsInMultiOrPipeline();
@@ -1195,12 +1224,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hget(key, field));
   }
 
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * @throws IllegalStateException if the method is called while in a transaction or pipeline context
+   * 
+   * @see HGetExParams
+   */
   @Override
   public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields){
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetex(key, params, fields));
   }
   
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   * @throws IllegalStateException if the client is in a transaction or pipeline
+   */
   @Override
   public List<byte[]> hgetdel(byte[] key, byte[]... fields){
     checkIsInMultiOrPipeline();
@@ -5711,12 +5761,41 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSETEX command
+   * @param field the field in the hash
+   * @param value the value to set
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * @throws IllegalStateException if the command is executed in a transaction or pipeline context
+   * 
+   * @see HSetExParams
+   */
   @Override
   public long hsetex(String key, HSetExParams params, String field, String value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
   }
 
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSETEX command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * @throws IllegalStateException if the command is executed in a transaction or pipeline context
+   * 
+   * @see HSetExParams
+   */
   @Override
   public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
     checkIsInMultiOrPipeline();
@@ -5739,16 +5818,37 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hget(key, field));
   }
 
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * @throws IllegalStateException if the method is called while in a transaction or pipeline context
+   * 
+   * @see HGetExParams
+   */
   @Override
-  public List<String> hgetex(String key, HGetExParams params, String... fields) {    checkIsInMultiOrPipeline();
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+    checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetex(key, params, fields));
-    
   }
 
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   * @throws IllegalStateException if the client is in a transaction or pipeline
+   */
   @Override
-  public List<String> hgetdel(String key, String... fields) {    checkIsInMultiOrPipeline();
+  public List<String> hgetdel(String key, String... fields) {    
+    checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetdel(key, fields));
-    
   }
 
   /**

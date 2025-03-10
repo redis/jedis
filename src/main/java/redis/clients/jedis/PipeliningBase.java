@@ -625,10 +625,39 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params additional parameters for the HSETEX command
+   * @param field the field in the hash to set
+   * @param value the value to set in the specified field
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
   public Response<Long> hsetex(String key, HSetExParams params, String field, String value) {
     return appendCommand(commandObjects.hsetex(key, params, field, value));
   }
 
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
   public Response<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
     return appendCommand(commandObjects.hsetex(key, params, hash));
   }
@@ -638,10 +667,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hget(key, field));
   }
 
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  @Override
   public Response<List<String>> hgetex(String key, HGetExParams params, String... fields) {
     return appendCommand(commandObjects.hgetex(key, params, fields));
   }
 
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  @Override
   public Response<List<String>> hgetdel(String key, String... fields) {
     return appendCommand(commandObjects.hgetdel(key, fields));
   }
@@ -1987,10 +2037,39 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param field the field in the hash to set
+   * @param value the value to set in the specified field
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
   public Response<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
     return appendCommand(commandObjects.hsetex(key, params, field, value));
   }
 
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
   public Response<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
     return appendCommand(commandObjects.hsetex(key, params, hash));
   }
@@ -2000,10 +2079,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hget(key, field));
   }
   
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  @Override
   public Response<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
     return appendCommand(commandObjects.hgetex(key, params, fields));
   }
 
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  @Override
   public Response<List<byte[]>> hgetdel(byte[] key, byte[]... fields) {
     return appendCommand(commandObjects.hgetdel(key, fields));
   }

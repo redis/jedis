@@ -5,6 +5,21 @@ import redis.clients.jedis.Protocol.Keyword;
 
 import java.util.Objects;
 
+/**
+ * BaseSetExParams is a base class for setting expiration parameters for Redis keys.
+ * It provides methods to set expiration times in seconds or milliseconds, 
+ * as well as Unix timestamps for expiration.
+ * 
+ * <ul>
+ *   <li>{@link #ex(long)} - Set the specified expire time, in seconds.</li>
+ *   <li>{@link #px(long)} - Set the specified expire time, in milliseconds.</li>
+ *   <li>{@link #exAt(long)} - Set the specified Unix time at which the key will expire, in seconds.</li>
+ *   <li>{@link #pxAt(long)} - Set the specified Unix time at which the key will expire, in milliseconds.</li>
+ *   <li>{@link #keepTtl()} - Retain the time to live associated with the key.</li>
+ * </ul>
+ * 
+ * @param <T> the type of the subclass extending this base class
+ */
 class BaseSetExParams<T extends BaseSetExParams> implements IParams {
 
   private Keyword expiration;

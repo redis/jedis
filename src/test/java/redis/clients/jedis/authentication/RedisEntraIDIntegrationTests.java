@@ -40,11 +40,15 @@ import org.mockito.MockedConstruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.azure.identity.DefaultAzureCredential;
+import com.azure.identity.DefaultAzureCredentialBuilder;
+
 import redis.clients.authentication.core.IdentityProvider;
 import redis.clients.authentication.core.IdentityProviderConfig;
 import redis.clients.authentication.core.SimpleToken;
 import redis.clients.authentication.core.Token;
 import redis.clients.authentication.core.TokenAuthConfig;
+import redis.clients.authentication.entraid.AzureTokenAuthConfigBuilder;
 import redis.clients.authentication.entraid.EntraIDIdentityProvider;
 import redis.clients.authentication.entraid.EntraIDIdentityProviderConfig;
 import redis.clients.authentication.entraid.EntraIDTokenAuthConfigBuilder;
@@ -377,5 +381,23 @@ public class RedisEntraIDIntegrationTests {
       fail("Fault Injection Server error:" + e.getMessage());
     }
     log.info("Action id: {}", actionResponse.getActionId());
+  }
+
+  @Test
+  public void withDefaultCredentials_azureCredentialsIntegrationTest() {
+    DefaultAzureCredential credential = new DefaultAzureCredentialBuilder().build();
+    TokenAuthConfig tokenAuthConfig = AzureTokenAuthConfigBuilder.builder()
+        .defaultAzureCredential(credential).tokenRequestExecTimeoutInMs(2000)
+        .build();
+
+    DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+
+    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+      String key = UUID.randomUUID().toString();
+      jedis.set(key, "value");
+      assertEquals("value", jedis.get(key));
+      jedis.del(key);
+    }
   }
 }

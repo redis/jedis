@@ -43,7 +43,7 @@ This guide explains how to bootstrap and manage a test environment for Jedis usi
 You can bootstrap the test environment for supported versions of Redis using the provided `make` targets.
 
 ## Option 1: Using `make` Targets
-To bring up the test environment for a specific Redis version (8.0-M02, 7.4.1, 7.2.6, or 6.2.16), use the following command:
+To bring up the test environment for a specific Redis version (8.0-M05-pre, 8.0-M04-pre, 8.0-M02, 7.4, 7.2, or 6.2), use the following command:
 ```bash
 make start-test-env version=8.0-M02  # Replace with desired version
 ```
@@ -64,11 +64,11 @@ rm -rf /tmp/redis-env-work
 export REDIS_VERSION=8.0-M02
 docker compose up
 ```
-- **Redis 7.4.1, 7.2.6, 6.2.16,**
+- **Redis 7.4, 7.2, 6.2,**
 ```bash
 rm -rf /tmp/redis-env-work
-export REDIS_VERSION=6.2.16
-docker compose --env-file .env --env-file .env.v6.2.16 up
+export REDIS_VERSION=6.2
+docker compose --env-file .env --env-file .env.v6.2 up
 ```
 
 

@@ -10,19 +10,19 @@ public class TestCache extends DefaultCache {
   }
 
   public TestCache(Map<CacheKey, CacheEntry> map) {
-    super(10000, map);
+    super(10000, 5000, map);
   }
 
   public TestCache(Map<CacheKey, CacheEntry> map, Cacheable cacheable) {
-    super(10000, map, cacheable, new LRUEviction(10000));
+    super(10000, 5000, map, cacheable, new LRUEviction(10000));
   }
 
   public TestCache(int maximumSize, EvictionPolicy evictionPolicy ) {
-    super(maximumSize, new HashMap<CacheKey, CacheEntry>(), DefaultCacheable.INSTANCE, evictionPolicy);
+    super(maximumSize, 5000, new HashMap<CacheKey, CacheEntry>(), DefaultCacheable.INSTANCE, evictionPolicy);
   }
 
   public TestCache(int maximumSize, EvictionPolicy evictionPolicy, Cacheable cacheable ) {
-    super(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, evictionPolicy);
+    super(maximumSize, 5000, new HashMap<CacheKey, CacheEntry>(), cacheable, evictionPolicy);
   }
 
 }

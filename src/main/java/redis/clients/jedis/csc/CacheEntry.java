@@ -14,11 +14,13 @@ public class CacheEntry<T> {
   private final CacheKey<T> cacheKey;
   private final WeakReference<CacheConnection> connection;
   private final byte[] bytes;
+  private long expireTime;
 
-  public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection) {
+  public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection, long ttl) {
     this.cacheKey = cacheKey;
     this.connection = new WeakReference<>(connection);
     this.bytes = toBytes(value);
+    this.expireTime = System.currentTimeMillis() + ttl;
   }
 
   public CacheKey<T> getCacheKey() {
@@ -52,5 +54,9 @@ public class CacheEntry<T> {
     } catch (IOException | ClassNotFoundException e) {
       throw new JedisCacheException("Failed to deserialize object", e);
     }
+  }
+
+  public boolean isExpired() {
+    return System.currentTimeMillis() > expireTime;
   }
 }

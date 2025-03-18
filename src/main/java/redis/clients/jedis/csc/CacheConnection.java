@@ -17,7 +17,7 @@ public class CacheConnection extends Connection {
   private final Cache cache;
   private ReentrantLock lock;
   private static final String REDIS = "redis";
-  private static final String MIN_REDIS_VERSION = "7.4";
+  private static final String MIN_REDIS_VERSION = "6.0";
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
@@ -89,8 +89,9 @@ public class CacheConnection extends Connection {
 
     // CACHE MISS !!
     cache.getStats().miss();
+    System.out.println("miss");
     T value = super.executeCommand(commandObject);
-    cacheEntry = new CacheEntry<>(cacheKey, value, this);
+    cacheEntry = new CacheEntry<>(cacheKey, value, this, cache.getTtl());
     cache.set(cacheKey, cacheEntry);
     // this line actually provides a deep copy of cached object instance 
     value = cacheEntry.getValue();

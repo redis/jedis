@@ -19,6 +19,11 @@ public interface Cache {
     int getSize();
 
     /**
+     * @return The ttl of the cache
+     */
+    long getTtl();
+
+    /**
      * @return All the entries within the cache
      */
     Collection<CacheEntry> getCacheEntries();
@@ -110,4 +115,9 @@ public interface Cache {
      * @return The compatibility of cache against different Redis versions
      */
     boolean compatibilityMode();
+
+    /**
+     * Releases any system resources associated with it
+     */
+    void close();
 }

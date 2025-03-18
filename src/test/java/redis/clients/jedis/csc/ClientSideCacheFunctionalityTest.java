@@ -60,7 +60,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
 
     Map<CacheKey, CacheEntry> map = new LinkedHashMap<>(count);
-    Cache cache = new DefaultCache(count, map);
+    Cache cache = new DefaultCache(count, 30000, map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
 
       // Retrieve the 100 keys in the same order
@@ -563,6 +563,29 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertNull(cache.getCacheEntries().iterator().next().getValue());
       assertEquals(1, stats.getHitCount());
       assertEquals(1, stats.getMissCount());
+    }
+  }
+
+  @Test
+  public void testCacheEntryExpiredWithUnifiedJedis() throws InterruptedException {
+    Cache cache = new TestCache();
+    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), cache);
+
+    try {
+      // "foo" is cached
+      client.set("foo", "bar");
+      client.get("foo"); // read from the server
+      Assert.assertEquals("bar", client.get("foo")); // cache hit
+      Assert.assertEquals(1, cache.getSize());
+
+      Thread.sleep(10000); // sleep 10000ms
+
+      Assert.assertEquals(0, cache.getSize()); // The cache "foo bar" has expired
+
+      client.get("foo"); // cache miss, read from the server
+      Assert.assertEquals(1, cache.getSize());
+    } finally {
+      client.close();
     }
   }
 }

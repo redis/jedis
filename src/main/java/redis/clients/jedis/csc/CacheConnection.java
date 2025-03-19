@@ -89,7 +89,6 @@ public class CacheConnection extends Connection {
 
     // CACHE MISS !!
     cache.getStats().miss();
-    System.out.println("miss");
     T value = super.executeCommand(commandObject);
     cacheEntry = new CacheEntry<>(cacheKey, value, this, cache.getTtl());
     cache.set(cacheKey, cacheEntry);

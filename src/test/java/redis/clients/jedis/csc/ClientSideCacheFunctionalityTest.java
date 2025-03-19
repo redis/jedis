@@ -60,7 +60,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
 
     Map<CacheKey, CacheEntry> map = new LinkedHashMap<>(count);
-    Cache cache = new DefaultCache(count, 30000, map);
+    Cache cache = new DefaultCache(count, 5000, map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
 
       // Retrieve the 100 keys in the same order

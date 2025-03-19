@@ -17,7 +17,7 @@ public class CacheConnection extends Connection {
   private final Cache cache;
   private ReentrantLock lock;
   private static final String REDIS = "redis";
-  private static final String MIN_REDIS_VERSION = "6.0";
+  private static final String MIN_REDIS_VERSION = "7.4";
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);

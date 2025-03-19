@@ -15,13 +15,17 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
+import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
+import static org.hamcrest.CoreMatchers.is;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import io.redis.test.annotations.SinceRedisVersion;
+
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
@@ -79,7 +83,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
-  @SinceRedisVersion("7.4.0")
+  @SinceRedisVersion("7.9.0")
   public void testHgetex() {
     String key = "hashKey";
     String field = "name";
@@ -87,8 +91,9 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     long seconds = 20;
 
     exec(commandObjects.hset(key, field, value));
-    List<String> fieldValues = exec(commandObjects.hgetex(key, new HGetExParams().ex(seconds), field));
-    assertThat(fieldValues, equalTo(value));
+    List<String> fieldValues = exec(
+      commandObjects.hgetex(key, new HGetExParams().ex(seconds), field));
+    assertThat(fieldValues, is(Collections.singletonList(value)));
 
     List<Long> ttlList = exec(commandObjects.httl(key, field));
     Long ttl = ttlList.get(0);
@@ -103,8 +108,9 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     byte[] value = "John".getBytes();
     long seconds = 20;
 
+    exec(commandObjects.hset(key, field, value));
     List<byte[]> get = exec(commandObjects.hgetex(key, new HGetExParams().ex(seconds), field));
-    assertThat(get, equalTo(value));
+    assertByteArrayListEquals(get, Collections.singletonList(value));
 
     List<Long> ttlList = exec(commandObjects.httl(key, field));
     Long ttl = ttlList.get(0);
@@ -160,7 +166,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.hset(key, field, value));
 
     List<String> getDel = exec(commandObjects.hgetdel(key, field));
-    assertThat(getDel, equalTo(value));
+    assertThat(getDel, is(Collections.singletonList(value)));
 
     String getAfterDel = exec(commandObjects.hget(key, field));
     assertThat(getAfterDel, nullValue());
@@ -176,7 +182,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.hset(key, field, value));
 
     List<byte[]> getDel = exec(commandObjects.hgetdel(key, field));
-    assertThat(getDel, equalTo(value));
+    assertByteArrayListEquals(Collections.singletonList(value), getDel);
 
     byte[] getAfterDel = exec(commandObjects.hget(key, field));
     assertThat(getAfterDel, nullValue());

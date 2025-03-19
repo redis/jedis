@@ -21,10 +21,16 @@ public class SearchResult {
 
   private final long totalResults;
   private final List<Document> documents;
+  private final List<String> warnings;
 
   private SearchResult(long totalResults, List<Document> documents) {
+    this(totalResults, documents, (List<String>) null);
+  }
+
+  private SearchResult(long totalResults, List<Document> documents, List<String> warnings) {
     this.totalResults = totalResults;
     this.documents = documents;
+    this.warnings = warnings;
   }
 
   public long getTotalResults() {
@@ -35,10 +41,16 @@ public class SearchResult {
     return Collections.unmodifiableList(documents);
   }
 
+  public List<String> getWarnings() {
+    return warnings;
+  }
+
   @Override
   public String toString() {
     return getClass().getSimpleName() + "{Total results:" + totalResults
-        + ", Documents:" + documents + "}";
+        + ", Documents:" + documents
+        + (warnings != null ? ", Warnings:" + warnings : "")
+        + "}";
   }
 
   public static class SearchResultBuilder extends Builder<SearchResult> {
@@ -104,6 +116,7 @@ public class SearchResult {
 
     private static final String TOTAL_RESULTS_STR = "total_results";
     private static final String RESULTS_STR = "results";
+    private static final String WARNINGS_STR = "warning";
 
     private final Builder<Document> documentBuilder;
 
@@ -120,20 +133,25 @@ public class SearchResult {
       List<KeyValue> list = (List<KeyValue>) data;
       long totalResults = -1;
       List<Document> results = null;
+      List<String> warnings = null;
       for (KeyValue kv : list) {
         String key = BuilderFactory.STRING.build(kv.getKey());
+        Object rawVal = kv.getValue();
         switch (key) {
           case TOTAL_RESULTS_STR:
-            totalResults = BuilderFactory.LONG.build(kv.getValue());
+            totalResults = BuilderFactory.LONG.build(rawVal);
             break;
           case RESULTS_STR:
-            results = ((List<Object>) kv.getValue()).stream()
+            results = ((List<Object>) rawVal).stream()
                 .map(documentBuilder::build)
                 .collect(Collectors.toList());
             break;
+          case WARNINGS_STR:
+            warnings = BuilderFactory.STRING_LIST.build(rawVal);
+            break;
         }
       }
-      return new SearchResult(totalResults, results);
+      return new SearchResult(totalResults, results, warnings);
     }
   };
   /// <-- RESP3

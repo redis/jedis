@@ -34,7 +34,7 @@ import redis.clients.jedis.util.Pool;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-    SentinelCommands, Closeable {
+    SentinelCommands, CommandCommands,  Closeable {
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
@@ -8223,48 +8223,56 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
+  @Override
   public long commandCount() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, COUNT);
     return connection.getIntegerReply();
   }
 
+  @Override
   public Map<String, CommandDocument> commandDocs(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(DOCS.name(), commands));
     return BuilderFactory.COMMAND_DOCS_RESPONSE.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandGetKeys(String... command) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(GETKEYS.name(), command));
     return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
+  @Override
   public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(GETKEYSANDFLAGS.name(), command));
     return BuilderFactory.KEYED_STRING_LIST_LIST.build(connection.getOne());
   }
 
+  @Override
   public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
     return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
+  @Override
   public Map<String, CommandInfo> command() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND);
     return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandList() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, LIST);
     return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
     checkIsInMultiOrPipeline();
     CommandArguments args = new CommandArguments(COMMAND).add(LIST).addParams(filterByParams);

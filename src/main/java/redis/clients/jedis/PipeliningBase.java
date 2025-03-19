@@ -11,8 +11,6 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -30,17 +28,9 @@ public abstract class PipeliningBase
     implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands {
 
   protected final CommandObjects commandObjects;
-  private GraphCommandObjects graphCommandObjects;
 
   protected PipeliningBase(CommandObjects commandObjects) {
     this.commandObjects = commandObjects;
-  }
-
-  /**
-   * Sub-classes must call this method, if graph commands are going to be used.
-   */
-  protected final void setGraphCommands(GraphCommandObjects graphCommandObjects) {
-    this.graphCommandObjects = graphCommandObjects;
   }
 
   protected abstract <T> Response<T> appendCommand(CommandObject<T> commandObject);
@@ -3565,21 +3555,25 @@ public abstract class PipeliningBase
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String option) {
     return appendCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return appendCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(option, value));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
@@ -4365,58 +4359,6 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.tdigestByRevRank(key, ranks));
   }
   // RedisBloom commands
-
-  // RedisGraph commands
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query));
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, timeout));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, params));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
-  }
-
-  @Override
-  public Response<String> graphDelete(String name) {
-    return appendCommand(graphCommandObjects.graphDelete(name));
-  }
-
-  @Override
-  public Response<List<String>> graphProfile(String graphName, String query) {
-    return appendCommand(commandObjects.graphProfile(graphName, query));
-  }
-  // RedisGraph commands
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

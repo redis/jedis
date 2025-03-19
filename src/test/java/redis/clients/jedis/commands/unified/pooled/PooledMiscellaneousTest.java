@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.unified.pooled;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -163,5 +165,14 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
     JedisDataException error = assertThrows(JedisDataException.class,
         () -> jedis.functionDelete("xyz"));
     assertEquals("ERR Library not found", error.getMessage());
+  }
+
+  @Test
+  public void info() {
+    String info = jedis.info();
+    assertThat(info, notNullValue());
+
+    info = jedis.info("server");
+    assertThat(info, notNullValue());
   }
 }

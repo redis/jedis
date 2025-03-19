@@ -13,5 +13,6 @@ import java.lang.annotation.Target;
  * If a type is marked with this annotation, all its members are considered internal.
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
-public @interface Internal { }
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD })
+public @interface Internal {
+}

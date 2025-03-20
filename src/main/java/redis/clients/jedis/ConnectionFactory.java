@@ -59,7 +59,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
       Cache csCache) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache);
-    if (!clientConfig.getTrackingModeOnDefault()) {
+    if (!clientConfig.getTrackingConfig().isTrackingModeOnDefault()) {
       invalidationListeningExecutor = Executors.newSingleThreadScheduledExecutor();
       // initialize tracking connection
       initializeTrackingConnection();
@@ -105,7 +105,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
    */
   @Experimental
   private void tracking() {
-    List<String> trackingPrefixList = clientConfig.getTrackingPrefixList();
+    List<String> trackingPrefixList = clientConfig.getTrackingConfig().getTrackingPrefixList();
     // if no prefix is set, the prefix is "".
     if (trackingPrefixList == null) {
       trackingPrefixList = new ArrayList<>();
@@ -127,15 +127,16 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (trackingConnection.isBroken() || !trackingConnection.isConnected() || !trackingConnection.ping()) {
         // flush cache(broadcasting mode only trackingConnection disconnect)
         clientSideCache.flush();
-        // reconnect and enable tracking
+        // create a new connection and enable tracking
         try {
-          trackingConnection.connect();
+          trackingConnection = new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
         } catch (Exception e) {
           // do something
         }
         tracking();
       }
       trackingConnection.readPushesWithCheckingBroken();
+      // period?
     }, 2, 2, TimeUnit.SECONDS);
   }
 

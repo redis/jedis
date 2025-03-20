@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.List;
 import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.csc.TrackingConfig;
 
 public interface JedisClientConfig {
 
@@ -55,20 +55,6 @@ public interface JedisClientConfig {
 
   default AuthXManager getAuthXManager() {
     return null;
-  }
-
-  /**
-   * @return tracking prefix list.
-   */
-  default List<String> getTrackingPrefixList() {
-    return null;
-  }
-
-  /**
-   * @return {@code true} - default mode. {@code false} - broadcasting mode.
-   */
-  default boolean getTrackingModeOnDefault() {
-    return true;
   }
 
   default int getDatabase() {
@@ -129,5 +115,13 @@ public interface JedisClientConfig {
    */
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
+  }
+
+  /**
+   * Modify Tracking config(tracking mode, tracking prefixes)
+   * @return Tracking config
+   */
+  default TrackingConfig getTrackingConfig() {
+    return TrackingConfig.DEFAULT;
   }
 }

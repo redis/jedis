@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.List;
 import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.csc.TrackingConfig;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -34,15 +34,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
-  /**
-   * tracking prefix list
-   */
-  private final List<String> trackingPrefixList;
-
-  /**
-   * tracking mode(true:default; false:broadcast)
-   */
-  private final boolean trackingModeOnDefault;
+  private final TrackingConfig trackingConfig;
 
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
@@ -61,8 +53,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
-    this.trackingPrefixList = builder.trackingPrefixList;
-    this.trackingModeOnDefault = builder.trackingModeOnDefault;
+    this.trackingConfig = builder.trackingConfig;
   }
 
   @Override
@@ -157,13 +148,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public List<String> getTrackingPrefixList() {
-    return trackingPrefixList;
-  }
-
-  @Override
-  public boolean getTrackingModeOnDefault() {
-    return trackingModeOnDefault;
+  public TrackingConfig getTrackingConfig() {
+    return trackingConfig;
   }
 
   public static Builder builder() {
@@ -198,9 +184,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private AuthXManager authXManager = null;
 
-    private List<String> trackingPrefixList = null;
-
-    private boolean trackingModeOnDefault = true;
+    private TrackingConfig trackingConfig = TrackingConfig.DEFAULT;
 
     private Builder() {
     }
@@ -324,13 +308,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder trackingPrefixList(List<String> trackingPrefixList) {
-      this.trackingPrefixList = trackingPrefixList;
-      return this;
-    }
-
-    public Builder trackingModeOnDefault(boolean trackingModeOnDefault) {
-      this.trackingModeOnDefault = trackingModeOnDefault;
+    public Builder trackingConfig(TrackingConfig trackingConfig) {
+      this.trackingConfig = trackingConfig;
       return this;
     }
 
@@ -351,8 +330,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
-      this.trackingPrefixList = instance.getTrackingPrefixList();
-      this.trackingModeOnDefault = instance.getTrackingModeOnDefault();
+      this.trackingConfig = instance.getTrackingConfig();
       return this;
     }
   }
@@ -414,8 +392,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
-    builder.trackingPrefixList(copy.getTrackingPrefixList());
-    builder.trackingModeOnDefault(copy.getTrackingModeOnDefault());
+    builder.trackingConfig(copy.getTrackingConfig());
 
     return builder.build();
   }

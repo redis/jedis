@@ -36,7 +36,7 @@ public class CacheConnection extends Connection {
       }
     }
     this.cache = Objects.requireNonNull(cache);
-    this.isDefaultMode = clientConfig.getTrackingModeOnDefault();
+    this.isDefaultMode = clientConfig.getTrackingConfig().isTrackingModeOnDefault();
     // only default mode
     if (isDefaultMode) {
       initializeClientSideCache();

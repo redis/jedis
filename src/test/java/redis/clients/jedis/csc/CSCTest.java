@@ -7,7 +7,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.ProtocolCommand;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CSCTest {
@@ -15,14 +14,9 @@ public class CSCTest {
     private static CacheConfig cacheConfig;
 
     static {
-        List<String> trackingPrefixList = new ArrayList<>();
-        trackingPrefixList.add("v1");
-        trackingPrefixList.add("v2");
-
         clientConfig = DefaultJedisClientConfig.builder()
                 .resp3()                                      // RESP3 protocol is required for client-side caching
-                .trackingModeOnDefault(false)                 // tracking mode(true:default; false:broadcast)
-                .trackingPrefixList(trackingPrefixList)       // tracking prefix list(only broadcast mode)
+                .trackingConfig(TrackingConfig.BROADCAST)
                 .build();
 
         cacheConfig = getCacheConfig();
@@ -49,9 +43,8 @@ public class CSCTest {
     public void testTrackingOnBroadcastMode() {
         HostAndPort node = HostAndPort.from("127.0.0.1:6379");
         try (UnifiedJedis client = new UnifiedJedis(node, clientConfig, CacheFactory.getCache(cacheConfig))) {
-            String a = client.get("a");
-            System.out.println();
-
+            String a1 = client.get("a");
+            String a2 = client.get("a");
         }
     }
 }

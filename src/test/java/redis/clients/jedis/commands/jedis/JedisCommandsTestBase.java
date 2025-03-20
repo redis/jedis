@@ -15,11 +15,9 @@ import redis.clients.jedis.util.RedisVersionRule;
 public abstract class JedisCommandsTestBase {
 
   @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(
-          HostAndPorts.getRedisEndpoint("standalone0"));
+  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
   @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
-          HostAndPorts.getRedisEndpoint("standalone0"));
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this

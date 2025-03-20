@@ -19,37 +19,18 @@ public class AggregationResult {
 
   private final List<Map<String, Object>> results;
 
+  private final List<String> warnings;
+
   private Long cursorId = -1L;
 
-  private AggregationResult(Object resp, long cursorId) {
-    this(resp);
-    this.cursorId = cursorId;
-  }
-
-  private AggregationResult(Object resp) {
-    List<Object> list = (List<Object>) SafeEncoder.encodeObject(resp);
-
-    // the first element is always the number of results
-    totalResults = (Long) list.get(0);
-    results = new ArrayList<>(list.size() - 1);
-
-    for (int i = 1; i < list.size(); i++) {
-      List<Object> mapList = (List<Object>) list.get(i);
-      Map<String, Object> map = new HashMap<>(mapList.size() / 2, 1f);
-      for (int j = 0; j < mapList.size(); j += 2) {
-        Object r = mapList.get(j);
-        if (r instanceof JedisDataException) {
-          throw (JedisDataException) r;
-        }
-        map.put((String) r, mapList.get(j + 1));
-      }
-      results.add(map);
-    }
-  }
-
   private AggregationResult(long totalResults, List<Map<String, Object>> results) {
+    this(totalResults, results, (List<String>) null);
+  }
+
+  private AggregationResult(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
     this.totalResults = totalResults;
     this.results = results;
+    this.warnings = warnings;
   }
 
   private void setCursorId(Long cursorId) {
@@ -80,12 +61,17 @@ public class AggregationResult {
     return new Row(results.get(index));
   }
 
+  public List<String> getWarnings() {
+    return warnings;
+  }
+
   public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT = new Builder<AggregationResult>() {
 
     private static final String TOTAL_RESULTS_STR = "total_results";
     private static final String RESULTS_STR = "results";
     // private static final String FIELDS_STR = "fields";
     private static final String FIELDS_STR = "extra_attributes";
+    private static final String WARNINGS_STR = "warning";
 
     @Override
     public AggregationResult build(Object data) {
@@ -96,14 +82,16 @@ public class AggregationResult {
         List<KeyValue> kvList = (List<KeyValue>) data;
         long totalResults = -1;
         List<Map<String, Object>> results = null;
+        List<String> warnings = null;
         for (KeyValue kv : kvList) {
           String key = BuilderFactory.STRING.build(kv.getKey());
+          Object rawVal = kv.getValue();
           switch (key) {
             case TOTAL_RESULTS_STR:
-              totalResults = BuilderFactory.LONG.build(kv.getValue());
+              totalResults = BuilderFactory.LONG.build(rawVal);
               break;
             case RESULTS_STR:
-              List<List<KeyValue>> resList = (List<List<KeyValue>>) kv.getValue();
+              List<List<KeyValue>> resList = (List<List<KeyValue>>) rawVal;
               results = new ArrayList<>(resList.size());
               for (List<KeyValue> rikv : resList) {
                 for (KeyValue ikv : rikv) {
@@ -114,9 +102,12 @@ public class AggregationResult {
                 }
               }
               break;
+            case WARNINGS_STR:
+              warnings = BuilderFactory.STRING_LIST.build(rawVal);
+              break;
           }
         }
-        return new AggregationResult(totalResults, results);
+        return new AggregationResult(totalResults, results, warnings);
       }
 
       list = (List<Object>) SafeEncoder.encodeObject(data);

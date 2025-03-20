@@ -1,8 +1,8 @@
 PATH := ./redis-git/src:${PATH}
 
 # Supported test env versions
-SUPPORTED_TEST_ENV_VERSIONS := 8.0-M02 7.4.1 7.2.6 6.2.16
-DEFAULT_TEST_ENV_VERSION := 8.0-M02
+SUPPORTED_TEST_ENV_VERSIONS := 8.0 7.4 7.2 6.2
+DEFAULT_TEST_ENV_VERSION := 8.0
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
 
 define REDIS1_CONF
@@ -585,9 +585,8 @@ start-test-env:
 	fi; \
 	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
 	mkdir -p "$(REDIS_ENV_WORK_DIR)"; \
-	export REDIS_VERSION=$$version && \
 	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d; \
-	echo "Started test environment with Redis version $$version."
+    echo "Started test environment with Redis version $$version. "
 
 # Stop the test environment
 stop-test-env:

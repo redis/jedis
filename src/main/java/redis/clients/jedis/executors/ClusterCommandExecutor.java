@@ -131,7 +131,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
         IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
+        throw new JedisClusterOperationException("Cluster retry deadline exceeded.", lastException);
       }
     }
 

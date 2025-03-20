@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.mockito.Mock;
+
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.PipeliningBase;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.mocked.MockedCommandObjectsTestBase;
 
 /**
@@ -31,11 +31,9 @@ public abstract class PipeliningBaseMockedTestBase extends MockedCommandObjectsT
     private final List<CommandObject<?>> commands;
 
     public TestPipeliningBase(CommandObjects commandObjects,
-                              GraphCommandObjects graphCommandObjects,
                               Response<?> predefinedResponse,
                               List<CommandObject<?>> commands) {
       super(commandObjects);
-      setGraphCommands(graphCommandObjects);
       this.predefinedResponse = predefinedResponse;
       this.commands = commands;
     }
@@ -69,12 +67,6 @@ public abstract class PipeliningBaseMockedTestBase extends MockedCommandObjectsT
   protected CommandObjects commandObjects;
 
   /**
-   * The {@link GraphCommandObjects} instance used by the {@link PipeliningBase} under-test.
-   */
-  @Mock
-  protected GraphCommandObjects graphCommandObjects;
-
-  /**
    * Mock {@link Response} that is returned by {@link PipeliningBase} from each method.
    */
   @Mock
@@ -82,6 +74,6 @@ public abstract class PipeliningBaseMockedTestBase extends MockedCommandObjectsT
 
   @Before
   public void setUp() {
-    pipeliningBase = new TestPipeliningBase(commandObjects, graphCommandObjects, predefinedResponse, commands);
+    pipeliningBase = new TestPipeliningBase(commandObjects, predefinedResponse, commands);
   }
 }

@@ -40,4 +40,38 @@ public class Path2Test {
     assertTrue(new Path2("a.b").equals(Path2.of(".a.b")));
     assertTrue(Path2.of("a.b").equals(new Path2(".a.b")));
   }
+  
+  @Test
+  public void testJsonPointer() {
+    assertEquals(Path2.ofJsonPointer(""), Path2.ROOT_PATH);
+    assertEquals(Path2.ofJsonPointer("/"), Path2.of("$.[\"\"]"));
+    assertEquals(Path2.ofJsonPointer("//0"), Path2.of("$.[\"\"].[0]"));
+    assertEquals(Path2.ofJsonPointer("//"), Path2.of("$.[\"\"].[\"\"]"));
+    assertEquals(Path2.ofJsonPointer("// "), Path2.of("$.[\"\"].[\" \"]"));
+    assertEquals(Path2.ofJsonPointer("/a/b/c"), Path2.of("$.[\"a\"].[\"b\"].[\"c\"]"));
+    assertEquals(Path2.ofJsonPointer("/a/0/c"), Path2.of("$.[\"a\"].[0].[\"c\"]"));
+    assertEquals(Path2.ofJsonPointer("/a/0b/c"), Path2.of("$.[\"a\"].[\"0b\"].[\"c\"]"));
+    assertEquals(Path2.ofJsonPointer("/ab/cd/1010"), Path2.of("$.[\"ab\"].[\"cd\"].[1010]"));
+    assertEquals(Path2.ofJsonPointer("/a/b/c").hashCode(), Path2.of("$.[\"a\"].[\"b\"].[\"c\"]").hashCode());
+  
+    // escape test
+    assertEquals(Path2.ofJsonPointer("/a/~0"), Path2.of("$.[\"a\"].[\"~\"]"));
+    assertEquals(Path2.ofJsonPointer("/a/~1"), Path2.of("$.[\"a\"].[\"/\"]"));
+    assertEquals(Path2.ofJsonPointer("/a/~0/c"), Path2.of("$.[\"a\"].[\"~\"].[\"c\"]"));
+    assertEquals(Path2.ofJsonPointer("/a/~1/c"), Path2.of("$.[\"a\"].[\"/\"].[\"c\"]"));
+    assertEquals(Path2.ofJsonPointer("/a/~~/c"), Path2.of("$.[\"a\"].[\"~~\"].[\"c\"]"));
+    assertEquals(Path2.ofJsonPointer("/~/~~~/~"), Path2.of("$.[\"~\"].[\"~~~\"].[\"~\"]"));
+    assertEquals(Path2.ofJsonPointer("/~/~~~/~~"), Path2.of("$.[\"~\"].[\"~~~\"].[\"~~\"]"));
+    assertEquals(Path2.ofJsonPointer("/~/~~~0/~~"), Path2.of("$.[\"~\"].[\"~~~\"].[\"~~\"]"));
+    assertEquals(Path2.ofJsonPointer("/~/'.'/~~"), Path2.of("$.[\"~\"].[\"'.'\"].[\"~~\"]"));
+  
+    // json path escape test
+    assertEquals(Path2.ofJsonPointer("/\t"), Path2.of("$.[\"\t\"]"));
+    assertEquals(Path2.ofJsonPointer("/\u0074"), Path2.of("$.[\"\u0074\"]"));
+    assertEquals(Path2.ofJsonPointer("/'"), Path2.of("$.[\"'\"]"));
+    assertEquals(Path2.ofJsonPointer("/\'"), Path2.of("$.[\"\'\"]"));
+    assertEquals(Path2.ofJsonPointer("/\""), Path2.of("$.[\"\"\"]"));
+    assertEquals(Path2.ofJsonPointer("/\n"), Path2.of("$.[\"\n\"]"));
+    assertEquals(Path2.ofJsonPointer("/\\"), Path2.of("$.[\"\\\"]"));
+  }
 }

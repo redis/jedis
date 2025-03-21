@@ -364,11 +364,17 @@ public class RedisEntraIDIntegrationTests {
       MatcherAssert.assertThat(aclException.getMessage(), is(in(expectedMessages)));
       Awaitility.await().pollDelay(Durations.ONE_HUNDRED_MILLISECONDS).atMost(Durations.TWO_SECONDS)
           .until(() -> {
-            String key = UUID.randomUUID().toString();
-            jedis.set(key, "value");
-            assertEquals("value", jedis.get(key));
-            jedis.del(key);
-            return true;
+            try {
+              String key = UUID.randomUUID().toString();
+              jedis.set(key, "value");
+              assertEquals("value", jedis.get(key));
+              jedis.del(key);
+              return true;
+            } catch (Exception e) {
+              log.debug("attempt to reconnect after network failure, connection has not been re-established yet:"
+                  + e.getMessage());
+              return false;
+            }
           });
     }
   }

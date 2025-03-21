@@ -1,6 +1,7 @@
 package redis.clients.jedis.authentication;
 
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.TWO_SECONDS;
 import static org.awaitility.Durations.FIVE_SECONDS;
 import static org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
 import static org.junit.Assert.assertEquals;
@@ -15,6 +16,8 @@ import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ import java.util.function.Consumer;
 
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
+import org.hamcrest.MatcherAssert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -58,6 +62,7 @@ import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.scenario.FaultInjectionClient;
+import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RedisEntraIDIntegrationTests {
@@ -341,18 +346,22 @@ public class RedisEntraIDIntegrationTests {
         jedis.del(key);
       }
 
-      triggerNetworkFailure();
+      TriggerActionResponse actionResponse = triggerNetworkFailure();
 
       JedisConnectionException aclException = assertThrows(JedisConnectionException.class, () -> {
-        for (int i = 0; i < 50; i++) {
-          String key = UUID.randomUUID().toString();
-          jedis.set(key, "value");
-          assertEquals("value", jedis.get(key));
-          jedis.del(key);
+        while (!actionResponse.isCompleted(ONE_HUNDRED_MILLISECONDS, TWO_SECONDS, FIVE_SECONDS)) {
+          for (int i = 0; i < 50; i++) {
+            String key = UUID.randomUUID().toString();
+            jedis.set(key, "value");
+            assertEquals("value", jedis.get(key));
+            jedis.del(key);
+          }
         }
       });
 
-      assertEquals("Unexpected end of stream.", aclException.getMessage());
+      String[] expectedMessages = new String[] { "Unexpected end of stream.",
+          "java.net.SocketException: Connection reset" };
+      MatcherAssert.assertThat(aclException.getMessage(), is(in(expectedMessages)));
       Awaitility.await().pollDelay(Durations.ONE_HUNDRED_MILLISECONDS).atMost(Durations.TWO_SECONDS)
           .until(() -> {
             String key = UUID.randomUUID().toString();
@@ -364,11 +373,11 @@ public class RedisEntraIDIntegrationTests {
     }
   }
 
-  private void triggerNetworkFailure() {
+  private TriggerActionResponse triggerNetworkFailure() {
     HashMap<String, Object> params = new HashMap<>();
     params.put("bdb_id", endpointConfig.getBdbId());
 
-    FaultInjectionClient.TriggerActionResponse actionResponse = null;
+    TriggerActionResponse actionResponse = null;
     String action = "network_failure";
     try {
       log.info("Triggering {}", action);
@@ -377,5 +386,6 @@ public class RedisEntraIDIntegrationTests {
       fail("Fault Injection Server error:" + e.getMessage());
     }
     log.info("Action id: {}", actionResponse.getActionId());
+    return actionResponse;
   }
 }

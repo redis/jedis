@@ -110,11 +110,27 @@ public class TTLCache extends DefaultCache {
 
     /**
      * clear the expirationTimes map before clear the cache
+     *
      * @param key cache key
      */
     protected void clearStore(CacheKey key) {
         expirationTimes.clear();
         super.clearStore();
+    }
+
+    /**
+     * decide the key is expired or not
+     *
+     * @param key cache key
+     * @return if the key is expired return true
+     */
+    private boolean isExpired(CacheKey key) {
+        Long expirationTime = expirationTimes.get(key);
+        if (expirationTime == null) {
+            // the key has not yet been set up a expirationTime
+            return false;
+        }
+        return System.currentTimeMillis() > expirationTime;
     }
 
 }

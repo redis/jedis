@@ -50,10 +50,9 @@ public class TTLCache extends DefaultCache {
 
     private void initCleanupTask() {
 
-        // decide the time interval of the cleaning up
-        long timeInterval = Math.max(this.defaultMilis / 10, 1000);
-
         if (defaultMilis > 0) {
+            // decide the time interval of the cleaning up
+            long timeInterval = Math.max(this.defaultMilis / 10, 1000);
             cleanupExecutor.scheduleAtFixedRate(this::cleanupExpiredEntries, timeInterval, timeInterval, TimeUnit.MILLISECONDS);
         }
     }
@@ -115,10 +114,8 @@ public class TTLCache extends DefaultCache {
 
     /**
      * clear the expirationTimes map before clear the cache
-     *
-     * @param key cache key
      */
-    protected void clearStore(CacheKey key) {
+    protected void clearStoreWithTTL() {
         expirationTimes.clear();
         super.clearStore();
     }
@@ -183,6 +180,15 @@ public class TTLCache extends DefaultCache {
 
         long remaining = expirationTime - System.currentTimeMillis();
         return remaining > 0 ? remaining : 0;
+    }
+
+    /**
+     * shut down the cleanup executor
+     */
+    public void shutdown() {
+        if (isShutdown.compareAndSet(false, true)) {
+            cleanupExecutor.shutdown();
+        }
     }
 
 }

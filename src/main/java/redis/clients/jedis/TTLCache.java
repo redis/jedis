@@ -148,4 +148,20 @@ public class TTLCache extends DefaultCache {
         return super.containsKeyInStore(key);
     }
 
+    /**
+     * set up a ttl for any other key
+     *
+     * @param key      the cache key
+     * @param ttl      time to live
+     * @param timeUnit time unit
+     */
+    public void setTTL(CacheKey key, Long ttl, TimeUnit timeUnit) {
+        // if the ttl less than zero , remove the key from the expirationTimes
+        if (ttl <= 0) {
+            expirationTimes.remove(key);
+        } else {
+            expirationTimes.put(key, System.currentTimeMillis() + ttl);
+        }
+    }
+
 }

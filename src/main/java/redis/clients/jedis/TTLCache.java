@@ -10,6 +10,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+/**
+ * @author PengJingzhao
+ * @date 2025-03-23
+ * add a ttl support for the default cache
+ */
 public class TTLCache extends DefaultCache {
 
     private final Map<CacheKey, Long> expirationTimes;
@@ -162,6 +167,22 @@ public class TTLCache extends DefaultCache {
         } else {
             expirationTimes.put(key, System.currentTimeMillis() + ttl);
         }
+    }
+
+    /**
+     * get the remaining ttl of the key
+     *
+     * @param key cache key
+     * @return the remaining ttl of the key
+     */
+    public long getTTL(CacheKey key) {
+        Long expirationTime = expirationTimes.get(key);
+        if (expirationTime == null) {
+            return -1;
+        }
+
+        long remaining = expirationTime - System.currentTimeMillis();
+        return remaining > 0 ? remaining : 0;
     }
 
 }

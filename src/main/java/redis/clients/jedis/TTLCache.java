@@ -53,6 +53,12 @@ public class TTLCache extends DefaultCache {
         }
     }
 
+    /**
+     * remove the key from the expirationTimes map before remove from cache
+     *
+     * @param key cache key
+     * @return
+     */
     public boolean removeFromStore(CacheKey key) {
         expirationTimes.remove(key);
         return super.removeFromStore(key);
@@ -101,4 +107,14 @@ public class TTLCache extends DefaultCache {
         }
         return super.putIntoStore(key, entry);
     }
+
+    /**
+     * clear the expirationTimes map before clear the cache
+     * @param key cache key
+     */
+    protected void clearStore(CacheKey key) {
+        expirationTimes.clear();
+        super.clearStore();
+    }
+
 }

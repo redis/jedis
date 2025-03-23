@@ -85,4 +85,20 @@ public class TTLCache extends DefaultCache {
             }
         });
     }
+
+    /**
+     * before put the cache into store,we should put the key into the expirationTimes Map
+     *
+     * @param key   cache key
+     * @param entry cache value
+     * @return cache entry
+     */
+    @Override
+    public CacheEntry putIntoStore(CacheKey key, CacheEntry entry) {
+        if (defaultMilis > 0) {
+            // set up the ttl from now
+            expirationTimes.put(key, System.currentTimeMillis() + defaultMilis);
+        }
+        return super.putIntoStore(key, entry);
+    }
 }

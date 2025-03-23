@@ -133,4 +133,19 @@ public class TTLCache extends DefaultCache {
         return System.currentTimeMillis() > expirationTime;
     }
 
+    /**
+     * decide the key is contained in the store or not
+     *
+     * @param key cache key
+     * @return if the key belong to the cache return true
+     */
+    protected boolean containsKeyInStore(CacheKey key) {
+        if (isExpired(key)) {
+            // if the key is expired , we should remove it from the store
+            removeFromStore(key);
+            return false;
+        }
+        return super.containsKeyInStore(key);
+    }
+
 }

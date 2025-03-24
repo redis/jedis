@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>redis.clients.authentication</groupId>
 			<artifactId>redis-authx-core</artifactId>
-			<version>0.1.1-beta1</version>
+			<version>0.1.1-beta2</version>
 		</dependency>
 
 		<!-- Optional dependencies -->
@@ -159,7 +159,7 @@
 		<dependency>
 			<groupId>redis.clients.authentication</groupId>
 			<artifactId>redis-authx-entraid</artifactId>
-			<version>0.1.1-beta1</version>
+			<version>0.1.1-beta2</version>
 			<scope>test</scope>
 		</dependency>
 

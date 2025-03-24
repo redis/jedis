@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -14,8 +16,62 @@ public interface HashCommands {
 
   long hset(String key, Map<String, String> hash);
 
-  String hget(String key, String field);
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSETEX command
+   * @param field the field in the hash
+   * @param value the value to set
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */  
+  long hsetex(String key, HSetExParams params, String field, String value);
 
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSETEX command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  long hsetex(String key, HSetExParams params, Map<String, String> hash);
+
+  String hget(String key, String field);
+    
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  List<String> hgetex(String key, HGetExParams params, String... fields);
+
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  List<String> hgetdel(String key, String... fields);
+  
   long hsetnx(String key, String field, String value);
 
   String hmset(String key, Map<String, String> hash);

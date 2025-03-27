@@ -4,6 +4,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
 import redis.clients.jedis.csc.TestCache;
+import redis.clients.jedis.util.JedisURIHelper;
 
 import java.net.URI;
 
@@ -17,6 +18,9 @@ import static org.mockito.Mockito.mockConstruction;
 public class JedisPoolUnitTest {
     private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 
+    /**
+     * to verify that the data(username/password) is correctly passed to the JedisFactory from the (JedisPool) constructor.
+     */
     @Test
     public void compareACLToStringWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
@@ -84,8 +88,63 @@ public class JedisPoolUnitTest {
         }
     }
 
+    @Test
+    public void compareACLToURIWithConfig() {
+        try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
+                (mock, context) -> {
+                    URI uri = (URI) context.arguments().get(0);
 
+                    String username = JedisURIHelper.getUser(uri);
+                    String password = JedisURIHelper.getPassword(uri);
 
+                    assertEquals(endpoint.getUsername(), username);
+                    assertEquals(endpoint.getPassword(), password);
+                })) {
+
+            JedisPool pool = new JedisPool(endpoint.getURIBuilder().defaultCredentials().build());
+
+            pool.close();
+        }
+    }
+
+    @Test
+    public void compareACLToClientConfigWithConfig() {
+        try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
+                (mock, context) -> {
+                    DefaultJedisClientConfig config = (DefaultJedisClientConfig) context.arguments().get(1);
+
+                    String username = config.getUser();
+                    String password = config.getPassword();
+
+                    assertEquals(endpoint.getUsername(), username);
+                    assertEquals(endpoint.getPassword(), password);
+                })) {
+
+            JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+
+            pool.close();
+        }
+    }
+
+    @Test
+    public void compareACLToClientConfigAndSocketFactoryWithConfig() {
+        try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
+                (mock, context) -> {
+                    DefaultJedisClientConfig config = (DefaultJedisClientConfig) context.arguments().get(1);
+
+                    assertEquals(endpoint.getUsername(), config.getUser());
+                    assertEquals(endpoint.getPassword(), config.getPassword());
+                })) {
+
+            JedisPool pool = new JedisPool(new JedisPoolConfig(), new DefaultJedisSocketFactory(), endpoint.getClientConfigBuilder().build());
+
+            pool.close();
+        }
+    }
+
+    /**
+     * to verify that the data(username/password) is correctly passed to the ConnectionFactory from the (JedisPooled) constructor.
+     */
     @Test
     public void compareACLWithConfigForJedisPooled() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
@@ -151,6 +210,29 @@ public class JedisPoolUnitTest {
     }
 
     @Test
+    public void compareACLToURIWithConfigForJedisPooled() {
+        try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
+                (mock, context) -> {
+                    URI uri = (URI) context.arguments().get(0);
+
+                    String username = JedisURIHelper.getUser(uri);
+                    String password = JedisURIHelper.getPassword(uri);
+
+                    assertEquals(endpoint.getUsername(), username);
+                    assertEquals(endpoint.getPassword(), password);
+                })) {
+
+            JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpoint.getURIBuilder().defaultCredentials().build().toString());
+
+            pool.close();
+        }
+    }
+
+
+    /**
+     * to verify that the data(username/password) is correctly passed to the ConnectionFactory from the (UnifiedJedis) constructor.
+     */
+    @Test
     public void compareACLWithConfigForUnifiedJedis() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
@@ -160,11 +242,7 @@ public class JedisPoolUnitTest {
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
                 })) {
 
-            DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
-                    .user(endpoint.getUsername())
-                    .password(endpoint.getPassword()).build();
-
-            UnifiedJedis unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(), jedisClientConfig);
+            UnifiedJedis unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
 
             unifiedJedis.close();
         }
@@ -180,7 +258,7 @@ public class JedisPoolUnitTest {
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
                 })) {
 
-            UnifiedJedis unifiedJedis = new UnifiedJedis(URI.create("redis://" + endpoint.getUsername() + ":" + endpoint.getPassword() + "@" + endpoint.getHost() + ":" + endpoint.getPort()));
+            UnifiedJedis unifiedJedis = new UnifiedJedis(endpoint.getURIBuilder().defaultCredentials().build());
 
             unifiedJedis.close();
         }
@@ -196,7 +274,7 @@ public class JedisPoolUnitTest {
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
                 })) {
 
-            UnifiedJedis unifiedJedis = new UnifiedJedis(URI.create("redis://" + endpoint.getUsername() + ":" + endpoint.getPassword() + "@" + endpoint.getHost() + ":" + endpoint.getPort()),
+            UnifiedJedis unifiedJedis = new UnifiedJedis(endpoint.getURIBuilder().defaultCredentials().build(),
                     DefaultJedisClientConfig.builder().build());
 
             unifiedJedis.close();

@@ -84,6 +84,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
+  public char[] getPasswordAsChars() {
+    return credentialsProvider.get().getPassword().clone();
+  }
+
+  @Override
   public Supplier<RedisCredentials> getCredentialsProvider() {
     return credentialsProvider;
   }
@@ -157,6 +162,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private String user = null;
     private String password = null;
+    private char[] passwordAsChars = null;
     private Supplier<RedisCredentials> credentialsProvider;
     private int database = Protocol.DEFAULT_DATABASE;
     private String clientName = null;
@@ -227,8 +233,18 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    /**
+     * @deprecated This method is deprecated in favor of {@link #passwordAsChars(char[])} due to security concerns.
+     * Storing passwords as Strings can lead to security risks since Strings are immutable and stay in memory
+     * until garbage collected. Use {@link #passwordAsChars(char[])} instead to handle passwords more securely.
+     */
     public Builder password(String password) {
       this.password = password;
+      return this;
+    }
+
+    public Builder passwordAsChars(char[] password) {
+      this.passwordAsChars = password;
       return this;
     }
 
@@ -357,6 +373,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     } else {
       builder.user(copy.getUser());
       builder.password(copy.getPassword());
+      builder.passwordAsChars(copy.getPasswordAsChars());
     }
 
     builder.database(copy.getDatabase());

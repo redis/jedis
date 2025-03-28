@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
 import redis.clients.jedis.csc.TestCache;
@@ -137,6 +138,23 @@ public class JedisPoolUnitTest {
                 })) {
 
             JedisPool pool = new JedisPool(new JedisPoolConfig(), new DefaultJedisSocketFactory(), endpoint.getClientConfigBuilder().build());
+
+            pool.close();
+        }
+    }
+
+    @Test
+    public void compareACLToHostAndPortClientConfigWithConfig() {
+        try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
+                (mock, context) -> {
+                    DefaultJedisClientConfig config = (DefaultJedisClientConfig) context.arguments().get(1);
+
+                    assertEquals(endpoint.getUsername(), config.getUser());
+                    assertEquals(endpoint.getPassword(), config.getPassword());
+                })) {
+
+            JedisPool pool = new JedisPool(new GenericObjectPoolConfig<>(), endpoint.getHostAndPort(),
+                                           endpoint.getClientConfigBuilder().build());
 
             pool.close();
         }

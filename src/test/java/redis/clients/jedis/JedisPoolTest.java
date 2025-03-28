@@ -19,7 +19,6 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.providers.PooledConnectionProvider;
 
 public class JedisPoolTest {
 

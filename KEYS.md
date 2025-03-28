@@ -1,5 +1,5 @@
 ## Verifying contents
-Jedis artifacts published on Maven central are signed. For each artifact, there is an associated signature file with the .asc suffix.
+Jedis artifacts published on Maven central are signed. For each artifact, there is an associated signature file with the `.asc` suffix.
 
 ## Keys used for signing
 ```

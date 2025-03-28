@@ -97,7 +97,7 @@ jedis.subscribe(l, "foo");
 Note that subscribe is a blocking operation because it will poll Redis for responses on the thread that calls subscribe.  A single JedisPubSub instance can be used to subscribe to multiple channels.  You can call subscribe or psubscribe on an existing JedisPubSub instance to change your subscriptions.
 
 
-### Monitoring
+## Monitoring
 
 To use the monitor command you can do something like the following:
 
@@ -122,6 +122,94 @@ jedis.monitor(new JedisMonitor() {
     }
 });
 ```
+## Token-Based Authentication
+
+Starting with version 5.3.0 GA, Jedis supports token-based authentication. The [redis-authx-entraid](https://github.com/redis/jvm-redis-authx-entraid) repository provides the necessary components that Jedis utilizes to enable this functionality. 
+
+Additionally, support for Microsoft EntraID has been fully implemented and is now available as an extension for Azure Managed Redis (AMR) and Azure Cache for Redis(ACR).
+
+### Using With Custom Identity Provider
+Jedis provides a token-based authentication mechanism with a generic identity provider of your choice. 
+For custom use of this feature, you will need to provide an implementation of `IdentityProvider` and `IdentityProviderConfig` and configure it in the way Jedis expects. 
+
+You will have the required interfaces from transitive Jedis dependencies;
+
+```
+    <dependency>
+        <groupId>redis.clients.authentication</groupId>
+        <artifactId>redis-authx-core</artifactId>
+        <version>${version}</version>
+    </dependency>
+```
+
+**An example to get started:**
+```java
+public class YourCustomIdentityProviderConfig implements IdentityProviderConfig {
+    ...
+}
+
+public class YourCustomIdentityProvider implements IdentityProvider {
+    ...
+}
+```
+
+Then configure Jedis like this:
+```java
+IdentityProviderConfig yourCustomIdentityProviderConfig = new YourCustomIdentityProviderConfig();
+TokenAuthConfig tokenAuthConfig = TokenAuthConfig.builder().identityProviderConfig(yourCustomIdentityProviderConfig);
+
+JedisClientConfig config = DefaultJedisClientConfig.builder()
+                .authXManager(new AuthXManager(tokenAuthConfig)).build();
+...
+```
+### Using With Microsoft EntraID
+
+Extension for EntraID is fully integrated and ready to use with [Azure Managed Redis](https://azure.microsoft.com/en-us/products/managed-redis)(AMR) or [Azure Cache for Redis](https://azure.microsoft.com/en-us/products/cache/)(ACR). All you need is to add the EntraID dependency and code for configuration for chosen authentication type with Microsoft EntraID service.
+
+To get started, add the `redis-authx-entraid` extension as dependency;
+
+```
+    <dependency>
+        <groupId>redis.clients.authentication</groupId>
+        <artifactId>redis-authx-entraid</artifactId>
+        <version>${version}</version>
+    </dependency>
+```
+
+After adding the dependency, configure it using `EntraIDTokenAuthConfigBuilder`:
+
+```java
+...
+    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+        .expirationRefreshRatio(0.8F)
+        .clientId("yourClientId")
+        .secret("yourClientSecret")
+        .authority("yourAuthority")
+        .scopes("yourRedisScopes").build();
+
+    AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
+
+    JedisClientConfig config = DefaultJedisClientConfig.builder()
+        .authXManager(authXManager).build();
+...
+```
+
+Here you will see the `AuthXManager` class that is built into Jedis. Essentially it integrates the extension into Jedis and handles the authentication process.  
+For other available configurations, detailed information and usage of Jedis with Microsoft EntraID, please refer to the [official guide](https://redis.io/docs/latest/develop/clients/jedis/amr/)
+
+**Setting Up AMR or ACR with Microsoft EntraID:**
+
+To use Microsoft EntraID with AMR or ACR, for sure you will need to set up and configure your AMR/ACR services as well as Microsoft EntraID. The following resources provide useful information;
+
+[Azure Managed Redis](https://azure.microsoft.com/en-us/products/managed-redis)
+
+[Azure Cache for Redis](https://azure.microsoft.com/en-us/products/cache/)
+
+[Microsoft Entra ID for AMR authentication](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/managed-redis/managed-redis-entra-for-authentication)
+
+[Microsoft Entra ID for ACR authentication](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-azure-active-directory-for-authentication)
+
+[Use Microsoft Entra](https://learn.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad?tabs=workforce-configuration)
 
 ## Miscellaneous 
 

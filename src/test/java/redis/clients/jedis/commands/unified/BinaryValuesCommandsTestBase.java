@@ -344,6 +344,19 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  public void setGetWithParams() {
+    jedis.del(bfoo);
+
+    // no previous, return null
+    assertNull(jedis.setGet(bfoo, bbar, setParams().nx()));
+
+    // key already exists, new value should not be set, previous value should be bbar
+    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue, setParams().nx()));
+
+    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue, setParams().xx()));
+  }
+
+  @Test
   public void sendCommandTest() {
     Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
     String returnValue = SafeEncoder.encode((byte[]) obj);

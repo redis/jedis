@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,19 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertNull(value);
     value = jedis.get("foo");
     assertEquals("bar", value);
+  }
+
+  @Test
+  public void setGetWithParams() {
+    jedis.del("foo");
+
+    // no previous, return null
+    assertNull(jedis.setGet("foo", "bar", setParams().nx()));
+
+    // key already exists, new value should not be set, previous value should be bbar
+    assertEquals("bar", jedis.setGet("foo", "foobar", setParams().nx()));
+
+    assertEquals("bar", jedis.setGet("foo", "foobar", setParams().xx()));
   }
 
   @Test

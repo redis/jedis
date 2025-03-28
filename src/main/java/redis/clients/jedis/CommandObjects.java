@@ -21,8 +21,6 @@ import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.json.DefaultGsonObjectMapper;
-import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -90,6 +88,17 @@ public class CommandObjects {
 
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
+      BuilderFactory.STRING);
+
+  public final CommandObject<String> info() {
+    return INFO_COMMAND_OBJECT;
+  }
+
+  public final CommandObject<String> info(String section) {
+    return new CommandObject<>(commandArguments(Command.INFO).add(section), BuilderFactory.STRING);
   }
 
   // Key commands
@@ -1009,8 +1018,28 @@ public class CommandObjects {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> hsetex(String key, HSetExParams params, String field, String value) {
+    return new CommandObject<>(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(1).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
+  }
+
   public final CommandObject<String> hget(String key, String field) {
     return new CommandObject<>(commandArguments(HGET).key(key).add(field), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> hgetex(String key, HGetExParams params, String... fields) {
+    return new CommandObject<>(commandArguments(Command.HGETEX).key(key)
+      .addParams(params).add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> hgetdel(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HGETDEL).key(key)
+      .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<Long> hsetnx(String key, String field, String value) {
@@ -1033,8 +1062,28 @@ public class CommandObjects {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    return new CommandObject<>(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(1).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
+  }
+
   public final CommandObject<byte[]> hget(byte[] key, byte[] field) {
     return new CommandObject<>(commandArguments(HGET).key(key).add(field), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return new CommandObject<>(commandArguments(Command.HGETEX).key(key)
+      .addParams(params).add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> hgetdel(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HGETDEL).key(key).add(FIELDS)
+      .add(fields.length).addObjects((Object[]) fields), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> hsetnx(byte[] key, byte[] field, byte[] value) {

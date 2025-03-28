@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>redis.clients.authentication</groupId>
 			<artifactId>redis-authx-core</artifactId>
-			<version>0.1.1-beta1</version>
+			<version>0.1.1-beta2</version>
 		</dependency>
 
 		<!-- Optional dependencies -->
@@ -152,14 +152,14 @@
 		<dependency>
 			<groupId>org.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
-			<version>4.2.2</version>
+			<version>4.3.0</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>redis.clients.authentication</groupId>
 			<artifactId>redis-authx-entraid</artifactId>
-			<version>0.1.1-beta1</version>
+			<version>0.1.1-beta2</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -224,7 +224,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
+				<version>3.14.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -295,7 +295,7 @@
 			<plugin>
 				<groupId>net.revelc.code.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
-				<version>2.11.0</version>
+				<version>2.16.0</version>
 				<configuration>
 					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
 					<directories>

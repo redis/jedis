@@ -1,4 +1,4 @@
-##Verifying contents
+## Verifying contents
 Jedis artifacts published on Maven central are signed. For each artifact, there is an associated signature file with the .asc suffix.
 
 ## Keys used for signing
@@ -26,8 +26,7 @@ pub   rsa3072 2021-06-27 [SC] [expired: 2023-06-27]
 uid           [ expired] RedisLabs OSS <oss@redislabs.com>
 sig 3        B68CD0A11D28B97D 2021-06-27  [self-signature]
 ```
-A copy of this key is stored on the  keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0xB68CD0A11D28B97D)
-
+A copy of this key is stored on the keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0xB68CD0A11D28B97D)
 ### Before 2021-06-27
 ```
 pub   rsa3072 2018-08-12 [SC] [expired: 2020-08-11]
@@ -35,4 +34,4 @@ pub   rsa3072 2018-08-12 [SC] [expired: 2020-08-11]
 uid           [ expired] Guy Korlad <guy.korland@redislabs.com>
 sig 3        2D62B50EF8D3297A 2018-08-12  [self-signature]
 ```
-A copy of this key is stored on the  keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0x2D62B50EF8D3297A)
+A copy of this key is stored on the keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0x2D62B50EF8D3297A)

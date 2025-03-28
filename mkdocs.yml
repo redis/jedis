@@ -29,6 +29,7 @@ nav:
     - Search: redisearch.md
     - JSON: redisjson.md
   - Failover: failover.md
+  - Verifying artifacts: verifying-artifacts.md
   - FAQ: faq.md
   - API Reference: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
   - Tutorials and Examples:  tutorials_examples.md

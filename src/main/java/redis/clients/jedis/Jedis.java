@@ -1167,6 +1167,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+  
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
@@ -1183,6 +1195,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hget(key, field));
   }
 
+  @Override
+  public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+  
+  @Override
+  public List<byte[]> hgetdel(byte[] key, byte[]... fields){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetdel(key, fields));
+  }
+  
   /**
    * Set the specified hash field to the specified value if the field not exists. <b>Time
    * complexity:</b> O(1)
@@ -5687,6 +5711,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  @Override
+  public long hsetex(String key, HSetExParams params, String field, String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
@@ -5701,6 +5737,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String hget(final String key, final String field) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hget(key, field));
+  }
+
+  @Override
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  @Override
+  public List<String> hgetdel(String key, String... fields) {    
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   /**

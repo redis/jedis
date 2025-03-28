@@ -176,6 +176,9 @@ hincrByFloat
 hiredis
 hlen
 hset
+hgetdel
+hgetex
+hsetex
 hsetnx
 hstrlen
 http
@@ -336,3 +339,9 @@ zrevrangeByScore
 zrevrangeByScoreWithScores
 zrevrangeWithScores
 zunionstore
+authx
+entraid
+EntraID
+ACR
+AMR
+Entra

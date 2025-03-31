@@ -176,6 +176,9 @@ hincrByFloat
 hiredis
 hlen
 hset
+hgetdel
+hgetex
+hsetex
 hsetnx
 hstrlen
 http

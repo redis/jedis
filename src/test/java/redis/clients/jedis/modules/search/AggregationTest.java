@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_80M3;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
@@ -39,11 +40,6 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
 
   public AggregationTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
@@ -205,7 +201,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
         .apply("@__score * 100", "normalized_score").dialect(3);
 
     AggregationResult res = client.ftAggregate(index, r);
-    if (RedisConditions.of(client).moduleVersionIsGreatherThan("SEARCH", 79900)) {
+    if (RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3)) {
       // Default scorer is BM25
       assertEquals(0.6931, res.getRow(0).getDouble("__score"), 0.0001);
       assertEquals(69.31, res.getRow(0).getDouble("normalized_score"), 0.01);

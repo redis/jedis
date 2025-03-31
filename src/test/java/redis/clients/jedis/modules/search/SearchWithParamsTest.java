@@ -2,7 +2,9 @@ package redis.clients.jedis.modules.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
+import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_80M3;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,6 +12,7 @@ import java.util.stream.Collectors;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +36,7 @@ import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import redis.clients.jedis.util.RedisConditions;
 import redis.clients.jedis.util.RedisVersionUtil;
 
 @RunWith(Parameterized.class)
@@ -44,11 +48,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  @After
+  public void cleanUp() {
+    if (client.ftList().contains(index)) {
+      client.ftDropIndex(index);
+    }
+  }
 
   public SearchWithParamsTest(RedisProtocol protocol) {
     super(protocol);
@@ -1249,6 +1255,32 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testFlatVectorSimilarityInt8() {
+    assumeTrue("INT8",
+        RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
+    assertOK(client.ftCreate(index,
+        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.FLAT)
+            .addAttribute("TYPE", "INT8").addAttribute("DIM", 2)
+            .addAttribute("DISTANCE_METRIC", "L2").build()));
+
+    byte[] a = { 127, 1 };
+    byte[] b = { 127, 10 };
+    byte[] c = { 127, 100 };
+
+    client.hset("a".getBytes(), "v".getBytes(), a);
+    client.hset("b".getBytes(), "v".getBytes(), b);
+    client.hset("c".getBytes(), "v".getBytes(), c);
+
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", a)
+        .sortBy("__v_score", SortingOrder.ASC).returnFields("__v_score");
+
+    Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments()
+        .get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
   @SinceRedisVersion(value = "7.4.0", message = "no optional params before 7.4.0")
   public void vectorFieldParams() {
     Map<String, Object> attr = new HashMap<>();
@@ -1284,6 +1316,26 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
             .addAttribute("DIM", 4)
             .addAttribute("DISTANCE_METRIC", "L2")
             .build()));
+  }
+
+  @Test
+  public void int8StorageType() {
+    assumeTrue("INT8",
+        RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
+    assertOK(client.ftCreate(index,
+        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+            .addAttribute("TYPE", "INT8").addAttribute("DIM", 4)
+            .addAttribute("DISTANCE_METRIC", "L2").build()));
+  }
+
+  @Test
+  public void uint8StorageType() {
+    assumeTrue("UINT8",
+        RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3));
+    assertOK(client.ftCreate(index,
+        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+            .addAttribute("TYPE", "UINT8").addAttribute("DIM", 4)
+            .addAttribute("DISTANCE_METRIC", "L2").build()));
   }
 
   @Test

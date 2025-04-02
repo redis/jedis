@@ -193,6 +193,7 @@ io
 jedis
 json
 kb
+keyserver
 keyslot
 keyspace
 keysvalues

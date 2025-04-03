@@ -573,7 +573,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
       client.ftSearch(index, new Query("hello world"));
       fail("Index should not exist.");
     } catch (JedisDataException de) {
-      assertTrue(de.getMessage().contains("no such index"));
+      // error message updated to "No such index" with Redis 8.0.0
+      assertTrue(de.getMessage().toLowerCase().contains("no such index"));
     }
     assertEquals(100, client.dbSize());
   }

@@ -4,11 +4,13 @@ import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.platform.commons.util.AnnotationUtils;
 import redis.clients.jedis.*;
 import redis.clients.jedis.resps.CommandInfo;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Optional;
 
 public class EnabledOnCommandCondition implements ExecutionCondition {
 
@@ -41,16 +43,14 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
   }
 
   private String[] getCommandFromAnnotations(ExtensionContext context) {
-    Method testMethod = context.getRequiredTestMethod();
-    EnabledOnCommand methodAnnotation = testMethod.getAnnotation(EnabledOnCommand.class);
-    if (methodAnnotation != null) {
-      return new String[]{methodAnnotation.value(), methodAnnotation.subCommand()};
+    Optional<EnabledOnCommand> methodAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestMethod(), EnabledOnCommand.class);
+    if (methodAnnotation.isPresent()) {
+      return new String[]{methodAnnotation.get().value(), methodAnnotation.get().subCommand()};
     }
 
-    Class<?> testClass = context.getRequiredTestClass();
-    EnabledOnCommand classAnnotation = testClass.getAnnotation(EnabledOnCommand.class);
-    if (classAnnotation != null) {
-      return new String[]{classAnnotation.value(), classAnnotation.subCommand()};
+    Optional<EnabledOnCommand> classAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestClass(), EnabledOnCommand.class);
+    if (classAnnotation.isPresent()) {
+      return new String[]{classAnnotation.get().value(), classAnnotation.get().subCommand()};
     }
 
     return null;

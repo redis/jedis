@@ -6,6 +6,7 @@ import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.platform.commons.util.AnnotationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.EndpointConfig;
@@ -14,6 +15,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import static redis.clients.jedis.util.RedisVersionUtil.forcedVersion;
 
@@ -60,13 +62,12 @@ public class RedisVersionCondition implements ExecutionCondition {
   }
 
   private SinceRedisVersion getAnnotation(ExtensionContext context) {
-    Method testMethod = context.getRequiredTestMethod();
-    SinceRedisVersion methodAnnotation = testMethod.getAnnotation(SinceRedisVersion.class);
-    if (methodAnnotation != null) {
-      return methodAnnotation;
+    Optional<SinceRedisVersion> methodAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestMethod(), SinceRedisVersion.class);
+    if (methodAnnotation.isPresent()) {
+      return methodAnnotation.get();
     }
 
-    Class<?> testClass = context.getRequiredTestClass();
-    return testClass.getAnnotation(SinceRedisVersion.class);
+    Optional<SinceRedisVersion> classAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestClass(), SinceRedisVersion.class);
+    return classAnnotation.orElse(null);
   }
 }

@@ -20,8 +20,8 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
@@ -39,7 +39,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() {
     super.setUp();

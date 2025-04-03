@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.executors.CommandExecutor;
@@ -25,7 +25,8 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * to a running Redis server. That one is provided by abstract subclasses, depending
  * on if a Redis Stack server is needed, or a standalone suffices.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public abstract class CommandObjectsTestBase {
 
   /**
@@ -34,7 +35,6 @@ public abstract class CommandObjectsTestBase {
    *
    * @see CommandsTestsParameters#respVersions()
    */
-  @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return CommandsTestsParameters.respVersions();
   }
@@ -67,7 +67,7 @@ public abstract class CommandObjectsTestBase {
     commandObjects.setProtocol(protocol);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     // Configure a default command executor.
     DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder().protocol(protocol)

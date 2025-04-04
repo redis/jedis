@@ -1,14 +1,11 @@
 package redis.clients.jedis.authentication;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +18,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisPooled;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 public class RedisEntraIDManagedIdentityIntegrationTests {
   private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
 
@@ -30,7 +30,7 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
   private static Set<String> managedIdentityAudience = Collections
       .singleton("https://redis.azure.com");
 
-  @BeforeClass
+  @BeforeAll
   public static void before() {
     try {
       testCtx = EntraIDTestContext.DEFAULT;
@@ -38,7 +38,7 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
-      assumeTrue(false);
+      assumeTrue(false,"No Redis endpoint 'standalone-entraid-acl' is configured!");
     }
   }
 

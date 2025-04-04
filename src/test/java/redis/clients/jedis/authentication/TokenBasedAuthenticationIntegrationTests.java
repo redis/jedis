@@ -1,9 +1,9 @@
 package redis.clients.jedis.authentication;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class TokenBasedAuthenticationIntegrationTests {
 
   private static EndpointConfig endpointConfig;
 
-  @BeforeClass
+  @BeforeAll
   public static void before() {
     try {
       endpointConfig = HostAndPorts.getRedisEndpoint("standalone0");
@@ -241,13 +242,12 @@ public class TokenBasedAuthenticationIntegrationTests {
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
     try (JedisPooled jedis = new JedisPooled(endpointConfig.getHostAndPort(), clientConfig)) {
-      JedisPubSub pubSub = new JedisPubSub() {
-      };
+      JedisPubSub pubSub = new JedisPubSub() {};
       JedisException e = assertThrows(JedisException.class,
-        () -> jedis.subscribe(pubSub, "channel1"));
+          () -> jedis.subscribe(pubSub, "channel1"));
       assertEquals(
-        "Blocking pub/sub operations are not supported on token-based authentication enabled connections with RESP2 protocol!",
-        e.getMessage());
+          "Blocking pub/sub operations are not supported on token-based authentication enabled connections with RESP2 protocol!",
+          e.getMessage());
     }
   }
 }

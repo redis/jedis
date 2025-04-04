@@ -1,8 +1,8 @@
 package redis.clients.jedis.authentication;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
@@ -20,8 +20,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,14 +46,14 @@ public class TokenBasedAuthenticationClusterIntegrationTests {
     private static EndpointConfig endpointConfig;
     private static HostAndPort hnp;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() {
         try {
             endpointConfig = HostAndPorts.getRedisEndpoint("cluster");
             hnp = endpointConfig.getHostAndPort();
         } catch (IllegalArgumentException e) {
             log.warn("Skipping test because no Redis endpoint is configured");
-            assumeTrue(false);
+            assumeTrue(false, "No Redis endpoint 'cluster' is configured!");
         }
     }
 
@@ -122,8 +122,7 @@ public class TokenBasedAuthenticationClusterIntegrationTests {
             Connection connection = spy((Connection) invocation.getArgument(0));
             invocation.getArguments()[0] = connection;
             connections.add(connection);
-            Object result = invocation.callRealMethod();
-            return result;
+            return invocation.callRealMethod();
         }).when(authXManager).addConnection(any(Connection.class));
 
         JedisClientConfig config = DefaultJedisClientConfig.builder().authXManager(authXManager)
@@ -137,8 +136,8 @@ public class TokenBasedAuthenticationClusterIntegrationTests {
                     assertEquals("OK", jc.set("foo", "bar"));
                 }
             };
-            Future task1 = executorService.submit(task);
-            Future task2 = executorService.submit(task);
+            Future<?> task1 = executorService.submit(task);
+            Future<?> task2 = executorService.submit(task);
 
             await().pollInterval(ONE_HUNDRED_MILLISECONDS).atMost(TWO_SECONDS)
                     .until(connections::size, greaterThanOrEqualTo(2));

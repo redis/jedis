@@ -1,14 +1,14 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.TlsUtil;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SSLOptionsJedisTest {
 
@@ -18,7 +18,7 @@ public class SSLOptionsJedisTest {
 
   private static final String trustStoreName = SSLOptionsJedisTest.class.getSimpleName();
   private static Path trustStorePath;
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),aclEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");

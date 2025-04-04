@@ -3,8 +3,7 @@ package redis.clients.jedis;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BuilderTest {
 
@@ -23,7 +22,7 @@ public class BuilderTest {
       BuilderFactory.DOUBLE.build("".getBytes());
       Assertions.fail("Empty String should throw NumberFormatException.");
     } catch (NumberFormatException expected) {
-      Assertions.assertEquals("empty String", expected.getMessage());
+      assertEquals("empty String", expected.getMessage());
     }
   }
 }

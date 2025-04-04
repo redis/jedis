@@ -4,9 +4,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,8 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Assert;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
@@ -48,16 +50,14 @@ public class JedisPooledTest {
     }
   }
 
-  @Test(expected = JedisException.class)
+  @Test
   public void checkPoolOverflow() {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config);
         Connection jedis = pool.getPool().getResource()) {
-
-      try (Connection jedis2 = pool.getPool().getResource()) {
-      }
+      assertThrows(JedisException.class, () -> pool.getPool().getResource());
     }
   }
 
@@ -90,9 +90,9 @@ public class JedisPooledTest {
     }
   }
 
-  @Test(expected = Exception.class)
-  public void shouldThrowExceptionForInvalidURI() throws URISyntaxException {
-    new JedisPooled(new URI("localhost:6380")).close();
+  @Test
+  public void shouldThrowExceptionForInvalidURI() {
+    assertThrows(Exception.class, ()->new JedisPooled(new URI("localhost:6380")));
   }
 
   @Test
@@ -174,7 +174,7 @@ public class JedisPooledTest {
         j.getOne();
         fail();
       } catch (Exception e) {
-        assertTrue(e instanceof JedisConnectionException);
+        assertInstanceOf(JedisConnectionException.class, e);
       }
       assertTrue(j.isBroken());
       j.close();
@@ -253,6 +253,7 @@ public class JedisPooledTest {
         pool.get("foo");
         fail("Should not get resource from pool");
       } catch (JedisException e) {
+        //ignore
       }
       assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle() + pool.getPool().getNumWaiters());
       assertThat(prepareCount.getAndSet(0), greaterThanOrEqualTo(1));

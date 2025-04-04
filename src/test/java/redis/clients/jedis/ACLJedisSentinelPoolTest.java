@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,13 +11,13 @@ import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.RedisVersionRule;
+import redis.clients.jedis.util.RedisVersionCondition;
 
 /**
  * This test class is mostly a copy of {@link JedisSentinelPoolTest}.
@@ -30,17 +33,17 @@ public class ACLJedisSentinelPoolTest {
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
-  @ClassRule
-  public static RedisVersionRule versionRule = new RedisVersionRule(HostAndPorts.getRedisEndpoint("standalone2-primary"));
+  @RegisterExtension
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone2-primary"));
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     sentinels.clear();
     sentinels.add(sentinel1);
   }
 
   private static Set<String> toStrings(Set<HostAndPort> hostAndPorts) {
-    return hostAndPorts.stream().map(hap -> hap.toString()).collect(Collectors.toSet());
+    return hostAndPorts.stream().map(HostAndPort::toString).collect(Collectors.toSet());
   }
 
   @Test
@@ -77,40 +80,42 @@ public class ACLJedisSentinelPoolTest {
     }
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test
   public void initializeWithNotAvailableSentinelsShouldThrowException() {
 
     GenericObjectPoolConfig<Jedis> poolConfig = new GenericObjectPoolConfig<>();
 
     JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2)
-        .user("acljedis").password("fizzbuzz").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
+        .password("fizzbuzz").build();
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000)
-        .user("default").password("foobared").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("default")
+        .password("foobared").build();
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig, masterConfig, sentinelConfig);
-    pool.getResource().close();
-    pool.destroy();
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig,
+        masterConfig, sentinelConfig)) {
+      assertThrows(JedisConnectionException.class, pool::getResource);
+    }
   }
 
-  @Test(expected = JedisException.class)
+  @Test
   public void initializeWithNotMonitoredMasterNameShouldThrowException() {
 
     GenericObjectPoolConfig<Jedis> poolConfig = new GenericObjectPoolConfig<>();
 
     JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2)
-        .user("acljedis").password("fizzbuzz").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
+        .password("fizzbuzz").build();
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000)
-        .user("sentinel").password("foobared").build();
+        .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("sentinel")
+        .password("foobared").build();
 
-    JedisSentinelPool pool = new JedisSentinelPool("wrongMasterName", sentinels, poolConfig, masterConfig, sentinelConfig);
-    pool.getResource().close();
-    pool.destroy();
+    try (JedisSentinelPool pool = new JedisSentinelPool("wrongMasterName", sentinels, poolConfig,
+        masterConfig, sentinelConfig)) {
+      assertThrows(JedisException.class, pool::getResource);
+    }
   }
 
   @Test

@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.TlsUtil;
 
 public class SSLJedisSentinelPoolTest {
@@ -25,7 +25,7 @@ public class SSLJedisSentinelPoolTest {
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
   private static final String trustStoreName = SSLJedisSentinelPoolTest.class.getSimpleName();
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis9-sentinel/work/tls"));
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
@@ -34,7 +34,7 @@ public class SSLJedisSentinelPoolTest {
     sentinels.add(HostAndPorts.getSentinelServers().get(4));
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardownTrustStore() {
     TlsUtil.restoreOriginalTrustStore();
   }

@@ -1,8 +1,5 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -13,13 +10,16 @@ import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
@@ -47,7 +47,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
   private static final String trustStoreName = SSLOptionsJedisClusterTest.class.getSimpleName();
   private static Path trustStorePath;
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Collections.singletonList(Paths.get("cluster-unbound/work/tls"));
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
@@ -135,7 +135,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
             .hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
-      Assert.fail("It should fail after all cluster attempts.");
+      fail("It should fail after all cluster attempts.");
     } catch (JedisClusterOperationException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
@@ -193,7 +193,7 @@ public class SSLOptionsJedisClusterTest extends JedisClusterTestBase {
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
-      Assert.fail("It should fail after all cluster attempts.");
+      fail("It should fail after all cluster attempts.");
     } catch (JedisClusterOperationException e) {
       // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
       // which causes custom hostname verification to fail

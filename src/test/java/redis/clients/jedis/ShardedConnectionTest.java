@@ -1,15 +1,15 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ShardedConnectionTest {
 
@@ -22,7 +22,7 @@ public class ShardedConnectionTest {
   private List<HostAndPort> shards;
   private JedisClientConfig clientConfig;
 
-  @Before
+  @BeforeEach
   public void startUp() {
     shards = new ArrayList<>();
     shards.add(redis1.getHostAndPort());

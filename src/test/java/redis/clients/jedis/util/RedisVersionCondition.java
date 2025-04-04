@@ -62,7 +62,7 @@ public class RedisVersionCondition implements ExecutionCondition {
   }
 
   private SinceRedisVersion getAnnotation(ExtensionContext context) {
-    Optional<SinceRedisVersion> methodAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestMethod(), SinceRedisVersion.class);
+    Optional<SinceRedisVersion> methodAnnotation = AnnotationUtils.findAnnotation(context.getTestMethod(), SinceRedisVersion.class);
     if (methodAnnotation.isPresent()) {
       return methodAnnotation.get();
     }

@@ -1,10 +1,10 @@
 package redis.clients.jedis.csc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,10 +13,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
 
@@ -28,13 +27,13 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   protected abstract UnifiedJedis createCachedJedis(CacheConfig cacheConfig);
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     control = createRegularJedis();
     control.flushAll();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     control.close();
   }

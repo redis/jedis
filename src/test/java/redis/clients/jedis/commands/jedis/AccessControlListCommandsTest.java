@@ -5,12 +5,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.util.Arrays;
@@ -51,8 +52,8 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   @BeforeAll
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.V6_0_0));
+    assumeTrue(getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.V6_0_0),
+        "Not running ACL test on this version of Redis");
   }
 
   public AccessControlListCommandsTest(RedisProtocol protocol) {
@@ -65,7 +66,9 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     try {
       jedis.aclDelUser(USER_NAME);
       jedis.aclDelUser(USER_ANTIREZ);
-    } catch (Exception e) { }
+    } catch (Exception e) {
+      // Ignore exception
+    }
     super.tearDown();
   }
 
@@ -373,7 +376,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
 
     List<AccessControlLogEntry> aclEntries = jedis.aclLog();
-    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals(1, aclEntries.size(), "Number of log messages ");
     assertEquals(1, aclEntries.get(0).getCount());
     assertEquals(USER_ANTIREZ, aclEntries.get(0).getUsername());
     assertEquals("toplevel", aclEntries.get(0).getContext());
@@ -397,7 +400,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // test the ACL Log
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals(1, jedis.aclLog().size(), "Number of log messages ");
     assertEquals(10, jedis.aclLog().get(0).getCount());
     assertEquals("get", jedis.aclLog().get(0).getObject());
 
@@ -411,7 +414,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // test the ACL Log
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 2, jedis.aclLog().size());
+    assertEquals( 2, jedis.aclLog().size(), "Number of log messages ");
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
     assertEquals("key", jedis.aclLog().get(0).getReason());
@@ -430,7 +433,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     t.close();
 
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals( 1, jedis.aclLog().size(), "Number of log messages ");
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("multi", jedis.aclLog().get(0).getContext());
     assertEquals("incr", jedis.aclLog().get(0).getObject());
@@ -451,12 +454,12 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 3, jedis.aclLog().size());
-    assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
+    assertEquals( 3, jedis.aclLog().size(), "Number of log messages ");
+    assertEquals( 2, jedis.aclLog(2).size(), "Number of log messages ");
 
     // Binary tests
-    assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
-    assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
+    assertEquals( 3, jedis.aclLogBinary().size(), "Number of log messages ");
+    assertEquals( 2, jedis.aclLogBinary(2).size(), "Number of log messages ");
 
     // RESET
     String status = jedis.aclLogReset();
@@ -475,7 +478,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     List<AccessControlLogEntry> aclEntries = jedis.aclLog();
-    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals( 1, aclEntries.size(), "Number of log messages ");
     assertEquals(1, aclEntries.get(0).getCount());
     assertEquals("wronguser", aclEntries.get(0).getUsername());
     assertEquals("toplevel", aclEntries.get(0).getContext());

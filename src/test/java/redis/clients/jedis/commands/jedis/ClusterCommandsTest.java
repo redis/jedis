@@ -27,6 +27,7 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -203,12 +204,12 @@ public class ClusterCommandsTest {
       List<Object> slotInfo = (List<Object>) slotInfoObj;
       assertTrue(slotInfo.size() >= 2);
 
-      assertTrue(slotInfo.get(0) instanceof Long);
-      assertTrue(slotInfo.get(1) instanceof Long);
+      assertInstanceOf(Long.class, slotInfo.get(0));
+      assertInstanceOf(Long.class, slotInfo.get(1));
 
       if (slotInfo.size() > 2) {
         // assigned slots
-        assertTrue(slotInfo.get(2) instanceof List);
+        assertInstanceOf(List.class, slotInfo.get(2));
       }
     }
     node1.clusterDelSlots(3000, 3001, 3002);

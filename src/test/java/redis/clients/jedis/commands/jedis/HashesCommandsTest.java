@@ -138,24 +138,24 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   public void hgetdel() {
     jedis.hset("foo", "bar", "car");
     assertEquals(asList("car"), jedis.hgetdel("foo", "bar"));
-    assertEquals(null, jedis.hget("foo", "bar"));
+    assertNull(jedis.hget("foo", "bar"));
 
     jedis.hset("foo", "bar", "car");
     jedis.hset("foo", "bare", "care");
     assertEquals(asList("car", "care"), jedis.hgetdel("foo", "bar", "bare"));
-    assertEquals(null, jedis.hget("foo", "bar"));
-    assertEquals(null, jedis.hget("foo", "bare"));
+    assertNull(jedis.hget("foo", "bar"));
+    assertNull(jedis.hget("foo", "bare"));
 
     // Binary
     jedis.hset(bfoo, bbar, bcar);
     assertByteArrayListEquals(asList(bcar), jedis.hgetdel(bfoo, bbar));
-    assertEquals(null, jedis.hget(bfoo, bbar));
+    assertNull(jedis.hget(bfoo, bbar));
 
     jedis.hset(bfoo, bbar, bcar);
     jedis.hset(bfoo, bbare, bcare);
     assertByteArrayListEquals(asList(bcar, bcare), jedis.hgetdel(bfoo, bbar, bbare));
-    assertEquals(null, jedis.hget(bfoo, bbar));
-    assertEquals(null, jedis.hget(bfoo, bbare));
+    assertNull(jedis.hget(bfoo, bbar));
+    assertNull(jedis.hget(bfoo, bbare));
   }
 
   @Test
@@ -719,7 +719,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     values.put("key", "value");
     jedis.hmset("myhash", values);
     long response = jedis.hstrlen("myhash", "key");
-    assertEquals(5l, response);
+    assertEquals(5L, response);
 
   }
 

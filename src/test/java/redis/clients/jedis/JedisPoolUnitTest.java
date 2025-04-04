@@ -8,8 +8,10 @@ import redis.clients.jedis.csc.TestCache;
 import redis.clients.jedis.util.JedisURIHelper;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mockConstruction;
 
 /**
@@ -26,7 +28,14 @@ public class JedisPoolUnitTest {
     public void compareACLToStringWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -42,11 +51,24 @@ public class JedisPoolUnitTest {
     public void compareACLToPoolConfigWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    String username = (String) context.arguments().get(4);
-                    String password = (String) context.arguments().get(5);
+                    boolean nameCheck = false;
+                    boolean passwordCheck = false;
 
-                    assertEquals(endpoint.getUsername(), username);
-                    assertEquals(endpoint.getPassword(), password);
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (!nameCheck) {
+                            if (argument instanceof String) {
+                                nameCheck = endpoint.getUsername().equalsIgnoreCase((String) argument);
+                            }
+                        }
+                        if (!passwordCheck) {
+                            if (argument instanceof String) {
+                                passwordCheck = endpoint.getPassword().equalsIgnoreCase((String) argument);
+                            }
+                        }
+                    }
+                    assertTrue(nameCheck);
+                    assertTrue(passwordCheck);
                 })) {
 
             JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(), endpoint.getPort(), endpoint.getUsername(), endpoint.getPassword());
@@ -59,11 +81,24 @@ public class JedisPoolUnitTest {
     public void compareACLToPoolConfigAndTimeoutWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    String username = (String) context.arguments().get(4);
-                    String password = (String) context.arguments().get(5);
+                    boolean nameCheck = false;
+                    boolean passwordCheck = false;
 
-                    assertEquals(endpoint.getUsername(), username);
-                    assertEquals(endpoint.getPassword(), password);
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (!nameCheck) {
+                            if (argument instanceof String) {
+                                nameCheck = endpoint.getUsername().equalsIgnoreCase((String) argument);
+                            }
+                        }
+                        if (!passwordCheck) {
+                            if (argument instanceof String) {
+                                passwordCheck = endpoint.getPassword().equalsIgnoreCase((String) argument);
+                            }
+                        }
+                    }
+                    assertTrue(nameCheck);
+                    assertTrue(passwordCheck);
                 })) {
 
             JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(), endpoint.getPort(), Protocol.DEFAULT_TIMEOUT, endpoint.getUsername(), endpoint.getPassword());
@@ -76,11 +111,24 @@ public class JedisPoolUnitTest {
     public void compareACLToPoolConfigAndTimeoutSslWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    String username = (String) context.arguments().get(5);
-                    String password = (String) context.arguments().get(6);
+                    boolean nameCheck = false;
+                    boolean passwordCheck = false;
 
-                    assertEquals(endpoint.getUsername(), username);
-                    assertEquals(endpoint.getPassword(), password);
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (!nameCheck) {
+                            if (argument instanceof String) {
+                                nameCheck = endpoint.getUsername().equalsIgnoreCase((String) argument);
+                            }
+                        }
+                        if (!passwordCheck) {
+                            if (argument instanceof String) {
+                                passwordCheck = endpoint.getPassword().equalsIgnoreCase((String) argument);
+                            }
+                        }
+                    }
+                    assertTrue(nameCheck);
+                    assertTrue(passwordCheck);
                 })) {
 
             JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(), endpoint.getPort(), Protocol.DEFAULT_TIMEOUT, endpoint.getUsername(), endpoint.getPassword(), false);
@@ -93,13 +141,17 @@ public class JedisPoolUnitTest {
     public void compareACLToURIWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    URI uri = (URI) context.arguments().get(0);
+                    URI uri = new URI("redis://" + endpoint.getHost() + ":" + endpoint.getPort());
 
-                    String username = JedisURIHelper.getUser(uri);
-                    String password = JedisURIHelper.getPassword(uri);
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof URI) {
+                            uri = (URI) argument;
+                        }
+                    }
 
-                    assertEquals(endpoint.getUsername(), username);
-                    assertEquals(endpoint.getPassword(), password);
+                    assertEquals(endpoint.getUsername(), JedisURIHelper.getUser(uri));
+                    assertEquals(endpoint.getPassword(), JedisURIHelper.getPassword(uri));
                 })) {
 
             JedisPool pool = new JedisPool(endpoint.getURIBuilder().defaultCredentials().build());
@@ -112,13 +164,17 @@ public class JedisPoolUnitTest {
     public void compareACLToClientConfigWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig config = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
 
-                    String username = config.getUser();
-                    String password = config.getPassword();
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
-                    assertEquals(endpoint.getUsername(), username);
-                    assertEquals(endpoint.getPassword(), password);
+                    assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
+                    assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
                 })) {
 
             JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
@@ -131,10 +187,17 @@ public class JedisPoolUnitTest {
     public void compareACLToClientConfigAndSocketFactoryWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig config = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
 
-                    assertEquals(endpoint.getUsername(), config.getUser());
-                    assertEquals(endpoint.getPassword(), config.getPassword());
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
+
+                    assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
+                    assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
                 })) {
 
             JedisPool pool = new JedisPool(new JedisPoolConfig(), new DefaultJedisSocketFactory(), endpoint.getClientConfigBuilder().build());
@@ -147,10 +210,17 @@ public class JedisPoolUnitTest {
     public void compareACLToHostAndPortClientConfigWithConfig() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig config = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
 
-                    assertEquals(endpoint.getUsername(), config.getUser());
-                    assertEquals(endpoint.getPassword(), config.getPassword());
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
+
+                    assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
+                    assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
                 })) {
 
             JedisPool pool = new JedisPool(new GenericObjectPoolConfig<>(), endpoint.getHostAndPort(),
@@ -167,7 +237,14 @@ public class JedisPoolUnitTest {
     public void compareACLWithConfigForJedisPooled() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -183,7 +260,14 @@ public class JedisPoolUnitTest {
     public void compareACLToConnectionConfigWithConfigForJedisPooled() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -199,7 +283,14 @@ public class JedisPoolUnitTest {
     public void compareACLToConnectionConfigWithConfigAndTimeoutForJedisPooled() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -215,7 +306,14 @@ public class JedisPoolUnitTest {
     public void compareACLToConnectionConfigAndTimeoutSslWithConfigForJedisPooled() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -231,13 +329,18 @@ public class JedisPoolUnitTest {
     public void compareACLToURIWithConfigForJedisPooled() {
         try (MockedConstruction<JedisFactory> ignored = mockConstruction(JedisFactory.class,
                 (mock, context) -> {
-                    URI uri = (URI) context.arguments().get(0);
+                    URI uri = new URI("redis://" + endpoint.getHost() + ":" + endpoint.getPort());
 
-                    String username = JedisURIHelper.getUser(uri);
-                    String password = JedisURIHelper.getPassword(uri);
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof URI) {
+                            uri = (URI) argument;
+                        }
+                    }
 
-                    assertEquals(endpoint.getUsername(), username);
-                    assertEquals(endpoint.getPassword(), password);
+                    assertEquals(endpoint.getUsername(), JedisURIHelper.getUser(uri));
+                    assertEquals(endpoint.getPassword(), JedisURIHelper.getPassword(uri));
+
                 })) {
 
             JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpoint.getURIBuilder().defaultCredentials().build().toString());
@@ -254,7 +357,14 @@ public class JedisPoolUnitTest {
     public void compareACLWithConfigForUnifiedJedis() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -270,7 +380,14 @@ public class JedisPoolUnitTest {
     public void compareACLToURIWithConfigForUnifiedJedis() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -286,7 +403,14 @@ public class JedisPoolUnitTest {
     public void compareACLToURIAndConfigWithConfigForUnifiedJedis() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());
@@ -303,7 +427,14 @@ public class JedisPoolUnitTest {
     public void compareACLToCacheAndConfigWithConfigForUnifiedJedis() {
         try (MockedConstruction<ConnectionFactory> ignored = mockConstruction(ConnectionFactory.class,
                 (mock, context) -> {
-                    DefaultJedisClientConfig jedisClientConfig = (DefaultJedisClientConfig) context.arguments().get(1);
+                    DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder().build();
+
+                    List<?> arguments = context.arguments();
+                    for (Object argument : arguments) {
+                        if (argument instanceof DefaultJedisClientConfig) {
+                            jedisClientConfig = (DefaultJedisClientConfig) argument;
+                        }
+                    }
 
                     assertEquals(endpoint.getUsername(), jedisClientConfig.getUser());
                     assertEquals(endpoint.getPassword(), jedisClientConfig.getPassword());

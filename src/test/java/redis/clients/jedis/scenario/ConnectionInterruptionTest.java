@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public class ConnectionInterruptionTest {
@@ -42,7 +43,7 @@ public class ConnectionInterruptionTest {
       ConnectionInterruptionTest.endpoint = HostAndPorts.getRedisEndpoint("re-standalone");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
-      org.junit.Assume.assumeTrue(false);
+      assumeTrue(false);
     }
   }
 

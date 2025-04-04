@@ -6,13 +6,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
+
+import static org.junit.Assume.assumeTrue;
 
 public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCacheTestBase {
 
@@ -28,7 +29,7 @@ public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCach
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
-        Assume.assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
+        assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
                 RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4));
     }
   }

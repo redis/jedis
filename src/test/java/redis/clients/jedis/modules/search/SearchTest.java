@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,7 +96,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void createNoParams() throws Exception {
+  public void createNoParams() {
     Schema sc = new Schema().addTextField("first", 1.0).addTextField("last", 1.0).addNumericField("age");
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -119,7 +119,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void createWithFieldNames() throws Exception {
+  public void createWithFieldNames() {
     Schema sc = new Schema().addField(new TextField(FieldName.of("first").as("given")))
         .addField(new TextField(FieldName.of("last")));
     IndexDefinition rule = new IndexDefinition()
@@ -147,7 +147,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void alterAdd() throws Exception {
+  public void alterAdd() {
     Schema sc = new Schema().addTextField("title", 1.0);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -268,7 +268,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void stopwords() throws Exception {
+  public void stopwords() {
     Schema sc = new Schema().addTextField("title", 1.0);
 
     assertEquals("OK", client.ftCreate(index,
@@ -285,7 +285,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void noStopwords() throws Exception {
+  public void noStopwords() {
     Schema sc = new Schema().addTextField("title", 1.0);
 
     assertEquals("OK", client.ftCreate(index,
@@ -301,7 +301,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void geoFilter() throws Exception {
+  public void geoFilter() {
     Schema sc = new Schema().addTextField("title", 1.0).addGeoField("loc");
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -330,7 +330,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void geoFilterAndGeoCoordinateObject() throws Exception {
+  public void geoFilterAndGeoCoordinateObject() {
     Schema schema = new Schema().addTextField("title", 1.0).addGeoField("loc");
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema));
 
@@ -354,7 +354,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testQueryFlags() throws Exception {
+  public void testQueryFlags() {
     Schema sc = new Schema().addTextField("title", 1.0);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -424,7 +424,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testSortQueryFlags() throws Exception {
+  public void testSortQueryFlags() {
     Schema sc = new Schema().addSortableTextField("title", 1.0);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -457,7 +457,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testNullField() throws Exception {
+  public void testNullField() {
     Schema sc = new Schema()
         .addTextField("title", 1.0)
         .addTextField("genre", 1.0)
@@ -554,7 +554,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void dropIndex() throws Exception {
+  public void dropIndex() {
     Schema sc = new Schema().addTextField("title", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -580,7 +580,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void dropIndexDD() throws Exception {
+  public void dropIndexDD() {
     Schema sc = new Schema().addTextField("title", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -601,7 +601,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void noStem() throws Exception {
+  public void noStem() {
     Schema sc = new Schema().addTextField("stemmed", 1.0).addField(new Schema.TextField("notStemmed", 1.0, false, true));
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -621,7 +621,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void phoneticMatch() throws Exception {
+  public void phoneticMatch() {
     Schema sc = new Schema()
         .addTextField("noPhonetic", 1.0)
         .addField(new Schema.TextField("withPhonetic", 1.0, false, false, false, "dm:en"));
@@ -684,7 +684,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void noIndex() throws Exception {
+  public void noIndex() {
     Schema sc = new Schema()
         .addField(new Schema.TextField("f1", 1.0, true, false, true))
         .addField(new Schema.TextField("f2", 1.0));
@@ -723,7 +723,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testExplain() throws Exception {
+  public void testExplain() {
     Schema sc = new Schema()
         .addTextField("f1", 1.0)
         .addTextField("f2", 1.0)
@@ -736,7 +736,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testHighlightSummarize() throws Exception {
+  public void testHighlightSummarize() {
     Schema sc = new Schema().addTextField("text", 1.0);
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
 
@@ -861,7 +861,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testReturnFields() throws Exception {
+  public void testReturnFields() {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -880,7 +880,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void returnWithFieldNames() throws Exception {
+  public void returnWithFieldNames() {
     Schema sc = new Schema().addTextField("a", 1).addTextField("b", 1).addTextField("c", 1);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -903,7 +903,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void inKeys() throws Exception {
+  public void inKeys() {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -926,8 +926,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void blobField() throws Exception {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // not supporting
+  public void blobField() {
+    assumeFalse(protocol == RedisProtocol.RESP3); // not supporting
 
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -952,7 +952,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void alias() throws Exception {
+  public void alias() {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -1062,7 +1062,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testDialectsWithFTExplain() throws Exception {
+  public void testDialectsWithFTExplain() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
     attr.put("DIM", 2);
@@ -1201,7 +1201,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void searchIteration() throws Exception {
+  public void searchIteration() {
     Schema sc = new Schema().addTextField("first", 1.0).addTextField("last", 1.0).addNumericField("age");
     IndexDefinition rule = new IndexDefinition();
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), sc));

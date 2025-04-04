@@ -1,7 +1,5 @@
 package redis.clients.jedis.modules;
 
-import static org.junit.Assume.assumeTrue;
-
 import java.util.Collection;
 
 import org.junit.After;
@@ -18,6 +16,8 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.RedisVersionRule;
+
+import static org.junit.Assume.assumeTrue;
 
 public abstract class RedisModuleCommandsTestBase {
 

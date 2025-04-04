@@ -3,7 +3,6 @@ package redis.clients.jedis.util;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisInfo;
 import io.redis.test.utils.RedisVersion;
-import org.junit.Assume;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -16,6 +15,7 @@ import redis.clients.jedis.JedisClientConfig;
 
 import java.lang.reflect.Method;
 
+import static org.junit.Assume.assumeTrue;
 import static redis.clients.jedis.util.RedisVersionUtil.forcedVersion;
 
 public class RedisVersionRule implements TestRule {
@@ -75,7 +75,7 @@ public class RedisVersionRule implements TestRule {
 
                 RedisVersion minRequiredVersion = RedisVersion.of(versionAnnotation.value());
                 if (currentVersion.isLessThan(minRequiredVersion)) {
-                    Assume.assumeTrue("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion, false);
+                    assumeTrue("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion, false);
                 }
             }
 

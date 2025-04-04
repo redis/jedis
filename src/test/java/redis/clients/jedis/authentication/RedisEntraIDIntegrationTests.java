@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
@@ -86,7 +87,7 @@ public class RedisEntraIDIntegrationTests {
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
-      org.junit.Assume.assumeTrue(false);
+      assumeTrue(false);
     }
   }
 

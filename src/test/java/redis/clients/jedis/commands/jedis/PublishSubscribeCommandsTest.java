@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -559,7 +560,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
   @Test
   @Timeout(5)
   public void subscribeCacheInvalidateChannel() {
-    org.junit.Assume.assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
+    assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
 
     final String cacheInvalidate = "__redis__:invalidate";
     final AtomicBoolean onMessage = new AtomicBoolean(false);
@@ -592,7 +593,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
   @Test
   @Timeout(5)
   public void subscribeCacheInvalidateChannelBinary() {
-    org.junit.Assume.assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
+    assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
 
     final byte[] cacheInvalidate = "__redis__:invalidate".getBytes();
     final AtomicBoolean onMessage = new AtomicBoolean(false);

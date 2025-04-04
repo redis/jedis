@@ -2,6 +2,8 @@ package redis.clients.jedis.modules.json;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static redis.clients.jedis.json.Path2.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
 
@@ -11,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,7 +63,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     IRLObject obj = new IRLObject();
     jsonV2.jsonSetWithEscape("obj", obj);
     Object expected = gson.fromJson(gson.toJson(obj), Object.class);
-    assertTrue(expected.equals(jsonV2.jsonGet("obj")));
+    assertEquals(expected, jsonV2.jsonGet("obj"));
 
     // check an update
     Path2 p = Path2.of(".str");
@@ -448,7 +449,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void numIncrBy() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(protocol == RedisProtocol.RESP3);
     jsonV2.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), jsonV2.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertJsonArrayEquals(jsonArray(null, 4, 7, null), jsonV2.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
@@ -458,7 +459,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void numIncrByResp3() {
-    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
+    assumeTrue(protocol == RedisProtocol.RESP3);
     jsonV2.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertEquals(singletonList((Object) null), jsonV2.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertEquals(Arrays.asList(null, 4d, 7d, null), jsonV2.jsonNumIncrBy("doc", Path2.of("..a"), 2d));

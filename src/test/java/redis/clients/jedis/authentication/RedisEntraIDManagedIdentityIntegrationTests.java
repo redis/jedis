@@ -1,6 +1,7 @@
 package redis.clients.jedis.authentication;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Collections;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
-      org.junit.Assume.assumeTrue(false);
+      assumeTrue(false);
     }
   }
 

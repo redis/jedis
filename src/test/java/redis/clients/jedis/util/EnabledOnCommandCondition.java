@@ -8,7 +8,6 @@ import org.junit.platform.commons.util.AnnotationUtils;
 import redis.clients.jedis.*;
 import redis.clients.jedis.resps.CommandInfo;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,7 +21,6 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
     this.config = config;
   }
 
-
   public EnabledOnCommandCondition(EndpointConfig endpointConfig) {
     this.hostPort = endpointConfig.getHostAndPort();
     this.config = endpointConfig.getClientConfigBuilder().build();
@@ -34,23 +32,28 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
       String[] command = getCommandFromAnnotations(context);
 
       if (command != null && !isCommandAvailable(jedisClient, command[0], command[1])) {
-        return ConditionEvaluationResult.disabled("Test requires Redis command '" + command[0] + " " + command[1] + "' to be available, but it was not found.");
+        return ConditionEvaluationResult.disabled(
+            "Test requires Redis command '" + command[0] + " " + command[1]
+                + "' to be available on " + hostPort + ", but it was not found.");
       }
     } catch (Exception e) {
-      return ConditionEvaluationResult.disabled("Failed to check Redis command: " + e.getMessage());
+      return ConditionEvaluationResult.disabled(
+          "Failed to check Redis command on " + hostPort + ": " + e.getMessage());
     }
     return ConditionEvaluationResult.enabled("Redis command is available");
   }
 
   private String[] getCommandFromAnnotations(ExtensionContext context) {
-    Optional<EnabledOnCommand> methodAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestMethod(), EnabledOnCommand.class);
+    Optional<EnabledOnCommand> methodAnnotation = AnnotationUtils.findAnnotation(
+        context.getRequiredTestMethod(), EnabledOnCommand.class);
     if (methodAnnotation.isPresent()) {
-      return new String[]{methodAnnotation.get().value(), methodAnnotation.get().subCommand()};
+      return new String[] { methodAnnotation.get().value(), methodAnnotation.get().subCommand() };
     }
 
-    Optional<EnabledOnCommand> classAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestClass(), EnabledOnCommand.class);
+    Optional<EnabledOnCommand> classAnnotation = AnnotationUtils.findAnnotation(
+        context.getRequiredTestClass(), EnabledOnCommand.class);
     if (classAnnotation.isPresent()) {
-      return new String[]{classAnnotation.get().value(), classAnnotation.get().subCommand()};
+      return new String[] { classAnnotation.get().value(), classAnnotation.get().subCommand() };
     }
 
     return null;
@@ -74,7 +77,9 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
       }
       return false;
     } catch (Exception e) {
-      throw new RuntimeException("Error found while EnableOnCommand for command '" + command + "'", e);
+      throw new RuntimeException("Error found while EnableOnCommand for command '" + command + "'",
+          e);
     }
   }
+
 }

@@ -4,7 +4,6 @@ import io.redis.test.utils.RedisVersion;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -14,6 +13,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSentineled;
 import redis.clients.jedis.util.RedisVersionUtil;
+
+import static org.junit.Assume.assumeTrue;
 
 public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
@@ -42,7 +43,7 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
     public static void prepare() {
         try (JedisSentineled sentinelClient = new JedisSentineled(MASTER_NAME, masterClientConfig, sentinels, sentinelClientConfig);
             Jedis master = new Jedis(sentinelClient.getCurrentMaster(),masterClientConfig)) {
-            Assume.assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
+            assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
                     RedisVersionUtil.getRedisVersion(master).isGreaterThanOrEqualTo(RedisVersion.V7_4));
         }
     }

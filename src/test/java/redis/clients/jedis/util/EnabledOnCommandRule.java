@@ -4,13 +4,14 @@ import io.redis.test.annotations.EnabledOnCommand;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.junit.Assume;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.resps.CommandInfo;
+
+import static org.junit.Assume.assumeTrue;
 
 public class EnabledOnCommandRule implements TestRule {
 
@@ -36,7 +37,7 @@ public class EnabledOnCommandRule implements TestRule {
                     String[] command = getCommandFromAnnotations(description);
 
                     if (command != null && !isCommandAvailable(jedisClient, command[0],command[1])) {
-                        Assume.assumeTrue("Test requires Redis command '" + command[0] + " " + command[1] + "' to be available, but it was not found.", false);
+                        assumeTrue("Test requires Redis command '" + command[0] + " " + command[1] + "' to be available, but it was not found.", false);
                     }
 
                     base.evaluate();

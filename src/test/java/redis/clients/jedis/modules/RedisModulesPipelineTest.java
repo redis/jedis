@@ -2,6 +2,7 @@ package redis.clients.jedis.modules;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeFalse;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.Baz;
 import static redis.clients.jedis.modules.json.JsonObjects.IRLObject;
@@ -14,7 +15,6 @@ import java.util.Map;
 import java.util.Collections;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,7 +99,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(protocol == RedisProtocol.RESP3);
 
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");

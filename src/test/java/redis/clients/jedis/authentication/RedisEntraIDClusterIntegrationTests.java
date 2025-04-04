@@ -2,6 +2,7 @@ package redis.clients.jedis.authentication;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
@@ -51,7 +52,7 @@ public class RedisEntraIDClusterIntegrationTests {
             hnp = endpointConfig.getHostAndPort();
         } catch (IllegalArgumentException e) {
             log.warn("Skipping test because no Redis endpoint is configured");
-            org.junit.Assume.assumeTrue(false);
+            assumeTrue(false);
         }
     }
 

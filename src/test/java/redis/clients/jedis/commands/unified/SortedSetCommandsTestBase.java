@@ -1,7 +1,11 @@
 package redis.clients.jedis.commands.unified;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
@@ -9,8 +13,8 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import java.util.*;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;

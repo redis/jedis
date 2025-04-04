@@ -2,21 +2,21 @@ package redis.clients.jedis.commands.unified.pooled;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
@@ -24,28 +24,29 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
-  @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(PooledCommandsTestHelper.nodeInfo);
-  @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(PooledCommandsTestHelper.nodeInfo);
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(PooledCommandsTestHelper.nodeInfo);
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
 
   public PooledMiscellaneousTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     jedis = PooledCommandsTestHelper.getPooled(protocol);
     PooledCommandsTestHelper.clearData();
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     jedis.close();
   }

@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.google.gson.JsonObject;
 import org.json.JSONArray;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import redis.clients.jedis.json.JsonObjectMapper;

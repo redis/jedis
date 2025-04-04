@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;

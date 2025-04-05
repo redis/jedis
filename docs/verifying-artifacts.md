@@ -8,7 +8,7 @@ pub   rsa3072 2023-12-17 [SC]
 uid           [ unknown] Redis OSS <oss@redis.com>
 sig 3        C2B44BE148BDCEC8 2023-12-17  [self-signature]
 ```
-A copy of this key is stored on the  keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0xC2B44BE148BDCEC8)
+A copy of this key is stored on the  keyserver [Ubuntu keyserver](https://keyserver.ubuntu.com/pks/lookup?op=vindex&search=0xC2B44BE148BDCEC8)
 
 ### Before 2023-12-17 
 ```
@@ -17,7 +17,7 @@ pub   rsa3072 2023-09-03 [SC]
 uid           [ unknown] Redis OSS <oss@redis.com>
 sig 3        43543D884CC71C96 2023-09-03  [self-signature]
 ```
-A copy of this key is stored on the  keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0x43543D884CC71C96)
+A copy of this key is stored on the  keyserver [Ubuntu keyserver](https://keyserver.ubuntu.com/pks/lookup?op=vindex&search=0x43543D884CC71C96)
 
 ### Before 2023-09-03
 ```
@@ -26,7 +26,7 @@ pub   rsa3072 2021-06-27 [SC] [expired: 2023-06-27]
 uid           [ expired] RedisLabs OSS <oss@redislabs.com>
 sig 3        B68CD0A11D28B97D 2021-06-27  [self-signature]
 ```
-A copy of this key is stored on the keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0xB68CD0A11D28B97D)
+A copy of this key is stored on the keyserver [Ubuntu keyserver](https://keyserver.ubuntu.com/pks/lookup?op=vindex&search=0xB68CD0A11D28B97D)
 ### Before 2021-06-27
 ```
 pub   rsa3072 2018-08-12 [SC] [expired: 2020-08-11]
@@ -34,4 +34,4 @@ pub   rsa3072 2018-08-12 [SC] [expired: 2020-08-11]
 uid           [ expired] Guy Korlad <guy.korland@redislabs.com>
 sig 3        2D62B50EF8D3297A 2018-08-12  [self-signature]
 ```
-A copy of this key is stored on the keyserver [MIT keyserver](https://pgp.mit.edu/pks/lookup?op=get&search=0x2D62B50EF8D3297A)
+A copy of this key is stored on the keyserver [Ubuntu keyserver](https://keyserver.ubuntu.com/pks/lookup?op=vindex&search=0x2D62B50EF8D3297A)

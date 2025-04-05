@@ -27,42 +27,49 @@ public class PipeTransExample {
         // REMOVE_END
 
         // STEP_START basic_pipe
-        AbstractPipeline pipe = jedis.pipelined();
+        // Pipeline is a way to send multiple commands to Redis in a single request.
+        // It can be used to improve performance by reducing the number of round trips to the server.
+        // Make sure to close the pipeline after use to release resources and return the connection to the pool.
+        try (AbstractPipeline pipe = jedis.pipelined()) {
 
-        for (int i = 0; i < 5; i++) {
-            pipe.set(String.format("seat:%d", i), String.format("#%d", i));
+            for (int i = 0; i < 5; i++) {
+                pipe.set(String.format("seat:%d", i), String.format("#%d", i));
+            }
+
+            pipe.sync();
         }
 
-        pipe.sync();
+        try (AbstractPipeline pipe = jedis.pipelined()) {
 
-        pipe = jedis.pipelined();
+            Response<String> resp0 = pipe.get("seat:0");
+            Response<String> resp3 = pipe.get("seat:3");
+            Response<String> resp4 = pipe.get("seat:4");
 
-        Response<String> resp0 = pipe.get("seat:0");
-        Response<String> resp3 = pipe.get("seat:3");
-        Response<String> resp4 = pipe.get("seat:4");
+            pipe.sync();
 
-        pipe.sync();
+            // Responses are available after the pipeline has executed.
+            System.out.println(resp0.get()); // >>> #0
+            System.out.println(resp3.get()); // >>> #3
+            System.out.println(resp4.get()); // >>> #4
 
-        // Responses are available after the pipeline has executed.
-        System.out.println(resp0.get()); // >>> #0
-        System.out.println(resp3.get()); // >>> #3
-        System.out.println(resp4.get()); // >>> #4
+
+            // REMOVE_START
+            Assert.assertEquals("#0", resp0.get());
+            Assert.assertEquals("#3", resp3.get());
+            Assert.assertEquals("#4", resp4.get());
+            // REMOVE_END
+        }
         // STEP_END
-        // REMOVE_START
-        Assert.assertEquals("#0", resp0.get());
-        Assert.assertEquals("#3", resp3.get());
-        Assert.assertEquals("#4", resp4.get());
-        // REMOVE_END
 
         // STEP_START basic_trans
-        AbstractTransaction trans = jedis.multi();
+        try ( AbstractTransaction trans = jedis.multi()) {
 
-        trans.incrBy("counter:1", 1);
-        trans.incrBy("counter:2", 2);
-        trans.incrBy("counter:3", 3);
+           trans.incrBy("counter:1", 1);
+           trans.incrBy("counter:2", 2);
+           trans.incrBy("counter:3", 3);
 
-        trans.exec();
-
+           trans.exec();
+        }
         System.out.println(jedis.get("counter:1")); // >>> 1
         System.out.println(jedis.get("counter:2")); // >>> 2
         System.out.println(jedis.get("counter:3")); // >>> 3
@@ -78,40 +85,41 @@ public class PipeTransExample {
         jedis.set("shellpath", "/usr/syscmds/");
 
         // Start the transaction and watch the key we are about to update.
-        trans = jedis.transaction(false); // create a Transaction object without sending MULTI command
-        trans.watch("shellpath"); // send WATCH command(s)
-        trans.multi(); // send MULTI command
+        try (AbstractTransaction trans = jedis.transaction(false)) { // create a Transaction object without sending MULTI command
+            trans.watch("shellpath"); // send WATCH command(s)
+            trans.multi(); // send MULTI command
 
-        String currentPath = jedis.get("shellpath");
-        String newPath = currentPath + ":/usr/mycmds/";
+            String currentPath = jedis.get("shellpath");
+            String newPath = currentPath + ":/usr/mycmds/";
 
-        // Commands added to the `trans` object
-        // will be buffered until `trans.exec()` is called.
-        Response<String> setResult = trans.set("shellpath", newPath);
-        List<Object> transResults = trans.exec();
-        
-        // The `exec()` call returns null if the transaction failed.
-        if (transResults != null) {
-            // Responses are available if the transaction succeeded.
-            System.out.println(setResult.get()); // >>> OK
+            // Commands added to the `trans` object
+            // will be buffered until `trans.exec()` is called.
+            Response<String> setResult = trans.set("shellpath", newPath);
+            List<Object> transResults = trans.exec();
 
-            // You can also get the results from the list returned by
-            // `trans.exec()`.
-            for (Object item: transResults) {
-                System.out.println(item);
+            // The `exec()` call returns null if the transaction failed.
+            if (transResults != null) {
+                // Responses are available if the transaction succeeded.
+                System.out.println(setResult.get()); // >>> OK
+
+                // You can also get the results from the list returned by
+                // `trans.exec()`.
+                for (Object item: transResults) {
+                    System.out.println(item);
+                }
+                // >>> OK
+
+                System.out.println(jedis.get("shellpath"));
+                // >>> /usr/syscmds/:/usr/mycmds/
             }
-            // >>> OK
-
-            System.out.println(jedis.get("shellpath"));
-            // >>> /usr/syscmds/:/usr/mycmds/
+            // REMOVE_START
+            Assert.assertEquals("/usr/syscmds/:/usr/mycmds/", jedis.get("shellpath"));
+            Assert.assertEquals("OK", setResult.get());
+            Assert.assertEquals(1, transResults.size());
+            Assert.assertEquals("OK", transResults.get(0).toString());
+            // REMOVE_END
         }
         // STEP_END
-        // REMOVE_START
-        Assert.assertEquals("/usr/syscmds/:/usr/mycmds/", jedis.get("shellpath"));
-        Assert.assertEquals("OK", setResult.get());
-        Assert.assertEquals(1, transResults.size());
-        Assert.assertEquals("OK", transResults.get(0).toString());
-        // REMOVE_END
 
 // HIDE_START
         jedis.close();

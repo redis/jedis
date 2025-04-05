@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
 public abstract class MultiNodePipelineBase extends PipelineBase {
@@ -39,16 +37,6 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     connections = new LinkedHashMap<>();
   }
 
-  /**
-   * Sub-classes must call this method, if graph commands are going to be used.
-   * @param connectionProvider connection provider
-   */
-  protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
-    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(connectionProvider);
-    graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
-    super.setGraphCommands(graphCommandObjects);
-  }
-
   protected abstract HostAndPort getNodeKey(CommandArguments args);
 
   protected abstract Connection getConnection(HostAndPort nodeKey);
@@ -63,9 +51,6 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
       queue = pipelinedResponses.get(nodeKey);
       connection = connections.get(nodeKey);
     } else {
-      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
-      queue = pipelinedResponses.get(nodeKey);
-
       Connection newOne = getConnection(nodeKey);
       connections.putIfAbsent(nodeKey, newOne);
       connection = connections.get(nodeKey);
@@ -73,6 +58,9 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
         log.debug("Duplicate connection to {}, closing it.", nodeKey);
         IOUtils.closeQuietly(newOne);
       }
+
+      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
+      queue = pipelinedResponses.get(nodeKey);
     }
 
     connection.sendCommand(commandObject.getArguments());

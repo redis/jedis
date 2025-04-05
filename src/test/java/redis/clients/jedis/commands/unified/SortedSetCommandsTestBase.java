@@ -7,8 +7,11 @@ import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.*;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
@@ -33,6 +36,10 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+
+  public SortedSetCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void zadd() {
@@ -449,6 +456,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @SinceRedisVersion(value="7.2.0")
   public void zrankWithScore() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 2d, "b");
@@ -1397,6 +1405,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zintercard() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1508,12 +1517,16 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
   @Test
   public void bzpopmax() {
+    assertNull(jedis.bzpopmax(1, "foo", "bar"));
+
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
     assertEquals(new KeyValue<>("foo", new Tuple("b", 10d)), jedis.bzpopmax(0, "foo", "bar"));
 
     // Binary
+    assertNull(jedis.bzpopmax(1, bfoo, bbar));
+
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
@@ -1524,12 +1537,16 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
   @Test
   public void bzpopmin() {
+    assertNull(jedis.bzpopmin(1, "bar", "foo"));
+
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
     assertEquals(new KeyValue<>("bar", new Tuple("c", 0.1)), jedis.bzpopmin(0, "bar", "foo"));
 
     // Binary
+    assertNull(jedis.bzpopmin(1, bbar, bfoo));
+
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
@@ -1631,6 +1648,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zmpop() {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1646,6 +1664,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void bzmpopSimple() {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());

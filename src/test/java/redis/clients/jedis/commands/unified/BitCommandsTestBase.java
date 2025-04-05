@@ -7,9 +7,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -17,6 +20,10 @@ import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
+
+  public BitCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void setAndgetbit() {
@@ -138,6 +145,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message="Starting with Redis version 7.0.0: Added the BYTE|BIT option.")
   public void bitposModifier() {
     jedis.set("mykey", "\\x00\\xff\\xf0");
     assertEquals(0, jedis.bitpos("mykey", false));
@@ -163,6 +171,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message="Starting with Redis version 7.0.0: Added the BYTE|BIT option.")
   public void bitCount() {
     jedis.setbit("foo", 16, true);
     jedis.setbit("foo", 24, true);

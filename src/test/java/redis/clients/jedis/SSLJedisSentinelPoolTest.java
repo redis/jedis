@@ -1,10 +1,17 @@
 package redis.clients.jedis;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.clients.jedis.util.TlsUtil;
 
 public class SSLJedisSentinelPoolTest {
 
@@ -16,12 +23,20 @@ public class SSLJedisSentinelPoolTest {
       -> new HostAndPort(hap.getHost(), hap.getPort() + 10000);
 
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
+  private static final String trustStoreName = SSLJedisSentinelPoolTest.class.getSimpleName();
 
   @BeforeClass
   public static void prepare() {
-    SSLJedisTest.setupTrustStore();
+    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis9-sentinel/work/tls"));
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
     sentinels.add(HostAndPorts.getSentinelServers().get(4));
+  }
+
+  @AfterClass
+  public static void teardownTrustStore() {
+    TlsUtil.restoreOriginalTrustStore();
   }
 
   @Test

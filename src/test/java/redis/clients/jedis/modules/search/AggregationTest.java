@@ -5,36 +5,33 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_80M3;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.search.Document;
-import redis.clients.jedis.search.FieldName;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.aggr.AggregationBuilder;
-import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.search.aggr.Reducers;
-import redis.clients.jedis.search.aggr.Row;
-import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import redis.clients.jedis.search.FTProfileParams;
-import redis.clients.jedis.search.aggr.FtAggregateIteration;
+import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
+import redis.clients.jedis.util.RedisConditions;
+import redis.clients.jedis.util.RedisVersionUtil;
 
+@RunWith(Parameterized.class)
 public class AggregationTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "aggbindex";
@@ -43,11 +40,10 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
+
+  public AggregationTest(RedisProtocol redisProtocol) {
+    super(redisProtocol);
+  }
 
   private void addDocument(Document doc) {
     String key = doc.getId();
@@ -142,7 +138,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
         .groupBy("@name", Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"));
 
-    Map.Entry<AggregationResult, Map<String, Object>> reply
+    Map.Entry<AggregationResult, ProfilingInfo> reply
         = client.ftProfileAggregate(index, FTProfileParams.profileParams(), aggr);
 
     // actual search
@@ -158,18 +154,17 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     assertEquals("10", rows.get(1).get("sum"));
 
     // profile
-    Map<String, Object> profile = reply.getValue();
-
-    assertEquals(Arrays.asList("Index", "Grouper", "Sorter"),
-        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
-            .map(map -> map.get("Type")).collect(Collectors.toList()));
-
+    Object profileObject = reply.getValue().getProfilingInfo();
     if (protocol != RedisProtocol.RESP3) {
-      assertEquals("WILDCARD", ((Map<String, Object>) profile.get("Iterators profile")).get("Type"));
+      assertThat(profileObject, Matchers.isA(List.class));
+      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
+        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
+      }
     } else {
-      assertEquals(Arrays.asList("WILDCARD"),
-          ((List<Map<String, Object>>) profile.get("Iterators profile")).stream()
-              .map(map -> map.get("Type")).collect(Collectors.toList()));
+      assertThat(profileObject, Matchers.isA(Map.class));
+      if (RedisVersionUtil.getRedisVersion(client).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
+        assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
+      }
     }
   }
 
@@ -190,6 +185,31 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     res = client.ftAggregate(index, r);
     assertEquals(0, res.getTotalResults());
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.4.0", message = "ADDSCORES")
+  public void testAggregationBuilderAddScores() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    sc.addSortableNumericField("age");
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    addDocument(new Document("data1").set("name", "Adam").set("age", 33));
+    addDocument(new Document("data2").set("name", "Sara").set("age", 44));
+
+    AggregationBuilder r = new AggregationBuilder("sara").addScores()
+        .apply("@__score * 100", "normalized_score").dialect(3);
+
+    AggregationResult res = client.ftAggregate(index, r);
+    if (RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3)) {
+      // Default scorer is BM25
+      assertEquals(0.6931, res.getRow(0).getDouble("__score"), 0.0001);
+      assertEquals(69.31, res.getRow(0).getDouble("normalized_score"), 0.01);
+    } else {
+      // Default scorer is TF-IDF
+      assertEquals(2, res.getRow(0).getLong("__score"));
+      assertEquals(200, res.getRow(0).getLong("normalized_score"));
+    }
   }
 
   @Test

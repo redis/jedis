@@ -10,13 +10,17 @@ import java.util.List;
 import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 /**
  * Tests for the Count-Min-Sketch Implementation
  */
+@RunWith(Parameterized.class)
 public class CMSTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
@@ -28,6 +32,10 @@ public class CMSTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public CMSTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void testInitByDim() {

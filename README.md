@@ -6,7 +6,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 [![Integration](https://github.com/redis/jedis/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/redis/jedis/actions/workflows/integration.yml)
 [![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
-[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/qRhBuY8Z)
+[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/redis)
 
 ## What is Jedis?
 
@@ -16,17 +16,15 @@ Are you looking for a high-level library to handle object mapping? See [redis-om
 
 ## How do I Redis?
 
-[Learn for free at Redis University](https://university.redis.com/)
+[Learn for free at Redis University](https://university.redis.io/academy/)
 
-[Build faster with the Redis Launchpad](https://launchpad.redis.com/)
+[Try the Redis Cloud](https://redis.io/try-free/)
 
-[Try the Redis Cloud](https://redis.com/try-free/)
+[Dive in developer tutorials](https://redis.io/learn/)
 
-[Dive in developer tutorials](https://developer.redis.com/)
+[Join the Redis community](https://redis.io/community/)
 
-[Join the Redis community](https://redis.com/community/)
-
-[Work at Redis](https://redis.com/company/careers/jobs/)
+[Work at Redis](https://redis.io/careers/jobs/)
 
 ## Supported Redis versions
 
@@ -34,17 +32,19 @@ The most recent version of this library supports redis version
 [5.0](https://github.com/redis/redis/blob/5.0/00-RELEASENOTES), 
 [6.0](https://github.com/redis/redis/blob/6.0/00-RELEASENOTES), 
 [6.2](https://github.com/redis/redis/blob/6.2/00-RELEASENOTES), 
-[7.0](https://github.com/redis/redis/blob/7.0/00-RELEASENOTES) and 
-[7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES).
+[7.0](https://github.com/redis/redis/blob/7.0/00-RELEASENOTES), 
+[7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES) and 
+[7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES).
 
 The table below highlights version compatibility of the most-recent library versions and Redis versions. Compatibility means communication features, and Redis command capabilities.
 
 
-| Jedis version | Supported Redis versions       | JDK Compatibility |
-|---------------|--------------------------------|-------------------|
-| 3.9+          | 5.0 and 6.2 Family of releases | 8, 11             |
-| >= 4.0        | Version 5.0 to current         | 8, 11, 17         |
-| >= 5.0        | Version 6.0 to current         | 8, 11, 17         |
+| Jedis version | Supported Redis versions              | JDK Compatibility |
+|---------------|---------------------------------------|-------------------|
+| 3.9+          | 5.0 to 6.2 Family of releases         | 8, 11             |
+| >= 4.0        | Version 5.0 to 7.2 Family of releases | 8, 11, 17         |
+| >= 5.0        | Version 6.0 to current                | 8, 11, 17, 21     |
+| >= 5.2        | Version 7.2 to current                | 8, 11, 17, 21     |
 
 ## Getting started
 
@@ -54,7 +54,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>5.0.0</version>
+    <version>5.2.0</version>
 </dependency>
 ```
 
@@ -123,7 +123,7 @@ jedis.sadd("planets", "Mars");
 ## Using Redis modules
 
 Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
-[RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+[RedisJSON](https://redis.io/json/) and [RediSearch](https://redis.io/search/).
 
 See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
 
@@ -131,10 +131,18 @@ See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisear
 
 Jedis supports retry and failover for your Redis deployments. This is useful when:
 
-1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
+1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://redis.io/docs/latest/operate/rs/databases/active-active/) clusters.
 2. You want your application to connect to one deployment at a time and to fail over to the next available deployment if the first deployment becomes unavailable.
 
 For the complete failover configuration options and examples, see the [Jedis failover docs](docs/failover.md).
+
+## Token-Based Authentication
+
+Jedis supports Token-Based authentication (TBA) starting with 5.3.0 GA release. This feature is complemented by an extension library that enhances the developer experience and provides most of the components required for TBA functionality.
+
+Notably, the extension library includes built-in support for **Microsoft EntraID**, offering a seamless integration as part of the generic solution.
+
+For more details and examples, please refer to the [Advanced Usage](docs/advanced-usage.md) documentation.
 
 ## Documentation
 
@@ -168,4 +176,4 @@ Jedis is licensed under the [MIT license](https://github.com/redis/jedis/blob/ma
 
 ## Sponsorship
 
-[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
+[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.io/)

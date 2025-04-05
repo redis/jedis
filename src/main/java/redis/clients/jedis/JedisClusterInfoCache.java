@@ -11,22 +11,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.Internal;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
 
+@Internal
 public class JedisClusterInfoCache {
 
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
@@ -34,6 +40,7 @@ public class JedisClusterInfoCache {
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
+  private final List<ConnectionPool>[] replicaSlots;
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -42,6 +49,7 @@ public class JedisClusterInfoCache {
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
+  private final Cache clientSideCache;
   private final Set<HostAndPort> startNodes;
 
   private static final int MASTER_NODE_INDEX = 2;
@@ -61,25 +69,53 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, null, startNodes);
+    this(clientConfig, null, null, startNodes);
+  }
+
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final Set<HostAndPort> startNodes) {
+    this(clientConfig, clientSideCache, null, startNodes);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, poolConfig, startNodes, null);
+    this(clientConfig, null, poolConfig, startNodes);
+  }
+
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
+    this(clientConfig, clientSideCache, poolConfig, startNodes, null);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
+    this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
+  }
+
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
+      final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
+    this.clientSideCache = clientSideCache;
     this.startNodes = startNodes;
+    if (clientConfig.getAuthXManager() != null) {
+      clientConfig.getAuthXManager().start();
+    }
     if (topologyRefreshPeriod != null) {
       logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();
       topologyRefreshExecutor.scheduleWithFixedDelay(new TopologyRefreshTask(), topologyRefreshPeriod.toMillis(),
           topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
+    }
+    if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
+      replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
+    } else {
+      replicaSlots = null;
     }
   }
 
@@ -140,6 +176,8 @@ public class JedisClusterInfoCache {
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
+          } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
+            assignSlotsToReplicaNode(slotNums, targetNode);
           }
         }
       }
@@ -209,6 +247,9 @@ public class JedisClusterInfoCache {
     try {
       Arrays.fill(slots, null);
       Arrays.fill(slotNodes, null);
+      if (clientSideCache != null) {
+        clientSideCache.flush();
+      }
       Set<String> hostAndPortKeys = new HashSet<>();
 
       for (Object slotInfoObj : slotsInfo) {
@@ -232,6 +273,8 @@ public class JedisClusterInfoCache {
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
+          } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
+            assignSlotsToReplicaNode(slotNums, targetNode);
           }
         }
       }
@@ -270,12 +313,27 @@ public class JedisClusterInfoCache {
       ConnectionPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      ConnectionPool nodePool = poolConfig == null ? new ConnectionPool(node, clientConfig)
-          : new ConnectionPool(node, clientConfig, poolConfig);
+      ConnectionPool nodePool = createNodePool(node);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {
       w.unlock();
+    }
+  }
+
+  private ConnectionPool createNodePool(HostAndPort node) {
+    if (poolConfig == null) {
+      if (clientSideCache == null) {
+        return new ConnectionPool(node, clientConfig);
+      } else {
+        return new ConnectionPool(node, clientConfig, clientSideCache);
+      }
+    } else {
+      if (clientSideCache == null) {
+        return new ConnectionPool(node, clientConfig, poolConfig);
+      } else {
+        return new ConnectionPool(node, clientConfig, clientSideCache, poolConfig);
+      }
     }
   }
 
@@ -297,6 +355,21 @@ public class JedisClusterInfoCache {
       for (Integer slot : targetSlots) {
         slots[slot] = targetPool;
         slotNodes[slot] = targetNode;
+      }
+    } finally {
+      w.unlock();
+    }
+  }
+
+  public void assignSlotsToReplicaNode(List<Integer> targetSlots, HostAndPort targetNode) {
+    w.lock();
+    try {
+      ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
+      for (Integer slot : targetSlots) {
+        if (replicaSlots[slot] == null) {
+          replicaSlots[slot] = new ArrayList<>();
+        }
+        replicaSlots[slot].add(targetPool);
       }
     } finally {
       w.unlock();
@@ -329,6 +402,15 @@ public class JedisClusterInfoCache {
     r.lock();
     try {
       return slotNodes[slot];
+    } finally {
+      r.unlock();
+    }
+  }
+
+  public List<ConnectionPool> getSlotReplicaPools(int slot) {
+    r.lock();
+    try {
+      return replicaSlots[slot];
     } finally {
       r.unlock();
     }

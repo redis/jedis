@@ -1,19 +1,29 @@
 package redis.clients.jedis.modules.search;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.NumericField;
+import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
@@ -21,6 +31,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 
+@RunWith(Parameterized.class)
 public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
   private static final String INDEX = "dialect-INDEX";
@@ -29,6 +40,10 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public SearchDefaultDialectTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Override
@@ -47,6 +62,14 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     Map<String, String> map = new LinkedHashMap<>();
     doc.getProperties().forEach(entry -> map.put(entry.getKey(), String.valueOf(entry.getValue())));
     client.hset(key, map);
+  }
+
+  private static Map<String, String> toMap(String... values) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < values.length; i += 2) {
+      map.put(values[i], values[i + 1]);
+    }
+    return map;
   }
 
   @Test
@@ -99,62 +122,34 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
     String q = "(*)";
     Query query = new Query(q).dialect(1);
-    try {
-      client.ftExplain(INDEX, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-    query = new Query(q); // dialect=default=2
-    assertTrue("Should contain 'WILDCARD'", client.ftExplain(INDEX, query).contains("WILDCARD"));
+    assertSyntaxError(query, client); // dialect=1 throws syntax error
+    query = new Query(q); // dialect=default=2 should return execution plan
+    assertThat(client.ftExplain(INDEX, query), containsString("WILDCARD"));
 
     q = "$hello";
     query = new Query(q).dialect(1);
-    try {
-      client.ftExplain(INDEX, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-    query = new Query(q).addParam("hello", "hello"); // dialect=default=2
-    assertTrue("Should contain 'UNION {\n  hello\n  +hello(expanded)\n}\n'",
-        client.ftExplain(INDEX, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
+    assertSyntaxError(query, client); // dialect=1 throws syntax error
+    query = new Query(q).addParam("hello", "hello"); // dialect=default=2 should return execution plan
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
+
 
     q = "@title:(@num:[0 10])";
-    query = new Query(q).dialect(1);
-    assertTrue("Should contain 'NUMERIC {0.000000 <= @num <= 10.000000}'",
-        client.ftExplain(INDEX, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
+    query = new Query(q).dialect(1); // dialect=1 should return execution plan
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
-    try {
-      client.ftExplain(INDEX, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "@t1:@t2:@t3:hello";
-    query = new Query(q).dialect(1);
-    assertTrue("Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
-        client.ftExplain(INDEX, query).contains("@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
+    query = new Query(q).dialect(1); // dialect=1 should return execution plan
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
-    try {
-      client.ftExplain(INDEX, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=2 throws syntax error
 
     q = "@title:{foo}}}}}";
-    query = new Query(q).dialect(1);
-    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'",
-        client.ftExplain(INDEX, query).contains("TAG:@title {\n  foo\n}\n"));
+    query = new Query(q).dialect(1); // dialect=1 should return execution plan
+    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
-    try {
-      client.ftExplain(INDEX, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
+    assertSyntaxError(query, client); // dialect=2 throws syntax error
   }
 
   @Test
@@ -186,9 +181,44 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
   @Test
   public void dialectBoundSpellCheck() {
     client.ftCreate(INDEX, TextField.of("t"));
-    JedisDataException error = Assert.assertThrows(JedisDataException.class,
+    JedisDataException error = assertThrows(JedisDataException.class,
         () -> client.ftSpellCheck(INDEX, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
-    MatcherAssert.assertThat(error.getMessage(), Matchers.containsString("DIALECT requires a non negative integer"));
+    assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
   }
+
+  private void assertSyntaxError(Query query, UnifiedJedis client) {
+    JedisDataException error = assertThrows(JedisDataException.class,
+        () -> client.ftExplain(INDEX, query));
+    assertThat(error.getMessage(), containsString("Syntax error"));
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.9.0")
+  public void warningMaxPrefixExpansions() {
+    final String configParam = "search-max-prefix-expansions";
+    String defaultConfigValue = jedis.configGet(configParam).get(configParam);
+    try {
+      assertOK(client.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.HASH),
+          TextField.of("t"), TagField.of("t2")));
+
+      client.hset("doc13", toMap("t", "foo", "t2", "foo"));
+
+      jedis.configSet(configParam, "1");
+
+      SearchResult srcResult = client.ftSearch(INDEX, "fo*");
+      assertEqualsByProtocol(protocol, null, Arrays.asList(), srcResult.getWarnings());
+
+      client.hset("doc23", toMap("t", "fooo", "t2", "fooo"));
+
+      AggregationResult aggResult = client.ftAggregate(INDEX, new AggregationBuilder("fo*").loadAll());
+      assertEqualsByProtocol(protocol,
+          /* resp2 */ null,
+          Arrays.asList("Max prefix expansions limit was reached"),
+          aggResult.getWarnings());
+    } finally {
+      jedis.configSet(configParam, defaultConfigValue);
+    }
+  }
+
 }

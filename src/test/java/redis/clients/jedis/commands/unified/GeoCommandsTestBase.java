@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands.unified;
 
 import static org.junit.Assert.*;
-import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,12 +9,15 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -27,6 +29,10 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected final byte[] bNotexist = { 0x0F };
 
   private static final double EPSILON = 1e-5;
+
+  public GeoCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void geoadd() {
@@ -298,7 +304,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    AssertUtil.assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test
@@ -442,7 +448,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    AssertUtil.assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test
@@ -524,7 +530,8 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(1, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
-    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
+    assertThat(members.get(0).getCoordinate(),
+        GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523));
   }
 
   @Test
@@ -532,30 +539,30 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     // combine byradius and bybox
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
+          .byRadius(3000, GeoUnit.M)
+          .byBox(300, 300, GeoUnit.M));
       fail();
-    } catch (redis.clients.jedis.exceptions.JedisDataException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // without byradius and without bybox
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-              .fromMember("foobar"));
+      jedis.geosearch("barcelona", new GeoSearchParam().fromMember("foobar"));
       fail();
-    } catch (java.lang.IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // combine frommember and fromlonlat
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .fromMember("foobar").fromLonLat(10,10));
+          .fromMember("foobar")
+          .fromLonLat(10,10));
       fail();
-    } catch (java.lang.IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // without frommember and without fromlonlat
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-              .byRadius(10, GeoUnit.MI));
+      jedis.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI));
       fail();
-    } catch (redis.clients.jedis.exceptions.JedisDataException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
   }
 
   @Test

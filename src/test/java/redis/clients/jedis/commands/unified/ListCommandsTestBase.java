@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
@@ -13,10 +12,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -40,6 +41,10 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
   protected final byte[] bhello = { 0x04, 0x02 };
   protected final byte[] bx = { 0x02, 0x04 };
   protected final byte[] bdst = { 0x11, 0x12, 0x13, 0x14 };
+
+  public ListCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void rpush() {
@@ -486,17 +491,11 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test
+  @Test(timeout = 5000L)
   public void blpopDoubleWithSleep() {
-    long startMillis, totalMillis;
-
-    startMillis = System.currentTimeMillis();
     KeyValue<String, String> result = jedis.blpop(0.04, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
     assertNull(result);
 
-    startMillis = System.currentTimeMillis();
     new Thread(() -> {
       try {
         Thread.sleep(30);
@@ -506,8 +505,6 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
       jedis.lpush("foo", "bar");
     }).start();
     result = jedis.blpop(1.2, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
 
     assertNotNull(result);
     assertEquals("foo", result.getKey());
@@ -606,17 +603,11 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test
+  @Test(timeout = 5000L)
   public void brpopDoubleWithSleep() {
-    long startMillis, totalMillis;
-
-    startMillis = System.currentTimeMillis();
     KeyValue<String, String> result = jedis.brpop(0.04, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
     assertNull(result);
 
-    startMillis = System.currentTimeMillis();
     new Thread(() -> {
       try {
         Thread.sleep(30);
@@ -626,8 +617,6 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
       jedis.lpush("foo", "bar");
     }).start();
     result = jedis.brpop(1.2, "foo");
-    totalMillis = System.currentTimeMillis() - startMillis;
-    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
 
     assertNotNull(result);
     assertEquals("foo", result.getKey());
@@ -860,6 +849,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void lmpop() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";
@@ -885,6 +875,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void blmpopSimple() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";

@@ -29,8 +29,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.RedisProtocol;
@@ -44,7 +47,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisProtocolUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -65,6 +67,10 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   protected final byte[] bnx = { 0x6E, 0x78 };
   protected final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
+
+  public AllKindOfValuesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void exists() {
@@ -283,6 +289,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void expire() {
     assertEquals(0, jedis.expire("foo", 20L));
 
@@ -299,6 +306,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void expireAt() {
     long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
@@ -319,6 +327,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void expireTime() {
     long unixTime;
 
@@ -424,6 +433,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @Ignore(value = "TODO: Regression in 8.0-M02 discarding restore idle time.")
   public void restoreParams() {
     jedis.set("foo", "bar");
     jedis.set("from", "a");
@@ -455,6 +465,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void pexpire() {
     assertEquals(0, jedis.pexpire("foo", 10000));
 
@@ -496,6 +507,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void pexpireTime() {
     long unixTime = (System.currentTimeMillis()) + 10000;
 
@@ -801,7 +813,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -819,7 +831,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -836,7 +848,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -863,7 +875,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");

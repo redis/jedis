@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
@@ -21,6 +23,8 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.GeoCoordinateMatcher;
+import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -527,7 +531,8 @@ public class ClusterPipeliningTest {
     Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
     p.sadd("mynew{set}", "hello", "hello", "world");
     Response<Set<String>> r2 = p.sdiff("my{set}", "mynew{set}");
-    Response<Long> r3 = p.sdiffStore("diffset{set}", "my{set}", "mynew{set}");
+    Response<Long> r3deprecated = p.sdiffStore("diffset{set}deprecated", "my{set}", "mynew{set}");
+    Response<Long> r3 = p.sdiffstore("diffset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r4 = p.smembers("diffset{set}");
     Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
     Response<Long> r6 = p.sinterstore("interset{set}", "my{set}", "mynew{set}");
@@ -547,6 +552,7 @@ public class ClusterPipeliningTest {
     p.sync();
     assertEquals(Long.valueOf(4), r1.get());
     assertEquals(diff, r2.get());
+    assertEquals(Long.valueOf(diff.size()), r3deprecated.get());
     assertEquals(Long.valueOf(diff.size()), r3.get());
     assertEquals(diff, r4.get());
     assertEquals(inter, r5.get());
@@ -691,10 +697,6 @@ public class ClusterPipeliningTest {
     hm.put("place1", new GeoCoordinate(2.1909389952632, 41.433791470673));
     hm.put("place2", new GeoCoordinate(2.1873744593677, 41.406342043777));
 
-    List<GeoCoordinate> values = new ArrayList<>();
-    values.add(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
-    values.add(new GeoCoordinate(2.18737632036209106, 41.40634178640635099));
-
     List<String> hashValues = new ArrayList<>();
     hashValues.add("sp3e9yg3kd0");
     hashValues.add("sp3e9cbc3t0");
@@ -703,11 +705,6 @@ public class ClusterPipeliningTest {
     GeoRadiusParam params = new GeoRadiusParam().withCoord().withHash().withDist();
     GeoRadiusParam params2 = new GeoRadiusParam().count(1, true);
     GeoRadiusStoreParam storeParams = new GeoRadiusStoreParam().store("radius{#}");
-
-    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
-    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
-    expectedResponse.setDistance(0.0881);
-    expectedResponse.setRawScore(3471609698139488L);
 
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
@@ -736,11 +733,21 @@ public class ClusterPipeliningTest {
     assertEquals(Double.valueOf(3067.4157), r2.get());
     assertEquals(Double.valueOf(3.0674), r3.get());
     assertEquals(hashValues, r4.get());
-    assertEquals(values, r5.get());
+    assertThat(r5.get(), contains(
+            GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523),
+            GeoCoordinateMatcher.atCoordinates(2.18737632036209106, 41.40634178640635099))
+    );
     assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
     assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
-    assertEquals(expectedResponse, r8.get().get(0));
-    assertEquals(expectedResponse, r9.get().get(0));
+
+    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
+    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
+    expectedResponse.setDistance(0.0881);
+    expectedResponse.setRawScore(3471609698139488L);
+
+    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.ofResponse(expectedResponse));
+    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.ofResponse(expectedResponse));
+
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));
     assertTrue(r12.get().size() == 2 && r12.get().get(0).getMemberByString().equals("place2"));
@@ -1019,6 +1026,18 @@ public class ClusterPipeliningTest {
       assertNull(result0.get());
       assertNull(result1.get());
       assertArrayEquals(SafeEncoder.encode("13"), result2.get());
+    }
+  }
+
+  @Test
+  public void spublishInPipeline() {
+    try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+      ClusterPipeline pipelined = jedis.pipelined();
+      Response<Long> p1 = pipelined.publish("foo", "bar");
+      Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
+      pipelined.sync();
+      assertEquals(0, p1.get().longValue());
+      assertEquals(0, p2.get().longValue());
     }
   }
 

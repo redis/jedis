@@ -3,17 +3,26 @@ package redis.clients.jedis.commands.unified;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
+
+  public StringValuesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Test
   public void setAndGet() {
     String status = jedis.set("foo", "bar");
@@ -31,6 +40,19 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertNull(value);
     value = jedis.get("foo");
     assertEquals("bar", value);
+  }
+
+  @Test
+  public void setGetWithParams() {
+    jedis.del("foo");
+
+    // no previous, return null
+    assertNull(jedis.setGet("foo", "bar", setParams().nx()));
+
+    // key already exists, new value should not be set, previous value should be bbar
+    assertEquals("bar", jedis.setGet("foo", "foobar", setParams().nx()));
+
+    assertEquals("bar", jedis.setGet("foo", "foobar", setParams().xx()));
   }
 
   @Test
@@ -238,6 +260,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 

@@ -1,8 +1,8 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
-
 import static org.mockito.ArgumentMatchers.any;
+
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -15,18 +15,21 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class TransactionCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -37,12 +40,17 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
 
   Jedis nj;
 
+  public TransactionCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    nj = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
+    nj = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
   }
 
   @After
@@ -340,7 +348,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testResetStateWithFullyExecutedTransaction() {
     Jedis jedis2 = createJedis();
-    jedis2.auth("foobared");
 
     Transaction t = jedis2.multi();
     t.set("mykey", "foo");
@@ -357,8 +364,8 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testCloseable() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());;
 
     Transaction transaction = jedis2.multi();
     transaction.set("a", "1");

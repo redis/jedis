@@ -1,29 +1,58 @@
 package redis.clients.jedis.commands.jedis;
 
+import java.util.Collection;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.runners.Parameterized.Parameters;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.util.RedisProtocolUtil;
+import redis.clients.jedis.*;
+import redis.clients.jedis.commands.CommandsTestsParameters;
+import redis.clients.jedis.util.EnabledOnCommandRule;
+import redis.clients.jedis.util.RedisVersionRule;
 
 public abstract class JedisCommandsTestBase {
 
-  protected static final HostAndPort hnp = HostAndPorts.getRedisServers().get(0);
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
+  @Rule
+  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
+
+  /**
+   * Input data for parameterized tests. In principle all subclasses of this
+   * class should be parameterized tests, to run with several versions of RESP.
+   *
+   * @see CommandsTestsParameters#respVersions()
+   */
+  @Parameters
+  public static Collection<Object[]> data() {
+    return CommandsTestsParameters.respVersions();
+  }
+
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+
+  protected final RedisProtocol protocol;
 
   protected Jedis jedis;
 
-  public JedisCommandsTestBase() {
-    super();
+  /**
+   * The RESP protocol is to be injected by the subclasses, usually via JUnit
+   * parameterized tests, because most of the subclassed tests are meant to be
+   * executed against multiple RESP versions. For the special cases where a single
+   * RESP version is relevant, we still force the subclass to be explicit and
+   * call this constructor.
+   *
+   * @param protocol The RESP protocol to use during the tests.
+   */
+  public JedisCommandsTestBase(RedisProtocol protocol) {
+    this.protocol = protocol;
   }
 
   @Before
   public void setUp() throws Exception {
-//    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
-    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocolUtil.getRedisProtocol()).timeoutMillis(500).password("foobared").build());
+    jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .protocol(protocol).timeoutMillis(500).build());
     jedis.flushAll();
   }
 
@@ -33,8 +62,7 @@ public abstract class JedisCommandsTestBase {
   }
 
   protected Jedis createJedis() {
-//    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
-    return new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocolUtil.getRedisProtocol()).password("foobared").build());
+    return new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .protocol(protocol).build());
   }
 }

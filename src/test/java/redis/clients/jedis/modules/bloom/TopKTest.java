@@ -8,9 +8,13 @@ import java.util.Collections;
 import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class TopKTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
@@ -22,6 +26,10 @@ public class TopKTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public TopKTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void createTopKFilter() {

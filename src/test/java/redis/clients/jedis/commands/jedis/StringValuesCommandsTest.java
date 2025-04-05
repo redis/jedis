@@ -6,14 +6,25 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 
+@RunWith(Parameterized.class)
 public class StringValuesCommandsTest extends JedisCommandsTestBase {
+
+  public StringValuesCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Test
   public void setAndGet() {
     String status = jedis.set("foo", "bar");
@@ -238,6 +249,7 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 

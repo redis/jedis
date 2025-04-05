@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -14,8 +17,16 @@ public interface HashPipelineCommands {
 
   Response<Long> hset(String key, Map<String, String> hash);
 
-  Response<String> hget(String key, String field);
+  Response<Long> hsetex(String key, HSetExParams params, String field, String value);
 
+  Response<Long> hsetex(String key, HSetExParams params, Map<String, String> hash);
+
+  Response<String> hget(String key, String field);
+  
+  Response<List<String>> hgetex(String key, HGetExParams params, String... fields);
+
+  Response<List<String>> hgetdel(String key, String... fields);
+  
   Response<Long> hsetnx(String key, String field, String value);
 
   Response<String> hmset(String key, Map<String, String> hash);
@@ -50,5 +61,37 @@ public interface HashPipelineCommands {
 
   Response<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params);
 
+  default Response<ScanResult<String>> hscanNoValues(String key, String cursor) {
+    return hscanNoValues(key, cursor, new ScanParams());
+  }
+
+  Response<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params);
+
   Response<Long> hstrlen(String key, String field);
+
+  Response<List<Long>> hexpire(String key, long seconds, String... fields);
+
+  Response<List<Long>> hexpire(String key, long seconds, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hpexpire(String key, long milliseconds, String... fields);
+
+  Response<List<Long>> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, String... fields);
+
+  Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, String... fields);
+
+  Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hexpireTime(String key, String... fields);
+
+  Response<List<Long>> hpexpireTime(String key, String... fields);
+
+  Response<List<Long>> httl(String key, String... fields);
+
+  Response<List<Long>> hpttl(String key, String... fields);
+
+  Response<List<Long>> hpersist(String key, String... fields);
 }

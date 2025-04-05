@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
 
@@ -108,16 +109,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_POOL_CONFIG)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
-//      Collection<JedisPool> values = clusterNodes.values();
-//      for (JedisPool jedisPool : values) {
-//        Jedis jedis = jedisPool.getResource();
-//        try {
-//          assertEquals(clientName, jedis.clientGetname());
-//        } finally {
-//          jedis.close();
-//        }
-//      }
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -133,11 +124,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(Collections.singleton(hp),
         DefaultJedisClientConfig.builder().password("cluster").clientName(clientName).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-//      jc.getClusterNodes().values().forEach(jedisPool -> {
-//        try (Jedis jedis = jedisPool.getResource()) {
-//          assertEquals(clientName, jedis.clientGetname());
-//        }
-//      });
       jc.getClusterNodes().values().forEach(pool -> {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -193,6 +179,33 @@ public class JedisClusterTest extends JedisClusterTestBase {
       nodeSlave2.get("test");
       fail();
     } catch (JedisMovedDataException e) {
+    }
+
+    nodeSlave2.clusterReset(ClusterResetType.SOFT);
+    nodeSlave2.flushDB();
+  }
+
+  @Test
+  public void testReadFromReplicas() throws Exception {
+    node1.clusterMeet(LOCAL_IP, nodeInfoSlave2.getPort());
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
+
+    for (String nodeInfo : node2.clusterNodes().split("\n")) {
+      if (nodeInfo.contains("myself")) {
+        nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
+        break;
+      }
+    }
+
+    DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+        .password("cluster").readOnlyForRedisClusterReplicas().build();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+    try (JedisCluster jedisCluster = new JedisCluster(nodeInfo1, READ_REPLICAS_CLIENT_CONFIG,
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+      assertEquals("OK", jedisCluster.set("test", "read-from-replicas"));
+
+      assertEquals("read-from-replicas", jedisCluster.executeCommandToReplica(commandObjects.get("test")));
+      // TODO: ensure data being served from replica node(s)
     }
 
     nodeSlave2.clusterReset(ClusterResetType.SOFT);
@@ -486,7 +499,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-//  @Test(expected = JedisExhaustedPoolException.class)
   @Test(expected = JedisException.class)
   public void testIfPoolConfigAppliesToClusterPools() {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
@@ -533,12 +545,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, 4000, 4000, DEFAULT_REDIRECTIONS,
         "cluster", DEFAULT_POOL_CONFIG)) {
 
-//      for (JedisPool pool : jc.getClusterNodes().values()) {
-//        Jedis jedis = pool.getResource();
-//        assertEquals(4000, jedis.getClient().getConnectionTimeout());
-//        assertEquals(4000, jedis.getClient().getSoTimeout());
-//        jedis.close();
-//      }
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Connection conn = pool.getResource()) {
           assertEquals(4000, conn.getSoTimeout());
@@ -555,10 +561,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       jc.getClusterNodes().values().forEach(pool -> {
-//        try (Jedis jedis = pool.getResource()) {
-//          assertEquals(4000, jedis.getClient().getConnectionTimeout());
-//          assertEquals(4000, jedis.getClient().getSoTimeout());
-//        }
         try (Connection conn = pool.getResource()) {
           assertEquals(4000, conn.getSoTimeout());
         }
@@ -606,10 +608,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
 
-//      try (Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
-//        ClientKillerUtil.tagClient(j, "DEAD");
-//        ClientKillerUtil.killClient(j, "DEAD");
-//      }
       try (Connection c = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
         Jedis j = new Jedis(c);
         ClientKillerUtil.tagClient(j, "DEAD");
@@ -647,7 +645,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
@@ -664,7 +661,6 @@ public class JedisClusterTest extends JedisClusterTestBase {
     config.setMaxTotal(1);
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config)) {
-//      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
@@ -672,7 +668,8 @@ public class JedisClusterTest extends JedisClusterTestBase {
   }
 
   @Test
-  public void clusterLinks2() throws InterruptedException {
+  @SinceRedisVersion("7.0.0")
+  public void clusterLinks2() {
     Set<String> mapKeys = new HashSet<>(Arrays.asList("direction", "node", "create-time", "events",
         "send-buffer-allocated", "send-buffer-used"));
 

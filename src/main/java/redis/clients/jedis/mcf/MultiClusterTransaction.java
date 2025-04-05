@@ -4,29 +4,30 @@ import static redis.clients.jedis.Protocol.Command.DISCARD;
 import static redis.clients.jedis.Protocol.Command.EXEC;
 import static redis.clients.jedis.Protocol.Command.MULTI;
 import static redis.clients.jedis.Protocol.Command.UNWATCH;
-import static redis.clients.jedis.Protocol.Command.WATCH;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
 
 /**
  * This is high memory dependent solution as all the appending commands will be hold in memory.
  */
+@Experimental
 public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
+  
+  private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
-  private final CircuitBreakerFailoverConnectionProvider provider;
+  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
@@ -38,6 +39,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * called with this object.
    * @param provider
    */
+  @Deprecated
   public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider) {
     this(provider, true);
   }
@@ -49,13 +51,29 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param provider
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
+  @Deprecated
   public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
-    try (Connection connection = provider.getConnection()) { // we don't need a healthy connection now
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+
+    try (Connection connection = failoverProvider.getConnection()) {
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
 
-    this.provider = new CircuitBreakerFailoverConnectionProvider(provider);
+    if (doMulti) multi();
+  }
+
+  /**
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param provider
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param commandObjects command objects
+   */
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti, CommandObjects commandObjects) {
+    super(commandObjects);
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
     if (doMulti) multi();
   }
@@ -73,7 +91,7 @@ public class MultiClusterTransaction extends TransactionBase {
    */
   @Override
   public final String watch(String... keys) {
-    appendCommand(new CommandObject<>(new CommandArguments(WATCH).addObjects((Object[]) keys), NO_OP_BUILDER));
+    appendCommand(commandObjects.watch(keys));
     extraCommandCount.incrementAndGet();
     inWatch = true;
     return null;
@@ -85,7 +103,7 @@ public class MultiClusterTransaction extends TransactionBase {
    */
   @Override
   public final String watch(byte[]... keys) {
-    appendCommand(new CommandObject<>(new CommandArguments(WATCH).addObjects((Object[]) keys), NO_OP_BUILDER));
+    appendCommand(commandObjects.watch(keys));
     extraCommandCount.incrementAndGet();
     inWatch = true;
     return null;
@@ -129,7 +147,7 @@ public class MultiClusterTransaction extends TransactionBase {
       throw new IllegalStateException("EXEC without MULTI");
     }
 
-    try (Connection connection = provider.getConnection()) {
+    try (Connection connection = failoverProvider.getConnection()) {
 
       commands.forEach((command) -> connection.sendCommand(command.getKey()));
       // following connection.getMany(int) flushes anyway, so no flush here.
@@ -174,7 +192,7 @@ public class MultiClusterTransaction extends TransactionBase {
       throw new IllegalStateException("DISCARD without MULTI");
     }
 
-    try (Connection connection = provider.getConnection()) {
+    try (Connection connection = failoverProvider.getConnection()) {
 
       commands.forEach((command) -> connection.sendCommand(command.getKey()));
       // following connection.getMany(int) flushes anyway, so no flush here.
@@ -190,56 +208,4 @@ public class MultiClusterTransaction extends TransactionBase {
       inWatch = false;
     }
   }
-
-  // RedisGraph commands
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<String> graphDelete(String name) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-
-  @Override
-  public Response<List<String>> graphProfile(String graphName, String query) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
-  }
-  // RedisGraph commands
 }

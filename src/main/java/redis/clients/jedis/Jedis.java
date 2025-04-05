@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Arrays;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -33,7 +34,7 @@ import redis.clients.jedis.util.Pool;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-    SentinelCommands, Closeable {
+    SentinelCommands, CommandCommands,  Closeable {
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
@@ -192,6 +193,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         .hostnameVerifier(hostnameVerifier).build());
   }
 
+  /**
+   * Create a new Jedis with the provided URI and JedisClientConfig object. Note that all fields
+   * that can be parsed from the URI will be used instead of the corresponding configuration values. This includes
+   * the following fields: user, password, database, protocol version, and whether to use SSL.
+   *
+   * For example, if the URI is "redis://user:password@localhost:6379/1", the user and password fields will be set
+   * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
+   * from the JedisClientConfig object.
+   *
+   * @param uri The URI to connect to
+   * @param config The JedisClientConfig object to use
+   */
   public Jedis(final URI uri, JedisClientConfig config) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
@@ -870,7 +883,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#setGet(byte[], byte[])}.
    */
+  @Deprecated
   @Override
   public byte[] getSet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
@@ -1152,6 +1167,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+  
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
@@ -1168,6 +1195,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hget(key, field));
   }
 
+  @Override
+  public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+  
+  @Override
+  public List<byte[]> hgetdel(byte[] key, byte[]... fields){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetdel(key, fields));
+  }
+  
   /**
    * Set the specified hash field to the specified value if the field not exists. <b>Time
    * complexity:</b> O(1)
@@ -3428,7 +3467,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * All the fields are in the form field:value
    *
    * <pre>
-   * edis_version:0.07
+   * redis_version:0.07
    * connected_clients:1
    * connected_slaves:0
    * used_memory:3187
@@ -4324,6 +4363,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
+  @Override
+  public TrackingInfo clientTrackingInfo() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "TRACKINGINFO");
+    return TrackingInfo.TRACKING_INFO_BUILDER.build(connection.getOne());
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);
@@ -4413,15 +4459,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
-    return hscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<byte[]> hscanNoValues(final byte[] key, final byte[] cursor, final ScanParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override
@@ -4643,6 +4690,84 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long hstrlen(final byte[] key, final byte[] field) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
+  public List<Long> hexpire(byte[] key, long seconds, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireTime(byte[] key, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireTime(byte[] key, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> httl(byte[] key, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpttl(byte[] key, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpersist(byte[] key, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpersist(key, fields));
   }
 
   @Override
@@ -5307,7 +5432,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#setGet(java.lang.String, java.lang.String)}.
    */
+  @Deprecated
   @Override
   public String getSet(final String key, final String value) {
     checkIsInMultiOrPipeline();
@@ -5584,6 +5711,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  @Override
+  public long hsetex(String key, HSetExParams params, String field, String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
@@ -5598,6 +5737,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String hget(final String key, final String field) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hget(key, field));
+  }
+
+  @Override
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  @Override
+  public List<String> hgetdel(String key, String... fields) {    
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   /**
@@ -8120,42 +8271,56 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
+  @Override
   public long commandCount() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, COUNT);
     return connection.getIntegerReply();
   }
 
+  @Override
   public Map<String, CommandDocument> commandDocs(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(DOCS.name(), commands));
     return BuilderFactory.COMMAND_DOCS_RESPONSE.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandGetKeys(String... command) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(GETKEYS.name(), command));
     return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
+  @Override
   public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(GETKEYSANDFLAGS.name(), command));
     return BuilderFactory.KEYED_STRING_LIST_LIST.build(connection.getOne());
   }
 
+  @Override
   public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
-    return BuilderFactory.COMMAND_INFO_RESPONSE.build(connection.getOne());
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
+  @Override
+  public Map<String, CommandInfo> command() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND);
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
+  }
+
+  @Override
   public List<String> commandList() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, LIST);
     return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
     checkIsInMultiOrPipeline();
     CommandArguments args = new CommandArguments(COMMAND).add(LIST).addParams(filterByParams);
@@ -8614,6 +8779,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final ScanParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<String> hscanNoValues(final String key, final String cursor, final ScanParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override
@@ -9219,6 +9390,84 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<Long> hexpire(String key, long seconds, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireTime(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireTime(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> httl(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpttl(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpersist(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpersist(key, fields));
+  }
+
+  @Override
   public String memoryDoctor() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(MEMORY, DOCTOR);
@@ -9278,6 +9527,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(LATENCY, DOCTOR);
     return connection.getBulkReply();
+  }
+
+  public Map<String, LatencyLatestInfo> latencyLatest() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LATENCY, LATEST);
+    return BuilderFactory.LATENCY_LATEST_RESPONSE.build(connection.getOne());
+  }
+
+  public List<LatencyHistoryInfo> latencyHistory(LatencyEvent event) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(new CommandArguments(LATENCY).add(HISTORY).add(event));
+    return BuilderFactory.LATENCY_HISTORY_RESPONSE.build(connection.getOne());
+  }
+
+  public long latencyReset(LatencyEvent... events) {
+    checkIsInMultiOrPipeline();
+    CommandArguments arguments = new CommandArguments(LATENCY).add(Keyword.RESET);
+    Arrays.stream(events).forEach(arguments::add);
+    connection.sendCommand(arguments);
+    return connection.getIntegerReply();
   }
 
   @Override
@@ -9356,6 +9625,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Map<String, List<StreamEntry>> xreadAsMap(final XReadParams xReadParams, final Map<String, StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadAsMap(xReadParams, streams));
+  }
+
+  @Override
   public long xack(final String key, final String group, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xack(key, group, ids));
@@ -9411,11 +9686,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(final String groupName,
-      final String consumer, final XReadGroupParams xReadGroupParams,
-      final Map<String, StreamEntryID> streams) {
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(final String groupName, final String consumer,
+      final XReadGroupParams xReadGroupParams, final Map<String, StreamEntryID> streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<String, List<StreamEntry>> xreadGroupAsMap(final String groupName, final String consumer,
+      final XReadGroupParams xReadGroupParams, final Map<String, StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override

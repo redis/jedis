@@ -1,31 +1,54 @@
 package redis.clients.jedis.util;
 
-import redis.clients.jedis.Jedis;
+import io.redis.test.utils.RedisInfo;
+import io.redis.test.utils.RedisVersion;
+import redis.clients.jedis.*;
 
 public class RedisVersionUtil {
 
-  public static Integer getRedisMajorVersionNumber() {
-    String completeVersion = null;
+  static final String FORCE_REDIS_SERVER_VERSION_ENV = "forceRedisServerVersion";
 
-    try (Jedis jedis = new Jedis()) {
-      jedis.auth("foobared");
-      String info = jedis.info("server");
-      String[] splitted = info.split("\\s+|:");
-      for (int i = 0; i < splitted.length; i++) {
-        if (splitted[i].equalsIgnoreCase("redis_version")) {
-          completeVersion = splitted[i + 1];
-          break;
-        }
-      }
+  static final RedisVersion forcedVersion = System.getenv(FORCE_REDIS_SERVER_VERSION_ENV) != null
+          ? RedisVersion.of(System.getenv(FORCE_REDIS_SERVER_VERSION_ENV))
+          : null;
+
+  public static RedisVersion getRedisVersion(Connection conn) {
+    if (forcedVersion != null) {
+      return forcedVersion;
     }
 
-    if (completeVersion == null) {
-      return null;
+    try (Jedis jedis = new Jedis(conn)) {
+      return getRedisVersion(jedis);
     }
-    return Integer.parseInt(completeVersion.substring(0, completeVersion.indexOf(".")));
   }
 
-  public static boolean checkRedisMajorVersionNumber(int minVersion) {
-    return getRedisMajorVersionNumber() >= minVersion;
+  public static RedisVersion getRedisVersion(UnifiedJedis jedis) {
+    if (forcedVersion != null) {
+      return forcedVersion;
+    }
+
+    Object response = SafeEncoder.encodeObject(jedis.sendCommand(Protocol.Command.INFO, "server"));
+    RedisInfo info = RedisInfo.parseInfoServer(response.toString());
+    return RedisVersion.of(info.getRedisVersion());
+  }
+
+  public static RedisVersion getRedisVersion(Jedis jedis) {
+    if (forcedVersion != null) {
+      return forcedVersion;
+    }
+
+    RedisInfo info = RedisInfo.parseInfoServer(jedis.info("server"));
+    return RedisVersion.of(info.getRedisVersion());
+  }
+
+  public static RedisVersion getRedisVersion(EndpointConfig endpoint) {
+    if (forcedVersion != null) {
+      return forcedVersion;
+    }
+
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
+      return getRedisVersion(jedis);
+    }
   }
 }

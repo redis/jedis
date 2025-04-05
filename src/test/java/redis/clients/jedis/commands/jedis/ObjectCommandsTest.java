@@ -10,26 +10,32 @@ import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
   private final byte[] binaryKey = SafeEncoder.encode(key);
-  private final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
+  private final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
   private Jedis lfuJedis;
+
+  public ObjectCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
+    lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(),
+        lfuEndpoint.getClientConfigBuilder().build());
     lfuJedis.connect();
     lfuJedis.flushAll();
   }

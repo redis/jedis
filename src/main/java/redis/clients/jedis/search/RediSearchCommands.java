@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.commands.ConfigCommands;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
@@ -73,13 +74,13 @@ public interface RediSearchCommands {
 
   String ftCursorDel(String indexName, long cursorId);
 
-  Map.Entry<AggregationResult, Map<String, Object>> ftProfileAggregate(String indexName,
+  Map.Entry<AggregationResult, ProfilingInfo> ftProfileAggregate(String indexName,
       FTProfileParams profileParams, AggregationBuilder aggr);
 
-  Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, Query query);
 
-  Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams);
 
   String ftSynUpdate(String indexName, String synonymGroupId, String... terms);
@@ -107,12 +108,22 @@ public interface RediSearchCommands {
 
   Set<String> ftTagVals(String indexName, String fieldName);
 
+  /**
+   * @deprecated {@link ConfigCommands#configGet(java.lang.String)} is used since Redis 8.
+   */
+  @Deprecated
   Map<String, Object> ftConfigGet(String option);
 
+  @Deprecated
   Map<String, Object> ftConfigGet(String indexName, String option);
 
+  /**
+   * @deprecated {@link ConfigCommands#configSet(java.lang.String, java.lang.String)} is used since Redis 8.
+   */
+  @Deprecated
   String ftConfigSet(String option, String value);
 
+  @Deprecated
   String ftConfigSet(String indexName, String option, String value);
 
   long ftSugAdd(String key, String string, double score);

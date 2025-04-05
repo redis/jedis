@@ -2,12 +2,17 @@ package redis.clients.jedis.resps;
 
 import redis.clients.jedis.Builder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static redis.clients.jedis.BuilderFactory.STRING_LIST;
 import static redis.clients.jedis.BuilderFactory.LONG;
+import static redis.clients.jedis.BuilderFactory.STRING;
+import static redis.clients.jedis.BuilderFactory.STRING_LIST;
 
 public class CommandInfo {
+
+  private final String name;
   private final long arity;
   private final List<String> flags;
   private final long firstKey;
@@ -15,10 +20,22 @@ public class CommandInfo {
   private final long step;
   private final List<String> aclCategories;
   private final List<String> tips;
-  private final List<String> subcommands;
+  private final Map<String, CommandInfo> subcommands;
 
+  /**
+   * THIS IGNORES 'subcommands' parameter.
+   * @param subcommands WILL BE IGNORED
+   * @deprecated
+   */
+  @Deprecated
   public CommandInfo(long arity, List<String> flags, long firstKey, long lastKey, long step,
       List<String> aclCategories, List<String> tips, List<String> subcommands) {
+    this((String) null, arity, flags, firstKey, lastKey, step, aclCategories, tips, (Map) null);
+  }
+
+  private CommandInfo(String name, long arity, List<String> flags, long firstKey, long lastKey, long step,
+      List<String> aclCategories, List<String> tips, Map<String, CommandInfo> subcommands) {
+    this.name = name;
     this.arity = arity;
     this.flags = flags;
     this.firstKey = firstKey;
@@ -27,6 +44,13 @@ public class CommandInfo {
     this.aclCategories = aclCategories;
     this.tips = tips;
     this.subcommands = subcommands;
+  }
+
+  /**
+   * Command name
+   */
+  public String getName() {
+    return name;
   }
 
   /**
@@ -89,25 +113,58 @@ public class CommandInfo {
   /**
    * All the command's subcommands, if any
    */
-  public List<String> getSubcommands() {
+  public Map<String, CommandInfo> getSubcommands() {
     return subcommands;
   }
 
   public static final Builder<CommandInfo> COMMAND_INFO_BUILDER = new Builder<CommandInfo>() {
     @Override
     public CommandInfo build(Object data) {
-      List<Object> commandData = (List<Object>) data;
+      if (data == null) {
+        return null;
+      }
 
+      List<Object> commandData = (List<Object>) data;
+      if (commandData.isEmpty()) {
+        return null;
+      }
+
+      String name = STRING.build(commandData.get(0));
       long arity = LONG.build(commandData.get(1));
       List<String> flags = STRING_LIST.build(commandData.get(2));
       long firstKey = LONG.build(commandData.get(3));
       long lastKey = LONG.build(commandData.get(4));
       long step = LONG.build(commandData.get(5));
-      List<String> aclCategories = STRING_LIST.build(commandData.get(6));
-      List<String> tips = STRING_LIST.build(commandData.get(7));
-      List<String> subcommands = STRING_LIST.build(commandData.get(9));
+      // Redis 6.0
+      List<String> aclCategories = commandData.size() >= 7 ? STRING_LIST.build(commandData.get(6)) : null;
+      // Redis 7.0
+      List<String> tips = commandData.size() >= 8 ? STRING_LIST.build(commandData.get(7)) : null;
+      Map<String, CommandInfo> subcommands = commandData.size() >= 10
+          ? COMMAND_INFO_RESPONSE.build(commandData.get(9)) : null;
 
-      return new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
+      return new CommandInfo(name, arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
     }
   };
+
+  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<Map<String, CommandInfo>>() {
+    @Override
+    public Map<String, CommandInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      Map<String, CommandInfo> map = new HashMap<>(rawList.size());
+
+      for (Object rawCommandInfo : rawList) {
+        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(rawCommandInfo);
+        if (info != null) {
+          map.put(info.getName(), info);
+        }
+      }
+
+      return map;
+    }
+  };
+
 }

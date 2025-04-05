@@ -9,17 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: get version from tag
         id: get_version
         run: |
           realversion="${GITHUB_REF/refs\/tags\//}"
           realversion="${realversion//v/}"
-          echo "::set-output name=VERSION::$realversion"
+          echo "VERSION=$realversion" >> $GITHUB_OUTPUT
 
       - name: Set up publishing to maven central
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
@@ -32,14 +32,14 @@ jobs:
 
       - name: Install gpg key
         run: |
-          cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+          cat <(echo -e "${{ secrets.OSSH_GPG_SECRET_KEY }}") | gpg --batch --import
           gpg --list-secret-keys --keyid-format LONG
 
       - name: Publish
         run: |
           mvn --no-transfer-progress \
             --batch-mode \
-            -Dgpg.passphrase='${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}' \
+            -Dgpg.passphrase='${{ secrets.OSSH_GPG_SECRET_KEY_PASSWORD }}' \
             -DskipTests deploy -P release
         env:
           MAVEN_USERNAME: ${{secrets.OSSH_USERNAME}}

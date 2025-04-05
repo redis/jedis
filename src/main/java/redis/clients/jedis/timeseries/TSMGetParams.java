@@ -4,6 +4,7 @@ import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeywor
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.SELECTED_LABELS;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.WITHLABELS;
 
+import java.util.Arrays;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
@@ -54,5 +55,27 @@ public class TSMGetParams implements IParams {
         args.add(label);
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    TSMGetParams that = (TSMGetParams) o;
+    return latest == that.latest && withLabels == that.withLabels &&
+        Arrays.equals(selectedLabels, that.selectedLabels);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Boolean.hashCode(latest);
+    result = 31 * result + Boolean.hashCode(withLabels);
+    result = 31 * result + Arrays.hashCode(selectedLabels);
+    return result;
   }
 }

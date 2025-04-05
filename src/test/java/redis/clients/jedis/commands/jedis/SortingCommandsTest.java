@@ -6,10 +6,15 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.SortingParams;
 
+@RunWith(Parameterized.class)
 public class SortingCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoodest = { 0x01, 0x02, 0x03, 0x04, 0x05 };
@@ -26,6 +31,10 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
   final byte[] b2 = { '2' };
   final byte[] b3 = { '3' };
   final byte[] b10 = { '1', '0' };
+
+  public SortingCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void sort() {
@@ -316,6 +325,7 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @EnabledOnCommand("SORT_RO")
   public void sort_ro() {
     jedis.rpush("foo", "1", "3", "2");
 

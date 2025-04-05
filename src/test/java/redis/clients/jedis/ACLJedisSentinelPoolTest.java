@@ -5,44 +5,38 @@ import static org.junit.Assert.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionRule;
 
 /**
  * This test class is mostly a copy of {@link JedisSentinelPoolTest}.
  * <p>
  * This tests are only executed when the server/cluster is Redis 6 or more.
  */
+@SinceRedisVersion("6.0.0")
 public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
 
-  //protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(8);
   protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(4);
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
-  @BeforeClass
-  public static void prepare() throws Exception {
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
-  }
+  @ClassRule
+  public static RedisVersionRule versionRule = new RedisVersionRule(HostAndPorts.getRedisEndpoint("standalone2-primary"));
 
   @Before
   public void setUp() throws Exception {
     sentinels.clear();
     sentinels.add(sentinel1);
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   private static Set<String> toStrings(Set<HostAndPort> hostAndPorts) {

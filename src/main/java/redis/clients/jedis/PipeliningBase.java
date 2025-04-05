@@ -11,8 +11,6 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -30,17 +28,9 @@ public abstract class PipeliningBase
     implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands {
 
   protected final CommandObjects commandObjects;
-  private GraphCommandObjects graphCommandObjects;
 
   protected PipeliningBase(CommandObjects commandObjects) {
     this.commandObjects = commandObjects;
-  }
-
-  /**
-   * Sub-classes must call this method, if graph commands are going to be used.
-   */
-  protected final void setGraphCommands(GraphCommandObjects graphCommandObjects) {
-    this.graphCommandObjects = graphCommandObjects;
   }
 
   protected abstract <T> Response<T> appendCommand(CommandObject<T> commandObject);
@@ -281,6 +271,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> setGet(String key, String value) {
+    return appendCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public Response<String> setGet(String key, String value, SetParams params) {
     return appendCommand(commandObjects.setGet(key, value, params));
   }
@@ -315,6 +310,10 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   @Override
   public Response<String> getSet(String key, String value) {
     return appendCommand(commandObjects.getSet(key, value));
@@ -626,9 +625,75 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params additional parameters for the HSETEX command
+   * @param field the field in the hash to set
+   * @param value the value to set in the specified field
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(String key, HSetExParams params, String field, String value) {
+    return appendCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return appendCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   @Override
   public Response<String> hget(String key, String field) {
     return appendCommand(commandObjects.hget(key, field));
+  }
+
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  @Override
+  public Response<List<String>> hgetex(String key, HGetExParams params, String... fields) {
+    return appendCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  @Override
+  public Response<List<String>> hgetdel(String key, String... fields) {
+    return appendCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -707,8 +772,78 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params) {
+    return appendCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public Response<Long> hstrlen(String key, String field) {
     return appendCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(String key, long seconds, String... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(String key, long milliseconds, String... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireTime(String key, String... fields) {
+    return appendCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireTime(String key, String... fields) {
+    return appendCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> httl(String key, String... fields) {
+    return appendCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpttl(String key, String... fields) {
+    return appendCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpersist(String key, String... fields) {
+    return appendCommand(commandObjects.hpersist(key, fields));
   }
 
   @Override
@@ -772,7 +907,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> sdiffStore(String dstKey, String... keys) {
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
@@ -1523,8 +1658,18 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<String, List<StreamEntry>>> xreadAsMap(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadAsMap(xReadParams, streams));
+  }
+
+  @Override
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<Map<String, List<StreamEntry>>> xreadGroupAsMap(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -1892,9 +2037,75 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param field the field in the hash to set
+   * @param value the value to set in the specified field
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    return appendCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return appendCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   @Override
   public Response<byte[]> hget(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hget(key, field));
+  }
+  
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  @Override
+  public Response<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return appendCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  @Override
+  public Response<List<byte[]>> hgetdel(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -1973,8 +2184,78 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return appendCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public Response<Long> hstrlen(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(byte[] key, long seconds, byte[]... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireTime(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireTime(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> httl(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpttl(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpersist(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hpersist(key, fields));
   }
 
   @Override
@@ -2069,7 +2350,7 @@ public abstract class PipeliningBase
 
   @Override
   public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
-    return appendCommand(commandObjects.expireAt(key, unixTime));
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
   }
 
   @Override
@@ -3105,6 +3386,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value) {
+    return appendCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
     return appendCommand(commandObjects.setGet(key, value, params));
   }
@@ -3139,6 +3425,10 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> getSet(byte[] key, byte[] value) {
     return appendCommand(commandObjects.getSet(key, value));
@@ -3397,21 +3687,25 @@ public abstract class PipeliningBase
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String option) {
     return appendCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return appendCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(option, value));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
@@ -3781,6 +4075,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> tsAdd(String key, long timestamp, double value, TSAddParams addParams) {
+    return appendCommand(commandObjects.tsAdd(key, timestamp, value, addParams));
+  }
+
+  @Override
   public Response<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
     return appendCommand(commandObjects.tsMAdd(entries));
   }
@@ -3796,6 +4095,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> tsIncrBy(String key, double addend, TSIncrByParams incrByParams) {
+    return appendCommand(commandObjects.tsIncrBy(key, addend, incrByParams));
+  }
+
+  @Override
   public Response<Long> tsDecrBy(String key, double value) {
     return appendCommand(commandObjects.tsDecrBy(key, value));
   }
@@ -3803,6 +4107,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> tsDecrBy(String key, double value, long timestamp) {
     return appendCommand(commandObjects.tsDecrBy(key, value, timestamp));
+  }
+
+  @Override
+  public Response<Long> tsDecrBy(String key, double subtrahend, TSDecrByParams decrByParams) {
+    return appendCommand(commandObjects.tsDecrBy(key, subtrahend, decrByParams));
   }
 
   @Override
@@ -3878,6 +4187,16 @@ public abstract class PipeliningBase
   @Override
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
+  }
+
+  @Override
+  public Response<TSInfo> tsInfo(String key) {
+    return appendCommand(commandObjects.tsInfo(key));
+  }
+
+  @Override
+  public Response<TSInfo> tsInfoDebug(String key) {
+    return appendCommand(commandObjects.tsInfoDebug(key));
   }
   // RedisTimeSeries commands
 
@@ -3985,6 +4304,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Boolean> cfExists(String key, String item) {
     return appendCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfMExists(String key, String... items) {
+    return appendCommand(commandObjects.cfMExists(key, items));
   }
 
   @Override
@@ -4167,58 +4491,6 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.tdigestByRevRank(key, ranks));
   }
   // RedisBloom commands
-
-  // RedisGraph commands
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query));
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, timeout));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, params));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
-  }
-
-  @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
-  }
-
-  @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
-  }
-
-  @Override
-  public Response<String> graphDelete(String name) {
-    return appendCommand(graphCommandObjects.graphDelete(name));
-  }
-
-  @Override
-  public Response<List<String>> graphProfile(String graphName, String query) {
-    return appendCommand(commandObjects.graphProfile(graphName, query));
-  }
-  // RedisGraph commands
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

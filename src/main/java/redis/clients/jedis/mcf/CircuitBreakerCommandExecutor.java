@@ -6,6 +6,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
@@ -18,6 +19,7 @@ import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluste
  * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
  * <p>
  */
+@Experimental
 public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase implements CommandExecutor {
 
     public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider) {
@@ -32,8 +34,8 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
 
         supplier.withRetry(cluster.getRetry());
         supplier.withCircuitBreaker(cluster.getCircuitBreaker());
-        supplier.withFallback(defaultCircuitBreakerFallbackException,
-                              e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker()));
+        supplier.withFallback(provider.getFallbackExceptionList(),
+                e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker()));
 
         return supplier.decorate().get();
     }

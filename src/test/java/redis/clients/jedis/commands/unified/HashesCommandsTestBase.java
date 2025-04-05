@@ -1,16 +1,28 @@
 package redis.clients.jedis.commands.unified;
 
+import static java.util.Arrays.asList;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,9 +30,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.HGetExParams;
+import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
@@ -31,11 +49,17 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
-
+  final byte[] bbare = { 0x05, 0x06, 0x07, 0x08, 0x09 };
+  final byte[] bcare = { 0x09, 0x0A, 0x0B, 0x0C, 0x0D };
+  
   final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+
+  public HashesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void hset() {
@@ -59,6 +83,126 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertNull(jedis.hget(bbar, bfoo));
     assertNull(jedis.hget(bfoo, bcar));
     assertArrayEquals(bcar, jedis.hget(bfoo, bbar));
+  }
+
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void hgetex() {
+    long seconds = 20;
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList("car"), jedis.hgetex("foo", HGetExParams.hGetExParams().ex(seconds), "bar"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList("car"), jedis.hgetex("foo", HGetExParams.hGetExParams().persist(), "bar"));
+    assertEquals(Long.valueOf(-1), jedis.httl("foo", "bar").get(0));
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList("car", "care"), jedis.hgetex("foo", HGetExParams.hGetExParams().ex(seconds), "bar", "bare"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl("foo", "bare").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    // Binary
+    jedis.hset(bfoo, bbar, bcar);
+    assertByteArrayListEquals(asList(bcar), jedis.hgetex(bfoo, HGetExParams.hGetExParams().ex(seconds), bbar));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    jedis.hset(bfoo, bbar, bcar);
+    assertByteArrayListEquals(asList(bcar), jedis.hgetex(bfoo, HGetExParams.hGetExParams().persist(), bbar));
+    assertEquals(Long.valueOf(-1), jedis.httl(bfoo, bbar).get(0));
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbare, bcare);
+    assertByteArrayListEquals(asList(bcar, bcare), jedis.hgetex(bfoo, HGetExParams.hGetExParams().ex(seconds), bbar, bbare));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl(bfoo, bbare).get(0), greaterThanOrEqualTo(seconds - 1));
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void hgetdel() {
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList("car"), jedis.hgetdel("foo", "bar"));
+    assertEquals(null, jedis.hget("foo", "bar"));
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList("car", "care"), jedis.hgetdel("foo", "bar", "bare"));
+    assertEquals(null, jedis.hget("foo", "bar"));
+    assertEquals(null, jedis.hget("foo", "bare"));
+
+    // Binary
+    jedis.hset(bfoo, bbar, bcar);
+    assertByteArrayListEquals(asList(bcar), jedis.hgetdel(bfoo, bbar));
+    assertEquals(null, jedis.hget(bfoo, bbar));
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbare, bcare);
+    assertByteArrayListEquals(asList(bcar, bcare), jedis.hgetdel(bfoo, bbar, bbare));
+    assertEquals(null, jedis.hget(bfoo, bbar));
+    assertEquals(null, jedis.hget(bfoo, bbare));
+  }
+
+  @Test
+  @SinceRedisVersion("7.9.0")
+  public void hsetex() {
+    long seconds = 20;
+    jedis.del("foo");
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().ex(seconds).fnx(), "bar", "car"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().keepTtl(), "bar", "car"));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().fxx(), "bar", "car"));
+    assertEquals(Long.valueOf(-1), jedis.httl("foo", "bar").get(0));
+
+    HashMap<String, String> hash = new HashMap<String, String>();
+    hash.put("bar", "car");
+    hash.put("bare", "care");
+    jedis.del("foo");
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().ex(seconds).fnx(), hash));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl("foo", "bare").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().keepTtl(), hash));
+    assertThat(jedis.httl("foo", "bar").get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl("foo", "bare").get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex("foo", HSetExParams.hSetExParams().fxx(), hash));
+    assertEquals(Long.valueOf(-1), jedis.httl("foo", "bar").get(0));
+    assertEquals(Long.valueOf(-1), jedis.httl("foo", "bare").get(0));
+
+    // Binary
+    jedis.del(bfoo);
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().ex(seconds).fnx(), bbar, bcar));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().keepTtl(), bbar, bcar));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().fxx(), bbar, bcar));
+    assertEquals(Long.valueOf(-1), jedis.httl(bfoo, bbar).get(0));
+
+    HashMap<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
+    bhash.put(bbar, bcar);
+    bhash.put(bbare, bcare);
+
+    jedis.del(bfoo);
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().ex(seconds).fnx(), bhash));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl(bfoo, bbare).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().keepTtl(), bhash));
+    assertThat(jedis.httl(bfoo, bbar).get(0), greaterThanOrEqualTo(seconds - 1));
+    assertThat(jedis.httl(bfoo, bbare).get(0), greaterThanOrEqualTo(seconds - 1));
+
+    assertEquals(1, jedis.hsetex(bfoo, HSetExParams.hSetExParams().fxx(), bhash));
+    assertEquals(Long.valueOf(-1), jedis.httl(bfoo, bbar).get(0));
+    assertEquals(Long.valueOf(-1), jedis.httl(bfoo, bbare).get(0));
   }
 
   @Test
@@ -316,13 +460,20 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void hscan() {
-    jedis.hset("foo", "b", "b");
-    jedis.hset("foo", "a", "a");
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
 
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START);
 
     assertEquals(SCAN_POINTER_START, result.getCursor());
-    assertFalse(result.getResult().isEmpty());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder("a", "b"));
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder("x", "y"));
 
     // binary
     jedis.hset(bfoo, bbar, bcar);
@@ -330,7 +481,14 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY);
 
     assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
-    assertFalse(bResult.getResult().isEmpty());
+    assertEquals(1, bResult.getResult().size());
+
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder(bbar));
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder(bcar));
   }
 
   @Test
@@ -338,13 +496,20 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     ScanParams params = new ScanParams();
     params.match("a*");
 
-    jedis.hset("foo", "b", "b");
-    jedis.hset("foo", "a", "a");
-    jedis.hset("foo", "aa", "aa");
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
+    jedis.hset("foo", "aa", "xx");
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START, params);
 
     assertEquals(SCAN_POINTER_START, result.getCursor());
-    assertFalse(result.getResult().isEmpty());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder("a", "aa"));
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder("x", "xx"));
 
     // binary
     params = new ScanParams();
@@ -355,11 +520,17 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar2, bcar);
     jedis.hset(bfoo, bbar3, bcar);
 
-    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-      params);
+    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
-    assertFalse(bResult.getResult().isEmpty());
+    assertEquals(4, bResult.getResult().size());
+
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder(bbar, bbar1, bbar2, bbar3));
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder(bcar, bcar, bcar, bcar));
   }
 
   @Test
@@ -368,12 +539,19 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     params.count(2);
 
     for (int i = 0; i < 10; i++) {
-      jedis.hset("foo", "a" + i, "a" + i);
+      jedis.hset("foo", "a" + i, "x" + i);
     }
 
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START, params);
 
     assertFalse(result.getResult().isEmpty());
+
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getKey).map(s -> s.substring(0, 1)).collect(Collectors.toSet()),
+        containsInAnyOrder("a"));
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getValue).map(s -> s.substring(0, 1)).collect(Collectors.toSet()),
+        containsInAnyOrder("x"));
 
     // binary
     params = new ScanParams();
@@ -384,10 +562,112 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar2, bcar);
     jedis.hset(bfoo, bbar3, bcar);
 
-    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-      params);
+    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getKey)
+            .map(a -> Arrays.copyOfRange(a, 0, 4)).map(Arrays::toString).collect(Collectors.toSet()),
+        containsInAnyOrder(Arrays.toString(bbar)));
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getValue)
+            .map(a -> Arrays.copyOfRange(a, 0, 4)).map(Arrays::toString).collect(Collectors.toSet()),
+        containsInAnyOrder(Arrays.toString(bcar)));
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.4.0", message = "NOVALUES flag (since Redis 7.4)")
+  public void hscanNoValues() {
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
+
+    ScanResult<String> result = jedis.hscanNoValues("foo", SCAN_POINTER_START);
+
+    assertEquals(SCAN_POINTER_START, result.getCursor());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(result.getResult(), containsInAnyOrder("a", "b"));
+
+    // binary
+    jedis.hset(bfoo, bbar, bcar);
+
+    ScanResult<byte[]> bResult = jedis.hscanNoValues(bfoo, SCAN_POINTER_START_BINARY);
+
+    assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+    assertEquals(1, bResult.getResult().size());
+
+    assertThat(bResult.getResult(), containsInAnyOrder(bbar));
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.4.0", message = "NOVALUES flag (since Redis 7.4)")
+  public void hscanNoValuesMatch() {
+    ScanParams params = new ScanParams();
+    params.match("a*");
+
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
+    jedis.hset("foo", "aa", "xx");
+    ScanResult<String> result = jedis.hscanNoValues("foo", SCAN_POINTER_START, params);
+
+    assertEquals(SCAN_POINTER_START, result.getCursor());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(result.getResult(), containsInAnyOrder("a", "aa"));
+
+    // binary
+    params = new ScanParams();
+    params.match(bbarstar);
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    jedis.hset(bfoo, bbar3, bcar);
+
+    ScanResult<byte[]> bResult = jedis.hscanNoValues(bfoo, SCAN_POINTER_START_BINARY, params);
+
+    assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+    assertEquals(4, bResult.getResult().size());
+
+    assertThat(bResult.getResult(), containsInAnyOrder(bbar, bbar1, bbar2, bbar3));
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.4.0", message = "NOVALUES flag (since Redis 7.4)")
+  public void hscanNoValuesCount() {
+    ScanParams params = new ScanParams();
+    params.count(2);
+
+    for (int i = 0; i < 10; i++) {
+      jedis.hset("foo", "a" + i, "a" + i);
+    }
+
+    ScanResult<String> result = jedis.hscanNoValues("foo", SCAN_POINTER_START, params);
+
+    assertFalse(result.getResult().isEmpty());
+
+    assertThat(
+        result.getResult().stream().map(s -> s.substring(0, 1)).collect(Collectors.toSet()),
+        containsInAnyOrder("a"));
+
+    // binary
+    params = new ScanParams();
+    params.count(2);
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    jedis.hset(bfoo, bbar3, bcar);
+
+    ScanResult<byte[]> bResult = jedis.hscanNoValues(bfoo, SCAN_POINTER_START_BINARY, params);
+
+    assertFalse(bResult.getResult().isEmpty());
+
+    assertThat(
+        bResult.getResult().stream()
+            .map(a -> Arrays.copyOfRange(a, 0, 4)).map(Arrays::toString).collect(Collectors.toSet()),
+        containsInAnyOrder(Arrays.toString(bbar)));
   }
 
   @Test
@@ -471,5 +751,173 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     bactual = jedis.hrandfieldWithValues(bfoo, -5);
     assertEquals(5, bactual.size());
     bactual.forEach(e -> assertArrayEquals(bhash.get(e.getKey()), e.getValue()));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hexpireAndHttl() {
+    long seconds1 = 20;
+    long seconds2 = 10;
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList(1L, -2L), jedis.hexpire("foo", seconds1, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(0L, 1L), jedis.hexpire("foo", seconds2, ExpiryOption.NX, "bar", "bared"));
+
+    assertThat(jedis.httl("foo", "bar", "bare", "bared"),
+        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hexpireAndHttlBinary() {
+    long seconds1 = 20;
+    long seconds2 = 10;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    assertEquals(asList(1L, -2L), jedis.hexpire(bfoo, seconds1, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(0L, 1L), jedis.hexpire(bfoo, seconds2, ExpiryOption.NX, bbar1, bbar3));
+
+    assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
+        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hpexpireAndHpttl() {
+    long millis1 = 20_000;
+    long millis2 = 10_000;
+
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList(1L, -2L), jedis.hpexpire("foo", millis1, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(1L, 0L), jedis.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared"));
+
+    assertThat(jedis.hpttl("foo", "bar", "bare", "bared"),
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hpexpireAndHpttlBinary() {
+    long millis1 = 20_000;
+    long millis2 = 10_000;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    assertEquals(asList(1L, -2L), jedis.hpexpire(bfoo, millis1, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(1L, 0L), jedis.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3));
+
+    assertThat(jedis.hpttl(bfoo, bbar1, bbar2, bbar3),
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hexpireAtAndExpireTime() {
+    long currSeconds = System.currentTimeMillis() / 1000;
+    long seconds1 = currSeconds + 20;
+    long seconds2 = currSeconds + 10;
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList(1L, -2L), jedis.hexpireAt("foo", seconds1, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(1L, 1L), jedis.hexpireAt("foo", seconds2, ExpiryOption.LT, "bar", "bared"));
+
+    assertThat(jedis.hexpireTime("foo", "bar", "bare", "bared"),
+        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hexpireAtAndExpireTimeBinary() {
+    long currSeconds = System.currentTimeMillis() / 1000;
+    long seconds1 = currSeconds + 20;
+    long seconds2 = currSeconds + 10;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    assertEquals(asList(1L, -2L), jedis.hexpireAt(bfoo, seconds1, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(1L, 1L), jedis.hexpireAt(bfoo, seconds2, ExpiryOption.LT, bbar1, bbar3));
+
+    assertThat(jedis.hexpireTime(bfoo, bbar1, bbar2, bbar3),
+        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hpexpireAtAndPexpireTime() {
+    long currMillis = System.currentTimeMillis();
+    long unixMillis = currMillis + 20_000;
+
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList(1L, -2L), jedis.hpexpireAt("foo", unixMillis - 100, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(1L, 0L), jedis.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared"));
+
+    assertThat(jedis.hpexpireTime("foo", "bar", "bare", "bared"),
+        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hpexpireAtAndPexpireTimeBinary() {
+    long currMillis = System.currentTimeMillis();
+    long unixMillis = currMillis + 20_000;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    assertEquals(asList(1L, -2L), jedis.hpexpireAt(bfoo, unixMillis - 100, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(1L, 0L), jedis.hpexpireAt(bfoo, unixMillis, ExpiryOption.GT, bbar1, bbar3));
+
+    assertThat(jedis.hpexpireTime(bfoo, bbar1, bbar2, bbar3),
+        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hpersist() {
+    long seconds = 20;
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList(1L, -2L), jedis.hexpire("foo", seconds, "bar", "bared"));
+
+    assertEquals(asList(1L, -1L, -2L), jedis.hpersist("foo", "bar", "bare", "bared"));
+
+    assertThat(jedis.httl("foo", "bar", "bare", "bared"),
+        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  @SinceRedisVersion("7.4.0")
+  public void hpersistBinary() {
+    long seconds = 20;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    assertEquals(asList(1L, -2L), jedis.hexpire(bfoo, seconds, bbar1, bbar3));
+
+    assertEquals(asList(1L, -1L, -2L), jedis.hpersist(bfoo, bbar1, bbar2, bbar3));
+
+    assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
+        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 }

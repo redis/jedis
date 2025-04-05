@@ -9,14 +9,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
@@ -26,6 +24,7 @@ import redis.clients.jedis.resps.ClusterShardInfo;
 import redis.clients.jedis.resps.ClusterShardNodeInfo;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterTestUtil;
+import redis.clients.jedis.util.RedisVersionRule;
 
 public class ClusterCommandsTest {
 
@@ -34,6 +33,10 @@ public class ClusterCommandsTest {
 
   private static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
   private static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
+
+  @Rule
+  public RedisVersionRule versionRule = new RedisVersionRule(nodeInfo1,
+      DefaultJedisClientConfig.builder().password("cluster").build());
 
   @Before
   public void setUp() throws Exception {
@@ -124,6 +127,7 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void addAndDelSlotsRange() {
     // test add
     assertEquals("OK", node1.clusterAddSlotsRange(100, 105));
@@ -203,6 +207,7 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void clusterShards() {
     assertEquals("OK", node1.clusterAddSlots(3100, 3101, 3102, 3105));
 
@@ -224,7 +229,7 @@ public class ClusterCommandsTest {
         assertNotNull(nodeInfo.getIp());
         assertNull(nodeInfo.getHostname());
         assertNotNull(nodeInfo.getPort());
-        assertNull(nodeInfo.getTlsPort());
+        assertNotNull(nodeInfo.getTlsPort()); // currently we are always starting Redis server with `tls-port`
         assertNotNull(nodeInfo.getRole());
         assertNotNull(nodeInfo.getReplicationOffset());
         assertNotNull(nodeInfo.getHealth());
@@ -234,6 +239,7 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void clusterLinks() throws InterruptedException {
     List<Map<String, Object>> links = node1.clusterLinks();
     assertNotNull(links);
@@ -264,6 +270,7 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clusterMyShardId() {
     MatcherAssert.assertThat(node1.clusterMyShardId(), Matchers.not(Matchers.isEmptyOrNullString()));
   }

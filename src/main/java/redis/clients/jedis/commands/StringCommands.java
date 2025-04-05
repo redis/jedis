@@ -116,7 +116,9 @@ public interface StringCommands extends BitCommands {
    * @param key
    * @param value
    * @return The old value that was stored in key
+   * @deprecated Use {@link StringCommands#setGet(java.lang.String, java.lang.String)}.
    */
+  @Deprecated
   String getSet(String key, String value);
 
   /**

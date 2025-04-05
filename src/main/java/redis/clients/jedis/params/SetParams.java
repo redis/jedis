@@ -1,16 +1,13 @@
 package redis.clients.jedis.params;
 
+import java.util.Objects;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
-public class SetParams implements IParams {
+public class SetParams extends BaseSetExParams<SetParams> {
 
   private Keyword existance;
-  private Keyword expiration;
-  private Long expirationValue;
-
-  public SetParams() {
-  }
 
   public static SetParams setParams() {
     return new SetParams();
@@ -34,76 +31,25 @@ public class SetParams implements IParams {
     return this;
   }
 
-  private SetParams expiration(Keyword type, Long value) {
-    this.expiration = type;
-    this.expirationValue = value;
-    return this;
-  }
-
-  /**
-   * Set the specified expire time, in seconds.
-   * @param remainingSeconds
-   * @return SetParams
-   */
-  public SetParams ex(long remainingSeconds) {
-    return expiration(Keyword.EX, remainingSeconds);
-  }
-
-  /**
-   * Set the specified expire time, in milliseconds.
-   * @param remainingMilliseconds
-   * @return SetParams
-   */
-  public SetParams px(long remainingMilliseconds) {
-    return expiration(Keyword.PX, remainingMilliseconds);
-  }
-
-  /**
-   * Set the specified Unix time at which the key will expire, in seconds.
-   * @param timestampSeconds
-   * @return SetParams
-   */
-  public SetParams exAt(long timestampSeconds) {
-    return expiration(Keyword.EXAT, timestampSeconds);
-  }
-
-  /**
-   * Set the specified Unix time at which the key will expire, in milliseconds.
-   * @param timestampMilliseconds
-   * @return SetParams
-   */
-  public SetParams pxAt(long timestampMilliseconds) {
-    return expiration(Keyword.PXAT, timestampMilliseconds);
-  }
-
-  /**
-   * Retain the time to live associated with the key.
-   * @return SetParams
-   */
-  // TODO: deprecate?
-  public SetParams keepttl() {
-    return keepTtl();
-  }
-
-  /**
-   * Retain the time to live associated with the key.
-   * @return SetParams
-   */
-  public SetParams keepTtl() {
-    return expiration(Keyword.KEEPTTL, null);
-  }
-
   @Override
   public void addParams(CommandArguments args) {
     if (existance != null) {
       args.add(existance);
     }
 
-    if (expiration != null) {
-      args.add(expiration);
-      if (expirationValue != null) {
-        args.add(expirationValue);
-      }
-    }
+    super.addParams(args);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    SetParams setParams = (SetParams) o;
+    return Objects.equals(existance, setParams.existance) && super.equals((BaseSetExParams) o);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(existance, super.hashCode());
   }
 }

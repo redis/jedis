@@ -2,8 +2,7 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 
 import java.util.HashMap;
@@ -16,6 +15,8 @@ import redis.clients.jedis.UnifiedJedis;
 // HIDE_END
 
 import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 // HIDE_START
 public class CmdsHashExample {
@@ -45,9 +46,9 @@ public class CmdsHashExample {
         // STEP_END
         // REMOVE_START
         // Tests for 'hget' step.
-        Assert.assertEquals(1, hGetResult1);
-        Assert.assertEquals("foo", hGetResult2);
-        Assert.assertNull(hGetResult3);
+        assertEquals(1, hGetResult1);
+        assertEquals("foo", hGetResult2);
+        assertNull(hGetResult3);
         jedis.del("myhash");
         // REMOVE_END
 
@@ -70,8 +71,8 @@ public class CmdsHashExample {
         // STEP_END
         // REMOVE_START
         // Tests for 'hgetall' step.
-        Assert.assertEquals(2, hGetAllResult1);
-        Assert.assertEquals("[field1=Hello, field2=World]",
+        assertEquals(2, hGetAllResult1);
+        assertEquals("[field1=Hello, field2=World]",
             hGetAllResult2.entrySet().stream()
                     .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
                     .collect(toList())
@@ -112,15 +113,15 @@ public class CmdsHashExample {
         // STEP_END
         // REMOVE_START
         // Tests for 'hset' step.
-        Assert.assertEquals(1, hSetResult1);
-        Assert.assertEquals("Hello", hSetResult2);
-        Assert.assertEquals(2, hSetResult3);
-        Assert.assertEquals("Hi", hSetResult4);
-        Assert.assertEquals("World", hSetResult5);
-        Assert.assertEquals(3, hSetResult6.size());
-        Assert.assertEquals("Hello", hSetResult6.get("field1"));
-        Assert.assertEquals("Hi", hSetResult6.get("field2"));
-        Assert.assertEquals("World", hSetResult6.get("field3"));
+        assertEquals(1, hSetResult1);
+        assertEquals("Hello", hSetResult2);
+        assertEquals(2, hSetResult3);
+        assertEquals("Hi", hSetResult4);
+        assertEquals("World", hSetResult5);
+        assertEquals(3, hSetResult6.size());
+        assertEquals("Hello", hSetResult6.get("field1"));
+        assertEquals("Hi", hSetResult6.get("field2"));
+        assertEquals("World", hSetResult6.get("field3"));
         jedis.del("myhash");
         // REMOVE_END
 
@@ -139,8 +140,8 @@ public class CmdsHashExample {
         // STEP_END
         // REMOVE_START       
         // Tests for 'hvals' step.
-        Assert.assertEquals(2, hValsResult1);
-        Assert.assertEquals("[Hello, World]", hValsResult2.toString());
+        assertEquals(2, hValsResult1);
+        assertEquals("[Hello, World]", hValsResult2.toString());
         jedis.del("myhash");
         // REMOVE_END
 

@@ -2,13 +2,14 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ExpiryOption;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // HIDE_END
 
 // HIDE_START
@@ -36,9 +37,9 @@ public class CmdsGenericExample {
 
         // Tests for 'del' step.
         // REMOVE_START
-        Assert.assertEquals("OK", delResult1);
-        Assert.assertEquals("OK", delResult2);
-        Assert.assertEquals(2, delResult3);
+        assertEquals("OK", delResult1);
+        assertEquals("OK", delResult2);
+        assertEquals(2, delResult3);
         // REMOVE_END
 
 
@@ -73,15 +74,15 @@ public class CmdsGenericExample {
 
         // Tests for 'expire' step.
         // REMOVE_START
-        Assert.assertEquals("OK", expireResult1);
-        Assert.assertEquals(1, expireResult2);
-        Assert.assertEquals(10, expireResult3);
-        Assert.assertEquals("OK", expireResult4);
-        Assert.assertEquals(-1, expireResult5);
-        Assert.assertEquals(0, expireResult6);
-        Assert.assertEquals(-1, expireResult7);
-        Assert.assertEquals(1, expireResult8);
-        Assert.assertEquals(10, expireResult9);
+        assertEquals("OK", expireResult1);
+        assertEquals(1, expireResult2);
+        assertEquals(10, expireResult3);
+        assertEquals("OK", expireResult4);
+        assertEquals(-1, expireResult5);
+        assertEquals(0, expireResult6);
+        assertEquals(-1, expireResult7);
+        assertEquals(1, expireResult8);
+        assertEquals(10, expireResult9);
         jedis.del("mykey");
         // REMOVE_END
 
@@ -99,9 +100,9 @@ public class CmdsGenericExample {
 
         // Tests for 'ttl' step.
         // REMOVE_START
-        Assert.assertEquals("OK", ttlResult1);
-        Assert.assertEquals(1, ttlResult2);
-        Assert.assertEquals(10, ttlResult3);
+        assertEquals("OK", ttlResult1);
+        assertEquals(1, ttlResult2);
+        assertEquals(10, ttlResult3);
         jedis.del("mykey");
         // REMOVE_END
 

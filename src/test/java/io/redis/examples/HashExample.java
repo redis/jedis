@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 //REMOVE_START
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 //REMOVE_END
 
 public class HashExample {

@@ -2,8 +2,7 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 import java.util.List;
 
@@ -11,6 +10,8 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.Response;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PipeTransExample {
 
@@ -53,9 +54,9 @@ public class PipeTransExample {
 
 
             // REMOVE_START
-            Assert.assertEquals("#0", resp0.get());
-            Assert.assertEquals("#3", resp3.get());
-            Assert.assertEquals("#4", resp4.get());
+            assertEquals("#0", resp0.get());
+            assertEquals("#3", resp3.get());
+            assertEquals("#4", resp4.get());
             // REMOVE_END
         }
         // STEP_END
@@ -74,9 +75,9 @@ public class PipeTransExample {
         System.out.println(jedis.get("counter:3")); // >>> 3
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("1", jedis.get("counter:1"));
-        Assert.assertEquals("2", jedis.get("counter:2"));
-        Assert.assertEquals("3", jedis.get("counter:3"));
+        assertEquals("1", jedis.get("counter:1"));
+        assertEquals("2", jedis.get("counter:2"));
+        assertEquals("3", jedis.get("counter:3"));
         // REMOVE_END
 
         // STEP_START trans_watch
@@ -112,10 +113,10 @@ public class PipeTransExample {
                 // >>> /usr/syscmds/:/usr/mycmds/
             }
             // REMOVE_START
-            Assert.assertEquals("/usr/syscmds/:/usr/mycmds/", jedis.get("shellpath"));
-            Assert.assertEquals("OK", setResult.get());
-            Assert.assertEquals(1, transResults.size());
-            Assert.assertEquals("OK", transResults.get(0).toString());
+            assertEquals("/usr/syscmds/:/usr/mycmds/", jedis.get("shellpath"));
+            assertEquals("OK", setResult.get());
+            assertEquals(1, transResults.size());
+            assertEquals("OK", transResults.get(0).toString());
             // REMOVE_END
         }
         // STEP_END

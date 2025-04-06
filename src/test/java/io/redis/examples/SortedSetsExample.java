@@ -7,11 +7,11 @@ import redis.clients.jedis.resps.Tuple;
 //HIDE_END
 
 //REMOVE_START
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 //REMOVE_END
 
 public class SortedSetsExample {

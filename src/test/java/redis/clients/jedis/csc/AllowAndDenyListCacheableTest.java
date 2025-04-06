@@ -1,7 +1,7 @@
 package redis.clients.jedis.csc;
 
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisPooled;

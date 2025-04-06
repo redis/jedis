@@ -25,7 +25,6 @@ public class SetFromListTest {
 
   @BeforeAll
   public static void beforeClass() throws Exception {
-//    Class<?> clazz = Class.forName("redis.clients.jedis.BinaryJedis$SetFromList");
     Class<?> clazz = Class.forName("redis.clients.jedis.BuilderFactory$SetFromList");
     method = clazz.getDeclaredMethod("of", List.class);
     method.setAccessible(true);

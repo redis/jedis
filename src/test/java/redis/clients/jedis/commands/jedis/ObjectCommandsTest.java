@@ -3,7 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -117,6 +117,6 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     assertNull(lfuJedis.objectFreq("no_such_key"));
 
     jedis.set(key, "test2");
-    assertThrows("Freq is only allowed with LFU policy", JedisDataException.class, () -> jedis.objectFreq(key));
+    assertThrows(JedisDataException.class, () -> jedis.objectFreq(key), "Freq is only allowed with LFU policy");
   }
 }

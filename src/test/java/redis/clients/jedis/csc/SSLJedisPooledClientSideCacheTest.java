@@ -12,7 +12,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCacheTestBase {
 
@@ -27,9 +27,10 @@ public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCach
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
-        assumeTrue("Jedis Client side caching is only supported with 'Redis 7.4' or later.",
-                RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4));
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
+      assumeTrue(RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4),
+          "Jedis Client side caching is only supported with 'Redis 7.4' or later.");
     }
   }
 

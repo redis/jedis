@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import org.junit.ComparisonFailure;
+import org.opentest4j.AssertionFailedError;
 import redis.clients.jedis.RedisProtocol;
 
 public class AssertUtil {
@@ -32,7 +32,7 @@ public class AssertUtil {
         return true;
       }
     }
-    throw new ComparisonFailure("element is missing", Objects.toString(expected), array.toString());
+    throw new AssertionFailedError("element is missing", Objects.toString(expected), array.toString());
   }
 
   public static boolean assertByteArrayCollectionContains(Collection<byte[]> array, byte[] expected) {
@@ -41,7 +41,7 @@ public class AssertUtil {
         return true;
       }
     }
-    throw new ComparisonFailure("element is missing", Arrays.toString(expected), array.toString());
+    throw new AssertionFailedError("element is missing", Arrays.toString(expected), array.toString());
   }
 
   public static void assertByteArrayListEquals(List<byte[]> expected, List<byte[]> actual) {
@@ -64,7 +64,7 @@ public class AssertUtil {
         }
       }
       if (!contained) {
-        throw new ComparisonFailure("element is missing", Arrays.toString(next), actual.toString());
+        throw new AssertionFailedError("element is missing", Arrays.toString(next), actual.toString());
       }
     }
   }
@@ -81,7 +81,7 @@ public class AssertUtil {
         }
       }
       if (!found) {
-        throw new ComparisonFailure("element is missing", Objects.toString(fo), all.toString());
+        throw new AssertionFailedError("element is missing", Objects.toString(fo), all.toString());
       }
     }
   }
@@ -99,7 +99,7 @@ public class AssertUtil {
         }
       }
       if (!found) {
-        throw new ComparisonFailure("element is missing", Arrays.toString(fo), all.toString());
+        throw new AssertionFailedError("element is missing", Arrays.toString(fo), all.toString());
       }
     }
   }
@@ -111,25 +111,25 @@ public class AssertUtil {
       Object actObj = actual.get(n);
       if (expObj instanceof List) {
         if (!(actObj instanceof List)) {
-          throw new ComparisonFailure(n + "'th element is not a list",
+          throw new AssertionFailedError(n + "'th element is not a list",
               expObj.getClass().toString(), actObj.getClass().toString());
         }
         assertPipelineSyncAll((List) expObj, (List) actObj);
       } else if (expObj instanceof List) {
         if (!(actObj instanceof List)) {
-          throw new ComparisonFailure(n + "'th element is not a list",
+          throw new AssertionFailedError(n + "'th element is not a list",
               expObj.getClass().toString(), actObj.getClass().toString());
         }
         assertPipelineSyncAll((List) expObj, (List) actObj);
       } else if (expObj instanceof Set) {
         if (!(actObj instanceof Set)) {
-          throw new ComparisonFailure(n + "'th element is not a set",
+          throw new AssertionFailedError(n + "'th element is not a set",
               expObj.getClass().toString(), actObj.getClass().toString());
         }
         assertPipelineSyncAllSet((Set) expObj, (Set) actObj);
       } else if (expObj instanceof byte[]) {
         if (!(actObj instanceof byte[])) {
-          throw new ComparisonFailure(n + "'th element is not byte array",
+          throw new AssertionFailedError(n + "'th element is not byte array",
               expObj.getClass().toString(), actObj.getClass().toString());
         }
         assertArrayEquals((byte[]) expObj, (byte[]) actObj);

@@ -15,7 +15,6 @@ import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Assert;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -117,7 +116,7 @@ public class JedisPooledTest {
          Connection jedis = pool.getPool().getResource()) {
     } catch (Exception e) {
       if (!e.getMessage().startsWith("client info cannot contain space")) {
-        Assert.fail("invalid client name test fail");
+        fail("invalid client name test fail");
       }
     }
   }

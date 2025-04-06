@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
 import static java.util.Collections.emptySet;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;

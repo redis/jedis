@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class JedisClusterCRC16Test {
 
   @Test
-  public void testGetCRC16() throws Exception {
+  public void testGetCRC16() {
     Map<String, Integer> solutions = prepareSolutionSet();
 
     for (Entry<String, Integer> entry : solutions.entrySet()) {

@@ -1,7 +1,7 @@
 package redis.clients.jedis.util;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +47,7 @@ public class AssertUtil {
   public static void assertByteArrayListEquals(List<byte[]> expected, List<byte[]> actual) {
     assertEquals(expected.size(), actual.size());
     for (int n = 0; n < expected.size(); n++) {
-      assertArrayEquals(n + "'th elements don't match", expected.get(n), actual.get(n));
+      assertArrayEquals(expected.get(n), actual.get(n), n + "'th elements don't match");
     }
   }
 
@@ -134,7 +134,7 @@ public class AssertUtil {
         }
         assertArrayEquals((byte[]) expObj, (byte[]) actObj);
       } else {
-        assertEquals(n + "'th element mismatched", expObj, actObj);
+        assertEquals(expObj, actObj, n + "'th element mismatched");
       }
     }
   }

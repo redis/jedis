@@ -1,12 +1,10 @@
 package redis.clients.jedis.modules.search;
 
-import static org.junit.Assert.*;
-
 import org.json.JSONObject;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
@@ -19,22 +17,21 @@ import redis.clients.jedis.search.Schema.*;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
   public static final String JSON_ROOT = "$";
 
   private static final String index = "json-index";
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
 
   public JsonSearchTest(RedisProtocol protocol) {
     super(protocol);

@@ -1,9 +1,14 @@
 package redis.clients.jedis.modules.json;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static redis.clients.jedis.json.Path2.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
 
@@ -13,11 +18,12 @@ import java.util.Collections;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -26,14 +32,15 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.json.commands.RedisJsonV2Commands;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
 
   private RedisJsonV2Commands jsonV2;
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
@@ -42,7 +49,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() {
     super.setUp();
@@ -110,10 +117,10 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertNull(jsonV2.jsonSetWithEscape("obj", p, "strangle", JsonSetParams.jsonSetParams().xx()));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void setException() {
     // should error on non root path for new key
-    jsonV2.jsonSet("test", Path2.of(".foo"), "bar");
+    assertThrows(JedisDataException.class, () -> jsonV2.jsonSet("test", Path2.of(".foo"), "bar"));
   }
 
   @Test
@@ -366,9 +373,10 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals(singletonList(null), jsonV2.jsonArrAppendWithEscape("test_arrappend", Path2.of(".a"), 1));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void arrIndexAbsentKey() {
-    jsonV2.jsonArrIndexWithEscape("quxquux", ROOT_PATH, new JSONObject());
+    assertThrows(JedisDataException.class,
+        () -> jsonV2.jsonArrIndexWithEscape("quxquux", ROOT_PATH, new JSONObject()));
   }
 
   @Test
@@ -492,11 +500,11 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       fail("Actual value is not JSONArray.");
     }
     JSONArray b = (JSONArray) _b;
-    assertEquals("JSONArray length mismatch", a.length(), b.length());
+    assertEquals(a.length(), b.length(), "JSONArray length mismatch");
     int length = a.length();
     for (int index = 0; index < length; index++) {
       if (a.isNull(index)) {
-        assertTrue(index + "'th element is not null", b.isNull(index));
+        assertTrue(b.isNull(index), index + "'th element is not null");
         continue;
       }
       Object ia = a.get(index);
@@ -506,9 +514,10 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       } else if (ia instanceof JSONObject) {
         assertJsonObjectEquals((JSONObject) ia, ib);
       } else if (ia instanceof Number && ib instanceof Number) {
-        assertEquals(index + "'th element mismatch", ((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d);
+        assertEquals(((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d,
+            index + "'th element mismatch");
       } else {
-        assertEquals(index + "'th element mismatch", ia, ib);
+        assertEquals(ia, ib, index + "'th element mismatch");
       }
     }
   }
@@ -518,11 +527,11 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       fail("Actual value is not JSONObject.");
     }
     JSONObject b = (JSONObject) _b;
-    assertEquals("JSONObject length mismatch", a.length(), b.length());
+    assertEquals(a.length(), b.length(), "JSONObject length mismatch");
     assertEquals(a.keySet(), b.keySet());
     for (String key : a.keySet()) {
       if (a.isNull(key)) {
-        assertTrue(key + "'s value is not null", b.isNull(key));
+        assertTrue(b.isNull(key), key + "'s value is not null");
         continue;
       }
       Object oa = a.get(key);
@@ -532,7 +541,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       } else if (oa instanceof JSONObject) {
         assertJsonObjectEquals((JSONObject) oa, ob);
       } else {
-        assertEquals(key + "'s value mismatch", oa, ob);
+        assertEquals(oa, ob, key + "'s value mismatch");
       }
     }
   }

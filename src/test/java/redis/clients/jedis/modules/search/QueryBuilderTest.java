@@ -1,12 +1,13 @@
 package redis.clients.jedis.modules.search;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.search.querybuilder.QueryBuilders.*;
 import static redis.clients.jedis.search.querybuilder.Values.*;
 
 import java.util.Arrays;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.search.querybuilder.Node;
@@ -26,9 +27,9 @@ public class QueryBuilderTest {
     assertEquals("{foo | bar}", v.toString());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testEmptyTag() {
-    tags();
+    assertThrows(IllegalArgumentException.class, () -> tags());
   }
 
   @Test

@@ -19,6 +19,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisVersionCondition;
 
@@ -273,14 +274,11 @@ public class ACLJedisPoolTest {
         Jedis jedis = new Jedis(endpointWithDefaultUser.getURIBuilder()
             .credentials("", endpointWithDefaultUser.getPassword()).build())) {
       int currentClientCount = getClientCount(jedis.clientList());
-      try {
-        pool.getResource();
-        fail("Should throw exception as password is incorrect.");
-      } catch (Exception e) {
-        await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
-            .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
-        assertEquals(currentClientCount, getClientCount(jedis.clientList()));
-      }
+      assertThrows(JedisAccessControlException.class, pool::getResource);
+      // wait for the redis server to close the connection
+      await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
+          .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
+      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
   }
 

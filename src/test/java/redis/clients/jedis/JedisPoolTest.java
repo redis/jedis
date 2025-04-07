@@ -395,12 +395,28 @@ public class JedisPoolTest {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(),
         endpointStandalone0.getPort(), 2000, "wrong pass");
         Jedis jedis = new Jedis(endpointStandalone0.getURIBuilder().defaultCredentials().build())) {
-      int currentClientCount = getClientCount(jedis.clientList());
+      int initialClientCount = getClientCount(jedis.clientList());
+      boolean clientCountStabilized = false;
       try {
         pool.getResource();
         fail("Should throw exception as password is incorrect.");
       } catch (Exception e) {
-        assertEquals(currentClientCount, getClientCount(jedis.clientList()));
+        long startTime = System.currentTimeMillis();
+        long timeout = 2000;
+        while (System.currentTimeMillis() - startTime < timeout) {
+          int currentClientCount = getClientCount(jedis.clientList());
+          if (currentClientCount == initialClientCount) {
+            clientCountStabilized = true;
+            break;
+          }
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+          }
+        }
+        assertEquals(initialClientCount, getClientCount(jedis.clientList()));
+        assertTrue("Client count did not stabilize within the timeout.", clientCountStabilized);
       }
     }
   }

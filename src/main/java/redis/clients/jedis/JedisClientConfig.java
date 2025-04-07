@@ -115,4 +115,15 @@ public interface JedisClientConfig {
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
   }
+
+  /**
+   * If different then DEFAULT this will provide an Executor implementation that will sync/close multi node pipelines
+   * in parallel. This replaces the deprecated internal usage of new Executor Services for every pipeline, resulting in
+   * high thread creation rates and impact on latency.
+   *
+   * @return PipelineExecutorProvider
+   */
+  default PipelineExecutorProvider getPipelineExecutorProvider() {
+    return PipelineExecutorProvider.DEFAULT;
+  }
 }

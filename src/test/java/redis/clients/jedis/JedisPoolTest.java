@@ -399,9 +399,14 @@ public class JedisPoolTest {
         endpointStandalone0.getPort(), 2000, "wrong pass");
         Jedis jedis = new Jedis(endpointStandalone0.getURIBuilder().defaultCredentials().build())) {
       int currentClientCount = getClientCount(jedis.clientList());
-      await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
-          .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
-      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
+      try {
+        pool.getResource();
+        fail("Should throw exception as password is incorrect.");
+      } catch (Exception e) {
+        await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
+            .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
+        assertEquals(currentClientCount, getClientCount(jedis.clientList()));
+      }
     }
   }
 

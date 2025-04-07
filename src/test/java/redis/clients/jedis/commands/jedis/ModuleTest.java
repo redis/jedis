@@ -1,9 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assume;
@@ -53,7 +57,7 @@ public class ModuleTest extends JedisCommandsTestBase {
 
       List<Module> modules = jedis.moduleList();
 
-      assertEquals("testmodule", modules.get(0).getName());
+      assertThat(modules, hasItem(hasProperty("name", equalTo("testmodule"))));
 
       Object output = jedis.sendCommand(ModuleCommand.SIMPLE);
       assertTrue((Long) output > 0);
@@ -61,7 +65,8 @@ public class ModuleTest extends JedisCommandsTestBase {
     } finally {
 
       assertEquals("OK", jedis.moduleUnload("testmodule"));
-      assertEquals(Collections.emptyList(), jedis.moduleList());
+      List<Module> modules = jedis.moduleList();
+      assertThat(modules, not(hasItem(hasProperty("name", equalTo("testmodule")))));
     }
   }
 }

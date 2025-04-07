@@ -112,10 +112,12 @@ public class ACLJedisSentinelPoolTest {
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("sentinel")
         .password("foobared").build();
 
-    try (JedisSentinelPool pool = new JedisSentinelPool("wrongMasterName", sentinels, poolConfig,
-        masterConfig, sentinelConfig)) {
-      assertThrows(JedisException.class, pool::getResource);
-    }
+    assertThrows(JedisException.class, () -> {
+      try (JedisSentinelPool ignored = new JedisSentinelPool("wrongMasterName", sentinels, poolConfig,
+          masterConfig, sentinelConfig)) {
+        // do nothing
+      }
+    });
   }
 
   @Test

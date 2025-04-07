@@ -128,11 +128,11 @@ public class ACLJedisPoolTest {
         Jedis jedis = pool.getResource()) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
 
-      try (Jedis jedis2 = pool.getResource()) {
-        assertThrows(JedisException.class, () -> {
+      assertThrows(JedisException.class, () -> {
+        try (Jedis jedis2 = pool.getResource()) {
           jedis2.auth(endpoint.getUsername(), endpoint.getPassword());
-        });
-      }
+        }
+      });
     }
   }
 
@@ -215,7 +215,7 @@ public class ACLJedisPoolTest {
   @Test
   public void shouldThrowInvalidURIExceptionForInvalidURI() {
     assertThrows(InvalidURIException.class, () -> {
-      new JedisPool(new URI("redis://localhost:6379")).close();
+      new JedisPool(new URI("redis://localhost:")).close();
     });
   }
 

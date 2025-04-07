@@ -27,9 +27,8 @@ public class PipeTransExample {
         // REMOVE_END
 
         // STEP_START basic_pipe
-        // Pipeline is a way to send multiple commands to Redis in a single request.
-        // It can be used to improve performance by reducing the number of round trips to the server.
-        // Make sure to close the pipeline after use to release resources and return the connection to the pool.
+        // Make sure you close the pipeline after use to release resources
+        // and return the connection to the pool.
         try (AbstractPipeline pipe = jedis.pipelined()) {
 
             for (int i = 0; i < 5; i++) {

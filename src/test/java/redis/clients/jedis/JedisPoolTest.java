@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -8,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
@@ -395,29 +398,10 @@ public class JedisPoolTest {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(),
         endpointStandalone0.getPort(), 2000, "wrong pass");
         Jedis jedis = new Jedis(endpointStandalone0.getURIBuilder().defaultCredentials().build())) {
-      int initialClientCount = getClientCount(jedis.clientList());
-      boolean clientCountStabilized = false;
-      try {
-        pool.getResource();
-        fail("Should throw exception as password is incorrect.");
-      } catch (Exception e) {
-        long startTime = System.currentTimeMillis();
-        long timeout = 2000;
-        while (System.currentTimeMillis() - startTime < timeout) {
-          int currentClientCount = getClientCount(jedis.clientList());
-          if (currentClientCount == initialClientCount) {
-            clientCountStabilized = true;
-            break;
-          }
-          try {
-            Thread.sleep(100);
-          } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-          }
-        }
-        assertEquals(initialClientCount, getClientCount(jedis.clientList()));
-        assertTrue("Client count did not stabilize within the timeout.", clientCountStabilized);
-      }
+      int currentClientCount = getClientCount(jedis.clientList());
+      await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
+          .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
+      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
   }
 

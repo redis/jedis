@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -7,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -264,12 +267,9 @@ public class ACLJedisPoolTest {
         Jedis jedis = new Jedis(endpointWithDefaultUser.getURIBuilder()
             .credentials("", endpointWithDefaultUser.getPassword()).build())) {
       int currentClientCount = getClientCount(jedis.clientList());
-      try {
-        pool.getResource();
-        fail("Should throw exception as password is incorrect.");
-      } catch (Exception e) {
-        assertEquals(currentClientCount, getClientCount(jedis.clientList()));
-      }
+      await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
+          .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
+      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
   }
 

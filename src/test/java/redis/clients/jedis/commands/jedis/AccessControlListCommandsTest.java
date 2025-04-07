@@ -19,11 +19,12 @@ import java.util.List;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Jedis;
@@ -39,14 +40,15 @@ import redis.clients.jedis.util.SafeEncoder;
 /**
  * TODO: properly define and test exceptions
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static final String USER_NAME = "newuser";
   public static final String USER_PASSWORD = "secret";
   public static final String USER_ANTIREZ = "antirez";
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
@@ -57,7 +59,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     super(protocol);
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     try {

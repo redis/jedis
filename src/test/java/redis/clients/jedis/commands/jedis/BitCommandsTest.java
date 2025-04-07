@@ -1,17 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -21,7 +17,14 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class BitCommandsTest extends JedisCommandsTestBase {
 
   public BitCommandsTest(RedisProtocol protocol) {
@@ -254,9 +257,11 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(new byte[]{0x79}, jedis.get(dest));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void bitOpNotMultiSourceShouldFail() {
-    jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
+    Assertions.assertThrows(JedisDataException.class, () -> {
+      jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
+    });
   }
 
   @Test

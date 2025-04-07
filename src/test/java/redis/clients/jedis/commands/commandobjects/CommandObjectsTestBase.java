@@ -24,20 +24,13 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * This class provides the basic setup, except the {@link HostAndPort} for connecting
  * to a running Redis server. That one is provided by abstract subclasses, depending
  * on if a Redis Stack server is needed, or a standalone suffices.
+ * <p>
+ * In principle all subclasses of this class should be parameterized tests,
+ * to run with several versions of RESP. {@link CommandsTestsParameters#respVersions}
  */
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public abstract class CommandObjectsTestBase {
-
-  /**
-   * Input data for parameterized tests. In principle all subclasses of this
-   * class should be parameterized tests, to run with several versions of RESP.
-   *
-   * @see CommandsTestsParameters#respVersions()
-   */
-  public static Collection<Object[]> data() {
-    return CommandsTestsParameters.respVersions();
-  }
 
   /**
    * RESP protocol used in the tests. Injected from subclasses.

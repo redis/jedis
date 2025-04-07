@@ -7,6 +7,8 @@ import io.redis.test.utils.RedisVersion;
 import java.net.URISyntaxException;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -17,7 +19,6 @@ import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
-@RunWith(Parameterized.class)
 public class ACLJedisTest extends JedisCommandsTestBase {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");

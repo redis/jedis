@@ -11,12 +11,11 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
@@ -33,10 +32,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
@@ -47,17 +47,18 @@ import redis.clients.jedis.params.HSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.JedisByteHashMap;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class HashesCommandsTest extends JedisCommandsTestBase {
 
-  @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(endpoint);
-  @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(endpoint);
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(endpoint);
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -708,8 +709,8 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void testHstrLen_EmptyHash() {
-    Long response = jedis.hstrlen("myhash", "k1");
-    assertEquals(0l, response.longValue());
+    long response = jedis.hstrlen("myhash", "k1");
+    assertEquals(0L, response);
   }
 
   @Test
@@ -717,8 +718,8 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     Map<String, String> values = new HashMap<>();
     values.put("key", "value");
     jedis.hmset("myhash", values);
-    Long response = jedis.hstrlen("myhash", "key");
-    assertEquals(5l, response.longValue());
+    long response = jedis.hstrlen("myhash", "key");
+    assertEquals(5l, response);
 
   }
 
@@ -727,8 +728,8 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     Map<byte[], byte[]> values = new HashMap<>();
     values.put(bbar, bcar);
     jedis.hmset(bfoo, values);
-    Long response = jedis.hstrlen(bfoo, bbar);
-    assertEquals(4l, response.longValue());
+    long response = jedis.hstrlen(bfoo, bbar);
+    assertEquals(4L, response);
   }
 
   @Test

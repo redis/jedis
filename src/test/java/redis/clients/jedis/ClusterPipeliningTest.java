@@ -2,19 +2,27 @@ package redis.clients.jedis;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
@@ -44,7 +52,7 @@ public class ClusterPipeliningTest {
   private static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
   private Set<HostAndPort> nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
@@ -84,21 +92,21 @@ public class ClusterPipeliningTest {
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
   }
 
-  @Before
+  @BeforeEach
   public void prepare() {
     node1.flushAll();
     node2.flushAll();
     node3.flushAll();
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     node1.flushDB();
     node2.flushDB();
     node3.flushDB();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws InterruptedException {
     node1.flushDB();
     node2.flushDB();
@@ -355,12 +363,12 @@ public class ClusterPipeliningTest {
     assertTrue(Arrays.equals(secondKey, value1) || Arrays.equals(secondKey, value2));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void pipelineResponseWithinPipeline() {
     try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<String> string = p.get("string");
-      string.get();
+      assertThrows(IllegalStateException.class,string::get);
       p.sync();
     }
   }
@@ -893,9 +901,11 @@ public class ClusterPipeliningTest {
     try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       p.set(key, "0");
-      Response<Object> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+      Response<Object> result0 = p.eval(script, Collections.singletonList(key),
+          Collections.singletonList(arg));
       p.incr(key);
-      Response<Object> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+      Response<Object> result1 = p.eval(script, Collections.singletonList(key),
+          Collections.singletonList(arg));
       Response<String> result2 = p.get(key);
       p.sync();
 
@@ -915,9 +925,11 @@ public class ClusterPipeliningTest {
     try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline bP = new ClusterPipeline(provider);
       bP.set(bKey, SafeEncoder.encode("0"));
-      Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
+      Response<Object> bResult0 = bP.eval(bScript, Collections.singletonList(bKey),
+          Collections.singletonList(bArg));
       bP.incr(bKey);
-      Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
+      Response<Object> bResult1 = bP.eval(bScript, Collections.singletonList(bKey),
+          Collections.singletonList(bArg));
       Response<byte[]> bResult2 = bP.get(bKey);
       bP.sync();
 
@@ -1081,7 +1093,8 @@ public class ClusterPipeliningTest {
     }
   }
 
-  @Test(timeout = 10_000L)
+  @Test
+  @Timeout(10)
   public void multiple() {
     final int maxTotal = 100;
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();

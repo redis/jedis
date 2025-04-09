@@ -1,7 +1,7 @@
 package redis.clients.jedis.scenario;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -13,7 +13,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.*;
 
 public class ClusterTopologyRefreshTest {
@@ -24,13 +27,13 @@ public class ClusterTopologyRefreshTest {
 
   private final FaultInjectionClient faultClient = new FaultInjectionClient();
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() {
     try {
       ClusterTopologyRefreshTest.endpoint = HostAndPorts.getRedisEndpoint("re-single-shard-oss-cluster");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
-      org.junit.Assume.assumeTrue(false);
+      assumeTrue(false);
     }
   }
 
@@ -49,8 +52,8 @@ public class ClusterTopologyRefreshTest {
 
     try (JedisCluster client = new JedisCluster(spyProvider,
         RecommendedSettings.MAX_RETRIES, RecommendedSettings.MAX_TOTAL_RETRIES_DURATION)) {
-      assertEquals("Was this BDB used to run this test before?", 1,
-          client.getClusterNodes().size());
+      assertEquals(1,
+          client.getClusterNodes().size(),"Was this BDB used to run this test before?");
 
       AtomicLong commandsExecuted = new AtomicLong();
 

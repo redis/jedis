@@ -1,16 +1,17 @@
 package redis.clients.jedis.modules;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import java.util.Locale;
 import java.util.function.Consumer;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.RedisProtocol;
@@ -25,7 +26,8 @@ import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 @SinceRedisVersion(value = "7.9.0")
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ConsolidatedAccessControlListCommandsTest extends RedisModuleCommandsTestBase {
 
   public static final String USER_NAME = "moduser";
@@ -35,7 +37,7 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
     super(protocol);
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     try {
@@ -142,10 +144,10 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
         DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())) {
 
       // user can't execute commands
-      JedisAccessControlException noperm = assertThrows("Should throw a NOPERM exception",
-          JedisAccessControlException.class, () -> operation.accept(client));
-      assertThat(noperm.getMessage(),
-          Matchers.oneOf(getNopermErrorMessage(false, command), getNopermErrorMessage(true, command)));
+      JedisAccessControlException noperm = assertThrows(JedisAccessControlException.class,
+          () -> operation.accept(client), "Should throw a NOPERM exception");
+      assertThat(noperm.getMessage(), Matchers.oneOf(getNopermErrorMessage(false, command),
+          getNopermErrorMessage(true, command)));
 
       // permit user to commands
       jedis.aclSetUser(USER_NAME, "+" + SafeEncoder.encode(command.getRaw()));
@@ -155,7 +157,8 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
     }
   }
 
-  private void grantModuleCommandCatTest(String category, ProtocolCommand command, Consumer<UnifiedJedis> operation) {
+  private void grantModuleCommandCatTest(String category, ProtocolCommand command,
+      Consumer<UnifiedJedis> operation) {
     // create and enable an user with permission to all keys but no commands
     jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD, "on", "~*");
 
@@ -164,10 +167,10 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
         DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())) {
 
       // user can't execute category commands
-      JedisAccessControlException noperm = assertThrows("Should throw a NOPERM exception",
-          JedisAccessControlException.class, () -> operation.accept(client));
-      assertThat(noperm.getMessage(),
-          Matchers.oneOf(getNopermErrorMessage(false, command), getNopermErrorMessage(true, command)));
+      JedisAccessControlException noperm = assertThrows(JedisAccessControlException.class,
+          () -> operation.accept(client), "Should throw a NOPERM exception");
+      assertThat(noperm.getMessage(), Matchers.oneOf(getNopermErrorMessage(false, command),
+          getNopermErrorMessage(true, command)));
 
       // permit user to category commands
       jedis.aclSetUser(USER_NAME, "+@" + category);

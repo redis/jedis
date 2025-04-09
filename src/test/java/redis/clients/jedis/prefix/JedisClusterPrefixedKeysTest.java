@@ -2,13 +2,15 @@ package redis.clients.jedis.prefix;
 
 import java.util.stream.Collectors;
 import java.util.Set;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JedisClusterPrefixedKeysTest extends PrefixedKeysTest<JedisCluster> {
 
@@ -21,8 +23,8 @@ public class JedisClusterPrefixedKeysTest extends PrefixedKeysTest<JedisCluster>
   }
 
   @Override
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void prefixesKeysInTransaction() {
-    super.prefixesKeysInTransaction();
+    assertThrows(UnsupportedOperationException.class, () -> super.prefixesKeysInTransaction());
   }
 }

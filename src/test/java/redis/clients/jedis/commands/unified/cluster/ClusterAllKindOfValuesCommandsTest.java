@@ -1,40 +1,41 @@
 package redis.clients.jedis.commands.unified.cluster;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.util.EnabledOnCommandRule;
-import redis.clients.jedis.util.RedisVersionRule;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
-  @Rule
-  public RedisVersionRule versionRule = new RedisVersionRule(
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
           HostAndPorts.getStableClusterServers().get(0),
           DefaultJedisClientConfig.builder().password("cluster").build());
-  @Rule
-  public EnabledOnCommandRule enabledOnCommandRule = new EnabledOnCommandRule(
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
           HostAndPorts.getStableClusterServers().get(0),
           DefaultJedisClientConfig.builder().password("cluster").build());
 
@@ -42,12 +43,12 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
@@ -151,10 +152,10 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     assertEquals(0, jedis.renamenx("foo{&}", "bar{&}"));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   @Override
   public void dbSize() {
-    super.dbSize();
+    assertThrows(UnsupportedOperationException.class, super::dbSize);
   }
 
   @Test
@@ -255,10 +256,10 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     assertEquals(Collections.singletonList("{+}f"), scanResult.getResult());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   @Override
   public void scanIsCompleteIteration() {
-    super.scanIsCompleteIteration();
+    assertThrows( IllegalArgumentException.class, super::scanIsCompleteIteration);
   }
 
   @Test

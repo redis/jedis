@@ -3,9 +3,11 @@
 // HIDE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.UnifiedJedis;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CuckooFilterExample {
 
@@ -23,7 +25,7 @@ public class CuckooFilterExample {
         System.out.println(res1); // >>> OK
 
         // REMOVE_START
-        Assert.assertEquals(res1, "OK");
+        assertEquals(res1, "OK");
         // REMOVE_END
 
         boolean res2 = jedis.cfAdd("bikes:models", "Smoky Mountain Striker");
@@ -39,7 +41,7 @@ public class CuckooFilterExample {
         System.out.println(res5); // >>> True
 
         // REMOVE_START
-        Assert.assertTrue(res5);
+        assertTrue(res5);
         // REMOVE_END
         // STEP_END
 

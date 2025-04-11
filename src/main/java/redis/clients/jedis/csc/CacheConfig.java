@@ -3,12 +3,17 @@ package redis.clients.jedis.csc;
 public class CacheConfig {
 
     private int maxSize;
+    private long ttl;
     private Cacheable cacheable;
     private EvictionPolicy evictionPolicy;
     private Class cacheClass;
 
     public int getMaxSize() {
         return maxSize;
+    }
+
+    public long getTtl() {
+        return ttl;
     }
 
     public Cacheable getCacheable() {
@@ -28,13 +33,23 @@ public class CacheConfig {
 
     public static class Builder {
         private final int DEFAULT_MAX_SIZE = 10000;
+        /**
+         * 30000ms
+         */
+        private final long DEFAULT_TTL = 30000;
         private int maxSize = DEFAULT_MAX_SIZE;
+        private long ttl = DEFAULT_TTL;
         private Cacheable cacheable = DefaultCacheable.INSTANCE;
         private EvictionPolicy evictionPolicy;
         private Class cacheClass;
 
         public Builder maxSize(int maxSize) {
             this.maxSize = maxSize;
+            return this;
+        }
+
+        public Builder ttl(long ttl) {
+            this.ttl = ttl;
             return this;
         }
 
@@ -56,6 +71,7 @@ public class CacheConfig {
         public CacheConfig build() {
             CacheConfig cacheConfig = new CacheConfig();
             cacheConfig.maxSize = this.maxSize;
+            cacheConfig.ttl = this.ttl;
             cacheConfig.cacheable = this.cacheable;
             cacheConfig.evictionPolicy = this.evictionPolicy;
             cacheConfig.cacheClass = this.cacheClass;

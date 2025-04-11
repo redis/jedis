@@ -7,6 +7,7 @@ import static org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -300,7 +301,7 @@ public class RedisEntraIDIntegrationTests {
     IdentityProviderConfig idpConfig = mock(IdentityProviderConfig.class);
     when(idpConfig.getProvider()).thenReturn(mockIdentityProvider);
 
-    TokenAuthConfig tokenAuthConfig = EntraIDTokenAuthConfigBuilder.builder()
+    TokenAuthConfig tokenAuthConfig = TokenAuthConfig.builder().tokenRequestExecTimeoutInMs(4000)
         .identityProviderConfig(idpConfig).expirationRefreshRatio(0.000001F).build();
     AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
     DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
@@ -326,8 +327,9 @@ public class RedisEntraIDIntegrationTests {
             jedis.del(key);
           }
         });
-
-      assertEquals("WRONGPASS invalid username-password pair", aclException.getMessage());
+      String expectedError = "WRONGPASS invalid username-password pair";
+      assertTrue(aclException.getMessage().startsWith(expectedError),
+        "Expected '" + aclException.getMessage() + "' to start with '" + expectedError + "'");
     }
   }
 

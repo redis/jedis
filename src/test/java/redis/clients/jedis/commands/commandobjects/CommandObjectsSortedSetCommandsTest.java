@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.ScanParams;

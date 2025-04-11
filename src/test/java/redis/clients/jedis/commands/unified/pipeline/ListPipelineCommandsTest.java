@@ -10,9 +10,10 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -525,7 +527,8 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(bresult3.get().getValue(), equalTo(bcar));
   }
 
-  @Test(timeout = 5000L)
+  @Test
+  @Timeout(5)
   public void blpopDoubleWithSleep() {
     Response<KeyValue<String, String>> result = pipe.blpop(0.04, "foo");
     pipe.sync();
@@ -636,7 +639,8 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(bresult3.get().getValue(), equalTo(bcar));
   }
 
-  @Test(timeout = 5000L)
+  @Test
+  @Timeout(5)
   public void brpopDoubleWithSleep() {
     Response<KeyValue<String, String>> result = pipe.brpop(0.04, "foo");
     pipe.sync();
@@ -747,16 +751,13 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test
   public void brpoplpush() {
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          logger.error("", e);
-        }
-        jedis.lpush("foo", "a");
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        logger.error("", e);
       }
+      jedis.lpush("foo", "a");
     }).start();
 
     Response<String> element = pipe.brpoplpush("foo", "bar", 0);
@@ -771,16 +772,13 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
     // Binary
 
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          logger.error("", e);
-        }
-        jedis.lpush(bfoo, bA);
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        logger.error("", e);
       }
+      jedis.lpush(bfoo, bA);
     }).start();
 
     Response<byte[]> belement = pipe.brpoplpush(bfoo, bbar, 0);

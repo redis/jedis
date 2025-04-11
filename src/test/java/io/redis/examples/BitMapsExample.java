@@ -2,9 +2,12 @@
 // HIDE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.UnifiedJedis;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BitMapsExample {
 
@@ -29,9 +32,9 @@ public class BitMapsExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.assertFalse(res1);
-        Assert.assertTrue(res2);
-        Assert.assertFalse(res3);
+        assertFalse(res1);
+        assertTrue(res2);
+        assertFalse(res3);
         // REMOVE_END
 
         // STEP_START bitcount
@@ -40,7 +43,7 @@ public class BitMapsExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.assertEquals(1, res4);
+        assertEquals(1, res4);
         // REMOVE_END
 
 // HIDE_START

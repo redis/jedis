@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;

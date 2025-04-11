@@ -4,10 +4,10 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.*;
 
@@ -20,8 +20,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import redis.clients.jedis.CommandObjects;
@@ -200,7 +200,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
           .collect(Collectors.toList());
       List<Boolean> isDeleted = cache.delete(cacheKeysToDelete);
       assertThat(isDeleted, hasSize(delete));
-      isDeleted.forEach(Assert::assertTrue);
+      isDeleted.forEach(Assertions::assertTrue);
       assertEquals(count - delete, cache.getSize());
     }
   }
@@ -244,14 +244,14 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       // "foo" is cached
       client.set("foo", "bar");
       client.get("foo"); // read from the server
-      Assert.assertEquals("bar", client.get("foo")); // cache hit
+      assertEquals("bar", client.get("foo")); // cache hit
 
       // Using another connection
       controlClient.set("foo", "bar2");
-      Assert.assertEquals("bar2", controlClient.get("foo"));
+      assertEquals("bar2", controlClient.get("foo"));
 
       //invalidating the cache and read it back from server
-      Assert.assertEquals("bar2", client.get("foo"));
+      assertEquals("bar2", client.get("foo"));
 
       Mockito.verify(mock, Mockito.times(1)).deleteByRedisKeys(Mockito.anyList());
       Mockito.verify(mock, Mockito.times(2)).set(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
@@ -446,9 +446,9 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
         assertTrue(!cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
       }
 
-      /// check expected evictions are done after the touched keys
+      // check expected evictions are done after the touched keys
       for (int i = touchOffset + expectedEvictions; i < (2 * expectedEvictions); i++) {
-        assertTrue(!cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertFalse(cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
       }
 
       assertEquals(maxSize, cache.getSize());

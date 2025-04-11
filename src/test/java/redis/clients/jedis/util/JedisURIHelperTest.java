@@ -1,11 +1,11 @@
 package redis.clients.jedis.util;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static redis.clients.jedis.util.JedisURIHelper.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;

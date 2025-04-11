@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.executors.CommandExecutor;
@@ -24,20 +24,13 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * This class provides the basic setup, except the {@link HostAndPort} for connecting
  * to a running Redis server. That one is provided by abstract subclasses, depending
  * on if a Redis Stack server is needed, or a standalone suffices.
+ * <p>
+ * In principle all subclasses of this class should be parameterized tests,
+ * to run with several versions of RESP. {@link CommandsTestsParameters#respVersions}
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public abstract class CommandObjectsTestBase {
-
-  /**
-   * Input data for parameterized tests. In principle all subclasses of this
-   * class should be parameterized tests, to run with several versions of RESP.
-   *
-   * @see CommandsTestsParameters#respVersions()
-   */
-  @Parameterized.Parameters
-  public static Collection<Object[]> data() {
-    return CommandsTestsParameters.respVersions();
-  }
 
   /**
    * RESP protocol used in the tests. Injected from subclasses.
@@ -67,7 +60,7 @@ public abstract class CommandObjectsTestBase {
     commandObjects.setProtocol(protocol);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     // Configure a default command executor.
     DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder().protocol(protocol)

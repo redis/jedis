@@ -4,19 +4,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
@@ -31,13 +32,14 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
   private static final String INDEX = "dialect-INDEX";
   private static final int DEFAULT_DIALECT = 2;
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
@@ -47,15 +49,11 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
   }
 
   @Override
+  @BeforeEach
   public void setUp() {
     super.setUp();
     client.setDefaultSearchDialect(DEFAULT_DIALECT);
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
 
   private void addDocument(Document doc) {
     String key = doc.getId();

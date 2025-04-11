@@ -1,16 +1,15 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.TlsUtil;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SSLJedisTest {
 
@@ -18,7 +17,7 @@ public class SSLJedisTest {
 
   private static final String trustStoreName = SSLJedisTest.class.getSimpleName();
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
@@ -26,7 +25,7 @@ public class SSLJedisTest {
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardownTrustStore() {
     TlsUtil.restoreOriginalTrustStore();
   }

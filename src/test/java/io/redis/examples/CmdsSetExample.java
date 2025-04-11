@@ -2,10 +2,11 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Set;
 
@@ -37,10 +38,10 @@ public class CmdsSetExample {
         // >>> [Hello, World]
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(1, sAddResult1);
-        Assert.assertEquals(1, sAddResult2);
-        Assert.assertEquals(0, sAddResult3);
-        Assert.assertArrayEquals(new String[] {"Hello", "World"}, sAddResult4.stream().sorted().toArray());
+        assertEquals(1, sAddResult1);
+        assertEquals(1, sAddResult2);
+        assertEquals(0, sAddResult3);
+        assertArrayEquals(new String[] {"Hello", "World"}, sAddResult4.stream().sorted().toArray());
         jedis.del("myset");
         // REMOVE_END
 
@@ -53,8 +54,8 @@ public class CmdsSetExample {
         // >>> [Hello, World]
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(2, sMembersResult1);
-        Assert.assertArrayEquals(new String[] {"Hello", "World"}, sMembersResult2.stream().sorted().toArray());
+        assertEquals(2, sMembersResult1);
+        assertArrayEquals(new String[] {"Hello", "World"}, sMembersResult2.stream().sorted().toArray());
         // REMOVE_END
 
 // HIDE_START

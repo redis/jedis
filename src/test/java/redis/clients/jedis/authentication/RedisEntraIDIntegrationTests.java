@@ -4,10 +4,11 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Durations.TWO_SECONDS;
 import static org.awaitility.Durations.FIVE_SECONDS;
 import static org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
@@ -36,10 +37,10 @@ import java.util.function.Consumer;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.hamcrest.MatcherAssert;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.MockedConstruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.scenario.FaultInjectionClient;
 import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class RedisEntraIDIntegrationTests {
   private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
 
@@ -78,7 +79,7 @@ public class RedisEntraIDIntegrationTests {
 
   private final FaultInjectionClient faultClient = new FaultInjectionClient();
 
-  @BeforeClass
+  @BeforeAll
   public static void before() {
     try {
       testCtx = EntraIDTestContext.DEFAULT;
@@ -86,7 +87,7 @@ public class RedisEntraIDIntegrationTests {
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
-      org.junit.Assume.assumeTrue(false);
+      assumeTrue(false, "No Redis endpoint 'standalone-entraid-acl' is configured!");
     }
   }
 

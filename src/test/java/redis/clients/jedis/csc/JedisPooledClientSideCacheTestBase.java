@@ -1,15 +1,14 @@
 package redis.clients.jedis.csc;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisClientSideCacheTestBase {
 

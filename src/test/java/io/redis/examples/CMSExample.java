@@ -5,7 +5,7 @@ package io.redis.examples;
 
 //REMOVE_START
 import redis.clients.jedis.UnifiedJedis;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;

@@ -2,8 +2,7 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 // REMOVE_END
 // STEP_START import
@@ -15,6 +14,9 @@ import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.*;
 import org.json.JSONObject;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // STEP_END
 
 // HIDE_START
@@ -70,7 +72,7 @@ public class HomeJsonExample {
         System.out.println(createResult); // >>> OK
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", createResult);
+        assertEquals("OK", createResult);
         // REMOVE_END
 
         // STEP_START add_data
@@ -79,9 +81,9 @@ public class HomeJsonExample {
         String user3Set = jedis.jsonSet("user:3", new Path2("$"), user3);
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", user1Set);
-        Assert.assertEquals("OK", user2Set);
-        Assert.assertEquals("OK", user3Set);
+        assertEquals("OK", user1Set);
+        assertEquals("OK", user2Set);
+        assertEquals("OK", user3Set);
         // REMOVE_END
 
         // STEP_START query1
@@ -99,7 +101,7 @@ public class HomeJsonExample {
         // >>> user:3
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("user:3", paulDocs.get(0).getId());
+        assertEquals("user:3", paulDocs.get(0).getId());
         // REMOVE_END
 
         // STEP_START query2
@@ -118,7 +120,7 @@ public class HomeJsonExample {
         // >>> user:3
         // STEP_END
         // REMOVE_START
-        Assert.assertArrayEquals(
+        assertArrayEquals(
             new String[] {"user:1", "user:3"},
             citiesResult.getDocuments().stream().map(Document::getId).sorted().toArray()
         );
@@ -142,7 +144,7 @@ public class HomeJsonExample {
         // >>> Tel Aviv - 2
         // STEP_END
         // REMOVE_START
-        Assert.assertArrayEquals(
+        assertArrayEquals(
             new String[] {"London - 1", "Tel Aviv - 2"},
             aggResult.getRows().stream()
                     .map(r -> r.getString("city") + " - " + r.getString("count"))

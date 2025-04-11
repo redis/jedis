@@ -3,7 +3,7 @@ package redis.clients.jedis.mocked.pipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 
 import redis.clients.jedis.CommandObject;
@@ -72,7 +72,7 @@ public abstract class PipeliningBaseMockedTestBase extends MockedCommandObjectsT
   @Mock
   protected Response<?> predefinedResponse;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     pipeliningBase = new TestPipeliningBase(commandObjects, predefinedResponse, commands);
   }

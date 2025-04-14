@@ -36,7 +36,7 @@ The most recent version of this library supports redis version
 [7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES) and 
 [7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES).
 
-The table below highlights version compatibility of the most-recent library versions and Redis versions. Compatibility means communication features, and Redis command capabilities.
+The table below highlights the version compatibility of the most-recent library versions with Redis versions and JDK versions. Compatibility means communication features, and Redis command capabilities.
 
 
 | Jedis version | Supported Redis versions              | JDK Compatibility |

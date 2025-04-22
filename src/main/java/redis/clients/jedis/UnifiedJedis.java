@@ -3600,7 +3600,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoadReplace(String functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override

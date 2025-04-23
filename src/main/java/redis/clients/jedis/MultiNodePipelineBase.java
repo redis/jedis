@@ -108,13 +108,14 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
         } catch (JedisConnectionException jce) {
           log.error("Error with connection to " + nodeKey, jce);
           // cleanup the connection
+          // TODO these operations not thread-safe
           iter.remove();
           connections.remove(nodeKey);
-          IOUtils.closeQuietly(connection);
         } finally {
-            if (!onlyOneNode) {
-              countDownLatch.countDown();
-            }
+          IOUtils.closeQuietly(connection);
+          if (!onlyOneNode) {
+            countDownLatch.countDown();
+          }
         }
       });
     }

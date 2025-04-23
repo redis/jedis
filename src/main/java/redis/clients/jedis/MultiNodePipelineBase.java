@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -85,17 +86,20 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     }
     syncing = true;
 
-    ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
+    boolean onlyOneNode = pipelinedResponses.size() == 1;
+    ExecutorService executorService = onlyOneNode ? null : Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
+    CountDownLatch countDownLatch = onlyOneNode ? null : new CountDownLatch(pipelinedResponses.size());
 
-    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
-        = pipelinedResponses.entrySet().iterator();
-    while (pipelinedResponsesIterator.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
+    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> iter = pipelinedResponses.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<HostAndPort, Queue<Response<?>>> entry = iter.next();
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
-      executorService.submit(() -> {
+
+      // last node run in current thread directly
+      Executor executor = iter.hasNext() ? executorService : Runnable::run;
+      executor.execute(() -> {
         try {
           List<Object> unformatted = connection.getMany(queue.size());
           for (Object o : unformatted) {
@@ -104,22 +108,26 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
         } catch (JedisConnectionException jce) {
           log.error("Error with connection to " + nodeKey, jce);
           // cleanup the connection
-          pipelinedResponsesIterator.remove();
+          iter.remove();
           connections.remove(nodeKey);
           IOUtils.closeQuietly(connection);
         } finally {
-          countDownLatch.countDown();
+            if (!onlyOneNode) {
+              countDownLatch.countDown();
+            }
         }
       });
     }
 
-    try {
-      countDownLatch.await();
-    } catch (InterruptedException e) {
-      log.error("Thread is interrupted during sync.", e);
-    }
+    if (!onlyOneNode) {
+      try {
+        countDownLatch.await();
+      } catch (InterruptedException e) {
+        log.error("Thread is interrupted during sync.", e);
+      }
 
-    executorService.shutdownNow();
+      executorService.shutdownNow();
+    }
 
     syncing = false;
   }

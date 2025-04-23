@@ -81,18 +81,14 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
 
   @Override
   public final void sync() {
-    if (pipelinedResponses.isEmpty()) {
-      return;
-    }
-
     if (syncing) {
       return;
     }
     syncing = true;
 
-    boolean onlyOneNode = pipelinedResponses.size() == 1;
-    ExecutorService executorService = onlyOneNode ? null : Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
-    CountDownLatch countDownLatch = onlyOneNode ? null : new CountDownLatch(pipelinedResponses.size());
+    boolean multiNode = pipelinedResponses.size() > 1;
+    ExecutorService executorService = multiNode ? Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS) : null;
+    CountDownLatch countDownLatch = multiNode ? new CountDownLatch(pipelinedResponses.size()) : null;
 
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
@@ -113,19 +109,19 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
         } catch (JedisConnectionException jce) {
           log.error("Error with connection to " + nodeKey, jce);
           // cleanup the connection
-          // TODO these operations not thread-safe
+          // TODO these operations not thread-safe and
           pipelinedResponsesIterator.remove();
           connections.remove(nodeKey);
-        } finally {
           IOUtils.closeQuietly(connection);
-          if (!onlyOneNode) {
+        } finally {
+          if (multiNode) {
             countDownLatch.countDown();
           }
         }
       });
     }
 
-    if (!onlyOneNode) {
+    if (multiNode) {
       try {
         countDownLatch.await();
       } catch (InterruptedException e) {

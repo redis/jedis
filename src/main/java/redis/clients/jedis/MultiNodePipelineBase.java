@@ -94,15 +94,16 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     ExecutorService executorService = onlyOneNode ? null : Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
     CountDownLatch countDownLatch = onlyOneNode ? null : new CountDownLatch(pipelinedResponses.size());
 
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> iter = pipelinedResponses.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = iter.next();
+    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
+        = pipelinedResponses.entrySet().iterator();
+    while (pipelinedResponsesIterator.hasNext()) {
+      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
 
       // last node run in current thread directly
-      Executor executor = iter.hasNext() ? executorService : Runnable::run;
+      Executor executor = pipelinedResponsesIterator.hasNext() ? executorService : Runnable::run;
       executor.execute(() -> {
         try {
           List<Object> unformatted = connection.getMany(queue.size());
@@ -113,7 +114,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
           log.error("Error with connection to " + nodeKey, jce);
           // cleanup the connection
           // TODO these operations not thread-safe
-          iter.remove();
+          pipelinedResponsesIterator.remove();
           connections.remove(nodeKey);
         } finally {
           IOUtils.closeQuietly(connection);

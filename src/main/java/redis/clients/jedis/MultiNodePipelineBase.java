@@ -81,6 +81,10 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
 
   @Override
   public final void sync() {
+    if (pipelinedResponses.isEmpty()) {
+      return;
+    }
+
     if (syncing) {
       return;
     }

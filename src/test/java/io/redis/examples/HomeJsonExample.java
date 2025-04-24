@@ -3,7 +3,8 @@
 package io.redis.examples;
 
 import org.junit.jupiter.api.Test;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // REMOVE_END
 // STEP_START import
 import redis.clients.jedis.UnifiedJedis;
@@ -14,9 +15,7 @@ import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.*;
 import org.json.JSONObject;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Map;
 // STEP_END
 
 // HIDE_START
@@ -32,7 +31,8 @@ public class HomeJsonExample {
         //REMOVE_START
         // Clear the indexes and keys here before using them in tests.
         try {jedis.ftDropIndex("idx:users");} catch (JedisDataException j){}
-        jedis.del("bike", "bike:1", "crashes", "newbike", "riders", "bikes:inventory");
+        try {jedis.ftDropIndex("hash-idx:users");} catch (JedisDataException j){}
+        jedis.del("user:1", "user:2", "user:3", "huser:1", "huser:2", "huser:3");
         //REMOVE_END
 
         // STEP_START create_data
@@ -149,6 +149,78 @@ public class HomeJsonExample {
             aggResult.getRows().stream()
                     .map(r -> r.getString("city") + " - " + r.getString("count"))
                     .sorted().toArray());
+        // REMOVE_END
+
+        // STEP_START make_hash_index
+        SchemaField[] hashSchema = {
+            TextField.of("name"),
+            TextField.of("city"),
+            NumericField.of("age")
+        };
+
+        String hashCreateResult = jedis.ftCreate("hash-idx:users",
+            FTCreateParams.createParams()
+                .on(IndexDataType.HASH)
+                .addPrefix("huser:"),
+                hashSchema
+        );
+
+        System.out.println(hashCreateResult); // >>> OK
+        // STEP_END
+        // REMOVE_START
+        assertEquals("OK", hashCreateResult);
+        // REMOVE_END
+
+        // STEP_START add_hash_data
+        long huser1Set = jedis.hset("huser:1", Map.of(
+            "name", "Paul John",
+            "email", "paul.john@example.com",
+            "age", "42",
+            "city", "London"
+        ));
+        
+        System.out.println(huser1Set); // >>> 4
+
+        long huser2Set = jedis.hset("huser:2", Map.of(
+            "name", "Eden Zamir",
+            "email", "eden.zamir@example.com",
+            "age", "29",
+            "city", "Tel Aviv"
+        ));
+        
+        System.out.println(huser2Set); // >>> 4
+
+        long huser3Set = jedis.hset("huser:3", Map.of(
+            "name", "Paul Zamir",
+            "email", "paul.zamir@example.com",
+            "age", "35",
+            "city", "Tel Aviv"
+        ));
+        
+        System.out.println(huser3Set); // >>> 4
+        // STEP_END
+        // REMOVE_START
+        assertEquals(4, huser1Set);
+        assertEquals(4, huser2Set);
+        assertEquals(4, huser3Set);
+        // REMOVE_END
+        
+        // STEP_START query1_hash
+        SearchResult findPaulHashResult = jedis.ftSearch("hash-idx:users",
+             "Paul @age:[30 40]"
+        );
+        
+        System.out.println(findPaulHashResult.getTotalResults()); // >>> 1
+
+        List<Document> paulHashDocs = findPaulHashResult.getDocuments();
+
+        for (Document doc: paulHashDocs) {
+            System.out.println(doc.getId());
+        }
+        // >>> user:3
+        // STEP_END
+        // REMOVE_START
+        assertEquals("huser:3", paulHashDocs.get(0).getId());
         // REMOVE_END
 
 // HIDE_START

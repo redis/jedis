@@ -1548,7 +1548,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
     return executeCommand(commandObjects.hgetex(key, params, fields));
   }
-  
+
   @Override
   public List<byte[]> hgetdel(byte[] key, byte[]... fields) {
     return executeCommand(commandObjects.hgetdel(key, fields));
@@ -3459,6 +3459,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams, 
+      Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams, 
+      Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName, byte[] consumer, 
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer, 
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
 

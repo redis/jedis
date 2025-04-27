@@ -2892,6 +2892,30 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
+  public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(
+      XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadBinaryAsMap(
+      XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
+  }
+
   public final CommandObject<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
@@ -2904,6 +2928,36 @@ public class CommandObjects {
       args.add(entry.getValue());
     }
     return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      Map.Entry<byte[], byte[]>... streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .add(GROUP).add(groupName).add(consumer)
+        .addParams(xReadGroupParams).add(STREAMS);
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      Map.Entry<byte[], byte[]>... streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .add(GROUP).add(groupName).add(consumer)
+        .addParams(xReadGroupParams).add(STREAMS);
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
   }
   // Stream commands
 

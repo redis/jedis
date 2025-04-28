@@ -45,6 +45,52 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 
+/**
+ * UnifiedJedis provides a single interface for multiple Redis deployment types.
+ * Supports standalone Redis servers, Redis Sentinel, Redis Cluster, and sharded Redis deployments.
+ * Implements multiple command interfaces for Redis operations.
+ * 
+ * <p>Features:
+ * <ul>
+ *   <li>Redis commands across different Redis versions</li>
+ *   <li>Connection management for different Redis topologies</li>
+ *   <li>Connection pooling</li>
+ *   <li>Redis modules (RedisJSON, RediSearch, RedisTimeSeries)</li>
+ *   <li>Client-side caching</li>
+ *   <li>Pipeline and transaction operations</li>
+ * </ul>
+ * 
+ * <p>Basic usage with default connection (localhost:6379):
+ * <pre>
+ * UnifiedJedis jedis = new UnifiedJedis();
+ * jedis.set("key", "value");
+ * String value = jedis.get("key");
+ * jedis.close();
+ * </pre>
+ * 
+ * <p>Usage with specific host and port:
+ * <pre>
+ * UnifiedJedis jedis = new UnifiedJedis(new HostAndPort("localhost", 6379));
+ * jedis.set("key", "value");
+ * String value = jedis.get("key");
+ * jedis.close();
+ * </pre>
+ * 
+ * <p>Usage with URI (including authentication):
+ * <pre>
+ * UnifiedJedis jedis = new UnifiedJedis(URI.create("redis://user:password@localhost:6379/0"));
+ * jedis.set("key", "value");
+ * String value = jedis.get("key");
+ * jedis.close();
+ * </pre>
+ * 
+ * <p>Production usage requires configuration of connection timeouts and connection pooling.
+ * 
+ * @see JedisPool For connection pooling with standalone Redis servers
+ * @see JedisCluster For dedicated Redis Cluster support
+ * @see JedisSentineled For dedicated Redis Sentinel support
+ * @see JedisSentinelPool For Redis Sentinel connection pooling
+ */
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
@@ -57,18 +103,37 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
+  /**
+   * Creates a UnifiedJedis instance with default host and port (localhost:6379).
+   */
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified host and port.
+   * 
+   * @param hostAndPort The host and port of the Redis server
+   */
   public UnifiedJedis(HostAndPort hostAndPort) {
     this(new PooledConnectionProvider(hostAndPort), (RedisProtocol) null);
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified URL.
+   * 
+   * @param url The URL of the Redis server (e.g., "redis://localhost:6379")
+   */
   public UnifiedJedis(final String url) {
     this(URI.create(url));
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified URI.
+   * The URI can include authentication information, database index, and SSL configuration.
+   * 
+   * @param uri The URI of the Redis server (e.g., "redis://user:password@localhost:6379/1")
+   */
   public UnifiedJedis(final URI uri) {
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
@@ -100,28 +165,69 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier()).build());
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified host, port, and client configuration.
+   * 
+   * @param hostAndPort The host and port of the Redis server
+   * @param clientConfig The client configuration
+   */
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified host, port, client configuration, and cache configuration.
+   * This constructor enables client-side caching.
+   * 
+   * @param hostAndPort The host and port of the Redis server
+   * @param clientConfig The client configuration
+   * @param cacheConfig The cache configuration
+   */
   @Experimental
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
     this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig));
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified host, port, client configuration, and cache.
+   * This constructor enables client-side caching with a pre-configured cache.
+   * 
+   * @param hostAndPort The host and port of the Redis server
+   * @param clientConfig The client configuration
+   * @param cache The pre-configured cache
+   */
   @Experimental
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(), cache);
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified connection provider.
+   * 
+   * @param provider The connection provider
+   */
   public UnifiedJedis(ConnectionProvider provider) {
     this(new DefaultCommandExecutor(provider), provider);
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified connection provider and Redis protocol.
+   * 
+   * @param provider The connection provider
+   * @param protocol The Redis protocol version
+   */
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified connection provider, Redis protocol, and cache.
+   * This constructor enables client-side caching.
+   * 
+   * @param provider The connection provider
+   * @param protocol The Redis protocol version
+   * @param cache The cache
+   */
   @Experimental
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, cache);
@@ -168,12 +274,29 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  /**
+   * Creates a UnifiedJedis instance for a Redis Cluster with the specified nodes, client configuration, and retry attempts.
+   * 
+   * @param jedisClusterNodes The set of cluster nodes
+   * @param clientConfig The client configuration
+   * @param maxAttempts The maximum number of retry attempts
+   * @deprecated Use constructor with explicit maxTotalRetriesDuration parameter
+   */
   @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     this(jedisClusterNodes, clientConfig, maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
   }
 
+  /**
+   * Creates a UnifiedJedis instance for a Redis Cluster with the specified nodes, client configuration, and retry parameters.
+   * 
+   * @param jedisClusterNodes The set of cluster nodes
+   * @param clientConfig The client configuration
+   * @param maxAttempts The maximum number of retry attempts
+   * @param maxTotalRetriesDuration The maximum total duration for retries
+   * @deprecated Use constructor with ClusterConnectionProvider
+   */
   @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts,
       Duration maxTotalRetriesDuration) {
@@ -181,6 +304,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         clientConfig.getRedisProtocol());
   }
 
+  /**
+   * Creates a UnifiedJedis instance for a Redis Cluster with the specified nodes, client configuration, pool configuration, and retry parameters.
+   * 
+   * @param jedisClusterNodes The set of cluster nodes
+   * @param clientConfig The client configuration
+   * @param poolConfig The connection pool configuration
+   * @param maxAttempts The maximum number of retry attempts
+   * @param maxTotalRetriesDuration The maximum total duration for retries
+   * @deprecated Use constructor with ClusterConnectionProvider
+   */
   @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
@@ -188,18 +321,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }
 
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
+  /**
+   * Creates a UnifiedJedis instance for a Redis Cluster with the specified connection provider and retry parameters.
+   * Uses a fetched connection to process protocol. Should be avoided if possible.
+   * 
+   * @param provider The cluster connection provider
+   * @param maxAttempts The maximum number of retry attempts
+   * @param maxTotalRetriesDuration The maximum total duration for retries
+   */
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects());
   }
 
+  /**
+   * Creates a UnifiedJedis instance for a Redis Cluster with the specified connection provider, retry parameters, and protocol.
+   * 
+   * @param provider The cluster connection provider
+   * @param maxAttempts The maximum number of retry attempts
+   * @param maxTotalRetriesDuration The maximum total duration for retries
+   * @param protocol The Redis protocol version
+   */
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol);
   }
 
+  /**
+   * Creates a UnifiedJedis instance for a Redis Cluster with the specified connection provider, retry parameters, protocol, and cache.
+   * This constructor enables client-side caching.
+   * 
+   * @param provider The cluster connection provider
+   * @param maxAttempts The maximum number of retry attempts
+   * @param maxTotalRetriesDuration The maximum total duration for retries
+   * @param protocol The Redis protocol version
+   * @param cache The cache
+   */
   @Experimental
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache cache) {
@@ -208,6 +366,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * Creates a UnifiedJedis instance with a sharded connection provider.
+   * 
+   * @param provider The sharded connection provider
    * @deprecated Sharding/Sharded feature will be removed in next major release.
    */
   @Deprecated
@@ -216,6 +377,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * Creates a UnifiedJedis instance with a sharded connection provider and tag pattern.
+   * 
+   * @param provider The sharded connection provider
+   * @param tagPattern The pattern for extracting key tags
    * @deprecated Sharding/Sharded feature will be removed in next major release.
    */
   @Deprecated
@@ -224,6 +389,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern));
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified connection provider and retry parameters.
+   * 
+   * @param provider The connection provider
+   * @param maxAttempts The maximum number of retry attempts
+   * @param maxTotalRetriesDuration The maximum total duration for retries
+   */
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
   }
@@ -233,7 +405,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    * With this Constructor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
    * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
-   * <p>
+   * 
+   * @param provider The multi-cluster pooled connection provider
    */
   @Experimental
   public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
@@ -250,11 +423,24 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(executor, (ConnectionProvider) null);
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified command executor and connection provider.
+   * 
+   * @param executor The command executor
+   * @param provider The connection provider
+   */
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
     this(executor, provider, new CommandObjects());
   }
 
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
+  /**
+   * Creates a UnifiedJedis instance with the specified command executor, connection provider, and command objects.
+   * Uses a fetched connection to process protocol. Should be avoided if possible.
+   * 
+   * @param executor The command executor
+   * @param provider The connection provider
+   * @param commandObjects The command objects
+   */
   @VisibleForTesting
   public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null, null);
@@ -271,12 +457,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified command executor, connection provider, command objects, and protocol.
+   * 
+   * @param executor The command executor
+   * @param provider The connection provider
+   * @param commandObjects The command objects
+   * @param protocol The Redis protocol version
+   */
   @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
     this(executor, provider, commandObjects, protocol, (Cache) null);
   }
 
+  /**
+   * Creates a UnifiedJedis instance with the specified command executor, connection provider, command objects, protocol, and cache.
+   * This constructor enables client-side caching.
+   * 
+   * @param executor The command executor
+   * @param provider The connection provider
+   * @param commandObjects The command objects
+   * @param protocol The Redis protocol version
+   * @param cache The cache
+   * @throws IllegalArgumentException if cache is provided but protocol is not RESP3
+   */
   @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, Cache cache) {
@@ -1488,12 +1693,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
     return executeCommand(commandObjects.hsetex(key, params, hash));
   }
-  
+
   @Override
   public String hget(String key, String field) {
     return executeCommand(commandObjects.hget(key, field));
   }
-    
+
   @Override
   public List<String> hgetex(String key, HGetExParams params, String... fields) {
     return executeCommand(commandObjects.hgetex(key, params, fields));
@@ -1548,7 +1753,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
     return executeCommand(commandObjects.hgetex(key, params, fields));
   }
-  
+
   @Override
   public List<byte[]> hgetdel(byte[] key, byte[]... fields) {
     return executeCommand(commandObjects.hgetdel(key, fields));

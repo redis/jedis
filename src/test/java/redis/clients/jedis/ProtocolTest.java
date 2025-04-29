@@ -1,10 +1,12 @@
 package redis.clients.jedis;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.FragmentedByteArrayInputStream;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.io.BufferedInputStream;
@@ -17,7 +19,6 @@ import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisBusyException;
 import redis.clients.jedis.util.RedisInputStream;
@@ -47,7 +48,7 @@ public class ProtocolTest {
     assertEquals(expectedCommand, sb.toString());
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void writeOverflow() throws IOException {
     RedisOutputStream ros = new RedisOutputStream(new OutputStream() {
 
@@ -63,10 +64,9 @@ public class ProtocolTest {
     try {
       ros.write((byte) '*');
     } catch (IOException ioe) {
+      //ignore
     }
-
-    ros.write((byte) '*');
-
+    assertThrows(IOException.class, ()-> ros.write((byte) '*'));
   }
 
   @Test

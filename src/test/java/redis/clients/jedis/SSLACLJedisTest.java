@@ -1,19 +1,18 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.*;
-
 import io.redis.test.annotations.SinceRedisVersion;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
-import redis.clients.jedis.util.RedisVersionRule;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.util.TlsUtil;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This test class is a copy of {@link SSLJedisTest}.
@@ -27,12 +26,12 @@ public class SSLACLJedisTest {
 
   protected static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
-  @ClassRule
-  public static RedisVersionRule versionRule = new RedisVersionRule(endpoint);
+  @RegisterExtension
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
 
   private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
         endpointWithDefaultUser.getCertificatesLocation());
@@ -42,7 +41,7 @@ public class SSLACLJedisTest {
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardownTrustStore() {
     TlsUtil.restoreOriginalTrustStore();
   }

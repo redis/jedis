@@ -7,21 +7,22 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
@@ -55,7 +56,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
@@ -70,7 +71,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     destAuth.select(dbAuth);
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     dest.close();

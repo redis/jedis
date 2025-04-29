@@ -2,8 +2,7 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 
 // HIDE_START
@@ -14,6 +13,9 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class QueryEmExample {
 
@@ -237,11 +239,11 @@ public class QueryEmExample {
 
         // Tests for 'em1' step.
         // REMOVE_START
-        Assert.assertEquals(1, res1.getTotalResults());
-        Assert.assertEquals("bicycle:0", docs1.get(0).getId());
+        assertEquals(1, res1.getTotalResults());
+        assertEquals("bicycle:0", docs1.get(0).getId());
 
-        Assert.assertEquals(1, res2.getTotalResults());
-        Assert.assertEquals("bicycle:0", docs2.get(0).getId());
+        assertEquals(1, res2.getTotalResults());
+        assertEquals("bicycle:0", docs2.get(0).getId());
         // REMOVE_END
 
 
@@ -263,8 +265,8 @@ public class QueryEmExample {
 
         // Tests for 'em2' step.
         // REMOVE_START
-        Assert.assertEquals(5, res3.getTotalResults());
-        Assert.assertArrayEquals(
+        assertEquals(5, res3.getTotalResults());
+        assertArrayEquals(
             new String[] {"bicycle:0", "bicycle:5", "bicycle:6", "bicycle:7", "bicycle:8" },
             docs3.stream().map(Document::getId).sorted().toArray()
         );
@@ -314,8 +316,8 @@ public class QueryEmExample {
 
         // Tests for 'em4' step.
         // REMOVE_START
-        Assert.assertEquals(1, res5.getTotalResults());
-        Assert.assertEquals("bicycle:8", docs5.get(0).getId());
+        assertEquals(1, res5.getTotalResults());
+        assertEquals("bicycle:8", docs5.get(0).getId());
         // REMOVE_END
 
 // HIDE_START

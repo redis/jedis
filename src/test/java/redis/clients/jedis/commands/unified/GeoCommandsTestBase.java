@@ -1,13 +1,11 @@
 package redis.clients.jedis.commands.unified;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
@@ -19,6 +17,13 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.SafeEncoder;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

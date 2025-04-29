@@ -11,12 +11,11 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
@@ -33,8 +32,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;

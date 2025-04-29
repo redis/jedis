@@ -7,14 +7,14 @@ import redis.clients.jedis.UnifiedJedis;
 //HIDE_END
 
 //REMOVE_START
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 //REMOVE_END
 
 public class StreamsExample {

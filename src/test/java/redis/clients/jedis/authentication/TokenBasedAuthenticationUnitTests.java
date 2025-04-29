@@ -1,7 +1,7 @@
 package redis.clients.jedis.authentication;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.awaitility.Awaitility.await;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 
@@ -248,8 +248,7 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 2000, new TokenManagerConfig.RetryPolicy(5, 100)));
 
     AuthXManager manager = new AuthXManager(tokenManager);
-    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class,
-      () -> manager.start());
+    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class, manager::start);
 
     assertEquals(exceptionMessage, e.getCause().getCause().getMessage());
   }
@@ -262,6 +261,7 @@ public class TokenBasedAuthenticationUnitTests {
       try {
         latch.await();
       } catch (InterruptedException e) {
+        // Ignore
       }
       return null;
     };
@@ -270,8 +270,7 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 1000, new TokenManagerConfig.RetryPolicy(2, 100)));
 
     AuthXManager manager = new AuthXManager(tokenManager);
-    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class,
-      () -> manager.start());
+    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class, manager::start);
 
     latch.countDown();
     assertEquals(exceptionMessage, e.getMessage());
@@ -327,6 +326,7 @@ public class TokenBasedAuthenticationUnitTests {
         try {
           Thread.sleep(sleepDuration);
         } catch (InterruptedException e) {
+          // Ignore
         }
         return null;
       }

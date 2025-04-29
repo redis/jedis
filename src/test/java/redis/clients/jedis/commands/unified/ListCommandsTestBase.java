@@ -1,10 +1,10 @@
 package redis.clients.jedis.commands.unified;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
@@ -13,7 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,7 +492,8 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test(timeout = 5000L)
+  @Test
+  @Timeout(5)
   public void blpopDoubleWithSleep() {
     KeyValue<String, String> result = jedis.blpop(0.04, "foo");
     assertNull(result);
@@ -603,7 +605,8 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test(timeout = 5000L)
+  @Test
+  @Timeout(5)
   public void brpopDoubleWithSleep() {
     KeyValue<String, String> result = jedis.brpop(0.04, "foo");
     assertNull(result);

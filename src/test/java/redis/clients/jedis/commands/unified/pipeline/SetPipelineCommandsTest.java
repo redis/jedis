@@ -21,15 +21,16 @@ import java.util.List;
 import java.util.Set;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

@@ -4,9 +4,10 @@
 package io.redis.examples;
 
 import redis.clients.jedis.UnifiedJedis;
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BloomFilterExample {
 
@@ -24,7 +25,7 @@ public class BloomFilterExample {
         System.out.println(res1); // >>> OK
 
         // REMOVE_START
-        Assert.assertEquals("OK", res1);
+        assertEquals("OK", res1);
         // REMOVE_END
 
         boolean res2 = jedis.bfAdd("bikes:models", "Smoky Mountain Striker");

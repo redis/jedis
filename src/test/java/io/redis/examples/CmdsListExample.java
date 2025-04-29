@@ -2,13 +2,14 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 import java.util.List;
 
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CmdsListExample {
 
@@ -31,9 +32,9 @@ public class CmdsListExample {
         System.out.println(lLenResult3); // >>> 2
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(1, lLenResult1);
-        Assert.assertEquals(2, lLenResult2);
-        Assert.assertEquals(2, lLenResult3);
+        assertEquals(1, lLenResult1);
+        assertEquals(2, lLenResult2);
+        assertEquals(2, lLenResult3);
         jedis.del("mylist");
         // REMOVE_END
 
@@ -53,10 +54,10 @@ public class CmdsListExample {
         System.out.println(lPopResult4); // >>> [four, five]
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(5, lPopResult1);
-        Assert.assertEquals("one", lPopResult2);
-        Assert.assertEquals("[two, three]", lPopResult3.toString());
-        Assert.assertEquals("[four, five]", lPopResult4.toString());
+        assertEquals(5, lPopResult1);
+        assertEquals("one", lPopResult2);
+        assertEquals("[two, three]", lPopResult3.toString());
+        assertEquals("[four, five]", lPopResult4.toString());
         jedis.del("mylist");
         // REMOVE_END
 
@@ -72,9 +73,9 @@ public class CmdsListExample {
         // >>> [Hello, World]
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(1, lPushResult1);
-        Assert.assertEquals(2, lPushResult2);
-        Assert.assertEquals("[Hello, World]", lPushResult3.toString());
+        assertEquals(1, lPushResult1);
+        assertEquals(2, lPushResult2);
+        assertEquals("[Hello, World]", lPushResult3.toString());
         jedis.del("mylist");
         // REMOVE_END
 
@@ -95,11 +96,11 @@ public class CmdsListExample {
         System.out.println(lRangeResult5); // >>> []
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(3, lRangeResult1);
-        Assert.assertEquals("[one]", lRangeResult2.toString());
-        Assert.assertEquals("[one, two, three]", lRangeResult3.toString());
-        Assert.assertEquals("[one, two, three]", lRangeResult4.toString());
-        Assert.assertEquals("[]", lRangeResult5.toString());
+        assertEquals(3, lRangeResult1);
+        assertEquals("[one]", lRangeResult2.toString());
+        assertEquals("[one, two, three]", lRangeResult3.toString());
+        assertEquals("[one, two, three]", lRangeResult4.toString());
+        assertEquals("[]", lRangeResult5.toString());
         jedis.del("mylist");
         // REMOVE_END
 
@@ -119,10 +120,10 @@ public class CmdsListExample {
         System.out.println(rPopResult4); // >>> [one, two]
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(5, rPopResult1);
-        Assert.assertEquals("five", rPopResult2);
-        Assert.assertEquals("[four, three]", rPopResult3.toString());
-        Assert.assertEquals("[one, two]", rPopResult4.toString());
+        assertEquals(5, rPopResult1);
+        assertEquals("five", rPopResult2);
+        assertEquals("[four, three]", rPopResult3.toString());
+        assertEquals("[one, two]", rPopResult4.toString());
         jedis.del("mylist");
         // REMOVE_END
 
@@ -137,9 +138,9 @@ public class CmdsListExample {
         System.out.println(rPushResult3); // >>> [hello, world]
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(1, rPushResult1);
-        Assert.assertEquals(2, rPushResult2);
-        Assert.assertEquals("[hello, world]", rPushResult3.toString());
+        assertEquals(1, rPushResult1);
+        assertEquals(2, rPushResult2);
+        assertEquals("[hello, world]", rPushResult3.toString());
         jedis.del("mylist");
         // REMOVE_END
 

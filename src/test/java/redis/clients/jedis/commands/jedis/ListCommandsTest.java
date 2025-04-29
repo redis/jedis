@@ -1,10 +1,10 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
@@ -13,9 +13,10 @@ import java.util.Collections;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ListCommandsTest extends JedisCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -495,7 +497,8 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test(timeout = 5000L)
+  @Test
+  @Timeout(5)
   public void blpopDoubleWithSleep() {
     KeyValue<String, String> result = jedis.blpop(0.04, "foo");
     assertNull(result);
@@ -609,7 +612,8 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.getValue());
   }
 
-  @Test(timeout = 5000L)
+  @Test
+  @Timeout(5)
   public void brpopDoubleWithSleep() {
     KeyValue<String, String> result = jedis.brpop(0.04, "foo");
     assertNull(result);

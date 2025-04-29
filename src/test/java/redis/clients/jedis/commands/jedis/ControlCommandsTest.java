@@ -2,13 +2,14 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,9 +25,9 @@ import java.util.concurrent.TimeUnit;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClientPauseMode;
@@ -42,7 +43,8 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ControlCommandsTest extends JedisCommandsTestBase {
 
   public ControlCommandsTest(RedisProtocol redisProtocol) {
@@ -132,14 +134,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
       List<Object> role = master.role();
       assertEquals("master", role.get(0));
-      assertTrue(role.get(1) instanceof Long);
-      assertTrue(role.get(2) instanceof List);
+      assertInstanceOf(Long.class, role.get(1));
+      assertInstanceOf(List.class, role.get(2));
 
       // binary
       List<Object> brole = master.roleBinary();
       assertArrayEquals("master".getBytes(), (byte[]) brole.get(0));
-      assertTrue(brole.get(1) instanceof Long);
-      assertTrue(brole.get(2) instanceof List);
+      assertInstanceOf(Long.class, brole.get(1));
+      assertInstanceOf(List.class, brole.get(2));
     }
   }
 
@@ -156,14 +158,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
       assertEquals("slave", role.get(0));
       assertEquals((long) primaryEndpoint.getPort(), role.get(2));
       assertEquals("connected", role.get(3));
-      assertTrue(role.get(4) instanceof Long);
+      assertInstanceOf(Long.class, role.get(4));
 
       // binary
       List<Object> brole = slave.roleBinary();
       assertArrayEquals("slave".getBytes(), (byte[]) brole.get(0));
       assertEquals((long) primaryEndpoint.getPort(), brole.get(2));
       assertArrayEquals("connected".getBytes(), (byte[]) brole.get(3));
-      assertTrue(brole.get(4) instanceof Long);
+      assertInstanceOf(Long.class, brole.get(4));
     }
   }
 
@@ -173,13 +175,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
       List<Object> role = sentinel.role();
       assertEquals("sentinel", role.get(0));
-      assertTrue(role.get(1) instanceof List);
+      assertInstanceOf(List.class, role.get(1));
       AssertUtil.assertCollectionContains((List) role.get(1), "mymaster");
 
       // binary
       List<Object> brole = sentinel.roleBinary();
       assertArrayEquals("sentinel".getBytes(), (byte[]) brole.get(0));
-      assertTrue(brole.get(1) instanceof List);
+      assertInstanceOf(List.class, brole.get(1));
       AssertUtil.assertByteArrayCollectionContains((List) brole.get(1), "mymaster".getBytes());
     }
   }
@@ -194,12 +196,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
           Thread.sleep(100);
         } catch (InterruptedException e) {
         }
-        Jedis j = new Jedis(endpoint.getHostAndPort());
-        j.auth(endpoint.getPassword());
-        for (int i = 0; i < 5; i++) {
-          j.incr("foobared");
+        try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
+          j.auth(endpoint.getPassword());
+          for (int i = 0; i < 5; i++) {
+            j.incr("foobared");
+          }
+          j.disconnect();
         }
-        j.disconnect();
       }
     }).start();
 

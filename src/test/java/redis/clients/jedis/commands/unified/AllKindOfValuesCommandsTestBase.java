@@ -1,14 +1,16 @@
 package redis.clients.jedis.commands.unified;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static redis.clients.jedis.Protocol.Command.BLPOP;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.HGETALL;
@@ -32,10 +34,9 @@ import java.util.Set;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
-import org.junit.Assume;
-import org.junit.Ignore;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.StreamEntryID;
@@ -433,7 +434,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
-  @Ignore(value = "TODO: Regression in 8.0-M02 discarding restore idle time.")
+  @Disabled(value = "TODO: Regression in 8.0-M02 discarding restore idle time.")
   public void restoreParams() {
     jedis.set("foo", "bar");
     jedis.set("from", "a");
@@ -813,7 +814,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -831,7 +832,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
+    assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -848,7 +849,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -860,7 +861,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     List encodeObj = (List) SafeEncoder.encodeObject(obj);
 
     assertThat(encodeObj.size(), Matchers.greaterThanOrEqualTo(14));
-    assertEquals("must have even number of elements", 0, encodeObj.size() % 2); // must be even
+    assertEquals( 0, encodeObj.size() % 2, "must have even number of elements"); // must be even
 
     assertEquals(1L, findValueFromMapAsList(encodeObj, "length"));
     assertEquals(entryID.toString(), findValueFromMapAsList(encodeObj, "last-generated-id"));
@@ -875,7 +876,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
+    assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");

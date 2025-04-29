@@ -1,17 +1,17 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.FailoverParams;
 import redis.clients.jedis.HostAndPorts;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class FailoverCommandsTest {
 
@@ -23,7 +23,7 @@ public class FailoverCommandsTest {
   private HostAndPort masterAddress;
   private HostAndPort replicaAddress;
 
-  @Before
+  @BeforeEach
   public void prepare() {
     String role1, role2;
     try (Jedis jedis1 = new Jedis(node1.getHostAndPort(), node1.getClientConfigBuilder().build())) {
@@ -69,18 +69,18 @@ public class FailoverCommandsTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void failoverForceWithoutToFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
-      assertEquals("OK", master.failover(FailoverParams.failoverParams()
+      assertThrows(IllegalArgumentException.class, () -> master.failover(FailoverParams.failoverParams()
           .timeout(100).force()));
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void failoverForceWithoutTimeoutFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
-      assertEquals("OK", master.failover(FailoverParams.failoverParams()
+      assertThrows(IllegalArgumentException.class, ()-> master.failover(FailoverParams.failoverParams()
           .to(new HostAndPort("127.0.0.1", INVALID_PORT)).force()));
     }
   }

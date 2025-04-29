@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;

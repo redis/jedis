@@ -14,6 +14,8 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.*;
 import org.json.JSONObject;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 // STEP_END
@@ -135,10 +137,8 @@ public class HomeJsonExample {
         System.out.println(aggResult.getTotalResults()); // >>> 2
 
         for (Row cityRow: aggResult.getRows()) {
-            System.out.println(String.format(
-                "%s - %d",
-                cityRow.getString("city"), cityRow.getLong("count"))
-            );
+            System.out.printf("%s - %d%n",
+                cityRow.getString("city"), cityRow.getLong("count"));
         }
         // >>> London - 1
         // >>> Tel Aviv - 2
@@ -172,30 +172,30 @@ public class HomeJsonExample {
         // REMOVE_END
 
         // STEP_START add_hash_data
-        long huser1Set = jedis.hset("huser:1", Map.of(
-            "name", "Paul John",
-            "email", "paul.john@example.com",
-            "age", "42",
-            "city", "London"
-        ));
+        Map<String, String> user1Info = new HashMap<>();
+        user1Info.put("name", "Paul John");
+        user1Info.put("email", "paul.john@example.com");
+        user1Info.put("age", "42");
+        user1Info.put("city", "London");
+        long huser1Set = jedis.hset("huser:1", user1Info);
         
         System.out.println(huser1Set); // >>> 4
 
-        long huser2Set = jedis.hset("huser:2", Map.of(
-            "name", "Eden Zamir",
-            "email", "eden.zamir@example.com",
-            "age", "29",
-            "city", "Tel Aviv"
-        ));
+        Map<String, String> user2Info = new HashMap<>();
+        user2Info.put("name", "Eden Zamir");
+        user2Info.put("email", "eden.zamir@example.com");
+        user2Info.put("age", "29");
+        user2Info.put("city", "Tel Aviv");
+        long huser2Set = jedis.hset("huser:2", user2Info);
         
         System.out.println(huser2Set); // >>> 4
 
-        long huser3Set = jedis.hset("huser:3", Map.of(
-            "name", "Paul Zamir",
-            "email", "paul.zamir@example.com",
-            "age", "35",
-            "city", "Tel Aviv"
-        ));
+        Map<String, String> user3Info = new HashMap<>();
+        user3Info.put("name", "Paul Zamir");
+        user3Info.put("email", "paul.zamir@example.com");
+        user3Info.put("age", "35");
+        user3Info.put("city", "Tel Aviv");
+        long huser3Set = jedis.hset("huser:3", user3Info);
         
         System.out.println(huser3Set); // >>> 4
         // STEP_END

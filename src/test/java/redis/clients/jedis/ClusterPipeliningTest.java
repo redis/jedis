@@ -1128,7 +1128,7 @@ public class ClusterPipeliningTest {
 
       // test multi key but at same node
       int cnt = 3;
-      String prefix = "{foobar}:";
+      String prefix = "{foo}:";
       for (int i = 0; i < cnt; i++) {
         String key = prefix + i;
         cluster.set(key, String.valueOf(i));

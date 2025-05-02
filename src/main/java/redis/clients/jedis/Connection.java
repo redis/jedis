@@ -195,6 +195,16 @@ public class Connection implements Closeable {
     sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }
 
+  @Experimental
+  public void sendCommandWithTracking(final ProtocolCommand cmd, List<String> prefixList, final String... args) {
+    List<String> list = new ArrayList<>();
+    for (String prefix : prefixList) {
+      list.add("PREFIX");
+      list.add(prefix);
+    }
+    sendCommand(new CommandArguments(cmd).addObjects((Object[]) args).addObjects(list.toArray()));
+  }
+
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }

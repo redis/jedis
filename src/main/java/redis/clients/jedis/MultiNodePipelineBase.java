@@ -95,10 +95,12 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     } else {
       executor = Runnable::run;
     }
-    CountDownLatch countDownLatch = multiNode ? new CountDownLatch(pipelinedResponses.size()) : null;
+    CountDownLatch countDownLatch = multiNode
+        ? new CountDownLatch(pipelinedResponses.size())
+        : null;
 
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
-        = pipelinedResponses.entrySet().iterator();
+    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator = pipelinedResponses.entrySet()
+        .iterator();
     while (pipelinedResponsesIterator.hasNext()) {
       Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
       HostAndPort nodeKey = entry.getKey();

@@ -1141,7 +1141,8 @@ public class ClusterPipeliningTest {
           results.add(pipeline.get(key));
         }
 
-        Response<Object> foo = pipeline.eval("return redis.call('get', KEYS[1])", Collections.singletonList("foo"), Collections.emptyList());
+        Response<Object> foo = pipeline.eval("return redis.call('get', KEYS[1])",
+            Collections.singletonList("foo"), Collections.emptyList());
 
         pipeline.sync();
         int idx = 0;

@@ -23,15 +23,17 @@ public abstract class AbstractCache implements Cache {
   private Cacheable cacheable;
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private final int maximumSize;
-  private ReentrantLock lock = new ReentrantLock();
+  private final long ttl;
+  ReentrantLock lock = new ReentrantLock();
   private volatile CacheStats stats = new CacheStats();
 
-  protected AbstractCache(int maximumSize) {
-    this(maximumSize, DefaultCacheable.INSTANCE);
+  protected AbstractCache(int maximumSize, long ttl) {
+    this(maximumSize, ttl, DefaultCacheable.INSTANCE);
   }
 
-  protected AbstractCache(int maximumSize, Cacheable cacheable) {
+  protected AbstractCache(int maximumSize, long ttl, Cacheable cacheable) {
     this.maximumSize = maximumSize;
+    this.ttl = ttl;
     this.cacheable = cacheable;
   }
 
@@ -41,6 +43,11 @@ public abstract class AbstractCache implements Cache {
   public int getMaxSize() {
     return maximumSize;
   }
+
+  @Override
+  public long getTtl() {
+    return ttl;
+  };
 
   @Override
   public abstract int getSize();

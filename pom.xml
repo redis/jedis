@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>6.0.0-SNAPSHOT</version>
+	<version>6.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -50,7 +50,7 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.18.3</jackson.version>
-		<maven.surefire.version>3.5.2</maven.surefire.version>
+		<maven.surefire.version>3.5.3</maven.surefire.version>
 		<junit.version>5.13.0-M1</junit.version>
 	</properties>
 
@@ -173,7 +173,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5-fluent</artifactId>
-			<version>5.4.2</version>
+			<version>5.4.4</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -234,7 +234,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.12</version>
+				<version>0.8.13</version>
 				<executions>
 					<execution>
 						<goals>

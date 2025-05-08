@@ -255,7 +255,7 @@ protected-mode no
 requirepass cluster
 port 7379
 tls-port 8379
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_cluster_node1.pid
 logfile /tmp/redis_cluster_node1.log
 save ""
@@ -274,7 +274,7 @@ protected-mode no
 requirepass cluster
 port 7380
 tls-port 8380
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_cluster_node2.pid
 logfile /tmp/redis_cluster_node2.log
 save ""
@@ -293,7 +293,7 @@ protected-mode no
 requirepass cluster
 port 7381
 tls-port 8381
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_cluster_node3.pid
 logfile /tmp/redis_cluster_node3.log
 save ""
@@ -312,7 +312,7 @@ protected-mode no
 requirepass cluster
 port 7382
 tls-port 8382
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_cluster_node4.pid
 logfile /tmp/redis_cluster_node4.log
 save ""
@@ -331,7 +331,7 @@ protected-mode no
 requirepass cluster
 port 7383
 tls-port 8383
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_cluster_node5.pid
 logfile /tmp/redis_cluster_node5.log
 save ""
@@ -351,7 +351,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7479
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_stable_cluster_node1.pid
 logfile /tmp/redis_stable_cluster_node1.log
 save ""
@@ -365,7 +365,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7480
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_stable_cluster_node2.pid
 logfile /tmp/redis_stable_cluster_node2.log
 save ""
@@ -379,7 +379,7 @@ daemonize yes
 protected-mode no
 requirepass cluster
 port 7481
-cluster-node-timeout 15000
+cluster-node-timeout 150
 pidfile /tmp/redis_stable_cluster_node3.pid
 logfile /tmp/redis_stable_cluster_node3.log
 save ""

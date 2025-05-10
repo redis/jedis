@@ -4812,6 +4812,34 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
   public byte[] xadd(final byte[] key, final XAddParams params, final Map<byte[], byte[]> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, params, hash));

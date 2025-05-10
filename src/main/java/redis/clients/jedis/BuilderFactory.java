@@ -1859,8 +1859,20 @@ public final class BuilderFactory {
           responses.add(null);
           continue;
         }
+        String entryIdString = SafeEncoder.encode((byte[]) res.get(0));
+        StreamEntryID entryID = new StreamEntryID(entryIdString);
+        List<byte[]> hash = (List<byte[]>) res.get(1);
+        if (hash == null) {
+          responses.add(new StreamEntryBinary(entryID, null));
+          continue;
+        }
 
-        responses.add(STREAM_ENTRY_BINARY.build(res));
+        Iterator<byte[]> hashIterator = hash.iterator();
+        Map<byte[], byte[]> map = new HashMap<>(hash.size() / 2, 1f);
+        while (hashIterator.hasNext()) {
+          map.put(hashIterator.next(), hashIterator.next());
+        }
+        responses.add(new StreamEntryBinary(entryID, map));
       }
 
       return responses;

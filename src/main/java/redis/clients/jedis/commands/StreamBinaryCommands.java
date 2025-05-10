@@ -92,4 +92,17 @@ public interface StreamBinaryCommands {
 
   Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], StreamEntryID>... streams);
+
+  List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams);
+
+  Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams);
+
+  List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams);
+
+  Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams);
+
 }

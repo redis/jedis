@@ -40,7 +40,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
         final String key1 = "xread-stream1";
         final String key2 = "xread-stream2";
 
-        Map.Entry<byte[], StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>(key1.getBytes(), new StreamEntryID());
+        Map<byte[], StreamEntryID> streamQeury1 = singletonMap(key1.getBytes(), new StreamEntryID());
 
         // Before creating Stream
         assertNull(jedis.xreadBinary(XReadParams.xReadParams().block(1), streamQeury1));
@@ -57,21 +57,16 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
         assertArrayEquals(key1.getBytes(), streams1.get(0).getKey());
         assertEquals(1, streams1.get(0).getValue().size());
         assertEquals(id1, streams1.get(0).getValue().get(0).getID());
-        for (Map.Entry<byte[], byte[]> entry : streams1.get(0).getValue().get(0).getFields().entrySet()) {
-            String key = SafeEncoder.encode(entry.getKey());
-            String value = SafeEncoder.encode(entry.getValue());
-            String validate = map.get(key);
+        assertEquals(map, convertToMap(streams1.get(0).getValue().get(0).getFields()));
 
-            assertEquals(validate, value);
-        }
-
-        assertNull(jedis.xreadBinary(XReadParams.xReadParams().block(1), new AbstractMap.SimpleImmutableEntry<>(key1.getBytes(), id1)));
-        assertNull(jedis.xreadBinary(XReadParams.xReadParams(), new AbstractMap.SimpleImmutableEntry<>(key1.getBytes(), id1)));
+        assertNull(jedis.xreadBinary(XReadParams.xReadParams().block(1), singletonMap(key1.getBytes(), id1)));
+        assertNull(jedis.xreadBinary(XReadParams.xReadParams(), singletonMap(key1.getBytes(), id1)));
 
         // Read from two Streams
-        Map.Entry<byte[], StreamEntryID> streamQuery2 = new AbstractMap.SimpleImmutableEntry<>(key1.getBytes(), new StreamEntryID());
-        Map.Entry<byte[], StreamEntryID> streamQuery3 = new AbstractMap.SimpleImmutableEntry<>(key2.getBytes(), new StreamEntryID());
-        List<Map.Entry<byte[], List<StreamEntryBinary>>> streams2 = jedis.xreadBinary(XReadParams.xReadParams().count(2).block(1), streamQuery2, streamQuery3);
+        Map<byte[], StreamEntryID> streamQuery2 = new LinkedHashMap<>();
+        streamQuery2.put(key1.getBytes(), new StreamEntryID());
+        streamQuery2.put(key2.getBytes(), new StreamEntryID());
+        List<Map.Entry<byte[], List<StreamEntryBinary>>> streams2 = jedis.xreadBinary(XReadParams.xReadParams().count(2).block(1), streamQuery2);
         assertEquals(2, streams2.size());
     }
 

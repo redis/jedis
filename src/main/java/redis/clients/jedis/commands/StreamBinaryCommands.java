@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.StreamEntryBinary;
 
@@ -81,14 +82,14 @@ public interface StreamBinaryCommands {
       Map.Entry<byte[], byte[]>... streams);
 
   List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
-      Map.Entry<byte[], byte[]>... streams);
+      Map.Entry<byte[], StreamEntryID>... streams);
 
   Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
-      Map.Entry<byte[], byte[]>... streams);
+      Map.Entry<byte[], StreamEntryID>... streams);
 
   List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName, byte[] consumer,
-      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], StreamEntryID>... streams);
 
   Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
-      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], StreamEntryID>... streams);
 }

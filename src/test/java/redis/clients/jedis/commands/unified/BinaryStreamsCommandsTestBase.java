@@ -11,12 +11,10 @@ import redis.clients.jedis.resps.StreamEntryBinary;
 
 import java.util.*;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class BinaryStreamsCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
-  protected static final byte[] STREAM_KEY = "test-binary-stream".getBytes();
   protected static final byte[] FIELD_KEY = "binary-field".getBytes();
   protected static final byte[] BINARY_VALUE = new byte[] { 0x00, 0x01, 0x02, 0x03, (byte) 0xFF };
 
@@ -26,22 +24,23 @@ public abstract class BinaryStreamsCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void testBinaryStreamEntry() {
+    final byte[] streamKey = UUID.randomUUID().toString().getBytes();
     Map<byte[], byte[]> hash = new HashMap<>();
     hash.put(FIELD_KEY, BINARY_VALUE);
 
-    byte[] idBytes = jedis.xadd(STREAM_KEY, new XAddParams(), hash);
+    byte[] idBytes = jedis.xadd(streamKey, new XAddParams(), hash);
     StreamEntryID id = new StreamEntryID(new String(idBytes));
     assertNotNull(id);
 
-    Map.Entry<byte[], byte[]> streamEntry = new AbstractMap.SimpleImmutableEntry<>(STREAM_KEY, "0-0".getBytes());
+    Map.Entry<byte[], StreamEntryID> streamEntry = new AbstractMap.SimpleImmutableEntry<>(streamKey, new StreamEntryID());
     List<Map.Entry<byte[], List<StreamEntryBinary>>> result = jedis.xreadBinary(
-        XReadParams.xReadParams().count(1), streamEntry);
+        XReadParams.xReadParams(), streamEntry);
 
     assertNotNull(result);
     assertEquals(1, result.size());
 
     Map.Entry<byte[], List<StreamEntryBinary>> streamData = result.get(0);
-    assertArrayEquals(STREAM_KEY, streamData.getKey());
+    assertArrayEquals(streamKey, streamData.getKey());
 
     List<StreamEntryBinary> entries = streamData.getValue();
     assertNotNull(entries);
@@ -57,8 +56,9 @@ public abstract class BinaryStreamsCommandsTestBase extends UnifiedJedisCommands
     assertEquals(1, mapResult.size());
 
     boolean keyFound = false;
+
     for (byte[] key : mapResult.keySet()) {
-      if (Arrays.equals(key, STREAM_KEY)) {
+      if (Arrays.equals(key, streamKey)) {
         keyFound = true;
         List<StreamEntryBinary> mapEntries = mapResult.get(key);
         assertNotNull(mapEntries);
@@ -84,17 +84,19 @@ public abstract class BinaryStreamsCommandsTestBase extends UnifiedJedisCommands
     assertNotNull(id);
 
     try {
-      jedis.xgroupCreate(streamKey, groupName, "0-0".getBytes(), true);
+      jedis.xgroupCreate(streamKey, groupName, idBytes, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
       }
     }
 
-    Map.Entry<byte[], byte[]> streamEntry = new AbstractMap.SimpleImmutableEntry<>(streamKey, ">".getBytes());
+    jedis.xadd(streamKey, new XAddParams(), hash);
+
+    Map.Entry<byte[], StreamEntryID> streamEntry = new AbstractMap.SimpleImmutableEntry<>(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
 
     List<Map.Entry<byte[], List<StreamEntryBinary>>> result = jedis.xreadGroupBinary(
-            groupName, consumerName, XReadGroupParams.xReadGroupParams().count(1), streamEntry);
+            groupName, consumerName, XReadGroupParams.xReadGroupParams(), streamEntry);
 
     assertNotNull(result);
     assertEquals(1, result.size());
@@ -125,7 +127,7 @@ public abstract class BinaryStreamsCommandsTestBase extends UnifiedJedisCommands
     jedis.xadd(streamKey, new XAddParams(), hash1);
     jedis.xadd(streamKey, new XAddParams(), hash2);
 
-    Map.Entry<byte[], byte[]> streamEntry = new AbstractMap.SimpleImmutableEntry<>(streamKey, "0-0".getBytes());
+    Map.Entry<byte[], StreamEntryID> streamEntry = new AbstractMap.SimpleImmutableEntry<>(streamKey, new StreamEntryID());
     List<Map.Entry<byte[], List<StreamEntryBinary>>> result = jedis.xreadBinary(
             XReadParams.xReadParams().count(2), streamEntry);
 

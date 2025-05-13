@@ -86,10 +86,8 @@ import redis.clients.jedis.util.KeyValue;
  * 
  * <p>Production usage requires configuration of connection timeouts and connection pooling.
  * 
- * @see JedisPool For connection pooling with standalone Redis servers
  * @see JedisCluster For dedicated Redis Cluster support
  * @see JedisSentineled For dedicated Redis Sentinel support
- * @see JedisSentinelPool For Redis Sentinel connection pooling
  */
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,

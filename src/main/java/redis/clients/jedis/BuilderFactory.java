@@ -8,10 +8,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
-import redis.clients.jedis.util.DoublePrecision;
-import redis.clients.jedis.util.JedisByteHashMap;
-import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.*;
 
 public final class BuilderFactory {
 
@@ -1870,7 +1867,7 @@ public final class BuilderFactory {
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<byte[], byte[]> map = new HashMap<>(hash.size() / 2, 1f);
         while (hashIterator.hasNext()) {
-          map.put(hashIterator.next(), hashIterator.next());
+          map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
         }
         responses.add(new StreamEntryBinary(entryID, map));
       }
@@ -1893,11 +1890,11 @@ public final class BuilderFactory {
       List list = (List) data;
       if (list.isEmpty()) return Collections.emptyMap();
 
+      JedisByteMap<List<StreamEntryBinary>> result = new JedisByteMap<>();
       if (list.get(0) instanceof KeyValue) {
-        return ((List<KeyValue>) list).stream()
-                .collect(Collectors.toMap(kv -> BINARY.build(kv.getKey()), kv -> STREAM_ENTRY_BINARY_LIST.build(kv.getValue())));
+        ((List<KeyValue>) list).forEach(kv -> result.put(BINARY.build(kv.getKey()), STREAM_ENTRY_BINARY_LIST.build(kv.getValue())));
+        return result;
       } else {
-        Map<byte[], List<StreamEntryBinary>> result = new HashMap<>(list.size());
         for (Object anObj : list) {
           List<Object> streamObj = (List<Object>) anObj;
           byte[] streamKey = (byte[]) streamObj.get(0);

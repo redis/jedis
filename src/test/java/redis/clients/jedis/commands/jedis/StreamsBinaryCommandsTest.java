@@ -95,7 +95,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
         // Read only a single Stream
         Map<byte[], List<StreamEntryBinary>> streams1 = jedis.xreadBinaryAsMap(XReadParams.xReadParams().count(2), streamQeury1);
         assertArrayEquals(stream1.getBytes(), streams1.keySet().iterator().next());
-        List<StreamEntryBinary> list1 = streams1.get(findKey(streams1.keySet(), stream1));
+        List<StreamEntryBinary> list1 = streams1.get(stream1.getBytes());
         assertEquals(2, list1.size());
         assertEquals(id1, list1.get(0).getID());
         Map<String, String> map1 = convertToMap(list1.get(0).getFields());
@@ -110,8 +110,8 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
         streamQuery2.put(stream2.getBytes(), new StreamEntryID());
         Map<byte[], List<StreamEntryBinary>> streams2 = jedis.xreadBinaryAsMap(XReadParams.xReadParams().count(1), streamQuery2);
         assertEquals(2, streams2.size());
-        assertEquals(id1, streams2.get(findKey(streams2.keySet(), stream1)).get(0).getID());
-        assertEquals(id2, streams2.get(findKey(streams2.keySet(), stream2)).get(0).getID());
+        assertEquals(id1, streams2.get(stream1.getBytes()).get(0).getID());
+        assertEquals(id2, streams2.get(stream2.getBytes()).get(0).getID());
     }
 
     @Test
@@ -142,9 +142,9 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
         Map<byte[], StreamEntryID> streamQueryLE = singletonMap(stream1.getBytes(), StreamEntryID.XREAD_LAST_ENTRY);
         Map<byte[], List<StreamEntryBinary>> streamsLE = jedis.xreadBinaryAsMap(XReadParams.xReadParams().count(1), streamQueryLE);
         assertArrayEquals(stream1.getBytes(), streamsLE.keySet().iterator().next());
-        assertEquals(1, streamsLE.get(findKey(streamsLE.keySet(), stream1)).size());
-        assertEquals(id3, streamsLE.get(findKey(streamsLE.keySet(), stream1)).get(0).getID());
-        assertEquals(map, convertToMap(streamsLE.get(findKey(streamsLE.keySet(), stream1)).get(0).getFields()));
+        assertEquals(1, streamsLE.get(stream1.getBytes()).size());
+        assertEquals(id3, streamsLE.get(stream1.getBytes()).get(0).getID());
+        assertEquals(map, convertToMap(streamsLE.get(stream1.getBytes()).get(0).getFields()));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
         Map<byte[], List<StreamEntryBinary>> range = jedis.xreadGroupBinaryAsMap("xreadGroup-group".getBytes(), "xreadGroup-consumer".getBytes(),
                 XReadGroupParams.xReadGroupParams().noAck(), streamQeury1);
         assertArrayEquals(stream1.getBytes(), range.keySet().iterator().next());
-        List<StreamEntryBinary> list = range.get(findKey(range.keySet(), stream1));
+        List<StreamEntryBinary> list = range.get(stream1.getBytes());
         assertEquals(1, list.size());
         assertEquals(id1, list.get(0).getID());
         assertEquals(map, convertToMap(list.get(0).getFields()));
@@ -716,14 +716,5 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
             result.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
         }
         return result;
-    }
-
-    private byte[] findKey(Set<byte[]> map, String key) {
-        for (byte[] entry : map) {
-            if (key.equals(SafeEncoder.encode(entry))) {
-                return entry;
-            }
-        }
-        return null;
     }
 }

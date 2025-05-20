@@ -36,7 +36,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     // create group on empty stream
     jedis.xgroupCreate("illegal_utf-8", "illegal_g1", new StreamEntryID(), true);
 
-    byte[] fieldKey1 = "f".getBytes(StandardCharsets.UTF_8);
+    byte[] fieldKey1 = "fv".getBytes(StandardCharsets.UTF_8);
     Map<byte[], byte[]> map1 = Collections.singletonMap(fieldKey1, value);
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams(), map1);
 
@@ -54,8 +54,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     assertArrayEquals(value, returned);
 
-    // StreamEntryBinary 아닌 StreamEntry 로 가져올 경우와 비교
-    byte[] fieldKey2 = "f2".getBytes(StandardCharsets.UTF_8);
+    byte[] fieldKey2 = "fv2".getBytes(StandardCharsets.UTF_8);
     Map<byte[], byte[]> map2 = Collections.singletonMap(fieldKey2, value);
     byte[] id2 = jedis.xadd(stream, XAddParams.xAddParams(), map2);
 

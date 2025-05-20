@@ -1824,7 +1824,7 @@ public final class BuilderFactory {
       List<byte[]> hash = (List<byte[]>) objectList.get(1);
 
       Iterator<byte[]> hashIterator = hash.iterator();
-      JedisByteHashMap map = new JedisByteHashMap();
+      Map<byte[], byte[]> map = new JedisByteHashMap();
       while (hashIterator.hasNext()) {
         map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
       }
@@ -1865,7 +1865,7 @@ public final class BuilderFactory {
         }
 
         Iterator<byte[]> hashIterator = hash.iterator();
-        Map<byte[], byte[]> map = new HashMap<>(hash.size() / 2, 1f);
+        Map<byte[], byte[]> map = new JedisByteHashMap();
         while (hashIterator.hasNext()) {
           map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
         }

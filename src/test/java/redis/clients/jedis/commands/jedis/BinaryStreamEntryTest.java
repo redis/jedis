@@ -40,7 +40,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     Map<byte[], byte[]> map1 = Collections.singletonMap(fieldKey1, value);
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams(), map1);
 
-    Map.Entry<byte[], StreamEntryID> query = new AbstractMap.SimpleImmutableEntry<>(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    Map<byte[], StreamEntryID> query = singletonMap(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     List<Map.Entry<byte[], List<StreamEntryBinary>>> res =
             jedis.xreadGroupBinary(
                     group, consumer,
@@ -81,8 +81,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     final byte[] value = "xb-v1".getBytes();
 
     // before any entry
-    Map.Entry<byte[], StreamEntryID> query1 = new AbstractMap.SimpleImmutableEntry<>(stream1, new StreamEntryID());
-    Map.Entry<byte[], StreamEntryID> query2 = new AbstractMap.SimpleImmutableEntry<>(stream2, new StreamEntryID());
+    Map<byte[], StreamEntryID> query1 = singletonMap(stream1, new StreamEntryID());
     assertNull(jedis.xreadBinary(XReadParams.xReadParams().block(1), query1));
     assertNull(jedis.xreadBinary(XReadParams.xReadParams(), query1));
 
@@ -103,8 +102,10 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     assertArrayEquals(value, e1.getFields().get(field));
 
     // read both streams
+    Map<byte[], StreamEntryID> multiStreamQuery = mapOf(stream1, new StreamEntryID(), stream2,
+        new StreamEntryID());
     List<Map.Entry<byte[], List<StreamEntryBinary>>> res2 = jedis
-        .xreadBinary(XReadParams.xReadParams().count(2).block(1), query1, query2);
+        .xreadBinary(XReadParams.xReadParams().count(2).block(1), multiStreamQuery);
     assertEquals(2, res2.size());
     assertArrayEquals(stream1, res2.get(0).getKey());
     assertArrayEquals(stream2, res2.get(1).getKey());
@@ -125,7 +126,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     final byte[] value = "xbaM-v1".getBytes();
 
     // before any entry
-    Map.Entry<byte[], StreamEntryID> q1 = new AbstractMap.SimpleImmutableEntry<>(stream1, new StreamEntryID());
+    Map<byte[], StreamEntryID> q1 = singletonMap(stream1, new StreamEntryID());
     assertNull(jedis.xreadBinaryAsMap(XReadParams.xReadParams().block(1), q1));
     assertNull(jedis.xreadBinaryAsMap(XReadParams.xReadParams(), q1));
 
@@ -138,7 +139,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     // read single stream as map
     Map<byte[], List<StreamEntryBinary>> m1 = jedis.xreadBinaryAsMap(
-      XReadParams.xReadParams().count(2), new AbstractMap.SimpleImmutableEntry<>(stream1, new StreamEntryID()));
+      XReadParams.xReadParams().count(2), singletonMap(stream1, new StreamEntryID()));
 
     byte[] key = m1.keySet().iterator().next();
     assertArrayEquals(stream1, key);
@@ -149,9 +150,10 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     assertArrayEquals(id3, list1.get(1).getID().toString().getBytes());
 
     // read both streams as map
+    Map<byte[], StreamEntryID> multiStreamQuery = mapOf(stream1, new StreamEntryID(), stream2,
+        new StreamEntryID());
     Map<byte[], List<StreamEntryBinary>> m2 = jedis.xreadBinaryAsMap(
-      XReadParams.xReadParams().count(1), new AbstractMap.SimpleImmutableEntry<>(stream1, new StreamEntryID()),
-        new AbstractMap.SimpleImmutableEntry<>(stream2, new StreamEntryID()));
+      XReadParams.xReadParams().count(1), multiStreamQuery);
 
     byte[] key1 = new byte[0];
     byte[] key2 = new byte[0];
@@ -192,7 +194,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     // create group on empty stream
     jedis.xgroupCreate("xg-stream", "xg-g1", new StreamEntryID(), true);
 
-    Map.Entry<byte[], StreamEntryID> q1 = new AbstractMap.SimpleImmutableEntry<>(stream, new StreamEntryID());
+    Map<byte[], StreamEntryID> q1 = singletonMap(stream, new StreamEntryID());
 
     // before any entry
     List<Map.Entry<byte[], List<StreamEntryBinary>>> before = jedis.xreadGroupBinary(group,
@@ -214,7 +216,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams().maxLen(3), map);
 
     // read with group
-    Map.Entry<byte[], StreamEntryID> readNew = new AbstractMap.SimpleImmutableEntry<>(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    Map<byte[], StreamEntryID> readNew = singletonMap(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     List<Map.Entry<byte[], List<StreamEntryBinary>>> res2 = jedis.xreadGroupBinary(group, consumer,
       XReadGroupParams.xReadGroupParams().count(1).block(1), readNew);
     assertEquals(1, res2.size());
@@ -233,7 +235,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     jedis.xgroupCreate("xgaM-stream", "xgaM-g1", new StreamEntryID(), true);
 
     // before any entry
-    Map.Entry<byte[], StreamEntryID> q1 = new AbstractMap.SimpleImmutableEntry<>(stream, new StreamEntryID());
+    Map<byte[], StreamEntryID> q1 = singletonMap(stream, new StreamEntryID());
     Map<byte[], List<StreamEntryBinary>> before = jedis.xreadGroupBinaryAsMap(group, consumer, XReadGroupParams.xReadGroupParams().block(1), q1);
 
     byte[] key = before.keySet().iterator().next();
@@ -257,7 +259,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams(), map);
 
     // read as map
-    Map.Entry<byte[], StreamEntryID> readNew = new AbstractMap.SimpleImmutableEntry<>(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    Map<byte[], StreamEntryID> readNew = singletonMap(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     Map<byte[], List<StreamEntryBinary>> m = jedis.xreadGroupBinaryAsMap(group, consumer,
       XReadGroupParams.xReadGroupParams().count(1).block(1), readNew);
 
@@ -274,5 +276,12 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
         .orElse(new ArrayList<>());
     assertEquals(1, m.size());
     assertArrayEquals(id1, list1.get(0).getID().toString().getBytes());
+  }
+
+  static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+    Map<K, V> map = new HashMap<K, V>();
+    map.put(k1, v1);
+    map.put(k2, v2);
+    return map;
   }
 }

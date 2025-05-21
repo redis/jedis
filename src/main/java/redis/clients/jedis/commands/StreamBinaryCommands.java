@@ -76,22 +76,20 @@ public interface StreamBinaryCommands {
 
   List<Object> xinfoConsumers(byte[] key, byte[] group);
 
+  /**
+   * @deprecated As of Jedis 6.1.0, replaced by {@link #xreadBinary(XReadParams, Map)} or
+   * {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry parsing.
+   */
+  @Deprecated
   List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   * {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], byte[]>... streams);
-
-  List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
-      Map.Entry<byte[], StreamEntryID>... streams);
-
-  Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
-      Map.Entry<byte[], StreamEntryID>... streams);
-
-  List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName, byte[] consumer,
-      XReadGroupParams xReadGroupParams, Map.Entry<byte[], StreamEntryID>... streams);
-
-  Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
-      XReadGroupParams xReadGroupParams, Map.Entry<byte[], StreamEntryID>... streams);
 
   List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
       Map<byte[], StreamEntryID> streams);

@@ -1806,37 +1806,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamEntryBinary> STREAM_ENTRY_BINARY = new Builder<StreamEntryBinary>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public StreamEntryBinary build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<Object> objectList = (List<Object>) data;
-
-      if (objectList.isEmpty()) {
-          return null;
-      }
-
-      String entryIdString = SafeEncoder.encode((byte[]) objectList.get(0));
-      StreamEntryID entryID = new StreamEntryID(entryIdString);
-      List<byte[]> hash = (List<byte[]>) objectList.get(1);
-
-      Iterator<byte[]> hashIterator = hash.iterator();
-      Map<byte[], byte[]> map = new JedisByteHashMap();
-      while (hashIterator.hasNext()) {
-        map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
-      }
-      return new StreamEntryBinary(entryID, map);
-    }
-
-    @Override
-    public String toString() {
-      return "StreamEntryBinary";
-    }
-  };
-
   public static final Builder<List<StreamEntryBinary>> STREAM_ENTRY_BINARY_LIST = new Builder<List<StreamEntryBinary>>() {
     @Override
     @SuppressWarnings("unchecked")

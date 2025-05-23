@@ -2881,6 +2881,11 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STREAM_READ_MAP_RESPONSE);
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, replaced by {@link #xreadBinary(XReadParams, Map)} or
+   * {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry parsing.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
     for (Map.Entry<byte[], byte[]> entry : streams) {
@@ -2916,6 +2921,11 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   * {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)

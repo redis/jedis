@@ -4770,12 +4770,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hpersist(key, fields));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   @Override
   public List<Object> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   @Override
   public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {

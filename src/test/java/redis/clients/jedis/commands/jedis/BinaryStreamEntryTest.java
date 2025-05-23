@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,9 +15,16 @@ import redis.clients.jedis.util.ByteArrayComparator;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonMap;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.argThat;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -88,8 +96,8 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     // add entries
     Map<byte[], byte[]> map = new HashMap<>();
     map.put(field, value);
-    byte[] id1 = jedis.xadd(stream1, XAddParams.xAddParams(), map);
-    byte[] id2 = jedis.xadd(stream2, XAddParams.xAddParams(), map);
+    byte[] id1 = jedis.xadd(stream1, XAddParams.xAddParams().id(0,1), map);
+    byte[] id2 = jedis.xadd(stream2, XAddParams.xAddParams().id(0,2), map);
 
     // read single stream
     List<Map.Entry<byte[], List<StreamEntryBinary>>> res1 = jedis
@@ -106,13 +114,22 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
         new StreamEntryID());
     List<Map.Entry<byte[], List<StreamEntryBinary>>> res2 = jedis
         .xreadBinary(XReadParams.xReadParams().count(2).block(1), multiStreamQuery);
+
     assertEquals(2, res2.size());
-    assertArrayEquals(stream1, res2.get(0).getKey());
-    assertArrayEquals(stream2, res2.get(1).getKey());
+
+    List<byte[]> streamKeys = res2.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+    assertThat(streamKeys, containsInAnyOrder(stream1, stream2));
+
     assertEquals(1, res2.get(0).getValue().size());
     assertEquals(1, res2.get(1).getValue().size());
-    StreamEntryBinary e2 = res2.get(0).getValue().get(0);
-    StreamEntryBinary e3 = res2.get(1).getValue().get(0);
+
+    // order of streams in the result is not guaranteed
+    int stream1Idx = ByteArrayComparator.compare(res2.get(0).getKey(), stream1) == 0 ? 0 : 1;
+    int stream2Idx = 1 - stream1Idx;
+
+    StreamEntryBinary e2 = res2.get(stream1Idx).getValue().get(0);
+    StreamEntryBinary e3 = res2.get(stream2Idx).getValue().get(0);
+
     assertArrayEquals(id1, e2.getID().toString().getBytes());
     assertArrayEquals(id2, e3.getID().toString().getBytes());
     assertArrayEquals(value, e2.getFields().get(field));
@@ -139,7 +156,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     // read single stream as map
     Map<byte[], List<StreamEntryBinary>> m1 = jedis.xreadBinaryAsMap(
-      XReadParams.xReadParams().count(2), singletonMap(stream1, new StreamEntryID()));
+      XReadParams.xReadParams().count(2), singletonMap(stream1, StreamEntryID.XREAD_NEW_ENTRY));
 
     byte[] key = m1.keySet().iterator().next();
     assertArrayEquals(stream1, key);

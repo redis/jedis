@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands.jedis;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,12 +18,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.argThat;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -32,6 +27,13 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
   public BinaryStreamEntryTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+    Map<K, V> map = new HashMap<K, V>();
+    map.put(k1, v1);
+    map.put(k2, v2);
+    return map;
   }
 
   @Test
@@ -48,13 +50,10 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     Map<byte[], byte[]> map1 = Collections.singletonMap(fieldKey1, value);
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams(), map1);
 
-    Map<byte[], StreamEntryID> query = singletonMap(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
-    List<Map.Entry<byte[], List<StreamEntryBinary>>> res =
-            jedis.xreadGroupBinary(
-                    group, consumer,
-                    XReadGroupParams.xReadGroupParams().count(1).block(1000),
-                    query
-            );
+    Map<byte[], StreamEntryID> query = singletonMap(stream,
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> res = jedis.xreadGroupBinary(group, consumer,
+        XReadGroupParams.xReadGroupParams().count(1).block(1000), query);
 
     assertEquals(1, res.size());
     List<StreamEntryBinary> entries = res.get(0).getValue();
@@ -68,12 +67,8 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     Map<String, StreamEntryID> query2 = new HashMap<>();
     query2.put("illegal_utf-8", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
-    List<Map.Entry<String, List<StreamEntry>>> res2 =
-            jedis.xreadGroup(
-                    "illegal_g1", "illegal_c1",
-                    XReadGroupParams.xReadGroupParams().count(1).block(1000),
-                    query2
-            );
+    List<Map.Entry<String, List<StreamEntry>>> res2 = jedis.xreadGroup("illegal_g1", "illegal_c1",
+        XReadGroupParams.xReadGroupParams().count(1).block(1000), query2);
 
     assertEquals(1, res2.size());
     List<StreamEntry> entries2 = res2.get(0).getValue();
@@ -96,12 +91,12 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     // add entries
     Map<byte[], byte[]> map = new HashMap<>();
     map.put(field, value);
-    byte[] id1 = jedis.xadd(stream1, XAddParams.xAddParams().id(0,1), map);
-    byte[] id2 = jedis.xadd(stream2, XAddParams.xAddParams().id(0,2), map);
+    byte[] id1 = jedis.xadd(stream1, XAddParams.xAddParams().id(0, 1), map);
+    byte[] id2 = jedis.xadd(stream2, XAddParams.xAddParams().id(0, 2), map);
 
     // read single stream
-    List<Map.Entry<byte[], List<StreamEntryBinary>>> res1 = jedis
-        .xreadBinary(XReadParams.xReadParams().count(1).block(1), query1);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> res1 = jedis.xreadBinary(
+        XReadParams.xReadParams().count(1).block(1), query1);
     assertEquals(1, res1.size());
     assertArrayEquals(stream1, res1.get(0).getKey());
     assertEquals(1, res1.get(0).getValue().size());
@@ -112,8 +107,8 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     // read both streams
     Map<byte[], StreamEntryID> multiStreamQuery = mapOf(stream1, new StreamEntryID(), stream2,
         new StreamEntryID());
-    List<Map.Entry<byte[], List<StreamEntryBinary>>> res2 = jedis
-        .xreadBinary(XReadParams.xReadParams().count(2).block(1), multiStreamQuery);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> res2 = jedis.xreadBinary(
+        XReadParams.xReadParams().count(2).block(1), multiStreamQuery);
 
     assertEquals(2, res2.size());
 
@@ -156,7 +151,7 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     // read single stream as map
     Map<byte[], List<StreamEntryBinary>> m1 = jedis.xreadBinaryAsMap(
-      XReadParams.xReadParams().count(2), singletonMap(stream1, StreamEntryID.XREAD_NEW_ENTRY));
+        XReadParams.xReadParams().count(2), singletonMap(stream1, new StreamEntryID()));
 
     byte[] key = m1.keySet().iterator().next();
     assertArrayEquals(stream1, key);
@@ -170,17 +165,17 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     Map<byte[], StreamEntryID> multiStreamQuery = mapOf(stream1, new StreamEntryID(), stream2,
         new StreamEntryID());
     Map<byte[], List<StreamEntryBinary>> m2 = jedis.xreadBinaryAsMap(
-      XReadParams.xReadParams().count(1), multiStreamQuery);
+        XReadParams.xReadParams().count(1), multiStreamQuery);
 
     byte[] key1 = new byte[0];
     byte[] key2 = new byte[0];
 
     for (Map.Entry<byte[], List<StreamEntryBinary>> entry : m2.entrySet()) {
-        if (ByteArrayComparator.compare(entry.getKey(), stream1) == 0) {
-            key1 = entry.getKey();
-        } else if (ByteArrayComparator.compare(entry.getKey(), stream2) == 0) {
-            key2 = entry.getKey();
-        }
+      if (ByteArrayComparator.compare(entry.getKey(), stream1) == 0) {
+        key1 = entry.getKey();
+      } else if (ByteArrayComparator.compare(entry.getKey(), stream2) == 0) {
+        key2 = entry.getKey();
+      }
     }
 
     List<StreamEntryBinary> list2 = m2.get(key1);
@@ -189,11 +184,9 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     assertArrayEquals(id1, list2.get(0).getID().toString().getBytes());
     assertArrayEquals(id2, list3.get(0).getID().toString().getBytes());
 
-    list2 = m2.entrySet().stream()
-        .filter(e -> Arrays.equals(e.getKey(), stream1))
+    list2 = m2.entrySet().stream().filter(e -> Arrays.equals(e.getKey(), stream1))
         .map(Map.Entry::getValue).findFirst().orElse(new ArrayList<>());
-    list3 = m2.entrySet().stream()
-        .filter(e -> Arrays.equals(e.getKey(), stream2))
+    list3 = m2.entrySet().stream().filter(e -> Arrays.equals(e.getKey(), stream2))
         .map(Map.Entry::getValue).findFirst().orElse(new ArrayList<>());
     assertEquals(2, m2.size());
     assertArrayEquals(id1, list2.get(0).getID().toString().getBytes());
@@ -215,14 +208,14 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     // before any entry
     List<Map.Entry<byte[], List<StreamEntryBinary>>> before = jedis.xreadGroupBinary(group,
-      consumer, XReadGroupParams.xReadGroupParams().block(1), q1);
+        consumer, XReadGroupParams.xReadGroupParams().block(1), q1);
     assertNotNull(before);
     assertEquals(1, before.size());
     assertArrayEquals(stream, before.get(0).getKey());
     assertTrue(before.get(0).getValue().isEmpty());
 
     List<Map.Entry<byte[], List<StreamEntryBinary>>> beforeNoBlock = jedis.xreadGroupBinary(group,
-      consumer, XReadGroupParams.xReadGroupParams(), q1);
+        consumer, XReadGroupParams.xReadGroupParams(), q1);
     assertNotNull(beforeNoBlock);
     assertEquals(1, beforeNoBlock.size());
     assertArrayEquals(stream, beforeNoBlock.get(0).getKey());
@@ -233,9 +226,10 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams().maxLen(3), map);
 
     // read with group
-    Map<byte[], StreamEntryID> readNew = singletonMap(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    Map<byte[], StreamEntryID> readNew = singletonMap(stream,
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     List<Map.Entry<byte[], List<StreamEntryBinary>>> res2 = jedis.xreadGroupBinary(group, consumer,
-      XReadGroupParams.xReadGroupParams().count(1).block(1), readNew);
+        XReadGroupParams.xReadGroupParams().count(1).block(1), readNew);
     assertEquals(1, res2.size());
     assertArrayEquals(stream, res2.get(0).getKey());
     assertArrayEquals(id1, res2.get(0).getValue().get(0).getID().toString().getBytes());
@@ -253,7 +247,8 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
 
     // before any entry
     Map<byte[], StreamEntryID> q1 = singletonMap(stream, new StreamEntryID());
-    Map<byte[], List<StreamEntryBinary>> before = jedis.xreadGroupBinaryAsMap(group, consumer, XReadGroupParams.xReadGroupParams().block(1), q1);
+    Map<byte[], List<StreamEntryBinary>> before = jedis.xreadGroupBinaryAsMap(group, consumer,
+        XReadGroupParams.xReadGroupParams().block(1), q1);
 
     byte[] key = before.keySet().iterator().next();
     assertArrayEquals(stream, key);
@@ -262,10 +257,8 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     assertNotNull(list);
     assertEquals(0, list.size());
 
-
-    list = before.entrySet().stream()
-        .filter(e -> Arrays.equals(e.getKey(), stream)).map(Map.Entry::getValue).findFirst()
-        .orElse(null);
+    list = before.entrySet().stream().filter(e -> Arrays.equals(e.getKey(), stream))
+        .map(Map.Entry::getValue).findFirst().orElse(null);
     assertNotNull(before);
     assertEquals(1, before.size());
     assertNotNull(list);
@@ -276,9 +269,10 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     byte[] id1 = jedis.xadd(stream, XAddParams.xAddParams(), map);
 
     // read as map
-    Map<byte[], StreamEntryID> readNew = singletonMap(stream, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    Map<byte[], StreamEntryID> readNew = singletonMap(stream,
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     Map<byte[], List<StreamEntryBinary>> m = jedis.xreadGroupBinaryAsMap(group, consumer,
-      XReadGroupParams.xReadGroupParams().count(1).block(1), readNew);
+        XReadGroupParams.xReadGroupParams().count(1).block(1), readNew);
 
     byte[] key1 = m.keySet().iterator().next();
     assertArrayEquals(stream, key1);
@@ -287,18 +281,10 @@ public class BinaryStreamEntryTest extends JedisCommandsTestBase {
     assertNotNull(list1);
     assertArrayEquals(id1, list1.get(0).getID().toString().getBytes());
 
-
-    list1 = m.entrySet().stream()
-        .filter(e -> Arrays.equals(e.getKey(), stream)).map(Map.Entry::getValue).findFirst()
-        .orElse(new ArrayList<>());
+    list1 = m.entrySet().stream().filter(e -> Arrays.equals(e.getKey(), stream))
+        .map(Map.Entry::getValue).findFirst().orElse(new ArrayList<>());
     assertEquals(1, m.size());
     assertArrayEquals(id1, list1.get(0).getID().toString().getBytes());
   }
 
-  static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
-    Map<K, V> map = new HashMap<K, V>();
-    map.put(k1, v1);
-    map.put(k2, v2);
-    return map;
-  }
 }

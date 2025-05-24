@@ -15,8 +15,9 @@ public class PooledBinaryStreamsCommandsTest extends BinaryStreamsCommandsTestBa
     super(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
+
+  @Override
+  public void setUpTestClient() {
     jedis = PooledCommandsTestHelper.getPooled(protocol);
   }
 

@@ -15,8 +15,8 @@ public class ClusterBinaryStreamsCommandsTest extends BinaryStreamsCommandsTestB
     super(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
+  @Override
+  protected void setUpTestClient() {
     jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 

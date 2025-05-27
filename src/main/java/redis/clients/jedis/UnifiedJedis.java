@@ -1548,7 +1548,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
     return executeCommand(commandObjects.hgetex(key, params, fields));
   }
-  
+
   @Override
   public List<byte[]> hgetdel(byte[] key, byte[]... fields) {
     return executeCommand(commandObjects.hgetdel(key, fields));
@@ -3451,14 +3451,55 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   @Override
   public List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   @Override
-  public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(
+        commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return executeCommand(
+        commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return executeCommand(
+        commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
 

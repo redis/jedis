@@ -1,17 +1,16 @@
 package redis.clients.jedis.commands.unified.cluster;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.commands.unified.BinaryStreamsCommandsTestBase;
+import redis.clients.jedis.commands.unified.StreamsBinaryCommandsTestBase;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class ClusterBinaryStreamsCommandsTest extends BinaryStreamsCommandsTestBase {
+public class ClusterStreamsBinaryCommandsTest extends StreamsBinaryCommandsTestBase {
 
-  public ClusterBinaryStreamsCommandsTest(RedisProtocol protocol) {
+  public ClusterStreamsBinaryCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
@@ -25,4 +24,5 @@ public class ClusterBinaryStreamsCommandsTest extends BinaryStreamsCommandsTestB
     jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
+
 }

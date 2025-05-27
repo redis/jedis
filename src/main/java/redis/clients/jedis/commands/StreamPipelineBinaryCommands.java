@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.StreamEntryBinary;
 
 public interface StreamPipelineBinaryCommands {
 
@@ -75,9 +77,66 @@ public interface StreamPipelineBinaryCommands {
 
   Response<List<Object>> xinfoConsumers(byte[] key, byte[] group);
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   Response<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   Response<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
+
+
+  /**
+   * Read from one or more streams.
+   *
+   * @param xReadParams {@link XReadParams}
+   * @param streams Map of stream name and ID to read from.
+   * @return List of entries. Each entry in the list is a pair of stream name and the entries reported for that key.
+   */
+  Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams);
+
+  /**
+   * Read from one or more streams and return a map of stream name to list of entries.
+   *
+   * @param xReadParams {@link XReadParams}
+   * @param streams Map of stream name and ID to read from.
+   * @return Map of stream name to list of entries.
+   */
+  Response<Map<byte[], List<StreamEntryBinary>>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams);
+
+  /**
+   * Read from one or more streams using a consumer group.
+   *
+   * @param groupName Consumer group name
+   * @param consumer Consumer name
+   * @param xReadGroupParams {@link XReadGroupParams}
+   * @param streams Map of stream name and ID to read from.
+   * @return List of entries. Each entry in the list is a pair of stream name and the entries reported for that key.
+   */
+  Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams);
+
+  /**
+   * Read from one or more streams using a consumer group and return a map of stream name to list of entries.
+   *
+   * @param groupName Consumer group name
+   * @param consumer Consumer name
+   * @param xReadGroupParams {@link XReadGroupParams}
+   * @param streams Map of stream name and ID to read from.
+   * @return Map of stream name to list of entries.
+   */
+  Response<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams);
 
 }

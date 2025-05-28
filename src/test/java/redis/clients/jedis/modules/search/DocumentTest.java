@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.search.Document;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DocumentTest {
 
@@ -52,13 +53,14 @@ public class DocumentTest {
     Document document = new Document(id, map, score);
 
     // use english language to make sure the decimal separator is the same as the toString
-    String expected1 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
-        id, score, "[string=c, float=12.0]");
-    String expected2 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
-        id, score, "[float=12.0, string=c]");
+    String expected1 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s", id, score,
+        "[string=c, float=12.0]");
+    String expected2 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s", id, score,
+        "[float=12.0, string=c]");
 
     // the order of the properties is not guaranteed, so we check both possible outcomes
     String actual = document.toString();
-    assertTrue(actual.equals(expected1)||actual.equals(expected2));
+    assertTrue(actual.equals(expected1) || actual.equals(expected2));
   }
+
 }

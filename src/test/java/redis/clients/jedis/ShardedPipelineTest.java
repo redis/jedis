@@ -2,11 +2,13 @@ package redis.clients.jedis;
 
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ShardedPipelineTest {
 
@@ -19,7 +21,7 @@ public class ShardedPipelineTest {
 
   private List<HostAndPort> shards = Arrays.asList(redis1.getHostAndPort(), redis2.getHostAndPort());
 
-  @Before
+  @BeforeEach
   public void setUp() {
     for (HostAndPort shard : shards) {
       try (Jedis j = new Jedis(shard)) {
@@ -42,12 +44,12 @@ public class ShardedPipelineTest {
       Response<String> r6 = shardedPipeline.get("key3");
       
       shardedPipeline.sync();
-      Assert.assertEquals("OK", r1.get());
-      Assert.assertEquals("OK", r2.get());
-      Assert.assertEquals("OK", r3.get());
-      Assert.assertEquals("value1", r4.get());
-      Assert.assertEquals("value2", r5.get());
-      Assert.assertEquals("value3", r6.get());
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
     }
   }
 
@@ -62,12 +64,12 @@ public class ShardedPipelineTest {
       Response<String> r6 = pipe.get("key3");
       
       pipe.sync();
-      Assert.assertEquals("OK", r1.get());
-      Assert.assertEquals("OK", r2.get());
-      Assert.assertEquals("OK", r3.get());
-      Assert.assertEquals("value1", r4.get());
-      Assert.assertEquals("value2", r5.get());
-      Assert.assertEquals("value3", r6.get());
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
     }
   }
 
@@ -83,12 +85,12 @@ public class ShardedPipelineTest {
       Response<String> r6 = pipe.get("key3");
 
       pipe.sync();
-      Assert.assertEquals("OK", r1.get());
-      Assert.assertEquals("OK", r2.get());
-      Assert.assertEquals("OK", r3.get());
-      Assert.assertEquals("value1", r4.get());
-      Assert.assertEquals("value2", r5.get());
-      Assert.assertEquals("value3", r6.get());
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
     }
   }
 }

@@ -1,7 +1,5 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,10 +10,11 @@ import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
@@ -31,14 +30,24 @@ import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   public ScriptingCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
@@ -203,9 +212,11 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }
 
-  @Test(expected = JedisNoScriptException.class)
+  @Test
   public void evalshaShaNotFound() {
-    jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
+    assertThrows(JedisNoScriptException.class, () -> {
+      jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
+    });
   }
 
   @Test

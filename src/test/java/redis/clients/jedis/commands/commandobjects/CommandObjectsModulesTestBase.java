@@ -1,8 +1,6 @@
 package redis.clients.jedis.commands.commandobjects;
 
-import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 
 /**

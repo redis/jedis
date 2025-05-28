@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;

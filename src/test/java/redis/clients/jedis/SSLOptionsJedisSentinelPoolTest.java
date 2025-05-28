@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.TlsUtil;
 
 public class SSLOptionsJedisSentinelPoolTest {
@@ -25,7 +25,7 @@ public class SSLOptionsJedisSentinelPoolTest {
   private static final String trustStoreName = SSLOptionsJedisSentinelPoolTest.class.getSimpleName();
   private static Path trustStorePath;
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis9-sentinel/work/tls"));
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");

@@ -4,21 +4,21 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.TestEnvUtil;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class UdsTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void checkDockerEnvironment() {
-    Assume.assumeFalse("Unix sockets tests not supported against dockerised test env yet!", TestEnvUtil.isContainerEnv());
+    assumeFalse(TestEnvUtil.isContainerEnv(),"Unix sockets tests not supported against dockerised test env yet!");
   }
 
   @Test

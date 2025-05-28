@@ -2,11 +2,12 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 
 import redis.clients.jedis.Jedis;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // HIDE_START
 public class CmdsCnxmgmtExample {
@@ -24,7 +25,7 @@ public class CmdsCnxmgmtExample {
         String authResult1 = jedis.auth("default",  "temp_pass");
         System.out.println(authResult1); // >>> OK
         // REMOVE_START
-        Assert.assertEquals("OK", authResult1);
+        assertEquals("OK", authResult1);
         jedis.configSet("requirepass", "");
         // REMOVE_END
         // STEP_END
@@ -38,7 +39,7 @@ public class CmdsCnxmgmtExample {
         String authResult2 = jedis.auth("test-user", "strong_password");
         System.out.println(authResult2); // >>> OK
         // REMOVE_START
-        Assert.assertEquals("OK", authResult2);
+        assertEquals("OK", authResult2);
         jedis.aclDelUser("test-user");
         // REMOVE_END
         // STEP_END

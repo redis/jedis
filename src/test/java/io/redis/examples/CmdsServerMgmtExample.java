@@ -2,14 +2,15 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 import java.util.Set;
 
 import redis.clients.jedis.Jedis;
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CmdsServerMgmtExample {
     @Test
@@ -30,8 +31,8 @@ public class CmdsServerMgmtExample {
         System.out.println(flushAllResult2); // >>> []
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", flushAllResult1);
-        Assert.assertEquals("[]", flushAllResult2.toString());
+        assertEquals("OK", flushAllResult1);
+        assertEquals("[]", flushAllResult2.toString());
         // REMOVE_END
 
         // STEP_START info
@@ -48,7 +49,7 @@ public class CmdsServerMgmtExample {
         jedis2.close();
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("# Server", infoResult.substring(0, 8));
+        assertEquals("# Server", infoResult.substring(0, 8));
         // REMOVE_END
         
 // HIDE_START

@@ -5,9 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
@@ -17,11 +16,12 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Provides an exhaustive list of mocked {@link redis.clients.jedis.CommandObject}s for use in unit tests.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public abstract class MockedCommandObjectsTestBase {
 
   /**

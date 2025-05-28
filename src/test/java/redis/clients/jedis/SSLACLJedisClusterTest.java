@@ -1,7 +1,9 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.TlsUtil.*;
 
 import java.nio.file.Path;
@@ -14,11 +16,10 @@ import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -53,7 +54,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
   private static final String trustStoreName = SSLACLJedisClusterTest.class.getSimpleName();
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     List<Path> trustedCertLocation = Collections.singletonList(Paths.get("cluster-unbound/work/tls"));
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
@@ -61,7 +62,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
-  @AfterClass
+  @AfterAll
   public static void teardownTrustStore() {
     TlsUtil.restoreOriginalTrustStore();
   }
@@ -149,7 +150,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
             .sslParameters(sslParameters).hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS,
         DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
-      Assert.fail("It should fail after all cluster attempts.");
+      fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
     } catch (JedisClusterOperationException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
@@ -199,7 +200,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc.get("foo");
-      Assert.fail("It should fail after all cluster attempts.");
+      fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
     } catch (JedisClusterOperationException e) {
       // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1

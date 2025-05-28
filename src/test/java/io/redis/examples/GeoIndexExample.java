@@ -2,8 +2,7 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 
 // HIDE_START
@@ -19,6 +18,8 @@ import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // HIDE_END
 
 // HIDE_START
@@ -54,7 +55,7 @@ public class GeoIndexExample {
         );
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", geoIdxCreateResult);
+        assertEquals("OK", geoIdxCreateResult);
         // REMOVE_END
         
         // STEP_START add_geo_json
@@ -77,8 +78,8 @@ public class GeoIndexExample {
         System.out.println(jsonAddResult2); // >>> OK
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", jsonAddResult1);
-        Assert.assertEquals("OK", jsonAddResult2);
+        assertEquals("OK", jsonAddResult1);
+        assertEquals("OK", jsonAddResult2);
         // REMOVE_END
 
         // STEP_START geo_query
@@ -94,9 +95,9 @@ public class GeoIndexExample {
         // >>> product:46885
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", jsonAddResult1);
-        Assert.assertEquals("OK", jsonAddResult2);
-        Assert.assertEquals("product:46885", geoResult.getDocuments().get(0).getId());
+        assertEquals("OK", jsonAddResult1);
+        assertEquals("OK", jsonAddResult2);
+        assertEquals("product:46885", geoResult.getDocuments().get(0).getId());
         // REMOVE_END
 
         // STEP_START create_gshape_idx
@@ -114,7 +115,7 @@ public class GeoIndexExample {
         System.out.println(geomIndexCreateResult); // >>> OK
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", geomIndexCreateResult);
+        assertEquals("OK", geomIndexCreateResult);
         // REMOVE_END
 
         // STEP_START add_gshape_json
@@ -147,10 +148,10 @@ public class GeoIndexExample {
         System.out.println(gmJsonRes4); // >>> OK
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals("OK", gmJsonRes1);
-        Assert.assertEquals("OK", gmJsonRes2);
-        Assert.assertEquals("OK", gmJsonRes3);
-        Assert.assertEquals("OK", gmJsonRes4);
+        assertEquals("OK", gmJsonRes1);
+        assertEquals("OK", gmJsonRes2);
+        assertEquals("OK", gmJsonRes3);
+        assertEquals("OK", gmJsonRes4);
         // REMOVE_END
 
         // STEP_START gshape_query
@@ -169,8 +170,8 @@ public class GeoIndexExample {
         // shape:4
         // STEP_END
         // REMOVE_START
-        Assert.assertEquals(1, geomResult.getTotalResults());
-        Assert.assertEquals("shape:4", geomResult.getDocuments().get(0).getId());
+        assertEquals(1, geomResult.getTotalResults());
+        assertEquals("shape:4", geomResult.getDocuments().get(0).getId());
         // REMOVE_END
         // HIDE_START
 

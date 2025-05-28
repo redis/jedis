@@ -39,16 +39,8 @@ public class DocumentTest {
 
     assertEquals(id, read.getId());
     assertEquals(score, read.getScore(), 0d);
-
-    // use english language to make sure the decimal separator is the same as the toString
-    String exp1 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
-        id, score, "[string=c, float=12.0]");
-    String exp2 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
-        id, score, "[float=12.0, string=c]");
-    String actual = read.toString();
-    assertTrue(actual.equals(exp1)||actual.equals(exp2));
     assertEquals("c", read.getString("string"));
-    assertEquals(Double.valueOf(12d), read.get("float"));
+    assertEquals(12d, read.get("float"));
   }
 
   @Test
@@ -65,6 +57,8 @@ public class DocumentTest {
         id, score, "[string=c, float=12.0]");
     String expected2 = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
         id, score, "[float=12.0, string=c]");
+
+    // the order of the properties is not guaranteed, so we check both possible outcomes
     String actual = document.toString();
     assertTrue(actual.equals(expected1)||actual.equals(expected2));
   }

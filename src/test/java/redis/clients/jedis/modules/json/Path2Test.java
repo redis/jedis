@@ -1,21 +1,21 @@
 package redis.clients.jedis.modules.json;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.json.Path2;
 
 public class Path2Test {
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void _null() {
-    Path2.of(null);
+    assertThrows(NullPointerException.class, ()->Path2.of(null));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void empty() {
-    Path2.of("");
+    assertThrows(IllegalArgumentException.class,()->Path2.of(""));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class Path2Test {
 
   @Test
   public void equals() {
-    assertTrue(new Path2("a.b").equals(Path2.of(".a.b")));
-    assertTrue(Path2.of("a.b").equals(new Path2(".a.b")));
+    assertEquals(new Path2("a.b"), Path2.of(".a.b"));
+    assertEquals(Path2.of("a.b"), new Path2(".a.b"));
   }
 }

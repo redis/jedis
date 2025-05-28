@@ -2,27 +2,36 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -31,16 +40,25 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   final byte[] bb = { 0x0B };
   final byte[] bc = { 0x0C };
 
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
+
   public ClusterSortedSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
@@ -154,6 +172,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   @Test
   @Override
   public void bzpopmax() {
+    assertNull(jedis.bzpopmax(1, "f{:}oo", "b{:}ar"));
+
     jedis.zadd("f{:}oo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("f{:}oo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("b{:}ar", 0.1d, "c", ZAddParams.zAddParams().nx());
@@ -163,6 +183,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   @Test
   @Override
   public void bzpopmin() {
+    assertNull(jedis.bzpopmin(1, "ba{:}r", "fo{:}o"));
+
     jedis.zadd("fo{:}o", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("fo{:}o", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("ba{:}r", 0.1d, "c", ZAddParams.zAddParams().nx());
@@ -229,6 +251,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zintercard() {
     jedis.zadd("foo{.}", 1, "a");
     jedis.zadd("foo{.}", 2, "b");

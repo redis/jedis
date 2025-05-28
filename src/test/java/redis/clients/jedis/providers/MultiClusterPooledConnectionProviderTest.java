@@ -1,8 +1,8 @@
 package redis.clients.jedis.providers;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -10,24 +10,24 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @see MultiClusterPooledConnectionProvider
  */
 public class MultiClusterPooledConnectionProviderTest {
 
-    private final HostAndPort hostAndPort1 = HostAndPorts.getRedisServers().get(0);
-    private final HostAndPort hostAndPort2 = HostAndPorts.getRedisServers().get(1);
+    private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
+    private final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
 
     private MultiClusterPooledConnectionProvider provider;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(hostAndPort1, DefaultJedisClientConfig.builder().build());
-        clusterConfigs[1] = new ClusterConfig(hostAndPort2, DefaultJedisClientConfig.builder().build());
+        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build());
+        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build());
 
         provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterConfigs).build());
     }
@@ -54,14 +54,15 @@ public class MultiClusterPooledConnectionProviderTest {
         assertEquals(2, index);
     }
 
-    @Test(expected = JedisConnectionException.class)
+    @Test
     public void testIncrementActiveMultiClusterIndexOutOfRange() {
         provider.setActiveMultiClusterIndex(1);
 
         int index = provider.incrementActiveMultiClusterIndex();
         assertEquals(2, index);
 
-        provider.incrementActiveMultiClusterIndex(); // Should throw an exception
+        assertThrows(JedisConnectionException.class,
+            () -> provider.incrementActiveMultiClusterIndex()); // Should throw an exception
     }
 
     @Test
@@ -77,7 +78,7 @@ public class MultiClusterPooledConnectionProviderTest {
             provider.incrementActiveMultiClusterIndex();
         } catch (Exception e) {}
 
-        assertEquals(true, provider.isLastClusterCircuitBreakerForcedOpen());
+      assertTrue(provider.isLastClusterCircuitBreakerForcedOpen());
     }
 
     @Test
@@ -113,22 +114,43 @@ public class MultiClusterPooledConnectionProviderTest {
 
         }
 
-        assertEquals(true, isValidTest.get());
+      assertTrue(isValidTest.get());
     }
 
-    @Test(expected = JedisValidationException.class)
+    @Test
     public void testSetActiveMultiClusterIndexEqualsZero() {
-        provider.setActiveMultiClusterIndex(0); // Should throw an exception
+        assertThrows(JedisValidationException.class,
+            () -> provider.setActiveMultiClusterIndex(0)); // Should throw an exception
     }
 
-    @Test(expected = JedisValidationException.class)
+    @Test
     public void testSetActiveMultiClusterIndexLessThanZero() {
-        provider.setActiveMultiClusterIndex(-1); // Should throw an exception
+        assertThrows(JedisValidationException.class,
+            () -> provider.setActiveMultiClusterIndex(-1)); // Should throw an exception
     }
 
-    @Test(expected = JedisValidationException.class)
+    @Test
     public void testSetActiveMultiClusterIndexOutOfRange() {
-        provider.setActiveMultiClusterIndex(3); // Should throw an exception
+        assertThrows(JedisValidationException.class,
+            () -> provider.setActiveMultiClusterIndex(3)); // Should throw an exception
     }
 
+    @Test
+    public void testConnectionPoolConfigApplied() {
+        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+        poolConfig.setMaxTotal(8);
+        poolConfig.setMaxIdle(4);
+        poolConfig.setMinIdle(1);
+        ClusterConfig[] clusterConfigs = new ClusterConfig[2];
+        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+        try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
+                new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
+            MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
+            ConnectionPool connectionPool = activeCluster.getConnectionPool();
+            assertEquals(8, connectionPool.getMaxTotal());
+            assertEquals(4, connectionPool.getMaxIdle());
+            assertEquals(1, connectionPool.getMinIdle());
+        }
+    }
 }

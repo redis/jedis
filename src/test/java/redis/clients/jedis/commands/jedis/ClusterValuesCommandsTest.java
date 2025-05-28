@@ -1,8 +1,10 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,8 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
@@ -126,6 +128,15 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
   @Test
   public void pingBroadcast() {
     assertEquals("PONG", cluster.ping());
+  }
+
+  @Test
+  public void info() {
+    String info = cluster.info();
+    assertThat(info, notNullValue());
+
+    info = cluster.info("server");
+    assertThat(info, notNullValue());
   }
 
   @Test

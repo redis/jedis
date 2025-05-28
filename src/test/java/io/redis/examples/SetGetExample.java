@@ -1,36 +1,37 @@
-//EXAMPLE: set_and_get
-//HIDE_START
+// EXAMPLE: set_and_get
+// HIDE_START
 package io.redis.examples;
 
 import redis.clients.jedis.UnifiedJedis;
-//REMOVE_START
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-//REMOVE_END
+
+// REMOVE_START
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+// REMOVE_END
 
 public class SetGetExample {
 
-    @Test
-    public void run() {
+  @Test
+  public void run() {
 
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+    UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+    // HIDE_END
 
-        //HIDE_END
-        String status = jedis.set("bike:1", "Process 134");
+    String status = jedis.set("bike:1", "Process 134");
 
-        if ("OK".equals(status))
-            System.out.println("Successfully added a bike.");
+    if ("OK".equals(status)) System.out.println("Successfully added a bike.");
 
-        String value = jedis.get("bike:1");
+    String value = jedis.get("bike:1");
 
-        if ( value != null)
-            System.out.println("The name of the bike is: " + value  + ".");
-        //HIDE_START
+    if (value != null) System.out.println("The name of the bike is: " + value + ".");
 
-        //REMOVE_START
-        assertEquals("OK", status);
-        assertEquals("Process 134", value);
-        //REMOVE_END
-    }
+    // REMOVE_START
+    assertEquals("OK", status);
+    assertEquals("Process 134", value);
+    // REMOVE_END
+
+// HIDE_START
+    jedis.close();
+  }
 }
-//HIDE_END
+// HIDE_END

@@ -1,14 +1,10 @@
 package redis.clients.jedis.commands.unified;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.List;
-import org.junit.Test;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
@@ -16,6 +12,13 @@ import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
@@ -143,6 +146,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message="Starting with Redis version 7.0.0: Added the BYTE|BIT option.")
   public void bitposModifier() {
     jedis.set("mykey", "\\x00\\xff\\xf0");
     assertEquals(0, jedis.bitpos("mykey", false));
@@ -168,6 +172,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0", message="Starting with Redis version 7.0.0: Added the BYTE|BIT option.")
   public void bitCount() {
     jedis.setbit("foo", 16, true);
     jedis.setbit("foo", 24, true);
@@ -238,9 +243,9 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertArrayEquals(new byte[]{0x79}, jedis.get(dest));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void bitOpNotMultiSourceShouldFail() {
-    jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
+    assertThrows(JedisDataException.class, () -> jedis.bitop(BitOP.NOT, "dest", "src1", "src2"));
   }
 
   @Test

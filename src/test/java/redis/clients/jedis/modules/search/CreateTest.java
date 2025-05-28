@@ -1,6 +1,6 @@
 //package redis.clients.jedis.modules.search;
 //
-//import static org.junit.Assert.*;
+//import static org.junit.jupiter.api.Assertions.*;
 //
 //import java.util.ArrayList;
 //import java.util.Arrays;

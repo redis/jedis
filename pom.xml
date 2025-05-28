@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>5.2.0-SNAPSHOT</version>
+	<version>6.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -49,9 +49,22 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.17.0</jackson.version>
-		<maven.surefire.version>3.2.5</maven.surefire.version>
+		<jackson.version>2.19.0</jackson.version>
+		<maven.surefire.version>3.5.3</maven.surefire.version>
+		<junit.version>5.13.0-RC1</junit.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -62,24 +75,32 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
-			<version>2.12.0</version>
+			<version>2.12.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20240303</version>
+			<version>20250107</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.10.1</version>
+			<version>2.13.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>redis.clients.authentication</groupId>
+			<artifactId>redis-authx-core</artifactId>
+			<version>0.1.1-beta2</version>
+		</dependency>
+
+		<!-- Optional dependencies -->
 
 		<!-- UNIX socket connection support -->
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
-			<version>2.9.0</version>
+			<version>2.10.1</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
@@ -87,20 +108,36 @@
 		<dependency>
 			<groupId>org.locationtech.jts</groupId>
 			<artifactId>jts-core</artifactId>
-			<version>1.19.0</version>
+			<version>1.20.0</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- test -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>4.11.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
-			<version>2.2</version>
+			<version>3.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -125,6 +162,32 @@
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>${jackson.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.javacrumbs.json-unit</groupId>
+			<artifactId>json-unit</artifactId>
+			<version>2.40.1</version> <!-- 3.x requires Java 17 -->
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5-fluent</artifactId>
+			<version>5.4.4</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>4.3.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>redis.clients.authentication</groupId>
+			<artifactId>redis-authx-entraid</artifactId>
+			<version>0.1.1-beta2</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -171,7 +234,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.11</version>
+				<version>0.8.13</version>
 				<executions>
 					<execution>
 						<goals>
@@ -189,7 +252,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.12.1</version>
+				<version>3.14.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -199,6 +262,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
+					<argLine>${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
@@ -210,7 +274,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.3.1</version>
 				<configuration>
 					<attach>true</attach>
 				</configuration>
@@ -225,7 +289,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.6.3</version>
+				<version>3.11.2</version>
 				<configuration>
 					<source>8</source><!-- Until JDK 11+ -->
 					<detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->
@@ -243,12 +307,12 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.1.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.13</version>
+				<version>1.7.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
@@ -257,16 +321,26 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-				<artifactId>maven-java-formatter-plugin</artifactId>
-				<version>0.4</version>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>2.16.0</version>
 				<configuration>
 					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
+					<directories>
+						<directory>${project.basedir}/src/main/java/redis/clients/jedis/annots</directory>
+					</directories>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.4.2</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -300,7 +374,7 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.2.0</version>
+						<version>3.2.7</version>
 						<configuration>
 							<gpgArguments>
 								<arg>--pinentry-mode</arg>

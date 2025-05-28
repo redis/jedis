@@ -1,15 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -19,7 +17,14 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class BitCommandsTest extends JedisCommandsTestBase {
 
   public BitCommandsTest(RedisProtocol protocol) {
@@ -146,6 +151,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "7.0.0 Added the BYTE|BIT option.")
   public void bitposModifier() {
     jedis.set("mykey", "\\x00\\xff\\xf0");
     assertEquals(0, jedis.bitpos("mykey", false));
@@ -160,6 +166,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void setAndgetrange() {
     jedis.set("key1", "Hello World");
     assertEquals(11, jedis.setrange("key1", 6, "Jedis"));
@@ -182,6 +189,15 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L));
+  }
+
+  @Test
+  @SinceRedisVersion("7.0.0")
+  public void bitCountModifier() {
+    jedis.setbit("foo", 16, true);
+    jedis.setbit("foo", 24, true);
+    jedis.setbit("foo", 40, true);
+    jedis.setbit("foo", 56, true);
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L, BitCountOption.BYTE));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BYTE));
@@ -241,9 +257,11 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(new byte[]{0x79}, jedis.get(dest));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void bitOpNotMultiSourceShouldFail() {
-    jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
+    Assertions.assertThrows(JedisDataException.class, () -> {
+      jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
+    });
   }
 
   @Test

@@ -8,10 +8,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
-import redis.clients.jedis.util.DoublePrecision;
-import redis.clients.jedis.util.JedisByteHashMap;
-import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.*;
 
 public final class BuilderFactory {
 
@@ -385,7 +382,9 @@ public final class BuilderFactory {
 
       if (data instanceof List) {
         final List list = (List) data;
-        if (list.isEmpty()) return Collections.emptyMap();
+        if (list.isEmpty()) {
+          return list == Protocol.PROTOCOL_EMPTY_MAP ? Collections.emptyMap() : Collections.emptyList();
+        }
 
         if (list.get(0) instanceof KeyValue) {
           return ((List<KeyValue>) data).stream()
@@ -397,8 +396,9 @@ public final class BuilderFactory {
         }
       } else if (data instanceof byte[]) {
         return STRING.build(data);
+      } else {
+        return data;
       }
-      return data;
     }
   };
 
@@ -595,10 +595,9 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<String, Tuple> build(Object data) {
-      List<Object> l = (List<Object>) data; // never null
-      if (l.isEmpty()) {
-        return null;
-      }
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      if (l.isEmpty()) return null;
       return KeyValue.of(STRING.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 
@@ -612,10 +611,9 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<byte[], Tuple> build(Object data) {
-      List<Object> l = (List<Object>) data; // never null
-      if (l.isEmpty()) {
-        return null;
-      }
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      if (l.isEmpty()) return null;
       return KeyValue.of(BINARY.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 
@@ -661,6 +659,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -683,6 +682,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET_RESP3 = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -972,30 +972,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<Map<String, CommandInfo>>() {
-    @Override
-    public Map<String, CommandInfo> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
-      List<Object> rawList = (List<Object>) data;
-      Map<String, CommandInfo> map = new HashMap<>(rawList.size());
-
-      for (Object rawCommandInfo : rawList) {
-        if (rawCommandInfo == null) {
-          continue;
-        }
-
-        List<Object> commandInfo = (List<Object>) rawCommandInfo;
-        String name = STRING.build(commandInfo.get(0));
-        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(commandInfo);
-        map.put(name, info);
-      }
-
-      return map;
-    }
-  };
+  @Deprecated
+  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = CommandInfo.COMMAND_INFO_RESPONSE;
 
   public static final Builder<Map<String, LatencyLatestInfo>> LATENCY_LATEST_RESPONSE = new Builder<Map<String, LatencyLatestInfo>>() {
     @Override
@@ -1420,10 +1398,10 @@ public final class BuilderFactory {
             .collect(Collectors.toList());
       } else {
         List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(list.size());
-        for (Object streamObj : list) {
-          List<Object> stream = (List<Object>) streamObj;
-          String streamKey = STRING.build(stream.get(0));
-          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          String streamKey = STRING.build(streamObj.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(streamObj.get(1));
           result.add(KeyValue.of(streamKey, streamEntries));
         }
         return result;
@@ -1433,6 +1411,35 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<Entry<String, List<StreamEntry>>>";
+    }
+  };
+
+  public static final Builder<Map<String, List<StreamEntry>>> STREAM_READ_MAP_RESPONSE
+      = new Builder<Map<String, List<StreamEntry>>>() {
+    @Override
+    public Map<String, List<StreamEntry>> build(Object data) {
+      if (data == null) return null;
+      List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()), kv -> STREAM_ENTRY_LIST.build(kv.getValue())));
+      } else {
+        Map<String, List<StreamEntry>> result = new HashMap<>(list.size());
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          String streamKey = STRING.build(streamObj.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(streamObj.get(1));
+          result.put(streamKey, streamEntries);
+        }
+        return result;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, List<StreamEntry>>";
     }
   };
 
@@ -1783,20 +1790,125 @@ public final class BuilderFactory {
       }
 
       List<Object> objectList = (List<Object>) data;
-      long total = BuilderFactory.LONG.build(objectList.get(0));
-      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
-      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
-      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
-      Map<String, Long> map = new HashMap<>(consumerObjList.size());
-      for (List<Object> consumerObj : consumerObjList) {
-        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
-      }
-      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+      long total = LONG.build(objectList.get(0));
+      StreamEntryID minId = STREAM_ENTRY_ID.build(objectList.get(1));
+      StreamEntryID maxId = STREAM_ENTRY_ID.build(objectList.get(2));
+      Map<String, Long> map = objectList.get(3) == null ? null
+          : ((List<List<Object>>) objectList.get(3)).stream().collect(
+              Collectors.toMap(pair -> STRING.build(pair.get(0)),
+                  pair -> Long.parseLong(STRING.build(pair.get(1)))));
+      return new StreamPendingSummary(total, minId, maxId, map);
     }
 
     @Override
     public String toString() {
       return "StreamPendingSummary";
+    }
+  };
+
+  public static final Builder<List<StreamEntryBinary>> STREAM_ENTRY_BINARY_LIST = new Builder<List<StreamEntryBinary>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<StreamEntryBinary> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
+
+      List<StreamEntryBinary> responses = new ArrayList<>(objectList.size() / 2);
+      if (objectList.isEmpty()) {
+        return responses;
+      }
+
+      for (ArrayList<Object> res : objectList) {
+        if (res == null) {
+          responses.add(null);
+          continue;
+        }
+        String entryIdString = SafeEncoder.encode((byte[]) res.get(0));
+        StreamEntryID entryID = new StreamEntryID(entryIdString);
+        List<byte[]> hash = (List<byte[]>) res.get(1);
+        if (hash == null) {
+          responses.add(new StreamEntryBinary(entryID, null));
+          continue;
+        }
+
+        Iterator<byte[]> hashIterator = hash.iterator();
+        Map<byte[], byte[]> map = new JedisByteHashMap();
+        while (hashIterator.hasNext()) {
+          map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
+        }
+        responses.add(new StreamEntryBinary(entryID, map));
+      }
+
+      return responses;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamEntryBinary>";
+    }
+  };
+
+  public static final Builder<Map<byte[], List<StreamEntryBinary>>> STREAM_READ_BINARY_MAP_RESPONSE
+      = new Builder<Map<byte[], List<StreamEntryBinary>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], List<StreamEntryBinary>> build(Object data) {
+      if (data == null) return null;
+      List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      JedisByteMap<List<StreamEntryBinary>> result = new JedisByteMap<>();
+      if (list.get(0) instanceof KeyValue) {
+        ((List<KeyValue>) list).forEach(kv -> result.put(BINARY.build(kv.getKey()), STREAM_ENTRY_BINARY_LIST.build(kv.getValue())));
+        return result;
+      } else {
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          byte[] streamKey = (byte[]) streamObj.get(0);
+          List<StreamEntryBinary> streamEntries = STREAM_ENTRY_BINARY_LIST.build(streamObj.get(1));
+          result.put(streamKey, streamEntries);
+        }
+        return result;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<byte[], List<StreamEntryBinary>>";
+    }
+  };
+
+  public static final Builder<List<Map.Entry<byte[], List<StreamEntryBinary>>>> STREAM_READ_BINARY_RESPONSE
+      = new Builder<List<Map.Entry<byte[], List<StreamEntryBinary>>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map.Entry<byte[], List<StreamEntryBinary>>> build(Object data) {
+      if (data == null) return null;
+      List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+                .map(kv -> new KeyValue<>(BINARY.build(kv.getKey()),
+                    STREAM_ENTRY_BINARY_LIST.build(kv.getValue())))
+                .collect(Collectors.toList());
+      } else {
+        List<Map.Entry<byte[], List<StreamEntryBinary>>> result = new ArrayList<>(list.size());
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          byte[] streamKey = BINARY.build(streamObj.get(0));
+          List<StreamEntryBinary> streamEntries = STREAM_ENTRY_BINARY_LIST.build(streamObj.get(1));
+          result.add(KeyValue.of(streamKey, streamEntries));
+        }
+        return result;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "List<Entry<byte[], List<StreamEntryBinary>>>";
     }
   };
 

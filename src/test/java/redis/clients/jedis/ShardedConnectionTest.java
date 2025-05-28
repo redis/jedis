@@ -1,32 +1,34 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.Test;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ShardedConnectionTest {
 
-  private static final HostAndPort redis1 = HostAndPorts.getRedisServers().get(0);
-  private static final HostAndPort redis2 = HostAndPorts.getRedisServers().get(1);
+  /**
+   * NOTE(imalinovskyi): Both endpoints should share the same password.
+   */
+  private static final EndpointConfig redis1 = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig redis2 = HostAndPorts.getRedisEndpoint("standalone1");
 
   private List<HostAndPort> shards;
   private JedisClientConfig clientConfig;
 
-  @Before
+  @BeforeEach
   public void startUp() {
     shards = new ArrayList<>();
-    shards.add(redis1);
-    shards.add(redis2);
+    shards.add(redis1.getHostAndPort());
+    shards.add(redis2.getHostAndPort());
 
-    clientConfig = DefaultJedisClientConfig.builder().password("foobared").build();
+    clientConfig = redis1.getClientConfigBuilder().build();
 
     for (HostAndPort shard : shards) {
       try (Jedis j = new Jedis(shard, clientConfig)) {

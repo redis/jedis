@@ -1,8 +1,7 @@
 package redis.clients.jedis.collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,16 +15,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SetFromListTest {
 
   private static Method method;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
-//    Class<?> clazz = Class.forName("redis.clients.jedis.BinaryJedis$SetFromList");
     Class<?> clazz = Class.forName("redis.clients.jedis.BuilderFactory$SetFromList");
     method = clazz.getDeclaredMethod("of", List.class);
     method.setAccessible(true);

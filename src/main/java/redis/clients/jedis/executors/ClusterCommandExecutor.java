@@ -13,6 +13,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -72,6 +73,14 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, false);
+  }
+
+  public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, true);
+  }
+
+  private <T> T doExecuteCommand(CommandObject<T> commandObject, boolean toReplica) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
@@ -87,7 +96,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
             connection.executeCommand(Protocol.Command.ASKING);
           }
         } else {
-          connection = provider.getConnection(commandObject.getArguments());
+          connection = toReplica ? provider.getReplicaConnection(commandObject.getArguments())
+              : provider.getConnection(commandObject.getArguments());
         }
 
         return execute(connection, commandObject);
@@ -121,7 +131,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
         IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
+        throw new JedisClusterOperationException("Cluster retry deadline exceeded.", lastException);
       }
     }
 
@@ -135,6 +145,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
     return connection.executeCommand(commandObject);
   }
@@ -193,6 +204,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected void sleep(long sleepMillis) {
     try {
       TimeUnit.MILLISECONDS.sleep(sleepMillis);

@@ -1,15 +1,21 @@
 package redis.clients.jedis.commands.jedis;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.*;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
@@ -20,7 +26,8 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class SortedSetCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -400,6 +407,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void zrankWithScore() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 2d, "b");
@@ -1416,6 +1424,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void zintercard() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1527,12 +1536,16 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void bzpopmax() {
+    assertNull(jedis.bzpopmax(1, "foo", "bar"));
+
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
     assertEquals(new KeyValue<>("foo", new Tuple("b", 10d)), jedis.bzpopmax(0, "foo", "bar"));
 
     // Binary
+    assertNull(jedis.bzpopmax(1, bfoo, bbar));
+
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
@@ -1543,12 +1556,16 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void bzpopmin() {
+    assertNull(jedis.bzpopmin(1, "bar", "foo"));
+
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
     assertEquals(new KeyValue<>("bar", new Tuple("c", 0.1)), jedis.bzpopmin(0, "bar", "foo"));
 
     // Binary
+    assertNull(jedis.bzpopmin(1, bbar, bfoo));
+
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
@@ -1650,6 +1667,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void zmpop() {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1665,6 +1683,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void bzmpopSimple() {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());

@@ -5,6 +5,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.authentication.AuthXManager;
+
 public interface JedisClientConfig {
 
   default RedisProtocol getRedisProtocol() {
@@ -44,9 +46,14 @@ public interface JedisClientConfig {
     return null;
   }
 
+  // TODO: return null
   default Supplier<RedisCredentials> getCredentialsProvider() {
     return new DefaultRedisCredentialsProvider(
         new DefaultRedisCredentials(getUser(), getPassword()));
+  }
+
+  default AuthXManager getAuthXManager() {
+    return null;
   }
 
   default int getDatabase() {
@@ -58,7 +65,7 @@ public interface JedisClientConfig {
   }
 
   /**
-   * @return <code>true</code> - to create a TLS connection. <code>false</code> - otherwise.
+   * @return {@code true} - to create TLS connection(s). {@code false} - otherwise.
    */
   default boolean isSsl() {
     return false;
@@ -72,12 +79,33 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
+   * {@link JedisClientConfig#getSslParameters()} will be ignored if
+   * {@link JedisClientConfig#getSslOptions() this} is set.
+   * @return ssl options
+   */
+  default SslOptions getSslOptions() {
+    return null;
+  }
+
   default HostnameVerifier getHostnameVerifier() {
     return null;
   }
 
   default HostAndPortMapper getHostAndPortMapper() {
     return null;
+  }
+
+  /**
+   * Execute READONLY command to connections.
+   * <p>
+   * READONLY command is specific to Redis Cluster replica nodes. So this config param is only
+   * intended for Redis Cluster connections.
+   * @return {@code true} - to execute READONLY command to connection(s). {@code false} - otherwise.
+   */
+  default boolean isReadOnlyForRedisClusterReplicas() {
+    return false;
   }
 
   /**

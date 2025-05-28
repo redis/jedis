@@ -8,6 +8,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.Rawable;
 
+import java.util.Objects;
+
 public class ZRangeParams implements IParams {
 
   private final Keyword by;
@@ -97,5 +99,18 @@ public class ZRangeParams implements IParams {
     if (limit) {
       args.add(Keyword.LIMIT).add(offset).add(count);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ZRangeParams that = (ZRangeParams) o;
+    return rev == that.rev && limit == that.limit && offset == that.offset && count == that.count && by == that.by && Objects.equals(min, that.min) && Objects.equals(max, that.max);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(by, min, max, rev, limit, offset, count);
   }
 }

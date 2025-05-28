@@ -1,10 +1,10 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.params.ClientKillParams.SkipMe;
 
 import java.util.concurrent.ExecutionException;
@@ -15,13 +15,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -31,7 +31,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.resps.TrackingInfo;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
@@ -39,20 +40,21 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private Jedis client;
 
+
   public ClientCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    client = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    client.auth("foobared");
+    client = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    client.auth(endpoint.getPassword());
     client.clientSetname(clientName);
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     client.close();
@@ -74,6 +76,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clientSetInfoCommand() {
     String libName = "Jedis::A-Redis-Java-library";
     String libVersion = "999.999.999";
@@ -97,8 +100,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientIdmultipleConnection() {
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
-      client2.auth("foobared");
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
+      client2.auth(endpoint.getPassword());
       client2.clientSetname("fancy_jedis_another_name");
 
       // client-id is monotonically increasing
@@ -111,7 +114,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     long clientIdInitial = client.clientId();
     client.disconnect();
     client.connect();
-    client.auth("foobared");
+    client.auth(endpoint.getPassword());
     long clientIdAfterReconnect = client.clientId();
 
     assertTrue(clientIdInitial < clientIdAfterReconnect);
@@ -233,7 +236,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   @Test
   public void killUser() {
     client.aclSetUser("test_kill", "on", "+acl", ">password1");
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
       client2.auth("test_kill", "password1");
 
       assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
@@ -244,14 +247,15 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "MAXAGE (since Redis 7.4)")
   public void killMaxAge() throws InterruptedException {
     long maxAge = 2;
 
     // sleep twice the maxAge, to be sure
     Thread.sleep(maxAge * 2 * 1000);
 
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
-      client2.auth("foobared");
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
+      client2.auth(endpoint.getPassword());
 
       long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
 
@@ -300,8 +304,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void trackingInfoResp3() {
-    Jedis clientResp3 = new Jedis(hnp, DefaultJedisClientConfig.builder()
-            .protocol(RedisProtocol.RESP3).password("foobared").build());
+    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+            .protocol(RedisProtocol.RESP3).build());
     TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
 
     assertEquals(1, trackingInfo.getFlags().size());

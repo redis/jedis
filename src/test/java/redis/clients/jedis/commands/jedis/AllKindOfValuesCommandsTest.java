@@ -1,8 +1,15 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.Command.BLPOP;
 import static redis.clients.jedis.Protocol.Command.HGETALL;
 import static redis.clients.jedis.Protocol.Command.GET;
@@ -14,32 +21,35 @@ import static redis.clients.jedis.Protocol.Command.XINFO;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
+import java.time.Duration;
 import java.util.*;
-import org.hamcrest.Matchers;
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Transaction;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
+
+  private static final long TIME_SKEW = Duration.ofMillis(5).toMillis();
+
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
   final byte[] bfoo2 = { 0x01, 0x02, 0x03, 0x04, 0x0B };
@@ -57,7 +67,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
+  private static final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
@@ -310,6 +320,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void expire() {
     assertEquals(0, jedis.expire("foo", 20L));
 
@@ -326,6 +337,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void expireAt() {
     long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
@@ -346,6 +358,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void expireTime() {
     long unixTime;
 
@@ -602,10 +615,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @Disabled(value = "TODO: Regression in 8.0-M02 discarding restore idle time.")
   public void restoreParams() {
     // take a separate instance
-    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    jedis2.auth(endpoint.getPassword());
     jedis2.flushAll();
 
     jedis2.set("foo", "bar");
@@ -631,19 +645,21 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis2.pttl("foo") <= 1000);
 
     jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
-    assertTrue(jedis2.pttl("bar") <= 1000);
+    assertThat(jedis2.pttl("bar"), Matchers.lessThanOrEqualTo(1000l + TIME_SKEW));
+
 
     jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
     assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
     jedis2.close();
 
-    Jedis lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
+    Jedis lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(), lfuEndpoint.getClientConfigBuilder().timeoutMillis(500).build());;
     lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
     assertEquals(90, lfuJedis.objectFreq("bar1").longValue());
     lfuJedis.close();
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void pexpire() {
     assertEquals(0, jedis.pexpire("foo", 10000));
 
@@ -685,6 +701,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void pexpireTime() {
     long unixTime = (System.currentTimeMillis()) + 10000;
 
@@ -990,7 +1007,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -1008,7 +1025,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -1025,7 +1042,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -1037,7 +1054,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     List encodeObj = (List) SafeEncoder.encodeObject(obj);
 
     assertThat(encodeObj.size(), Matchers.greaterThanOrEqualTo(14));
-    assertEquals("must have even number of elements", 0, encodeObj.size() % 2); // must be even
+    assertEquals( 0, encodeObj.size() % 2, "must have even number of elements"); // must be even
 
     assertEquals(1L, findValueFromMapAsList(encodeObj, "length"));
     assertEquals(entryID.toString(), findValueFromMapAsList(encodeObj, "last-generated-id"));
@@ -1052,7 +1069,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -1146,7 +1163,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals("NOAUTH Authentication required.", ex1.getMessage());
 
     // multi reset
-    jedis.auth("foobared");
+    jedis.auth(endpoint.getPassword());
     jedis.set(counter, "1");
 
     Transaction trans = jedis.multi();
@@ -1156,7 +1173,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     Exception ex2 = assertThrows(JedisDataException.class, trans::exec);
     assertEquals("EXECABORT Transaction discarded because of: NOAUTH Authentication required.", ex2.getMessage());
 
-    jedis.auth("foobared");
+    jedis.auth(endpoint.getPassword());
     assertEquals("1", jedis.get(counter));
   }
 }

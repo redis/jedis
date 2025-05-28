@@ -1,7 +1,5 @@
 package redis.clients.jedis.examples;
 
-import org.junit.Assert;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -16,12 +14,20 @@ import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.schemafields.GeoShapeField;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * As of RediSearch 2.8.4, advanced GEO querying with GEOSHAPE fields is supported.
+ * <p>
+ * Notes:
+ * <ul>
+ *   <li>As of RediSearch 2.8.4, only POLYGON and POINT objects are supported.</li>
+ *   <li>As of RediSearch 2.8.4, only WITHIN and CONTAINS conditions are supported.</li>
+ *   <li>As of RedisStack 7.4.0, support for INTERSECTS and DISJOINT conditions are added.</li>
+ * </ul>
  *
- * Any object/library producing a
- * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry"> well-known
- * text (WKT)</a> in {@code toString()} method can be used.
+ * Any object/library producing a <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">
+ * well-known text (WKT)</a> in {@code toString()} method can be used.
  *
  * This example uses the <a href="https://github.com/locationtech/jts">JTS</a> library.
  * <pre>
@@ -63,7 +69,8 @@ public class GeoShapeFieldsUsageInRediSearch {
     );
 
     // client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geometry", small))); // setting data
-    client.hset("small", "geometry", small.toString()); // simplified setting data
+    // client.hset("small", "geometry", small.toString()); // simplified setting data
+    client.hsetObject("small", "geometry", small); // more simplified setting data
 
     final Polygon large = factory.createPolygon(
         new Coordinate[]{new Coordinate(34.9001, 29.7001),
@@ -72,7 +79,8 @@ public class GeoShapeFieldsUsageInRediSearch {
     );
 
     // client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geometry", large))); // setting data
-    client.hset("large", "geometry", large.toString()); // simplified setting data
+    // client.hset("large", "geometry", large.toString()); // simplified setting data
+    client.hsetObject("large", "geometry", large); // more simplified setting data
 
     // searching
     final Polygon within = factory.createPolygon(
@@ -82,24 +90,21 @@ public class GeoShapeFieldsUsageInRediSearch {
     );
 
     SearchResult res = client.ftSearch("geometry-index",
-        "@geometry:[within $poly]", // querying 'within' condition.
-                                    // RediSearch also supports 'contains' condition.
+        "@geometry:[within $poly]",     // query string
         FTSearchParams.searchParams()
             .addParam("poly", within)
-            .dialect(3) // DIALECT '3' is required for this query
+            .dialect(3)                 // DIALECT '3' is required for this query
     ); 
-    Assert.assertEquals(1, res.getTotalResults());
-    Assert.assertEquals(1, res.getDocuments().size());
+    assertEquals(1, res.getTotalResults());
+    assertEquals(1, res.getDocuments().size());
 
     // We can parse geometry objects with WKTReader
     try {
       final WKTReader reader = new WKTReader();
       Geometry object = reader.read(res.getDocuments().get(0).getString("geometry"));
-      Assert.assertEquals(small, object);
-    } catch (ParseException ex) {
+      assertEquals(small, object);
+    } catch (ParseException ex) { // WKTReader#read throws ParseException
       ex.printStackTrace(System.err);
     }
   }
-
-  // Note: As of RediSearch 2.8.4, only POLYGON and POINT objects are supported.
 }

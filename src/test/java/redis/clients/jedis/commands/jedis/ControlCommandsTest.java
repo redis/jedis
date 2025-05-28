@@ -2,13 +2,14 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,21 +22,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisMonitor;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.LatencyEvent;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.resps.CommandDocument;
@@ -46,7 +43,8 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ControlCommandsTest extends JedisCommandsTestBase {
 
   public ControlCommandsTest(RedisProtocol redisProtocol) {
@@ -129,39 +127,45 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleMaster() {
-    try (Jedis master = new Jedis(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().password("foobared").build())) {
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+
+    try (Jedis master = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
 
       List<Object> role = master.role();
       assertEquals("master", role.get(0));
-      assertTrue(role.get(1) instanceof Long);
-      assertTrue(role.get(2) instanceof List);
+      assertInstanceOf(Long.class, role.get(1));
+      assertInstanceOf(List.class, role.get(2));
 
       // binary
       List<Object> brole = master.roleBinary();
       assertArrayEquals("master".getBytes(), (byte[]) brole.get(0));
-      assertTrue(brole.get(1) instanceof Long);
-      assertTrue(brole.get(2) instanceof List);
+      assertInstanceOf(Long.class, brole.get(1));
+      assertInstanceOf(List.class, brole.get(2));
     }
   }
 
   @Test
   public void roleSlave() {
-    try (Jedis slave = new Jedis(HostAndPorts.getRedisServers().get(4),
-        DefaultJedisClientConfig.builder().password("foobared").build())) {
+    EndpointConfig primaryEndpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig secondaryEndpoint = HostAndPorts.getRedisEndpoint(
+        "standalone4-replica-of-standalone1");
+
+    try (Jedis slave = new Jedis(secondaryEndpoint.getHostAndPort(),
+        secondaryEndpoint.getClientConfigBuilder().build())) {
 
       List<Object> role = slave.role();
       assertEquals("slave", role.get(0));
-      assertEquals((long) HostAndPorts.getRedisServers().get(0).getPort(), role.get(2));
+      assertEquals((long) primaryEndpoint.getPort(), role.get(2));
       assertEquals("connected", role.get(3));
-      assertTrue(role.get(4) instanceof Long);
+      assertInstanceOf(Long.class, role.get(4));
 
       // binary
       List<Object> brole = slave.roleBinary();
       assertArrayEquals("slave".getBytes(), (byte[]) brole.get(0));
-      assertEquals((long) HostAndPorts.getRedisServers().get(0).getPort(), brole.get(2));
+      assertEquals((long) primaryEndpoint.getPort(), brole.get(2));
       assertArrayEquals("connected".getBytes(), (byte[]) brole.get(3));
-      assertTrue(brole.get(4) instanceof Long);
+      assertInstanceOf(Long.class, brole.get(4));
     }
   }
 
@@ -171,13 +175,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
       List<Object> role = sentinel.role();
       assertEquals("sentinel", role.get(0));
-      assertTrue(role.get(1) instanceof List);
+      assertInstanceOf(List.class, role.get(1));
       AssertUtil.assertCollectionContains((List) role.get(1), "mymaster");
 
       // binary
       List<Object> brole = sentinel.roleBinary();
       assertArrayEquals("sentinel".getBytes(), (byte[]) brole.get(0));
-      assertTrue(brole.get(1) instanceof List);
+      assertInstanceOf(List.class, brole.get(1));
       AssertUtil.assertByteArrayCollectionContains((List) brole.get(1), "mymaster".getBytes());
     }
   }
@@ -192,12 +196,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
           Thread.sleep(100);
         } catch (InterruptedException e) {
         }
-        Jedis j = new Jedis();
-        j.auth("foobared");
-        for (int i = 0; i < 5; i++) {
-          j.incr("foobared");
+        try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
+          j.auth(endpoint.getPassword());
+          for (int i = 0; i < 5; i++) {
+            j.incr("foobared");
+          }
+          j.disconnect();
         }
-        j.disconnect();
       }
     }).start();
 
@@ -252,6 +257,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added the ability to pass multiple pattern parameters in one call")
   public void configGetSetMulti() {
     String[] params = new String[]{"hash-max-listpack-entries", "set-max-intset-entries", "zset-max-listpack-entries"};
     Map<String, String> info = jedis.configGet(params);
@@ -271,6 +277,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void waitAof() {
     assertEquals(KeyValue.of(0L, 0L), jedis.waitAOF(0L, 0L, 100L));
   }
@@ -378,12 +385,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clientNoTouch() {
     assertEquals("OK", jedis.clientNoTouchOn());
     assertEquals("OK", jedis.clientNoTouchOff());
@@ -474,6 +483,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandDocs() {
     Map<String, CommandDocument> docs = jedis.commandDocs("SORT", "SET");
 
@@ -491,6 +501,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandGetKeys() {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
@@ -501,6 +512,29 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
+  public void commandNoArgs() {
+    Map<String, CommandInfo> infos = jedis.command();
+
+    assertThat(infos.size(), greaterThan(0));
+
+    CommandInfo getInfo = infos.get("get");
+    assertEquals(2, getInfo.getArity());
+    assertEquals(2, getInfo.getFlags().size());
+    assertEquals(1, getInfo.getFirstKey());
+    assertEquals(1, getInfo.getLastKey());
+    assertEquals(1, getInfo.getStep());
+
+    assertNull(infos.get("foo")); // non-existing command
+
+    CommandInfo setInfo = infos.get("set");
+    assertEquals(3, setInfo.getAclCategories().size());
+    assertEquals(0, setInfo.getTips().size());
+    assertEquals(0, setInfo.getSubcommands().size());
+  }
+
+  @Test
+  @SinceRedisVersion("7.0.0")
   public void commandInfo() {
     Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
 
@@ -519,7 +553,30 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, setInfo.getSubcommands().size());
   }
 
+  @Test // GitHub Issue #4020
+  @SinceRedisVersion("7.0.0")
+  public void commandInfoAcl() {
+    Map<String, CommandInfo> infos = jedis.commandInfo("ACL");
+    assertThat(infos, Matchers.aMapWithSize(1));
+
+    CommandInfo aclInfo = infos.get("acl");
+    assertEquals(-2, aclInfo.getArity());
+    assertEquals(0, aclInfo.getFlags().size());
+    assertEquals(0, aclInfo.getFirstKey());
+    assertEquals(0, aclInfo.getLastKey());
+    assertEquals(0, aclInfo.getStep());
+    assertEquals(1, aclInfo.getAclCategories().size());
+    assertEquals(0, aclInfo.getTips().size());
+    assertThat(aclInfo.getSubcommands().size(), Matchers.greaterThanOrEqualTo(13));
+    aclInfo.getSubcommands().forEach((name, subcommand) -> {
+      assertThat(name, Matchers.startsWith("acl|"));
+      assertNotNull(subcommand);
+      assertEquals(name, subcommand.getName());
+    });
+  }
+
   @Test
+  @SinceRedisVersion("7.0.0")
   public void commandList() {
     List<String> commands = jedis.commandList();
     assertTrue(commands.size() > 100);

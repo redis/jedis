@@ -1,24 +1,26 @@
 package redis.clients.jedis;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.providers.ManagedConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ManagedConnectionProviderTest {
 
   private Connection connection;
 
-  @Before
+  @BeforeEach
   public void setUp() {
-    connection = new Connection(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().user("acljedis").password("fizzbuzz").build());
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    connection = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     IOUtils.closeQuietly(connection);
   }
@@ -29,10 +31,10 @@ public class ManagedConnectionProviderTest {
     try (UnifiedJedis jedis = new UnifiedJedis(managed)) {
       try {
         jedis.get("any");
-        Assert.fail("Should get NPE.");
+        fail("Should get NPE.");
       } catch (NullPointerException npe) { }
       managed.setConnection(connection);
-      Assert.assertNull(jedis.get("any"));
+      assertNull(jedis.get("any"));
     }
   }
 }

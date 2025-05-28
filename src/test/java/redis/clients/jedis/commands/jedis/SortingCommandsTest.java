@@ -1,19 +1,21 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.EnabledOnCommand;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.SortingParams;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class SortingCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoodest = { 0x01, 0x02, 0x03, 0x04, 0x05 };
@@ -88,8 +90,8 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
     assertEquals(expected, result);
     
     // Sort to dest key
-    Long resultCount = jedis.sort("foo", sp, "foodest");
-    assertEquals(3L, resultCount.longValue());
+    long resultCount = jedis.sort("foo", sp, "foodest");
+    assertEquals(3L, resultCount);
 
     result = jedis.lpop("foodest", 5);
     assertEquals(expected, result);
@@ -117,7 +119,7 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
     
     // Sort to dest key
     resultCount = jedis.sort(bfoo, sp, bfoodest);
-    assertEquals(3L, resultCount.longValue());
+    assertEquals(3L, resultCount);
 
     bresult = jedis.lpop(bfoodest, 5);
     assertByteArrayListEquals(bexpected, bresult);
@@ -324,6 +326,7 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @EnabledOnCommand("SORT_RO")
   public void sort_ro() {
     jedis.rpush("foo", "1", "3", "2");
 

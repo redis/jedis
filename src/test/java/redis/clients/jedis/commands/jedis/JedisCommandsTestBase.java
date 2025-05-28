@@ -1,31 +1,21 @@
 package redis.clients.jedis.commands.jedis;
 
-import java.util.Collection;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runners.Parameterized.Parameters;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.commands.CommandsTestsParameters;
+import redis.clients.jedis.*;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.RedisVersionCondition;
 
 public abstract class JedisCommandsTestBase {
 
-  /**
-   * Input data for parameterized tests. In principle all subclasses of this
-   * class should be parameterized tests, to run with several versions of RESP.
-   *
-   * @see CommandsTestsParameters#respVersions()
-   */
-  @Parameters
-  public static Collection<Object[]> data() {
-    return CommandsTestsParameters.respVersions();
-  }
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(endpoint);
 
-  protected static final HostAndPort hnp = HostAndPorts.getRedisServers().get(0);
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
 
   protected final RedisProtocol protocol;
 
@@ -44,22 +34,20 @@ public abstract class JedisCommandsTestBase {
     this.protocol = protocol;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
-//    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
-    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .protocol(protocol).timeoutMillis(500).password("foobared").build());
+    jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .protocol(protocol).timeoutMillis(500).build());
     jedis.flushAll();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     jedis.close();
   }
 
   protected Jedis createJedis() {
-//    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
-    return new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .protocol(protocol).password("foobared").build());
+    return new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .protocol(protocol).build());
   }
 }

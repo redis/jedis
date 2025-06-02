@@ -4,11 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -262,6 +258,50 @@ public class JedisPooledTest {
       assertThat(pool.get("foo"), anything());
       assertThat(prepareCount.get(), equalTo(1));
       assertThat(cleanupCount.get(), equalTo(1));
+    }
+  }
+
+  @Test
+  public void transactionExecShouldReturnConnectionToPool() {
+    GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(true);
+
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config)) {
+      Transaction transaction = (Transaction) pool.multi();
+      transaction.set("foo_multiExec", "baz");
+
+      assertEquals(1, pool.getPool().getNumActive());
+      assertEquals(0, pool.getPool().getNumIdle());
+
+      transaction.exec();
+
+      assertEquals(0, pool.getPool().getNumActive());
+      assertEquals(1, pool.getPool().getNumIdle());
+
+      assertEquals("baz", pool.get("foo_multiExec"));
+    }
+  }
+
+  @Test
+  public void transactionDiscardShouldReturnConnectionToPool() {
+    GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(true);
+
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config)) {
+      Transaction transaction = (Transaction) pool.multi();
+      transaction.set("foo_multiDisc", "baz");
+
+      assertEquals(1, pool.getPool().getNumActive());
+      assertEquals(0, pool.getPool().getNumIdle());
+
+      transaction.discard();
+
+      assertEquals(0, pool.getPool().getNumActive());
+      assertEquals(1, pool.getPool().getNumIdle());
+
+      assertNull(pool.get("foo_multiDisc"));
     }
   }
 }

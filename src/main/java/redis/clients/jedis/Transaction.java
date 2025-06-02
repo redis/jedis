@@ -214,6 +214,7 @@ public class Transaction extends TransactionBase {
       if (jedis != null) {
         jedis.resetState();
       }
+      close();
     }
   }
 
@@ -241,6 +242,7 @@ public class Transaction extends TransactionBase {
       if (jedis != null) {
         jedis.resetState();
       }
+      close();
     }
   }
 }

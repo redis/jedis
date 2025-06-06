@@ -163,7 +163,7 @@ class ClusterClientBuilderTest {
         .connectionProvider(provider).commandExecutor(exec).searchDialect(3).build()) {
 
       client.ftSearch("idx", "q", new FTSearchParams());
-      verify(exec, atLeastOnce()).executeCommand(cap.capture());
+      verify(exec, atLeastOnce()).executeKeylessCommand(cap.capture());
       List<String> args = argsToStrings(cap.getValue());
       // FT.SEARCH idx q DIALECT 3
       assertEquals("FT.SEARCH", args.get(0));

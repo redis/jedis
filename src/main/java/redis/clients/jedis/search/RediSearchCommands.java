@@ -7,6 +7,7 @@ import java.util.Set;
 
 import redis.clients.jedis.commands.ConfigCommands;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.search.aggr.AggregateIterator;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
@@ -68,10 +69,47 @@ public interface RediSearchCommands {
 
   List<String> ftExplainCLI(String indexName, Query query);
 
+  /**
+   * Execute an aggregation query and return all results at once.
+   * Use this method when you don't need cursor-based pagination and want to retrieve
+   * all results in a single operation.
+   * @param indexName the index name
+   * @param aggr the aggregation builder containing the query
+   * @return the complete aggregation result
+   */
   AggregationResult ftAggregate(String indexName, AggregationBuilder aggr);
 
+  /**
+   * Execute an aggregation query with cursor-based iteration support.
+   * Use this method when you need to paginate through large result sets or want
+   * to process results incrementally using cursor-based iteration.
+   * @param indexName the index name
+   * @param aggr the aggregation builder containing the query (should include cursor configuration)
+   * @return an iterator for cursor-based result pagination
+   */
+  AggregateIterator ftAggregateIterator(String indexName, AggregationBuilder aggr);
+
+  /**
+   * Read from an aggregation cursor.
+   * @param indexName the index name
+   * @param cursorId the cursor ID
+   * @param count the number of results to read
+   * @return the aggregation result
+   * @deprecated Use {@link #ftAggregate(String, AggregationBuilder)} for operations without cursors,
+   *             or {@link #ftAggregateIterator(String, AggregationBuilder)} for cursor-based iteration
+   */
+  @Deprecated
   AggregationResult ftCursorRead(String indexName, long cursorId, int count);
 
+  /**
+   * Delete an aggregation cursor.
+   * @param indexName the index name
+   * @param cursorId the cursor ID
+   * @return the result of the cursor deletion
+   * @deprecated Use {@link #ftAggregate(String, AggregationBuilder)} for operations without cursors,
+   *             or {@link #ftAggregateIterator(String, AggregationBuilder)} for cursor-based iteration
+   */
+  @Deprecated
   String ftCursorDel(String indexName, long cursorId);
 
   Map.Entry<AggregationResult, ProfilingInfo> ftProfileAggregate(String indexName,

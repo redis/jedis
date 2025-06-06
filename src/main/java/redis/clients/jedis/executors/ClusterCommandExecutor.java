@@ -2,9 +2,12 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +26,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
   protected final CommandFlagsRegistry flags;
+
+  // Round-robin counter for keyless command distribution
+  private final AtomicInteger roundRobinCounter = new AtomicInteger(0);
 
   /**
    * @deprecated use {@link #ClusterCommandExecutor(ClusterConnectionProvider, int, Duration, CommandFlagsRegistry)}
@@ -90,6 +96,52 @@ public class ClusterCommandExecutor implements CommandExecutor {
     return doExecuteCommand(commandObject, false);
   }
 
+  @Override
+  public final <T> T executeKeylessCommand(CommandObject<T> commandObject) {
+    Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
+    int consecutiveConnectionFailures = 0;
+    Exception lastException = null;
+
+    for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
+      Connection connection = null;
+      try {
+        // Use round-robin distribution for keyless commands
+        connection = getNextConnection();
+        return execute(connection, commandObject);
+
+      } catch (JedisConnectionException jce) {
+        lastException = jce;
+        ++consecutiveConnectionFailures;
+        log.debug("Failed connecting to Redis: {}", connection, jce);
+
+        if (consecutiveConnectionFailures < 2) {
+          continue;
+        }
+
+        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        if (reset) {
+          consecutiveConnectionFailures = 0;
+        }
+      } catch (JedisRedirectionException jre) {
+        // For keyless commands, we don't follow redirections since we're not targeting a specific slot
+        // Just retry with a different random node
+        lastException = jre;
+        log.debug("Received redirection for keyless command, retrying with different node: {}", jre.getMessage());
+        consecutiveConnectionFailures = 0;
+      } finally {
+        IOUtils.closeQuietly(connection);
+      }
+      if (Instant.now().isAfter(deadline)) {
+        throw new JedisClusterOperationException("Cluster retry deadline exceeded.", lastException);
+      }
+    }
+
+    JedisClusterOperationException maxAttemptsException
+        = new JedisClusterOperationException("No more cluster attempts left.");
+    maxAttemptsException.addSuppressed(lastException);
+    throw maxAttemptsException;
+  }
+
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
     return doExecuteCommand(commandObject, true);
   }
@@ -155,6 +207,32 @@ public class ClusterCommandExecutor implements CommandExecutor {
       maxAttemptsException.addSuppressed(lastException);
     }
     throw maxAttemptsException;
+  }
+
+  /**
+   * Gets a connection using round-robin distribution across all cluster nodes.
+   * This ensures even distribution of keyless commands across the cluster.
+   *
+   * @return Connection from the next node in round-robin sequence
+   * @throws JedisClusterOperationException if no cluster nodes are available
+   */
+  private Connection getNextConnection() {
+    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
+
+    if (connectionMap.isEmpty()) {
+      throw new JedisClusterOperationException("No cluster nodes available.");
+    }
+
+    // Convert connection map to list for round-robin access
+    List<Map.Entry<String, ConnectionPool>> nodeList = new ArrayList<>(connectionMap.entrySet());
+
+    // Select node using round-robin distribution for true unified distribution
+    // Use modulo directly on the node list size to create a circular counter
+    int roundRobinIndex = roundRobinCounter.getAndUpdate(current -> (current + 1) % nodeList.size());
+    Map.Entry<String, ConnectionPool> selectedEntry = nodeList.get(roundRobinIndex);
+    ConnectionPool pool = selectedEntry.getValue();
+
+    return pool.getResource();
   }
 
   /**

@@ -79,7 +79,7 @@ class ClientBuilderTest {
 
       client.ftSearch("idx", "q", new FTSearchParams());
     }
-    verify(exec, atLeastOnce()).executeCommand(cap.capture());
+    verify(exec, atLeastOnce()).executeKeylessCommand(cap.capture());
     List<String> args = argsToStrings(cap.getValue());
     assertThat(args, contains("FT.SEARCH", "idx", "q", "DIALECT", "3"));
   }

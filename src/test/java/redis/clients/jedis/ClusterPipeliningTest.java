@@ -1112,6 +1112,49 @@ public class ClusterPipeliningTest {
     }
   }
 
+  @Test
+  public void testPipelineKeysAtSameNode() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+
+      // test simple key
+      cluster.set("foo", "bar");
+
+      try (ClusterPipeline pipeline = cluster.pipelined()) {
+        Response<String> foo = pipeline.get("foo");
+        pipeline.sync();
+
+        assertEquals("bar", foo.get());
+      }
+
+      // test multi key but at same node
+      int cnt = 3;
+      String prefix = "{foo}:";
+      for (int i = 0; i < cnt; i++) {
+        String key = prefix + i;
+        cluster.set(key, String.valueOf(i));
+      }
+
+      try (ClusterPipeline pipeline = cluster.pipelined()) {
+        List<Response<String>> results = new ArrayList<>();
+        for (int i = 0; i < cnt; i++) {
+          String key = prefix + i;
+          results.add(pipeline.get(key));
+        }
+
+        Response<Object> foo = pipeline.eval("return redis.call('get', KEYS[1])",
+            Collections.singletonList("foo"), Collections.emptyList());
+
+        pipeline.sync();
+        int idx = 0;
+        for (Response<String> res : results) {
+          assertEquals(String.valueOf(idx), res.get());
+          idx++;
+        }
+        assertEquals("bar", String.valueOf(foo.get()));
+      }
+    }
+  }
+
   private static void assertThreadsCount() {
     // Get the root thread group
     final ThreadGroup rootGroup = Thread.currentThread().getThreadGroup().getParent();

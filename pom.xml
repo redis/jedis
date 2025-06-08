@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>6.0.0-SNAPSHOT</version>
+	<version>6.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -49,9 +49,9 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.18.3</jackson.version>
+		<jackson.version>2.19.0</jackson.version>
 		<maven.surefire.version>3.5.3</maven.surefire.version>
-		<junit.version>5.13.0-M1</junit.version>
+		<junit.version>5.13.0-RC1</junit.version>
 	</properties>
 
 	<dependencyManagement>
@@ -80,12 +80,12 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20250107</version>
+			<version>20250517</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.12.1</version>
+			<version>2.13.1</version>
 		</dependency>
 
 		<dependency>
@@ -173,7 +173,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5-fluent</artifactId>
-			<version>5.4.4</version>
+			<version>5.5</version>
 			<scope>test</scope>
 		</dependency>
 

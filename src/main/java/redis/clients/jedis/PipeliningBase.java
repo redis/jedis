@@ -3359,15 +3359,54 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.xinfoConsumers(key, group));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   @Override
-  public Response<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<Object>> xread(XReadParams xReadParams,
+      Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xread(xReadParams, streams));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   @Override
   public Response<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Response<Map<byte[], List<StreamEntryBinary>>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return appendCommand(
+        commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return appendCommand(
+        commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override

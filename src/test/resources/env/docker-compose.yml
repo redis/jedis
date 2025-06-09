@@ -1,4 +1,24 @@
 services:
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.8.0
+    ports:
+      - "8474:8474"   # Admin API
+      - "29379:29379" # redis-failover-1 proxy
+      - "29380:29380" # redis-failover-2 proxy
+  redis-failover-1:
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis-failover-1
+    environment:
+      - PORT=9379
+    ports:
+      - 9379:9379
+  redis-failover-2:
+    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+    container_name: redis-failover-2
+    environment:
+      - PORT=9380
+    ports:
+      - 9380:9380
   redis1-2-5-8-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1

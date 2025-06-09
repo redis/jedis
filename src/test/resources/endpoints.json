@@ -1,4 +1,16 @@
 {
+  "redis-failover-1": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:29379"
+    ]
+  },
+  "redis-failover-2": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:29380"
+    ]
+  },
   "standalone0": {
     "password": "foobared",
     "tls": false,

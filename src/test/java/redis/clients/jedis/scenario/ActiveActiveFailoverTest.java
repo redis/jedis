@@ -2,6 +2,8 @@ package redis.clients.jedis.scenario;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@Tags({
+    @Tag("failover"),
+    @Tag("scenario")
+})
 public class ActiveActiveFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
 

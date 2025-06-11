@@ -335,6 +335,7 @@
 					<directories>
 						<directory>${project.basedir}/src/main/java/redis/clients/jedis/annots</directory>
 						<directory>${project.basedir}/src/main/java/redis/clients/jedis/mcf</directory>
+						<directory>${project.basedir}/src/test/java/redis/clients/jedis/misc/AutomaticFailoverTest.java</directory>
 						<directory>${project.basedir}/src/test/java/redis/clients/jedis/failover</directory>
 					</directories>
 				</configuration>

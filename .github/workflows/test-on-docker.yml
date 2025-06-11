@@ -1,6 +1,6 @@
 ---
 
-name: Build and Test using containerized environment
+name: Build and Test using a containerized environment
 
 on:
   push:
@@ -11,10 +11,12 @@ on:
     branches:
       - master
       - '[0-9].*'
+      - 'feature/**'
   pull_request:
     branches:
       - master
       - '[0-9].*'
+      - 'feature/**'
   schedule:
     - cron: '0 1 * * *' # nightly build
   workflow_dispatch:

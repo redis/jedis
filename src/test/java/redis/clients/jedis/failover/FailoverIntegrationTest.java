@@ -272,4 +272,56 @@ public class FailoverIntegrationTest {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
   }
 
+  /**
+   * Tests that the CircuitBreaker counts each command error separately, and not just after
+   * all retries are exhausted. This ensures that the circuit breaker opens based on the
+   * actual number of send commands with failures, and not based on the number of logical operations.
+   */
+  @Test
+  public void testCircuitBreakerCountsEachConnectionErrorSeparately() throws IOException {
+    MultiClusterClientConfig failoverConfig = new MultiClusterClientConfig.Builder(
+        getClusterConfigs(DefaultJedisClientConfig.builder()
+            .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
+            .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
+            endpoint1, endpoint2))
+        .retryMaxAttempts(2)
+        .retryWaitDuration(1)
+        .circuitBreakerSlidingWindowType(COUNT_BASED)
+        .circuitBreakerSlidingWindowSize(3)
+        .circuitBreakerFailureRateThreshold(50) // 50% failure rate threshold
+        .circuitBreakerSlidingWindowMinCalls(3)
+        .build();
+
+    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(failoverConfig);
+    try ( UnifiedJedis client = new UnifiedJedis(provider)){
+      // Verify initial connection to first endpoint
+      assertThat(getNodeId(client.info("server")), equalTo(JEDIS1_ID));
+
+      // Disable first endpoint
+      redisProxy1.disable();
+
+      // First command should fail and OPEN the circuit breaker immediately
+      //   If CB is applied after retries, it would take :
+      //      2 commands to OPEN CB (error is propagated for both commands)
+      //      Failover to the next Endpoint happens on the 3rd command
+      //   If CB is applied before retries, it should open after just 1 command
+      //      CB is OPEN after the 2nd retry of the first command, and error is propagated
+      //      Failover to the next Endpoint happens on the 2nd command
+      // Command 1
+      assertThrows(JedisConnectionException.class, () -> client.info("server"));
+
+      // Circuit breaker should be open after just one command with retries
+      assertThat(provider.getCluster(1).getCircuitBreaker().getState(),
+          equalTo(CircuitBreaker.State.OPEN));
+
+      // Next command should be routed to the second endpoint
+      //Command 2
+      assertThat(getNodeId(client.info("server")), equalTo(JEDIS2_ID));
+
+      //Command 3
+      assertThat(getNodeId(client.info("server")), equalTo(JEDIS2_ID));
+
+    }
+  }
+
 }

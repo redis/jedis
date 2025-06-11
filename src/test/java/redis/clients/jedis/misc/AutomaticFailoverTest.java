@@ -21,6 +21,7 @@ import redis.clients.jedis.util.IOUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("failover")
@@ -91,37 +92,38 @@ public class AutomaticFailoverTest {
 
   @Test
   public void commandFailover() {
-    int slidingWindowMinCalls = 10;
-    int slidingWindowSize = 10;
+    int slidingWindowMinCalls = 6;
+    int slidingWindowSize = 6;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+        .retryMaxAttempts(3) // Default is 3
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(builder.build());
+    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
     assertFalse(failoverReporter.failedOver);
-    for (int attempt = 0; attempt < 10; attempt++) {
-      try {
-        jedis.hset(key, "f1", "v1");
-      } catch (JedisConnectionException jce) {
-        //
-      }
-      assertFalse(failoverReporter.failedOver);
-    }
+    // First call fails - will be retried 3 times
+    // this will increase the CircuitBreaker failure count to 3
+    assertThrows(JedisConnectionException.class, () -> jedis.hset(key, "c1", "v1"));
 
+    // Second call fails - will be retried 3 times
+    // this will increase the CircuitBreaker failure count to 6
     // should failover now
-    jedis.hset(key, "f1", "v1");
+    assertThrows(JedisConnectionException.class, () ->jedis.hset(key, "c2", "v1"));
+
+    // CB is in OPEN state now, next call should cause failover
+    assertEquals(1L, jedis.hset(key, "c3", "v1"));
     assertTrue(failoverReporter.failedOver);
 
-    assertEquals(Collections.singletonMap("f1", "v1"), jedis.hgetAll(key));
+    assertEquals(Collections.singletonMap("c3", "v1"), jedis.hgetAll(key));
     jedis.flushAll();
 
     jedis.close();

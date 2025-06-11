@@ -334,6 +334,7 @@
 					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
 					<directories>
 						<directory>${project.basedir}/src/main/java/redis/clients/jedis/annots</directory>
+						<directory>${project.basedir}/src/main/java/redis/clients/jedis/mcf</directory>
 					</directories>
 				</configuration>
 				<executions>

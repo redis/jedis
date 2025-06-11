@@ -139,9 +139,9 @@ public class FailoverIntegrationTest {
 
     MultiClusterClientConfig failoverConfig = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
-        .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
-        .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
-        .circuitBreakerSlidingWindowMinCalls(1).build();
+            .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
+            .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
+            .circuitBreakerSlidingWindowMinCalls(1).build();
 
     provider = new MultiClusterPooledConnectionProvider(failoverConfig);
     failoverClient = new UnifiedJedis(provider);
@@ -171,14 +171,14 @@ public class FailoverIntegrationTest {
     redisProxy1.disable();
 
     // Endpoint 1 not available
-    // 1. First call should  should throw JedisConnectionException and trigger failover
-    // 1.1. Endpoint1  CB transitions to  open
+    // 1. First call should should throw JedisConnectionException and trigger failover
+    // 1.1. Endpoint1 CB transitions to open
     // 2. Subsequent calls should be routed to Endpoint2
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
 
     // Check that the circuit breaker for Endpoint 1 is open
     assertThat(provider.getCluster(1).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.OPEN));
 
     // Check that the failoverClient is now using Endpoint 2
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
@@ -189,7 +189,7 @@ public class FailoverIntegrationTest {
     // Endpoint1 and Endpoint2 are not available,
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
     assertThat(provider.getCluster(2).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.OPEN));
 
     // and since no other nodes are available, it should throw an exception for subsequent calls
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
@@ -232,10 +232,10 @@ public class FailoverIntegrationTest {
 
     // new command should be executed against the new endpoint
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
-    //Since failover was manually triggered and there were no errors
+    // Since failover was manually triggered and there were no errors
     // previous endpoint CB should be still in CLOSED
     assertThat(provider.getCluster(1).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.CLOSED));
+      equalTo(CircuitBreaker.State.CLOSED));
 
     jedis1.rpush("test-list", "somevalue");
 
@@ -266,7 +266,7 @@ public class FailoverIntegrationTest {
 
     // Check that the circuit breaker for Endpoint 1 is open after the error
     assertThat(provider.getCluster(1).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.OPEN));
 
     // Ensure that active cluster is still Endpoint 2
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));

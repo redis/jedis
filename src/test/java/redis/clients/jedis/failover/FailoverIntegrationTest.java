@@ -139,9 +139,9 @@ public class FailoverIntegrationTest {
 
     MultiClusterClientConfig failoverConfig = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
-            .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
-            .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
-            .circuitBreakerSlidingWindowMinCalls(1).build();
+        .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
+        .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
+        .circuitBreakerSlidingWindowMinCalls(1).build();
 
     provider = new MultiClusterPooledConnectionProvider(failoverConfig);
     failoverClient = new UnifiedJedis(provider);
@@ -284,10 +284,11 @@ public class FailoverIntegrationTest {
           DefaultJedisClientConfig.builder()
               .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
               .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
-          endpoint1, endpoint2)).retryMaxAttempts(2).retryWaitDuration(1)
-              .circuitBreakerSlidingWindowType(COUNT_BASED).circuitBreakerSlidingWindowSize(3)
-              .circuitBreakerFailureRateThreshold(50) // 50% failure rate threshold
-              .circuitBreakerSlidingWindowMinCalls(3).build();
+          endpoint1, endpoint2))
+        .retryMaxAttempts(2).retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
+        .circuitBreakerSlidingWindowSize(3).circuitBreakerFailureRateThreshold(50) // 50% failure
+                                                                                   // rate threshold
+        .circuitBreakerSlidingWindowMinCalls(3).build();
 
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
         failoverConfig);

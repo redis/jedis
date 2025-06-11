@@ -79,8 +79,8 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
   }
 
   private boolean isActiveCluster(Cluster cluster) {
-      Cluster activeCluster = provider.getCluster();
-      return activeCluster != null && !activeCluster.equals(cluster);
+    Cluster activeCluster = provider.getCluster();
+    return activeCluster != null && !activeCluster.equals(cluster);
   }
 
   /**

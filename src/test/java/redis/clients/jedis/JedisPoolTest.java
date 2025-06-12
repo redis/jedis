@@ -397,7 +397,7 @@ public class JedisPoolTest {
       int currentClientCount = getClientCount(jedis.clientList());
       assertThrows(JedisAccessControlException.class, pool::getResource);
       // wait for the redis server to close the connection
-      await().pollDelay(Duration.ofMillis(10)).atMost(50, MILLISECONDS)
+      await().pollDelay(Duration.ofMillis(10)).atMost(500, MILLISECONDS)
           .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
       assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }

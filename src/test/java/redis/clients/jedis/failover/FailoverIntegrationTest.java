@@ -347,7 +347,7 @@ public class FailoverIntegrationTest {
       builder -> builder.retryFailedInflightCommands(false))) {
 
       assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
-      Future<List<String>> blpop = executor.submit(() -> customClient.blpop(1000, "test-list-2"));
+      Future<List<String>> blpop = executor.submit(() -> customClient.blpop(500, "test-list-2"));
 
       // Simulate error by sending more than 100 bytes. This causes connection close, and triggers
       // failover

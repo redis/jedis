@@ -32,13 +32,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     AggregationResult expectedResponse = mock(AggregationResult.class);
 
     when(commandObjects.ftAggregate(indexName, aggr)).thenReturn(aggregationResultCommandObject);
-    when(commandExecutor.executeKeylessCommand(aggregationResultCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(aggregationResultCommandObject)).thenReturn(expectedResponse);
 
     AggregationResult result = jedis.ftAggregate(indexName, aggr);
 
     assertThat(result, sameInstance(expectedResponse));
 
-    verify(commandExecutor).executeKeylessCommand(aggregationResultCommandObject);
+    verify(commandExecutor).executeCommand(aggregationResultCommandObject);
     verify(commandObjects).ftAggregate(indexName, aggr);
   }
 

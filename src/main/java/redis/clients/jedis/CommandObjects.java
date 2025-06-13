@@ -3528,7 +3528,8 @@ public class CommandObjects {
     return ca;
   }
 
-  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx1, String idx2) {
+  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx1,
+      String idx2) {
     CommandArguments ca = commandArguments(sc);
     if (isRoundRobinSearchCommand(sc)) {
       ca.add(idx1).add(idx2);

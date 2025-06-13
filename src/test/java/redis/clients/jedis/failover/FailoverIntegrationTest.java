@@ -307,9 +307,9 @@ public class FailoverIntegrationTest {
 
     MultiClusterPooledConnectionProvider customProvider = createProvider();
 
-    // Create a custom client with retryFailedInflightCommands enabled for this specific test
+    // Create a custom client with retryOnFailover enabled for this specific test
     try (UnifiedJedis customClient = createClient(customProvider,
-      builder -> builder.retryFailedInflightCommands(true))) {
+      builder -> builder.retryOnFailover(true))) {
 
       assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
 
@@ -317,19 +317,23 @@ public class FailoverIntegrationTest {
       Future<List<String>> blpop = executor.submit(() -> customClient.blpop(10000, "test-list-1"));
 
       // Simulate error by sending more than 100 bytes. This causes the connection close, and
-      // triggers
-      // failover
+      // CB -> OPEN, failover will be actually triggered by the next command
       redisProxy1.toxics().limitData("simulate-socket-failure", ToxicDirection.UPSTREAM, 100);
       assertThrows(JedisConnectionException.class,
         () -> customClient.set("test-key", generateTestValue(150)));
 
+      // Actual failover is performed on first command received after CB is OPEN
+      // TODO : Remove second command. Once we Refactor existing code to perform actual failover
+      // immediately when CB state change to OPEN/FORCED_OPENs
+      assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS2_ID));
       // Check that the circuit breaker for Endpoint 1 is open
       assertThat(customProvider.getCluster(1).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+        equalTo(CircuitBreaker.State.FORCED_OPEN));
 
-      // Disable redisProxy1 to enforce the current blpop command failure
+      // Disable redisProxy1 to enforce connection drop for the in-flight (blpop) command
       redisProxy1.disable();
 
+      // The in-flight command should be retried and succeed after failover
       customClient.rpush("test-list-1", "somevalue");
       assertThat(blpop.get(), equalTo(Arrays.asList("test-list-1", "somevalue")));
     }
@@ -344,7 +348,7 @@ public class FailoverIntegrationTest {
     MultiClusterPooledConnectionProvider customProvider = createProvider();
 
     try (UnifiedJedis customClient = createClient(customProvider,
-      builder -> builder.retryFailedInflightCommands(false))) {
+      builder -> builder.retryOnFailover(false))) {
 
       assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
       Future<List<String>> blpop = executor.submit(() -> customClient.blpop(500, "test-list-2"));

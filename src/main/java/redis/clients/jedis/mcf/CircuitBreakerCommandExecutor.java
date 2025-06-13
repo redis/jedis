@@ -55,8 +55,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
       return connection.executeCommand(commandObject);
     } catch (Exception e) {
 
-      if (shouldRetryFailedInflightCommands() && !isActiveCluster(cluster)
-          && isCircuitBreakerOpen(cluster.getCircuitBreaker())
+      if (retryOnFailover() && !isActiveCluster(cluster)
           && isCircuitBreakerTrackedException(e, cluster.getCircuitBreaker())) {
         throw new ConnectionFailoverException(
             "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
@@ -74,13 +73,13 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     return cb.getCircuitBreakerConfig().getRecordExceptionPredicate().test(e);
   }
 
-  private boolean shouldRetryFailedInflightCommands() {
-    return options.isRetryFailedInflightCommands();
+  private boolean retryOnFailover() {
+    return options.isRetryOnFailover();
   }
 
   private boolean isActiveCluster(Cluster cluster) {
     Cluster activeCluster = provider.getCluster();
-    return activeCluster != null && !activeCluster.equals(cluster);
+    return activeCluster != null && activeCluster.equals(cluster);
   }
 
   /**

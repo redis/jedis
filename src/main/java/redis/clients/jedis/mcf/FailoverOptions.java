@@ -7,18 +7,18 @@ import redis.clients.jedis.annots.Experimental;
  */
 @Experimental
 public class FailoverOptions {
-  private final boolean retryFailedInflightCommands;
+  private final boolean retryOnFailover;
 
   private FailoverOptions(Builder builder) {
-    this.retryFailedInflightCommands = builder.retryFailedInflightCommands;
+    this.retryOnFailover = builder.retryOnFailover;
   }
 
   /**
-   * Gets whether to retry failed in-flight commands during failover
+   * Gets whether to retry failed commands during failover
    * @return true if retry is enabled, false otherwise
    */
-  public boolean isRetryFailedInflightCommands() {
-    return retryFailedInflightCommands;
+  public boolean isRetryOnFailover() {
+    return retryOnFailover;
   }
 
   /**
@@ -33,18 +33,18 @@ public class FailoverOptions {
    * Builder for FailoverOptions
    */
   public static class Builder {
-    private boolean retryFailedInflightCommands = false;
+    private boolean retryOnFailover = false;
 
     private Builder() {
     }
 
     /**
-     * Sets whether to retry failed in-flight commands during failover
+     * Sets whether to retry failed commands during failover
      * @param retry true to retry, false otherwise
      * @return this builder for method chaining
      */
-    public Builder retryFailedInflightCommands(boolean retry) {
-      this.retryFailedInflightCommands = retry;
+    public Builder retryOnFailover(boolean retry) {
+      this.retryOnFailover = retry;
       return this;
     }
 

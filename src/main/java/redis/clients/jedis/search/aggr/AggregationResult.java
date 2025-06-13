@@ -65,6 +65,14 @@ public class AggregationResult {
     return warnings;
   }
 
+  /**
+   * Tests if this aggregation result is empty.
+   * @return true if there are no warnings and no rows, false otherwise
+   */
+  public boolean isEmpty() {
+    return (warnings == null || warnings.isEmpty()) && (results == null || results.isEmpty());
+  }
+
   public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT = new Builder<AggregationResult>() {
 
     private static final String TOTAL_RESULTS_STR = "total_results";

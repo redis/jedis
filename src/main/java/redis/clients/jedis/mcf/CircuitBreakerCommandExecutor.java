@@ -65,10 +65,6 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     }
   }
 
-  private boolean isCircuitBreakerOpen(CircuitBreaker circuitBreaker) {
-    return circuitBreaker.getState() == CircuitBreaker.State.OPEN;
-  }
-
   private boolean isCircuitBreakerTrackedException(Exception e, CircuitBreaker cb) {
     return cb.getCircuitBreakerConfig().getRecordExceptionPredicate().test(e);
   }

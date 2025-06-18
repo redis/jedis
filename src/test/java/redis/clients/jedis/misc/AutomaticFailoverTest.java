@@ -104,11 +104,11 @@ public class AutomaticFailoverTest {
         .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(
+    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
         builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -142,11 +142,11 @@ public class AutomaticFailoverTest {
             .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(
+    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
         builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -182,11 +182,11 @@ public class AutomaticFailoverTest {
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(
+    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
         builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -217,11 +217,11 @@ public class AutomaticFailoverTest {
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(
+    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
         builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");

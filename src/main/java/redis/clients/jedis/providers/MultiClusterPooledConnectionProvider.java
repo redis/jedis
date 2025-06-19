@@ -29,16 +29,16 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
 
-
 /**
  * @author Allen Terleto (aterleto)
- * <p>
- * ConnectionProvider which supports multiple cluster/database endpoints each with their own isolated connection pool.
- * With this ConnectionProvider users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
- * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
- * <p>
- * Support for manual failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
- * <p>
+ *         <p>
+ *         ConnectionProvider which supports multiple cluster/database endpoints each with their own isolated connection
+ *         pool. With this ConnectionProvider users can seamlessly failover to Disaster Recovery (DR), Backup, and
+ *         Active-Active cluster(s) by using simple configuration which is passed through from Resilience4j -
+ *         https://resilience4j.readme.io/docs
+ *         <p>
+ *         Support for manual failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
+ *         <p>
  */
 // TODO: move?
 @Experimental
@@ -47,31 +47,31 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * Ordered map of cluster/database endpoints which were provided at startup via the MultiClusterClientConfig.
-     * Users can move down (failover) or (up) failback the map depending on their availability and order.
+     * Ordered map of cluster/database endpoints which were provided at startup via the MultiClusterClientConfig. Users
+     * can move down (failover) or (up) failback the map depending on their availability and order.
      */
     private final Map<Integer, Cluster> multiClusterMap = new ConcurrentHashMap<>();
 
     /**
-     * Indicates the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which were
-     * provided at startup via the MultiClusterClientConfig. All traffic will be routed according to this index.
+     * Indicates the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which
+     * were provided at startup via the MultiClusterClientConfig. All traffic will be routed according to this index.
      */
     private volatile Integer activeMultiClusterIndex = 1;
-    
+
     private final Lock activeClusterIndexLock = new ReentrantLock(true);
 
     /**
-     * Indicates the final cluster/database endpoint (connection pool), according to the pre-configured list
-     * provided at startup via the MultiClusterClientConfig, is unavailable and therefore no further failover is possible.
-     * Users can manually failback to an available cluster which would reset this flag via {@link #setActiveMultiClusterIndex(int)}
+     * Indicates the final cluster/database endpoint (connection pool), according to the pre-configured list provided at
+     * startup via the MultiClusterClientConfig, is unavailable and therefore no further failover is possible. Users can
+     * manually failback to an available cluster which would reset this flag via
+     * {@link #setActiveMultiClusterIndex(int)}
      */
     private volatile boolean lastClusterCircuitBreakerForcedOpen = false;
 
     /**
      * Functional interface typically used for activeMultiClusterIndex persistence or custom logging after a successful
-     * failover of a cluster/database endpoint (connection pool). Cluster/database endpoint info is passed as the sole parameter
-     *
-     * Example: cluster:2:redis-smart-cache.demo.com:12000
+     * failover of a cluster/database endpoint (connection pool). Cluster/database endpoint info is passed as the sole
+     * parameter Example: cluster:2:redis-smart-cache.demo.com:12000
      */
     private Consumer<String> clusterFailoverPostProcessor;
 
@@ -79,17 +79,19 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
-        if (multiClusterClientConfig == null)
-            throw new JedisValidationException("MultiClusterClientConfig must not be NULL for MultiClusterPooledConnectionProvider");
+        if (multiClusterClientConfig == null) throw new JedisValidationException(
+            "MultiClusterClientConfig must not be NULL for MultiClusterPooledConnectionProvider");
 
         ////////////// Configure Retry ////////////////////
 
         RetryConfig.Builder retryConfigBuilder = RetryConfig.custom();
         retryConfigBuilder.maxAttempts(multiClusterClientConfig.getRetryMaxAttempts());
-        retryConfigBuilder.intervalFunction(IntervalFunction.ofExponentialBackoff(multiClusterClientConfig.getRetryWaitDuration(),
+        retryConfigBuilder
+            .intervalFunction(IntervalFunction.ofExponentialBackoff(multiClusterClientConfig.getRetryWaitDuration(),
                 multiClusterClientConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
         retryConfigBuilder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
-        retryConfigBuilder.retryExceptions(multiClusterClientConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
+        retryConfigBuilder
+            .retryExceptions(multiClusterClientConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
 
         List<Class> retryIgnoreExceptionList = multiClusterClientConfig.getRetryIgnoreExceptionList();
         if (retryIgnoreExceptionList != null)
@@ -100,18 +102,25 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         ////////////// Configure Circuit Breaker ////////////////////
 
         CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
-        circuitBreakerConfigBuilder.failureRateThreshold(multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
-        circuitBreakerConfigBuilder.slowCallRateThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallRateThreshold());
-        circuitBreakerConfigBuilder.slowCallDurationThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallDurationThreshold());
-        circuitBreakerConfigBuilder.minimumNumberOfCalls(multiClusterClientConfig.getCircuitBreakerSlidingWindowMinCalls());
+        circuitBreakerConfigBuilder
+            .failureRateThreshold(multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
+        circuitBreakerConfigBuilder
+            .slowCallRateThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallRateThreshold());
+        circuitBreakerConfigBuilder
+            .slowCallDurationThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallDurationThreshold());
+        circuitBreakerConfigBuilder
+            .minimumNumberOfCalls(multiClusterClientConfig.getCircuitBreakerSlidingWindowMinCalls());
         circuitBreakerConfigBuilder.slidingWindowType(multiClusterClientConfig.getCircuitBreakerSlidingWindowType());
         circuitBreakerConfigBuilder.slidingWindowSize(multiClusterClientConfig.getCircuitBreakerSlidingWindowSize());
-        circuitBreakerConfigBuilder.recordExceptions(multiClusterClientConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
-        circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are forced. No half open states are used
+        circuitBreakerConfigBuilder.recordExceptions(
+            multiClusterClientConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
+        circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are
+                                                                                         // forced. No half open states
+                                                                                         // are used
 
         List<Class> circuitBreakerIgnoreExceptionList = multiClusterClientConfig.getCircuitBreakerIgnoreExceptionList();
-        if (circuitBreakerIgnoreExceptionList != null)
-            circuitBreakerConfigBuilder.ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
+        if (circuitBreakerIgnoreExceptionList != null) circuitBreakerConfigBuilder
+            .ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
 
         CircuitBreakerConfig circuitBreakerConfig = circuitBreakerConfigBuilder.build();
 
@@ -140,12 +149,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             if (poolConfig != null) {
                 multiClusterMap.put(config.getPriority(),
-                        new Cluster(new ConnectionPool(config.getHostAndPort(),
-                                config.getJedisClientConfig(), poolConfig), retry, circuitBreaker));
+                    new Cluster(new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(), poolConfig),
+                        retry, circuitBreaker));
             } else {
-                multiClusterMap.put(config.getPriority(),
-                        new Cluster(new ConnectionPool(config.getHostAndPort(),
-                                config.getJedisClientConfig()), retry, circuitBreaker));
+                multiClusterMap.put(config.getPriority(), new Cluster(
+                    new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig()), retry, circuitBreaker));
             }
         }
 
@@ -155,20 +163,18 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     /**
-     * Increments the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which were
-     * provided at startup via the MultiClusterClientConfig. All traffic will be routed according to this index.
-     *
-     * Only indexes within the pre-configured range (static) are supported otherwise an exception will be thrown.
-     *
-     * In the event that the next prioritized connection has a forced open state,
-     * the method will recursively increment the index in order to avoid a failed command.
+     * Increments the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which
+     * were provided at startup via the MultiClusterClientConfig. All traffic will be routed according to this index.
+     * Only indexes within the pre-configured range (static) are supported otherwise an exception will be thrown. In the
+     * event that the next prioritized connection has a forced open state, the method will recursively increment the
+     * index in order to avoid a failed command.
      */
     public int incrementActiveMultiClusterIndex() {
 
         // Field-level synchronization is used to avoid the edge case in which
         // setActiveMultiClusterIndex(int multiClusterIndex) is called at the same time
         activeClusterIndexLock.lock();
-        
+
         try {
             String originalClusterName = getClusterCircuitBreaker().getName();
 
@@ -177,20 +183,20 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
                 lastClusterCircuitBreakerForcedOpen = true;
 
-                throw new JedisConnectionException("Cluster/database endpoint could not failover since the MultiClusterClientConfig was not " +
-                                                   "provided with an additional cluster/database endpoint according to its prioritized sequence. " +
-                                                   "If applicable, consider failing back OR restarting with an available cluster/database endpoint.");
-            }
-            else activeMultiClusterIndex++;
+                throw new JedisConnectionException(
+                    "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "
+                        + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
+                        + "If applicable, consider failing back OR restarting with an available cluster/database endpoint.");
+            } else activeMultiClusterIndex++;
 
             CircuitBreaker circuitBreaker = getClusterCircuitBreaker();
 
             // Handles edge-case in which the user resets the activeMultiClusterIndex to a higher priority prematurely
             // which forces a failover to the next prioritized cluster that has potentially not yet recovered
-            if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))
-                incrementActiveMultiClusterIndex();
+            if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState())) incrementActiveMultiClusterIndex();
 
-            else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName, circuitBreaker.getName());
+            else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName,
+                circuitBreaker.getName());
         } finally {
             activeClusterIndexLock.unlock();
         }
@@ -199,11 +205,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     /**
-     * Design decision was made to defer responsibility for cross-replication validation to the user.
-     *
-     * Alternatively there was discussion to handle cross-cluster replication validation by
-     * setting a key/value pair per hashslot in the active connection (with a TTL) and
-     * subsequently reading it from the target connection.
+     * Design decision was made to defer responsibility for cross-replication validation to the user. Alternatively
+     * there was discussion to handle cross-cluster replication validation by setting a key/value pair per hashslot in
+     * the active connection (with a TTL) and subsequently reading it from the target connection.
      */
     public void validateTargetConnection(int multiClusterIndex) {
 
@@ -212,47 +216,47 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         State originalState = circuitBreaker.getState();
         try {
             // Transitions the state machine to a CLOSED state, allowing state transition, metrics and event publishing
-            // Safe since the activeMultiClusterIndex has not yet been changed and therefore no traffic will be routed yet
+            // Safe since the activeMultiClusterIndex has not yet been changed and therefore no traffic will be routed
+            // yet
             circuitBreaker.transitionToClosedState();
 
             try (Connection targetConnection = getConnection(multiClusterIndex)) {
                 targetConnection.ping();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
-            // If the original state was FORCED_OPEN, then transition it back which stops state transition, metrics and event publishing
-            if (CircuitBreaker.State.FORCED_OPEN.equals(originalState))
-                circuitBreaker.transitionToForcedOpenState();
+            // If the original state was FORCED_OPEN, then transition it back which stops state transition, metrics and
+            // event publishing
+            if (CircuitBreaker.State.FORCED_OPEN.equals(originalState)) circuitBreaker.transitionToForcedOpenState();
 
-            throw new JedisValidationException(circuitBreaker.getName() + " failed to connect. Please check configuration and try again.", e);
+            throw new JedisValidationException(
+                circuitBreaker.getName() + " failed to connect. Please check configuration and try again.", e);
         }
     }
 
     /**
-     * Manually overrides the actively used cluster/database endpoint (connection pool) amongst the
-     * pre-configured list which were provided at startup via the MultiClusterClientConfig.
-     * All traffic will be routed according to the provided new index.
-     *
-     * Special care should be taken to confirm cluster/database availability AND
-     * potentially cross-cluster replication BEFORE using this capability.
+     * Manually overrides the actively used cluster/database endpoint (connection pool) amongst the pre-configured list
+     * which were provided at startup via the MultiClusterClientConfig. All traffic will be routed according to the
+     * provided new index. Special care should be taken to confirm cluster/database availability AND potentially
+     * cross-cluster replication BEFORE using this capability.
      */
     public void setActiveMultiClusterIndex(int multiClusterIndex) {
 
         // Field-level synchronization is used to avoid the edge case in which
         // incrementActiveMultiClusterIndex() is called at the same time
         activeClusterIndexLock.lock();
-        
+
         try {
 
-            // Allows an attempt to reset the current cluster from a FORCED_OPEN to CLOSED state in the event that no failover is possible
-            if (activeMultiClusterIndex == multiClusterIndex &&
-                !CircuitBreaker.State.FORCED_OPEN.equals(getClusterCircuitBreaker(multiClusterIndex).getState()))
-                    return;
+            // Allows an attempt to reset the current cluster from a FORCED_OPEN to CLOSED state in the event that no
+            // failover is possible
+            if (activeMultiClusterIndex == multiClusterIndex
+                && !CircuitBreaker.State.FORCED_OPEN.equals(getClusterCircuitBreaker(multiClusterIndex).getState()))
+                return;
 
             if (multiClusterIndex < 1 || multiClusterIndex > multiClusterMap.size())
-                throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within " +
-                          "the configured range. Please choose an index between 1 and " + multiClusterMap.size());
+                throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within "
+                    + "the configured range. Please choose an index between 1 and " + multiClusterMap.size());
 
             validateTargetConnection(multiClusterIndex);
 
@@ -260,9 +264,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             if (activeMultiClusterIndex == multiClusterIndex)
                 log.warn("Cluster/database endpoint '{}' successfully closed its circuit breaker", originalClusterName);
-            else
-                log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'",
-                         originalClusterName, getClusterCircuitBreaker(multiClusterIndex).getName());
+            else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName,
+                getClusterCircuitBreaker(multiClusterIndex).getName());
 
             activeMultiClusterIndex = multiClusterIndex;
             lastClusterCircuitBreakerForcedOpen = false;

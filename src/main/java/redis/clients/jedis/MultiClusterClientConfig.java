@@ -15,23 +15,24 @@ import redis.clients.jedis.mcf.ConnectionFailoverException;
 
 /**
  * @author Allen Terleto (aterleto)
- * <p>
- * Config which supports multiple cluster/database endpoint configurations
- * that all share retry and circuit breaker configuration settings.
- * <p>
- * With this Config users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
- * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
- * <p>
- * Configuration options related to automatic failback (e.g. HALF_OPENED state) are not supported and therefore
- * not passed through to Jedis users.
- * <p>
+ *         <p>
+ *         Config which supports multiple cluster/database endpoint configurations that all share retry and circuit
+ *         breaker configuration settings.
+ *         <p>
+ *         With this Config users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active
+ *         cluster(s) by using simple configuration which is passed through from Resilience4j -
+ *         https://resilience4j.readme.io/docs
+ *         <p>
+ *         Configuration options related to automatic failback (e.g. HALF_OPENED state) are not supported and therefore
+ *         not passed through to Jedis users.
+ *         <p>
  */
 // TODO: move
 @Experimental
 public final class MultiClusterClientConfig {
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
-    private static final int RETRY_WAIT_DURATION_DEFAULT = 500;  // measured in milliseconds
+    private static final int RETRY_WAIT_DURATION_DEFAULT = 500; // measured in milliseconds
     private static final int RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT = 2;
     private static final List<Class> RETRY_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
 
@@ -41,9 +42,11 @@ public final class MultiClusterClientConfig {
     private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 100;
     private static final int CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT = 60000; // measured in milliseconds
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
-    private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
+    private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays
+        .asList(JedisConnectionException.class);
 
-    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays.asList(CallNotPermittedException.class, ConnectionFailoverException.class);
+    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays
+        .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
     private final ClusterConfig[] clusterConfigs;
 
@@ -55,56 +58,73 @@ public final class MultiClusterClientConfig {
     /** Fixed wait duration between retry attempt */
     private Duration retryWaitDuration;
 
-    /**  Wait duration increases exponentially between attempts due to the multiplier.
-     * For example, if we specified an initial wait time of 1s and a multiplier of 2,
-     * the retries would be done after 1s, 2s, 4s, 8s, 16s, and so on */
+    /**
+     * Wait duration increases exponentially between attempts due to the multiplier. For example, if we specified an
+     * initial wait time of 1s and a multiplier of 2, the retries would be done after 1s, 2s, 4s, 8s, 16s, and so on
+     */
     private int retryWaitDurationExponentialBackoffMultiplier;
 
-    /**  Configures a list of Throwable classes that are recorded as a failure and thus are retried.
-     * This parameter supports subtyping. */
+    /**
+     * Configures a list of Throwable classes that are recorded as a failure and thus are retried. This parameter
+     * supports subtyping.
+     */
     private List<Class> retryIncludedExceptionList;
 
-    /**  Configures a list of Throwable classes that are ignored and thus are not retried.
-     * This parameter supports subtyping. */
+    /**
+     * Configures a list of Throwable classes that are ignored and thus are not retried. This parameter supports
+     * subtyping.
+     */
     private List<Class> retryIgnoreExceptionList;
 
     //////////// Circuit Breaker Config - https://resilience4j.readme.io/docs/circuitbreaker ////////////
 
-    /**  When the failure rate is equal or greater than the threshold the CircuitBreaker transitions
-     * to open and starts short-circuiting calls */
+    /**
+     * When the failure rate is equal or greater than the threshold the CircuitBreaker transitions to open and starts
+     * short-circuiting calls
+     */
     private float circuitBreakerFailureRateThreshold;
 
-    /**  Minimum number of calls required (per sliding window period) before the CircuitBreaker
-     * can calculate the error rate or slow call rate. For example, if the value is 10,
-     * then at least 10 calls must be recorded, before the failure rate can be calculated. However, if
-     * only 9 calls have been recorded, the CircuitBreaker will not transition to open even if all 9  have failed */
+    /**
+     * Minimum number of calls required (per sliding window period) before the CircuitBreaker can calculate the error
+     * rate or slow call rate. For example, if the value is 10, then at least 10 calls must be recorded, before the
+     * failure rate can be calculated. However, if only 9 calls have been recorded, the CircuitBreaker will not
+     * transition to open even if all 9 have failed
+     */
     private int circuitBreakerSlidingWindowMinCalls;
 
-    /**  Used to record the outcome of calls when the CircuitBreaker is closed.
-     * If the type is COUNT_BASED, the last slidingWindowSize calls are recorded and aggregated.
-     * If the type is TIME_BASED, the calls of the last slidingWindowSize seconds are recorded and aggregated */
+    /**
+     * Used to record the outcome of calls when the CircuitBreaker is closed. If the type is COUNT_BASED, the last
+     * slidingWindowSize calls are recorded and aggregated. If the type is TIME_BASED, the calls of the last
+     * slidingWindowSize seconds are recorded and aggregated
+     */
     private SlidingWindowType circuitBreakerSlidingWindowType;
 
-    /**  Size of the sliding window which is used to record the outcome of calls when the CircuitBreaker is closed */
+    /** Size of the sliding window which is used to record the outcome of calls when the CircuitBreaker is closed */
     private int circuitBreakerSlidingWindowSize;
 
-    /**  Duration threshold above which calls are considered as slow and increase the rate of slow calls */
+    /** Duration threshold above which calls are considered as slow and increase the rate of slow calls */
     private Duration circuitBreakerSlowCallDurationThreshold;
 
-    /**  When the percentage of slow calls is equal or greater the threshold,
-     * the CircuitBreaker transitions to open and starts short-circuiting calls.
-     * CircuitBreaker considers a call as slow when the call duration is greater than slowCallDurationThreshold */
+    /**
+     * When the percentage of slow calls is equal or greater the threshold, the CircuitBreaker transitions to open and
+     * starts short-circuiting calls. CircuitBreaker considers a call as slow when the call duration is greater than
+     * slowCallDurationThreshold
+     */
     private float circuitBreakerSlowCallRateThreshold;
 
-    /**  A list of exceptions that are recorded as a failure and thus increase the failure rate.
-     * Any exception matching or inheriting from one of the list counts as a failure, unless explicitly
-     * ignored via ignoreExceptions. If you specify a list of exceptions, all other exceptions count as
-     * a success, unless they are explicitly ignored by ignoreExceptions */
+    /**
+     * A list of exceptions that are recorded as a failure and thus increase the failure rate. Any exception matching or
+     * inheriting from one of the list counts as a failure, unless explicitly ignored via ignoreExceptions. If you
+     * specify a list of exceptions, all other exceptions count as a success, unless they are explicitly ignored by
+     * ignoreExceptions
+     */
     private List<Class> circuitBreakerIncludedExceptionList;
 
-    /**  A list of exceptions that are ignored and neither count as a failure nor success.
-     * Any exception matching or inheriting from one of the list will not count as a
-     * failure nor success, even if the exceptions is part of recordExceptions */
+    /**
+     * A list of exceptions that are ignored and neither count as a failure nor success. Any exception matching or
+     * inheriting from one of the list will not count as a failure nor success, even if the exceptions is part of
+     * recordExceptions
+     */
     private List<Class> circuitBreakerIgnoreExceptionList;
 
     private List<Class<? extends Throwable>> fallbackExceptionList;
@@ -186,7 +206,7 @@ public final class MultiClusterClientConfig {
         }
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-                             GenericObjectPoolConfig<Connection> connectionPoolConfig) {
+            GenericObjectPoolConfig<Connection> connectionPoolConfig) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
             this.connectionPoolConfig = connectionPoolConfig;
@@ -235,8 +255,8 @@ public final class MultiClusterClientConfig {
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
-            if (clusterConfigs == null || clusterConfigs.length < 1)
-                throw new JedisValidationException("ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
+            if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
+                "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
             for (int i = 0; i < clusterConfigs.length; i++)
                 clusterConfigs[i].setPriority(i + 1);
@@ -258,7 +278,8 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
-        public Builder retryWaitDurationExponentialBackoffMultiplier(int retryWaitDurationExponentialBackoffMultiplier) {
+        public Builder retryWaitDurationExponentialBackoffMultiplier(
+            int retryWaitDurationExponentialBackoffMultiplier) {
             this.retryWaitDurationExponentialBackoffMultiplier = retryWaitDurationExponentialBackoffMultiplier;
             return this;
         }
@@ -317,7 +338,8 @@ public final class MultiClusterClientConfig {
          * @deprecated Use {@link #fallbackExceptionList(java.util.List)}.
          */
         @Deprecated
-        public Builder circuitBreakerFallbackExceptionList(List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
+        public Builder circuitBreakerFallbackExceptionList(
+            List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
             return fallbackExceptionList(circuitBreakerFallbackExceptionList);
         }
 
@@ -341,7 +363,8 @@ public final class MultiClusterClientConfig {
             config.circuitBreakerSlidingWindowMinCalls = this.circuitBreakerSlidingWindowMinCalls;
             config.circuitBreakerSlidingWindowType = this.circuitBreakerSlidingWindowType;
             config.circuitBreakerSlidingWindowSize = this.circuitBreakerSlidingWindowSize;
-            config.circuitBreakerSlowCallDurationThreshold = Duration.ofMillis(this.circuitBreakerSlowCallDurationThreshold);
+            config.circuitBreakerSlowCallDurationThreshold = Duration
+                .ofMillis(this.circuitBreakerSlowCallDurationThreshold);
             config.circuitBreakerSlowCallRateThreshold = this.circuitBreakerSlowCallRateThreshold;
 
             config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;

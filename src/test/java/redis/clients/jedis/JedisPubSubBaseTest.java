@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static redis.clients.jedis.Protocol.ResponseKeyword.MESSAGE;
@@ -40,7 +41,7 @@ public class JedisPubSubBaseTest  {
                 MESSAGE.getRaw(), "channel".getBytes(), "message".getBytes()
         );
 
-        when(mockConnection.getUnflushedObject()).
+        when(mockConnection.getUnflushedObject(any())).
 
                 thenReturn(mockSubscribe, mockResponse);
 

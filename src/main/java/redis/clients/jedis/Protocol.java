@@ -65,6 +65,16 @@ public final class Protocol {
   private static final String NOPERM_PREFIX = "NOPERM";
 
   private static final byte[] INVALIDATE_BYTES = SafeEncoder.encode("invalidate");
+  public static final PushHandler PROPAGATE_ALL_PUSH_EVENT = (pe) ->{
+    System.out.println("PROPAGATE_ALL_PUSH_EVENT" + pe.getType());
+    return new PushHandlerOutput(pe, false);
+  };
+
+  public static final PushHandler PROPAGATE_NONE_PUSH_EVENT = (pe) ->{
+
+  System.out.println("PROPAGATE_NONE_PUSH_EVENT.handlePushMessage: " + pe.getType());
+  return new PushHandlerOutput(pe, true);
+  };
 
   private Protocol() {
     throw new InstantiationError("Must not instantiate this class");
@@ -127,9 +137,9 @@ public final class Protocol {
     return response;
   }
 
-  private static Object process(final RedisInputStream is) {
+  private static Object process(final RedisInputStream is, PushHandler handler) {
     final byte b = is.readByte();
-    // System.out.println("BYTE: " + (char) b);
+    //System.out.println("BYTE: " + (char) b);
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();
@@ -153,7 +163,9 @@ public final class Protocol {
       case TILDE_BYTE: // TODO:
         return processMultiBulkReply(is);
       case GREATER_THAN_BYTE:
-        return processMultiBulkReply(is);
+        // return processMultiBulkReply(is);
+        // returns PushHandlerOutput - wraps a PushMessage
+        return processPush(is, handler);
       case MINUS_BYTE:
         processError(is);
         return null;
@@ -193,7 +205,7 @@ public final class Protocol {
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
-        ret.add(process(is));
+        ret.add(process(is, null));
       } catch (JedisDataException e) {
         ret.add(e);
       }
@@ -211,23 +223,61 @@ public final class Protocol {
       default:
         final List<KeyValue> ret = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-          ret.add(new KeyValue(process(is), process(is)));
+          ret.add(new KeyValue(process(is, null), process(is,null)));
         }
         return ret;
     }
   }
 
   public static Object read(final RedisInputStream is) {
-    return process(is);
+    // for backward compatibility
+    // propagate all push events to application
+    Object reply = process(is, PROPAGATE_ALL_PUSH_EVENT);
+
+    if (reply != null & reply instanceof PushHandlerOutput) {
+      if (((PushHandlerOutput) reply).isProcessed()) {
+        return null;
+      }
+      return ((PushHandlerOutput) reply).getMessage().getContent();
+    }
+
+    return reply;
   }
 
   @Experimental
-  public static Object read(final RedisInputStream is, final Cache cache) {
-    Object unhandledPush = readPushes(is, cache, false);
-    return unhandledPush == null ? process(is) : unhandledPush;
+  public static Object read(final RedisInputStream is, PushHandler pushConsumer) {
+    // read until we have a non-push event,
+    // or push-event is not handled and need to be propagated to application
+    Object reply;
+    do {
+      reply = process(is, pushConsumer);
+
+    } while (isPush(reply) && isProcessed((PushHandlerOutput) reply) );
+
+    if ( isPush(reply)) {
+      return ((PushHandlerOutput) reply).getMessage().getContent();
+    }
+
+    return reply;
   }
 
+  private static boolean isProcessed(PushHandlerOutput reply) {
+    return reply.isProcessed();
+  }
+
+  private static boolean isPush(Object reply) {
+    return reply instanceof PushHandlerOutput;
+  }
+
+  //  @Experimental
+//  public static Object read(final RedisInputStream is, final Cache cache) {
+//    Object unhandledPush = readPushes(is, cache, false);
+//    return unhandledPush == null ? process(is) : unhandledPush;
+//  }
+
+
   @Experimental
+  // TODO : Refactor to use PushHandler
   public static Object readPushes(final RedisInputStream is, final Cache cache,
       boolean onlyPendingBuffer) {
     Object unhandledPush = null;
@@ -245,6 +295,12 @@ public final class Protocol {
       }
     }
     return unhandledPush;
+  }
+
+  private static PushHandlerOutput processPush(final RedisInputStream is, PushHandler handler) {
+    List<Object> list = processMultiBulkReply(is);
+
+    return handler.handlePushMessage(new PushEvent(list));
   }
 
   private static Object processPush(final RedisInputStream is, Cache cache) {

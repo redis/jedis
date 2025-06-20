@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static redis.clients.jedis.Protocol.ResponseKeyword.SMESSAGE;
@@ -40,7 +41,7 @@ public class JedisShardedPubSubBaseTest {
         final List<Object> mockResponse = Arrays.asList(
                 SMESSAGE.getRaw(), "channel".getBytes(), "message".getBytes()
         );
-        when(mockConnection.getUnflushedObject()).thenReturn(mockSubscribe, mockResponse);
+        when(mockConnection.getUnflushedObject(any())).thenReturn(mockSubscribe, mockResponse);
 
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);

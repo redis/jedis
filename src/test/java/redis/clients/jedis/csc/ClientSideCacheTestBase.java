@@ -13,6 +13,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+@Tag("ClientSideCache")
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 @Tag("integration")
 public abstract class ClientSideCacheTestBase {

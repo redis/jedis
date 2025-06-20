@@ -15,10 +15,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
 
+@Tag("ClientSideCache")
 public abstract class UnifiedJedisClientSideCacheTestBase {
 
   protected UnifiedJedis control;
@@ -73,8 +75,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-          .untilAsserted(() -> assertNull(jedis.get("foo")));
+      await().untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 

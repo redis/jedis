@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.PROPAGATE_ALL_PUSH_EVENT;
+import static redis.clients.jedis.Protocol.PROPAGATE_NONE_PUSH_EVENT;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
@@ -82,6 +84,8 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
+
+  private PushHandler pushListener = PROPAGATE_NONE_PUSH_EVENT;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -354,7 +358,7 @@ public class Connection implements Closeable {
 
   public String getStatusCodeReply() {
     flush();
-    final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
+    final byte[] resp = (byte[]) readProtocolWithCheckingBroken(pushListener);
     if (null == resp) {
       return null;
     } else {
@@ -373,12 +377,12 @@ public class Connection implements Closeable {
 
   public byte[] getBinaryBulkReply() {
     flush();
-    return (byte[]) readProtocolWithCheckingBroken();
+    return (byte[]) readProtocolWithCheckingBroken(pushListener);
   }
 
   public Long getIntegerReply() {
     flush();
-    return (Long) readProtocolWithCheckingBroken();
+    return (Long) readProtocolWithCheckingBroken(pushListener);
   }
 
   public List<String> getMultiBulkReply() {
@@ -388,7 +392,7 @@ public class Connection implements Closeable {
   @SuppressWarnings("unchecked")
   public List<byte[]> getBinaryMultiBulkReply() {
     flush();
-    return (List<byte[]>) readProtocolWithCheckingBroken();
+    return (List<byte[]>) readProtocolWithCheckingBroken(pushListener);
   }
 
   /**
@@ -397,28 +401,28 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
-    return (List<Object>) readProtocolWithCheckingBroken();
+    return (List<Object>) readProtocolWithCheckingBroken(pushListener);
   }
 
   @SuppressWarnings("unchecked")
-  public Object getUnflushedObject() {
-    return readProtocolWithCheckingBroken();
+  public Object getUnflushedObject(PushHandler listener) {
+    return readProtocolWithCheckingBroken(listener);
   }
 
   public List<Object> getObjectMultiBulkReply() {
     flush();
-    return (List<Object>) readProtocolWithCheckingBroken();
+    return (List<Object>) readProtocolWithCheckingBroken(pushListener);
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
     flush();
-    return (List<Long>) readProtocolWithCheckingBroken();
+    return (List<Long>) readProtocolWithCheckingBroken(pushListener);
   }
 
   public Object getOne() {
     flush();
-    return readProtocolWithCheckingBroken();
+    return readProtocolWithCheckingBroken(pushListener);
   }
 
   protected void flush() {
@@ -430,22 +434,43 @@ public class Connection implements Closeable {
     }
   }
 
+  // -----------
+  // PUB_SUB
+  // ---------
+  // we can consume pending pushes before reading the next reply
+  // do {
+  //    obj = Protocol.read(is);
+  // } while (obj == PushOutput && PushOutput.skip() == true);
+  //
+  // Not filtered push messages are propagated to the client
+  // Will block and wait for next not-filtered PushMessage or command output
+  //
+  // ---
+  // executeCommand()
+  // ---------------
+  // we can consume pending pushes before reading the next reply
+  // do {
+  //    obj = Protocol.read(is);
+  // } while (obj == PushOutput && PushOutput.skip() == true);
+  // this will block and wait for next not-filtered PushMessage or command output
+  //
   @Experimental
-  protected Object protocolRead(RedisInputStream is) {
-    return Protocol.read(is);
+  protected Object protocolRead(RedisInputStream is, PushHandler listener) {
+
+    return Protocol.read(is, listener);
   }
 
   @Experimental
   protected void protocolReadPushes(RedisInputStream is) {
   }
 
-  protected Object readProtocolWithCheckingBroken() {
+  protected Object readProtocolWithCheckingBroken(PushHandler listener) {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
-      return protocolRead(inputStream);
+      return protocolRead(inputStream, listener);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -475,7 +500,7 @@ public class Connection implements Closeable {
     final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       try {
-        responses.add(readProtocolWithCheckingBroken());
+        responses.add(readProtocolWithCheckingBroken(pushListener));
       } catch (JedisDataException e) {
         responses.add(e);
       }
@@ -666,4 +691,10 @@ public class Connection implements Closeable {
   protected AuthXManager getAuthXManager() {
     return authXManager;
   }
+
+  @Experimental
+  public void setPushHandler(PushHandler listener) {
+    this.pushListener = listener;
+  }
+
 }

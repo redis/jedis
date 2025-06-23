@@ -19,6 +19,8 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
+import static redis.clients.jedis.PushHandlerChain.PROPAGATE_ALL_HANDLER;
+
 public final class Protocol {
 
   public static final String DEFAULT_HOST = "127.0.0.1";
@@ -65,16 +67,6 @@ public final class Protocol {
   private static final String NOPERM_PREFIX = "NOPERM";
 
   private static final byte[] INVALIDATE_BYTES = SafeEncoder.encode("invalidate");
-  public static final PushHandler PROPAGATE_ALL_PUSH_EVENT = (pe) ->{
-    System.out.println("PROPAGATE_ALL_PUSH_EVENT" + pe.getType());
-    return new PushHandlerOutput(pe, false);
-  };
-
-  public static final PushHandler PROPAGATE_NONE_PUSH_EVENT = (pe) ->{
-
-  System.out.println("PROPAGATE_NONE_PUSH_EVENT.handlePushMessage: " + pe.getType());
-  return new PushHandlerOutput(pe, true);
-  };
 
   private Protocol() {
     throw new InstantiationError("Must not instantiate this class");
@@ -230,15 +222,14 @@ public final class Protocol {
   }
 
   public static Object read(final RedisInputStream is) {
-    // for backward compatibility
-    // propagate all push events to application
-    Object reply = process(is, PROPAGATE_ALL_PUSH_EVENT);
+    // for backward compatibility propagate all push events to application
+    Object reply = process(is, PROPAGATE_ALL_HANDLER);
 
-    if (reply != null & reply instanceof PushHandlerOutput) {
-      if (((PushHandlerOutput) reply).isProcessed()) {
+    if (reply != null & reply instanceof PushHandlerContext) {
+      if (((PushHandlerContext) reply).isProcessed()) {
         return null;
       }
-      return ((PushHandlerOutput) reply).getMessage().getContent();
+      return ((PushHandlerContext) reply).getMessage().getContent();
     }
 
     return reply;
@@ -252,21 +243,21 @@ public final class Protocol {
     do {
       reply = process(is, pushConsumer);
 
-    } while (isPush(reply) && isProcessed((PushHandlerOutput) reply) );
+    } while (isPush(reply) && isProcessed((PushHandlerContext) reply) );
 
     if ( isPush(reply)) {
-      return ((PushHandlerOutput) reply).getMessage().getContent();
+      return ((PushHandlerContext) reply).getMessage().getContent();
     }
 
     return reply;
   }
 
-  private static boolean isProcessed(PushHandlerOutput reply) {
+  private static boolean isProcessed(PushHandlerContext reply) {
     return reply.isProcessed();
   }
 
   private static boolean isPush(Object reply) {
-    return reply instanceof PushHandlerOutput;
+    return reply instanceof PushHandlerContext;
   }
 
   //  @Experimental
@@ -297,10 +288,11 @@ public final class Protocol {
     return unhandledPush;
   }
 
-  private static PushHandlerOutput processPush(final RedisInputStream is, PushHandler handler) {
+  private static PushHandlerContext processPush(final RedisInputStream is, PushHandler handler) {
     List<Object> list = processMultiBulkReply(is);
-
-    return handler.handlePushMessage(new PushEvent(list));
+    PushHandlerContext context = new PushHandlerContext(new PushEvent(list));
+    handler.handlePushMessage(context);
+    return context;
   }
 
   private static Object processPush(final RedisInputStream is, Cache cache) {

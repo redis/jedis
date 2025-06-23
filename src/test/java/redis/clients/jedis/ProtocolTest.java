@@ -146,7 +146,7 @@ public class ProtocolTest {
   public void readWithPushListener() {
     // Create a mock push listener
     final List<PushEvent> receivedMessages = new ArrayList<>();
-    PushHandler listener = message -> { receivedMessages.add(message); return null; };
+    PushHandler listener = pushContext -> { receivedMessages.add(pushContext.getMessage()); };
 
     // Create a stream with a push message followed by a regular response
     byte[] data = (">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nfoo\r\n+OK\r\n").getBytes();
@@ -176,7 +176,7 @@ public class ProtocolTest {
   public void readWithMultiplePushMessages() {
     // Create a mock push listener
     final List<PushEvent> receivedMessages = new ArrayList<>();
-    PushHandler listener = message -> { receivedMessages.add(message); return null; };
+    PushHandler listener = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setProcessed(true); };
 
 
     // Create a stream with multiple push messages followed by a regular response

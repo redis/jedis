@@ -41,7 +41,7 @@ public class JedisShardedPubSubBaseTest {
         final List<Object> mockResponse = Arrays.asList(
                 SMESSAGE.getRaw(), "channel".getBytes(), "message".getBytes()
         );
-        when(mockConnection.getUnflushedObject(any())).thenReturn(mockSubscribe, mockResponse);
+        when(mockConnection.getUnflushedObject()).thenReturn(mockSubscribe, mockResponse);
 
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);

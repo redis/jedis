@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.PROPAGATE_ALL_PUSH_EVENT;
-import static redis.clients.jedis.Protocol.PROPAGATE_NONE_PUSH_EVENT;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
@@ -85,7 +83,11 @@ public class Connection implements Closeable {
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
 
-  private PushHandler pushListener = PROPAGATE_NONE_PUSH_EVENT;
+  public static final PushHandlerChain DEFAULT_PUSH_HANDLER_CHAIN = PushHandlerChain.of(
+      PushHandlerChain.CONSUME_ALL_HANDLER,   // Default to don't propagate any push events to application
+      PushHandlerChain.PUBSUB_ONLY_HANDLER);  // except for pub/sub events,
+
+  private PushHandlerChain pushHandlers =  DEFAULT_PUSH_HANDLER_CHAIN;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -358,7 +360,7 @@ public class Connection implements Closeable {
 
   public String getStatusCodeReply() {
     flush();
-    final byte[] resp = (byte[]) readProtocolWithCheckingBroken(pushListener);
+    final byte[] resp = (byte[]) readProtocolWithCheckingBroken(pushHandlers);
     if (null == resp) {
       return null;
     } else {
@@ -377,12 +379,12 @@ public class Connection implements Closeable {
 
   public byte[] getBinaryBulkReply() {
     flush();
-    return (byte[]) readProtocolWithCheckingBroken(pushListener);
+    return (byte[]) readProtocolWithCheckingBroken(pushHandlers);
   }
 
   public Long getIntegerReply() {
     flush();
-    return (Long) readProtocolWithCheckingBroken(pushListener);
+    return (Long) readProtocolWithCheckingBroken(pushHandlers);
   }
 
   public List<String> getMultiBulkReply() {
@@ -392,7 +394,7 @@ public class Connection implements Closeable {
   @SuppressWarnings("unchecked")
   public List<byte[]> getBinaryMultiBulkReply() {
     flush();
-    return (List<byte[]>) readProtocolWithCheckingBroken(pushListener);
+    return (List<byte[]>) readProtocolWithCheckingBroken(pushHandlers);
   }
 
   /**
@@ -401,28 +403,28 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
-    return (List<Object>) readProtocolWithCheckingBroken(pushListener);
+    return (List<Object>) readProtocolWithCheckingBroken(pushHandlers);
   }
 
   @SuppressWarnings("unchecked")
-  public Object getUnflushedObject(PushHandler listener) {
-    return readProtocolWithCheckingBroken(listener);
+  public Object getUnflushedObject() {
+    return readProtocolWithCheckingBroken(pushHandlers);
   }
 
   public List<Object> getObjectMultiBulkReply() {
     flush();
-    return (List<Object>) readProtocolWithCheckingBroken(pushListener);
+    return (List<Object>) readProtocolWithCheckingBroken(pushHandlers);
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
     flush();
-    return (List<Long>) readProtocolWithCheckingBroken(pushListener);
+    return (List<Long>) readProtocolWithCheckingBroken(pushHandlers);
   }
 
   public Object getOne() {
     flush();
-    return readProtocolWithCheckingBroken(pushListener);
+    return readProtocolWithCheckingBroken(pushHandlers);
   }
 
   protected void flush() {
@@ -500,7 +502,7 @@ public class Connection implements Closeable {
     final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       try {
-        responses.add(readProtocolWithCheckingBroken(pushListener));
+        responses.add(readProtocolWithCheckingBroken(pushHandlers));
       } catch (JedisDataException e) {
         responses.add(e);
       }
@@ -693,8 +695,14 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  public void setPushHandler(PushHandler listener) {
-    this.pushListener = listener;
+  public void setPushHandlers(PushHandlerChain handlers) {
+    this.pushHandlers = handlers;
   }
+
+  @Experimental
+  public PushHandlerChain getPushHandlers() {
+    return this.pushHandlers;
+  }
+
 
 }

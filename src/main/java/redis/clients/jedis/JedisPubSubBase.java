@@ -1,12 +1,9 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.PROPAGATE_ALL_PUSH_EVENT;
 import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import redis.clients.jedis.Protocol.Command;
@@ -130,28 +127,11 @@ public abstract class JedisPubSubBase<T> {
 
   protected abstract T encode(byte[] raw);
 
-
-  private static final Set<String> pubSubCommands =  new HashSet<>();
-  static {
-    pubSubCommands.add("message");
-    pubSubCommands.add("smessage");
-    pubSubCommands.add("subscribe");
-    pubSubCommands.add("ssubscribe");
-    pubSubCommands.add("psubscribe");
-    pubSubCommands.add("unsubscribe");
-    pubSubCommands.add("sunsubscribe");
-    pubSubCommands.add("punsubscribe");
-  }
-
-  private boolean isPubSubType(String type) {
-    return  pubSubCommands.contains(type);
-  }
-
   //  private void process(Client client) {
   private void process() {
 
     do {
-      Object reply = authenticator.client.getUnflushedObject(PROPAGATE_ALL_PUSH_EVENT);
+      Object reply = authenticator.client.getUnflushedObject();
 
       if (reply instanceof List) {
         List<Object> listReply = (List<Object>) reply;

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 // REMOVE_END
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -114,22 +115,24 @@ public class HomeProbDtsExample {
         String res16 = jedis.cmsInitByProb("items_sold", 0.01, 0.005);
         System.out.println(res16);  // >>> OK
 
+        Map<String, Long> firstItemIncrements = new HashMap<>();
+        firstItemIncrements.put("bread", 300L);
+        firstItemIncrements.put("tea", 200L);
+        firstItemIncrements.put("coffee", 200L);
+        firstItemIncrements.put("beer", 100L);
+
         List<Long> res17 = jedis.cmsIncrBy("items_sold",
-            Map.of(
-                "bread", 300L,
-                "tea", 200L,
-                "coffee", 200L,
-                "beer",100L
-            )
+            firstItemIncrements
         );
         res17.sort(null);
         System.out.println();  // >>> [100, 200, 200, 300]
 
+        Map<String, Long> secondItemIncrements = new HashMap<>();
+        secondItemIncrements.put("bread", 100L);
+        secondItemIncrements.put("coffee", 150L);
+
         List<Long> res18 = jedis.cmsIncrBy("items_sold",
-            Map.of(
-                "bread", 100L,
-                "coffee", 150L
-            )
+            secondItemIncrements
         );
         res18.sort(null);
         System.out.println(res18);  // >>> [350, 400]
@@ -206,15 +209,16 @@ public class HomeProbDtsExample {
         String res31 = jedis.topkReserve("top_3_songs", 3L, 2000L, 7L, 0.925D);
         System.out.println(res31);  // >>> OK
 
+        Map<String, Long> songIncrements = new HashMap<>();
+        songIncrements.put("Starfish Trooper", 3000L);
+        songIncrements.put("Only one more time", 1850L);
+        songIncrements.put("Rock me, Handel", 1325L);
+        songIncrements.put("How will anyone know?", 3890L);
+        songIncrements.put("Average lover", 4098L);
+        songIncrements.put("Road to everywhere", 770L);
+
         List<String> res32 = jedis.topkIncrBy("top_3_songs",
-            Map.of(
-                "Starfish Trooper", 3000L,
-                "Only one more time", 1850L,
-                "Rock me, Handel", 1325L,
-                "How will anyone know?", 3890L,
-                "Average lover", 4098L,
-                "Road to everywhere", 770L
-            )
+            songIncrements
         );
         System.out.println(res32);
         // >>> [null, null, null, null, null, Rock me, Handel]

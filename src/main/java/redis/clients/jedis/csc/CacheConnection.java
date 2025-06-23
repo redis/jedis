@@ -9,9 +9,9 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.PushEvent;
 import redis.clients.jedis.PushHandler;
-import redis.clients.jedis.PushHandlerOutput;
+import redis.clients.jedis.PushHandlerChain;
+import redis.clients.jedis.PushHandlerContext;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
@@ -19,11 +19,11 @@ import redis.clients.jedis.util.RedisInputStream;
 public class CacheConnection extends Connection {
 
   private final Cache cache;
-  private final PushEventInvalidateHandler invalidateHandler;
   private ReentrantLock lock;
   private static final String REDIS = "redis";
   private static final String MIN_REDIS_VERSION = "7.4";
 
+  private final PushHandlerChain pushHandlerChain;
   private static class PushEventInvalidateHandler implements PushHandler {
     private final Cache cache;
     public PushEventInvalidateHandler(Cache cache) {
@@ -31,13 +31,14 @@ public class CacheConnection extends Connection {
     }
 
     @Override
-    public PushHandlerOutput handlePushMessage(PushEvent message) {
-      if (message.getType().equals("invalidate")) {
-        System.out.println("PushEventInvalidateHandler.handlePushMessage: " + message.getType());
-        cache.deleteByRedisKeys((List) message.getContent().get(1));
-        return new PushHandlerOutput(message, true);
+    public void handlePushMessage(PushHandlerContext event) {
+      if (event.getMessage().getType().equals("invalidate")) {
+        System.out.println("PushEventInvalidateHandler.handlePushMessage: " + event.getMessage().getType());
+        cache.deleteByRedisKeys((List) event.getMessage().getContent().get(1));
+        event.setProcessed(true);
+        //return new PushHandlerContext(message, true);
       }
-      return new PushHandlerOutput(message, false);
+      //return new PushHandlerContext(message, false);
     }
   }
 
@@ -55,8 +56,9 @@ public class CacheConnection extends Connection {
       }
     }
     this.cache = Objects.requireNonNull(cache);
-    this.invalidateHandler = new PushEventInvalidateHandler(cache);
-    setPushHandler(invalidateHandler);
+
+    this.pushHandlerChain = PushHandlerChain.of(new PushEventInvalidateHandler(cache));
+    setPushHandlers(pushHandlerChain);
     initializeClientSideCache();
   }
 
@@ -71,7 +73,7 @@ public class CacheConnection extends Connection {
     lock.lock();
     try {
       // return Protocol.read(inputStream, cache);
-      return Protocol.read(inputStream, invalidateHandler);
+      return Protocol.read(inputStream, getPushHandlers());
     } finally {
       lock.unlock();
     }

@@ -144,8 +144,7 @@ public class PushNotificationTest {
     List<PushEvent> receivedMessages = new ArrayList<>();
     
     // Create a custom push listener
-    PushHandler listener = message -> { receivedMessages.add(message); return null; };
-
+    PushHandler listener = pushContext -> { receivedMessages.add(pushContext.getMessage());};
 
     // Create connection with RESP3 protocol
     connection = new Connection(endpoint.getHostAndPort(),
@@ -153,7 +152,8 @@ public class PushNotificationTest {
     connection.connect();
     
     // Set the push listener
-    connection.setPushHandler(listener);
+    PushHandlerChain chain = PushHandlerChain.of(PushHandlerChain.CONSUME_ALL_HANDLER).add(listener);
+    connection.setPushHandlers(chain);
     
     // Enable client tracking
     enableClientTracking(connection);
@@ -213,7 +213,7 @@ public class PushNotificationTest {
     JedisPubSub pubSub = new JedisPubSub() {
       @Override
       public void onMessage(String channel, String message) {
-        System.out.println("onMEssage from " + channel + " : " + message);
+        System.out.println("onMessage from " + channel + " : " + message);
         receivedMessages.add(message);
         
         // If we've received both messages, unsubscribe

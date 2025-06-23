@@ -41,7 +41,7 @@ public class JedisPubSubBaseTest  {
                 MESSAGE.getRaw(), "channel".getBytes(), "message".getBytes()
         );
 
-        when(mockConnection.getUnflushedObject(any())).
+        when(mockConnection.getUnflushedObject()).
 
                 thenReturn(mockSubscribe, mockResponse);
 

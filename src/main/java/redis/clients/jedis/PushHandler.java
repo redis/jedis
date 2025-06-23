@@ -6,10 +6,11 @@ public interface PushHandler {
   /**
    * Handle a push message.
    *
+   * Messages are not processed by default.  Handlers should update the context's processed flag to true if they
+   * have processed the message.
    *
-   * @param message message to respond to.
-   * @return push message to propagate, or null to stop propagation.
+   * @param context The context of the message to respond to.
    */
-  PushHandlerOutput handlePushMessage(PushEvent message);
+  void handlePushMessage(PushHandlerContext context);
 
 }

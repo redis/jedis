@@ -231,7 +231,7 @@ public class HomeProbDtsExample {
             "Starfish Trooper", "Road to everywhere"
         );
         System.out.println(res34);
-        // >>> [1, 0]
+        // >>> [true, false]
         // STEP_END
         // REMOVE_START
         assertEquals("OK", res31);

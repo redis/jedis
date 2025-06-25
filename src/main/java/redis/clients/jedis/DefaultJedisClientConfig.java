@@ -33,6 +33,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
+  private final TimeoutOptions timeoutOptions;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -50,6 +52,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
+    this.timeoutOptions = builder.timeoutOptions;
   }
 
   @Override
@@ -143,6 +146,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+  @Override
+  public TimeoutOptions getTimeoutOptions() {
+    return timeoutOptions;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -174,6 +182,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean readOnlyForRedisClusterReplicas = false;
 
     private AuthXManager authXManager = null;
+
+    private TimeoutOptions timeoutOptions = TimeoutOptions.create();
 
     private Builder() {
     }
@@ -297,6 +307,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder timeoutOptions(TimeoutOptions timeoutOptions) {
+      this.timeoutOptions = timeoutOptions;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -314,6 +329,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
+      this.timeoutOptions = instance.getTimeoutOptions();
       return this;
     }
   }
@@ -375,6 +391,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
+    builder.timeoutOptions(copy.getTimeoutOptions());
 
     return builder.build();
   }

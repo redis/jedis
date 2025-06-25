@@ -1,14 +1,17 @@
 package redis.clients.jedis;
 
-public class PushHandlerContext {
-    private final PushEvent message;
+import redis.clients.jedis.annots.Internal;
+
+@Internal
+public class PushConsumerContext {
+    private final PushMessage message;
     private boolean processed = false;
 
-    public PushHandlerContext(PushEvent message) {
+    public PushConsumerContext(PushMessage message) {
         this.message = message;
     }
 
-    public PushEvent getMessage() {
+    public PushMessage getMessage() {
         return message;
     }
 

@@ -25,7 +25,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
  * Tests for Redis RESP3 push notifications functionality.
  */
 @SinceRedisVersion("6.0.0")
-public class PushNotificationTest {
+public class PushMessageNotificationTest {
 
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
 
@@ -136,15 +136,43 @@ public class PushNotificationTest {
     // Next reply should be PONG
     assertEquals("PONG", pingResponse);
   }
+
+  @Test
+  public void testUnifiedJedisCustomPushListener() {
+    unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
+
+    List<PushMessage> receivedMessages = new ArrayList<>();
+    unifiedJedis.addListener(receivedMessages::add);
+
+    // Enable client tracking
+    unifiedJedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
+
+    // Set initial value
+    unifiedJedis.set(testKey, initialValue);
+
+    // Get the key to track it
+    assertEquals(initialValue, unifiedJedis.get(testKey));
+
+    // Modify the key from another connection to trigger invalidation
+    triggerKeyInvalidation(testKey, modifiedValue);
+
+    // Send PING command
+    String pingResponse = unifiedJedis.ping();
+    // Next reply should be PONG
+    assertEquals("PONG", pingResponse);
+    assertEquals(1, receivedMessages.size());
+    assertEquals("invalidate", receivedMessages.get(0).getType());
+  }
   
   
   @Test
   public void testConnectionResp3PushNotificationsWithCustomListener() {
     // Create a list to store received push messages
-    List<PushEvent> receivedMessages = new ArrayList<>();
+    List<PushMessage> receivedMessages = new ArrayList<>();
     
     // Create a custom push listener
-    PushHandler listener = pushContext -> { receivedMessages.add(pushContext.getMessage());};
+    PushConsumer listener = pushContext -> { receivedMessages.add(pushContext.getMessage());};
 
     // Create connection with RESP3 protocol
     connection = new Connection(endpoint.getHostAndPort(),
@@ -152,8 +180,7 @@ public class PushNotificationTest {
     connection.connect();
     
     // Set the push listener
-    PushHandlerChain chain = PushHandlerChain.of(PushHandlerChain.CONSUME_ALL_HANDLER).add(listener);
-    connection.setPushHandlers(chain);
+    connection.getPushConsumer().add(listener);
     
     // Enable client tracking
     enableClientTracking(connection);
@@ -178,9 +205,9 @@ public class PushNotificationTest {
     assertTrue(!receivedMessages.isEmpty(), "Should have received at least one push message");
     
     // Verify the message is an invalidation message
-    PushEvent pushEvent = receivedMessages.get(0);
-    assertNotNull(pushEvent);
-    assertEquals("invalidate", pushEvent.getType());
+    PushMessage pushMessage = receivedMessages.get(0);
+    assertNotNull(pushMessage);
+    assertEquals("invalidate", pushMessage.getType());
   }
 
   @ParameterizedTest

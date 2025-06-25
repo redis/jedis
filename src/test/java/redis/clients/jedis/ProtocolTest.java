@@ -143,40 +143,43 @@ public class ProtocolTest {
   }
 
   @Test
-  public void readWithPushListener() {
+  public void readPushEventsAreNotPropagatedAsReadOutputIfProcessed() {
     // Create a mock push listener
-    final List<PushEvent> receivedMessages = new ArrayList<>();
-    PushHandler listener = pushContext -> { receivedMessages.add(pushContext.getMessage()); };
+    final List<PushMessage> receivedMessages = new ArrayList<>();
+    PushConsumer handler = pushContext -> {
+        receivedMessages.add(pushContext.getMessage());
+        pushContext.setProcessed(true);
+    };
 
     // Create a stream with a push message followed by a regular response
     byte[] data = (">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nfoo\r\n+OK\r\n").getBytes();
     RedisInputStream is = new RedisInputStream(new ByteArrayInputStream(data));
 
     // Read the response, which should process the push message first
-    Object response = Protocol.read(is, listener);
+    Object response = Protocol.read(is, handler);
 
     // Verify the response
     assertArrayEquals(SafeEncoder.encode("OK"), (byte[]) response);
 
     // Verify the push message was received
     assertEquals(1, receivedMessages.size());
-    PushEvent pushEvent = receivedMessages.get(0);
-    assertEquals(2, pushEvent.getContent().size());
-    assertEquals("invalidate", pushEvent.getType());
-    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushEvent.getContent().get(0));
+    PushMessage pushMessage = receivedMessages.get(0);
+    assertEquals(2, pushMessage.getContent().size());
+    assertEquals("invalidate", pushMessage.getType());
+    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushMessage.getContent().get(0));
     
     // The second element should be a list with one element "foo"
-    assertInstanceOf(List.class, pushEvent.getContent().get(1));
-    List<?> keys = (List<?>) pushEvent.getContent().get(1);
+    assertInstanceOf(List.class, pushMessage.getContent().get(1));
+    List<?> keys = (List<?>) pushMessage.getContent().get(1);
     assertEquals(1, keys.size());
     assertArrayEquals(SafeEncoder.encode("foo"), (byte[]) keys.get(0));
   }
 
   @Test
-  public void readWithMultiplePushMessages() {
+  public void readMultiplePushEventsAreNotPropagatedAsReadOutputIfProcessed() {
     // Create a mock push listener
-    final List<PushEvent> receivedMessages = new ArrayList<>();
-    PushHandler listener = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setProcessed(true); };
+    final List<PushMessage> receivedMessages = new ArrayList<>();
+    PushConsumer handler = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setProcessed(true); };
 
 
     // Create a stream with multiple push messages followed by a regular response
@@ -189,7 +192,7 @@ public class ProtocolTest {
     RedisInputStream is = new RedisInputStream(new ByteArrayInputStream(data));
 
     // Read the response, which should process all push messages first
-    Object response = Protocol.read(is, listener);
+    Object response = Protocol.read(is, handler);
 
     // Verify the response
     assertEquals(123L, response);
@@ -198,21 +201,57 @@ public class ProtocolTest {
     assertEquals(3, receivedMessages.size());
     
     // First push message (invalidate foo)
-    PushEvent pushEvent1 = receivedMessages.get(0);
-    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushEvent1.getContent().get(0));
-    List<?> keys1 = (List<?>) pushEvent1.getContent().get(1);
+    PushMessage pushMessage1 = receivedMessages.get(0);
+    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushMessage1.getContent().get(0));
+    List<?> keys1 = (List<?>) pushMessage1.getContent().get(1);
     assertArrayEquals(SafeEncoder.encode("foo"), (byte[]) keys1.get(0));
     
     // Second push message (invalidate bar)
-    PushEvent pushEvent2 = receivedMessages.get(1);
-    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushEvent2.getContent().get(0));
-    List<?> keys2 = (List<?>) pushEvent2.getContent().get(1);
+    PushMessage pushMessage2 = receivedMessages.get(1);
+    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushMessage2.getContent().get(0));
+    List<?> keys2 = (List<?>) pushMessage2.getContent().get(1);
     assertArrayEquals(SafeEncoder.encode("bar"), (byte[]) keys2.get(0));
     
     // Third push message (message hello)
-    PushEvent pushEvent3 = receivedMessages.get(2);
-    assertArrayEquals(SafeEncoder.encode("message"), (byte[]) pushEvent3.getContent().get(0));
-    assertArrayEquals(SafeEncoder.encode("hello"), (byte[]) pushEvent3.getContent().get(1));
+    PushMessage pushMessage3 = receivedMessages.get(2);
+    assertArrayEquals(SafeEncoder.encode("message"), (byte[]) pushMessage3.getContent().get(0));
+    assertArrayEquals(SafeEncoder.encode("hello"), (byte[]) pushMessage3.getContent().get(1));
   }
 
+  @Test
+  public void readPushEventsArePropagateAsReadOutputIfNotProcessed() {
+    // Create a mock push listener
+    final List<PushMessage> receivedMessages = new ArrayList<>();
+    PushConsumer handler = pushContext -> {
+      receivedMessages.add(pushContext.getMessage());
+      pushContext.setProcessed(false);
+    };
+
+    // Create a stream with a push message followed by a regular response
+    byte[] data = (">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nfoo\r\n+OK\r\n").getBytes();
+    RedisInputStream is = new RedisInputStream(new ByteArrayInputStream(data));
+
+    // Read the response, which should return
+    //    - invoke the push handler with the push message
+    //    - propagate the push message as the read output since it was not processed
+    Object pushMessage = Protocol.read(is, handler);
+
+    // Verify the push message is propagated as the read output
+    assertInstanceOf(ArrayList.class, pushMessage);
+    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) ((ArrayList) pushMessage).get(0));
+
+    // Verify the handler receives the push message
+    assertEquals(1, receivedMessages.size());
+    PushMessage push = receivedMessages.get(0);
+    assertEquals(2, push.getContent().size());
+    assertEquals("invalidate", push.getType());
+    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) push.getContent().get(0));
+
+
+    // Second read should return the command response itself
+    Object commandResponse = Protocol.read(is, handler);
+
+    // Verify the response
+    assertArrayEquals(SafeEncoder.encode("OK"), (byte[]) commandResponse);
+  }
 }

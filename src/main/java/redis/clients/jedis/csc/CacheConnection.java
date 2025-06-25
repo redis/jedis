@@ -9,9 +9,9 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushConsumer;
+import redis.clients.jedis.PushConsumerContext;
 import redis.clients.jedis.PushHandler;
-import redis.clients.jedis.PushHandlerChain;
-import redis.clients.jedis.PushHandlerContext;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
@@ -67,22 +67,18 @@ public class CacheConnection extends Connection {
   private static final String REDIS = "redis";
   private static final String MIN_REDIS_VERSION = "7.4";
 
-  private final PushHandlerChain pushHandlerChain;
-  private static class PushEventInvalidateHandler implements PushHandler {
+  private static class PushInvalidateConsumer implements PushConsumer {
     private final Cache cache;
-    public PushEventInvalidateHandler(Cache cache) {
+    public PushInvalidateConsumer(Cache cache) {
       this.cache = cache;
     }
 
     @Override
-    public void handlePushMessage(PushHandlerContext event) {
+    public void accept(PushConsumerContext event) {
       if (event.getMessage().getType().equals("invalidate")) {
-        System.out.println("PushEventInvalidateHandler.handlePushMessage: " + event.getMessage().getType());
         cache.deleteByRedisKeys((List) event.getMessage().getContent().get(1));
         event.setProcessed(true);
-        //return new PushHandlerContext(message, true);
       }
-      //return new PushHandlerContext(message, false);
     }
   }
 
@@ -96,9 +92,15 @@ public class CacheConnection extends Connection {
     initializeClientSideCache();
   }
 
-  private CacheConnection(Builder builder) {
-    super(builder);
-    this.cache = builder.getCache();
+    private CacheConnection(Builder builder) {
+        super(builder);
+        this.cache = builder.getCache();
+    }
+
+  @Override
+  protected void initPushConsumers(PushHandler pushHandler, JedisClientConfig config) {
+    super.initPushConsumers(pushHandler, config);
+    this.pushConsumer.add(new PushInvalidateConsumer(cache));
   }
 
   @Override
@@ -112,11 +114,11 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected Object protocolRead(RedisInputStream inputStream, PushHandler listener) {
+  protected Object protocolRead(RedisInputStream inputStream, PushConsumer listener) {
     lock.lock();
     try {
       // return Protocol.read(inputStream, cache);
-      return Protocol.read(inputStream, getPushHandlers());
+      return Protocol.read(inputStream, pushConsumer);
     } finally {
       lock.unlock();
     }

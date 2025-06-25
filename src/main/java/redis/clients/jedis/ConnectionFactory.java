@@ -26,6 +26,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private Connection.Builder connectionBuilder;
     private JedisSocketFactory jedisSocketFactory;
     private Cache cache;
+    private PushHandler pushHandler;
     private HostAndPort hostAndPort;
 
     // Fluent API methods (preferred)
@@ -47,6 +48,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     public Builder cache(Cache cache) {
       this.cache = cache;
       return this;
+    }
+
+    public Builder pushHandler(PushHandler pushHandler) {
+        this.pushHandler = pushHandler;
+        return this;
     }
 
     public Builder hostAndPort(HostAndPort hostAndPort) {

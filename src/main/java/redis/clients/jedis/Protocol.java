@@ -19,7 +19,7 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
-import static redis.clients.jedis.PushHandlerChain.PROPAGATE_ALL_HANDLER;
+import static redis.clients.jedis.PushConsumerChain.PROPAGATE_ALL_HANDLER;
 
 public final class Protocol {
 
@@ -129,7 +129,7 @@ public final class Protocol {
     return response;
   }
 
-  private static Object process(final RedisInputStream is, PushHandler handler) {
+  private static Object process(final RedisInputStream is, PushConsumer pushConsumer) {
     final byte b = is.readByte();
     //System.out.println("BYTE: " + (char) b);
     switch (b) {
@@ -155,9 +155,8 @@ public final class Protocol {
       case TILDE_BYTE: // TODO:
         return processMultiBulkReply(is);
       case GREATER_THAN_BYTE:
-        // return processMultiBulkReply(is);
-        // returns PushHandlerOutput - wraps a PushMessage
-        return processPush(is, handler);
+        // return processMultiBulkReply(is)
+        return processPush(is, pushConsumer);
       case MINUS_BYTE:
         processError(is);
         return null;
@@ -225,50 +224,43 @@ public final class Protocol {
     // for backward compatibility propagate all push events to application
     Object reply = process(is, PROPAGATE_ALL_HANDLER);
 
-    if (reply != null & reply instanceof PushHandlerContext) {
-      if (((PushHandlerContext) reply).isProcessed()) {
+    if (reply != null & reply instanceof PushConsumerContext) {
+      if (((PushConsumerContext) reply).isProcessed()) {
         return null;
       }
-      return ((PushHandlerContext) reply).getMessage().getContent();
+      return ((PushConsumerContext) reply).getMessage().getContent();
     }
 
     return reply;
   }
 
   @Experimental
-  public static Object read(final RedisInputStream is, PushHandler pushConsumer) {
+  public static Object read(final RedisInputStream is, PushConsumer pushConsumer) {
     // read until we have a non-push event,
     // or push-event is not handled and need to be propagated to application
     Object reply;
     do {
       reply = process(is, pushConsumer);
 
-    } while (isPush(reply) && isProcessed((PushHandlerContext) reply) );
+    } while (isPush(reply) && isProcessed((PushConsumerContext) reply) );
 
     if ( isPush(reply)) {
-      return ((PushHandlerContext) reply).getMessage().getContent();
+      return ((PushConsumerContext) reply).getMessage().getContent();
     }
 
     return reply;
   }
 
-  private static boolean isProcessed(PushHandlerContext reply) {
+  private static boolean isProcessed(PushConsumerContext reply) {
     return reply.isProcessed();
   }
 
   private static boolean isPush(Object reply) {
-    return reply instanceof PushHandlerContext;
+    return reply instanceof PushConsumerContext;
   }
 
-  //  @Experimental
-//  public static Object read(final RedisInputStream is, final Cache cache) {
-//    Object unhandledPush = readPushes(is, cache, false);
-//    return unhandledPush == null ? process(is) : unhandledPush;
-//  }
-
-
-  @Experimental
   // TODO : Refactor to use PushHandler
+  @Experimental
   public static Object readPushes(final RedisInputStream is, final Cache cache,
       boolean onlyPendingBuffer) {
     Object unhandledPush = null;
@@ -288,10 +280,10 @@ public final class Protocol {
     return unhandledPush;
   }
 
-  private static PushHandlerContext processPush(final RedisInputStream is, PushHandler handler) {
+  private static PushConsumerContext processPush(final RedisInputStream is, PushConsumer handler) {
     List<Object> list = processMultiBulkReply(is);
-    PushHandlerContext context = new PushHandlerContext(new PushEvent(list));
-    handler.handlePushMessage(context);
+    PushConsumerContext context = new PushConsumerContext(new PushMessage(list));
+    handler.accept(context);
     return context;
   }
 

@@ -26,7 +26,7 @@ public class JedisAsserts {
    *
    * @param value the value to check
    * @param message the exception message to use if the assertion fails
-   * @throws IllegalArgumentException if the object array contains a {@code null} element
+   * @throws IllegalArgumentException if the value is {@code false}
    */
   public static void isTrue(boolean value, String message) {
     if (!value) {

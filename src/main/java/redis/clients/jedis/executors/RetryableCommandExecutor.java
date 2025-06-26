@@ -68,7 +68,9 @@ public class RetryableCommandExecutor implements CommandExecutor {
     }
 
     JedisException maxAttemptsException = new JedisException("No more attempts left.");
-    maxAttemptsException.addSuppressed(lastException);
+    if (lastException != null) {
+      maxAttemptsException.addSuppressed(lastException);
+    }
     throw maxAttemptsException;
   }
 

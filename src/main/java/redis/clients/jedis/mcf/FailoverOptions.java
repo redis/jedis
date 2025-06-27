@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.annots.Experimental;
 
 /**
@@ -8,9 +9,34 @@ import redis.clients.jedis.annots.Experimental;
 @Experimental
 public class FailoverOptions {
     private final boolean retryOnFailover;
+    private final StrategySupplier healthCheckStrategySupplier;
+    private final float weight;
+    private boolean failback;
+
+    private static StrategySupplier defaultStrategySupplier = (endpoint) -> new NoOpStrategy();
 
     private FailoverOptions(Builder builder) {
         this.retryOnFailover = builder.retryOnFailover;
+        this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier == null ? defaultStrategySupplier
+            : builder.healthCheckStrategySupplier;
+        this.weight = builder.weight;
+        this.failback = builder.failback;
+    }
+
+    public static interface StrategySupplier {
+        HealthCheckStrategy get(HostAndPort hostAndPort);
+    }
+
+    public HealthCheckStrategy getFailoverHealthCheckStrategy(HostAndPort hostAndPort) {
+        return healthCheckStrategySupplier.get(hostAndPort);
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public boolean isFailbackEnabled() {
+        return failback;
     }
 
     /**
@@ -34,6 +60,9 @@ public class FailoverOptions {
      */
     public static class Builder {
         private boolean retryOnFailover = false;
+        private StrategySupplier healthCheckStrategySupplier;
+        private float weight = 1.0f;
+        private boolean failback;
 
         private Builder() {
         }
@@ -45,6 +74,26 @@ public class FailoverOptions {
          */
         public Builder retryOnFailover(boolean retry) {
             this.retryOnFailover = retry;
+            return this;
+        }
+
+        public Builder healthCheckStrategySupplier(StrategySupplier healthCheckStrategySupplier) {
+            this.healthCheckStrategySupplier = healthCheckStrategySupplier;
+            return this;
+        }
+
+        public Builder weight(float weight) {
+            this.weight = weight;
+            return this;
+        }
+
+        public Builder failback(boolean failbackEnabled) {
+            this.failback = failbackEnabled;
+            return this;
+        }
+
+        public Builder healthCheckStrategy(HealthCheckStrategy healthCheckStrategy) {
+            this.healthCheckStrategySupplier = (hostAndPort) -> healthCheckStrategy;
             return this;
         }
 

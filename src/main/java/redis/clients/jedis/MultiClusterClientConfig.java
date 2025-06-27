@@ -12,6 +12,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.ConnectionFailoverException;
+import redis.clients.jedis.mcf.FailoverOptions;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -195,10 +196,10 @@ public final class MultiClusterClientConfig {
 
     public static class ClusterConfig {
 
-        private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
         private GenericObjectPoolConfig<Connection> connectionPoolConfig;
+        private FailoverOptions faileoverOptions = FailoverOptions.builder().build();
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
@@ -212,12 +213,12 @@ public final class MultiClusterClientConfig {
             this.connectionPoolConfig = connectionPoolConfig;
         }
 
-        public int getPriority() {
-            return priority;
-        }
-
-        private void setPriority(int priority) {
-            this.priority = priority;
+        public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+            GenericObjectPoolConfig<Connection> connectionPoolConfig, FailoverOptions failoverOptions) {
+            this.hostAndPort = hostAndPort;
+            this.clientConfig = clientConfig;
+            this.connectionPoolConfig = connectionPoolConfig;
+            this.faileoverOptions = failoverOptions;
         }
 
         public HostAndPort getHostAndPort() {
@@ -230,6 +231,10 @@ public final class MultiClusterClientConfig {
 
         public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
             return connectionPoolConfig;
+        }
+
+        public FailoverOptions getFailoverOptions() {
+            return faileoverOptions;
         }
     }
 
@@ -258,10 +263,8 @@ public final class MultiClusterClientConfig {
             if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
                 "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
-            for (int i = 0; i < clusterConfigs.length; i++)
-                clusterConfigs[i].setPriority(i + 1);
 
-            this.clusterConfigs = clusterConfigs;
+                this.clusterConfigs = clusterConfigs;
         }
 
         public Builder(List<ClusterConfig> clusterConfigs) {

@@ -8,6 +8,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.util.CompareCondition;
@@ -95,6 +97,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
+  private final PushHandler pushHandler = new PushHandlerImpl();
   private int db = 0;
   private Transaction transaction = null;
   private boolean isInMulti = false;
@@ -106,6 +109,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis() {
     connection = new Connection();
+    initializePushHandler();
   }
 
   /**
@@ -119,10 +123,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final HostAndPort hp) {
     connection = new Connection(hp);
+    initializePushHandler();
   }
 
   public Jedis(final String host, final int port) {
     connection = new Connection(host, port);
+    initializePushHandler();
   }
 
   public Jedis(final String host, final int port, final JedisClientConfig config) {
@@ -133,6 +139,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection = new Connection(hostPort, config);
     RedisProtocol proto = config.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
+    initializePushHandler();
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
@@ -211,6 +218,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
             .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+    initializePushHandler();
   }
 
   public Jedis(URI uri, final SSLSocketFactory sslSocketFactory,
@@ -280,20 +288,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .build());
     RedisProtocol proto = config.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
+    initializePushHandler();
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     connection = new Connection(jedisSocketFactory);
+    initializePushHandler();
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     connection = new Connection(jedisSocketFactory, clientConfig);
     RedisProtocol proto = clientConfig.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
+    initializePushHandler();
   }
 
   public Jedis(final Connection connection) {
     this.connection = connection;
+    initializePushHandler();
   }
 
   @Override
@@ -407,6 +419,47 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public int getDB() {
     return this.db;
+  }
+
+  /**
+   * Initialize the push handler with the connection's push consumer system.
+   * This method sets up the listener notification consumer to handle push messages.
+   */
+  private void initializePushHandler() {
+    if (connection != null && pushHandler != null) {
+      connection.getPushConsumer().add(new ListenerNotificationConsumer(pushHandler));
+    }
+  }
+
+  /**
+   * Add a new {@link PushListener listener} to receive push messages.
+   * Requires Redis 6+ using RESP3 protocol.
+   *
+   * @param listener the listener, must not be {@code null}.
+   */
+  @Experimental
+  public void addListener(PushListener listener) {
+    pushHandler.addListener(listener);
+  }
+
+  /**
+   * Remove an existing {@link PushListener listener}.
+   *
+   * @param listener the listener, must not be {@code null}.
+   */
+  @Experimental
+  public void removeListener(PushListener listener) {
+    pushHandler.removeListener(listener);
+  }
+
+  /**
+   * Returns a collection of {@link PushListener}.
+   *
+   * @return the collection of listeners.
+   */
+  @Experimental
+  public Collection<PushListener> getPushListeners() {
+    return pushHandler.getPushListeners();
   }
 
   /**
@@ -10638,4 +10691,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 
+
+    /**
+     * Push consumer that delegates to a {@link PushHandler} for listener notification.
+     */
+    private static class ListenerNotificationConsumer implements PushConsumer {
+        private final PushHandler pushHandler;
+
+        public ListenerNotificationConsumer(PushHandler pushHandler) {
+            this.pushHandler = pushHandler;
+        }
+
+        @Override
+        public void accept(PushConsumerContext context) {
+            if (pushHandler != null) {
+                notifyListeners(context.getMessage());
+            }
+        }
+
+        private void notifyListeners(PushMessage pushMessage) {
+            try {
+                pushHandler.getPushListeners().forEach(pushListener -> {
+                    try {
+                        pushListener.onPush(pushMessage);
+                    } catch (Exception e) {
+                        // Log individual listener failures but don't propagate
+                    }
+                });
+            } catch (Exception e) {
+                // Log notification failures but don't propagate
+            }
+        }
+    }
 }

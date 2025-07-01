@@ -164,7 +164,37 @@ public class PushMessageNotificationTest {
     assertEquals(1, receivedMessages.size());
     assertEquals("invalidate", receivedMessages.get(0).getType());
   }
-  
+
+  @Test
+  public void testJedisCustomPushListener() {
+    Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
+
+    List<PushMessage> receivedMessages = new ArrayList<>();
+    jedis.addListener(receivedMessages::add);
+
+    // Enable client tracking
+    jedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
+
+    // Set initial value
+    jedis.set(testKey, initialValue);
+
+    // Get the key to track it
+    assertEquals(initialValue, jedis.get(testKey));
+
+    // Modify the key from another connection to trigger invalidation
+    triggerKeyInvalidation(testKey, modifiedValue);
+
+    // Send PING command
+    String pingResponse = jedis.ping();
+    // Next reply should be PONG
+    assertEquals("PONG", pingResponse);
+    assertEquals(1, receivedMessages.size());
+    assertEquals("invalidate", receivedMessages.get(0).getType());
+
+    // Clean up
+    jedis.close();
+  }
   
   @Test
   public void testConnectionResp3PushNotificationsWithCustomListener() {

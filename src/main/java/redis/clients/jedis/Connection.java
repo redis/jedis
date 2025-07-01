@@ -690,7 +690,7 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  public PushConsumerChain getPushConsumer() {
+  PushConsumerChain getPushConsumer() {
     return this.pushConsumer;
   }
 

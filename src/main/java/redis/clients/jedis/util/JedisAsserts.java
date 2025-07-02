@@ -22,4 +22,17 @@ public class JedisAsserts {
       throw new IllegalArgumentException(message);
     }
   }
+
+  /**
+   * Assert that {@code value} is {@code true}.
+   *
+   * @param value the value to check
+   * @param message the exception message to use if the assertion fails
+   * @throws IllegalArgumentException if the value is {@code false}
+   */
+  public static void isTrue(boolean value, String message) {
+    if (!value) {
+      throw new IllegalArgumentException(message);
+    }
+  }
 }

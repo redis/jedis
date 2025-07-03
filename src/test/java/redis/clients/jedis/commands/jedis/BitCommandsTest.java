@@ -313,9 +313,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.1.240")
   public void bitOpDiff() {
     // Use single-byte values for simplicity
-    byte[] key1 = new byte[]{(byte) 0x07}; // 00000111 - bits 0,1,2 set
-    byte[] key2 = new byte[]{(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = new byte[]{(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = new byte[]{(byte) 0b00000111}; // bits 0,1,2 set
+    byte[] key2 = new byte[]{(byte) 0b00000010}; // bit 1 set
+    byte[] key3 = new byte[]{(byte) 0b00000100}; // bit 2 set
     String destKey = "resultDiff";
 
     // Set keys using byte arrays
@@ -336,7 +336,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     byte[] resultBytes = jedis.get(destKey).getBytes();
 
     // Expected result: 00000001 (only bit 0 set)
-    byte[] expectedBytes = new byte[]{(byte) 0x01};
+    byte[] expectedBytes = new byte[]{(byte) 0b00000001};
 
     // Verify the result
     assertArrayEquals(expectedBytes, resultBytes);

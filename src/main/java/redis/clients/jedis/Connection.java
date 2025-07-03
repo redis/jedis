@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.PushConsumerChain.PROPAGATE_ALL_HANDLER;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
@@ -9,6 +10,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
@@ -32,6 +36,7 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
 public class Connection implements Closeable {
+  public static Logger logger = LoggerFactory.getLogger(Connection.class);
 
   private ConnectionPool memberOf;
   protected RedisProtocol protocol;
@@ -40,6 +45,7 @@ public class Connection implements Closeable {
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
   private int soTimeout = 0;
+  private Duration relaxedTimeout = TimeoutOptions.DISABLED_TIMEOUT;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
   private boolean strValActive;
@@ -48,6 +54,11 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
+  private boolean relaxedTimeoutActive = false;
+
+
+  protected PushConsumerChain pushConsumer;
+  private PushHandler pushHandler;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -68,13 +79,58 @@ public class Connection implements Closeable {
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
     this.authXManager = null;
+
+    initPushConsumers(null, null);
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
+    this.relaxedTimeout = clientConfig.getTimeoutOptions().getRelaxedTimeout();
+
+    initPushConsumers(null, clientConfig);
     initializeFromClientConfig(clientConfig);
+  }
+
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, PushHandler pushHandler) {
+    this.socketFactory = socketFactory;
+    this.soTimeout = clientConfig.getSocketTimeoutMillis();
+    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
+    this.relaxedTimeout = clientConfig.getTimeoutOptions().getRelaxedTimeout();
+
+    initPushConsumers(pushHandler, clientConfig);
+    initializeFromClientConfig(clientConfig);
+  }
+
+  protected void initPushConsumers(PushHandler pushHandler, JedisClientConfig config) {
+    /*
+     * Default consumers to process push messages.
+     * Marks all @{link PushMessage}s as processed, except for pub/sub.
+     * Pub/sub messages are propagated to the client.
+     */
+    this.pushConsumer = PushConsumerChain.of(
+        PushConsumerChain.CONSUME_ALL_HANDLER,
+        PushConsumerChain.PUBSUB_ONLY_HANDLER
+    );
+
+    /*
+     * If the user has enabled relaxed timeouts, add consumer to handle push messages
+     * related to server maintenance events.
+     */
+    if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
+      PushConsumer maintenanceHandler = new AdaptiveTimeoutHandler(Connection.this);
+      this.pushConsumer.add(maintenanceHandler);
+    }
+
+    /*
+     * If the user has provided a {@link PushHandler},
+     * add consumer to notify {@link PushListener}s, without changing the processed flag.
+     */
+    this.pushHandler = pushHandler;
+    if (this.pushHandler != null) {
+      this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
+    }
   }
 
   @Override
@@ -303,7 +359,7 @@ public class Connection implements Closeable {
 
   public String getStatusCodeReply() {
     flush();
-    final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
+    final byte[] resp = (byte[]) readProtocolWithCheckingBroken(pushConsumer);
     if (null == resp) {
       return null;
     } else {
@@ -322,12 +378,12 @@ public class Connection implements Closeable {
 
   public byte[] getBinaryBulkReply() {
     flush();
-    return (byte[]) readProtocolWithCheckingBroken();
+    return (byte[]) readProtocolWithCheckingBroken(pushConsumer);
   }
 
   public Long getIntegerReply() {
     flush();
-    return (Long) readProtocolWithCheckingBroken();
+    return (Long) readProtocolWithCheckingBroken(pushConsumer);
   }
 
   public List<String> getMultiBulkReply() {
@@ -337,7 +393,7 @@ public class Connection implements Closeable {
   @SuppressWarnings("unchecked")
   public List<byte[]> getBinaryMultiBulkReply() {
     flush();
-    return (List<byte[]>) readProtocolWithCheckingBroken();
+    return (List<byte[]>) readProtocolWithCheckingBroken(pushConsumer);
   }
 
   /**
@@ -346,28 +402,28 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
-    return (List<Object>) readProtocolWithCheckingBroken();
+    return (List<Object>) readProtocolWithCheckingBroken(pushConsumer);
   }
 
   @SuppressWarnings("unchecked")
   public Object getUnflushedObject() {
-    return readProtocolWithCheckingBroken();
+    return readProtocolWithCheckingBroken(pushConsumer);
   }
 
   public List<Object> getObjectMultiBulkReply() {
     flush();
-    return (List<Object>) readProtocolWithCheckingBroken();
+    return (List<Object>) readProtocolWithCheckingBroken(pushConsumer);
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
     flush();
-    return (List<Long>) readProtocolWithCheckingBroken();
+    return (List<Long>) readProtocolWithCheckingBroken(pushConsumer);
   }
 
   public Object getOne() {
     flush();
-    return readProtocolWithCheckingBroken();
+    return readProtocolWithCheckingBroken(pushConsumer);
   }
 
   protected void flush() {
@@ -380,21 +436,39 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  protected Object protocolRead(RedisInputStream is) {
-    return Protocol.read(is);
+  protected Object protocolRead(RedisInputStream is, PushConsumer handler) {
+    return Protocol.read(is, handler);
   }
 
   @Experimental
   protected void protocolReadPushes(RedisInputStream is) {
   }
 
+  protected Object readProtocolWithCheckingBroken(PushConsumer handler) {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
+    }
+
+    try {
+      return protocolRead(inputStream, handler);
+    } catch (JedisConnectionException exc) {
+      broken = true;
+      throw exc;
+    }
+  }
+
+  /**
+   * @deprecated Use {@link #readProtocolWithCheckingBroken(PushConsumer)}
+   * @return
+   */
+  @Deprecated
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
-      return protocolRead(inputStream);
+      return protocolRead(inputStream, PROPAGATE_ALL_HANDLER);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -424,7 +498,7 @@ public class Connection implements Closeable {
     final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       try {
-        responses.add(readProtocolWithCheckingBroken());
+        responses.add(readProtocolWithCheckingBroken(pushConsumer));
       } catch (JedisDataException e) {
         responses.add(e);
       }
@@ -613,5 +687,72 @@ public class Connection implements Closeable {
 
   protected AuthXManager getAuthXManager() {
     return authXManager;
+  }
+
+  @Experimental
+  PushConsumerChain getPushConsumer() {
+    return this.pushConsumer;
+  }
+
+  @Experimental
+  public void relaxTimeouts() {
+    if (!relaxedTimeoutActive && !TimeoutOptions.isRelaxedTimeoutDisabled(relaxedTimeout)) {
+      relaxedTimeoutActive = true;
+      try {
+        if (isConnected()) {
+          socket.setSoTimeout((int) relaxedTimeout.toMillis());
+        }
+      } catch (SocketException ex) {
+        setBroken();
+        throw new JedisConnectionException(ex);
+      }
+    }
+  }
+
+  @Experimental
+  public void disableRelaxedTimeout() {
+    if (relaxedTimeoutActive) {
+      relaxedTimeoutActive = false;
+      try {
+        if (isConnected()) {
+          socket.setSoTimeout(soTimeout);
+        }
+      } catch (SocketException ex) {
+        setBroken();
+        throw new JedisConnectionException(ex);
+      }
+    }
+  }
+
+  /**
+   * Push consumer that delegates to a {@link PushHandler} for listener notification.
+   */
+  private static class ListenerNotificationConsumer implements PushConsumer {
+    private final PushHandler pushHandler;
+
+    public ListenerNotificationConsumer(PushHandler pushHandler) {
+      this.pushHandler = pushHandler;
+    }
+
+    @Override
+    public void accept(PushConsumerContext context) {
+      if (pushHandler != null) {
+        notifyListeners(context.getMessage());
+      }
+    }
+
+    private void notifyListeners(PushMessage pushMessage) {
+      try {
+        pushHandler.getPushListeners().forEach(pushListener -> {
+          try {
+            pushListener.onPush(pushMessage);
+          } catch (Exception e) {
+            // Log individual listener failures
+          }
+        });
+      } catch (Exception e) {
+        // Log notification failures
+      }
+    }
   }
 }

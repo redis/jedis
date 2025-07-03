@@ -29,32 +29,45 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final Supplier<Connection> objectMaker;
 
   private final AuthXEventListener authXEventListener;
+  private final PushHandler pushHandler;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
-    this(hostAndPort, DefaultJedisClientConfig.builder().build(), null);
+    this(hostAndPort, DefaultJedisClientConfig.builder().build(), (Cache) null);
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(hostAndPort, clientConfig, null);
+    this(hostAndPort, clientConfig, (Cache) null);
+  }
+
+  @Experimental
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, PushHandler pushHandler) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, (Cache) null, pushHandler);
   }
 
   @Experimental
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
       Cache csCache) {
-    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache);
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache, null);
+  }
+
+  @Experimental
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
+      Cache csCache, PushHandler pushHandler) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig, csCache, pushHandler);
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
       final JedisClientConfig clientConfig) {
-    this(jedisSocketFactory, clientConfig, null);
+    this(jedisSocketFactory, clientConfig, null, null);
   }
 
   private ConnectionFactory(final JedisSocketFactory jedisSocketFactory,
-      final JedisClientConfig clientConfig, Cache csCache) {
+      final JedisClientConfig clientConfig, Cache csCache, PushHandler pushHandler) {
 
     this.jedisSocketFactory = jedisSocketFactory;
     this.clientSideCache = csCache;
     this.clientConfig = clientConfig;
+    this.pushHandler = pushHandler;
 
     AuthXManager authXManager = clientConfig.getAuthXManager();
     if (authXManager == null) {
@@ -69,8 +82,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   private Supplier<Connection> connectionSupplier() {
-    return clientSideCache == null ? () -> new Connection(jedisSocketFactory, clientConfig)
-        : () -> new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
+
+    return clientSideCache == null ? () -> new Connection(jedisSocketFactory, clientConfig, pushHandler)
+        : () -> new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache, pushHandler);
   }
 
   @Override

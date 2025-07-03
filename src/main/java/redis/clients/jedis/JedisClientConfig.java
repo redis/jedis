@@ -35,6 +35,10 @@ public interface JedisClientConfig {
     return 0;
   }
 
+  default TimeoutOptions getTimeoutOptions() {
+    return TimeoutOptions.create();
+  }
+
   /**
    * @return Redis ACL user
    */

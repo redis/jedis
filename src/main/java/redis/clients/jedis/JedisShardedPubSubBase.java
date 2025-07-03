@@ -3,7 +3,9 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import redis.clients.jedis.Protocol.Command;

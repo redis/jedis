@@ -1,5 +1,6 @@
 package redis.clients.jedis.csc;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -8,6 +9,9 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushConsumer;
+import redis.clients.jedis.PushConsumerContext;
+import redis.clients.jedis.PushHandler;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
@@ -18,6 +22,21 @@ public class CacheConnection extends Connection {
   private ReentrantLock lock;
   private static final String REDIS = "redis";
   private static final String MIN_REDIS_VERSION = "7.4";
+
+  private static class PushInvalidateConsumer implements PushConsumer {
+    private final Cache cache;
+    public PushInvalidateConsumer(Cache cache) {
+      this.cache = cache;
+    }
+
+    @Override
+    public void accept(PushConsumerContext event) {
+      if (event.getMessage().getType().equals("invalidate")) {
+        cache.deleteByRedisKeys((List) event.getMessage().getContent().get(1));
+        event.setProcessed(true);
+      }
+    }
+  }
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
@@ -33,7 +52,34 @@ public class CacheConnection extends Connection {
       }
     }
     this.cache = Objects.requireNonNull(cache);
+
+
     initializeClientSideCache();
+  }
+
+  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache,  PushHandler pushHandler) {
+    super(socketFactory, clientConfig, pushHandler);
+
+    if (protocol != RedisProtocol.RESP3) {
+      throw new JedisException("Client side caching is only supported with RESP3.");
+    }
+    if (!cache.compatibilityMode()) {
+      RedisVersion current = new RedisVersion(version);
+      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
+      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
+        throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
+      }
+    }
+    this.cache = Objects.requireNonNull(cache);
+
+
+    initializeClientSideCache();
+  }
+
+  @Override
+  protected void initPushConsumers(PushHandler pushHandler, JedisClientConfig config) {
+    super.initPushConsumers(pushHandler, config);
+    this.pushConsumer.add(new PushInvalidateConsumer(cache));
   }
 
   @Override
@@ -43,10 +89,11 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected Object protocolRead(RedisInputStream inputStream) {
+  protected Object protocolRead(RedisInputStream inputStream, PushConsumer listener) {
     lock.lock();
     try {
-      return Protocol.read(inputStream, cache);
+      // return Protocol.read(inputStream, cache);
+      return Protocol.read(inputStream, pushConsumer);
     } finally {
       lock.unlock();
     }

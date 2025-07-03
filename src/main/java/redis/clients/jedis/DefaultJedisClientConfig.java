@@ -38,6 +38,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final TimeoutOptions timeoutOptions;
 
+  private final boolean proactiveRebindEnabled;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -56,6 +58,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
     this.timeoutOptions = builder.timeoutOptions;
+    this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
   }
 
   @Override
@@ -154,6 +157,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return timeoutOptions;
   }
 
+  @Override
+  public boolean isProactiveRebindEnabled() {
+    return proactiveRebindEnabled;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -237,6 +245,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private AuthXManager authXManager = null;
 
     private TimeoutOptions timeoutOptions = TimeoutOptions.create();
+
+    private boolean proactiveRebindEnabled = false;
 
     private Builder() {
     }
@@ -366,6 +376,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder proactiveRebindEnabled(boolean proactiveRebindEnabled) {
+      this.proactiveRebindEnabled = proactiveRebindEnabled;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -384,6 +399,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
       this.timeoutOptions = instance.getTimeoutOptions();
+      this.proactiveRebindEnabled = instance.isProactiveRebindEnabled();
       return this;
     }
   }
@@ -448,6 +464,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     builder.authXManager(copy.getAuthXManager());
     builder.timeoutOptions(copy.getTimeoutOptions());
+    if (copy.isProactiveRebindEnabled()) {
+      builder.proactiveRebindEnabled(true);
+    }
 
     return builder.build();
   }

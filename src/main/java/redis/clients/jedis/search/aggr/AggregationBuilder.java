@@ -22,6 +22,7 @@ public class AggregationBuilder implements IParams {
   private final List<Object> aggrArgs = new ArrayList<>();
   private Integer dialect;
   private boolean isWithCursor = false;
+  private Integer cursorCount;
 
   public AggregationBuilder(String query) {
     aggrArgs.add(query);
@@ -143,6 +144,7 @@ public class AggregationBuilder implements IParams {
 
   public AggregationBuilder cursor(int count) {
     isWithCursor = true;
+    this.cursorCount = count;
     aggrArgs.add(SearchKeyword.WITHCURSOR);
     aggrArgs.add(SearchKeyword.COUNT);
     aggrArgs.add(count);
@@ -151,6 +153,7 @@ public class AggregationBuilder implements IParams {
 
   public AggregationBuilder cursor(int count, long maxIdle) {
     isWithCursor = true;
+    this.cursorCount = count;
     aggrArgs.add(SearchKeyword.WITHCURSOR);
     aggrArgs.add(SearchKeyword.COUNT);
     aggrArgs.add(count);
@@ -204,6 +207,15 @@ public class AggregationBuilder implements IParams {
 
   public boolean isWithCursor() {
     return isWithCursor;
+  }
+
+  /**
+   * Returns the cursor count (batch size) if cursor is configured.
+   *
+   * @return cursor count, or null if cursor is not configured
+   */
+  public Integer getCursorCount() {
+    return cursorCount;
   }
 
   @Override

@@ -9,6 +9,14 @@ import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.util.JedisCommandIterationBase;
 
+/**
+ * Iterator for FT.SEARCH results across cluster nodes.
+ *
+ * @deprecated Since Redis 8.0, FT.SEARCH automatically retrieves results from all cluster nodes,
+ *             eliminating the need for manual iteration across nodes. Use the standard
+ *             {@code ftSearch} methods directly instead.
+ */
+@Deprecated
 public class FtSearchIteration extends JedisCommandIterationBase<SearchResult, Document> {
 
   private int batchStart;

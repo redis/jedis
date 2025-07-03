@@ -313,9 +313,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.1.240")
   public void bitOpDiff() {
     // Use single-byte values for simplicity
-    byte[] key1 = new byte[]{(byte) 0b00000111}; // bits 0,1,2 set
-    byte[] key2 = new byte[]{(byte) 0b00000010}; // bit 1 set
-    byte[] key3 = new byte[]{(byte) 0b00000100}; // bit 2 set
+    byte[] key1 = new byte[] { (byte) 0b00000111 }; // bits 0,1,2 set
+    byte[] key2 = new byte[] { (byte) 0b00000010 }; // bit 1 set
+    byte[] key3 = new byte[] { (byte) 0b00000100 }; // bit 2 set
     String destKey = "resultDiff";
 
     // Set keys using byte arrays
@@ -336,7 +336,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     byte[] resultBytes = jedis.get(destKey).getBytes();
 
     // Expected result: 00000001 (only bit 0 set)
-    byte[] expectedBytes = new byte[]{(byte) 0b00000001};
+    byte[] expectedBytes = new byte[] { (byte) 0b00000001 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, resultBytes);
@@ -346,9 +346,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.1.240")
   public void bitOpDiff1() {
     // Use single-byte values for simplicity
-    byte[] key1 = new byte[]{(byte) 0x07}; // 00000111 - bits 0,1,2 set
-    byte[] key2 = new byte[]{(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = new byte[]{(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = new byte[] { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
+    byte[] key2 = new byte[] { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = new byte[] { (byte) 0x04 }; // 00000100 - bit 2 set
     String destKey = "resultDiff1";
 
     // Set keys using byte arrays
@@ -369,7 +369,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     byte[] resultBytes = jedis.get(destKey).getBytes();
 
     // Expected result: 00000000 (no bits set)
-    byte[] expectedBytes = new byte[]{(byte) 0x00};
+    byte[] expectedBytes = new byte[] { (byte) 0x00 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, resultBytes);
@@ -379,9 +379,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.1.240")
   public void bitOpAndor() {
     // Use single-byte values for simplicity
-    byte[] key1 = new byte[]{(byte) 0x07}; // 00000111 - bits 0,1,2 set
-    byte[] key2 = new byte[]{(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = new byte[]{(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = new byte[] { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
+    byte[] key2 = new byte[] { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = new byte[] { (byte) 0x04 }; // 00000100 - bit 2 set
     String destKey = "resultAndor";
 
     // Set keys using byte arrays
@@ -401,7 +401,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     byte[] resultBytes = jedis.get(destKey).getBytes();
 
     // Expected result: 00000110 (bits 1,2 set)
-    byte[] expectedBytes = new byte[]{(byte) 0x06};
+    byte[] expectedBytes = new byte[] { (byte) 0x06 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, resultBytes);
@@ -411,9 +411,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.1.240")
   public void bitOpOne() {
     // Use single-byte values for simplicity
-    byte[] key1 = new byte[]{(byte) 0x01}; // 00000001 - bit 0 set
-    byte[] key2 = new byte[]{(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = new byte[]{(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = new byte[] { (byte) 0x01 }; // 00000001 - bit 0 set
+    byte[] key2 = new byte[] { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = new byte[] { (byte) 0x04 }; // 00000100 - bit 2 set
     String destKey = "resultOne";
 
     // Set keys using byte arrays
@@ -432,7 +432,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     byte[] resultBytes = jedis.get(destKey).getBytes();
 
     // Expected result: 00000111 (bits 0,1,2 set)
-    byte[] expectedBytes = new byte[]{(byte) 0x07};
+    byte[] expectedBytes = new byte[] { (byte) 0x07 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, resultBytes);
@@ -441,9 +441,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.1.240")
   public void bitOpDiffBinary() {
-    byte[] key1 = {(byte) 0x07}; // 00000111 - bits 0,1,2 set
-    byte[] key2 = {(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = {(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
+    byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = { (byte) 0x04 }; // 00000100 - bit 2 set
     byte[] dest = "resultDiffBinary".getBytes();
 
     jedis.set("key1".getBytes(), key1);
@@ -460,7 +460,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     jedis.bitop(BitOP.DIFF, dest, "key1".getBytes(), "key2".getBytes(), "key3".getBytes());
 
     // Expected result: 00000001 (only bit 0 set)
-    byte[] expectedBytes = new byte[]{(byte) 0x01};
+    byte[] expectedBytes = new byte[] { (byte) 0x01 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, jedis.get(dest));
@@ -469,9 +469,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.1.240")
   public void bitOpDiff1Binary() {
-    byte[] key1 = {(byte) 0x07}; // 00000111 - bits 0,1,2 set
-    byte[] key2 = {(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = {(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
+    byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = { (byte) 0x04 }; // 00000100 - bit 2 set
     byte[] dest = "resultDiff1Binary".getBytes();
 
     jedis.set("key1".getBytes(), key1);
@@ -488,7 +488,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     jedis.bitop(BitOP.DIFF1, dest, "key1".getBytes(), "key2".getBytes(), "key3".getBytes());
 
     // Expected result: 00000000 (no bits set)
-    byte[] expectedBytes = new byte[]{(byte) 0x00};
+    byte[] expectedBytes = new byte[] { (byte) 0x00 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, jedis.get(dest));
@@ -497,9 +497,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.1.240")
   public void bitOpAndorBinary() {
-    byte[] key1 = {(byte) 0x07}; // 00000111 - bits 0,1,2 set
-    byte[] key2 = {(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = {(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
+    byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = { (byte) 0x04 }; // 00000100 - bit 2 set
     byte[] dest = "resultAndorBinary".getBytes();
 
     jedis.set("key1".getBytes(), key1);
@@ -515,7 +515,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     jedis.bitop(BitOP.ANDOR, dest, "key1".getBytes(), "key2".getBytes(), "key3".getBytes());
 
     // Expected result: 00000110 (bits 1,2 set)
-    byte[] expectedBytes = new byte[]{(byte) 0x06};
+    byte[] expectedBytes = new byte[] { (byte) 0x06 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, jedis.get(dest));
@@ -524,9 +524,9 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.1.240")
   public void bitOpOneBinary() {
-    byte[] key1 = {(byte) 0x01}; // 00000001 - bit 0 set
-    byte[] key2 = {(byte) 0x02}; // 00000010 - bit 1 set
-    byte[] key3 = {(byte) 0x04}; // 00000100 - bit 2 set
+    byte[] key1 = { (byte) 0x01 }; // 00000001 - bit 0 set
+    byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
+    byte[] key3 = { (byte) 0x04 }; // 00000100 - bit 2 set
     byte[] dest = "resultOneBinary".getBytes();
 
     jedis.set("key1".getBytes(), key1);
@@ -541,7 +541,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     jedis.bitop(BitOP.ONE, dest, "key1".getBytes(), "key2".getBytes(), "key3".getBytes());
 
     // Expected result: 00000111 (bits 0,1,2 set)
-    byte[] expectedBytes = new byte[]{(byte) 0x07};
+    byte[] expectedBytes = new byte[] { (byte) 0x07 };
 
     // Verify the result
     assertArrayEquals(expectedBytes, jedis.get(dest));

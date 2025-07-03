@@ -159,7 +159,7 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
             return null;
         }
 
-        redis.clients.jedis.CommandArguments args = new redis.clients.jedis.CommandArguments(SearchProtocol.SearchCommand.CURSOR)
+        redis.clients.jedis.CommandArguments args = new redis.clients.jedis.ClusterCommandArguments(SearchProtocol.SearchCommand.CURSOR)
             .add(SearchProtocol.SearchKeyword.READ)
             .add(indexName)
             .add(cursorId);
@@ -178,7 +178,7 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
 
     private Connection acquireConnection(AggregationBuilder aggregationBuilder) {
         // Create the initial FT.AGGREGATE command
-        redis.clients.jedis.CommandArguments args = new redis.clients.jedis.CommandArguments(SearchProtocol.SearchCommand.AGGREGATE)
+        redis.clients.jedis.CommandArguments args = new redis.clients.jedis.ClusterCommandArguments(SearchProtocol.SearchCommand.AGGREGATE)
             .add(indexName)
             .addParams(aggregationBuilder);
         

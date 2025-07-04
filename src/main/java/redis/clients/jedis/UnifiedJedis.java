@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +59,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
   private final Cache cache;
-  private final PushHandler pushHandler;
 
   /**
    * @deprecated Use {@link RedisClient#create()} instead.
@@ -128,11 +126,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @Deprecated
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(hostAndPort, clientConfig, new PushHandlerImpl());
-  }
-
-  private UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, PushHandler pushHandler) {
-    this(new PooledConnectionProvider(hostAndPort, clientConfig, pushHandler), clientConfig.getRedisProtocol(), pushHandler);
+    this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
   }
 
   /**
@@ -160,10 +154,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
-  }
-
-  private UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, PushHandler pushHandler) {
-    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, null, pushHandler);
   }
 
   @Experimental
@@ -207,7 +197,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new CommandObjects();
-    this.pushHandler = null;
     RedisProtocol proto = connection.getRedisProtocol();
     if (proto != null) {
       this.commandObjects.setProtocol(proto);
@@ -296,12 +285,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Experimental
   UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, Cache cache) {
-    this(executor, provider, commandObjects, protocol, cache, null);
-  }
-
-  @Experimental
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
-      RedisProtocol protocol, Cache cache, PushHandler pushHandler) {
 
     if (cache != null && protocol != RedisProtocol.RESP3) {
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
@@ -316,7 +299,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
 
     this.cache = cache;
-    this.pushHandler = pushHandler;
   }
 
   @Override
@@ -328,21 +310,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final void setProtocol(RedisProtocol protocol) {
     this.protocol = protocol;
     this.commandObjects.setProtocol(this.protocol);
-  }
-
-  @Experimental
-  public void addListener(PushListener listener) {
-    pushHandler.addListener(listener);
-  }
-
-  @Experimental
-  public void removeListener(PushListener listener) {
-    pushHandler.removeListener(listener);
-  }
-
-  @Experimental
-  public Collection<PushListener> getPushListeners() {
-    return pushHandler.getPushListeners();
   }
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {

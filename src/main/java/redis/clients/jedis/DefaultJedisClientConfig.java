@@ -40,6 +40,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean proactiveRebindEnabled;
 
+  private final PushHandler pushHandler;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -59,6 +61,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.authXManager = builder.authXManager;
     this.timeoutOptions = builder.timeoutOptions;
     this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
+    this.pushHandler = builder.pushHandler;
   }
 
   @Override
@@ -162,6 +165,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return proactiveRebindEnabled;
   }
 
+  @Override
+  public PushHandler getPushHandler() {
+    return pushHandler;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -247,6 +255,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private TimeoutOptions timeoutOptions = TimeoutOptions.create();
 
     private boolean proactiveRebindEnabled = false;
+
+    private PushHandler pushHandler = null;
 
     private Builder() {
     }
@@ -378,6 +388,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public Builder proactiveRebindEnabled(boolean proactiveRebindEnabled) {
       this.proactiveRebindEnabled = proactiveRebindEnabled;
+      return this;
+    }
+
+    public Builder pushHandler(PushHandler pushHandler) {
+      this.pushHandler = pushHandler;
       return this;
     }
 

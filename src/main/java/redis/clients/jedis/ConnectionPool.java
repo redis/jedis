@@ -19,12 +19,6 @@ public class ConnectionPool extends Pool<Connection> {
   }
 
   @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, PushHandler pushHandler) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, pushHandler));
-    attachAuthenticationListener(clientConfig.getAuthXManager());
-  }
-
-  @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));

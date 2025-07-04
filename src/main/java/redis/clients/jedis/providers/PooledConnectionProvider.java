@@ -11,7 +11,6 @@ import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.PushHandler;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.Pool;
@@ -28,12 +27,6 @@ public class PooledConnectionProvider implements ConnectionProvider {
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig));
-    this.connectionMapKey = hostAndPort;
-  }
-
-  @Experimental
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, PushHandler pushHandler) {
-    this(new ConnectionPool(hostAndPort, clientConfig, pushHandler));
     this.connectionMapKey = hostAndPort;
   }
 

@@ -57,28 +57,9 @@ public class CacheConnection extends Connection {
     initializeClientSideCache();
   }
 
-  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache,  PushHandler pushHandler) {
-    super(socketFactory, clientConfig, pushHandler);
-
-    if (protocol != RedisProtocol.RESP3) {
-      throw new JedisException("Client side caching is only supported with RESP3.");
-    }
-    if (!cache.compatibilityMode()) {
-      RedisVersion current = new RedisVersion(version);
-      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
-      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
-        throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
-      }
-    }
-    this.cache = Objects.requireNonNull(cache);
-
-
-    initializeClientSideCache();
-  }
-
   @Override
-  protected void initPushConsumers(PushHandler pushHandler, JedisClientConfig config) {
-    super.initPushConsumers(pushHandler, config);
+  protected void initPushConsumers( JedisClientConfig config) {
+    super.initPushConsumers(config);
     this.pushConsumer.add(new PushInvalidateConsumer(cache));
   }
 

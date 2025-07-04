@@ -139,11 +139,16 @@ public class PushMessageNotificationTest {
 
   @Test
   public void testUnifiedJedisCustomPushListener() {
-    unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
-
     List<PushMessage> receivedMessages = new ArrayList<>();
-    unifiedJedis.addListener(receivedMessages::add);
+    PushHandlerImpl pushHandler = new PushHandlerImpl();
+    pushHandler.addListener(receivedMessages::add);
+
+    DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder()
+        .pushHandler(pushHandler)
+        .protocol(RedisProtocol.RESP3).build();
+
+    unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(), clientConfig);
+
 
     // Enable client tracking
     unifiedJedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
@@ -167,11 +172,15 @@ public class PushMessageNotificationTest {
 
   @Test
   public void testJedisCustomPushListener() {
-    Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
-
     List<PushMessage> receivedMessages = new ArrayList<>();
-    jedis.addListener(receivedMessages::add);
+    PushHandlerImpl pushHandler = new PushHandlerImpl();
+    pushHandler.addListener(receivedMessages::add);
+
+    DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder()
+        .pushHandler(pushHandler)
+        .protocol(RedisProtocol.RESP3).build();
+
+    Jedis jedis = new Jedis(endpoint.getHostAndPort(), clientConfig);
 
     // Enable client tracking
     jedis.sendCommand(Command.CLIENT, "TRACKING", "ON");

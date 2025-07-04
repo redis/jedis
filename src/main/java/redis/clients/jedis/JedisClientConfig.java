@@ -7,6 +7,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
 
+import static redis.clients.jedis.PushHandler.NOOP;
+
 public interface JedisClientConfig {
 
   default RedisProtocol getRedisProtocol() {
@@ -66,6 +68,10 @@ public interface JedisClientConfig {
   }
 
   default AuthXManager getAuthXManager() {
+    return null;
+  }
+
+  default PushHandler getPushHandler() {
     return null;
   }
 

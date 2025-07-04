@@ -80,7 +80,7 @@ public class Connection implements Closeable {
     this.socketFactory = socketFactory;
     this.authXManager = null;
 
-    initPushConsumers(null, null);
+    initPushConsumers(null);
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
@@ -89,21 +89,12 @@ public class Connection implements Closeable {
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     this.relaxedTimeout = clientConfig.getTimeoutOptions().getRelaxedTimeout();
 
-    initPushConsumers(null, clientConfig);
+    initPushConsumers(clientConfig);
     initializeFromClientConfig(clientConfig);
   }
 
-  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, PushHandler pushHandler) {
-    this.socketFactory = socketFactory;
-    this.soTimeout = clientConfig.getSocketTimeoutMillis();
-    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    this.relaxedTimeout = clientConfig.getTimeoutOptions().getRelaxedTimeout();
 
-    initPushConsumers(pushHandler, clientConfig);
-    initializeFromClientConfig(clientConfig);
-  }
-
-  protected void initPushConsumers(PushHandler pushHandler, JedisClientConfig config) {
+  protected void initPushConsumers(JedisClientConfig config) {
     /*
      * Default consumers to process push messages.
      * Marks all @{link PushMessage}s as processed, except for pub/sub.
@@ -114,22 +105,24 @@ public class Connection implements Closeable {
         PushConsumerChain.PUBSUB_ONLY_HANDLER
     );
 
-    /*
-     * If the user has enabled relaxed timeouts, add consumer to handle push messages
-     * related to server maintenance events.
-     */
-    if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
-      PushConsumer maintenanceHandler = new AdaptiveTimeoutHandler(Connection.this);
-      this.pushConsumer.add(maintenanceHandler);
-    }
+    if (config != null) {
+      /*
+       * If the user has enabled relaxed timeouts, add consumer to handle push messages
+       * related to server maintenance events.
+       */
+      if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
+        PushConsumer maintenanceHandler = new AdaptiveTimeoutHandler(Connection.this);
+        this.pushConsumer.add(maintenanceHandler);
+      }
 
-    /*
-     * If the user has provided a {@link PushHandler},
-     * add consumer to notify {@link PushListener}s, without changing the processed flag.
-     */
-    this.pushHandler = pushHandler;
-    if (this.pushHandler != null) {
-      this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
+      /*
+       * If the user has provided a {@link PushHandler},
+       * add consumer to notify {@link PushListener}s, without changing the processed flag.
+       */
+      pushHandler = config.getPushHandler();
+      if (this.pushHandler != null) {
+        this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
+      }
     }
   }
 

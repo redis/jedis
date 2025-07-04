@@ -18,6 +18,11 @@ class PushHandlerImpl implements PushHandler {
   }
 
   @Override
+  public void removeAllListeners() {
+    pushListeners.clear();
+  }
+
+  @Override
   public Collection<PushListener> getPushListeners() {
     return pushListeners;
   }

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * A handler object that provides access to {@link PushListener}.
+ * A handler object that provides access to {@link PushListener}s.
  *
  * @author Ivo Gaydajiev
  * @since 6.1
@@ -26,6 +26,11 @@ public interface PushHandler {
   void removeListener(PushListener listener);
 
   /**
+   * Remove all existing {@link PushListener listeners}.
+   */
+  void removeAllListeners();
+
+  /**
    * Returns a collection of {@link PushListener}.
    *
    * @return the collection of listeners.
@@ -35,17 +40,13 @@ public interface PushHandler {
   /**
    * A no-operation implementation of PushHandler that doesn't maintain any listeners.
    * All operations are no-ops and getPushListeners() returns an empty list.
-   * Implemented as a singleton to avoid unnecessary object creation.
    */
   PushHandler NOOP = new NoOpPushHandler();
+
 }
 
-/**
- * Singleton implementation of a no-operation PushHandler.
- */
 final class NoOpPushHandler implements PushHandler {
 
-  // Package-private constructor to prevent external instantiation
   NoOpPushHandler() {}
 
   @Override
@@ -55,6 +56,11 @@ final class NoOpPushHandler implements PushHandler {
 
   @Override
   public void removeListener(PushListener listener) {
+    // No-op
+  }
+
+  @Override
+  public void removeAllListeners() {
     // No-op
   }
 

@@ -186,7 +186,7 @@ public class CacheConnection extends Connection {
           String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
       }
     }
-
+    this.pushConsumer.add(new PushInvalidateConsumer(cache));
     sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
     String reply = getStatusCodeReply();
     if (!"OK".equals(reply)) {

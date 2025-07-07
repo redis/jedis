@@ -346,7 +346,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
 
   /**
-   * @return <code>PONG</code
+   * @return <code>PONG</code>
    */
   @Override
   public String ping() {

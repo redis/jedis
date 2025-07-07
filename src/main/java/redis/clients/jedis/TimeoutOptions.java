@@ -54,13 +54,13 @@ public class TimeoutOptions {
 
     /**
      * Enable proactive timeout relaxing. Disabled by default, see {@link #DEFAULT_RELAXED_TIMEOUT}.
-     * <p/>
+     * <p>
      * If the Redis server supports this, and the client is set up to use it
      * , the client would listen to notifications that the current
      * endpoint is about to go down (as part of some maintenance activity, for example). In such cases, the driver could
      * extend the existing timeout settings for newly issued commands, or such that are in flight, to make sure they do not
      * time out during this process.
-     *
+     * </p>
      * @param duration {@link Duration} to relax timeouts proactively, must not be {@code null}.
      * @return {@code this}
      */

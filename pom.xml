@@ -44,6 +44,15 @@
 		<tag>jedis-3.4.1</tag>
 	</scm>
 
+	<developers>
+		<developer>
+			<id>redis</id>
+			<name>Redis Ltd.</name>
+			<organization>Redis</organization>
+			<organizationUrl>https://redis.io</organizationUrl>
+		</developer>
+	</developers>
+
 	<properties>
 		<github.global.server>github</github.global.server>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
@@ -213,14 +222,14 @@
 	</dependencies>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>central</id>
+			<url>https://central.sonatype.com/api/v1/publisher/deployments/upload/</url>
 		</repository>
+		<snapshotRepository>
+			<id>central</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<build>
@@ -310,14 +319,14 @@
 				<version>3.1.1</version>
 			</plugin>
 			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.7.0</version>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.8.0</version>
 				<extensions>true</extensions>
 				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<publishingServerId>central</publishingServerId>
+					<autoPublish>true</autoPublish>
+					<waitUntil>published</waitUntil>
 				</configuration>
 			</plugin>
 			<plugin>

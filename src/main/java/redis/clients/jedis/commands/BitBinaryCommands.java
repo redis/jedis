@@ -27,8 +27,8 @@ public interface BitBinaryCommands {
   List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
 
   /**
-   * <b><a href="http://redis.io/commands/bitop">Bitop Command</a></b>
-   * Perform a bitwise operation between multiple keys and store the result in the destKey.
+   * <b><a href="http://redis.io/commands/bitop">Bitop Command</a></b> Perform a bitwise operation
+   * between multiple keys and store the result in the destKey.
    * @param op can be AND, OR, XOR, NOT, DIFF, DIFF1, ANDOR and ONE
    * @param destKey
    * @param srcKeys

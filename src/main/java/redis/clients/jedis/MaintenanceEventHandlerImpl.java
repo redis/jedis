@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-class MaintenanceEventHandlerImpl implements MaintenanceEventHandler {
+public class MaintenanceEventHandlerImpl implements MaintenanceEventHandler {
   private final List<MaintenanceEventListener> listeners = new CopyOnWriteArrayList<>();
 
   @Override

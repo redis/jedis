@@ -61,10 +61,15 @@ public class TcpMockServer {
     }
 
     /**
-     * Stop the server
+     * Stop the server and close all active connections
      */
     public void stop() throws IOException {
         running.set(false);
+
+        // Close all active client connections first
+        closeAllActiveConnections();
+
+        // Close the server socket
         if (serverSocket != null && !serverSocket.isClosed()) {
             serverSocket.close();
         }
@@ -139,6 +144,26 @@ public class TcpMockServer {
      */
     public void sendCustomPushToAll(String pushType, String... args) {
         sendPushMessageToAll(pushType, args);
+    }
+
+
+    /**
+     * Close all active client connections
+     */
+    private void closeAllActiveConnections() {
+        // Create a copy of the values to avoid ConcurrentModificationException
+        java.util.List<ClientHandler> clientsToClose = new java.util.ArrayList<>(connectedClients.values());
+
+        for (ClientHandler client : clientsToClose) {
+            try {
+                client.forceClose();
+            } catch (Exception e) {
+                logger.error("Error closing client connection: " + e.getMessage());
+            }
+        }
+
+        // Clear the map
+        connectedClients.clear();
     }
 
     /**
@@ -278,6 +303,25 @@ public class TcpMockServer {
                 logger.error("Error sending " + pushType + " push to " + clientId + " (client disconnected): " + e.getMessage());
                 cleanup();
             }
+        }
+
+        /**
+         * Force close this client connection (used when server is shutting down)
+         */
+        public void forceClose() {
+            connected = false;
+
+            try {
+                if (clientSocket != null && !clientSocket.isClosed()) {
+                    clientSocket.close();
+                }
+            } catch (IOException e) {
+                logger.error("Error force closing client socket: " + e.getMessage());
+            }
+
+            // Remove from connected clients map
+            connectedClients.remove(clientId);
+            outputStream = null;
         }
 
     }

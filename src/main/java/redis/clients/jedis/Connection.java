@@ -5,6 +5,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -34,6 +35,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class Connection implements Closeable {
   public static Logger logger = LoggerFactory.getLogger(Connection.class);
@@ -55,11 +57,9 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private boolean relaxedTimeoutActive = false;
-
+  private boolean rebindRequested = false;
 
   protected PushConsumerChain pushConsumer;
-  private PushHandler pushHandler;
-
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -106,21 +106,29 @@ public class Connection implements Closeable {
     );
 
     if (config != null) {
+
       /*
-       * If the user has enabled relaxed timeouts, add consumer to handle push messages
-       * related to server maintenance events.
+       * Add consumer to handle server maintenance events.
+       * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
        */
-      if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
-        PushConsumer maintenanceHandler = new AdaptiveTimeoutHandler(Connection.this);
-        this.pushConsumer.add(maintenanceHandler);
+      MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
+      if (maintenanceEventHandler != null) {
+        this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler));
+
+        if (config.isProactiveRebindEnabled()) {
+          maintenanceEventHandler.addListener(new ConnectionRebindHandler());
+        }
+
+        if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
+          maintenanceEventHandler.addListener(new AdaptiveTimeoutHandler(Connection.this));
+        }
       }
 
       /*
-       * If the user has provided a {@link PushHandler},
-       * add consumer to notify {@link PushListener}s, without changing the processed flag.
+       * Add consumer to notify registered {@link PushListener}s.
        */
-      pushHandler = config.getPushHandler();
-      if (this.pushHandler != null) {
+      PushHandler pushHandler = config.getPushHandler();
+      if (pushHandler != null) {
         this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
       }
     }
@@ -310,7 +318,7 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken()) {
+      if (isBroken() || isRebindRequested()) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);
@@ -318,6 +326,10 @@ public class Connection implements Closeable {
     } else {
       disconnect();
     }
+  }
+
+  private boolean isRebindRequested() {
+    return rebindRequested;
   }
 
   /**
@@ -740,11 +752,148 @@ public class Connection implements Closeable {
           try {
             pushListener.onPush(pushMessage);
           } catch (Exception e) {
-            // Log individual listener failures
+            // ignore
           }
         });
       } catch (Exception e) {
         // Log notification failures
+      }
+    }
+  }
+
+  /**
+   * Push consumer that delegates to a {@link PushHandler} for listener notification.
+   */
+  private static class MaintenanceEventConsumer implements PushConsumer {
+    private final MaintenanceEventHandler eventHandler;
+
+    public MaintenanceEventConsumer(MaintenanceEventHandler eventHandler) {
+      this.eventHandler = eventHandler;
+    }
+
+    @Override
+    public void accept(PushConsumerContext context) {
+      PushMessage message = context.getMessage();
+
+      switch ( message.getType()) {
+      case "MOVING":
+        onMoving(message);
+        break;
+      case "MIGRATING":
+        onMigrating();
+        break;
+      case "MIGRATED":
+        onMigrated();
+        break;
+      case "FAILING_OVER":
+        onFailOver();
+        break;
+      case "FAILED_OVER":
+        onFailedOver();
+        break;
+      }
+    }
+    private void onMoving(PushMessage message) {
+      HostAndPort rebindTarget = getRebindTarget(message);
+      eventHandler.getListeners().forEach(listener -> listener.onRebind(rebindTarget));
+    }
+
+    private void onMigrating() {
+      eventHandler.getListeners().forEach(MaintenanceEventListener::onMigrating);
+    }
+
+    private void onMigrated() {
+      eventHandler.getListeners().forEach(MaintenanceEventListener::onMigrated);
+    }
+
+    private void onFailOver() {
+      eventHandler.getListeners().forEach(MaintenanceEventListener::onFailOver);
+    }
+
+    private void onFailedOver() {
+      eventHandler.getListeners().forEach(MaintenanceEventListener::onFailedOver);
+    }
+
+    private HostAndPort getRebindTarget(PushMessage message) {
+      // Extract domain/ip and port from the message
+      // MOVING push message format: ["MOVING", slot, "host:port"]
+      List<Object> content = message.getContent();
+
+      if (content.size() < 3) {
+        logger.warn("MOVING push message is malformed: {}", message);
+        return null;
+      }
+
+      Object addressObject = content.get(2); // Get the 3rd element (index 2)
+      if (!(addressObject instanceof byte[])) {
+        logger.warn("Invalid re-bind message format, expected 3rd element to be a byte[], got {}",
+            addressObject.getClass());
+        return null;
+      }
+
+      try {
+        String addressAndPort = SafeEncoder.encode((byte[]) addressObject);
+        String[] parts = addressAndPort.split(":");
+        if (parts.length != 2) {
+          logger.warn("Invalid re-bind message format, expected 'host:port', got {}",
+              addressAndPort);
+          return null;
+        }
+
+        String address = parts[0];
+        int port = Integer.parseInt(parts[1]);
+        return new HostAndPort(address, port);
+      } catch (Exception e) {
+        logger.warn("Error parsing re-bind target from message: {}", message, e);
+        return null;
+      }
+    }
+  }
+
+  private class ConnectionRebindHandler implements MaintenanceEventListener {
+      public void onRebind(HostAndPort target) {
+        rebindRequested = true;
+      }
+  }
+
+  private static class AdaptiveTimeoutHandler implements MaintenanceEventListener {
+
+    private final WeakReference<Connection> connectionRef;
+
+    /**
+     * Creates a new maintenance listener for the specified connection.
+     *
+     * @param connection The connection to manage timeouts for
+     */
+    public AdaptiveTimeoutHandler(Connection connection) {
+      this.connectionRef = new WeakReference<>(connection);
+    }
+
+    public void onMigrating() {
+      Connection connection = connectionRef.get();
+      if (connection != null) {
+        connection.relaxTimeouts();
+      }
+    }
+
+    public void onMigrated() {
+      Connection connection = connectionRef.get();
+      if (connection != null) {
+        connection.disableRelaxedTimeout();
+      }
+    }
+
+    public void onFailOver() {
+      Connection connection = connectionRef.get();
+      if (connection != null) {
+        connection.relaxTimeouts();
+      }
+    }
+
+    public void onFailedOver() {
+      Connection connection = connectionRef.get();
+      if (connection != null) {
+        connection.disableRelaxedTimeout();
       }
     }
   }

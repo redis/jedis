@@ -62,7 +62,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
     this.pushHandler = builder.pushHandler;
 
-    if (builder.proactiveRebindEnabled && builder.maintenanceEventHandler == null) {
+    if ((builder.proactiveRebindEnabled || TimeoutOptions.isRelaxedTimeoutEnabled(builder.timeoutOptions.getRelaxedTimeout()))
+        && builder.maintenanceEventHandler == null) {
+      // Proactive rebind or relaxed timeouts require a maintenance event handler
       this.maintenanceEventHandler = new MaintenanceEventHandlerImpl();
     } else {
       this.maintenanceEventHandler = builder.maintenanceEventHandler;

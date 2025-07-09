@@ -6,7 +6,9 @@ import java.time.Duration;
 
 public class TimeoutOptions {
 
-  public static final Duration DISABLED_TIMEOUT = Duration.ZERO.minusSeconds(1);
+  private static final int DISABLED_TIMEOUT_MS = -1;
+
+  public static final Duration DISABLED_TIMEOUT = Duration.ofMillis(DISABLED_TIMEOUT_MS);
 
   public static final Duration DEFAULT_RELAXED_TIMEOUT = DISABLED_TIMEOUT;
 
@@ -22,6 +24,10 @@ public class TimeoutOptions {
 
   public static boolean isRelaxedTimeoutDisabled(Duration relaxedTimeout) {
     return  relaxedTimeout == null || relaxedTimeout.equals(DISABLED_TIMEOUT);
+  }
+
+  public static boolean isRelaxedTimeoutDisabled(int relaxedTimeout) {
+    return  relaxedTimeout == DISABLED_TIMEOUT_MS;
   }
 
   /**

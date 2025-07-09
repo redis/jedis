@@ -11,7 +11,6 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.authentication.AuthXManager;
@@ -47,7 +47,7 @@ public class Connection implements Closeable {
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
   private int soTimeout = 0;
-  private Duration relaxedTimeout = TimeoutOptions.DISABLED_TIMEOUT;
+  private int relaxedTimeout = safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
   private boolean strValActive;
@@ -87,7 +87,7 @@ public class Connection implements Closeable {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    this.relaxedTimeout = clientConfig.getTimeoutOptions().getRelaxedTimeout();
+    this.relaxedTimeout = safeToInt(clientConfig.getTimeoutOptions().getRelaxedTimeout().toMillis());
 
     initPushConsumers(clientConfig);
     initializeFromClientConfig(clientConfig);
@@ -209,7 +209,8 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(this.soTimeout);
+      int timeout = relaxedTimeoutActive? this.relaxedTimeout : this.soTimeout;
+      socket.setSoTimeout(timeout);
     } catch (SocketException ex) {
       setBroken();
       throw new JedisConnectionException(ex);
@@ -695,8 +696,14 @@ public class Connection implements Closeable {
   }
 
   @Experimental
+  @VisibleForTesting
   PushConsumerChain getPushConsumer() {
     return this.pushConsumer;
+  }
+
+  @Experimental
+  public boolean isRelaxedTimeoutActive() {
+    return relaxedTimeoutActive;
   }
 
   @Experimental
@@ -705,7 +712,7 @@ public class Connection implements Closeable {
       relaxedTimeoutActive = true;
       try {
         if (isConnected()) {
-          socket.setSoTimeout((int) relaxedTimeout.toMillis());
+          socket.setSoTimeout(relaxedTimeout);
         }
       } catch (SocketException ex) {
         setBroken();
@@ -729,6 +736,13 @@ public class Connection implements Closeable {
     }
   }
 
+  private static int safeToInt(long millis) {
+    if (millis > Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    }
+
+    return (int) millis;
+  }
   /**
    * Push consumer that delegates to a {@link PushHandler} for listener notification.
    */
@@ -761,9 +775,7 @@ public class Connection implements Closeable {
     }
   }
 
-  /**
-   * Push consumer that delegates to a {@link PushHandler} for listener notification.
-   */
+
   private static class MaintenanceEventConsumer implements PushConsumer {
     private final MaintenanceEventHandler eventHandler;
 

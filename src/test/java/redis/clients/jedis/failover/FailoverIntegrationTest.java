@@ -19,7 +19,9 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.mcf.EchoStrategy;
 import redis.clients.jedis.mcf.FailoverOptions;
+
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -182,8 +184,8 @@ public class FailoverIntegrationTest {
     private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(JedisClientConfig clientConfig,
         FailoverOptions failoverOptions, EndpointConfig... endpoints) {
 
-        return Arrays.stream(endpoints).map(
-            e -> new MultiClusterClientConfig.ClusterConfig(e.getHostAndPort(), clientConfig, null, failoverOptions))
+        return Arrays.stream(endpoints).map(e -> MultiClusterClientConfig.ClusterConfig
+            .builder(e.getHostAndPort(), clientConfig).failoverOptions(failoverOptions).build())
             .collect(Collectors.toList());
     }
 

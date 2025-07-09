@@ -213,7 +213,7 @@ public final class MultiClusterClientConfig {
             this.connectionPoolConfig = connectionPoolConfig;
         }
 
-        public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+        private ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
             GenericObjectPoolConfig<Connection> connectionPoolConfig, FailoverOptions failoverOptions) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
@@ -223,6 +223,10 @@ public final class MultiClusterClientConfig {
 
         public HostAndPort getHostAndPort() {
             return hostAndPort;
+        }
+
+        public static Builder builder(HostAndPort hostAndPort, JedisClientConfig clientConfig){
+            return new Builder( hostAndPort,  clientConfig);
         }
 
         public JedisClientConfig getJedisClientConfig() {
@@ -235,6 +239,32 @@ public final class MultiClusterClientConfig {
 
         public FailoverOptions getFailoverOptions() {
             return faileoverOptions;
+        }
+
+        public static class Builder{
+            private HostAndPort hostAndPort;
+            private JedisClientConfig clientConfig;
+            private GenericObjectPoolConfig<Connection> connectionPoolConfig;
+            private FailoverOptions failoverOptions = FailoverOptions.builder().build();
+
+            public Builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+                this.hostAndPort = hostAndPort;
+                this.clientConfig = clientConfig;
+            }
+
+            public Builder connectionPoolConfig(GenericObjectPoolConfig<Connection> connectionPoolConfig) {
+                this.connectionPoolConfig = connectionPoolConfig;
+                return this;
+            }
+
+            public Builder failoverOptions(FailoverOptions failoverOptions) {
+                this.failoverOptions = failoverOptions;
+                return this;
+            }
+
+            public ClusterConfig build() {
+                return new ClusterConfig(hostAndPort, clientConfig, connectionPoolConfig, failoverOptions);
+            }
         }
     }
 

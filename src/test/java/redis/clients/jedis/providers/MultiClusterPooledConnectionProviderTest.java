@@ -28,10 +28,12 @@ public class MultiClusterPooledConnectionProviderTest {
     public void setUp() {
 
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(),
-            endpointStandalone0.getClientConfigBuilder().build(), null, FailoverOptions.builder().weight(0.5f).build());
-        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(),
-            endpointStandalone0.getClientConfigBuilder().build(), null, FailoverOptions.builder().weight(0.3f).build());
+        clusterConfigs[0] = ClusterConfig
+            .builder(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build())
+            .failoverOptions(FailoverOptions.builder().weight(0.5f).build()).build();
+        clusterConfigs[1] = ClusterConfig
+            .builder(endpointStandalone1.getHostAndPort(), endpointStandalone1.getClientConfigBuilder().build())
+            .failoverOptions(FailoverOptions.builder().weight(0.3f).build()).build();
 
         provider = new MultiClusterPooledConnectionProvider(
             new MultiClusterClientConfig.Builder(clusterConfigs).build());
@@ -91,10 +93,12 @@ public class MultiClusterPooledConnectionProviderTest {
     @Test
     public void testRunClusterFailoverPostProcessor() {
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(new HostAndPort("purposefully-incorrect", 0000),
-            DefaultJedisClientConfig.builder().build());
-        clusterConfigs[1] = new ClusterConfig(new HostAndPort("purposefully-incorrect", 0001),
-            DefaultJedisClientConfig.builder().build());
+        clusterConfigs[0] = ClusterConfig
+            .builder(new HostAndPort("purposefully-incorrect", 0000), DefaultJedisClientConfig.builder().build())
+            .failoverOptions(FailoverOptions.builder().weight(0.5f).build()).build();
+        clusterConfigs[1] = ClusterConfig
+            .builder(new HostAndPort("purposefully-incorrect", 0001), DefaultJedisClientConfig.builder().build())
+            .failoverOptions(FailoverOptions.builder().weight(0.4f).build()).build();
 
         MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
 

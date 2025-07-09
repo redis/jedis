@@ -74,6 +74,10 @@ public class CommandObjects {
     return PING_COMMAND_OBJECT;
   }
 
+  public final CommandObject<String> echo(String msg) {
+    return new CommandObject<>(commandArguments(ECHO).add(msg), BuilderFactory.STRING);
+  }
+
   private final CommandObject<String> FLUSHALL_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHALL), BuilderFactory.STRING);
 
   public final CommandObject<String> flushAll() {

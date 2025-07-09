@@ -32,9 +32,14 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 import redis.clients.jedis.mcf.HealthStatusManager;
+import redis.clients.jedis.mcf.FailoverOptions.StrategySupplier;
+
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.mcf.EchoStrategy;
 import redis.clients.jedis.mcf.Endpoint;
 import redis.clients.jedis.mcf.FailoverOptions;
+
+import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -157,12 +162,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getFailoverOptions());
             multiClusterMap.put(config.getHostAndPort(), cluster);
 
-            healthStatusManager.add(config.getHostAndPort(),
-                config.getFailoverOptions().getFailoverHealthCheckStrategy(config.getHostAndPort()));
+            StrategySupplier strategySupplier = config.getFailoverOptions().getStrategySupplier();
+            if (strategySupplier != null) {
+                HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
+                healthStatusManager.add(config.getHostAndPort(), hcs);
+            }
         }
 
         // selecting activeCluster with configuration values.
-        // all health status would be HEALTHY at this point 
+        // all health status would be HEALTHY at this point
         activeCluster = findWeightedHealthyCluster().getValue();
 
         for (Endpoint endpoint : multiClusterMap.keySet()) {

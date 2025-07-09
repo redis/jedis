@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.annots.Experimental;
 
 /**
@@ -13,22 +14,30 @@ public class FailoverOptions {
     private final float weight;
     private boolean failback;
 
-    private static StrategySupplier defaultStrategySupplier = (endpoint) -> new NoOpStrategy();
-
     private FailoverOptions(Builder builder) {
         this.retryOnFailover = builder.retryOnFailover;
-        this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier == null ? defaultStrategySupplier
-            : builder.healthCheckStrategySupplier;
+        if (builder.healthCheckStrategySupplier != null) {
+            this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
+        } else {
+            this.healthCheckStrategySupplier = builder.enableHealthCheck ? EchoStrategy.DEFAULT : null;
+        }
         this.weight = builder.weight;
         this.failback = builder.failback;
+
     }
 
     public static interface StrategySupplier {
-        HealthCheckStrategy get(HostAndPort hostAndPort);
+        /**
+         * Creates a HealthCheckStrategy for the given endpoint.
+         * @param hostAndPort the endpoint to create a strategy for
+         * @param jedisClientConfig the client configuration, may be null for implementations that don't need it
+         * @return a HealthCheckStrategy instance
+         */
+        HealthCheckStrategy get(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig);
     }
 
-    public HealthCheckStrategy getFailoverHealthCheckStrategy(HostAndPort hostAndPort) {
-        return healthCheckStrategySupplier.get(hostAndPort);
+    public StrategySupplier getStrategySupplier() {
+        return healthCheckStrategySupplier;
     }
 
     public float getWeight() {
@@ -63,6 +72,7 @@ public class FailoverOptions {
         private StrategySupplier healthCheckStrategySupplier;
         private float weight = 1.0f;
         private boolean failback;
+        private boolean enableHealthCheck = false;
 
         private Builder() {
         }
@@ -78,6 +88,9 @@ public class FailoverOptions {
         }
 
         public Builder healthCheckStrategySupplier(StrategySupplier healthCheckStrategySupplier) {
+            if (healthCheckStrategySupplier == null) {
+                throw new IllegalArgumentException("healthCheckStrategySupplier must not be null");
+            }
             this.healthCheckStrategySupplier = healthCheckStrategySupplier;
             return this;
         }
@@ -93,7 +106,18 @@ public class FailoverOptions {
         }
 
         public Builder healthCheckStrategy(HealthCheckStrategy healthCheckStrategy) {
-            this.healthCheckStrategySupplier = (hostAndPort) -> healthCheckStrategy;
+            if (healthCheckStrategy == null) {
+                throw new IllegalArgumentException("healthCheckStrategy must not be null");
+            }
+            this.healthCheckStrategySupplier = (hostAndPort, jedisClientConfig) -> healthCheckStrategy;
+            return this;
+        }
+
+        public Builder enableHealthCheck(boolean enableHealthCheck) {
+            this.enableHealthCheck = enableHealthCheck;
+            if (!enableHealthCheck) {
+                this.healthCheckStrategySupplier = null;
+            }
             return this;
         }
 

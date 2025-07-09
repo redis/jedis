@@ -199,7 +199,7 @@ public final class MultiClusterClientConfig {
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
         private GenericObjectPoolConfig<Connection> connectionPoolConfig;
-        private FailoverOptions faileoverOptions = FailoverOptions.builder().build();
+        private FailoverOptions failoverOptions = FailoverOptions.builder().build();
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
@@ -218,7 +218,7 @@ public final class MultiClusterClientConfig {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
             this.connectionPoolConfig = connectionPoolConfig;
-            this.faileoverOptions = failoverOptions;
+            this.failoverOptions = failoverOptions;
         }
 
         public HostAndPort getHostAndPort() {
@@ -238,7 +238,7 @@ public final class MultiClusterClientConfig {
         }
 
         public FailoverOptions getFailoverOptions() {
-            return faileoverOptions;
+            return failoverOptions;
         }
 
         public static class Builder{

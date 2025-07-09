@@ -7,7 +7,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
 
-import static redis.clients.jedis.PushHandler.NOOP;
 
 public interface JedisClientConfig {
 
@@ -37,19 +36,6 @@ public interface JedisClientConfig {
     return 0;
   }
 
-  default TimeoutOptions getTimeoutOptions() {
-    return TimeoutOptions.create();
-  }
-
-  /**
-   * Configure whether the driver should listen for server events that indicate the current endpoint is being re-bound.
-   * When enabled, the proactive re-bind will help with the connection handover and reduce the number of failed commands.
-   * This feature requires the server to support proactive re-binds. Defaults to {@code false}.
-   */
-  default boolean isProactiveRebindEnabled() {
-    return false;
-  }
-
   /**
    * @return Redis ACL user
    */
@@ -68,10 +54,6 @@ public interface JedisClientConfig {
   }
 
   default AuthXManager getAuthXManager() {
-    return null;
-  }
-
-  default PushHandler getPushHandler() {
     return null;
   }
 
@@ -134,4 +116,32 @@ public interface JedisClientConfig {
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
   }
+
+  default TimeoutOptions getTimeoutOptions() {
+    return TimeoutOptions.create();
+  }
+
+  /**
+   * Configure whether the driver should listen for server events that indicate the current endpoint is being re-bound.
+   * When enabled, the proactive re-bind will help with the connection handover and reduce the number of failed commands.
+   * This feature requires the server to support proactive re-binds.
+   * Enabling this feature requires also setting a {@link #getMaintenanceEventHandler() maintenance event handler}
+   *
+   * Defaults to {@code false}.
+   */
+  default boolean isProactiveRebindEnabled() {
+    return false;
+  }
+
+  default PushHandler getPushHandler() {
+    return null;
+  }
+
+  /**
+   * @return The event handler to use for server maintenance events.
+   */
+  default MaintenanceEventHandler getMaintenanceEventHandler(){
+    return null;
+  }
+
 }

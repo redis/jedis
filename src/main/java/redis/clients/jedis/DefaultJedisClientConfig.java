@@ -42,6 +42,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final PushHandler pushHandler;
 
+  private final MaintenanceEventHandler maintenanceEventHandler;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -62,6 +64,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.timeoutOptions = builder.timeoutOptions;
     this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
     this.pushHandler = builder.pushHandler;
+
+    if (builder.proactiveRebindEnabled && builder.maintenanceEventHandler == null) {
+      this.maintenanceEventHandler = new MaintenanceEventHandlerImpl();
+    } else {
+      this.maintenanceEventHandler = builder.maintenanceEventHandler;
+    }
   }
 
   @Override
@@ -170,6 +178,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return pushHandler;
   }
 
+
+  @Override
+  public MaintenanceEventHandler getMaintenanceEventHandler() {
+    return maintenanceEventHandler;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -257,6 +271,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean proactiveRebindEnabled = false;
 
     private PushHandler pushHandler = null;
+
+    private MaintenanceEventHandler maintenanceEventHandler = null;
 
     private Builder() {
     }
@@ -396,6 +412,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder maintenanceEventHandler(MaintenanceEventHandler maintenanceEventHandler) {
+      this.maintenanceEventHandler = maintenanceEventHandler;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -415,6 +436,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.authXManager = instance.getAuthXManager();
       this.timeoutOptions = instance.getTimeoutOptions();
       this.proactiveRebindEnabled = instance.isProactiveRebindEnabled();
+      this.pushHandler = instance.getPushHandler();
+      this.maintenanceEventHandler = instance.getMaintenanceEventHandler();
       return this;
     }
   }

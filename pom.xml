@@ -40,9 +40,17 @@
 	<scm>
 		<connection>scm:git:git@github.com:redis/jedis.git</connection>
 		<url>scm:git:git@github.com:redis/jedis.git</url>
-		<developerConnection>scm:git:git@github.com:redis/jedis.git</developerConnection>
-		<tag>jedis-3.4.1</tag>
+		<developerConnection>https://github.com/redis/jedis/tree/master</developerConnection>
 	</scm>
+
+	<developers>
+		<developer>
+			<id>redis</id>
+			<name>Redis Ltd.</name>
+			<organization>Redis</organization>
+			<organizationUrl>https://redis.io</organizationUrl>
+		</developer>
+	</developers>
 
 	<properties>
 		<github.global.server>github</github.global.server>
@@ -51,7 +59,7 @@
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.19.1</jackson.version>
 		<maven.surefire.version>3.5.3</maven.surefire.version>
-		<junit.version>5.13.1</junit.version>
+		<junit.version>5.13.2</junit.version>
 	</properties>
 
 	<dependencyManagement>
@@ -213,14 +221,14 @@
 	</dependencies>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>central</id>
+			<url>https://central.sonatype.com/api/v1/publisher/deployments/upload/</url>
 		</repository>
+		<snapshotRepository>
+			<id>central</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<build>
@@ -310,14 +318,14 @@
 				<version>3.1.1</version>
 			</plugin>
 			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.7.0</version>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.8.0</version>
 				<extensions>true</extensions>
 				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<publishingServerId>central</publishingServerId>
+					<autoPublish>true</autoPublish>
+					<waitUntil>published</waitUntil>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -374,7 +382,7 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.2.7</version>
+						<version>3.2.8</version>
 						<configuration>
 							<gpgArguments>
 								<arg>--pinentry-mode</arg>

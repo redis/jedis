@@ -1,7 +1,5 @@
 package redis.clients.jedis.util;
 
-import java.time.Duration;
-
 /**
  * Assertion utility class that assists in validating arguments. This class is part of the internal API and may change without
  * further notice.

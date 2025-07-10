@@ -8,7 +8,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.*;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -343,7 +341,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public int getDB() {
     return this.db;
   }
-
 
   /**
    * @return <code>PONG</code>

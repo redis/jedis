@@ -131,7 +131,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is, PushConsumer pushConsumer) {
     final byte b = is.readByte();
-    //System.out.println("BYTE: " + (char) b);
+    // System.out.println("BYTE: " + (char) b);
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();

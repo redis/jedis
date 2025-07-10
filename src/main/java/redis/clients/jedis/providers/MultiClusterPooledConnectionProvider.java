@@ -35,7 +35,6 @@ import redis.clients.jedis.mcf.HealthStatusManager;
 import redis.clients.jedis.mcf.FailoverOptions.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
-import redis.clients.jedis.mcf.EchoStrategy;
 import redis.clients.jedis.mcf.Endpoint;
 import redis.clients.jedis.mcf.FailoverOptions;
 
@@ -271,46 +270,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 circuitBreaker.getName() + " failed to connect. Please check configuration and try again.", e);
         }
     }
-
-    /**
-     * Manually overrides the actively used cluster/database endpoint (connection pool) amongst the pre-configured list
-     * which were provided at startup via the MultiClusterClientConfig. All traffic will be routed according to the
-     * provided new index. Special care should be taken to confirm cluster/database availability AND potentially
-     * cross-cluster replication BEFORE using this capability.
-     */
-    // public void setActiveMultiClusterIndex(int multiClusterIndex) {
-
-    // // Field-level synchronization is used to avoid the edge case in which
-    // // incrementActiveMultiClusterIndex() is called at the same time
-    // activeClusterIndexLock.lock();
-
-    // try {
-
-    // // Allows an attempt to reset the current cluster from a FORCED_OPEN to CLOSED state in the event that no
-    // // failover is possible
-    // if (activeMultiClusterIndex == multiClusterIndex
-    // && !CircuitBreaker.State.FORCED_OPEN.equals(getClusterCircuitBreaker(multiClusterIndex).getState()))
-    // return;
-
-    // if (multiClusterIndex < 1 || multiClusterIndex > multiClusterMap.size())
-    // throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within "
-    // + "the configured range. Please choose an index between 1 and " + multiClusterMap.size());
-
-    // validateTargetConnection(multiClusterIndex);
-
-    // String originalClusterName = getClusterCircuitBreaker().getName();
-
-    // if (activeMultiClusterIndex == multiClusterIndex)
-    // log.warn("Cluster/database endpoint '{}' successfully closed its circuit breaker", originalClusterName);
-    // else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName,
-    // getClusterCircuitBreaker(multiClusterIndex).getName());
-
-    // activeMultiClusterIndex = multiClusterIndex;
-    // // lastClusterCircuitBreakerForcedOpen = false;
-    // } finally {
-    // activeClusterIndexLock.unlock();
-    // }
-    // }
 
     public void setActiveCluster(Endpoint endpoint) {
         if (endpoint == null) {

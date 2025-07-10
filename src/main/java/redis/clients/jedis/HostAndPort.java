@@ -16,10 +16,12 @@ public class HostAndPort implements Serializable, Endpoint {
         this.port = port;
     }
 
+    @Override
     public String getHost() {
         return host;
     }
 
+    @Override
     public int getPort() {
         return port;
     }

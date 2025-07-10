@@ -30,7 +30,6 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.FailoverOptions;
 import redis.clients.jedis.mcf.MultiClusterPipeline;
 import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.params.*;

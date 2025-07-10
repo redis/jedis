@@ -48,7 +48,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *         Active-Active cluster(s) by using simple configuration which is passed through from Resilience4j -
  *         https://resilience4j.readme.io/docs
  *         <p>
- *         Support for manual failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
+ *         Support for manual failback is provided by way of {@link #setActiveCluster(Endpoint)}
  *         <p>
  */
 // TODO: move?

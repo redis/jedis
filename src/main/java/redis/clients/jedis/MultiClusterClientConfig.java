@@ -225,8 +225,8 @@ public final class MultiClusterClientConfig {
             return hostAndPort;
         }
 
-        public static Builder builder(HostAndPort hostAndPort, JedisClientConfig clientConfig){
-            return new Builder( hostAndPort,  clientConfig);
+        public static Builder builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+            return new Builder(hostAndPort, clientConfig);
         }
 
         public JedisClientConfig getJedisClientConfig() {
@@ -241,7 +241,7 @@ public final class MultiClusterClientConfig {
             return failoverOptions;
         }
 
-        public static class Builder{
+        public static class Builder {
             private HostAndPort hostAndPort;
             private JedisClientConfig clientConfig;
             private GenericObjectPoolConfig<Connection> connectionPoolConfig;
@@ -293,8 +293,7 @@ public final class MultiClusterClientConfig {
             if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
                 "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
-
-                this.clusterConfigs = clusterConfigs;
+            this.clusterConfigs = clusterConfigs;
         }
 
         public Builder(List<ClusterConfig> clusterConfigs) {

@@ -14,7 +14,7 @@ public class EchoStrategy implements HealthCheckStrategy {
     private UnifiedJedis jedis;
 
     public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
-       this(hostAndPort, jedisClientConfig, 1000, 1000);
+        this(hostAndPort, jedisClientConfig, 1000, 1000);
     }
 
     public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout) {

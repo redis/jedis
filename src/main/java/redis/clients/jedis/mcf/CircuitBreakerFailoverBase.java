@@ -57,11 +57,10 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                 // activeMultiClusterIndex persistence or custom logging
                 provider.runClusterFailoverPostProcessor(provider.getCluster());
             }
-            // this check relies on the fact that many failover attempts can hit with the same CB, 
+            // this check relies on the fact that many failover attempts can hit with the same CB,
             // only the first one will trigger a failover, and make the CB FORCED_OPEN.
-            // when the rest reaches here, the active cluster is already the next one, and should be different than active CB.
-            // if its the same one and there are no more clusters to failover to, 
-            // then throw an exception
+            // when the rest reaches here, the active cluster is already the next one, and should be different than
+            // active CB. If its the same one and there are no more clusters to failover to, then throw an exception
             else if (circuitBreaker == provider.getCluster().getCircuitBreaker() && !provider.canIterateOnceMore()) {
                 throw new JedisConnectionException(
                     "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "

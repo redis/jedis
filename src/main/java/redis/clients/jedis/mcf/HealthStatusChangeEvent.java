@@ -1,6 +1,4 @@
-
 package redis.clients.jedis.mcf;
-
 
 public class HealthStatusChangeEvent {
 

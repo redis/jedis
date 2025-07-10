@@ -9,4 +9,8 @@ public interface CommandExecutor extends AutoCloseable {
   default <T> T broadcastCommand(CommandObject<T> commandObject) {
     return executeCommand(commandObject);
   }
+
+  default <T> T executeKeylessCommand(CommandObject<T> commandObject) {
+    return executeCommand(commandObject);
+  }
 }

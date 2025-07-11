@@ -19,7 +19,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.EchoStrategy;
 import redis.clients.jedis.mcf.FailoverOptions;
 
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;

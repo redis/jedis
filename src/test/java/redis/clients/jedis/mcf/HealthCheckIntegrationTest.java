@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
@@ -21,8 +20,6 @@ import redis.clients.jedis.scenario.RecommendedSettings;
 public class HealthCheckIntegrationTest {
 
     private final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
-    private final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone1");
-
     private final JedisClientConfig clientConfig = endpoint1.getClientConfigBuilder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();

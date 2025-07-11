@@ -193,7 +193,7 @@ public class TcpMockServer {
                     try {
                         input = Protocol.read(rin);
                         if (input == null) {
-                            // Client closed connection
+                            connected = false;
                             break;
                         }
 
@@ -211,12 +211,12 @@ public class TcpMockServer {
                             throw new RuntimeException("Unknown command: " + cmd);
                         }
                     } catch (IOException e) {
-                        // Client disconnected or connection error
-                        logger.error("Client " + clientId + " disconnected (IOException): " + e.getMessage());
+                        logger.debug("Client " + clientId + " disconnected: " + e.getMessage());
+                        connected = false;
                         break;
                     } catch (Exception e) {
-                        // Other errors (like connection reset, socket closed, etc.)
-                        logger.error("Client " + clientId + " connection error: " + e.getMessage());
+                        logger.debug("Client " + clientId + " connection error: " + e.getMessage());
+                        connected = false;
                         break;
                     }
                 }

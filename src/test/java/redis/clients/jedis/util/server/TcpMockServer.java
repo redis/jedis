@@ -140,14 +140,6 @@ public class TcpMockServer {
     }
 
     /**
-     * Send a custom push message to all connected clients
-     */
-    public void sendCustomPushToAll(String pushType, String... args) {
-        sendPushMessageToAll(pushType, args);
-    }
-
-
-    /**
      * Close all active client connections
      */
     private void closeAllActiveConnections() {

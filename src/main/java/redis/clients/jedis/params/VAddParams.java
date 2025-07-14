@@ -8,7 +8,6 @@ import redis.clients.jedis.Protocol;
  */
 public class VAddParams implements IParams {
 
-  private Integer reduceDim;
   private boolean cas;
   private QuantizationType quantization;
   private Integer ef;
@@ -22,16 +21,7 @@ public class VAddParams implements IParams {
   public VAddParams() {
   }
 
-  /**
-   * Implements random projection to reduce the dimensionality of the vector.
-   * The projection matrix is saved and reloaded along with the vector set.
-   * @param dim the target dimension after reduction
-   * @return VAddParams
-   */
-  public VAddParams reduce(int dim) {
-    this.reduceDim = dim;
-    return this;
-  }
+
 
   /**
    * Performs the operation partially using threads, in a check-and-set style.
@@ -109,10 +99,6 @@ public class VAddParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
-    if (reduceDim != null) {
-      args.add(Protocol.Keyword.REDUCE).add(reduceDim);
-    }
-
     if (cas) {
       args.add(Protocol.Keyword.CAS);
     }

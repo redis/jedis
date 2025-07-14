@@ -7,20 +7,20 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
+import redis.clients.jedis.commands.unified.ExtendedVectorSetCommandsTestBase;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class PooledSortedSetCommandsTest extends SortedSetCommandsTestBase {
+public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(PooledCommandsTestHelper.nodeInfo);
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
 
-  public PooledSortedSetCommandsTest(RedisProtocol protocol) {
+  public PooledExtendedVectorSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 

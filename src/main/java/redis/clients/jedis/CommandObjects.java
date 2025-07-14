@@ -4742,12 +4742,12 @@ public class CommandObjects {
 
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
-    args.addParams(params);
     args.add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {
       args.add(value);
     }
     args.add(element);
+    args.addParams(params);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
@@ -4758,8 +4758,8 @@ public class CommandObjects {
 
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
-    args.addParams(params);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
+    args.addParams(params);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
@@ -4774,12 +4774,12 @@ public class CommandObjects {
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
-    args.addParams(params);
     args.add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {
       args.add(value);
     }
     args.add(element);
+    args.addParams(params);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
@@ -4790,8 +4790,8 @@ public class CommandObjects {
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
-    args.addParams(params);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
+    args.addParams(params);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 

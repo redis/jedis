@@ -308,7 +308,6 @@ public class CommandObjectsVectorSetCommandsTest extends CommandObjectsStandalon
   @Test
   public void testVAddParamsBuilder() {
     VAddParams params = new VAddParams()
-        .reduce(128)
         .cas()
         .q8()
         .ef(200)

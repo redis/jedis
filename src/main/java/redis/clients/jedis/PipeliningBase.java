@@ -4531,6 +4531,199 @@ public abstract class PipeliningBase
   }
   // RedisBloom commands
 
+  // Vector Set commands
+  @Override
+  public Response<Boolean> vadd(String key, float[] vector, String element) {
+    return appendCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public Response<Boolean> vadd(String key, float[] vector, String element, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public Response<List<String>> vsim(String key, float[] vector) {
+    return appendCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public Response<VSimResult> vsim(String key, float[] vector, VSimParams params) {
+    return appendCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Response<List<String>> vsimByElement(String key, String element) {
+    return appendCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public Response<VSimResult> vsimByElement(String key, String element, VSimParams params) {
+    return appendCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Response<List<String>> vsimFP32(String key, byte[] vectorBlob) {
+    return appendCommand(commandObjects.vsimFP32(key, vectorBlob));
+  }
+
+  @Override
+  public Response<VSimResult> vsimFP32(String key, byte[] vectorBlob, VSimParams params) {
+    return appendCommand(commandObjects.vsimFP32(key, vectorBlob, params));
+  }
+
+  @Override
+  public Response<Long> vdim(String key) {
+    return appendCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public Response<Long> vcard(String key) {
+    return appendCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public Response<List<Double>> vemb(String key, String element) {
+    return appendCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public Response<RawVector> vembRaw(String key, String element) {
+    return appendCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public Response<Boolean> vrem(String key, String element) {
+    return appendCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public Response<List<String>> vlinks(String key, String element) {
+    return appendCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public Response<Map<String, Double>> vlinksWithScores(String key, String element) {
+    return appendCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public Response<String> vrandmember(String key) {
+    return appendCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public Response<List<String>> vrandmember(String key, int count) {
+    return appendCommand(commandObjects.vrandmember(key, count));
+  }
+
+  // Binary vector set pipeline commands
+  @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element) {
+    return appendCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsim(byte[] key, float[] vector) {
+    return appendCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public Response<VSimResult> vsim(byte[] key, float[] vector, VSimParams params) {
+    return appendCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsimByElement(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public Response<VSimResult> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    return appendCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsimFP32(byte[] key, byte[] vectorBlob) {
+    return appendCommand(commandObjects.vsimFP32(key, vectorBlob));
+  }
+
+  @Override
+  public Response<VSimResult> vsimFP32(byte[] key, byte[] vectorBlob, VSimParams params) {
+    return appendCommand(commandObjects.vsimFP32(key, vectorBlob, params));
+  }
+
+  @Override
+  public Response<Long> vdim(byte[] key) {
+    return appendCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public Response<Long> vcard(byte[] key) {
+    return appendCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public Response<List<Double>> vemb(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public Response<RawVector> vembRaw(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public Response<Boolean> vrem(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public Response<List<byte[]>> vlinks(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public Response<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public Response<byte[]> vrandmember(byte[] key) {
+    return appendCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> vrandmember(byte[] key, int count) {
+    return appendCommand(commandObjects.vrandmember(key, count));
+  }
+  // Vector Set pipeline commands end
+
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }

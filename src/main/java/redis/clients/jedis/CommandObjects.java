@@ -4729,4 +4729,225 @@ public class CommandObjects {
     }
     return args;
   }
+
+  // Vector Set commands
+  public final CommandObject<Boolean> vadd(String key, float[] vector, String element) {
+    CommandArguments args = commandArguments(Command.VADD).key(key).add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    args.add(element);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vadd(String key, float[] vector, String element, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.addParams(params);
+    args.add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    args.add(element);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element) {
+    return new CommandObject<>(commandArguments(Command.VADD).key(key).add(Keyword.FP32).add(vectorBlob).add(element),
+        BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.addParams(params);
+    args.add(Keyword.FP32).add(vectorBlob).add(element);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element) {
+    CommandArguments args = commandArguments(Command.VADD).key(key).add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    args.add(element);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.addParams(params);
+    args.add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    args.add(element);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VADD).key(key).add(Keyword.FP32).add(vectorBlob).add(element),
+        BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.addParams(params);
+    args.add(Keyword.FP32).add(vectorBlob).add(element);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<String>> vsim(String key, float[] vector) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key).add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<VSimResult> vsim(String key, float[] vector, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.addParams(params);
+    args.add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES : BuilderFactory.VSIM_RESULT);
+  }
+
+  public final CommandObject<List<String>> vsimByElement(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.ELE).add(element),
+        BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<VSimResult> vsimByElement(String key, String element, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.addParams(params);
+    args.add(Keyword.ELE).add(element);
+    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES : BuilderFactory.VSIM_RESULT);
+  }
+
+  public final CommandObject<List<String>> vsimFP32(String key, byte[] vectorBlob) {
+    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.FP32).add(vectorBlob),
+        BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<VSimResult> vsimFP32(String key, byte[] vectorBlob, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.addParams(params);
+    args.add(Keyword.FP32).add(vectorBlob);
+    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES : BuilderFactory.VSIM_RESULT);
+  }
+
+  public final CommandObject<List<byte[]>> vsim(byte[] key, float[] vector) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key).add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<VSimResult> vsim(byte[] key, float[] vector, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.addParams(params);
+    args.add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES_BINARY : BuilderFactory.VSIM_RESULT_BINARY);
+  }
+
+  public final CommandObject<List<byte[]>> vsimByElement(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.ELE).add(element),
+        BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<VSimResult> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.addParams(params);
+    args.add(Keyword.ELE).add(element);
+    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES_BINARY : BuilderFactory.VSIM_RESULT_BINARY);
+  }
+
+  public final CommandObject<List<byte[]>> vsimFP32(byte[] key, byte[] vectorBlob) {
+    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.FP32).add(vectorBlob),
+        BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<VSimResult> vsimFP32(byte[] key, byte[] vectorBlob, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.addParams(params);
+    args.add(Keyword.FP32).add(vectorBlob);
+    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES_BINARY : BuilderFactory.VSIM_RESULT_BINARY);
+  }
+
+  public final CommandObject<Long> vdim(String key) {
+    return new CommandObject<>(commandArguments(Command.VDIM).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> vdim(byte[] key) {
+    return new CommandObject<>(commandArguments(Command.VDIM).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> vcard(String key) {
+    return new CommandObject<>(commandArguments(Command.VCARD).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> vcard(byte[] key) {
+    return new CommandObject<>(commandArguments(Command.VCARD).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Double>> vemb(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VEMB).key(key).add(element), BuilderFactory.VEMB_RESULT);
+  }
+
+  public final CommandObject<RawVector> vembRaw(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VEMB).key(key).add(element).add(Keyword.RAW), BuilderFactory.VEMB_RAW_RESULT);
+  }
+
+  public final CommandObject<List<Double>> vemb(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VEMB).key(key).add(element), BuilderFactory.VEMB_RESULT);
+  }
+
+  public final CommandObject<RawVector> vembRaw(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VEMB).key(key).add(element).add(Keyword.RAW), BuilderFactory.VEMB_RAW_RESULT);
+  }
+
+  public final CommandObject<Boolean> vrem(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VREM).key(key).add(element), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vrem(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VREM).key(key).add(element), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<String>> vlinks(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<Map<String, Double>> vlinksWithScores(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element).add(Keyword.WITHSCORES), BuilderFactory.VLINKS_WITH_SCORES_RESULT);
+  }
+
+  public final CommandObject<List<byte[]>> vlinks(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element).add(Keyword.WITHSCORES), BuilderFactory.VLINKS_WITH_SCORES_RESULT_BINARY);
+  }
+
+  public final CommandObject<String> vrandmember(String key) {
+    return new CommandObject<>(commandArguments(Command.VRANDMEMBER).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> vrandmember(String key, int count) {
+    return new CommandObject<>(commandArguments(Command.VRANDMEMBER).key(key).add(count), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<byte[]> vrandmember(byte[] key) {
+    return new CommandObject<>(commandArguments(Command.VRANDMEMBER).key(key), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<byte[]>> vrandmember(byte[] key, int count) {
+    return new CommandObject<>(commandArguments(Command.VRANDMEMBER).key(key).add(count), BuilderFactory.BINARY_LIST);
+  }
 }

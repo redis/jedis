@@ -9945,4 +9945,234 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return result;
   }
 
+  // Vector Set commands
+  @Override
+  public boolean vadd(String key, float[] vector, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public VSimResult vsim(String key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public VSimResult vsimByElement(String key, String element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public List<String> vsimFP32(String key, byte[] vectorBlob) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimFP32(key, vectorBlob));
+  }
+
+  @Override
+  public VSimResult vsimFP32(String key, byte[] vectorBlob, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimFP32(key, vectorBlob, params));
+  }
+
+  @Override
+  public long vdim(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<String> vlinks(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public Map<String, Double> vlinksWithScores(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public String vrandmember(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<String> vrandmember(String key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  // Binary vector set commands
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public VSimResult vsim(byte[] key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public VSimResult vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public List<byte[]> vsimFP32(byte[] key, byte[] vectorBlob) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimFP32(key, vectorBlob));
+  }
+
+  @Override
+  public VSimResult vsimFP32(byte[] key, byte[] vectorBlob, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimFP32(key, vectorBlob, params));
+  }
+
+  @Override
+  public long vdim(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<byte[]> vlinks(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public Map<byte[], Double> vlinksWithScores(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public byte[] vrandmember(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<byte[]> vrandmember(byte[] key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key, count));
+  }
+
 }

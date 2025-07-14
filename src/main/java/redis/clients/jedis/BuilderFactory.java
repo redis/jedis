@@ -2116,6 +2116,177 @@ public final class BuilderFactory {
     }
   };
 
+  // Vector Set builders
+  public static final Builder<VSimResult> VSIM_RESULT = new Builder<VSimResult>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public VSimResult build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      List<String> elements = list.stream().map(STRING::build).collect(Collectors.toList());
+      return new VSimResult(elements);
+    }
+
+    @Override
+    public String toString() {
+      return "VSimResult";
+    }
+  };
+
+  public static final Builder<VSimResult> VSIM_RESULT_WITH_SCORES = new Builder<VSimResult>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public VSimResult build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      List<String> elements = new ArrayList<>();
+      Map<String, Double> scores = new HashMap<>();
+
+      for (int i = 0; i < list.size(); i += 2) {
+        String element = STRING.build(list.get(i));
+        Double score = DOUBLE.build(list.get(i + 1));
+        elements.add(element);
+        scores.put(element, score);
+      }
+
+      return new VSimResult(elements, scores);
+    }
+
+    @Override
+    public String toString() {
+      return "VSimResult";
+    }
+  };
+
+  public static final Builder<VSimResult> VSIM_RESULT_BINARY = new Builder<VSimResult>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public VSimResult build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      List<String> elements = list.stream().map(STRING::build).collect(Collectors.toList());
+      return new VSimResult(elements);
+    }
+
+    @Override
+    public String toString() {
+      return "VSimResult";
+    }
+  };
+
+  public static final Builder<VSimResult> VSIM_RESULT_WITH_SCORES_BINARY = new Builder<VSimResult>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public VSimResult build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      List<String> elements = new ArrayList<>();
+      Map<String, Double> scores = new HashMap<>();
+
+      for (int i = 0; i < list.size(); i += 2) {
+        String element = STRING.build(list.get(i));
+        Double score = DOUBLE.build(list.get(i + 1));
+        elements.add(element);
+        scores.put(element, score);
+      }
+
+      return new VSimResult(elements, scores);
+    }
+
+    @Override
+    public String toString() {
+      return "VSimResult";
+    }
+  };
+
+  // VEMB builders
+  public static final Builder<List<Double>> VEMB_RESULT = new Builder<List<Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Double> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(DOUBLE::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Double>";
+    }
+  };
+
+  public static final Builder<RawVector> VEMB_RAW_RESULT = new Builder<RawVector>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public RawVector build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+
+      if (list.size() < 3) {
+        throw new IllegalArgumentException("Invalid VEMB RAW response format");
+      }
+
+      String quantizationType = STRING.build(list.get(0));
+      byte[] rawData = (byte[]) list.get(1);
+      Double norm = DOUBLE.build(list.get(2));
+      Double quantizationRange = list.size() > 3 ? DOUBLE.build(list.get(3)) : null;
+
+      return new RawVector(quantizationType, rawData, norm, quantizationRange);
+    }
+
+    @Override
+    public String toString() {
+      return "RawVector";
+    }
+  };
+
+  // VLINKS builders
+  public static final Builder<Map<String, Double>> VLINKS_WITH_SCORES_RESULT = new Builder<Map<String, Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Double> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      Map<String, Double> result = new HashMap<>();
+
+      for (int i = 0; i < list.size(); i += 2) {
+        String element = STRING.build(list.get(i));
+        Double score = DOUBLE.build(list.get(i + 1));
+        result.put(element, score);
+      }
+
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, Double>";
+    }
+  };
+
+  public static final Builder<Map<byte[], Double>> VLINKS_WITH_SCORES_RESULT_BINARY = new Builder<Map<byte[], Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], Double> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      Map<byte[], Double> result = new HashMap<>();
+
+      for (int i = 0; i < list.size(); i += 2) {
+        byte[] element = (byte[]) list.get(i);
+        Double score = DOUBLE.build(list.get(i + 1));
+        result.put(element, score);
+      }
+
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<byte[], Double>";
+    }
+  };
+
   /**
    * A decorator to implement Set from List. Assume that given List do not contains duplicated
    * values. The resulting set displays the same ordering, concurrency, and performance

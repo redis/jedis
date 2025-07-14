@@ -1,7 +1,7 @@
 package redis.clients.jedis.mcf;
 
 public enum HealthStatus {
-    HEALTHY(0x01), UNHEALTHY(0x02), FORCED_UNHEALTHY(0x04);
+    HEALTHY(0x01), UNHEALTHY(0x02);
 
     private final int value;
 
@@ -11,9 +11,5 @@ public enum HealthStatus {
 
     public boolean isHealthy() {
         return (this.value & HEALTHY.value) != 0;
-    }
-
-    public boolean isForcedUnhealthy() {
-        return (this.value & FORCED_UNHEALTHY.value) != 0;
     }
 }

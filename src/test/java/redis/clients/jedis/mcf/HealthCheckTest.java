@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 
 import java.util.concurrent.CountDownLatch;
@@ -64,14 +65,6 @@ public class HealthCheckTest {
     void testHealthStatusIsHealthy() {
         assertTrue(HealthStatus.HEALTHY.isHealthy());
         assertFalse(HealthStatus.UNHEALTHY.isHealthy());
-        assertFalse(HealthStatus.FORCED_UNHEALTHY.isHealthy());
-    }
-
-    @Test
-    void testHealthStatusIsForcedUnhealthy() {
-        assertFalse(HealthStatus.HEALTHY.isForcedUnhealthy());
-        assertFalse(HealthStatus.UNHEALTHY.isForcedUnhealthy());
-        assertTrue(HealthStatus.FORCED_UNHEALTHY.isForcedUnhealthy());
     }
 
     // ========== HostAndPort Tests ==========
@@ -270,70 +263,125 @@ public class HealthCheckTest {
 
     @Test
     void testEchoStrategyDefaultSupplier() {
-        FailoverOptions.StrategySupplier supplier = EchoStrategy.DEFAULT;
+        MultiClusterClientConfig.StrategySupplier supplier = EchoStrategy.DEFAULT;
         HealthCheckStrategy strategy = supplier.get(testEndpoint, testConfig);
 
         assertInstanceOf(EchoStrategy.class, strategy);
     }
 
-    // ========== FailoverOptions Tests ==========
+    // ========== Failover configuration Tests ==========
 
     @Test
-    void testFailoverOptionsBuilder() {
-        FailoverOptions options = FailoverOptions.builder().retryOnFailover(true).weight(2.5f).failback(true).build();
+    void testNewFieldLocations() {
+        // Test new field locations in ClusterConfig and MultiClusterClientConfig
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .weight(2.5f)
+            .build();
 
-        assertTrue(options.isRetryOnFailover());
-        assertEquals(2.5f, options.getWeight());
-        assertTrue(options.isFailbackEnabled());
+        MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
+            .retryOnFailover(true)
+            .failback(true)
+            .build();
+
+        assertEquals(2.5f, clusterConfig.getWeight());
+        assertTrue(multiConfig.isRetryOnFailover());
+        assertTrue(multiConfig.isFailback());
     }
 
     @Test
-    void testFailoverOptionsDefaultValues() {
-        FailoverOptions options = FailoverOptions.builder().build();
+    void testDefaultValues() {
+        // Test default values in ClusterConfig
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .build();
 
-        assertFalse(options.isRetryOnFailover()); // Default is false
-        assertEquals(1.0f, options.getWeight()); // Default weight
-        assertFalse(options.isFailbackEnabled()); // Default is false
+        assertEquals(1.0f, clusterConfig.getWeight()); // Default weight
+        assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier()); // Default is null (no health check)
+
+        // Test default values in MultiClusterClientConfig
+        MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
+            .build();
+
+        assertFalse(multiConfig.isRetryOnFailover()); // Default is false
+        assertFalse(multiConfig.isFailback()); // Default is false
     }
 
     @Test
-    void testFailoverOptionsWithHealthCheckStrategy() {
+    void testClusterConfigWithHealthCheckStrategy() {
         HealthCheckStrategy customStrategy = mock(HealthCheckStrategy.class);
 
-        FailoverOptions options = FailoverOptions.builder().healthCheckStrategy(customStrategy).build();
+        MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> customStrategy;
 
-        FailoverOptions.StrategySupplier supplier = options.getStrategySupplier();
-        assertNotNull(supplier);
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .healthCheckStrategySupplier(supplier)
+            .build();
 
-        HealthCheckStrategy result = supplier.get(testEndpoint, testConfig);
+        assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
+        HealthCheckStrategy result = clusterConfig.getHealthCheckStrategySupplier().get(testEndpoint, testConfig);
         assertEquals(customStrategy, result);
     }
 
     @Test
-    void testFailoverOptionsWithStrategySupplier() {
-        FailoverOptions.StrategySupplier customSupplier = (hostAndPort, jedisClientConfig) -> {
+    void testClusterConfigWithStrategySupplier() {
+        MultiClusterClientConfig.StrategySupplier customSupplier = (hostAndPort, jedisClientConfig) -> {
             return mock(HealthCheckStrategy.class);
         };
 
-        FailoverOptions options = FailoverOptions.builder().healthCheckStrategySupplier(customSupplier).build();
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .healthCheckStrategySupplier(customSupplier)
+            .build();
 
-        assertEquals(customSupplier, options.getStrategySupplier());
+        assertEquals(customSupplier, clusterConfig.getHealthCheckStrategySupplier());
     }
 
     @Test
-    void testFailoverOptionsWithEnabledHealthCheck() {
-        FailoverOptions options = FailoverOptions.builder().enableHealthCheck(true).build();
+    void testClusterConfigWithEchoStrategy() {
+        MultiClusterClientConfig.StrategySupplier echoSupplier = (hostAndPort, jedisClientConfig) -> {
+            return new EchoStrategy(hostAndPort, jedisClientConfig);
+        };
 
-        FailoverOptions.StrategySupplier supplier = options.getStrategySupplier();
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .healthCheckStrategySupplier(echoSupplier)
+            .build();
+
+        MultiClusterClientConfig.StrategySupplier supplier = clusterConfig.getHealthCheckStrategySupplier();
         assertNotNull(supplier);
-        assertEquals(EchoStrategy.DEFAULT, supplier);
+        assertInstanceOf(EchoStrategy.class, supplier.get(testEndpoint, testConfig));
     }
 
     @Test
-    void testFailoverOptionsWithDisabledHealthCheck() {
-        FailoverOptions options = FailoverOptions.builder().enableHealthCheck(false).build();
+    void testClusterConfigWithDefaultHealthCheck() {
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .build(); // Should use default EchoStrategy
 
-        assertNull(options.getStrategySupplier());
+        assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
+        assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier());
+    }
+
+    @Test
+    void testClusterConfigWithDisabledHealthCheck() {
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .healthCheckEnabled(false)
+            .build();
+
+        assertNull(clusterConfig.getHealthCheckStrategySupplier());
+    }
+
+    @Test
+    void testClusterConfigHealthCheckEnabledExplicitly() {
+        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+            .builder(testEndpoint, testConfig)
+            .healthCheckEnabled(true)
+            .build();
+
+        assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
+        assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier());
     }
 
     // ========== Integration Tests ==========
@@ -375,9 +423,9 @@ public class HealthCheckTest {
     }
 
     @Test
-    void testFailoverOptionsStrategySupplierPolymorphism() {
+    void testStrategySupplierPolymorphism() {
         // Test that the polymorphic design works correctly
-        FailoverOptions.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
+        MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
             if (jedisClientConfig != null) {
                 return new EchoStrategy(hostAndPort, jedisClientConfig, 500, 250);
             } else {

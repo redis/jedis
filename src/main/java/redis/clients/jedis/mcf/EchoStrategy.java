@@ -5,7 +5,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.FailoverOptions.StrategySupplier;
+import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
 

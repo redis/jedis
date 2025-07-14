@@ -68,8 +68,6 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                         + "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
             }
             // Ignore exceptions since we are already in a failure state
-        } catch (RuntimeException e) {
-            throw e;
         } finally {
             lock.unlock();
         }

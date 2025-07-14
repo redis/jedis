@@ -21,7 +21,6 @@ public class HealthStatusManager {
 
     public void registerListener(Endpoint endpoint, HealthStatusListener listener) {
         endpointListeners.computeIfAbsent(endpoint, k -> new CopyOnWriteArrayList<>()).add(listener);
-        listeners.add(listener);
     }
 
     public void unregisterListener(Endpoint endpoint, HealthStatusListener listener) {
@@ -29,7 +28,6 @@ public class HealthStatusManager {
             v.remove(listener);
             return v;
         });
-        listeners.remove(listener);
     }
 
     public void notifyListeners(HealthStatusChangeEvent eventArgs) {

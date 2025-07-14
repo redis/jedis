@@ -8,7 +8,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.Endpoint;
-import redis.clients.jedis.mcf.FailoverOptions;
+
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,10 +30,10 @@ public class MultiClusterPooledConnectionProviderTest {
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
         clusterConfigs[0] = ClusterConfig
             .builder(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build())
-            .failoverOptions(FailoverOptions.builder().weight(0.5f).build()).build();
+            .weight(0.5f).build();
         clusterConfigs[1] = ClusterConfig
             .builder(endpointStandalone1.getHostAndPort(), endpointStandalone1.getClientConfigBuilder().build())
-            .failoverOptions(FailoverOptions.builder().weight(0.3f).build()).build();
+            .weight(0.3f).build();
 
         provider = new MultiClusterPooledConnectionProvider(
             new MultiClusterClientConfig.Builder(clusterConfigs).build());
@@ -95,10 +95,10 @@ public class MultiClusterPooledConnectionProviderTest {
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
         clusterConfigs[0] = ClusterConfig
             .builder(new HostAndPort("purposefully-incorrect", 0000), DefaultJedisClientConfig.builder().build())
-            .failoverOptions(FailoverOptions.builder().weight(0.5f).build()).build();
+            .weight(0.5f).healthCheckEnabled(false).build();
         clusterConfigs[1] = ClusterConfig
             .builder(new HostAndPort("purposefully-incorrect", 0001), DefaultJedisClientConfig.builder().build())
-            .failoverOptions(FailoverOptions.builder().weight(0.4f).build()).build();
+            .weight(0.4f).healthCheckEnabled(false).build();
 
         MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
 
@@ -115,13 +115,7 @@ public class MultiClusterPooledConnectionProviderTest {
 
         try (UnifiedJedis jedis = new UnifiedJedis(localProvider)) {
 
-            // This should fail after 3 retries and meet the requirements to open the circuit on the next iteration
-            try {
-                jedis.get("foo");
-            } catch (Exception e) {
-            }
-
-            // This should fail after 3 retries and open the circuit which will trigger the post processor
+            // This will fail due to unable to connect and open the circuit which will trigger the post processor
             try {
                 jedis.get("foo");
             } catch (Exception e) {

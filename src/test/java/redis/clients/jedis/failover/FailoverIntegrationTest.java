@@ -19,8 +19,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.EchoStrategy;
-import redis.clients.jedis.mcf.FailoverOptions;
 
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -177,15 +175,7 @@ public class FailoverIntegrationTest {
         EndpointConfig... endpoints) {
 
         return Arrays.stream(endpoints)
-            .map(e -> new MultiClusterClientConfig.ClusterConfig(e.getHostAndPort(), clientConfig))
-            .collect(Collectors.toList());
-    }
-
-    private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(JedisClientConfig clientConfig,
-        FailoverOptions failoverOptions, EndpointConfig... endpoints) {
-
-        return Arrays.stream(endpoints).map(e -> MultiClusterClientConfig.ClusterConfig
-            .builder(e.getHostAndPort(), clientConfig).failoverOptions(failoverOptions).build())
+            .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig).build())
             .collect(Collectors.toList());
     }
 
@@ -419,20 +409,20 @@ public class FailoverIntegrationTest {
      * @return A configured provider
      */
     private MultiClusterPooledConnectionProvider createProvider(
-        Function<FailoverOptions.Builder, FailoverOptions.Builder> optionsCustomizer) {
-        FailoverOptions.Builder builder = FailoverOptions.builder();
-        if (optionsCustomizer != null) {
-            builder = optionsCustomizer.apply(builder);
-        }
+        Function<MultiClusterClientConfig.Builder, MultiClusterClientConfig.Builder> configCustomizer) {
         JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
             .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
             .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-        MultiClusterClientConfig failoverConfig = new MultiClusterClientConfig.Builder(
-            getClusterConfigs(clientConfig, builder.build(), endpoint1, endpoint2)).retryMaxAttempts(1)
-                .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED).circuitBreakerSlidingWindowSize(1)
-                .circuitBreakerFailureRateThreshold(100).circuitBreakerSlidingWindowMinCalls(1).build();
+        MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
+            getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1).retryWaitDuration(1)
+                .circuitBreakerSlidingWindowType(COUNT_BASED).circuitBreakerSlidingWindowSize(1)
+                .circuitBreakerFailureRateThreshold(100).circuitBreakerSlidingWindowMinCalls(1);
 
-        return new MultiClusterPooledConnectionProvider(failoverConfig);
+        if (configCustomizer != null) {
+            builder = configCustomizer.apply(builder);
+        }
+
+        return new MultiClusterPooledConnectionProvider(builder.build());
     }
 }

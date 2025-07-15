@@ -4990,4 +4990,12 @@ public class CommandObjects {
   public final CommandObject<List<byte[]>> vrandmember(byte[] key, int count) {
     return new CommandObject<>(commandArguments(Command.VRANDMEMBER).key(key).add(count), BuilderFactory.BINARY_LIST);
   }
+
+  public final CommandObject<String> vgetattr(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VGETATTR).key(key).add(element), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> vgetattr(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VGETATTR).key(key).add(element), BuilderFactory.BINARY);
+  }
 }

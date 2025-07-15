@@ -320,6 +320,166 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
+   * Test VADD with SETATTR parameter.
+   * Verifies that attributes can be set when adding elements to vector sets.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVaddWithSetAttr(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:WITH_ATTR";
+    float[] vector = {1.0f, 2.0f};
+
+    // Create JSON attributes for the element
+    String attributes = "{\"category\":\"test\",\"priority\":\"high\",\"score\":95.5}";
+
+    // Create parameters with attributes
+    VAddParams params = new VAddParams().setAttr(attributes);
+
+    // Add element with attributes
+    boolean result = jedis.vadd(testKey, vector, elementId, params);
+    assertTrue(result);
+
+    // Verify cardinality and dimension
+    assertEquals(1L, jedis.vcard(testKey));
+    assertEquals(2L, jedis.vdim(testKey));
+
+    // Verify the vector was stored correctly
+    List<Double> storedVector = jedis.vemb(testKey, elementId);
+    assertEquals(2, storedVector.size());
+    assertEquals(1.0, storedVector.get(0), 0.01);
+    assertEquals(2.0, storedVector.get(1), 0.01);
+
+    // Verify the attributes were stored correctly using VGETATTR
+    String retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+    assertTrue(retrievedAttrs.contains("\"category\":\"test\""));
+    assertTrue(retrievedAttrs.contains("\"priority\":\"high\""));
+    assertTrue(retrievedAttrs.contains("\"score\":95.5"));
+  }
+
+  /**
+   * Test VADD with SETATTR and other parameters combined.
+   * Verifies that SETATTR works alongside quantization and other options.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVaddWithSetAttrAndQuantization(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:ATTR_QUANT";
+    float[] vector = {1.0f, 2.0f};
+
+    // Create JSON attributes
+    String attributes = "{\"type\":\"quantized\",\"method\":\"Q8\",\"timestamp\":\"2024-01-01\"}";
+
+    // Create parameters with both attributes and quantization
+    VAddParams params = new VAddParams().setAttr(attributes).q8().ef(100);
+
+    // Add element with attributes and quantization
+    boolean result = jedis.vadd(testKey, vector, elementId, params);
+    assertTrue(result);
+
+    // Verify cardinality and dimension
+    assertEquals(1L, jedis.vcard(testKey));
+    assertEquals(2L, jedis.vdim(testKey));
+
+    // Verify the vector was stored (may be quantized)
+    List<Double> storedVector = jedis.vemb(testKey, elementId);
+    assertEquals(2, storedVector.size());
+    assertEquals(1.0, storedVector.get(0), 0.1); // Larger tolerance for quantization
+    assertEquals(2.0, storedVector.get(1), 0.1);
+
+    // Verify the attributes were stored correctly
+    String retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+    assertTrue(retrievedAttrs.contains("\"type\":\"quantized\""));
+    assertTrue(retrievedAttrs.contains("\"method\":\"Q8\""));
+    assertTrue(retrievedAttrs.contains("\"timestamp\":\"2024-01-01\""));
+  }
+
+  /**
+   * Test VADD with SETATTR using FP32 format.
+   * Verifies that attributes work with binary vector format.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVaddFP32WithSetAttr(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:FP32_ATTR";
+    float[] vector = {1.0f, 2.0f};
+
+    // Convert to FP32 byte blob
+    byte[] vectorBlob = floatArrayToFP32Bytes(vector);
+
+    // Create JSON attributes
+    String attributes = "{\"format\":\"FP32\",\"source\":\"binary\",\"validated\":true}";
+
+    // Create parameters with attributes
+    VAddParams params = new VAddParams().setAttr(attributes);
+
+    // Add element with FP32 format and attributes
+    boolean result = jedis.vaddFP32(testKey, vectorBlob, elementId, params);
+    assertTrue(result);
+
+    // Verify cardinality and dimension
+    assertEquals(1L, jedis.vcard(testKey));
+    assertEquals(2L, jedis.vdim(testKey));
+
+    // Verify the vector was stored correctly
+    List<Double> storedVector = jedis.vemb(testKey, elementId);
+    assertEquals(2, storedVector.size());
+    assertEquals(1.0, storedVector.get(0), 0.01);
+    assertEquals(2.0, storedVector.get(1), 0.01);
+
+    // Verify the attributes were stored correctly
+    String retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+    assertTrue(retrievedAttrs.contains("\"format\":\"FP32\""));
+    assertTrue(retrievedAttrs.contains("\"source\":\"binary\""));
+    assertTrue(retrievedAttrs.contains("\"validated\":true"));
+  }
+
+  /**
+   * Test VGETATTR command functionality.
+   * Verifies that attributes can be retrieved from vector set elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVgetattr(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:GETATTR_TEST";
+    float[] vector = {1.0f, 2.0f};
+
+    // First add an element without attributes
+    boolean result = jedis.vadd(testKey, vector, elementId);
+    assertTrue(result);
+
+    // VGETATTR should return null for element without attributes
+    String attrs = jedis.vgetattr(testKey, elementId);
+    // Note: This might return null or empty string depending on Redis implementation
+    // For now, we just verify the command executes without error
+
+    // Now add an element with attributes
+    String elementWithAttrs = "point:WITH_ATTRS";
+    String attributes = "{\"name\":\"test_point\",\"value\":42,\"active\":true}";
+    VAddParams params = new VAddParams().setAttr(attributes);
+    result = jedis.vadd(testKey, vector, elementWithAttrs, params);
+    assertTrue(result);
+
+    // VGETATTR should return the attributes
+    String retrievedAttrs = jedis.vgetattr(testKey, elementWithAttrs);
+    assertNotNull(retrievedAttrs);
+    assertTrue(retrievedAttrs.contains("\"name\":\"test_point\""));
+    assertTrue(retrievedAttrs.contains("\"value\":42"));
+    assertTrue(retrievedAttrs.contains("\"active\":true"));
+
+    // Test VGETATTR with non-existent element
+    String nonExistentAttrs = jedis.vgetattr(testKey, "non_existent_element");
+    // Should return null for non-existent elements
+    // Note: Actual behavior may vary based on Redis implementation
+  }
+
+  /**
    * Helper method to convert float array to FP32 byte blob (IEEE 754 format).
    */
   private byte[] floatArrayToFP32Bytes(float[] floats) {

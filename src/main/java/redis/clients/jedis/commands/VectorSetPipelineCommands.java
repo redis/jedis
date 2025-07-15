@@ -257,4 +257,15 @@ public interface VectorSetPipelineCommands {
    * @return Response wrapping list of random element names
    */
   Response<List<String>> vrandmember(String key, int count);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vgetattr/">VGETATTR Command</a></b>
+   * Get the attributes of an element in a vector set.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the name of the key that holds the vector set
+   * @param element the name of the element whose attributes to retrieve
+   * @return Response wrapping the attributes of the element as a JSON string, or null if the element doesn't exist or has no attributes
+   */
+  Response<String> vgetattr(String key, String element);
 }

@@ -10072,6 +10072,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.vrandmember(key, count));
   }
 
+  @Override
+  public String vgetattr(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vgetattr(key, element));
+  }
+
   // Binary vector set commands
   @Override
   public boolean vadd(byte[] key, float[] vector, byte[] element) {
@@ -10197,6 +10203,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<byte[]> vrandmember(byte[] key, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public byte[] vgetattr(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vgetattr(key, element));
   }
 
 }

@@ -4637,6 +4637,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.vrandmember(key, count));
   }
 
+  @Override
+  public Response<String> vgetattr(String key, String element) {
+    return appendCommand(commandObjects.vgetattr(key, element));
+  }
+
   // Binary vector set pipeline commands
   @Override
   public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element) {
@@ -4741,6 +4746,11 @@ public abstract class PipeliningBase
   @Override
   public Response<List<byte[]>> vrandmember(byte[] key, int count) {
     return appendCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public Response<byte[]> vgetattr(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vgetattr(key, element));
   }
   // Vector Set pipeline commands end
 

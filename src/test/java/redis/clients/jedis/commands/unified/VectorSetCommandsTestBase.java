@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.redis.test.annotations.SinceRedisVersion;
@@ -207,6 +208,115 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(1.0, noQuantVector.get(0), 0.01);
     assertEquals(2.0, noQuantVector.get(1), 0.01);
     assertEquals(1L, jedis.vcard(q8Key));
+  }
+
+  /**
+   * Test VADD with dimension reduction using float array.
+   * Verifies that high-dimensional vectors are reduced to target dimensions.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVaddWithReduceDimension(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:REDUCED";
+    // Use a 4-dimensional vector that will be reduced to 2 dimensions
+    float[] highDimVector = {1.0f, 2.0f, 3.0f, 4.0f};
+    int targetDim = 2;
+
+    // Create parameters for dimension reduction
+    VAddParams params = new VAddParams();
+
+    // Add element with dimension reduction
+    boolean result = jedis.vadd(testKey, highDimVector, elementId, targetDim, params);
+    assertTrue(result);
+
+    // Verify cardinality
+    assertEquals(1L, jedis.vcard(testKey));
+
+    // Verify the vector was reduced to target dimensions
+    assertEquals(targetDim, jedis.vdim(testKey));
+
+    // Retrieve and verify the reduced vector
+    List<Double> reducedVector = jedis.vemb(testKey, elementId);
+    assertEquals(targetDim, reducedVector.size());
+
+    // The values will be different due to random projection, but should exist
+    assertNotNull(reducedVector.get(0));
+    assertNotNull(reducedVector.get(1));
+  }
+
+  /**
+   * Test vaddFP32 with dimension reduction using byte blob.
+   * Verifies that FP32 format vectors are properly reduced.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVaddFP32WithReduceDimension(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:FP32_REDUCED";
+    // Use a 4-dimensional vector that will be reduced to 2 dimensions
+    float[] highDimVector = {1.0f, 2.0f, 3.0f, 4.0f};
+    int targetDim = 2;
+
+    // Convert to FP32 byte blob
+    byte[] vectorBlob = floatArrayToFP32Bytes(highDimVector);
+
+    // Create parameters for dimension reduction
+    VAddParams params = new VAddParams();
+
+    // Add element with dimension reduction using FP32 format
+    boolean result = jedis.vaddFP32(testKey, vectorBlob, elementId, targetDim, params);
+    assertTrue(result);
+
+    // Verify cardinality
+    assertEquals(1L, jedis.vcard(testKey));
+
+    // Verify the vector was reduced to target dimensions
+    assertEquals(targetDim, jedis.vdim(testKey));
+
+    // Retrieve and verify the reduced vector
+    List<Double> reducedVector = jedis.vemb(testKey, elementId);
+    assertEquals(targetDim, reducedVector.size());
+
+    // The values will be different due to random projection, but should exist
+    assertNotNull(reducedVector.get(0));
+    assertNotNull(reducedVector.get(1));
+  }
+
+  /**
+   * Test VADD with dimension reduction and additional parameters.
+   * Verifies that REDUCE works alongside other VAddParams.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVaddWithReduceDimensionAndParams(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:REDUCED_WITH_PARAMS";
+    // Use a 6-dimensional vector that will be reduced to 3 dimensions
+    float[] highDimVector = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+    int targetDim = 3;
+
+    // Create parameters with quantization and dimension reduction
+    VAddParams params = new VAddParams().q8().ef(100);
+
+    // Add element with dimension reduction and additional parameters
+    boolean result = jedis.vadd(testKey, highDimVector, elementId, targetDim, params);
+    assertTrue(result);
+
+    // Verify cardinality
+    assertEquals(1L, jedis.vcard(testKey));
+
+    // Verify the vector was reduced to target dimensions
+    assertEquals(targetDim, jedis.vdim(testKey));
+
+    // Retrieve and verify the reduced vector
+    List<Double> reducedVector = jedis.vemb(testKey, elementId);
+    assertEquals(targetDim, reducedVector.size());
+
+    // All dimensions should have values (may be quantized)
+    for (Double value : reducedVector) {
+      assertNotNull(value);
+    }
   }
 
   /**

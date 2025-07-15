@@ -9971,6 +9971,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public boolean vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
   public List<String> vsim(String key, float[] vector) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsim(key, vector));
@@ -10083,6 +10095,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
   }
 
   @Override

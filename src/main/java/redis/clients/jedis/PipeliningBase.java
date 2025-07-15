@@ -4553,6 +4553,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
   public Response<List<String>> vsim(String key, float[] vector) {
     return appendCommand(commandObjects.vsim(key, vector));
   }
@@ -4646,6 +4656,16 @@ public abstract class PipeliningBase
   @Override
   public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
     return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
   }
 
   @Override

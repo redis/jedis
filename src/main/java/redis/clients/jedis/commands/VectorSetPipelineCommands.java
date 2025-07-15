@@ -66,6 +66,34 @@ public interface VectorSetPipelineCommands {
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params);
 
   /**
+   * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b>
+   * Add a new element into the vector set specified by key with dimension reduction and additional parameters.
+   * <p>
+   * Time complexity: O(log(N)) for each element added, where N is the number of elements in the vector set.
+   * @param key the name of the key that will hold the vector set data
+   * @param vector the vector as floating point numbers
+   * @param element the name of the element that is being added to the vector set
+   * @param reduceDim the target dimension after reduction using random projection
+   * @param params additional parameters for the VADD command
+   * @return Response wrapping 1 if key was added; 0 if key was not added
+   */
+  Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b>
+   * Add a new element into the vector set specified by key using FP32 binary format with dimension reduction and additional parameters.
+   * <p>
+   * Time complexity: O(log(N)) for each element added, where N is the number of elements in the vector set.
+   * @param key the name of the key that will hold the vector set data
+   * @param vectorBlob the vector as FP32 binary blob
+   * @param element the name of the element that is being added to the vector set
+   * @param reduceDim the target dimension after reduction using random projection
+   * @param params additional parameters for the VADD command
+   * @return Response wrapping 1 if key was added; 0 if key was not added
+   */
+  Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b>
    * Return elements similar to a given vector.
    * <p>

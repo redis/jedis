@@ -4795,6 +4795,46 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
+  public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.add(Keyword.REDUCE).add(reduceDim);
+    args.add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    args.add(element);
+    args.addParams(params);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.add(Keyword.REDUCE).add(reduceDim);
+    args.add(Keyword.FP32).add(vectorBlob).add(element);
+    args.addParams(params);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.add(Keyword.REDUCE).add(reduceDim);
+    args.add(Keyword.VALUES).add(vector.length);
+    for (float value : vector) {
+      args.add(value);
+    }
+    args.add(element);
+    args.addParams(params);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    CommandArguments args = commandArguments(Command.VADD).key(key);
+    args.add(Keyword.REDUCE).add(reduceDim);
+    args.add(Keyword.FP32).add(vectorBlob).add(element);
+    args.addParams(params);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
   public final CommandObject<List<String>> vsim(String key, float[] vector) {
     CommandArguments args = commandArguments(Command.VSIM).key(key).add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {

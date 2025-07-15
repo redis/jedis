@@ -108,20 +108,6 @@ public interface StringCommands extends BitCommands {
   String getrange(String key, long startOffset, long endOffset);
 
   /**
-   * <b><a href="http://redis.io/commands/getset">GetSet Command</a></b>
-   * GETSET is an atomic set this value and return the old value command. Set key to the string
-   * value and return the old value stored at key. The string can't be longer than 1073741824 byte (1 GB).
-   * <p>
-   * Time complexity: O(1)
-   * @param key
-   * @param value
-   * @return The old value that was stored in key
-   * @deprecated Use {@link StringCommands#setGet(java.lang.String, java.lang.String)}.
-   */
-  @Deprecated
-  String getSet(String key, String value);
-
-  /**
    * <b><a href="http://redis.io/commands/setnx">SetNE Command</a></b>
    * SETNX works exactly like {@link StringCommands#set(String, String) SET} with the only difference that if
    * the key already exists no operation is performed. SETNX actually means "SET if Not Exists".

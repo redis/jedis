@@ -886,7 +886,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @deprecated Use {@link Jedis#setGet(byte[], byte[])}.
    */
   @Deprecated
-  @Override
   public byte[] getSet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.getSet(key, value));
@@ -2738,7 +2737,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
-  @Override
   @Deprecated
   public long zdiffStore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
@@ -4777,7 +4775,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    *     parsing.
    */
   @Deprecated
-  @Override
   public List<Object> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xread(xReadParams, streams));
@@ -4789,7 +4786,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
    */
   @Deprecated
-  @Override
   public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
@@ -5476,7 +5472,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @deprecated Use {@link Jedis#setGet(java.lang.String, java.lang.String)}.
    */
   @Deprecated
-  @Override
   public String getSet(final String key, final String value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.getSet(key, value));
@@ -6646,7 +6641,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
-  @Override
   @Deprecated
   public long zdiffStore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();

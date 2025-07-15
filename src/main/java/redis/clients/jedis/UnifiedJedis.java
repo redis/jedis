@@ -341,7 +341,6 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
    * @deprecated Use {@link UnifiedJedis#setGet(java.lang.String, java.lang.String)}.
    */
   @Deprecated
-  @Override
   public String getSet(String key, String value) {
     return executeCommand(commandObjects.getSet(key, value));
   }
@@ -350,19 +349,16 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
    * @deprecated Use {@link UnifiedJedis#setGet(byte[], byte[])}.
    */
   @Deprecated
-  @Override
   public byte[] getSet(byte[] key, byte[] value) {
     return executeCommand(commandObjects.getSet(key, value));
   }
 
   // Sorted Set commands
-  @Override
   @Deprecated
   public long zdiffStore(String dstkey, String... keys) {
     return executeCommand(commandObjects.zdiffStore(dstkey, keys));
   }
 
-  @Override
   @Deprecated
   public long zdiffStore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.zdiffStore(dstkey, keys));
@@ -377,7 +373,6 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
    *     parsing.
    */
   @Deprecated
-  @Override
   public List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }
@@ -388,7 +383,6 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
    *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
    */
   @Deprecated
-  @Override
   public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(
@@ -397,31 +391,26 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
   // Stream commands
 
   // RediSearch commands
-  @Override
   @Deprecated
   public SearchResult ftSearch(byte[] indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
 
-  @Override
   @Deprecated
   public Map<String, Object> ftConfigGet(String option) {
     return executeCommand(commandObjects.ftConfigGet(option));
   }
 
-  @Override
   @Deprecated
   public Map<String, Object> ftConfigGet(String indexName, String option) {
     return executeCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
-  @Override
   @Deprecated
   public String ftConfigSet(String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(option, value));
   }
 
-  @Override
   @Deprecated
   public String ftConfigSet(String indexName, String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(indexName, option, value));

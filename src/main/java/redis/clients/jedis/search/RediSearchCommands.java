@@ -61,9 +61,6 @@ public interface RediSearchCommands {
 
   SearchResult ftSearch(String indexName, Query query);
 
-  @Deprecated
-  SearchResult ftSearch(byte[] indexName, Query query);
-
   String ftExplain(String indexName, Query query);
 
   List<String> ftExplainCLI(String indexName, Query query);
@@ -107,24 +104,6 @@ public interface RediSearchCommands {
   Map<String, Object> ftInfo(String indexName);
 
   Set<String> ftTagVals(String indexName, String fieldName);
-
-  /**
-   * @deprecated {@link ConfigCommands#configGet(java.lang.String)} is used since Redis 8.
-   */
-  @Deprecated
-  Map<String, Object> ftConfigGet(String option);
-
-  @Deprecated
-  Map<String, Object> ftConfigGet(String indexName, String option);
-
-  /**
-   * @deprecated {@link ConfigCommands#configSet(java.lang.String, java.lang.String)} is used since Redis 8.
-   */
-  @Deprecated
-  String ftConfigSet(String option, String value);
-
-  @Deprecated
-  String ftConfigSet(String indexName, String option, String value);
 
   long ftSugAdd(String key, String string, double score);
 

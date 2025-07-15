@@ -1,19 +1,17 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-import java.time.Duration;
-import java.util.Set;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.executors.DefaultCommandExecutor;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
+import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.JedisURIHelper;
 
 /**
  * Redis client that provides a clean, developer-friendly API for Redis operations.
@@ -40,11 +38,14 @@ import redis.clients.jedis.util.IOUtils;
  * }
  *
  * // With configuration
+ * JedisClientConfig config = DefaultJedisClientConfig.builder()
+ *         .password("secret")
+ *         .database(1)
+ *         .build();
  * try (RedisClient client = RedisClient.builder()
  *         .host("localhost")
  *         .port(6379)
- *         .password("secret")
- *         .database(1)
+ *         .config(config)
  *         .build()) {
  *     client.set("key", "value");
  * }
@@ -58,12 +59,13 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
     private final CommandExecutor executor;
     private final ConnectionProvider provider;
     private final CommandObjects commandObjects;
+    private final Cache cache;
 
     /**
      * Creates a Redis client with default configuration connecting to localhost:6379.
      */
     public RedisClient() {
-        this("localhost", Protocol.DEFAULT_PORT);
+        this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
     }
 
     /**
@@ -82,45 +84,7 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
      * @param hostAndPort the Redis server host and port
      */
     public RedisClient(HostAndPort hostAndPort) {
-        this(hostAndPort, DefaultJedisClientConfig.builder().build());
-    }
-
-    /**
-     * Creates a Redis client with the specified client configuration.
-     *
-     * @param clientConfig the client configuration
-     */
-    public RedisClient(JedisClientConfig clientConfig) {
-        this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT), clientConfig);
-    }
-
-    /**
-     * Creates a Redis client connecting to the specified host and port with the given configuration.
-     *
-     * @param hostAndPort the Redis server host and port
-     * @param clientConfig the client configuration
-     */
-    public RedisClient(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-        this(hostAndPort, clientConfig, new ConnectionPoolConfig());
-    }
-
-    /**
-     * Creates a Redis client with full configuration.
-     *
-     * @param hostAndPort the Redis server host and port
-     * @param clientConfig the client configuration
-     * @param poolConfig the connection pool configuration
-     */
-    public RedisClient(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-                      GenericObjectPoolConfig<Connection> poolConfig) {
-        this.provider = new PooledConnectionProvider(hostAndPort, clientConfig, poolConfig);
-        this.executor = new DefaultCommandExecutor(provider);
-        this.commandObjects = new CommandObjects();
-
-        // Set protocol if specified
-        if (clientConfig.getRedisProtocol() != null) {
-            this.commandObjects.setProtocol(clientConfig.getRedisProtocol());
-        }
+        this(builder().host(hostAndPort.getHost()).port(hostAndPort.getPort()));
     }
 
     /**
@@ -128,35 +92,49 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
      *
      * @param uri the Redis URI (e.g., "redis://localhost:6379")
      */
-    public RedisClient(URI uri) {
-        this(uri, DefaultJedisClientConfig.builder().build());
-    }
-
-    /**
-     * Creates a Redis client from a URI with the specified configuration.
-     *
-     * @param uri the Redis URI
-     * @param clientConfig the client configuration
-     */
-    public RedisClient(URI uri, JedisClientConfig clientConfig) {
-        this(new HostAndPort(uri.getHost(), uri.getPort() == -1 ? Protocol.DEFAULT_PORT : uri.getPort()),
-             mergeUriConfig(uri, clientConfig));
+    public RedisClient(final URI uri) {
+        this(builder().fromURI(uri));
     }
 
     /**
      * Package-private constructor for builder.
      */
     RedisClient(Builder builder) {
-        this.provider = new PooledConnectionProvider(
-            new HostAndPort(builder.host, builder.port),
-            builder.clientConfig,
-            builder.poolConfig
-        );
+        // Use custom connection provider if provided, otherwise create default pooled provider
+        if (builder.connectionProvider != null) {
+            this.provider = builder.connectionProvider;
+        } else {
+            this.provider = new PooledConnectionProvider(
+                new HostAndPort(builder.host, builder.port),
+                builder.clientConfig,
+                builder.poolConfig
+            );
+        }
+
         this.executor = new DefaultCommandExecutor(provider);
         this.commandObjects = new CommandObjects();
 
         if (builder.clientConfig.getRedisProtocol() != null) {
             this.commandObjects.setProtocol(builder.clientConfig.getRedisProtocol());
+        }
+
+        if (builder.cache != null) {
+            this.cache = builder.cache;
+        } else {
+            this.cache = null;
+        }
+
+        // Apply builder configuration to CommandObjects
+        if (builder.keyPreProcessor != null) {
+            this.commandObjects.setKeyArgumentPreProcessor(builder.keyPreProcessor);
+        }
+
+        if (builder.jsonObjectMapper != null) {
+            this.commandObjects.setJsonObjectMapper(builder.jsonObjectMapper);
+        }
+
+        if (builder.searchDialect != SearchProtocol.DEFAULT_DIALECT) {
+            this.commandObjects.setDefaultSearchDialect(builder.searchDialect);
         }
     }
 
@@ -170,6 +148,10 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
     @Override
     protected ConnectionProvider getConnectionProvider() {
         return provider;
+    }
+
+    public Cache getCache() {
+        return cache;
     }
 
     @Override
@@ -233,64 +215,76 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
     }
 
     /**
-     * Merges URI configuration with client configuration.
-     */
-    private static JedisClientConfig mergeUriConfig(URI uri, JedisClientConfig clientConfig) {
-        DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder().from(clientConfig);
-        
-        // Extract database from URI path
-        if (uri.getPath() != null && uri.getPath().length() > 1) {
-            try {
-                int database = Integer.parseInt(uri.getPath().substring(1));
-                builder.database(database);
-            } catch (NumberFormatException e) {
-                // Ignore invalid database in URI
-            }
-        }
-        
-        // Extract credentials from URI
-        if (uri.getUserInfo() != null) {
-            String[] userInfo = uri.getUserInfo().split(":", 2);
-            if (userInfo.length == 1) {
-                builder.password(userInfo[0]);
-            } else if (userInfo.length == 2) {
-                builder.user(userInfo[0]).password(userInfo[1]);
-            }
-        }
-        
-        // Set SSL if scheme is rediss
-        if ("rediss".equals(uri.getScheme())) {
-            builder.ssl(true);
-        }
-        
-        return builder.build();
-    }
-
-    /**
      * Builder for configuring RedisClient instances.
      *
-     * <p>Provides a fluent API for setting connection parameters, authentication,
-     * SSL configuration, and connection pooling options.
+     * <p>Provides a fluent API for setting connection parameters and advanced Redis client features.
+     * For detailed client configuration (authentication, SSL, timeouts, etc.), use
+     * {@link DefaultJedisClientConfig.Builder} and pass the result to {@link #config(JedisClientConfig)}.
      *
      * <p>Example usage:
      * <pre>{@code
+     * // Simple configuration
      * RedisClient client = RedisClient.builder()
      *     .host("redis.example.com")
      *     .port(6379)
+     *     .build();
+     *
+     * // Advanced configuration with custom client config
+     * JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
      *     .password("secret")
      *     .database(1)
      *     .ssl(true)
-     *     .connectionTimeout(Duration.ofSeconds(5))
-     *     .socketTimeout(Duration.ofSeconds(10))
-     *     .maxPoolSize(20)
+     *     .connectionTimeoutMillis(5000)
+     *     .socketTimeoutMillis(10000)
+     *     .build();
+     *
+     * // Advanced configuration with custom pool config
+     * ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+     * poolConfig.setMaxTotal(20);
+     * poolConfig.setMaxIdle(10);
+     *
+     * RedisClient client = RedisClient.builder()
+     *     .host("redis.example.com")
+     *     .port(6379)
+     *     .config(clientConfig)
+     *     .poolConfig(poolConfig)
+     *     .cache(cache)
+     *     .build();
+     *
+     * // Custom connection provider
+     * ConnectionProvider customProvider = new MyCustomConnectionProvider();
+     * RedisClient client = RedisClient.builder()
+     *     .connectionProvider(customProvider)
+     *     .build();
+     *
+     * // Advanced configuration with custom processors and mappers
+     * CommandKeyArgumentPreProcessor keyProcessor = new PrefixedKeyArgumentPreProcessor("myapp:");
+     * JsonObjectMapper jsonMapper = new MyCustomJsonMapper();
+     * RedisClient client = RedisClient.builder()
+     *     .host("redis.example.com")
+     *     .port(6379)
+     *     .keyPreProcessor(keyProcessor)
+     *     .jsonObjectMapper(jsonMapper)
+     *     .searchDialect(3)
      *     .build();
      * }</pre>
      */
     public static class Builder {
+        // Connection details (not part of JedisClientConfig)
         private String host = "localhost";
         private int port = Protocol.DEFAULT_PORT;
+
+        // Client configuration
         private JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
+
+        // Additional configuration not part of JedisClientConfig
         private GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
+        private Cache cache = null;
+        private ConnectionProvider connectionProvider = null;
+
+        private CommandKeyArgumentPreProcessor keyPreProcessor = null;
+        private JsonObjectMapper jsonObjectMapper = null;
+        private int searchDialect = SearchProtocol.DEFAULT_DIALECT;
 
         private Builder() {
         }
@@ -320,10 +314,13 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
         /**
          * Sets the complete client configuration.
          *
+         * <p>Use {@link DefaultJedisClientConfig.Builder} to create advanced configurations
+         * with authentication, SSL, timeouts, and other Redis client settings.
+         *
          * @param clientConfig the client configuration
          * @return this builder
          */
-        public Builder clientConfig(JedisClientConfig clientConfig) {
+        public Builder config(JedisClientConfig clientConfig) {
             this.clientConfig = clientConfig;
             return this;
         }
@@ -340,211 +337,74 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
         }
 
         /**
-         * Sets the Redis password for authentication.
+         * Sets the client-side cache for caching Redis responses.
          *
-         * @param password the password
+         * @param cache the cache instance
          * @return this builder
          */
-        public Builder password(String password) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .password(password)
-                .build();
+        public Builder cache(Cache cache) {
+            this.cache = cache;
             return this;
         }
 
         /**
-         * Sets the Redis username and password for ACL authentication.
+         * Sets a custom connection provider.
          *
-         * @param user the username
-         * @param password the password
+         * <p>When a custom connection provider is set, the host, port, clientConfig,
+         * and poolConfig settings will be ignored as the provider is responsible
+         * for managing connections.
+         *
+         * @param connectionProvider the connection provider
          * @return this builder
          */
-        public Builder auth(String user, String password) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .user(user)
-                .password(password)
-                .build();
+        public Builder connectionProvider(ConnectionProvider connectionProvider) {
+            this.connectionProvider = connectionProvider;
             return this;
         }
 
         /**
-         * Sets the Redis database number.
+         * Sets a key preprocessor for transforming Redis keys before sending commands.
          *
-         * @param database the database number (0-15 typically)
+         * <p>The key preprocessor allows you to modify keys before they are sent to Redis,
+         * for example to add prefixes or perform other transformations.
+         *
+         * @param keyPreProcessor the key preprocessor
          * @return this builder
          */
-        public Builder database(int database) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .database(database)
-                .build();
+        public Builder keyPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
+            this.keyPreProcessor = keyPreProcessor;
             return this;
         }
 
         /**
-         * Sets the client name for this connection.
+         * Sets a custom JSON object mapper for JSON operations.
          *
-         * @param clientName the client name
+         * <p>The JSON object mapper is used for serializing and deserializing objects
+         * in JSON commands. If not set, a default Gson-based mapper will be used.
+         *
+         * @param jsonObjectMapper the JSON object mapper
          * @return this builder
          */
-        public Builder clientName(String clientName) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .clientName(clientName)
-                .build();
+        public Builder jsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+            this.jsonObjectMapper = jsonObjectMapper;
             return this;
         }
 
         /**
-         * Enables or disables SSL/TLS encryption.
+         * Sets the default search dialect for RediSearch operations.
          *
-         * @param ssl true to enable SSL, false to disable
-         * @return this builder
-         */
-        public Builder ssl(boolean ssl) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .ssl(ssl)
-                .build();
-            return this;
-        }
-
-        /**
-         * Sets the SSL socket factory for custom SSL configuration.
+         * <p>The search dialect determines the query syntax and features available
+         * for RediSearch commands. Default is {@value redis.clients.jedis.search.SearchProtocol#DEFAULT_DIALECT}.
          *
-         * @param sslSocketFactory the SSL socket factory
+         * @param searchDialect the search dialect version
          * @return this builder
+         * @throws IllegalArgumentException if dialect is 0 (not allowed)
          */
-        public Builder sslSocketFactory(SSLSocketFactory sslSocketFactory) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .sslSocketFactory(sslSocketFactory)
-                .build();
-            return this;
-        }
-
-        /**
-         * Sets the SSL parameters for SSL connections.
-         *
-         * @param sslParameters the SSL parameters
-         * @return this builder
-         */
-        public Builder sslParameters(SSLParameters sslParameters) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .sslParameters(sslParameters)
-                .build();
-            return this;
-        }
-
-        /**
-         * Sets the hostname verifier for SSL connections.
-         *
-         * @param hostnameVerifier the hostname verifier
-         * @return this builder
-         */
-        public Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .hostnameVerifier(hostnameVerifier)
-                .build();
-            return this;
-        }
-
-        /**
-         * Sets the connection timeout.
-         *
-         * @param timeout the connection timeout
-         * @return this builder
-         */
-        public Builder connectionTimeout(Duration timeout) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .connectionTimeoutMillis((int) timeout.toMillis())
-                .build();
-            return this;
-        }
-
-        /**
-         * Sets the socket timeout for Redis operations.
-         *
-         * @param timeout the socket timeout
-         * @return this builder
-         */
-        public Builder socketTimeout(Duration timeout) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .socketTimeoutMillis((int) timeout.toMillis())
-                .build();
-            return this;
-        }
-
-        /**
-         * Sets the Redis protocol version.
-         *
-         * @param protocol the Redis protocol (RESP2 or RESP3)
-         * @return this builder
-         */
-        public Builder protocol(RedisProtocol protocol) {
-            this.clientConfig = DefaultJedisClientConfig.builder()
-                .from(this.clientConfig)
-                .protocol(protocol)
-                .build();
-            return this;
-        }
-
-        /**
-         * Shortcut to set RESP3 protocol.
-         *
-         * @return this builder
-         */
-        public Builder resp3() {
-            return protocol(RedisProtocol.RESP3);
-        }
-
-        /**
-         * Sets the maximum number of connections in the pool.
-         *
-         * @param maxTotal the maximum total connections
-         * @return this builder
-         */
-        public Builder maxPoolSize(int maxTotal) {
-            this.poolConfig.setMaxTotal(maxTotal);
-            return this;
-        }
-
-        /**
-         * Sets the maximum number of idle connections in the pool.
-         *
-         * @param maxIdle the maximum idle connections
-         * @return this builder
-         */
-        public Builder maxIdleConnections(int maxIdle) {
-            this.poolConfig.setMaxIdle(maxIdle);
-            return this;
-        }
-
-        /**
-         * Sets the minimum number of idle connections in the pool.
-         *
-         * @param minIdle the minimum idle connections
-         * @return this builder
-         */
-        public Builder minIdleConnections(int minIdle) {
-            this.poolConfig.setMinIdle(minIdle);
-            return this;
-        }
-
-        /**
-         * Sets the maximum time to wait for a connection from the pool.
-         *
-         * @param maxWait the maximum wait time
-         * @return this builder
-         */
-        public Builder maxWaitTime(Duration maxWait) {
-            this.poolConfig.setMaxWait(maxWait);
+        public Builder searchDialect(int searchDialect) {
+            if (searchDialect == 0) {
+                throw new IllegalArgumentException("DIALECT=0 cannot be set.");
+            }
+            this.searchDialect = searchDialect;
             return this;
         }
 
@@ -563,6 +423,11 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
          * Validates the builder configuration.
          */
         private void validateConfiguration() {
+            // If custom connection provider is set, skip host/port/config validation
+            if (connectionProvider != null) {
+                return;
+            }
+
             if (host == null || host.trim().isEmpty()) {
                 throw new IllegalArgumentException("Host cannot be null or empty");
             }
@@ -575,6 +440,34 @@ public class RedisClient extends BaseRedisClient implements AutoCloseable {
             if (poolConfig == null) {
                 throw new IllegalArgumentException("Pool configuration cannot be null");
             }
+        }
+
+        /**
+         * Configures the builder from a Redis URI.
+         *
+         * <p>Parses the URI to extract connection parameters including host, port,
+         * authentication credentials, database, protocol, and SSL settings.
+         *
+         * <p>Supported URI formats:
+         * <ul>
+         *   <li>{@code redis://[user:password@]host[:port][/database][?protocol=3]}</li>
+         *   <li>{@code rediss://[user:password@]host[:port][/database][?protocol=3]} (SSL)</li>
+         * </ul>
+         *
+         * @param uri the Redis URI to parse
+         * @return this builder
+         * @throws IllegalArgumentException if the URI is invalid
+         */
+        public Builder fromURI(URI uri) {
+            HostAndPort hnp = JedisURIHelper.getHostAndPort(uri);
+            this.host = hnp.getHost();
+            this.port = hnp.getPort();
+
+            this.clientConfig = DefaultJedisClientConfig.builder()
+                .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+                .database(JedisURIHelper.getDBIndex(uri)).protocol(JedisURIHelper.getRedisProtocol(uri))
+                .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build();
+            return this;
         }
     }
 }

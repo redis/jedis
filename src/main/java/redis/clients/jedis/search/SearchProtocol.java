@@ -6,6 +6,8 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class SearchProtocol {
 
+  public static final int DEFAULT_DIALECT = 2;
+
   public enum SearchCommand implements ProtocolCommand {
 
     CREATE("FT.CREATE"),

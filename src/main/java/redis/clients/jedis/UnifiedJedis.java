@@ -5249,6 +5249,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.vgetattr(key, element));
   }
 
+  @Override
+  public boolean vsetattr(String key, String element, String attributes) {
+    return executeCommand(commandObjects.vsetattr(key, element, attributes));
+  }
+
   // Binary vector set commands
   @Override
   public boolean vadd(byte[] key, float[] vector, byte[] element) {
@@ -5358,5 +5363,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] vgetattr(byte[] key, byte[] element) {
     return executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(byte[] key, byte[] element, byte[] attributes) {
+    return executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 }

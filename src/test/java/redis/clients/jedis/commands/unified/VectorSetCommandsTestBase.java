@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.redis.test.annotations.SinceRedisVersion;
@@ -330,8 +331,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String elementId = "point:WITH_ATTR";
     float[] vector = {1.0f, 2.0f};
 
-    // Create JSON attributes for the element
-    String attributes = "{\"category\":\"test\",\"priority\":\"high\",\"score\":95.5}";
+    // Create simple text attributes for the element
+    String attributes = "category=test,priority=high,score=95.5";
 
     // Create parameters with attributes
     VAddParams params = new VAddParams().setAttr(attributes);
@@ -353,9 +354,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Verify the attributes were stored correctly using VGETATTR
     String retrievedAttrs = jedis.vgetattr(testKey, elementId);
     assertNotNull(retrievedAttrs);
-    assertTrue(retrievedAttrs.contains("\"category\":\"test\""));
-    assertTrue(retrievedAttrs.contains("\"priority\":\"high\""));
-    assertTrue(retrievedAttrs.contains("\"score\":95.5"));
+    assertEquals(attributes, retrievedAttrs);
   }
 
   /**
@@ -369,8 +368,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String elementId = "point:ATTR_QUANT";
     float[] vector = {1.0f, 2.0f};
 
-    // Create JSON attributes
-    String attributes = "{\"type\":\"quantized\",\"method\":\"Q8\",\"timestamp\":\"2024-01-01\"}";
+    // Create simple text attributes
+    String attributes = "type=quantized,method=Q8,timestamp=2024-01-01";
 
     // Create parameters with both attributes and quantization
     VAddParams params = new VAddParams().setAttr(attributes).q8().ef(100);
@@ -392,9 +391,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Verify the attributes were stored correctly
     String retrievedAttrs = jedis.vgetattr(testKey, elementId);
     assertNotNull(retrievedAttrs);
-    assertTrue(retrievedAttrs.contains("\"type\":\"quantized\""));
-    assertTrue(retrievedAttrs.contains("\"method\":\"Q8\""));
-    assertTrue(retrievedAttrs.contains("\"timestamp\":\"2024-01-01\""));
+    assertEquals(attributes, retrievedAttrs);
   }
 
   /**
@@ -411,8 +408,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Convert to FP32 byte blob
     byte[] vectorBlob = floatArrayToFP32Bytes(vector);
 
-    // Create JSON attributes
-    String attributes = "{\"format\":\"FP32\",\"source\":\"binary\",\"validated\":true}";
+    // Create simple text attributes
+    String attributes = "format=FP32,source=binary,validated=true";
 
     // Create parameters with attributes
     VAddParams params = new VAddParams().setAttr(attributes);
@@ -434,9 +431,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Verify the attributes were stored correctly
     String retrievedAttrs = jedis.vgetattr(testKey, elementId);
     assertNotNull(retrievedAttrs);
-    assertTrue(retrievedAttrs.contains("\"format\":\"FP32\""));
-    assertTrue(retrievedAttrs.contains("\"source\":\"binary\""));
-    assertTrue(retrievedAttrs.contains("\"validated\":true"));
+    assertEquals(attributes, retrievedAttrs);
   }
 
   /**
@@ -461,7 +456,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Now add an element with attributes
     String elementWithAttrs = "point:WITH_ATTRS";
-    String attributes = "{\"name\":\"test_point\",\"value\":42,\"active\":true}";
+    String attributes = "name=test_point,value=42,active=true";
     VAddParams params = new VAddParams().setAttr(attributes);
     result = jedis.vadd(testKey, vector, elementWithAttrs, params);
     assertTrue(result);
@@ -469,14 +464,79 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // VGETATTR should return the attributes
     String retrievedAttrs = jedis.vgetattr(testKey, elementWithAttrs);
     assertNotNull(retrievedAttrs);
-    assertTrue(retrievedAttrs.contains("\"name\":\"test_point\""));
-    assertTrue(retrievedAttrs.contains("\"value\":42"));
-    assertTrue(retrievedAttrs.contains("\"active\":true"));
+    assertEquals(attributes, retrievedAttrs);
 
     // Test VGETATTR with non-existent element
     String nonExistentAttrs = jedis.vgetattr(testKey, "non_existent_element");
     // Should return null for non-existent elements
     // Note: Actual behavior may vary based on Redis implementation
+  }
+
+  /**
+   * Test VSETATTR command functionality.
+   * Verifies that attributes can be set on vector set elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsetattr(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:SETATTR_TEST";
+    float[] vector = {1.0f, 2.0f};
+
+    // First add an element without attributes
+    boolean result = jedis.vadd(testKey, vector, elementId);
+    assertTrue(result);
+
+    // Set attributes using VSETATTR
+    String attributes = "name=test_point,value=42,active=true";
+    boolean setResult = jedis.vsetattr(testKey, elementId, attributes);
+    assertTrue(setResult);
+
+    // Verify attributes were set using VGETATTR
+    String retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+    assertEquals(attributes, retrievedAttrs);
+
+    // Update attributes with new values
+    String updatedAttributes = "name=updated_point,value=100,active=false,new_field=added";
+    setResult = jedis.vsetattr(testKey, elementId, updatedAttributes);
+    assertTrue(setResult);
+
+    // Verify updated attributes
+    retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+    assertEquals(updatedAttributes, retrievedAttrs);
+  }
+
+  /**
+   * Test VSETATTR with empty attributes (attribute deletion).
+   * Verifies that setting empty attributes removes them.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsetattrDelete(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    String elementId = "point:DELETE_ATTR";
+    float[] vector = {1.0f, 2.0f};
+
+    // Add element with attributes
+    String attributes = "category=test,priority=high";
+    VAddParams params = new VAddParams().setAttr(attributes);
+    boolean result = jedis.vadd(testKey, vector, elementId, params);
+    assertTrue(result);
+
+    // Verify attributes exist
+    String retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+    assertEquals(attributes, retrievedAttrs);
+
+    // Delete attributes by setting empty string
+    boolean setResult = jedis.vsetattr(testKey, elementId, "");
+    assertTrue(setResult);
+
+    // Verify attributes are deleted (should return null or empty)
+    retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNull(retrievedAttrs);
   }
 
   /**

@@ -267,4 +267,16 @@ public interface VectorSetCommands {
    * @return the attributes of the element as a JSON string, or null if the element doesn't exist or has no attributes
    */
   String vgetattr(String key, String element);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsetattr/">VSETATTR Command</a></b>
+   * Set the attributes of an element in a vector set.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the name of the key that holds the vector set
+   * @param element the name of the element whose attributes to set
+   * @param attributes the attributes to set as a JSON string
+   * @return true if the attributes were set successfully
+   */
+  boolean vsetattr(String key, String element, String attributes);
 }

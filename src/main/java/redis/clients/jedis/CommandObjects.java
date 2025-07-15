@@ -4998,4 +4998,12 @@ public class CommandObjects {
   public final CommandObject<byte[]> vgetattr(byte[] key, byte[] element) {
     return new CommandObject<>(commandArguments(Command.VGETATTR).key(key).add(element), BuilderFactory.BINARY);
   }
+
+  public final CommandObject<Boolean> vsetattr(String key, String element, String attributes) {
+    return new CommandObject<>(commandArguments(Command.VSETATTR).key(key).add(element).add(attributes), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vsetattr(byte[] key, byte[] element, byte[] attributes) {
+    return new CommandObject<>(commandArguments(Command.VSETATTR).key(key).add(element).add(attributes), BuilderFactory.BOOLEAN);
+  }
 }

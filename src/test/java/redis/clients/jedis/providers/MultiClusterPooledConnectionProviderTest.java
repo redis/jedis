@@ -36,7 +36,7 @@ public class MultiClusterPooledConnectionProviderTest {
             .weight(0.3f).build();
 
         provider = new MultiClusterPooledConnectionProvider(
-            new MultiClusterClientConfig.Builder(clusterConfigs).build());
+            new MultiClusterClientConfig.Builder(clusterConfigs).failbackSupported(false).build());
     }
 
     @Test

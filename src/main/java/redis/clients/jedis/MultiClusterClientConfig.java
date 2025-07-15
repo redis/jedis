@@ -147,10 +147,10 @@ public final class MultiClusterClientConfig {
     //////////// Failover Config ////////////
 
     /** Whether to retry failed commands during failover */
-    private boolean retryOnFailover = false;
+    private boolean retryOnFailover;
 
-    /** Whether failback is enabled */
-    private boolean failback = false;
+    /** Whether failback is supported by client */
+    private boolean isFailbackSupported;
 
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
@@ -220,8 +220,9 @@ public final class MultiClusterClientConfig {
         return retryOnFailover;
     }
 
-    public boolean isFailback() {
-        return failback;
+    /** Whether failback is supported by client */
+    public boolean isFailbackSupported() {
+        return isFailbackSupported;
     }
 
     public static Builder builder(ClusterConfig[] clusterConfigs) {
@@ -288,7 +289,6 @@ public final class MultiClusterClientConfig {
 
             private float weight = 1.0f;
             private StrategySupplier healthCheckStrategySupplier = EchoStrategy.DEFAULT;
-            private boolean healthCheckEnabled = true;
 
             public Builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
                 this.hostAndPort = hostAndPort;
@@ -322,7 +322,6 @@ public final class MultiClusterClientConfig {
             }
 
             public Builder healthCheckEnabled(boolean healthCheckEnabled) {
-                this.healthCheckEnabled = healthCheckEnabled;
                 if (!healthCheckEnabled) {
                     this.healthCheckStrategySupplier = null;
                 } else if (healthCheckStrategySupplier == null) {
@@ -358,7 +357,7 @@ public final class MultiClusterClientConfig {
         private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
 
         private boolean retryOnFailover = false;
-        private boolean failback = false;
+        private boolean isFailbackSupported = true;
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
@@ -457,8 +456,8 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
-        public Builder failback(boolean failback) {
-            this.failback = failback;
+        public Builder failbackSupported(boolean supported) {
+            this.isFailbackSupported = supported;
             return this;
         }
 
@@ -488,7 +487,7 @@ public final class MultiClusterClientConfig {
             config.fallbackExceptionList = this.fallbackExceptionList;
 
             config.retryOnFailover = this.retryOnFailover;
-            config.failback = this.failback;
+            config.isFailbackSupported = this.isFailbackSupported;
 
             return config;
         }

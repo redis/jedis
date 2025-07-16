@@ -2,10 +2,12 @@ package redis.clients.jedis.commands.unified;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.redis.test.annotations.SinceRedisVersion;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.resps.VectorInfo;
 
@@ -454,8 +457,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // VGETATTR should return null for element without attributes
     String attrs = jedis.vgetattr(testKey, elementId);
-    // Note: This might return null or empty string depending on Redis implementation
-    // For now, we just verify the command executes without error
+    assertNull(attrs);
 
     // Now add an element with attributes
     String elementWithAttrs = "point:WITH_ATTRS";
@@ -584,11 +586,145 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    */
   @Test
   @SinceRedisVersion("8.0.0")
-  public void testVinfoEmptySet(TestInfo testInfo) {
+  public void testVinfoNotExistingSet(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
 
     VectorInfo info = jedis.vinfo(testKey);
     assertNull(info);
+  }
+
+  /**
+   * Test VCARD command functionality.
+   * Verifies that vector set cardinality can be retrieved correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVcard(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    float[] vector1 = {1.0f, 2.0f};
+    float[] vector2 = {3.0f, 4.0f};
+
+    // Initially, cardinality should be 0 for non-existent vector set
+    assertEquals(0L, jedis.vcard(testKey));
+
+    // Add first element
+    boolean result1 = jedis.vadd(testKey, vector1, "element1");
+    assertTrue(result1);
+    assertEquals(1L, jedis.vcard(testKey));
+    assertEquals(1L, jedis.vcard(testKey.getBytes()));
+
+    // Add second element
+    boolean result2 = jedis.vadd(testKey, vector2, "element2");
+    assertTrue(result2);
+    assertEquals(2L, jedis.vcard(testKey));
+    assertEquals(2L, jedis.vcard(testKey.getBytes()));
+
+    // Try to add duplicate element (should not increase cardinality)
+    boolean result3 = jedis.vadd(testKey, vector1, "element1");
+    assertFalse(result3); // Should return false for duplicate
+    assertEquals(2L, jedis.vcard(testKey)); // Cardinality should remain 3
+    assertEquals(2L, jedis.vcard(testKey.getBytes()));
+
+    // Remove an element
+    boolean removed = jedis.vrem(testKey, "element2");
+    assertTrue(removed);
+    assertEquals(1L, jedis.vcard(testKey));
+    assertEquals(1L, jedis.vcard(testKey.getBytes()));
+
+    // Remove last element
+    removed = jedis.vrem(testKey, "element1");
+    assertTrue(removed);
+    assertEquals(0L, jedis.vcard(testKey));
+    assertEquals(0L, jedis.vcard(testKey.getBytes()));
+
+  }
+
+  /**
+   * Test VCARD with non-existent vector set.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVcardNotExistingSet(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
+
+    // VCARD should return 0 for non-existent vector set
+    assertEquals(0L, jedis.vcard(testKey));
+  }
+
+  /**
+   * Test VDIM command functionality.
+   * Verifies that vector set dimension can be retrieved correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVdim(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    // Add 2D vector
+    float[] vector2D = {1.0f, 2.0f};
+    boolean result = jedis.vadd(testKey, vector2D, "element1");
+    assertTrue(result);
+    assertEquals(2L, jedis.vdim(testKey));
+    assertEquals(2L, jedis.vdim(testKey.getBytes()));
+
+    // Test different dimensions
+    String testKey3D = testInfo.getDisplayName() + ":test:vector:set:3d";
+    float[] vector3D = {1.0f, 2.0f, 3.0f};
+    jedis.vadd(testKey3D, vector3D, "element3d");
+    assertEquals(3L, jedis.vdim(testKey3D));
+    assertEquals(3L, jedis.vdim(testKey3D.getBytes()));
+
+  }
+
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVdimNotExistingSet(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
+
+    JedisDataException thrown = assertThrows(JedisDataException.class, () -> jedis.vdim(testKey));
+    assertThat(thrown.getMessage(), is("ERR key does not exist"));
+
+    thrown = assertThrows(JedisDataException.class, () -> jedis.vdim(testKey.getBytes()));
+    assertThat(thrown.getMessage(), is("ERR key does not exist"));
+  }
+
+  // Test VDIM with empty set
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVdimWithEmptySet(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
+    // Add 2D vector
+    float[] vector2D = {1.0f, 2.0f};
+    assertTrue(jedis.vadd(testKey, vector2D, "element1"));
+    assertTrue(jedis.vrem(testKey, "element1"));
+    assertEquals(0L,(jedis.vcard(testKey)));
+
+    JedisDataException thrown = assertThrows(JedisDataException.class, () -> jedis.vdim(testKey));
+    assertThat(thrown.getMessage(), is("ERR key does not exist"));
+
+    thrown = assertThrows(JedisDataException.class, () -> jedis.vdim(testKey.getBytes()));
+    assertThat(thrown.getMessage(), is("ERR key does not exist"));
+  }
+
+  /**
+   * Test VDIM with dimension reduction.
+   * Verifies that VDIM returns the reduced dimension when REDUCE is used.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVdimWithDimensionReduction(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:reduced";
+
+    // Add 4D vector with dimension reduction to 2D
+    float[] vector4D = {1.0f, 2.0f, 3.0f, 4.0f};
+    VAddParams params = new VAddParams();
+
+    boolean result = jedis.vadd(testKey, vector4D, "element_reduced", 2, params);
+    assertTrue(result);
+
+    // VDIM should return the reduced dimension (2), not the original (4)
+    assertEquals(2L, jedis.vdim(testKey));
+    assertEquals(2L, jedis.vdim(testKey.getBytes()));
   }
 
   /**

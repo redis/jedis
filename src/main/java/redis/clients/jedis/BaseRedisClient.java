@@ -5,6 +5,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.commands.RedisBloomCommands;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.json.commands.RedisJsonV2Commands;
@@ -43,24 +44,30 @@ public abstract class BaseRedisClient
   protected abstract ConnectionProvider getConnectionProvider();
 
   /**
+   * Get the cache for this client.
+   * @return Cache instance
+   */
+  public abstract Cache getCache();
+
+  /**
    * Execute a Redis command.
-   * @param <T>           The return type of the command
+   * @param <T> The return type of the command
    * @param commandObject The command to execute
    * @return The command result
    */
-  protected abstract <T> T executeCommand(CommandObject<T> commandObject);
+  public abstract <T> T executeCommand(CommandObject<T> commandObject);
 
   /**
    * Broadcast a Redis command to all nodes in a cluster.
-   * @param <T>           The return type of the command
+   * @param <T> The return type of the command
    * @param commandObject The command to broadcast
    * @return The command result
    */
-  protected abstract <T> T broadcastCommand(CommandObject<T> commandObject);
+  public abstract <T> T broadcastCommand(CommandObject<T> commandObject);
 
   /**
    * Check if a command should be broadcast and execute accordingly.
-   * @param <T>           The return type of the command
+   * @param <T> The return type of the command
    * @param commandObject The command to execute
    * @return The command result
    */
@@ -69,13 +76,13 @@ public abstract class BaseRedisClient
   // Generic sendCommand methods for raw protocol commands
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(
-        new CommandObject<>(getCommandObjects().commandArguments(cmd), BuilderFactory.RAW_OBJECT));
+      new CommandObject<>(getCommandObjects().commandArguments(cmd), BuilderFactory.RAW_OBJECT));
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(
-        new CommandObject<>(getCommandObjects().commandArguments(cmd).addObjects((Object[]) args),
-            BuilderFactory.RAW_OBJECT));
+      new CommandObject<>(getCommandObjects().commandArguments(cmd).addObjects((Object[]) args),
+          BuilderFactory.RAW_OBJECT));
   }
 
   public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
@@ -86,8 +93,8 @@ public abstract class BaseRedisClient
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(
-        new CommandObject<>(getCommandObjects().commandArguments(cmd).addObjects((Object[]) args),
-            BuilderFactory.RAW_OBJECT));
+      new CommandObject<>(getCommandObjects().commandArguments(cmd).addObjects((Object[]) args),
+          BuilderFactory.RAW_OBJECT));
   }
 
   public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
@@ -103,9 +110,8 @@ public abstract class BaseRedisClient
   }
 
   public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
-    return executeCommand(new CommandObject<>(
-        getCommandObjects().commandArguments(cmd).addObjects((Object[]) args).blocking()
-            .processKey(sampleKey), BuilderFactory.RAW_OBJECT));
+    return executeCommand(new CommandObject<>(getCommandObjects().commandArguments(cmd)
+        .addObjects((Object[]) args).blocking().processKey(sampleKey), BuilderFactory.RAW_OBJECT));
   }
 
   public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
@@ -115,9 +121,8 @@ public abstract class BaseRedisClient
   }
 
   public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
-    return executeCommand(new CommandObject<>(
-        getCommandObjects().commandArguments(cmd).addObjects((Object[]) args).blocking()
-            .processKey(sampleKey), BuilderFactory.RAW_OBJECT));
+    return executeCommand(new CommandObject<>(getCommandObjects().commandArguments(cmd)
+        .addObjects((Object[]) args).blocking().processKey(sampleKey), BuilderFactory.RAW_OBJECT));
   }
 
   // Random node commands
@@ -548,7 +553,7 @@ public abstract class BaseRedisClient
 
   /**
    * @param batchCount COUNT for each batch execution
-   * @param match      pattern
+   * @param match pattern
    * @return scan iteration
    */
   public ScanIteration scanIteration(int batchCount, String match) {
@@ -557,8 +562,8 @@ public abstract class BaseRedisClient
 
   /**
    * @param batchCount COUNT for each batch execution
-   * @param match      pattern
-   * @param type       key type
+   * @param match pattern
+   * @param type key type
    * @return scan iteration
    */
   public ScanIteration scanIteration(int batchCount, String match, String type) {
@@ -2165,7 +2170,7 @@ public abstract class BaseRedisClient
   public List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
+      getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
@@ -2187,21 +2192,21 @@ public abstract class BaseRedisClient
   public List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
+      getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
+      getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
+      getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
@@ -2288,7 +2293,7 @@ public abstract class BaseRedisClient
   public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
+      getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
@@ -2310,21 +2315,21 @@ public abstract class BaseRedisClient
   public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
+      getCommandObjects().zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
+      getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset,
       int count) {
     return executeCommand(
-        getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
+      getCommandObjects().zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
@@ -2704,21 +2709,21 @@ public abstract class BaseRedisClient
   public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
       double radius, GeoUnit unit) {
     return executeCommand(
-        getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit));
+      getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(
-        getCommandObjects().georadius(key, longitude, latitude, radius, unit, param));
+      getCommandObjects().georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(
-        getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit, param));
+      getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
@@ -2743,22 +2748,21 @@ public abstract class BaseRedisClient
   public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(
-        getCommandObjects().georadiusByMemberReadonly(key, member, radius, unit, param));
+      getCommandObjects().georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
   public long georadiusStore(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    return executeCommand(
-        getCommandObjects().georadiusStore(key, longitude, latitude, radius, unit, param,
-            storeParam));
+    return executeCommand(getCommandObjects().georadiusStore(key, longitude, latitude, radius, unit,
+      param, storeParam));
   }
 
   @Override
   public long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(
-        getCommandObjects().georadiusByMemberStore(key, member, radius, unit, param, storeParam));
+      getCommandObjects().georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
   @Override
@@ -2804,14 +2808,14 @@ public abstract class BaseRedisClient
   public long geosearchStore(String dest, String src, String member, double width, double height,
       GeoUnit unit) {
     return executeCommand(
-        getCommandObjects().geosearchStore(dest, src, member, width, height, unit));
+      getCommandObjects().geosearchStore(dest, src, member, width, height, unit));
   }
 
   @Override
   public long geosearchStore(String dest, String src, GeoCoordinate coord, double width,
       double height, GeoUnit unit) {
     return executeCommand(
-        getCommandObjects().geosearchStore(dest, src, coord, width, height, unit));
+      getCommandObjects().geosearchStore(dest, src, coord, width, height, unit));
   }
 
   @Override
@@ -2834,21 +2838,21 @@ public abstract class BaseRedisClient
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit) {
     return executeCommand(
-        getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit));
+      getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(
-        getCommandObjects().georadius(key, longitude, latitude, radius, unit, param));
+      getCommandObjects().georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(
-        getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit, param));
+      getCommandObjects().georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
@@ -2873,22 +2877,21 @@ public abstract class BaseRedisClient
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(
-        getCommandObjects().georadiusByMemberReadonly(key, member, radius, unit, param));
+      getCommandObjects().georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
   public long georadiusStore(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    return executeCommand(
-        getCommandObjects().georadiusStore(key, longitude, latitude, radius, unit, param,
-            storeParam));
+    return executeCommand(getCommandObjects().georadiusStore(key, longitude, latitude, radius, unit,
+      param, storeParam));
   }
 
   @Override
   public long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(
-        getCommandObjects().georadiusByMemberStore(key, member, radius, unit, param, storeParam));
+      getCommandObjects().georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
   @Override
@@ -2934,14 +2937,14 @@ public abstract class BaseRedisClient
   public long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height,
       GeoUnit unit) {
     return executeCommand(
-        getCommandObjects().geosearchStore(dest, src, member, width, height, unit));
+      getCommandObjects().geosearchStore(dest, src, member, width, height, unit));
   }
 
   @Override
   public long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width,
       double height, GeoUnit unit) {
     return executeCommand(
-        getCommandObjects().geosearchStore(dest, src, coord, width, height, unit));
+      getCommandObjects().geosearchStore(dest, src, coord, width, height, unit));
   }
 
   @Override
@@ -3111,28 +3114,28 @@ public abstract class BaseRedisClient
   public List<StreamEntry> xclaim(String key, String group, String consumerName, long minIdleTime,
       XClaimParams params, StreamEntryID... ids) {
     return executeCommand(
-        getCommandObjects().xclaim(key, group, consumerName, minIdleTime, params, ids));
+      getCommandObjects().xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
   public List<StreamEntryID> xclaimJustId(String key, String group, String consumerName,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return executeCommand(
-        getCommandObjects().xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
+      getCommandObjects().xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
   public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group,
       String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     return executeCommand(
-        getCommandObjects().xautoclaim(key, group, consumerName, minIdleTime, start, params));
+      getCommandObjects().xautoclaim(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group,
       String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     return executeCommand(
-        getCommandObjects().xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
+      getCommandObjects().xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
@@ -3181,14 +3184,14 @@ public abstract class BaseRedisClient
   public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(
-        getCommandObjects().xreadGroup(groupName, consumer, xReadGroupParams, streams));
+      getCommandObjects().xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
   public Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(
-        getCommandObjects().xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
+      getCommandObjects().xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -3280,29 +3283,28 @@ public abstract class BaseRedisClient
   public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     return executeCommand(
-        getCommandObjects().xclaim(key, group, consumerName, minIdleTime, params, ids));
+      getCommandObjects().xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
   public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     return executeCommand(
-        getCommandObjects().xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
+      getCommandObjects().xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
   public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     return executeCommand(
-        getCommandObjects().xautoclaim(key, groupName, consumerName, minIdleTime, start, params));
+      getCommandObjects().xautoclaim(key, groupName, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
-    return executeCommand(
-        getCommandObjects().xautoclaimJustId(key, groupName, consumerName, minIdleTime, start,
-            params));
+    return executeCommand(getCommandObjects().xautoclaimJustId(key, groupName, consumerName,
+      minIdleTime, start, params));
   }
 
   @Override
@@ -3346,14 +3348,14 @@ public abstract class BaseRedisClient
   public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName,
       byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
     return executeCommand(
-        getCommandObjects().xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+      getCommandObjects().xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
   public Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName,
       byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
     return executeCommand(
-        getCommandObjects().xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
+      getCommandObjects().xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   // Scripting commands
@@ -3778,7 +3780,7 @@ public abstract class BaseRedisClient
   public String ftCreate(String indexName, FTCreateParams createParams,
       Iterable<SchemaField> schemaFields) {
     return checkAndBroadcastCommand(
-        getCommandObjects().ftCreate(indexName, createParams, schemaFields));
+      getCommandObjects().ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
@@ -3835,8 +3837,8 @@ public abstract class BaseRedisClient
    * {@link FTSearchParams#limit(int, int)} will be ignored.
    * @param batchSize batch size
    * @param indexName index name
-   * @param query     query
-   * @param params    limit will be ignored
+   * @param query query
+   * @param params limit will be ignored
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query,
@@ -3849,7 +3851,7 @@ public abstract class BaseRedisClient
    * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
    * @param batchSize batch size
    * @param indexName index name
-   * @param query     limit will be ignored
+   * @param query limit will be ignored
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
@@ -3875,7 +3877,7 @@ public abstract class BaseRedisClient
   /**
    * {@link AggregationBuilder#cursor(int, long) CURSOR} must be set.
    * @param indexName index name
-   * @param aggr      cursor must be set
+   * @param aggr cursor must be set
    * @return aggregate iteration
    */
   public FtAggregateIteration ftAggregateIteration(String indexName, AggregationBuilder aggr) {
@@ -3908,7 +3910,7 @@ public abstract class BaseRedisClient
   public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return executeCommand(
-        getCommandObjects().ftProfileSearch(indexName, profileParams, query, searchParams));
+      getCommandObjects().ftProfileSearch(indexName, profileParams, query, searchParams));
   }
 
   @Override
@@ -4305,15 +4307,14 @@ public abstract class BaseRedisClient
   public String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
       long timeBucket) {
     return executeCommand(
-        getCommandObjects().tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
+      getCommandObjects().tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
   }
 
   @Override
   public String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
       long bucketDuration, long alignTimestamp) {
-    return executeCommand(
-        getCommandObjects().tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration,
-            alignTimestamp));
+    return executeCommand(getCommandObjects().tsCreateRule(sourceKey, destKey, aggregationType,
+      bucketDuration, alignTimestamp));
   }
 
   @Override
@@ -4572,7 +4573,7 @@ public abstract class BaseRedisClient
   public String tdigestMerge(TDigestMergeParams mergeParams, String destinationKey,
       String... sourceKeys) {
     return executeCommand(
-        getCommandObjects().tdigestMerge(mergeParams, destinationKey, sourceKeys));
+      getCommandObjects().tdigestMerge(mergeParams, destinationKey, sourceKeys));
   }
 
   @Override
@@ -4608,7 +4609,7 @@ public abstract class BaseRedisClient
   @Override
   public double tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
     return executeCommand(
-        getCommandObjects().tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
+      getCommandObjects().tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
   }
 
   @Override

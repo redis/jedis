@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.providers.ConnectionProvider;
-import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor;
 import redis.clients.jedis.util.RedisVersionCondition;

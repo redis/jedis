@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.HashSet;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.providers.SentineledConnectionProvider;
 
 public class RedisSentinelClientTest {
 
@@ -111,20 +110,4 @@ public class RedisSentinelClientTest {
     assertNotNull(builder);
   }
 
-  // Integration test - only run if sentinel is available
-  // Commented out because it requires actual sentinel setup
-  /*
-   * @Test public void testActualSentinelConnection() { // This test would require actual Redis
-   * Sentinel setup try (RedisSentinelClient client = RedisSentinelClient.builder()
-   * .masterName(MASTER_NAME) .sentinels(sentinels) .masterConfig(DefaultJedisClientConfig.builder()
-   * .password("foobared") .database(2) .build()) .build()) { // Test basic operations
-   * client.set("test-key", "test-value"); assertEquals("test-value", client.get("test-key")); //
-   * Test sentinel-specific method HostAndPort currentMaster = client.getCurrentMaster();
-   * assertNotNull(currentMaster); // Test pipeline Pipeline pipeline = client.pipelined();
-   * pipeline.set("pipeline-key", "pipeline-value"); pipeline.get("pipeline-key"); pipeline.sync();
-   * // Test transaction Transaction transaction = client.multi(); transaction.set("tx-key",
-   * "tx-value"); transaction.get("tx-key"); transaction.exec(); } catch (Exception e) { // Skip
-   * test if sentinel is not available System.out.println("Skipping sentinel integration test: " +
-   * e.getMessage()); } }
-   */
 }

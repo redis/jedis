@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 import java.util.HashSet;
@@ -9,11 +8,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import redis.clients.jedis.providers.ClusterConnectionProvider;
-import redis.clients.jedis.executors.ClusterCommandExecutor;
 
 /**
  * Unit tests for RedisClusterClient. These tests verify the basic functionality and configuration

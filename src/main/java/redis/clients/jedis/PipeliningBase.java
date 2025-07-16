@@ -4618,12 +4618,12 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<String>> vlinks(String key, String element) {
+  public Response<List<List<String>>> vlinks(String key, String element) {
     return appendCommand(commandObjects.vlinks(key, element));
   }
 
   @Override
-  public Response<Map<String, Double>> vlinksWithScores(String key, String element) {
+  public Response<List<Map<String, Double>>> vlinksWithScores(String key, String element) {
     return appendCommand(commandObjects.vlinksWithScores(key, element));
   }
 
@@ -4739,12 +4739,12 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<byte[]>> vlinks(byte[] key, byte[] element) {
+  public Response<List<List<byte[]>>> vlinks(byte[] key, byte[] element) {
     return appendCommand(commandObjects.vlinks(key, element));
   }
 
   @Override
-  public Response<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+  public Response<List<Map<byte[], Double>>> vlinksWithScores(byte[] key, byte[] element) {
     return appendCommand(commandObjects.vlinksWithScores(key, element));
   }
 

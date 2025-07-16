@@ -174,11 +174,11 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
   @SinceRedisVersion("8.0.0")
   public void testHnswGraphLinks() {
     // Get links for point A
-    List<String> links = jedis.vlinks(POINTS_KEY, "pt:A");
+    List<List<String>> links = jedis.vlinks(POINTS_KEY, "pt:A");
     assertNotNull(links);
 
     // Get links with scores
-    Map<String, Double> linksWithScores = jedis.vlinksWithScores(POINTS_KEY, "pt:A");
+    List<Map<String, Double>> linksWithScores = jedis.vlinksWithScores(POINTS_KEY, "pt:A");
     assertNotNull(linksWithScores);
   }
 

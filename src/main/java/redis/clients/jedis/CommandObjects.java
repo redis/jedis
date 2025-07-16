@@ -4959,19 +4959,19 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.VREM).key(key).add(element), BuilderFactory.BOOLEAN);
   }
 
-  public final CommandObject<List<String>> vlinks(String key, String element) {
-    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element), BuilderFactory.STRING_LIST);
+  public final CommandObject<List<List<String>>> vlinks(String key, String element) {
+    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element), BuilderFactory.STRING_LIST_LIST);
   }
 
-  public final CommandObject<Map<String, Double>> vlinksWithScores(String key, String element) {
+  public final CommandObject<List<Map<String, Double>>> vlinksWithScores(String key, String element) {
     return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element).add(Keyword.WITHSCORES), BuilderFactory.VLINKS_WITH_SCORES_RESULT);
   }
 
-  public final CommandObject<List<byte[]>> vlinks(byte[] key, byte[] element) {
-    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element), BuilderFactory.BINARY_LIST);
+  public final CommandObject<List<List<byte[]>>> vlinks(byte[] key, byte[] element) {
+    return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element), BuilderFactory.BINARY_LIST_LIST);
   }
 
-  public final CommandObject<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+  public final CommandObject<List<Map<byte[], Double>>> vlinksWithScores(byte[] key, byte[] element) {
     return new CommandObject<>(commandArguments(Command.VLINKS).key(key).add(element).add(Keyword.WITHSCORES), BuilderFactory.VLINKS_WITH_SCORES_RESULT_BINARY);
   }
 

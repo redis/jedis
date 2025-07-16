@@ -223,7 +223,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return list of neighbor element names
    */
-  List<byte[]> vlinks(byte[] key, byte[] element);
+  List<List<byte[]>> vlinks(byte[] key, byte[] element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vlinks/">VLINKS Command</a></b>
@@ -234,7 +234,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return map of neighbor element names to similarity scores
    */
-  Map<byte[], Double> vlinksWithScores(byte[] key, byte[] element);
+  List<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vrandmember/">VRANDMEMBER Command</a></b>

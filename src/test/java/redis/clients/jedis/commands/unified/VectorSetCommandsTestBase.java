@@ -24,7 +24,9 @@ import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.resps.VectorInfo;
 import redis.clients.jedis.util.SafeEncoder;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Tag("integration")
 @Tag("vector-set")
@@ -589,6 +591,153 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     String updatedRetrievedString = SafeEncoder.encode(retrievedAttrs);
     assertEquals(updatedAttributes, updatedRetrievedString);
+  }
+
+  /**
+   * Test VLINKS command functionality.
+   * Verifies that vector set links can be retrieved correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVlinks(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    // Add some vectors to create a vector set with links
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+    float[] vector3 = {1.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "element1");
+    jedis.vadd(testKey, vector2, "element2");
+    jedis.vadd(testKey, vector3, "element3");
+
+    // Get links for element1
+    List<List<String>> links = jedis.vlinks(testKey, "element1");
+    assertNotNull(links);
+
+    assertFalse(links.isEmpty());
+    for (List<String> linkList : links) {
+      for (String rawLink : linkList) {
+        assertTrue(rawLink.equals("element2") || rawLink.equals("element3"));;
+      }
+    }
+  }
+
+  /**
+   * Test VLINKS command functionality.
+   * Verifies that vector set links can be retrieved correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVlinksWithScores(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    // Add some vectors to create a vector set with links
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+    float[] vector3 = {1.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "element1");
+    jedis.vadd(testKey, vector2, "element2");
+    jedis.vadd(testKey, vector3, "element3");
+
+    // Get links for element1
+    List<Map<String, Double>> links = jedis.vlinksWithScores(testKey, "element1");
+    assertNotNull(links);
+
+    assertFalse(links.isEmpty());
+    for (Map<String, Double> scores : links) {
+      for (String element : scores.keySet()) {
+        assertTrue(element.equals("element2") || element.equals("element3"));
+        assertTrue(scores.get(element) > 0.0);
+      }
+    }
+  }
+
+  /**
+   * Test VLINKS with binary key and element.
+   * Verifies that VLINKS works with byte array keys and elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVlinksBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+    byte[] elementId = "binary_element".getBytes();
+
+    // Add vectors using binary key and elements
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, elementId);
+    jedis.vadd(testKey, vector2, "element2".getBytes());
+
+    // Get links using binary VLINKS
+    List<List<byte[]>> binaryLinks = jedis.vlinks(testKey, elementId);
+    assertNotNull(binaryLinks);
+
+    // Links should be returned as strings (element IDs)
+    assertTrue(binaryLinks.size() > 0);
+
+    // If there are links, verify they are valid strings
+    for (List<byte[]> linkList : binaryLinks) {
+      for (byte[] rawLink : linkList) {
+        String link = SafeEncoder.encode(rawLink);
+        assertNotNull(link);
+        assertTrue(link.length() > 0);
+      }
+    }
+  }
+
+  /**
+   * Test VLINKS command functionality.
+   * Verifies that vector set links can be retrieved correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVlinksBinaryWithScores(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+
+    // Add some vectors to create a vector set with links
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+    float[] vector3 = {1.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "element1".getBytes());
+    jedis.vadd(testKey, vector2, "element2".getBytes());
+    jedis.vadd(testKey, vector3, "element3".getBytes());
+
+    // Get links for element1
+    List<Map<byte[], Double>> links = jedis.vlinksWithScores(testKey, "element1".getBytes());
+    assertNotNull(links);
+
+    assertFalse(links.isEmpty());
+    for (Map<byte[], Double> scores : links) {
+      for (byte[] element : scores.keySet()) {
+        assertTrue(
+            Arrays.equals(element, "element2".getBytes()) || Arrays.equals(element, "element3".getBytes()));
+        assertTrue(scores.get(element) > 0.0);
+      }
+    }
+  }
+
+  /**
+   * Test VLINKS with non-existent element.
+   * Verifies that VLINKS handles non-existent elements correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVlinksNonExistent(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:nonexistent";
+
+    // Add a vector first
+    float[] vector = {1.0f, 2.0f};
+    jedis.vadd(testKey, vector, "existing_element");
+
+    // Try to get links for non-existent element
+    List<List<String>> links = jedis.vlinks(testKey, "non_existent_element");
+    // Should return empty list or null for non-existent elements
+    // Exact behavior depends on Redis implementation
+    assertTrue(links == null || links.isEmpty());
   }
 
   /**

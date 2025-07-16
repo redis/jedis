@@ -224,7 +224,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping list of neighbor element names
    */
-  Response<List<byte[]>> vlinks(byte[] key, byte[] element);
+  Response<List<List<byte[]>>> vlinks(byte[] key, byte[] element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vlinks/">VLINKS Command</a></b>
@@ -235,7 +235,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping map of neighbor element names to similarity scores
    */
-  Response<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element);
+  Response<List<Map<byte[], Double>>> vlinksWithScores(byte[] key, byte[] element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vrandmember/">VRANDMEMBER Command</a></b>

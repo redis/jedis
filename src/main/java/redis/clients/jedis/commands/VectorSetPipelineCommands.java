@@ -225,7 +225,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping list of neighbor element names
    */
-  Response<List<String>> vlinks(String key, String element);
+  Response<List<List<String>>> vlinks(String key, String element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vlinks/">VLINKS Command</a></b>
@@ -236,7 +236,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping map of neighbor element names to similarity scores
    */
-  Response<Map<String, Double>> vlinksWithScores(String key, String element);
+  Response<List<Map<String, Double>>> vlinksWithScores(String key, String element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vrandmember/">VRANDMEMBER Command</a></b>

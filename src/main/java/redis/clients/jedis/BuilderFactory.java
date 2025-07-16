@@ -190,7 +190,6 @@ public final class BuilderFactory {
 
   public static final Builder<Set<byte[]>> BINARY_SET = new Builder<Set<byte[]>>() {
     @Override
-    @SuppressWarnings("unchecked")
     public Set<byte[]> build(Object data) {
       if (null == data) {
         return null;
@@ -477,6 +476,66 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Double>> STRING_DOUBLE_MAP = new Builder<Map<String, Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Double> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, Double> map = new LinkedHashMap<>(list.size(), 1f);
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          map.put(STRING.build(kv.getKey()), DOUBLE.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<String, Double> map = new LinkedHashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(STRING.build(iterator.next()), DOUBLE.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, Double>";
+    }
+  };
+
+
+  public static final Builder<Map<byte[], Double>> BINARY_DOUBLE_MAP = new Builder<Map<byte[], Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], Double> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<byte[], Double> map = new LinkedHashMap<>(list.size(), 1f);
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          map.put(BINARY.build(kv.getKey()), DOUBLE.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<byte[], Double> map = new LinkedHashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(BINARY.build(iterator.next()), DOUBLE.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, Double>";
+    }
+  };
   public static final Builder<KeyValue<String, String>> KEYED_ELEMENT = new Builder<KeyValue<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -2278,18 +2337,18 @@ public final class BuilderFactory {
   };
 
   // VLINKS builders
-  public static final Builder<Map<String, Double>> VLINKS_WITH_SCORES_RESULT = new Builder<Map<String, Double>>() {
+  public static final Builder<List<Map<String, Double>>> VLINKS_WITH_SCORES_RESULT = new Builder<List<Map<String, Double>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, Double> build(Object data) {
+    public List<Map<String, Double>> build(Object data) {
       if (data == null) return null;
       List<Object> list = (List<Object>) data;
-      Map<String, Double> result = new HashMap<>();
 
-      for (int i = 0; i < list.size(); i += 2) {
-        String element = STRING.build(list.get(i));
-        Double score = DOUBLE.build(list.get(i + 1));
-        result.put(element, score);
+      List<Map<String, Double>> result = new ArrayList<>();
+      for (Object scoresRaw : list) {
+        if (scoresRaw == null) continue;
+        Map<String, Double> scores  = STRING_DOUBLE_MAP.build(scoresRaw);
+        result.add(scores);
       }
 
       return result;
@@ -2301,18 +2360,33 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<byte[], Double>> VLINKS_WITH_SCORES_RESULT_BINARY = new Builder<Map<byte[], Double>>() {
+  public static final Builder<List<List<byte[]>>> BINARY_LIST_LIST = new Builder<List<List<byte[]>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public Map<byte[], Double> build(Object data) {
+    public List<List<byte[]>> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(BINARY_LIST::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<List<String>>";
+    }
+  };
+
+
+  public static final Builder<List<Map<byte[], Double>>> VLINKS_WITH_SCORES_RESULT_BINARY = new Builder<List<Map<byte[], Double>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map<byte[], Double>> build(Object data) {
       if (data == null) return null;
       List<Object> list = (List<Object>) data;
-      Map<byte[], Double> result = new HashMap<>();
 
-      for (int i = 0; i < list.size(); i += 2) {
-        byte[] element = (byte[]) list.get(i);
-        Double score = DOUBLE.build(list.get(i + 1));
-        result.put(element, score);
+      List<Map<byte[], Double>> result = new ArrayList<>();
+      for (Object scoresRaw : list) {
+        if (scoresRaw == null) continue;
+        Map<byte[], Double> scores  = BINARY_DOUBLE_MAP.build(scoresRaw);
+        result.add(scores);
       }
 
       return result;

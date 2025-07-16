@@ -10049,13 +10049,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> vlinks(String key, String element) {
+  public List<List<String>> vlinks(String key, String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vlinks(key, element));
   }
 
   @Override
-  public Map<String, Double> vlinksWithScores(String key, String element) {
+  public List<Map<String, Double>> vlinksWithScores(String key, String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vlinksWithScores(key, element));
   }
@@ -10194,13 +10194,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> vlinks(byte[] key, byte[] element) {
+  public List<List<byte[]>> vlinks(byte[] key, byte[] element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vlinks(key, element));
   }
 
   @Override
-  public Map<byte[], Double> vlinksWithScores(byte[] key, byte[] element) {
+  public List<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vlinksWithScores(key, element));
   }

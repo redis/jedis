@@ -176,7 +176,7 @@ public class CommandObjectsVectorSetCommandsTest extends CommandObjectsStandalon
     String key = "test:vector:set";
     String element = "element1";
 
-    CommandObject<List<String>> cmd = commandObjects.vlinks(key, element);
+    CommandObject<List<List<String>>> cmd = commandObjects.vlinks(key, element);
     assertThat(cmd, notNullValue());
   }
 
@@ -185,7 +185,7 @@ public class CommandObjectsVectorSetCommandsTest extends CommandObjectsStandalon
     String key = "test:vector:set";
     String element = "element1";
 
-    CommandObject<Map<String, Double>> cmd = commandObjects.vlinksWithScores(key, element);
+    CommandObject<List<Map<String, Double>>> cmd = commandObjects.vlinksWithScores(key, element);
     assertThat(cmd, notNullValue());
   }
 
@@ -274,7 +274,7 @@ public class CommandObjectsVectorSetCommandsTest extends CommandObjectsStandalon
     byte[] key = "test:vector:set".getBytes();
     byte[] element = "element1".getBytes();
 
-    CommandObject<List<byte[]>> cmd = commandObjects.vlinks(key, element);
+    CommandObject<List<List<byte[]>>> cmd = commandObjects.vlinks(key, element);
     assertThat(cmd, notNullValue());
   }
 
@@ -283,7 +283,7 @@ public class CommandObjectsVectorSetCommandsTest extends CommandObjectsStandalon
     byte[] key = "test:vector:set".getBytes();
     byte[] element = "element1".getBytes();
 
-    CommandObject<Map<byte[], Double>> cmd = commandObjects.vlinksWithScores(key, element);
+    CommandObject<List<Map<byte[], Double>>> cmd = commandObjects.vlinksWithScores(key, element);
     assertThat(cmd, notNullValue());
   }
 

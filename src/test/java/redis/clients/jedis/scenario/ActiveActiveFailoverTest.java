@@ -99,7 +99,7 @@ public class ActiveActiveFailoverTest {
         builder.build());
     FailoverReporter reporter = new FailoverReporter();
     provider.setClusterFailoverPostProcessor(reporter);
-    provider.setActiveMultiClusterIndex(1);
+    provider.setActiveCluster(endpoint.getHostAndPort(0));
 
     UnifiedJedis client = new UnifiedJedis(provider);
 
@@ -180,7 +180,7 @@ public class ActiveActiveFailoverTest {
       throw new RuntimeException(e);
     }
 
-    ConnectionPool pool = provider.getCluster(1).getConnectionPool();
+    ConnectionPool pool = provider.getCluster(endpoint.getHostAndPort(0)).getConnectionPool();
 
     log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(),
         pool.getNumIdle());

@@ -12,24 +12,30 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * Unit tests for RedisClusterClient. These tests verify the basic functionality and configuration
- * of RedisClusterClient without requiring an actual Redis cluster.
+ * of RedisClusterClient using the stable cluster endpoints for consistent testing.
  */
 public class RedisClusterClientTest {
 
   private Set<HostAndPort> nodes;
+  private JedisClientConfig clientConfig;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    nodes = new HashSet<>();
-    nodes.add(new HostAndPort("localhost", 7000));
-    nodes.add(new HostAndPort("localhost", 7001));
-    nodes.add(new HostAndPort("localhost", 7002));
+    // Use stable cluster servers that are configured for testing
+    nodes = new HashSet<>(HostAndPorts.getStableClusterServers());
+
+    // Create client configuration with cluster authentication
+    clientConfig = DefaultJedisClientConfig.builder()
+        .password("cluster")
+        .build();
   }
 
   @Test
   public void testBuilderWithNodes() {
-    RedisClusterClient.Builder builder = RedisClusterClient.builder().nodes(nodes);
+    RedisClusterClient.Builder builder = RedisClusterClient.builder()
+        .nodes(nodes)
+        .clientConfig(clientConfig);
 
     assertNotNull(builder);
 
@@ -47,11 +53,15 @@ public class RedisClusterClientTest {
 
   @Test
   public void testBuilderWithClientConfig() {
-    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password("testpassword")
-        .connectionTimeoutMillis(5000).socketTimeoutMillis(10000).build();
+    JedisClientConfig customClientConfig = DefaultJedisClientConfig.builder()
+        .password("cluster")
+        .connectionTimeoutMillis(5000)
+        .socketTimeoutMillis(10000)
+        .build();
 
-    RedisClusterClient.Builder builder = RedisClusterClient.builder().nodes(nodes)
-        .clientConfig(clientConfig);
+    RedisClusterClient.Builder builder = RedisClusterClient.builder()
+        .nodes(nodes)
+        .clientConfig(customClientConfig);
 
     assertNotNull(builder);
 
@@ -68,7 +78,10 @@ public class RedisClusterClientTest {
 
   @Test
   public void testBuilderWithMaxAttempts() {
-    RedisClusterClient.Builder builder = RedisClusterClient.builder().nodes(nodes).maxAttempts(10);
+    RedisClusterClient.Builder builder = RedisClusterClient.builder()
+        .nodes(nodes)
+        .clientConfig(clientConfig)
+        .maxAttempts(10);
 
     assertNotNull(builder);
 
@@ -85,7 +98,9 @@ public class RedisClusterClientTest {
 
   @Test
   public void testBuilderWithMaxTotalRetriesDuration() {
-    RedisClusterClient.Builder builder = RedisClusterClient.builder().nodes(nodes)
+    RedisClusterClient.Builder builder = RedisClusterClient.builder()
+        .nodes(nodes)
+        .clientConfig(clientConfig)
         .maxTotalRetriesDuration(Duration.ofSeconds(30));
 
     assertNotNull(builder);
@@ -103,7 +118,9 @@ public class RedisClusterClientTest {
 
   @Test
   public void testBuilderWithTopologyRefreshPeriod() {
-    RedisClusterClient.Builder builder = RedisClusterClient.builder().nodes(nodes)
+    RedisClusterClient.Builder builder = RedisClusterClient.builder()
+        .nodes(nodes)
+        .clientConfig(clientConfig)
         .topologyRefreshPeriod(Duration.ofMinutes(5));
 
     assertNotNull(builder);
@@ -143,22 +160,6 @@ public class RedisClusterClientTest {
 
   @Test
   public void testConstructorWithNodes() {
-    try (RedisClusterClient client = new RedisClusterClient(nodes)) {
-      assertNotNull(client);
-    } catch (Exception e) {
-      // Expected since we don't have a real cluster running
-      assertTrue(
-        e.getMessage().contains("Connection") || e.getMessage().contains("connection")
-            || e.getCause() instanceof java.net.ConnectException,
-        "Expected connection-related exception");
-    }
-  }
-
-  @Test
-  public void testConstructorWithNodesAndClientConfig() {
-    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password("testpassword")
-        .build();
-
     try (RedisClusterClient client = new RedisClusterClient(nodes, clientConfig)) {
       assertNotNull(client);
     } catch (Exception e) {
@@ -171,8 +172,25 @@ public class RedisClusterClientTest {
   }
 
   @Test
+  public void testConstructorWithNodesAndClientConfig() {
+    JedisClientConfig customClientConfig = DefaultJedisClientConfig.builder()
+        .password("cluster")
+        .build();
+
+    try (RedisClusterClient client = new RedisClusterClient(nodes, customClientConfig)) {
+      assertNotNull(client);
+    } catch (Exception e) {
+      // Expected since we don't have a real cluster running
+      assertTrue(
+        e.getMessage().contains("Connection") || e.getMessage().contains("connection")
+            || e.getCause() instanceof java.net.ConnectException,
+        "Expected connection-related exception");
+    }
+  }
+
+  @Test
   public void testTransactionNotSupported() {
-    try (RedisClusterClient client = new RedisClusterClient(nodes)) {
+    try (RedisClusterClient client = new RedisClusterClient(nodes, clientConfig)) {
       try {
         client.transaction(true);
         fail("Expected UnsupportedOperationException");
@@ -193,7 +211,7 @@ public class RedisClusterClientTest {
 
   @Test
   public void testPipelinedMethod() {
-    try (RedisClusterClient client = new RedisClusterClient(nodes)) {
+    try (RedisClusterClient client = new RedisClusterClient(nodes, clientConfig)) {
       ClusterPipeline pipeline = client.pipelined();
       assertNotNull(pipeline);
     } catch (Exception e) {

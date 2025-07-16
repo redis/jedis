@@ -9002,7 +9002,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
-  @Override
   @Deprecated
   public List<String> clusterSlaves(final String nodeId) {
     checkIsInMultiOrPipeline();
@@ -9031,7 +9030,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
-  @Override
   @Deprecated
   public List<Object> clusterSlots() {
     checkIsInMultiOrPipeline();

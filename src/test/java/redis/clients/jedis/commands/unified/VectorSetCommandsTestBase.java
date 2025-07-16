@@ -22,6 +22,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.resps.VectorInfo;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.List;
 
@@ -480,6 +481,37 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNull(nonExistentAttrs);
   }
 
+
+  /**
+   * Test VGETATTR with binary key and element.
+   * Verifies that VGETATTR works with byte array keys and elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVgetattrBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+    byte[] elementId = "binary_element_with_attrs".getBytes();
+    float[] vector = {1.0f, 2.0f};
+
+    // VGETATTR should return null for element without attributes
+    byte[] attrs = jedis.vgetattr(testKey, elementId);
+    // Note: This might return null or empty for non-existent element
+
+    // Now add an element with attributes using binary key and element
+    String attributes = "name=binary_test_point,value=42,active=true";
+    VAddParams params = new VAddParams().setAttr(attributes);
+    boolean result = jedis.vadd(testKey, vector, elementId, params);
+    assertTrue(result);
+
+    // VGETATTR should return the attributes as byte array
+    byte[] retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+
+    // Convert byte array back to string and verify content
+    String retrievedAttrsString = SafeEncoder.encode(retrievedAttrs);
+    assertEquals(attributes, retrievedAttrsString);
+  }
+
   /**
    * Test VSETATTR command functionality.
    * Verifies that attributes can be set on vector set elements.
@@ -514,6 +546,49 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     retrievedAttrs = jedis.vgetattr(testKey, elementId);
     assertNotNull(retrievedAttrs);
     assertEquals(updatedAttributes, retrievedAttrs);
+  }
+
+  /**
+   * Test VSETATTR with binary key and element.
+   * Verifies that VSETATTR works with byte array keys and elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsetattrBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+    byte[] elementId = "binary_setattr_element".getBytes();
+    float[] vector = {1.0f, 2.0f};
+
+    // First add an element without attributes
+    boolean result = jedis.vadd(testKey, vector, elementId);
+    assertTrue(result);
+
+    // Set attributes using binary VSETATTR
+    String attributes = "name=binary_test_point,value=42,active=true";
+    byte[] attributesBytes = attributes.getBytes();
+    boolean setResult = jedis.vsetattr(testKey, elementId, attributesBytes);
+    assertTrue(setResult);
+
+    // Verify attributes were set using binary VGETATTR
+    byte[] retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+
+    // Convert back to string and verify
+    String retrievedAttrsString =SafeEncoder.encode(retrievedAttrs);
+    assertEquals(attributes, retrievedAttrsString);
+
+    // Update attributes with new values using binary VSETATTR
+    String updatedAttributes = "name=updated_binary_point,value=100,active=false,new_field=added";
+    byte[] updatedAttributesBytes = updatedAttributes.getBytes();
+    setResult = jedis.vsetattr(testKey, elementId, updatedAttributesBytes);
+    assertTrue(setResult);
+
+    // Verify updated attributes using binary VGETATTR
+    retrievedAttrs = jedis.vgetattr(testKey, elementId);
+    assertNotNull(retrievedAttrs);
+
+    String updatedRetrievedString = SafeEncoder.encode(retrievedAttrs);
+    assertEquals(updatedAttributes, updatedRetrievedString);
   }
 
   /**
@@ -884,4 +959,5 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNull(jedis.vemb(testKey, "non_existent_element"));
 
   }
+
 }

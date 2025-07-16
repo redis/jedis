@@ -280,8 +280,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         clusterWithHealthChange.setHealthStatus(newStatus);
 
         if (newStatus.isHealthy()) {
-            if (clusterWithHealthChange.isFailbackSupported() && clusterWithHealthChange.isFailbackCandidate()
-                && activeCluster != clusterWithHealthChange) {
+            if (clusterWithHealthChange.isFailbackSupported() && activeCluster != clusterWithHealthChange) {
                 // lets check if weighted switching is possible
                 Map.Entry<Endpoint, Cluster> failbackCluster = findWeightedHealthyClusterToIterate();
                 if (failbackCluster == clusterWithHealthChange
@@ -307,9 +306,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         Cluster cluster = clusterToIterate.getValue();
         boolean changed = setActiveCluster(cluster, false);
         if (!changed) return null;
-        if (cluster.isFailbackSupported()) {
-            cluster.setFailbackCandidate(false);
-        }
         return clusterToIterate.getKey();
     }
 
@@ -471,9 +467,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         // it starts its life with the assumption of being healthy
         private HealthStatus healthStatus = HealthStatus.HEALTHY;
         private MultiClusterClientConfig multiClusterClientConfig;
-        // it starts its life as a failback candidate,
-        // this changes under the condition that cluster failover to another and failback is not supported by client
-        private boolean failbackCandidate = true;
+        private boolean disabled = false;
 
         public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
@@ -520,26 +514,19 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public boolean isHealthy() {
-            return healthStatus.isHealthy() && !isCBForcedOpen();
-        }
-
-        /**
-         * Whether this cluster is a failback candidate Cluster starts its life as a failback candidate, this changes
-         * under the condition that cluster failover to another and failback is not supported by client
-         */
-        public boolean isFailbackCandidate() {
-            return failbackCandidate;
-        }
-
-        /**
-         * Sets this cluster as a failback candidate
-         */
-        public void setFailbackCandidate(boolean failbackCandidate) {
-            this.failbackCandidate = failbackCandidate;
+            return healthStatus.isHealthy() && !isCBForcedOpen() && !disabled;
         }
 
         public boolean retryOnFailover() {
             return multiClusterClientConfig.isRetryOnFailover();
+        }
+
+        public boolean isDisabled() {
+            return disabled;
+        }
+
+        public void setDisabled(boolean disabled) {
+            this.disabled = disabled;
         }
 
         /**
@@ -553,8 +540,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         public String toString() {
             return circuitBreaker.getName() + "{" + "connectionPool=" + connectionPool + ", retry=" + retry
                 + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus=" + healthStatus
-                + ", multiClusterClientConfig=" + multiClusterClientConfig + ", failbackCandidate=" + failbackCandidate
-                + '}';
+                + ", multiClusterClientConfig=" + multiClusterClientConfig + '}';
         }
     }
 

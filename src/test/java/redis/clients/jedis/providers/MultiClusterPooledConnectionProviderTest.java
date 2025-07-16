@@ -9,7 +9,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.Endpoint;
 
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +35,7 @@ public class MultiClusterPooledConnectionProviderTest {
             .weight(0.3f).build();
 
         provider = new MultiClusterPooledConnectionProvider(
-            new MultiClusterClientConfig.Builder(clusterConfigs).failbackSupported(false).build());
+            new MultiClusterClientConfig.Builder(clusterConfigs).build());
     }
 
     @Test
@@ -56,16 +55,19 @@ public class MultiClusterPooledConnectionProviderTest {
     }
 
     @Test
-    public void testIncrementActiveMultiClusterIndex() {
+    public void testIterateActiveCluster() {
         Endpoint e2 = provider.iterateActiveCluster();
         assertEquals(endpointStandalone1.getHostAndPort(), e2);
     }
 
     @Test
-    public void testIncrementActiveMultiClusterIndexOutOfRange() {
+    public void testIterateActiveClusterOutOfRange() {
         provider.setActiveCluster(endpointStandalone0.getHostAndPort());
+        provider.getCluster().setDisabled(true);
 
         Endpoint e2 = provider.iterateActiveCluster();
+        provider.getCluster().setDisabled(true);
+
         assertEquals(endpointStandalone1.getHostAndPort(), e2);
 
         assertThrows(JedisConnectionException.class, () -> provider.iterateActiveCluster()); // Should throw an
@@ -73,20 +75,11 @@ public class MultiClusterPooledConnectionProviderTest {
     }
 
     @Test
-    public void testIsLastClusterCircuitBreakerForcedOpen() {
+    public void testCanIterateOnceMore() {
         provider.setActiveCluster(endpointStandalone0.getHostAndPort());
-
-        try {
-            provider.iterateActiveCluster();
-        } catch (Exception e) {
-        }
-
-        // This should set the isLastClusterCircuitBreakerForcedOpen to true
-        try {
-            provider.iterateActiveCluster();
-        } catch (Exception e) {
-        }
-
+        provider.getCluster().setDisabled(true);
+        provider.iterateActiveCluster();
+        
         assertFalse(provider.canIterateOnceMore());
     }
 

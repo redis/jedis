@@ -44,8 +44,8 @@ public class MultiClusterDynamicEndpointUnitTest {
 
     // Helper method to create cluster configurations
     private ClusterConfig createClusterConfig(HostAndPort hostAndPort, float weight) {
-        return ClusterConfig.builder(hostAndPort, clientConfig)
-            .weight(weight).build();
+        // Disable health check for unit tests to avoid real connections
+        return ClusterConfig.builder(hostAndPort, clientConfig).weight(weight).healthCheckEnabled(false).build();
     }
 
     @Test
@@ -85,20 +85,21 @@ public class MultiClusterDynamicEndpointUnitTest {
             MultiClusterClientConfig multiConfig = MultiClusterClientConfig
                 .builder(new ClusterConfig[] { clusterConfig1 }).build();
 
-            MultiClusterPooledConnectionProvider providerWithMockedPool = new MultiClusterPooledConnectionProvider(
-                multiConfig);
+            try (MultiClusterPooledConnectionProvider providerWithMockedPool = new MultiClusterPooledConnectionProvider(
+                multiConfig)) {
 
-            // Add endpoint2 as second cluster
-            ClusterConfig newConfig = createClusterConfig(endpoint2.getHostAndPort(), 2.0f);
-            providerWithMockedPool.add(newConfig);
+                // Add endpoint2 as second cluster
+                ClusterConfig newConfig = createClusterConfig(endpoint2.getHostAndPort(), 2.0f);
+                providerWithMockedPool.add(newConfig);
 
-            // Now remove endpoint1 (original cluster)
-            assertDoesNotThrow(() -> providerWithMockedPool.remove(endpoint1.getHostAndPort()));
+                // Now remove endpoint1 (original cluster)
+                assertDoesNotThrow(() -> providerWithMockedPool.remove(endpoint1.getHostAndPort()));
 
-            // Verify endpoint1 was removed
-            assertNull(providerWithMockedPool.getCluster(endpoint1.getHostAndPort()));
-            // Verify endpoint2 still exists
-            assertNotNull(providerWithMockedPool.getCluster(endpoint2.getHostAndPort()));
+                // Verify endpoint1 was removed
+                assertNull(providerWithMockedPool.getCluster(endpoint1.getHostAndPort()));
+                // Verify endpoint2 still exists
+                assertNotNull(providerWithMockedPool.getCluster(endpoint2.getHostAndPort()));
+            }
         }
     }
 
@@ -180,22 +181,23 @@ public class MultiClusterDynamicEndpointUnitTest {
             MultiClusterClientConfig multiConfig = MultiClusterClientConfig
                 .builder(new ClusterConfig[] { clusterConfig1 }).build();
 
-            MultiClusterPooledConnectionProvider providerWithMockedPool = new MultiClusterPooledConnectionProvider(
-                multiConfig);
+            try (MultiClusterPooledConnectionProvider providerWithMockedPool = new MultiClusterPooledConnectionProvider(
+                multiConfig)) {
 
-            // Add endpoint2 as second cluster
-            ClusterConfig newConfig = createClusterConfig(endpoint2.getHostAndPort(), 2.0f);
-            providerWithMockedPool.add(newConfig);
+                // Add endpoint2 as second cluster
+                ClusterConfig newConfig = createClusterConfig(endpoint2.getHostAndPort(), 2.0f);
+                providerWithMockedPool.add(newConfig);
 
-            // Get current active cluster
-            Object initialActiveCluster = providerWithMockedPool.getCluster();
-            assertNotNull(initialActiveCluster);
+                // Get current active cluster
+                Object initialActiveCluster = providerWithMockedPool.getCluster();
+                assertNotNull(initialActiveCluster);
 
-            // Remove endpoint1 (original cluster, might be active)
-            providerWithMockedPool.remove(endpoint1.getHostAndPort());
+                // Remove endpoint1 (original cluster, might be active)
+                providerWithMockedPool.remove(endpoint1.getHostAndPort());
 
-            // Should still have an active cluster
-            assertNotNull(providerWithMockedPool.getCluster());
+                // Should still have an active cluster
+                assertNotNull(providerWithMockedPool.getCluster());
+            }
         }
     }
 }

@@ -28,6 +28,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusChangeEvent;
@@ -201,13 +202,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             if (isActiveCluster) {
                 log.info("Active cluster is being removed. Finding a new active cluster...");
-
-                // If we removed the active cluster, find a new one
-                if (isActiveCluster) {
-                    Map.Entry<Endpoint, Cluster> candidateCluster = findWeightedHealthyClusterToIterate();
-                    if (candidateCluster != null) {
-                        setActiveCluster(candidateCluster.getValue(), true);
-                    }
+                Map.Entry<Endpoint, Cluster> candidateCluster = findWeightedHealthyClusterToIterate();
+                if (candidateCluster != null) {
+                    setActiveCluster(candidateCluster.getValue(), true);
+                    log.info("New active cluster set to {}", candidateCluster.getKey());
+                } else {
+                    throw new JedisException(
+                        "Cluster can not be removed due to no healthy cluster available to switch!");
                 }
             }
 
@@ -220,6 +221,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             // Close the cluster resources
             if (clusterToRemove != null) {
+                clusterToRemove.setDisabled(true);
                 clusterToRemove.getConnectionPool().close();
             }
         } finally {

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.commands.unified.VectorTestUtils.floatArrayToFP32Bytes;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.VAddParams;
+import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.resps.VectorInfo;
 
 import java.util.List;
@@ -35,6 +37,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
   @BeforeEach
   public void setUp(TestInfo testInfo) {
+    jedis.flushAll();
+
     POINTS_KEY = testInfo.getDisplayName() + ":points";
     jedis.del(POINTS_KEY);
     // Add the example points from the Redis documentation
@@ -728,17 +732,156 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Helper method to convert float array to FP32 byte blob (IEEE 754 format).
+   * Test VEMB command functionality.
+   * Verifies that vector embeddings can be retrieved correctly.
    */
-  private byte[] floatArrayToFP32Bytes(float[] floats) {
-    byte[] bytes = new byte[floats.length * 4]; // 4 bytes per float
-    for (int i = 0; i < floats.length; i++) {
-      int bits = Float.floatToIntBits(floats[i]);
-      bytes[i * 4] = (byte) (bits & 0xFF);
-      bytes[i * 4 + 1] = (byte) ((bits >> 8) & 0xFF);
-      bytes[i * 4 + 2] = (byte) ((bits >> 16) & 0xFF);
-      bytes[i * 4 + 3] = (byte) ((bits >> 24) & 0xFF);
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVemb(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    // Add vector to the set
+    float[] originalVector = {1.0f, 2.0f};
+    VAddParams params = new VAddParams().noQuant();
+    boolean result = jedis.vadd(testKey, originalVector, "element1", params);
+    assertTrue(result);
+
+    // Retrieve the vector using VEMB
+    List<Double> retrievedVector = jedis.vemb(testKey, "element1");
+    assertNotNull(retrievedVector);
+    assertEquals(2, retrievedVector.size());
+
+    // Verify vector values (with small tolerance for floating point precision)
+    assertEquals(1.0f, retrievedVector.get(0), 0.001);
+    assertEquals(2.0f, retrievedVector.get(1), 0.001);
+  }
+
+  /**
+   * Test VEMB with binary key and element.
+   * Verifies that VEMB works with byte array keys and elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVembBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+    byte[] elementId = "binary_element".getBytes();
+
+    // Add vector to the set using binary key and element
+    float[] originalVector = {0.0f, 1.0f};
+    boolean result = jedis.vadd(testKey, originalVector, elementId);
+    assertTrue(result);
+
+    // Retrieve the vector using binary VEMB
+    List<Double> retrievedVector = jedis.vemb(testKey, elementId);
+    assertNotNull(retrievedVector);
+    assertEquals(2, retrievedVector.size());
+
+    // Verify vector values
+    assertEquals(0.0, retrievedVector.get(0), 0.001);
+    assertEquals(1.0, retrievedVector.get(1), 0.001);
+  }
+
+  /**
+   * Test VEMB with RAW option.
+   * Verifies that VEMB can return raw vector data when RAW flag is used with FP32 format.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVembRaw(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:raw";
+
+    // Add vector to the set using FP32 format
+    float[] originalVector = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
+    byte[] vectorBlob = floatArrayToFP32Bytes(originalVector);
+    VAddParams params = new VAddParams().noQuant();
+    boolean result = jedis.vaddFP32(testKey, vectorBlob, "raw_element", params);
+    assertTrue(result);
+
+    // Retrieve the vector using VEMB with RAW option
+    RawVector rawVector = jedis.vembRaw(testKey, "raw_element");
+    assertNotNull(rawVector);
+
+    // Verify the raw data length matches the original vector length
+    byte[] rawData = rawVector.getRawData();
+    int expectedLength = originalVector.length * 4; // 4 bytes per float
+    assertEquals(expectedLength, rawData.length);
+
+    // Verify the quantization type is FP32
+    assertEquals("f32", rawVector.getQuantizationType());
+
+    // Verify the norm is present (L2 norm of the vector)
+    assertNotNull(rawVector.getNorm());
+    assertTrue(rawVector.getNorm() > 0);
+
+    // Verify the raw data contains the correct float values by converting back
+    // IEEE 754 32-bit floats are stored in little-endian format
+    List<Float> reconstructedVector = VectorTestUtils.fp32BytesToFloatArray(rawData);
+
+    // Verify the reconstructed vector matches the original
+    assertEquals(originalVector.length, reconstructedVector.size());
+    for (int i = 0; i < originalVector.length; i++) {
+      assertEquals(originalVector[i]/rawVector.getNorm(), reconstructedVector.get(i), 0.001f);
     }
-    return bytes;
+  }
+
+  /**
+   * Test VEMB with RAW option.
+   * Verifies that VEMB can return raw vector data when RAW flag is used with FP32 format.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVembRawBinary(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:raw";
+
+    // Add vector to the set using FP32 format
+    float[] originalVector = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
+    byte[] vectorBlob = floatArrayToFP32Bytes(originalVector);
+    VAddParams params = new VAddParams().noQuant();
+    boolean result = jedis.vaddFP32(testKey, vectorBlob, "raw_element", params);
+    assertTrue(result);
+
+    // Retrieve the vector using VEMB with RAW option
+    RawVector rawVector = jedis.vembRaw(testKey.getBytes(), "raw_element".getBytes());
+    assertNotNull(rawVector);
+
+    // Verify the raw data length matches the original vector length
+    byte[] rawData = rawVector.getRawData();
+    int expectedLength = originalVector.length * 4; // 4 bytes per float
+    assertEquals(expectedLength, rawData.length);
+
+    // Verify the quantization type is FP32
+    assertEquals("f32", rawVector.getQuantizationType());
+
+    // Verify the norm is present (L2 norm of the vector)
+    assertNotNull(rawVector.getNorm());
+    assertTrue(rawVector.getNorm() > 0);
+
+    // Verify the raw data contains the correct float values by converting back
+    // IEEE 754 32-bit floats are stored in little-endian format
+    List<Float> reconstructedVector = VectorTestUtils.fp32BytesToFloatArray(rawData);
+
+    // Verify the reconstructed vector matches the original
+    assertEquals(originalVector.length, reconstructedVector.size());
+    for (int i = 0; i < originalVector.length; i++) {
+      assertEquals(originalVector[i]/rawVector.getNorm(), reconstructedVector.get(i), 0.001f);
+    }
+  }
+
+  /**
+   * Test VEMB with non-existent element.
+   * Verifies that VEMB handles non-existent elements correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVembNonExistent(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:nonexistent";
+
+    // Add a vector first
+    float[] vector = {1.0f, 2.0f};
+    jedis.vadd(testKey, vector, "existing_element");
+
+    // Try to retrieve non-existent element
+    assertNull(jedis.vemb(testKey, "non_existent_element"));
+
   }
 }

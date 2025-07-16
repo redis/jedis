@@ -579,7 +579,7 @@ public class RedisClusterClient extends BaseRedisClient implements ClusterComman
      * <p>
      * When a cluster operation fails due to redirection or node failure, the client will retry up
      * to this many times before giving up.
-     * @param maxAttempts the maximum number of attempts (must be > 0)
+     * @param maxAttempts the maximum number of attempts (must be higher than 0)
      * @return this builder
      */
     public Builder maxAttempts(int maxAttempts) {

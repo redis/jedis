@@ -5006,4 +5006,8 @@ public class CommandObjects {
   public final CommandObject<Boolean> vsetattr(byte[] key, byte[] element, byte[] attributes) {
     return new CommandObject<>(commandArguments(Command.VSETATTR).key(key).add(element).add(attributes), BuilderFactory.BOOLEAN);
   }
+
+  public final CommandObject<VectorInfo> vinfo(String key) {
+    return new CommandObject<>(commandArguments(Command.VINFO).key(key), BuilderFactory.VECTOR_INFO);
+  }
 }

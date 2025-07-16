@@ -4647,6 +4647,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.vsetattr(key, element, attributes));
   }
 
+  @Override
+  public Response<VectorInfo> vinfo(String key) {
+    return appendCommand(commandObjects.vinfo(key));
+  }
+
   // Binary vector set pipeline commands
   @Override
   public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element) {

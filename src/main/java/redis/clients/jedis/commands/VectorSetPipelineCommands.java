@@ -8,6 +8,7 @@ import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.resps.VSimResult;
+import redis.clients.jedis.resps.VectorInfo;
 
 /**
  * Interface for Redis Vector Set pipeline commands.
@@ -280,4 +281,14 @@ public interface VectorSetPipelineCommands {
    * @return Response wrapping true if the attributes were set successfully
    */
   Response<Boolean> vsetattr(String key, String element, String attributes);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vinfo/">VINFO Command</a></b>
+   * Get information about a vector set.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the name of the key that holds the vector set
+   * @return Response wrapping information about the vector set
+   */
+  Response<VectorInfo> vinfo(String key);
 }

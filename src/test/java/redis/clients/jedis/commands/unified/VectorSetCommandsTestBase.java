@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.unified;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.VAddParams;
+import redis.clients.jedis.resps.VectorInfo;
 
 import java.util.List;
 
@@ -468,8 +471,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test VGETATTR with non-existent element
     String nonExistentAttrs = jedis.vgetattr(testKey, "non_existent_element");
-    // Should return null for non-existent elements
-    // Note: Actual behavior may vary based on Redis implementation
+    assertNull(nonExistentAttrs);
   }
 
   /**
@@ -537,6 +539,56 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Verify attributes are deleted (should return null or empty)
     retrievedAttrs = jedis.vgetattr(testKey, elementId);
     assertNull(retrievedAttrs);
+  }
+
+  /**
+   * Test VINFO command functionality.
+   * Verifies that vector set information can be retrieved.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVinfo(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    float[] vector1 = {1.0f, 2.0f};
+    float[] vector2 = {3.0f, 4.0f};
+
+    // Add some elements to the vector set
+    VAddParams params = new VAddParams().setAttr("{\"type\": \"fruit\", \"color\": \"red\"}");
+    boolean result1 = jedis.vadd(testKey, vector1, "element1", params);
+    assertTrue(result1);
+
+    boolean result2 = jedis.vadd(testKey, vector2, "element2");
+    assertTrue(result2);
+
+    // Get vector set information
+    VectorInfo info = jedis.vinfo(testKey);
+    assertNotNull(info);
+
+    // Verify basic information is present
+    assertNotNull(info.getVectorInfo());
+    assertFalse(info.getVectorInfo().isEmpty());
+    assertEquals(2, info.getDimensionality());
+    assertEquals("int8", info.getType());
+    assertEquals(2L, info.getSize());
+    assertEquals(16L, info.getMaxNodes());
+    assertThat(info.getMaxNodeUid(), greaterThan(0L));
+    assertThat(info.getVSetUid(), greaterThan(0L) );
+    assertEquals(0L, info.getProjectionInputDim());
+    assertEquals(1L, info.getAttributesCount());
+    assertNotNull(info.getMaxLevel());
+  }
+
+  /**
+   * Test VINFO with empty vector set.
+   * Verifies behavior when vector set doesn't exist.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVinfoEmptySet(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
+
+    VectorInfo info = jedis.vinfo(testKey);
+    assertNull(info);
   }
 
   /**

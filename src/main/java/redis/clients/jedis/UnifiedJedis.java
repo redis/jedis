@@ -5254,6 +5254,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 
+  @Override
+  public VectorInfo vinfo(String key) {
+    return executeCommand(commandObjects.vinfo(key));
+  }
+
   // Binary vector set commands
   @Override
   public boolean vadd(byte[] key, float[] vector, byte[] element) {

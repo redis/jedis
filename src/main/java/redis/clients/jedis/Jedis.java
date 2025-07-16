@@ -10084,6 +10084,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 
+  @Override
+  public VectorInfo vinfo(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vinfo(key));
+  }
+
   // Binary vector set commands
   @Override
   public boolean vadd(byte[] key, float[] vector, byte[] element) {

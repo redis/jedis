@@ -1781,6 +1781,43 @@ public final class BuilderFactory {
   @Deprecated
   public static final Builder<StreamFullInfo> STREAM_INFO_FULL = STREAM_FULL_INFO;
 
+  public static final Builder<VectorInfo> VECTOR_INFO = new Builder<VectorInfo>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(VectorInfo.VECTOR_DIM, LONG);
+      tempMappingFunctions.put(VectorInfo.TYPE, STRING);
+      tempMappingFunctions.put(VectorInfo.SIZE, LONG);
+      tempMappingFunctions.put(VectorInfo.MAX_NODE_UID, LONG);
+      tempMappingFunctions.put(VectorInfo.VSET_UID, LONG);
+      tempMappingFunctions.put(VectorInfo.MAX_NODES, LONG);
+      tempMappingFunctions.put(VectorInfo.PROJECTION_INPUT_DIM, LONG);
+      tempMappingFunctions.put(VectorInfo.ATTRIBUTES_COUNT, LONG);
+      tempMappingFunctions.put(VectorInfo.MAX_LEVEL, LONG);
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public VectorInfo build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> vectorEntries = (List<Object>) data;
+      Iterator<Object> iterator = vectorEntries.iterator();
+
+      return new VectorInfo(createMapFromDecodingFunctions(iterator, mappingFunctions));
+    }
+
+    @Override
+    public String toString() {
+      return "VectorInfo";
+    }
+  };
+
   public static final Builder<StreamPendingSummary> STREAM_PENDING_SUMMARY = new Builder<StreamPendingSummary>() {
     @Override
     @SuppressWarnings("unchecked")

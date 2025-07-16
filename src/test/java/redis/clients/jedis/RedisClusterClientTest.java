@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,10 @@ public class RedisClusterClientTest {
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    nodes = Set.of(new HostAndPort("localhost", 7000), new HostAndPort("localhost", 7001),
-      new HostAndPort("localhost", 7002));
+    nodes = new HashSet<>();
+    nodes.add(new HostAndPort("localhost", 7000));
+    nodes.add(new HostAndPort("localhost", 7001));
+    nodes.add(new HostAndPort("localhost", 7002));
   }
 
   @Test
@@ -131,7 +134,8 @@ public class RedisClusterClientTest {
   @Test
   public void testBuilderWithEmptyNodes() {
     assertThrows(IllegalArgumentException.class, () -> {
-      RedisClusterClient.builder().nodes(Set.of()).build();
+      Set<HostAndPort> nodes1 = new HashSet<>();
+      RedisClusterClient.builder().nodes(nodes1).build();
     });
   }
 

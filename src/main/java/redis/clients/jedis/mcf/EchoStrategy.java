@@ -24,7 +24,7 @@ public class EchoStrategy implements HealthCheckStrategy {
         try {
             this.jedis = new UnifiedJedis(connFactory.makeObject().getObject());
         } catch (Exception e) {
-            new JedisConnectionException("HealtCheck connection Failed!", e);
+            throw new JedisConnectionException("HealthCheck connection Failed!", e);
         }
     }
 

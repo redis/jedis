@@ -31,7 +31,6 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
-import redis.clients.jedis.resps.VSimResult;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.MultiClusterPipeline;
@@ -5175,8 +5174,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public VSimResult vsim(String key, float[] vector, VSimParams params) {
+  public List<String> vsim(String key, float[] vector, VSimParams params) {
     return executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimWithScores(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScores(key, vector, params));
   }
 
   @Override
@@ -5185,18 +5189,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public VSimResult vsimByElement(String key, String element, VSimParams params) {
+  public List<String> vsimByElement(String key, String element, VSimParams params) {
     return executeCommand(commandObjects.vsimByElement(key, element, params));
   }
 
   @Override
-  public List<String> vsimFP32(String key, byte[] vectorBlob) {
-    return executeCommand(commandObjects.vsimFP32(key, vectorBlob));
-  }
-
-  @Override
-  public VSimResult vsimFP32(String key, byte[] vectorBlob, VSimParams params) {
-    return executeCommand(commandObjects.vsimFP32(key, vectorBlob, params));
+  public Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
   }
 
   @Override
@@ -5296,8 +5295,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public VSimResult vsim(byte[] key, float[] vector, VSimParams params) {
+  public List<byte[]> vsim(byte[] key, float[] vector, VSimParams params) {
     return executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScores(key, vector, params));
   }
 
   @Override
@@ -5306,18 +5310,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public VSimResult vsimByElement(byte[] key, byte[] element, VSimParams params) {
+  public List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params) {
     return executeCommand(commandObjects.vsimByElement(key, element, params));
   }
 
   @Override
-  public List<byte[]> vsimFP32(byte[] key, byte[] vectorBlob) {
-    return executeCommand(commandObjects.vsimFP32(key, vectorBlob));
-  }
-
-  @Override
-  public VSimResult vsimFP32(byte[] key, byte[] vectorBlob, VSimParams params) {
-    return executeCommand(commandObjects.vsimFP32(key, vectorBlob, params));
+  public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
   }
 
   @Override

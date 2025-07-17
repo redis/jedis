@@ -3,10 +3,7 @@ package redis.clients.jedis;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.params.VAddParams;
-import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
-import redis.clients.jedis.resps.VSimResult;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.IOUtils;
 

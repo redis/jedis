@@ -2,8 +2,13 @@ package redis.clients.jedis.commands.unified;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,6 +26,7 @@ import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.VAddParams;
+import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.resps.VectorInfo;
 import redis.clients.jedis.util.SafeEncoder;
@@ -28,6 +34,8 @@ import redis.clients.jedis.util.SafeEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static org.hamcrest.Matchers.*;
 
 @Tag("integration")
 @Tag("vector-set")
@@ -37,21 +45,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     super(protocol);
   }
 
-  private String POINTS_KEY;
-
   @BeforeEach
   public void setUp(TestInfo testInfo) {
     jedis.flushAll();
-
-    POINTS_KEY = testInfo.getDisplayName() + ":points";
-    jedis.del(POINTS_KEY);
-    // Add the example points from the Redis documentation
-    // A: (1.0, 1.0), B: (-1.0, -1.0), C: (-1.0, 1.0), D: (1.0, -1.0), and E: (1.0, 0)
-    jedis.vadd(POINTS_KEY, new float[]{1.0f, 1.0f}, "pt:A");
-    jedis.vadd(POINTS_KEY, new float[]{-1.0f, -1.0f}, "pt:B");
-    jedis.vadd(POINTS_KEY, new float[]{-1.0f, 1.0f}, "pt:C");
-    jedis.vadd(POINTS_KEY, new float[]{1.0f, -1.0f}, "pt:D");
-    jedis.vadd(POINTS_KEY, new float[]{1.0f, 0.0f}, "pt:E");
   }
 
   /**
@@ -497,8 +493,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     float[] vector = {1.0f, 2.0f};
 
     // VGETATTR should return null for element without attributes
-    byte[] attrs = jedis.vgetattr(testKey, elementId);
-    // Note: This might return null or empty for non-existent element
+    assertNull(jedis.vgetattr(testKey, elementId));
+
 
     // Now add an element with attributes using binary key and element
     String attributes = "name=binary_test_point,value=42,active=true";
@@ -619,7 +615,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(links.isEmpty());
     for (List<String> linkList : links) {
       for (String rawLink : linkList) {
-        assertTrue(rawLink.equals("element2") || rawLink.equals("element3"));;
+        assertTrue(rawLink.equals("element2") || rawLink.equals("element3"));
       }
     }
   }
@@ -675,16 +671,14 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Get links using binary VLINKS
     List<List<byte[]>> binaryLinks = jedis.vlinks(testKey, elementId);
     assertNotNull(binaryLinks);
-
-    // Links should be returned as strings (element IDs)
-    assertTrue(binaryLinks.size() > 0);
+    assertThat(binaryLinks.size(), is(greaterThan(0)));
 
     // If there are links, verify they are valid strings
     for (List<byte[]> linkList : binaryLinks) {
       for (byte[] rawLink : linkList) {
         String link = SafeEncoder.encode(rawLink);
-        assertNotNull(link);
-        assertTrue(link.length() > 0);
+        assertThat(link, is(notNullValue()));
+        assertThat(link, not(emptyString()));
       }
     }
   }
@@ -1378,6 +1372,198 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Try to retrieve non-existent element
     assertNull(jedis.vemb(testKey, "non_existent_element"));
 
+  }
+
+  /**
+   * Test VSIM command functionality.
+   * Verifies vector similarity search with vectors and elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsim(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    setupVSimTestSet(testKey);
+
+    // Test vsim with vector
+    List<String> similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f});
+    assertNotNull(similar);
+    assertThat(similar, is(not(empty())));
+    assertThat(similar.size(), is(3));
+    assertThat(similar, hasItems("element1", "element2", "element3"));
+
+    // Test vsim with element
+    similar = jedis.vsimByElement(testKey, "element1");
+    assertNotNull(similar);
+    assertThat(similar, is(not(empty())));
+    assertThat(similar.size(), is(3));
+    assertThat(similar, hasItems("element1", "element2", "element3"));
+
+    // Test vsim with vector and parameters
+    VSimParams params = new VSimParams().count(2);
+    similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    assertNotNull(similar);
+    assertThat(similar.size(), is(2));
+
+    // Test vsim with element and parameters
+    similar = jedis.vsimByElement(testKey, "element1", params);
+    assertNotNull(similar);
+    assertThat(similar.size(), is(2));
+  }
+
+  private void setupVSimTestSet(String testKey) {
+    // Add test vectors
+    float[] vector1 = {0.1f, 0.2f, 0.3f};
+    float[] vector2 = {0.2f, 0.3f, 0.4f};
+    float[] vector3 = {0.3f, 0.4f, 0.5f};
+
+    jedis.vadd(testKey, vector1, "element1");
+    jedis.vadd(testKey, vector2, "element2");
+    jedis.vadd(testKey, vector3, "element3");
+  }
+
+  /**
+   * Test VSIM command with scores functionality.
+   * Verifies vector similarity search returns scores correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimWithScores(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:scores";
+
+    setupVSimTestSet(testKey);
+
+    // Test vsim with vector and scores
+    VSimParams params = new VSimParams();
+    Map<String, Double> similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    assertThat(similarWithScores.keySet(), hasItems("element1", "element2", "element3"));
+    assertThat(similarWithScores.values(), everyItem(greaterThanOrEqualTo(0.0)));
+
+    // Test vsim with element and scores
+    similarWithScores = jedis.vsimByElementWithScores(testKey, "element1", params);
+    assertThat(similarWithScores.keySet(), hasItems("element1", "element2", "element3"));
+    assertThat(similarWithScores.values(), everyItem(greaterThan(0.0)));
+    assertEquals(1.0, similarWithScores.get("element1"), 0.001);
+
+    // Test with count parameter
+    params = new VSimParams().count(2);
+    similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    assertThat(similarWithScores.keySet(), hasItems("element1", "element2"));
+    assertThat(similarWithScores.values(), everyItem(greaterThan(0.0)));
+  }
+
+  /**
+   * Test VSIM command with binary keys and elements.
+   * Verifies vector similarity search works with byte arrays.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+
+    setupVSimTestSetBinary(testKey);
+
+    // Test vsim with vector (binary)
+    List<byte[]> similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f});
+    assertNotNull(similar);
+    assertThat(similar, is(not(empty())));
+    assertThat(similar.size(), is(3));
+    assertThat(getBinaryElementNames(similar), hasItems("element1", "element2", "element3"));
+
+    // Test vsim with element (binary)
+    similar = jedis.vsimByElement(testKey, "element1".getBytes());
+    assertNotNull(similar);
+    assertThat(similar, is(not(empty())));
+    assertThat(similar.size(), is(3));
+    assertThat(getBinaryElementNames(similar), hasItems("element1", "element2", "element3"));
+
+    // Test vsim with vector and parameters (binary)
+    VSimParams params = new VSimParams().count(2);
+    similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    assertNotNull(similar);
+    assertThat(similar.size(), is(2));
+
+    // Test vsim with element and parameters (binary)
+    similar = jedis.vsimByElement(testKey, "element1".getBytes(), params);
+    assertNotNull(similar);
+    assertThat(similar.size(), is(2));
+  }
+
+  /**
+   * Test VSIM command with binary keys and scores.
+   * Verifies vector similarity search returns scores with binary data.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimBinaryWithScores(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary:scores").getBytes();
+
+    setupVSimTestSetBinary(testKey);
+
+    // Test vsim with vector and scores (binary)
+    VSimParams params = new VSimParams();
+    Map<byte[], Double> similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    assertNotNull(similarWithScores);
+    assertThat(similarWithScores, is(not(anEmptyMap())));
+
+    // Verify scores are present and valid
+    for (Map.Entry<byte[], Double> entry : similarWithScores.entrySet()) {
+      assertNotNull(entry.getKey());
+      assertNotNull(entry.getValue());
+      assertThat(entry.getValue(), is(greaterThan(0.0)));
+    }
+
+    // Test vsim with element and scores (binary)
+    similarWithScores = jedis.vsimByElementWithScores(testKey, "element1".getBytes(), params);
+    assertNotNull(similarWithScores);
+    assertThat(similarWithScores, is(not(anEmptyMap())));
+
+    // Element1 should have perfect similarity with itself
+    Double element1Score = getBinaryScoreForElement(similarWithScores, "element1");
+    assertNotNull(element1Score);
+    assertThat(element1Score, is(closeTo(1.0, 0.001)));
+
+    // Test with count parameter (binary)
+    params = new VSimParams().count(2);
+    similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    assertNotNull(similarWithScores);
+    assertThat(similarWithScores.size(), is(2));
+  }
+
+  /**
+   * Helper method to set up test vector set for binary VSIM tests.
+   */
+  private void setupVSimTestSetBinary(byte[] testKey) {
+    // Add test vectors - same as non-binary version
+    float[] vector1 = {0.1f, 0.2f, 0.3f};
+    float[] vector2 = {0.15f, 0.25f, 0.35f};
+    float[] vector3 = {0.9f, 0.8f, 0.7f};
+
+    jedis.vadd(testKey, vector1, "element1".getBytes());
+    jedis.vadd(testKey, vector2, "element2".getBytes());
+    jedis.vadd(testKey, vector3, "element3".getBytes());
+  }
+
+  /**
+   * Helper method to convert binary element list to string names for assertions.
+   */
+  private List<String> getBinaryElementNames(List<byte[]> binaryElements) {
+    return binaryElements.stream()
+        .map(String::new)
+        .collect(java.util.stream.Collectors.toList());
+  }
+
+  /**
+   * Helper method to get score for a specific element from binary score map.
+   */
+  private Double getBinaryScoreForElement(Map<byte[], Double> scoreMap, String elementName) {
+    byte[] elementBytes = elementName.getBytes();
+    for (Map.Entry<byte[], Double> entry : scoreMap.entrySet()) {
+      if (java.util.Arrays.equals(entry.getKey(), elementBytes)) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
 }

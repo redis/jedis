@@ -3,8 +3,10 @@ package redis.clients.jedis.commands.unified;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 
 /**
@@ -134,8 +137,8 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
     assertEquals("pt:B", similar.get(4));
 
     // Search for vectors similar to point A with scores
-    VSimParams params = new VSimParams().withScores();
-    Map<String, Double> similarWithScores = jedis.vsimByElement(POINTS_KEY, "pt:A", params).getScores();
+    VSimParams params = new VSimParams();
+    Map<String, Double> similarWithScores = jedis.vsimByElementWithScores(POINTS_KEY, "pt:A", params);
     assertNotNull(similarWithScores);
     assertFalse(similarWithScores.isEmpty());
 
@@ -144,7 +147,7 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
 
     // Limit the number of results to 4
     params = new VSimParams().count(4);
-    similar = jedis.vsimByElement(POINTS_KEY, "pt:A", params).getElements();
+    similar = jedis.vsimByElement(POINTS_KEY, "pt:A", params);
     assertEquals(4, similar.size());
   }
 
@@ -182,14 +185,12 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
     assertNotNull(linksWithScores);
   }
 
-  // TODO: Implement attribute operations tests when vgetattr/vsetattr commands are implemented
-  /*
   @Test
   @SinceRedisVersion("8.0.0")
   public void testAttributeOperations() {
     // Set attributes for point A
     String attributes = "{\"name\":\"Point A\",\"description\":\"First point added\"}";
-    Boolean result = jedis.vsetattr(POINTS_KEY, "pt:A", attributes);
+    boolean result = jedis.vsetattr(POINTS_KEY, "pt:A", attributes);
     assertTrue(result);
 
     // Get attributes for point A
@@ -205,10 +206,7 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
     retrievedAttributes = jedis.vgetattr(POINTS_KEY, "pt:A");
     assertNull(retrievedAttributes);
   }
-  */
 
-  // TODO: Implement filtered search tests when JSON support and filter parameters are implemented
-  /*
   @Test
   @SinceRedisVersion("8.0.0")
   public void testFilteredVectorSimilaritySearch() {
@@ -221,31 +219,28 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
 
     // Filter by size = "large"
     VSimParams params = new VSimParams().filter(".size == \"large\"");
-    List<String> similar = jedis.vsim(POINTS_KEY, "pt:A", params).getElements();
+    List<String> similar = jedis.vsimByElement(POINTS_KEY, "pt:A", params);
     assertEquals(3, similar.size());
-    assertEquals(List.of("pt:A", "pt:C", "pt:B"), similar);
+    assertEquals(Arrays.asList("pt:A", "pt:C", "pt:B"), similar);
 
     // Filter by size = "large" AND price > 20.00
     params = new VSimParams().filter(".size == \"large\" && .price > 20.00");
-    similar = jedis.vsim(POINTS_KEY, "pt:A", params).getElements();
+    similar = jedis.vsimByElement(POINTS_KEY, "pt:A", params);
     assertEquals(2, similar.size());
-    assertEquals(List.of("pt:C", "pt:B"), similar);
+    assertEquals(Arrays.asList("pt:C", "pt:B"), similar);
   }
-  */
 
-  // TODO: Implement quantization tests when quantization parameters are implemented
-  /*
   @Test
   @SinceRedisVersion("8.0.0")
   public void testQuantizationTypes() {
     // Test Q8 quantization
-    VAddParams q8Params = new VAddParams().quantizationType("Q8");
+    VAddParams q8Params = new VAddParams().q8();
     jedis.vadd("quantSetQ8", new float[]{1.262185f, 1.958231f}, "quantElement", q8Params);
     List<Double> q8Vector = jedis.vemb("quantSetQ8", "quantElement");
     assertEquals(2, q8Vector.size());
 
     // Test NOQUANT (no quantization)
-    VAddParams noQuantParams = new VAddParams().quantizationType("NOQUANT");
+    VAddParams noQuantParams = new VAddParams().noQuant();
     jedis.vadd("quantSetNoQ", new float[]{1.262185f, 1.958231f}, "quantElement", noQuantParams);
     List<Double> noQuantVector = jedis.vemb("quantSetNoQ", "quantElement");
     assertEquals(2, noQuantVector.size());
@@ -253,7 +248,7 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
     assertEquals(1.958231, noQuantVector.get(1), 0.0001);
 
     // Test BIN (binary) quantization
-    VAddParams binParams = new VAddParams().quantizationType("BIN");
+    VAddParams binParams = new VAddParams().bin();
     jedis.vadd("quantSetBin", new float[]{1.262185f, 1.958231f}, "quantElement", binParams);
     List<Double> binVector = jedis.vemb("quantSetBin", "quantElement");
     assertEquals(2, binVector.size());
@@ -261,5 +256,4 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
     assertTrue(binVector.get(0) == 1.0 || binVector.get(0) == -1.0);
     assertTrue(binVector.get(1) == 1.0 || binVector.get(1) == -1.0);
   }
-  */
 }

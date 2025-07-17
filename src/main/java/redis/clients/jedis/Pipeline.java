@@ -9,7 +9,6 @@ import java.util.Queue;
 import redis.clients.jedis.commands.DatabasePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.VSimResult;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 

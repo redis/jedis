@@ -8,7 +8,6 @@ import redis.clients.jedis.Protocol;
  */
 public class VSimParams implements IParams {
 
-  private boolean withScores;
   private Integer count;
   private Integer ef;
   private String filter;
@@ -17,16 +16,6 @@ public class VSimParams implements IParams {
   private boolean noThread;
 
   public VSimParams() {
-  }
-
-  /**
-   * Returns the similarity score (from 1 to 0) alongside each result.
-   * A score of 1 is identical; 0 is the opposite.
-   * @return VSimParams
-   */
-  public VSimParams withScores() {
-    this.withScores = true;
-    return this;
   }
 
   /**
@@ -90,16 +79,8 @@ public class VSimParams implements IParams {
     return this;
   }
 
-  public boolean isWithScores() {
-    return withScores;
-  }
-
   @Override
   public void addParams(CommandArguments args) {
-    if (withScores) {
-      args.add(Protocol.Keyword.WITHSCORES);
-    }
-
     if (count != null) {
       args.add(Protocol.Keyword.COUNT).add(count);
     }

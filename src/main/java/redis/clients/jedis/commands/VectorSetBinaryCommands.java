@@ -6,7 +6,6 @@ import java.util.Map;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
-import redis.clients.jedis.resps.VSimResult;
 
 /**
  * Interface for Redis Vector Set binary commands.
@@ -111,9 +110,21 @@ public interface VectorSetBinaryCommands {
    * @param key the name of the key that holds the vector set data
    * @param vector the vector to use as similarity reference
    * @param params additional parameters for the VSIM command
-   * @return VSimResult containing similar elements and optionally their scores
+   * @return list of similar elements
    */
-  VSimResult vsim(byte[] key, float[] vector, VSimParams params);
+  List<byte[]> vsim(byte[] key, float[] vector, VSimParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b>
+   * Return elements similar to a given vector with their similarity scores.
+   * <p>
+   * Time complexity: O(log(N)) where N is the number of elements in the vector set.
+   * @param key the name of the key that holds the vector set data
+   * @param vector the vector to use as similarity reference
+   * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
+   * @return map of element names to their similarity scores
+   */
+  Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b>
@@ -134,32 +145,21 @@ public interface VectorSetBinaryCommands {
    * @param key the name of the key that holds the vector set data
    * @param element the name of the element to use as similarity reference
    * @param params additional parameters for the VSIM command
-   * @return VSimResult containing similar elements and optionally their scores
-   */
-  VSimResult vsimByElement(byte[] key, byte[] element, VSimParams params);
-
-  /**
-   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b>
-   * Return elements similar to a given vector using FP32 binary format.
-   * <p>
-   * Time complexity: O(log(N)) where N is the number of elements in the vector set.
-   * @param key the name of the key that holds the vector set data
-   * @param vectorBlob the vector as FP32 binary blob to use as similarity reference
    * @return list of similar elements
    */
-  List<byte[]> vsimFP32(byte[] key, byte[] vectorBlob);
+  List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b>
-   * Return elements similar to a given vector using FP32 binary format with additional parameters.
+   * Return elements similar to a given element in the vector set with their similarity scores.
    * <p>
    * Time complexity: O(log(N)) where N is the number of elements in the vector set.
    * @param key the name of the key that holds the vector set data
-   * @param vectorBlob the vector as FP32 binary blob to use as similarity reference
-   * @param params additional parameters for the VSIM command
-   * @return VSimResult containing similar elements and optionally their scores
+   * @param element the name of the element to use as similarity reference
+   * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
+   * @return map of element names to their similarity scores
    */
-  VSimResult vsimFP32(byte[] key, byte[] vectorBlob, VSimParams params);
+  Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vdim/">VDIM Command</a></b>

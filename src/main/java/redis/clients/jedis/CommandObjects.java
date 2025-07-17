@@ -4836,87 +4836,108 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<String>> vsim(String key, float[] vector) {
-    CommandArguments args = commandArguments(Command.VSIM).key(key).add(Keyword.VALUES).add(vector.length);
+
+    return vsim(key, vector, null);
+  }
+
+  public final CommandObject<List<String>> vsim(String key, float[] vector, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {
       args.add(value);
+    }
+    if (params != null) {
+      args.addParams(params);
     }
     return new CommandObject<>(args, BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<VSimResult> vsim(String key, float[] vector, VSimParams params) {
+  public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
-    args.addParams(params);
     args.add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {
       args.add(value);
     }
-    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES : BuilderFactory.VSIM_RESULT);
+    args.add(Keyword.WITHSCORES);
+    if (params != null) {
+      args.addParams(params);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_DOUBLE_MAP);
   }
 
   public final CommandObject<List<String>> vsimByElement(String key, String element) {
-    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.ELE).add(element),
-        BuilderFactory.STRING_LIST);
+    return vsimByElement(key, element, null);
   }
 
-  public final CommandObject<VSimResult> vsimByElement(String key, String element, VSimParams params) {
+  public final CommandObject<List<String>> vsimByElement(String key, String element, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
-    args.addParams(params);
     args.add(Keyword.ELE).add(element);
-    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES : BuilderFactory.VSIM_RESULT);
+    if (params != null) {
+      args.addParams(params);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<String>> vsimFP32(String key, byte[] vectorBlob) {
-    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.FP32).add(vectorBlob),
-        BuilderFactory.STRING_LIST);
-  }
-
-  public final CommandObject<VSimResult> vsimFP32(String key, byte[] vectorBlob, VSimParams params) {
+  public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
-    args.addParams(params);
-    args.add(Keyword.FP32).add(vectorBlob);
-    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES : BuilderFactory.VSIM_RESULT);
+    args.add(Keyword.ELE).add(element);
+    args.add(Keyword.WITHSCORES);
+    if (params != null) {
+      args.addParams(params);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_DOUBLE_MAP);
   }
 
   public final CommandObject<List<byte[]>> vsim(byte[] key, float[] vector) {
-    CommandArguments args = commandArguments(Command.VSIM).key(key).add(Keyword.VALUES).add(vector.length);
+    return vsim(key, vector, null);
+  }
+
+  public final CommandObject<List<byte[]>> vsim(byte[] key, float[] vector, VSimParams params) {
+    CommandArguments args = commandArguments(Command.VSIM).key(key);
+    args.add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {
       args.add(value);
+    }
+    if (params != null) {
+      args.addParams(params);
     }
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<VSimResult> vsim(byte[] key, float[] vector, VSimParams params) {
+  public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
-    args.addParams(params);
     args.add(Keyword.VALUES).add(vector.length);
     for (float value : vector) {
       args.add(value);
     }
-    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES_BINARY : BuilderFactory.VSIM_RESULT_BINARY);
+    args.add(Keyword.WITHSCORES);
+    if (params != null) {
+      args.addParams(params);
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_DOUBLE_MAP);
   }
 
   public final CommandObject<List<byte[]>> vsimByElement(byte[] key, byte[] element) {
-    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.ELE).add(element),
-        BuilderFactory.BINARY_LIST);
+    return vsimByElement(key, element, null);
   }
 
-  public final CommandObject<VSimResult> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+  public final CommandObject<List<byte[]>> vsimByElement(byte[] key, byte[] element, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
-    args.addParams(params);
     args.add(Keyword.ELE).add(element);
-    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES_BINARY : BuilderFactory.VSIM_RESULT_BINARY);
+    if (params != null) {
+      args.addParams(params);
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> vsimFP32(byte[] key, byte[] vectorBlob) {
-    return new CommandObject<>(commandArguments(Command.VSIM).key(key).add(Keyword.FP32).add(vectorBlob),
-        BuilderFactory.BINARY_LIST);
-  }
-
-  public final CommandObject<VSimResult> vsimFP32(byte[] key, byte[] vectorBlob, VSimParams params) {
+  public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
-    args.addParams(params);
-    args.add(Keyword.FP32).add(vectorBlob);
-    return new CommandObject<>(args, params.isWithScores() ? BuilderFactory.VSIM_RESULT_WITH_SCORES_BINARY : BuilderFactory.VSIM_RESULT_BINARY);
+    args.add(Keyword.ELE).add(element);
+    args.add(Keyword.WITHSCORES);
+    if (params != null) {
+      args.addParams(params);
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_DOUBLE_MAP);
   }
 
   public final CommandObject<Long> vdim(String key) {

@@ -218,7 +218,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(2, noQuantVector.size());
     assertEquals(1.0, noQuantVector.get(0), 0.01);
     assertEquals(2.0, noQuantVector.get(1), 0.01);
-    assertEquals(1L, jedis.vcard(q8Key));
+    assertEquals(1L, jedis.vcard(noQuantKey));
   }
 
   /**

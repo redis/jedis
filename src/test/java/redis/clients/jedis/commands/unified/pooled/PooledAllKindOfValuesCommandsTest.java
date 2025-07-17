@@ -16,11 +16,9 @@ import redis.clients.jedis.util.RedisVersionCondition;
 public class PooledAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      PooledCommandsTestHelper.nodeInfo);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(PooledCommandsTestHelper.nodeInfo);
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      PooledCommandsTestHelper.nodeInfo);
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
 
   public PooledAllKindOfValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);

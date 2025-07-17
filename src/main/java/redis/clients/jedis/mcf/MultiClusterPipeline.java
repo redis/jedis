@@ -76,5 +76,4 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
   public Response<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
     return appendCommand(commandObjects.waitAOF(numLocal, numReplicas, timeout));
   }
-
 }

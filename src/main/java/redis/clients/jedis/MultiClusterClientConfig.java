@@ -63,6 +63,9 @@ public final class MultiClusterClientConfig {
     private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays
         .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
+    private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 5000; // 5 seconds
+    private static final long GRACE_PERIOD_DEFAULT = 10000; // 10 seconds
+
     private final ClusterConfig[] clusterConfigs;
 
     //////////// Retry Config - https://resilience4j.readme.io/docs/retry ////////////
@@ -152,6 +155,12 @@ public final class MultiClusterClientConfig {
     /** Whether failback is supported by client */
     private boolean isFailbackSupported;
 
+    /** Interval in milliseconds to wait before attempting failback to a recovered cluster */
+    private long failbackCheckInterval;
+
+    /** Grace period in milliseconds to keep clusters disabled after they become unhealthy */
+    private long gracePeriod;
+
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
     }
@@ -223,6 +232,14 @@ public final class MultiClusterClientConfig {
     /** Whether failback is supported by client */
     public boolean isFailbackSupported() {
         return isFailbackSupported;
+    }
+
+    public long getFailbackCheckInterval() {
+        return failbackCheckInterval;
+    }
+
+    public long getGracePeriod() {
+        return gracePeriod;
     }
 
     public static Builder builder(ClusterConfig[] clusterConfigs) {
@@ -358,6 +375,8 @@ public final class MultiClusterClientConfig {
 
         private boolean retryOnFailover = false;
         private boolean isFailbackSupported = true;
+        private long failbackCheckInterval = FAILBACK_CHECK_INTERVAL_DEFAULT;
+        private long gracePeriod = GRACE_PERIOD_DEFAULT;
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
@@ -461,6 +480,16 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
+        public Builder failbackCheckInterval(long failbackCheckInterval) {
+            this.failbackCheckInterval = failbackCheckInterval;
+            return this;
+        }
+
+        public Builder gracePeriod(long gracePeriod) {
+            this.gracePeriod = gracePeriod;
+            return this;
+        }
+
         public MultiClusterClientConfig build() {
             MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterConfigs);
 
@@ -488,6 +517,8 @@ public final class MultiClusterClientConfig {
 
             config.retryOnFailover = this.retryOnFailover;
             config.isFailbackSupported = this.isFailbackSupported;
+            config.failbackCheckInterval = this.failbackCheckInterval;
+            config.gracePeriod = this.gracePeriod;
 
             return config;
         }

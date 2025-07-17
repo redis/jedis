@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -46,16 +47,24 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                 // Transitions state machine to a FORCED_OPEN state, stopping state transition, metrics and
                 // event publishing.
                 // To recover/transition from this forced state the user will need to manually failback
+
+                Cluster activeCluster = provider.getCluster();
+                // This should never happen in theory !!
+                if (activeCluster.getCircuitBreaker() != circuitBreaker) throw new IllegalStateException(
+                    "A circuitbreaker failover can be triggered only by the active cluster!");
+
+                activeCluster.setGracePeriod();
                 circuitBreaker.transitionToForcedOpenState();
 
                 // Iterating the active cluster will allow subsequent calls to the executeCommand() to use the next
                 // cluster's connection pool - according to the configuration's prioritization/order/weight
                 // int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex1();
-                provider.iterateActiveCluster();
+                if (provider.iterateActiveCluster() != null) {
 
-                // Implementation is optionally provided during configuration. Typically, used for
-                // activeMultiClusterIndex persistence or custom logging
-                provider.runClusterFailoverPostProcessor(provider.getCluster());
+                    // Implementation is optionally provided during configuration. Typically, used for
+                    // activeMultiClusterIndex persistence or custom logging
+                    provider.runClusterFailoverPostProcessor(provider.getCluster());
+                }
             }
             // this check relies on the fact that many failover attempts can hit with the same CB,
             // only the first one will trigger a failover, and make the CB FORCED_OPEN.

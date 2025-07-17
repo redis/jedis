@@ -41,7 +41,7 @@ public class MultiClusterPooledConnectionProviderTest {
     @Test
     public void testCircuitBreakerForcedTransitions() {
 
-        CircuitBreaker circuitBreaker = provider.getClusterCircuitBreaker(1);
+        CircuitBreaker circuitBreaker = provider.getClusterCircuitBreaker();
         circuitBreaker.getState();
 
         if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))

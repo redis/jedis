@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -35,8 +36,8 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   protected long expireMillis = expireSeconds * 1000;
   protected byte[] binaryValue;
 
-  public BinaryValuesCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public BinaryValuesCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @BeforeEach
@@ -137,12 +138,6 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
         setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
-  }
-
-  @Test
-  public void getSet() {
-    assertNull(jedis.getSet(bfoo, binaryValue));
-    assertArrayEquals(binaryValue, jedis.get(bfoo));
   }
 
   @Test

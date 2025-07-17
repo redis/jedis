@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
 import redis.clients.jedis.params.LCSParams;
@@ -23,11 +24,11 @@ import redis.clients.jedis.util.RedisVersionCondition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.cluster.ClusterCommandsTestHelper#testParamsProvider")
 public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBase {
 
-  public ClusterStringValuesCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public ClusterStringValuesCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @RegisterExtension
@@ -41,12 +42,16 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
 
   @BeforeEach
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol, clientType);
   }
 
   @AfterEach
   public void tearDown() {
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
     ClusterCommandsTestHelper.clearClusterData();
   }
 

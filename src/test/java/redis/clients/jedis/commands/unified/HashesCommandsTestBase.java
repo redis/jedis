@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
@@ -56,8 +57,8 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
 
-  public HashesCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public HashesCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test

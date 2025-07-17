@@ -1,11 +1,16 @@
 package redis.clients.jedis.commands.unified;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 
 public abstract class UnifiedJedisCommandsTestBase {
+
+  protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this
@@ -15,7 +20,13 @@ public abstract class UnifiedJedisCommandsTestBase {
    */
   protected final RedisProtocol protocol;
 
-  protected UnifiedJedis jedis;
+  /**
+   * The {@link BaseRedisClient} instance to use for the tests. This is the subject-under-test.
+   */
+  protected BaseRedisClient jedis;
+
+
+  protected Class<? extends BaseRedisClient> clientType;
 
   /**
    * The RESP protocol is to be injected by the subclasses, usually via JUnit
@@ -26,7 +37,8 @@ public abstract class UnifiedJedisCommandsTestBase {
    *
    * @param protocol The RESP protocol to use during the tests.
    */
-  public UnifiedJedisCommandsTestBase(RedisProtocol protocol) {
+  public UnifiedJedisCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
     this.protocol = protocol;
+    this.clientType = clientType;
   }
 }

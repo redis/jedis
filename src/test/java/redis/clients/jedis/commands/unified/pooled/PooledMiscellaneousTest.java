@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
@@ -28,7 +29,7 @@ import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper#testParamsProvider")
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   @RegisterExtension
@@ -36,19 +37,22 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
 
-  public PooledMiscellaneousTest(RedisProtocol protocol) {
-    super(protocol);
+  public PooledMiscellaneousTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
-    PooledCommandsTestHelper.clearData();
+    jedis = PooledCommandsTestHelper.getCleanClient(protocol, clientType);
   }
 
   @AfterEach
   public void cleanUp() {
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
   }
 
   @Test

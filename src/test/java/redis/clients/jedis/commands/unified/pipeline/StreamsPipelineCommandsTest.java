@@ -34,9 +34,11 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.Matchers;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -59,11 +61,11 @@ import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper#testParamsProvider")
 public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
-  public StreamsPipelineCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public StreamsPipelineCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test
@@ -474,7 +476,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
       @Override
       public void run() {
         long startTime = System.currentTimeMillis();
-        Pipeline blockPipe = jedis.pipelined();
+        Pipeline blockPipe = (Pipeline) jedis.pipelined();
         Map<String, StreamEntryID> streamQuery = singletonMap("block0-stream", new StreamEntryID());
         Response<List<Entry<String, List<StreamEntry>>>> read =
             blockPipe.xread(XReadParams.xReadParams().block(0), streamQuery);

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.MockitoAnnotations;
 
 /**
  * Unit tests for RedisClusterClient. These tests verify the basic functionality and configuration
@@ -21,7 +20,6 @@ public class RedisClusterClientTest {
 
   @BeforeEach
   public void setUp() {
-    MockitoAnnotations.openMocks(this);
     // Use stable cluster servers that are configured for testing
     nodes = new HashSet<>(HostAndPorts.getStableClusterServers());
 

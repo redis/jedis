@@ -15,6 +15,7 @@ import java.util.*;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
@@ -41,8 +42,8 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
 
-  public SortedSetCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public SortedSetCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test

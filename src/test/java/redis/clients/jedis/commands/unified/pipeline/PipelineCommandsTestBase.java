@@ -3,15 +3,22 @@ package redis.clients.jedis.commands.unified.pipeline;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.provider.Arguments;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
 
+import java.util.stream.Stream;
+
 public abstract class PipelineCommandsTestBase {
 
-  protected JedisPooled jedis;
+  private static final Logger logger = LoggerFactory.getLogger(PipelineCommandsTestBase.class);
+
+  protected BaseRedisClient jedis;
   protected Pipeline pipe;
   /**
    * Input data for parameterized tests. In principle all subclasses of this class should be
@@ -19,6 +26,7 @@ public abstract class PipelineCommandsTestBase {
    * @see CommandsTestsParameters#respVersions()
    */
   protected final RedisProtocol protocol;
+  protected final Class<? extends BaseRedisClient> clientType;
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(PooledCommandsTestHelper.nodeInfo);
@@ -32,21 +40,28 @@ public abstract class PipelineCommandsTestBase {
    * call this constructor.
    *
    * @param protocol The RESP protocol to use during the tests.
+   * @param clientType The client type to use during the tests.
    */
-  public PipelineCommandsTestBase(RedisProtocol protocol) {
+  public PipelineCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
     this.protocol = protocol;
+    this.clientType = clientType;
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
-    PooledCommandsTestHelper.clearData();
-    pipe = jedis.pipelined();
+    jedis = PooledCommandsTestHelper.getCleanClient(protocol, clientType);
+    pipe = (Pipeline) jedis.pipelined();
   }
 
   @AfterEach
   public void tearDown() {
     pipe.close();
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
+    PooledCommandsTestHelper.clearData();
   }
+
 }

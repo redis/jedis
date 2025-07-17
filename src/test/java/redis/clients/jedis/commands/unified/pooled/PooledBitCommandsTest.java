@@ -8,11 +8,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.BitCommandsTestBase;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper#testParamsProvider")
 public class PooledBitCommandsTest extends BitCommandsTestBase {
 
   @RegisterExtension
@@ -20,18 +21,21 @@ public class PooledBitCommandsTest extends BitCommandsTestBase {
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
 
-  public PooledBitCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public PooledBitCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
-    PooledCommandsTestHelper.clearData();
+    jedis = PooledCommandsTestHelper.getCleanClient(protocol, clientType);
   }
 
   @AfterEach
   public void cleanUp() {
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
   }
 }

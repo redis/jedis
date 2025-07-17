@@ -21,6 +21,7 @@ import java.util.Set;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -40,8 +41,8 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
 
-  public SetCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public SetCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test

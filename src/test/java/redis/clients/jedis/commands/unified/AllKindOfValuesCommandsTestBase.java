@@ -37,6 +37,7 @@ import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.StreamEntryID;
@@ -69,8 +70,8 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   protected final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  public AllKindOfValuesCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public AllKindOfValuesCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test

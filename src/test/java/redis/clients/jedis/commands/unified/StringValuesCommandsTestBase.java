@@ -12,6 +12,7 @@ import java.util.List;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
@@ -20,8 +21,8 @@ import redis.clients.jedis.params.GetExParams;
 
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
-  public StringValuesCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public StringValuesCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test
@@ -33,14 +34,6 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals("bar", value);
 
     assertNull(jedis.get("bar"));
-  }
-
-  @Test
-  public void getSet() {
-    String value = jedis.getSet("foo", "bar");
-    assertNull(value);
-    value = jedis.get("foo");
-    assertEquals("bar", value);
   }
 
   @Test

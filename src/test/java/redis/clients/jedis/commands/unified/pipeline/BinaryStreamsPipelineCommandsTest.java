@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
@@ -26,7 +27,7 @@ import static redis.clients.jedis.StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY;
 import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStreamEntries;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper#testParamsProvider")
 public class BinaryStreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   protected static final byte[] STREAM_KEY_1 = "{binary-stream}-1".getBytes();
   protected static final byte[] STREAM_KEY_2 = "{binary-stream}-2".getBytes();
@@ -51,8 +52,8 @@ public class BinaryStreamsPipelineCommandsTest extends PipelineCommandsTestBase 
     stream2Entries.add(new StreamEntryBinary(new StreamEntryID("0-2"), HASH_1));
   }
 
-  public BinaryStreamsPipelineCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public BinaryStreamsPipelineCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   /**

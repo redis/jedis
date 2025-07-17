@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
@@ -35,8 +36,8 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   private static final double EPSILON = 1e-5;
 
-  public GeoCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public GeoCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test

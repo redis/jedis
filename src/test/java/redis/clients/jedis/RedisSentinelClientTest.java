@@ -15,15 +15,13 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
  */
 public class RedisSentinelClientTest {
 
-  private static final String MASTER_NAME = "mymaster";
+  private static final String PRIMARY_NAME = "myprimary";
 
-  // Use centralized endpoint configuration following established patterns
-  private static final EndpointConfig masterEndpoint = HostAndPorts.getRedisEndpoint("standalone2-primary");
   private static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   private static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 
   private Set<HostAndPort> sentinels;
-  private JedisClientConfig masterConfig;
+  private JedisClientConfig primaryConfig;
   private JedisClientConfig sentinelConfig;
 
   @BeforeEach
@@ -34,7 +32,7 @@ public class RedisSentinelClientTest {
     sentinels.add(sentinel2);
 
     // Create master configuration with proper authentication
-    masterConfig = DefaultJedisClientConfig.builder()
+    primaryConfig = DefaultJedisClientConfig.builder()
         .password("foobared")
         .database(2)
         .build();
@@ -48,9 +46,8 @@ public class RedisSentinelClientTest {
   public void testBuilderWithMinimalConfiguration() {
     // Test that builder can be created with minimal configuration
     RedisSentinelClient.Builder builder = RedisSentinelClient.builder()
-        .masterName(MASTER_NAME)
-        .sentinels(sentinels)
-        .masterConfig(masterConfig);
+        .primary(PRIMARY_NAME, primaryConfig)
+        .sentinels(sentinels);
 
     assertNotNull(builder);
 
@@ -69,7 +66,7 @@ public class RedisSentinelClientTest {
 
   @Test
   public void testBuilderWithAdvancedConfiguration() {
-    JedisClientConfig customMasterConfig = DefaultJedisClientConfig.builder()
+    JedisClientConfig customPrimaryConfig = DefaultJedisClientConfig.builder()
         .password("foobared")
         .database(1)
         .connectionTimeoutMillis(5000)
@@ -85,9 +82,8 @@ public class RedisSentinelClientTest {
     poolConfig.setMaxIdle(10);
 
     RedisSentinelClient.Builder builder = RedisSentinelClient.builder()
-        .masterName(MASTER_NAME)
+        .primary(PRIMARY_NAME, customPrimaryConfig)
         .sentinels(sentinels)
-        .masterConfig(customMasterConfig)
         .sentinelConfig(customSentinelConfig)
         .poolConfig(poolConfig)
         .subscribeRetryWaitTimeMillis(10000)
@@ -123,21 +119,11 @@ public class RedisSentinelClientTest {
   }
 
   @Test
-  public void testBuilderFailsWithoutMasterName() {
-    assertThrows(IllegalArgumentException.class, () -> {
-      RedisSentinelClient.builder()
-          .sentinels(sentinels)
-          .masterConfig(masterConfig)
-          .build();
-    });
-  }
-
-  @Test
   public void testBuilderFailsWithoutSentinels() {
     assertThrows(IllegalArgumentException.class, () -> {
       RedisSentinelClient.builder()
-          .masterName(MASTER_NAME)
-          .masterConfig(masterConfig)
+          .masterName(PRIMARY_NAME)
+          .masterConfig(primaryConfig)
           .build();
     });
   }
@@ -146,9 +132,9 @@ public class RedisSentinelClientTest {
   public void testBuilderFailsWithEmptySentinels() {
     assertThrows(IllegalArgumentException.class, () -> {
       RedisSentinelClient.builder()
-          .masterName(MASTER_NAME)
+          .masterName(PRIMARY_NAME)
           .sentinels(new HashSet<>())
-          .masterConfig(masterConfig)
+          .masterConfig(primaryConfig)
           .build();
     });
   }
@@ -158,9 +144,9 @@ public class RedisSentinelClientTest {
     // Test that all builder methods return the builder for chaining
     RedisSentinelClient.Builder builder = RedisSentinelClient.builder();
 
-    assertSame(builder, builder.masterName(MASTER_NAME));
+    assertSame(builder, builder.masterName(PRIMARY_NAME));
     assertSame(builder, builder.sentinels(sentinels));
-    assertSame(builder, builder.masterConfig(masterConfig));
+    assertSame(builder, builder.masterConfig(primaryConfig));
     assertSame(builder, builder.sentinelConfig(sentinelConfig));
     assertSame(builder, builder.poolConfig(new ConnectionPoolConfig()));
     assertSame(builder, builder.subscribeRetryWaitTimeMillis(5000));
@@ -182,9 +168,9 @@ public class RedisSentinelClientTest {
   public void testIntegrationBasicOperations() {
     // Test basic Redis operations through sentinel client
     try (RedisSentinelClient client = RedisSentinelClient.builder()
-        .masterName(MASTER_NAME)
+        .masterName(PRIMARY_NAME)
         .sentinels(sentinels)
-        .masterConfig(masterConfig)
+        .masterConfig(primaryConfig)
         .sentinelConfig(sentinelConfig)
         .build()) {
 
@@ -214,9 +200,9 @@ public class RedisSentinelClientTest {
     poolConfig.setMinIdle(1);
 
     try (RedisSentinelClient client = RedisSentinelClient.builder()
-        .masterName(MASTER_NAME)
+        .masterName(PRIMARY_NAME)
         .sentinels(sentinels)
-        .masterConfig(masterConfig)
+        .masterConfig(primaryConfig)
         .sentinelConfig(sentinelConfig)
         .poolConfig(poolConfig)
         .build()) {
@@ -245,9 +231,9 @@ public class RedisSentinelClientTest {
   public void testIntegrationWithCustomConnectionProvider() {
     // Test with custom connection provider (null test for API verification)
     try (RedisSentinelClient client = RedisSentinelClient.builder()
-        .masterName(MASTER_NAME)
+        .masterName(PRIMARY_NAME)
         .sentinels(sentinels)
-        .masterConfig(masterConfig)
+        .masterConfig(primaryConfig)
         .sentinelConfig(sentinelConfig)
         .subscribeRetryWaitTimeMillis(3000)
         .build()) {

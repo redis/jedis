@@ -261,6 +261,17 @@ public class RedisClient extends BaseRedisClient {
     }
 
     /**
+     * Sets the Redis server host and port.
+     * @param hostAndPort the host and port
+     * @return this builder
+     */
+    public Builder hostAndPort(HostAndPort hostAndPort) {
+      this.host = hostAndPort.getHost();
+      this.port = hostAndPort.getPort();
+      return this;
+    }
+
+    /**
      * Sets the complete client configuration.
      * <p>
      * Use {@link DefaultJedisClientConfig.Builder} to create advanced configurations with
@@ -322,15 +333,11 @@ public class RedisClient extends BaseRedisClient {
      * @throws IllegalArgumentException if the URI is invalid
      */
     public Builder fromURI(URI uri) {
-      HostAndPort hnp = JedisURIHelper.getHostAndPort(uri);
-      this.host = hnp.getHost();
-      this.port = hnp.getPort();
-
       this.clientConfig = DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
           .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
           .protocol(JedisURIHelper.getRedisProtocol(uri)).ssl(JedisURIHelper.isRedisSSLScheme(uri))
           .build();
-      return this;
+      return hostAndPort(JedisURIHelper.getHostAndPort(uri));
     }
   }
 }

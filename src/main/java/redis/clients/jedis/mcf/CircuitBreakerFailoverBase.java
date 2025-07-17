@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -39,34 +40,43 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
         lock.lock();
 
         try {
-            // Check state to handle race conditions since incrementActiveMultiClusterIndex() is
+            // Check state to handle race conditions since iterateActiveCluster() is
             // non-idempotent
             if (!CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState())) {
 
                 // Transitions state machine to a FORCED_OPEN state, stopping state transition, metrics and
                 // event publishing.
                 // To recover/transition from this forced state the user will need to manually failback
+
+                Cluster activeCluster = provider.getCluster();
+                // This should never happen in theory !!
+                if (activeCluster.getCircuitBreaker() != circuitBreaker) throw new IllegalStateException(
+                    "A circuitbreaker failover can be triggered only by the active cluster!");
+
+                activeCluster.setGracePeriod();
                 circuitBreaker.transitionToForcedOpenState();
 
-                // Incrementing the activeMultiClusterIndex will allow subsequent calls to the
-                // executeCommand()
-                // to use the next cluster's connection pool - according to the configuration's
-                // prioritization/order
-                int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex();
+                // Iterating the active cluster will allow subsequent calls to the executeCommand() to use the next
+                // cluster's connection pool - according to the configuration's prioritization/order/weight
+                // int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex1();
+                if (provider.iterateActiveCluster() != null) {
 
-                // Implementation is optionally provided during configuration. Typically, used for
-                // activeMultiClusterIndex persistence or custom logging
-                provider.runClusterFailoverPostProcessor(activeMultiClusterIndex);
+                    // Implementation is optionally provided during configuration. Typically, used for
+                    // activeMultiClusterIndex persistence or custom logging
+                    provider.runClusterFailoverPostProcessor(provider.getCluster());
+                }
             }
-
-            // Once the priority list is exhausted only a manual failback can open the circuit breaker so
-            // all subsequent operations will fail
-            else if (provider.isLastClusterCircuitBreakerForcedOpen()) {
+            // this check relies on the fact that many failover attempts can hit with the same CB,
+            // only the first one will trigger a failover, and make the CB FORCED_OPEN.
+            // when the rest reaches here, the active cluster is already the next one, and should be different than
+            // active CB. If its the same one and there are no more clusters to failover to, then throw an exception
+            else if (circuitBreaker == provider.getCluster().getCircuitBreaker() && !provider.canIterateOnceMore()) {
                 throw new JedisConnectionException(
                     "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "
                         + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
                         + "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
             }
+            // Ignore exceptions since we are already in a failure state
         } finally {
             lock.unlock();
         }

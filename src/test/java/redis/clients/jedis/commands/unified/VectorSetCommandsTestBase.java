@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -738,6 +739,177 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Should return empty list or null for non-existent elements
     // Exact behavior depends on Redis implementation
     assertTrue(links == null || links.isEmpty());
+  }
+
+  /**
+   * Test VRANDMEMBER command functionality.
+   * Verifies that random vector set members can be retrieved correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrandmember(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    // Add some vectors to the set
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+    float[] vector3 = {1.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "element1");
+    jedis.vadd(testKey, vector2, "element2");
+    jedis.vadd(testKey, vector3, "element3");
+
+    // Get a single random member
+    String randomMember = jedis.vrandmember(testKey);
+    assertNotNull(randomMember);
+
+    // Should be one of the added elements
+    assertTrue(randomMember.equals("element1") ||
+               randomMember.equals("element2") ||
+               randomMember.equals("element3"));
+  }
+
+  /**
+   * Test VRANDMEMBER with count parameter.
+   * Verifies that multiple random members can be retrieved.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrandmemberWithCount(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:count";
+
+    // Add multiple vectors
+    for (int i = 1; i <= 5; i++) {
+      float[] vector = {(float) i, (float) i};
+      jedis.vadd(testKey, vector, "element" + i);
+    }
+
+    // Get 3 random members
+    List<String> randomMembers = jedis.vrandmember(testKey, 3);
+    assertNotNull(randomMembers);
+    assertEquals(3, randomMembers.size());
+
+    // All returned members should be valid element IDs
+    String[] validElements = {"element1", "element2", "element3", "element4", "element5"};
+    for (String member : randomMembers) {
+      assertTrue(asList(validElements).contains(member));
+    }
+
+    // Test with count larger than set size
+    List<String> allMembers = jedis.vrandmember(testKey, 10);
+    assertNotNull(allMembers);
+    assertTrue(allMembers.size() <= 5); // Should not exceed actual set size
+  }
+
+  /**
+   * Test VRANDMEMBER with binary key.
+   * Verifies that VRANDMEMBER works with byte array keys.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrandmemberBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+
+    // Add vectors using binary key
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "binary_element1".getBytes());
+    jedis.vadd(testKey, vector2, "binary_element2".getBytes());
+
+    // Get random member using binary key
+    byte[] randomMember = jedis.vrandmember(testKey);
+    assertNotNull(randomMember);
+
+    // Convert to string for comparison
+    String randomMemberStr = SafeEncoder.encode(randomMember);
+    assertTrue(randomMemberStr.equals("binary_element1") ||
+               randomMemberStr.equals("binary_element2"));
+
+    // Test with count using binary key
+    List<byte[]> randomMembers = jedis.vrandmember(testKey, 2);
+    assertNotNull(randomMembers);
+    assertTrue(randomMembers.size() <= 2);
+
+    // Verify all returned members are valid
+    for (byte[] member : randomMembers) {
+      assertNotNull(member);
+      String memberStr = SafeEncoder.encode(member);
+      assertTrue(memberStr.equals("binary_element1") ||
+                 memberStr.equals("binary_element2"));
+    }
+  }
+
+  /**
+   * Test VRANDMEMBER with empty vector set.
+   * Verifies that VRANDMEMBER handles empty sets correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrandmemberEmptySet(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
+
+    // Try to get random member from empty/non-existent set
+    String randomMember = jedis.vrandmember(testKey);
+    // Should return null for empty set
+    assertNull(randomMember);
+
+    // Test with count on empty set
+    List<String> randomMembers = jedis.vrandmember(testKey, 5);
+    // Should return empty list for empty set
+    assertTrue(randomMembers.isEmpty());
+  }
+
+  /**
+   * Test VRANDMEMBER with single element.
+   * Verifies that VRANDMEMBER works correctly with only one element.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrandmemberSingleElement(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:single";
+
+    // Add only one vector
+    float[] vector = {1.0f, 2.0f};
+    jedis.vadd(testKey, vector, "single_element");
+
+    // Get random member (should always be the single element)
+    String randomMember = jedis.vrandmember(testKey);
+    assertNotNull(randomMember);
+    assertEquals("single_element", randomMember);
+
+    // Test with count
+    List<String> randomMembers = jedis.vrandmember(testKey, 3);
+    assertNotNull(randomMembers);
+    assertEquals(1, randomMembers.size()); // Should only return the single element
+    assertEquals("single_element", randomMembers.get(0));
+  }
+
+  /**
+   * Test VRANDMEMBER with negative count.
+   * Verifies that VRANDMEMBER handles negative count (allows duplicates).
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrandmemberNegativeCount(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:negative";
+
+    // Add some vectors
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "element1");
+    jedis.vadd(testKey, vector2, "element2");
+
+    // Get random members with negative count (allows duplicates)
+    List<String> randomMembers = jedis.vrandmember(testKey, -5);
+    assertNotNull(randomMembers);
+    assertEquals(5, randomMembers.size()); // Should return exactly 5 elements (with possible duplicates)
+
+    // All returned members should be valid element IDs
+    for (String member : randomMembers) {
+      assertTrue(member.equals("element1") || member.equals("element2"));
+    }
   }
 
   /**

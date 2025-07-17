@@ -84,11 +84,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @BeforeEach
-  public void setUp() {
-    setUpTestStream();
-  }
-
-
   public void setUpTestStream() {
     jedis.del(STREAM_KEY_1);
     jedis.del(STREAM_KEY_2);

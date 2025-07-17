@@ -37,9 +37,16 @@ public abstract class UnifiedJedisCommandsTestBase {
    */
   protected abstract UnifiedJedis createTestClient();
 
+  protected void clearData() {
+    if (jedis != null) {
+      jedis.flushAll();
+    }
+  }
+
   @BeforeEach
   void setUp() {
     jedis = createTestClient();
+    clearData();
   }
 
   @AfterEach

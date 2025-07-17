@@ -29,8 +29,9 @@ public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetComman
     return PooledCommandsTestHelper.getPooled(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
+  @Override
+  protected void clearData() {
     PooledCommandsTestHelper.clearData();
   }
+
 }

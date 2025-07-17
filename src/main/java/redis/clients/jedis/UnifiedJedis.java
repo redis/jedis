@@ -332,6 +332,7 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
     this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
   }
 
+  @Override
   public Cache getCache() {
     return cache;
   }
@@ -642,9 +643,10 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
   // RedisJSON commands
 
   /**
-   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   * @return pipeline object.
    */
-  public PipelineBase pipelined() {
+  @Override
+  public AbstractPipeline pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
@@ -657,6 +659,7 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
   /**
    * @return transaction object
    */
+  @Override
   public AbstractTransaction multi() {
     return transaction(true);
   }
@@ -665,6 +668,7 @@ public class UnifiedJedis extends BaseRedisClient implements RedisJsonV1Commands
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @return transaction object
    */
+  @Override
   public AbstractTransaction transaction(boolean doMulti) {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());

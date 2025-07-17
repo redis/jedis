@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
+import java.net.URI;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisURIHelper;
 
 /**
  * Redis Cluster client that provides a clean, developer-friendly API for Redis Cluster operations.
@@ -59,12 +62,28 @@ import redis.clients.jedis.util.JedisClusterCRC16;
  * @see ClusterCommands
  * @see Builder
  */
-public class RedisClusterClient extends BaseRedisClient implements ClusterCommands, AutoCloseable {
+public class RedisClusterClient extends BaseRedisClient implements ClusterCommands {
 
   private final ClusterCommandExecutor executor;
   private final ClusterConnectionProvider provider;
   private final ClusterCommandObjects commandObjects;
   private final Cache cache;
+
+  /**
+   * Creates a RedisClusterClient with default configuration.
+   * @param node
+   */
+  public RedisClusterClient(HostAndPort node) {
+    this(builder().node(node));
+  }
+
+  /**
+   * Creates a RedisClusterClient with default configuration.
+   * @param uri
+   */
+  public RedisClusterClient(URI uri) {
+    this(builder().fromURI(uri));
+  }
 
   /**
    * Creates a RedisClusterClient with default configuration.
@@ -95,10 +114,6 @@ public class RedisClusterClient extends BaseRedisClient implements ClusterComman
       }
       this.provider = (ClusterConnectionProvider) builder.connectionProvider;
     } else {
-      if (builder.nodes == null || builder.nodes.isEmpty()) {
-        throw new IllegalArgumentException("Cluster nodes must be provided");
-      }
-
       if (builder.cache != null) {
         if (builder.topologyRefreshPeriod != null) {
           this.provider = new ClusterConnectionProvider(builder.nodes, builder.clientConfig,
@@ -541,11 +556,34 @@ public class RedisClusterClient extends BaseRedisClient implements ClusterComman
 
     @Override
     public RedisClusterClient build() {
+      validateConfiguration();
+      return new RedisClusterClient(this);
+    }
+
+    /**
+     * Validates the builder configuration.
+     */
+    private void validateConfiguration() {
+      // Validate common configuration
       validateCommonConfiguration();
+
+      // If custom connection provider is set, skip cluster-specific validation
+      if (connectionProvider != null) {
+        return;
+      }
+
       if (nodes == null || nodes.isEmpty()) {
         throw new IllegalArgumentException("Cluster nodes must be provided");
       }
-      return new RedisClusterClient(this);
+      if (clientConfig == null) {
+        throw new IllegalArgumentException("Client configuration cannot be null");
+      }
+      if (maxAttempts <= 0) {
+        throw new IllegalArgumentException("Max attempts must be greater than 0");
+      }
+      if (maxTotalRetriesDuration == null || maxTotalRetriesDuration.isNegative()) {
+        throw new IllegalArgumentException("Max total retries duration must be non-negative");
+      }
     }
 
     /**
@@ -558,6 +596,20 @@ public class RedisClusterClient extends BaseRedisClient implements ClusterComman
      */
     public Builder nodes(Set<HostAndPort> nodes) {
       this.nodes = nodes;
+      return this;
+    }
+
+    /**
+     * Sets a single cluster node to connect to.
+     * <p>
+     * The client will discover other nodes in the cluster automatically through the CLUSTER NODES
+     * command.
+     * @param node the cluster node
+     * @return this builder
+     */
+    public Builder node(HostAndPort node) {
+      this.nodes = new HashSet<>();
+      this.nodes.add(node);
       return this;
     }
 
@@ -613,6 +665,33 @@ public class RedisClusterClient extends BaseRedisClient implements ClusterComman
      */
     public Builder topologyRefreshPeriod(Duration topologyRefreshPeriod) {
       this.topologyRefreshPeriod = topologyRefreshPeriod;
+      return this;
+    }
+
+    /**
+     * Configures the builder from a Redis URI.
+     * <p>
+     * Parses the URI to extract connection parameters including host, port, authentication
+     * credentials, database, protocol, and SSL settings.
+     * <p>
+     * Supported URI formats:
+     * <ul>
+     * <li>{@code redis://[user:password@]host[:port][/database][?protocol=3]}</li>
+     * <li>{@code rediss://[user:password@]host[:port][/database][?protocol=3]} (SSL)</li>
+     * </ul>
+     * @param uri the Redis URI to parse
+     * @return this builder
+     * @throws IllegalArgumentException if the URI is invalid
+     */
+    public RedisClusterClient.Builder fromURI(URI uri) {
+      HostAndPort hnp = JedisURIHelper.getHostAndPort(uri);
+      this.nodes = new HashSet<>();
+      this.nodes.add(hnp);
+
+      this.clientConfig = DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
+          .password(JedisURIHelper.getPassword(uri))
+          .protocol(JedisURIHelper.getRedisProtocol(uri)).ssl(JedisURIHelper.isRedisSSLScheme(uri))
+          .build();
       return this;
     }
   }

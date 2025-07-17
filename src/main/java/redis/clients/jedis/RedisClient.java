@@ -47,7 +47,7 @@ import redis.clients.jedis.util.JedisURIHelper;
  * @see BaseRedisClient
  * @see Builder
  */
-public class RedisClient extends BaseRedisClient implements AutoCloseable {
+public class RedisClient extends BaseRedisClient {
 
   private final CommandExecutor executor;
   private final ConnectionProvider provider;

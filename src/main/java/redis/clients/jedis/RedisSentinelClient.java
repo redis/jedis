@@ -2,15 +2,11 @@ package redis.clients.jedis;
 
 import java.util.Set;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.executors.DefaultCommandExecutor;
-import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
-import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -60,7 +56,7 @@ import redis.clients.jedis.util.IOUtils;
  * @see SentineledConnectionProvider
  * @see Builder
  */
-public class RedisSentinelClient extends BaseRedisClient implements AutoCloseable {
+public class RedisSentinelClient extends BaseRedisClient {
 
   private final CommandExecutor executor;
   private final SentineledConnectionProvider provider;
@@ -69,6 +65,11 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
 
   /**
    * Package-private constructor for builder.
+   * <p>
+   * Creates a new RedisSentinelClient instance using the configuration provided by the builder.
+   * This constructor initializes the connection provider, command executor, and other components
+   * needed for Redis Sentinel operations.
+   * @param builder the builder containing the configuration
    */
   RedisSentinelClient(Builder builder) {
     // Use custom connection provider if provided, otherwise create default sentineled provider
@@ -79,16 +80,12 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
       }
       this.provider = (SentineledConnectionProvider) builder.connectionProvider;
     } else {
-      if (builder.masterName == null || builder.sentinels == null || builder.sentinels.isEmpty()) {
-        throw new IllegalArgumentException("Master name and sentinels must be provided");
-      }
-
       if (builder.cache != null) {
-        this.provider = new SentineledConnectionProvider(builder.masterName, builder.masterConfig,
+        this.provider = new SentineledConnectionProvider(builder.primaryName, builder.primaryConfig,
             builder.cache, builder.poolConfig, builder.sentinels, builder.sentinelConfig,
             builder.subscribeRetryWaitTimeMillis);
       } else {
-        this.provider = new SentineledConnectionProvider(builder.masterName, builder.masterConfig,
+        this.provider = new SentineledConnectionProvider(builder.primaryName, builder.primaryConfig,
             builder.poolConfig, builder.sentinels, builder.sentinelConfig,
             builder.subscribeRetryWaitTimeMillis);
       }
@@ -97,8 +94,8 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
     this.executor = new DefaultCommandExecutor(provider);
     this.commandObjects = new CommandObjects();
 
-    if (builder.masterConfig.getRedisProtocol() != null) {
-      this.commandObjects.setProtocol(builder.masterConfig.getRedisProtocol());
+    if (builder.primaryConfig.getRedisProtocol() != null) {
+      this.commandObjects.setProtocol(builder.primaryConfig.getRedisProtocol());
     }
 
     if (builder.cache != null) {
@@ -145,8 +142,11 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
   // Sentinel-specific methods
 
   /**
-   * Gets the current master host and port.
-   * @return the current master HostAndPort
+   * Gets the current master host and port as discovered by Redis Sentinel.
+   * <p>
+   * This method returns the current master server information as determined by the
+   * sentinel monitoring system. The master may change during failover operations.
+   * @return the current master HostAndPort, or null if no master is currently available
    */
   public HostAndPort getCurrentMaster() {
     return provider.getCurrentMaster();
@@ -156,7 +156,11 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
 
   /**
    * Creates a new pipeline for batching commands.
-   * @return a new Pipeline instance
+   * <p>
+   * Pipelines allow you to send multiple commands to Redis without waiting for individual
+   * responses, improving performance for bulk operations. The pipeline will automatically
+   * use the current master connection as determined by Redis Sentinel.
+   * @return a new Pipeline instance for batching commands
    */
   public Pipeline pipelined() {
     return new Pipeline(provider.getConnection(), true, commandObjects);
@@ -164,7 +168,11 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
 
   /**
    * Creates a new transaction (MULTI/EXEC block).
-   * @return a new Transaction instance
+   * <p>
+   * Transactions ensure that a group of commands are executed atomically. This method
+   * automatically executes the MULTI command to start the transaction. The transaction
+   * will use the current master connection as determined by Redis Sentinel.
+   * @return a new Transaction instance for atomic command execution
    */
   public Transaction multi() {
     return new Transaction(provider.getConnection(), true, true, commandObjects);
@@ -172,13 +180,24 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
 
   /**
    * Creates a new transaction with optional MULTI command.
-   * @param doMulti whether to execute MULTI command
-   * @return a new Transaction instance
+   * <p>
+   * This method provides more control over transaction initialization. When doMulti is false,
+   * you can manually control when to start the transaction. The transaction will use the
+   * current master connection as determined by Redis Sentinel.
+   * @param doMulti whether to automatically execute the MULTI command to start the transaction
+   * @return a new Transaction instance for atomic command execution
    */
   public Transaction transaction(boolean doMulti) {
     return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
   }
 
+  /**
+   * Closes the client and releases all associated resources.
+   * <p>
+   * This method closes the command executor and all underlying connections.
+   * After calling this method, the client should not be used for any operations.
+   * This method is idempotent and can be called multiple times safely.
+   */
   @Override
   public void close() {
     IOUtils.closeQuietly(this.executor);
@@ -186,7 +205,10 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
 
   /**
    * Creates a new builder for configuring a RedisSentinelClient.
-   * @return a new Builder instance
+   * <p>
+   * The builder provides a fluent API for configuring all aspects of the Redis Sentinel client,
+   * including master name, sentinel nodes, authentication, connection pooling, and more.
+   * @return a new Builder instance for configuring the client
    */
   public static Builder builder() {
     return new Builder();
@@ -223,12 +245,12 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
    */
   public static class Builder extends AbstractRedisClientBuilder<Builder, RedisSentinelClient> {
     // Sentinel-specific configuration
-    private String masterName = null;
+    private String primaryName = null;
     private Set<HostAndPort> sentinels = null;
     private long subscribeRetryWaitTimeMillis = 5000; // DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS
 
     // Client configurations
-    private JedisClientConfig masterConfig = DefaultJedisClientConfig.builder().build();
+    private JedisClientConfig primaryConfig = DefaultJedisClientConfig.builder().build();
     private JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder().build();
 
     private Builder() {
@@ -240,22 +262,29 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
     }
 
     /**
-     * Sets the Redis master name as configured in Sentinel.
-     * @param masterName the master name
+     * Sets the primary (master) name and client configuration.
+     * <p>
+     * Use {@link DefaultJedisClientConfig.Builder} to create advanced configurations with
+     * authentication, SSL, timeouts, and other Redis client settings for the master connection.
+     * @param primaryName the name of the master as configured in Redis Sentinel
+     * @param primaryConfig the client configuration for connecting to the master
      * @return this builder
      */
-    public Builder masterName(String masterName) {
-      this.masterName = masterName;
+    public Builder primary(String primaryName, JedisClientConfig primaryConfig) {
+      this.primaryName = primaryName;
+      this.primaryConfig = primaryConfig;
       return this;
     }
 
     /**
-     * Sets the set of sentinel nodes.
-     * @param sentinels the sentinel nodes
+     * Sets the master name.
+     * <p>
+     * This is a convenience method equivalent to calling {@code primary(masterName, DefaultJedisClientConfig.builder().build())}.
+     * @param masterName the name of the master as configured in Redis Sentinel
      * @return this builder
      */
-    public Builder sentinels(Set<HostAndPort> sentinels) {
-      this.sentinels = sentinels;
+    public Builder masterName(String masterName) {
+      this.primaryName = masterName;
       return this;
     }
 
@@ -264,11 +293,24 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
      * <p>
      * Use {@link DefaultJedisClientConfig.Builder} to create advanced configurations with
      * authentication, SSL, timeouts, and other Redis client settings for the master connection.
-     * @param masterConfig the master client configuration
+     * @param masterConfig the client configuration for connecting to the master
      * @return this builder
      */
     public Builder masterConfig(JedisClientConfig masterConfig) {
-      this.masterConfig = masterConfig;
+      this.primaryConfig = masterConfig;
+      return this;
+    }
+
+    /**
+     * Sets the set of sentinel nodes.
+     * <p>
+     * These are the Redis Sentinel instances that will be used for master discovery
+     * and failover monitoring. At least one sentinel must be provided.
+     * @param sentinels the set of sentinel host and port combinations
+     * @return this builder
+     */
+    public Builder sentinels(Set<HostAndPort> sentinels) {
+      this.sentinels = sentinels;
       return this;
     }
 
@@ -301,7 +343,10 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
 
     /**
      * Sets the subscribe retry wait time in milliseconds.
-     * @param subscribeRetryWaitTimeMillis the retry wait time
+     * <p>
+     * This controls how long to wait before retrying sentinel subscription operations
+     * when they fail. Default is 5000 milliseconds (5 seconds).
+     * @param subscribeRetryWaitTimeMillis the retry wait time in milliseconds
      * @return this builder
      */
     public Builder subscribeRetryWaitTimeMillis(long subscribeRetryWaitTimeMillis) {
@@ -312,9 +357,40 @@ public class RedisSentinelClient extends BaseRedisClient implements AutoCloseabl
     /**
      * Builds the RedisSentinelClient instance.
      * @return a new RedisSentinelClient instance
+     * @throws IllegalArgumentException if the configuration is invalid
      */
     public RedisSentinelClient build() {
+      validateConfiguration();
       return new RedisSentinelClient(this);
+    }
+
+    /**
+     * Validates the builder configuration.
+     */
+    private void validateConfiguration() {
+      // Validate common configuration
+      validateCommonConfiguration();
+
+      // If custom connection provider is set, skip sentinel-specific validation
+      if (connectionProvider != null) {
+        return;
+      }
+
+      if (primaryName == null || primaryName.trim().isEmpty()) {
+        throw new IllegalArgumentException("Primary name must be specified");
+      }
+      if (sentinels == null || sentinels.isEmpty()) {
+        throw new IllegalArgumentException("At least one sentinel must be specified");
+      }
+      if (primaryConfig == null) {
+        throw new IllegalArgumentException("Primary configuration cannot be null");
+      }
+      if (sentinelConfig == null) {
+        throw new IllegalArgumentException("Sentinel configuration cannot be null");
+      }
+      if (subscribeRetryWaitTimeMillis < 0) {
+        throw new IllegalArgumentException("Subscribe retry wait time must be non-negative");
+      }
     }
   }
 }

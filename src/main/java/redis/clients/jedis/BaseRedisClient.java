@@ -29,7 +29,7 @@ import java.util.Set;
  */
 public abstract class BaseRedisClient
     implements JedisCommands, JedisBinaryCommands, SampleKeyedCommands, SampleBinaryKeyedCommands,
-    RediSearchCommands, RedisJsonV2Commands, RedisTimeSeriesCommands, RedisBloomCommands {
+    RediSearchCommands, RedisJsonV2Commands, RedisTimeSeriesCommands, RedisBloomCommands, AutoCloseable {
 
   /**
    * Get the command objects factory for this client.
@@ -72,6 +72,27 @@ public abstract class BaseRedisClient
    * @return The command result
    */
   protected abstract <T> T checkAndBroadcastCommand(CommandObject<T> commandObject);
+
+  /**
+   * Create a new pipeline for batching commands.
+   * @return a new AbstractPipeline instance
+   */
+  public abstract AbstractPipeline pipelined();
+
+  /**
+   * Create a new transaction.
+   * @return a new AbstractTransaction instance
+   */
+  public AbstractTransaction multi() {
+    return transaction(true);
+  }
+
+  /**
+   * Create a new transaction with optional MULTI command.
+   * @param doMulti whether to execute MULTI command
+   * @return a new AbstractTransaction instance
+   */
+  public abstract AbstractTransaction transaction(boolean doMulti);
 
   // Generic sendCommand methods for raw protocol commands
   public Object sendCommand(ProtocolCommand cmd) {

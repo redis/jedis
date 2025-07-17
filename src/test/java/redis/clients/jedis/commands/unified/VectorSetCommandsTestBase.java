@@ -913,6 +913,105 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
+   * Test VREM command functionality.
+   * Verifies that vector set elements can be removed correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVrem(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+
+    // Add some vectors to the set
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+    float[] vector3 = {1.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "element1");
+    jedis.vadd(testKey, vector2, "element2");
+    jedis.vadd(testKey, vector3, "element3");
+
+    // Verify initial cardinality
+    assertEquals(3L, jedis.vcard(testKey));
+
+    // Remove one element
+    boolean removed = jedis.vrem(testKey, "element2");
+    assertTrue(removed);
+    assertEquals(2L, jedis.vcard(testKey));
+
+    // Try to remove the same element again (should return false)
+    removed = jedis.vrem(testKey, "element2");
+    assertFalse(removed);
+    assertEquals(2L, jedis.vcard(testKey));
+
+    // Remove remaining elements
+    removed = jedis.vrem(testKey, "element1");
+    assertTrue(removed);
+    assertEquals(1L, jedis.vcard(testKey));
+
+    removed = jedis.vrem(testKey, "element3");
+    assertTrue(removed);
+    assertEquals(0L, jedis.vcard(testKey));
+  }
+
+  /**
+   * Test VREM with binary key and elements.
+   * Verifies that VREM works with byte array keys and elements.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVremBinary(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
+
+    // Add vectors using binary key and elements
+    float[] vector1 = {1.0f, 0.0f};
+    float[] vector2 = {0.0f, 1.0f};
+    float[] vector3 = {1.0f, 1.0f};
+
+    jedis.vadd(testKey, vector1, "binary_element1".getBytes());
+    jedis.vadd(testKey, vector2, "binary_element2".getBytes());
+    jedis.vadd(testKey, vector3, "binary_element3".getBytes());
+
+    // Verify initial cardinality
+    assertEquals(3L, jedis.vcard(testKey));
+
+    // Remove element using binary VREM
+    boolean removed = jedis.vrem(testKey, "binary_element2".getBytes());
+    assertTrue(removed);
+    assertEquals(2L, jedis.vcard(testKey));
+
+    // Remove remaining elements using binary VREM
+    boolean removed1 = jedis.vrem(testKey, "binary_element1".getBytes());
+    boolean removed3 = jedis.vrem(testKey, "binary_element3".getBytes());
+    assertTrue(removed1);
+    assertTrue(removed3);
+    assertEquals(0L, jedis.vcard(testKey));
+  }
+
+  /**
+   * Test VREM with non-existent elements.
+   * Verifies that VREM handles non-existent elements correctly.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVremNonExistent(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:nonexistent";
+
+    // Add one vector
+    float[] vector = {1.0f, 2.0f};
+    jedis.vadd(testKey, vector, "existing_element");
+
+    // Try to remove non-existent element
+    boolean removed = jedis.vrem(testKey, "non_existent_element");
+    assertFalse(removed);
+    assertEquals(1L, jedis.vcard(testKey)); // Cardinality should remain unchanged
+
+    // Try to remove from non-existent vector set
+    String nonExistentKey = testInfo.getDisplayName() + ":non:existent:key";
+    removed = jedis.vrem(nonExistentKey, "any_element");
+    assertFalse(removed);
+  }
+
+  /**
    * Test VSETATTR with empty attributes (attribute deletion).
    * Verifies that setting empty attributes removes them.
    */

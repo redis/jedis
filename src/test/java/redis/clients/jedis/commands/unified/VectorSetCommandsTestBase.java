@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.util.VectorTestUtils.floatArrayToFP32Bytes;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

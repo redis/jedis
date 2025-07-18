@@ -2237,10 +2237,6 @@ public final class BuilderFactory {
       if (data == null) return null;
       List<Object> list = (List<Object>) data;
 
-      if (list.size() < 3) {
-        throw new IllegalArgumentException("Invalid VEMB RAW response format");
-      }
-
       String quantizationType = STRING.build(list.get(0));
       byte[] rawData = (byte[]) list.get(1);
       Double norm = DOUBLE.build(list.get(2));
@@ -2275,7 +2271,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "Map<String, Double>";
+      return "List<Map<String, Double>>";
     }
   };
 
@@ -2313,7 +2309,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "Map<byte[], Double>";
+      return "List<Map<byte[], Double>>";
     }
   };
 

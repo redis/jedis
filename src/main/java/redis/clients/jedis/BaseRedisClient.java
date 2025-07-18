@@ -27,9 +27,9 @@ import java.util.Set;
 /**
  * Abstract base class that implements all Redis command interfaces.
  */
-public abstract class BaseRedisClient
-    implements JedisCommands, JedisBinaryCommands, SampleKeyedCommands, SampleBinaryKeyedCommands,
-    RediSearchCommands, RedisJsonV2Commands, RedisTimeSeriesCommands, RedisBloomCommands, AutoCloseable {
+public abstract class BaseRedisClient implements JedisCommands, JedisBinaryCommands,
+    SampleKeyedCommands, SampleBinaryKeyedCommands, RediSearchCommands, RedisJsonV2Commands,
+    RedisTimeSeriesCommands, RedisBloomCommands, AutoCloseable {
 
   /**
    * Get the command objects factory for this client.

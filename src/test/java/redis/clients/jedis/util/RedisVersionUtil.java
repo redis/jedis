@@ -22,7 +22,7 @@ public class RedisVersionUtil {
     }
   }
 
-  public static RedisVersion getRedisVersion(UnifiedJedis jedis) {
+  public static RedisVersion getRedisVersion(BaseRedisClient jedis) {
     if (forcedVersion != null) {
       return forcedVersion;
     }

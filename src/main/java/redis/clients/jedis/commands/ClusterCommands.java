@@ -66,27 +66,11 @@ public interface ClusterCommands {
 
   String clusterReplicate(String nodeId);
 
-  /**
-   * {@code CLUSTER SLAVES} command is deprecated since Redis 5.
-   *
-   * @deprecated Use {@link ClusterCommands#clusterReplicas(java.lang.String)}.
-   */
-  @Deprecated
-  List<String> clusterSlaves(String nodeId);
-
   List<String> clusterReplicas(String nodeId);
 
   String clusterFailover();
 
   String clusterFailover(ClusterFailoverOption failoverOption);
-
-  /**
-   * {@code CLUSTER SLOTS} command is deprecated since Redis 7.
-   *
-   * @deprecated Use {@link ClusterCommands#clusterShards()}.
-   */
-  @Deprecated
-  List<Object> clusterSlots();
 
   /**
    * {@code CLUSTER SHARDS} returns details about the shards of the cluster.

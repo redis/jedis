@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
@@ -26,7 +27,7 @@ import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper#testParamsProvider")
 public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -45,8 +46,8 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   protected final byte[] bx = { 0x02, 0x04 };
   protected final byte[] bdst = { 0x11, 0x12, 0x13, 0x14 };
 
-  public ListPipelineCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public ListPipelineCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @Test

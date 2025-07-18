@@ -3,11 +3,14 @@ package redis.clients.jedis.resps;
 import java.io.Serializable;
 import java.util.Map;
 
+import redis.clients.jedis.annots.Experimental;
+
 /**
  * This class holds information about a vector set returned by the {@code VINFO} command.
  * They can be accessed via getters. There is also {@link VectorInfo#getVectorInfo()} method
  * that returns a generic {@link Map} in case where more info are returned from the server.
  */
+@Experimental
 public class VectorInfo implements Serializable {
   public static final String VECTOR_DIM = "vector-dim";
   public static final String TYPE = "quant-type";
@@ -33,7 +36,6 @@ public class VectorInfo implements Serializable {
   /**
    * @param map contains key-value pairs with vector set info
    */
-  @SuppressWarnings("unchecked")
   public VectorInfo(Map<String, Object> map) {
     vectorInfo = map;
     dimensionality = (Long) map.get(VECTOR_DIM);

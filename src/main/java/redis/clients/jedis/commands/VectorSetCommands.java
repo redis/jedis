@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
@@ -24,6 +25,7 @@ public interface VectorSetCommands {
    * @param element the name of the element that is being added to the vector set
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vadd(String key, float[] vector, String element);
 
   /**
@@ -37,6 +39,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vadd(String key, float[] vector, String element, VAddParams params);
 
   /**
@@ -49,6 +52,7 @@ public interface VectorSetCommands {
    * @param element the name of the element that is being added to the vector set
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vaddFP32(String key, byte[] vectorBlob, String element);
 
   /**
@@ -62,6 +66,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params);
 
   /**
@@ -76,6 +81,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vadd(String key, float[] vector, String element, int reduceDim, VAddParams params);
 
   /**
@@ -90,6 +96,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params);
 
   /**
@@ -101,6 +108,7 @@ public interface VectorSetCommands {
    * @param vector the vector to use as similarity reference
    * @return list of similar elements
    */
+  @Experimental
   List<String> vsim(String key, float[] vector);
 
   /**
@@ -113,6 +121,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VSIM command
    * @return list of similar elements
    */
+  @Experimental
   List<String> vsim(String key, float[] vector, VSimParams params);
 
   /**
@@ -125,6 +134,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return map of element names to their similarity scores
    */
+  @Experimental
   Map<String, Double> vsimWithScores(String key, float[] vector, VSimParams params);
 
   /**
@@ -136,6 +146,7 @@ public interface VectorSetCommands {
    * @param element the name of the element to use as similarity reference
    * @return list of similar elements
    */
+  @Experimental
   List<String> vsimByElement(String key, String element);
 
   /**
@@ -148,6 +159,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VSIM command
    * @return list of similar elements
    */
+  @Experimental
   List<String> vsimByElement(String key, String element, VSimParams params);
 
   /**
@@ -160,6 +172,7 @@ public interface VectorSetCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return map of element names to their similarity scores
    */
+  @Experimental
   Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params);
 
   /**
@@ -170,6 +183,7 @@ public interface VectorSetCommands {
    * @param key the name of the key that holds the vector set
    * @return the number of vector set elements
    */
+  @Experimental
   long vdim(String key);
 
   /**
@@ -180,6 +194,7 @@ public interface VectorSetCommands {
    * @param key the name of the key that holds the vector set
    * @return the number of elements in the vector set
    */
+  @Experimental
   long vcard(String key);
 
   /**
@@ -191,6 +206,7 @@ public interface VectorSetCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return list of real numbers representing the vector
    */
+  @Experimental
   List<Double> vemb(String key, String element);
 
   /**
@@ -202,6 +218,7 @@ public interface VectorSetCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return RawVector containing raw vector data, quantization type, and metadata
    */
+  @Experimental
   RawVector vembRaw(String key, String element);
 
   /**
@@ -213,6 +230,7 @@ public interface VectorSetCommands {
    * @param element the name of the element to remove from the vector set
    * @return true if the element was removed, false if either element or key do not exist
    */
+  @Experimental
   boolean vrem(String key, String element);
 
   /**
@@ -224,6 +242,7 @@ public interface VectorSetCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return list of neighbor element names
    */
+  @Experimental
   List<List<String>> vlinks(String key, String element);
 
   /**
@@ -233,8 +252,9 @@ public interface VectorSetCommands {
    * Time complexity: O(1)
    * @param key the name of the key that holds the vector set
    * @param element the name of the element whose HNSW neighbors you want to inspect
-   * @return map of neighbor element names to similarity scores
+   * @return List of map of neighbor element names to similarity scores per layer
    */
+  @Experimental
   List<Map<String, Double>> vlinksWithScores(String key, String element);
 
   /**
@@ -245,6 +265,7 @@ public interface VectorSetCommands {
    * @param key the name of the key that holds the vector set
    * @return a random element name, or null if the key does not exist
    */
+  @Experimental
   String vrandmember(String key);
 
   /**
@@ -256,6 +277,7 @@ public interface VectorSetCommands {
    * @param count the number of elements to return. Positive values return distinct elements; negative values allow duplicates
    * @return list of random element names
    */
+  @Experimental
   List<String> vrandmember(String key, int count);
 
   /**
@@ -267,6 +289,7 @@ public interface VectorSetCommands {
    * @param element the name of the element whose attributes to retrieve
    * @return the attributes of the element as a JSON string, or null if the element doesn't exist or has no attributes
    */
+  @Experimental
   String vgetattr(String key, String element);
 
   /**
@@ -279,6 +302,7 @@ public interface VectorSetCommands {
    * @param attributes the attributes to set as a JSON string
    * @return true if the attributes were set successfully
    */
+  @Experimental
   boolean vsetattr(String key, String element, String attributes);
 
   /**
@@ -289,5 +313,6 @@ public interface VectorSetCommands {
    * @param key the name of the key that holds the vector set
    * @return information about the vector set
    */
+  @Experimental
   VectorInfo vinfo(String key);
 }

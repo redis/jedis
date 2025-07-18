@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
@@ -23,6 +24,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element that is being added to the vector set
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vadd(byte[] key, float[] vector, byte[] element);
 
   /**
@@ -36,6 +38,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vadd(byte[] key, float[] vector, byte[] element, VAddParams params);
 
   /**
@@ -48,6 +51,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element that is being added to the vector set
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element);
 
   /**
@@ -61,6 +65,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params);
 
   /**
@@ -75,6 +80,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params);
 
   /**
@@ -89,6 +95,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return 1 if key was added; 0 if key was not added
    */
+  @Experimental
   boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params);
 
   /**
@@ -100,6 +107,7 @@ public interface VectorSetBinaryCommands {
    * @param vector the vector to use as similarity reference
    * @return list of similar elements
    */
+  @Experimental
   List<byte[]> vsim(byte[] key, float[] vector);
 
   /**
@@ -112,6 +120,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VSIM command
    * @return list of similar elements
    */
+  @Experimental
   List<byte[]> vsim(byte[] key, float[] vector, VSimParams params);
 
   /**
@@ -124,6 +133,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return map of element names to their similarity scores
    */
+  @Experimental
   Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params);
 
   /**
@@ -135,6 +145,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element to use as similarity reference
    * @return list of similar elements
    */
+  @Experimental
   List<byte[]> vsimByElement(byte[] key, byte[] element);
 
   /**
@@ -147,6 +158,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VSIM command
    * @return list of similar elements
    */
+  @Experimental
   List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params);
 
   /**
@@ -159,6 +171,7 @@ public interface VectorSetBinaryCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return map of element names to their similarity scores
    */
+  @Experimental
   Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params);
 
   /**
@@ -169,6 +182,7 @@ public interface VectorSetBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @return the number of vector set elements
    */
+  @Experimental
   long vdim(byte[] key);
 
   /**
@@ -179,6 +193,7 @@ public interface VectorSetBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @return the number of elements in the vector set
    */
+  @Experimental
   long vcard(byte[] key);
 
   /**
@@ -190,6 +205,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return list of real numbers representing the vector
    */
+  @Experimental
   List<Double> vemb(byte[] key, byte[] element);
 
   /**
@@ -212,6 +228,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element to remove from the vector set
    * @return true if the element was removed, false if either element or key do not exist
    */
+  @Experimental
   boolean vrem(byte[] key, byte[] element);
 
   /**
@@ -223,6 +240,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return list of neighbor element names
    */
+  @Experimental
   List<List<byte[]>> vlinks(byte[] key, byte[] element);
 
   /**
@@ -232,8 +250,9 @@ public interface VectorSetBinaryCommands {
    * Time complexity: O(1)
    * @param key the name of the key that holds the vector set
    * @param element the name of the element whose HNSW neighbors you want to inspect
-   * @return map of neighbor element names to similarity scores
+   * @return List of map of neighbor element names to similarity scores per layer
    */
+  @Experimental
   List<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element);
 
   /**
@@ -244,6 +263,7 @@ public interface VectorSetBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @return a random element name, or null if the key does not exist
    */
+  @Experimental
   byte[] vrandmember(byte[] key);
 
   /**
@@ -255,6 +275,7 @@ public interface VectorSetBinaryCommands {
    * @param count the number of elements to return. Positive values return distinct elements; negative values allow duplicates
    * @return list of random element names
    */
+  @Experimental
   List<byte[]> vrandmember(byte[] key, int count);
 
   /**
@@ -266,6 +287,7 @@ public interface VectorSetBinaryCommands {
    * @param element the name of the element whose attributes to retrieve
    * @return the attributes of the element as a JSON string, or null if the element doesn't exist or has no attributes
    */
+  @Experimental
   byte[] vgetattr(byte[] key, byte[] element);
 
   /**
@@ -278,5 +300,6 @@ public interface VectorSetBinaryCommands {
    * @param attributes the attributes to set as a JSON string
    * @return true if the attributes were set successfully
    */
+  @Experimental
   boolean vsetattr(byte[] key, byte[] element, byte[] attributes);
 }

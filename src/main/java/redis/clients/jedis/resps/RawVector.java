@@ -1,11 +1,13 @@
 package redis.clients.jedis.resps;
 
-import java.util.List;
+
+import redis.clients.jedis.annots.Experimental;
 
 /**
  * Result of a VEMB RAW command, containing raw vector data and metadata.
  * For regular VEMB commands (without RAW), use List&lt;Double&gt; directly.
  */
+@Experimental
 public class RawVector {
 
   private final String quantizationType;

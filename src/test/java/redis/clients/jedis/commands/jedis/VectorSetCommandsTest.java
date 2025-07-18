@@ -1,59 +1,49 @@
-package redis.clients.jedis.commands.unified;
-
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static redis.clients.jedis.util.VectorTestUtils.floatArrayToFP32Bytes;
+package redis.clients.jedis.commands.jedis;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.util.VectorTestUtils;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.resps.VectorInfo;
 import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.util.VectorTestUtils;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static redis.clients.jedis.util.VectorTestUtils.floatArrayToFP32Bytes;
 
+/**
+ * Integration tests for Vector Set commands using Jedis client.
+ * <p>
+ * Tests are parameterized to run against multiple RESP protocol versions.
+ * Repeating tests from {@link redis.clients.jedis.commands.unified.VectorSetCommandsTestBase}
+ * against Jedis client.s
+ * </p>
+ */
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
 @Tag("vector-set")
-public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTestBase {
+public class VectorSetCommandsTest extends JedisCommandsTestBase {
 
-  public VectorSetCommandsTestBase(RedisProtocol protocol) {
+  public VectorSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
-  }
-
-  @BeforeEach
-  public void setUp() {
-    jedis.flushAll();
   }
 
   /**
    * Test the basic VADD method with float array.
-   * Overload 1: vadd(String key, float[] vector, String element)
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -787,7 +777,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // All returned members should be valid element IDs
     String[] validElements = {"element1", "element2", "element3", "element4", "element5"};
     for (String member : randomMembers) {
-      assertTrue(asList(validElements).contains(member));
+      assertTrue(Arrays.asList(validElements).contains(member));
     }
 
     // Test with count larger than set size

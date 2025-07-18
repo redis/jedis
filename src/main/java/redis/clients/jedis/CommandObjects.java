@@ -4732,12 +4732,8 @@ public class CommandObjects {
 
   // Vector Set commands
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element) {
-    CommandArguments args = commandArguments(Command.VADD).key(key).add(Keyword.VALUES).add(vector.length);
-    for (float value : vector) {
-      args.add(value);
-    }
-    args.add(element);
-    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+
+    return vadd(key, vector, element, null);
   }
 
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, VAddParams params) {
@@ -4747,29 +4743,27 @@ public class CommandObjects {
       args.add(value);
     }
     args.add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element) {
-    return new CommandObject<>(commandArguments(Command.VADD).key(key).add(Keyword.FP32).add(vectorBlob).add(element),
-        BuilderFactory.BOOLEAN);
+    return vaddFP32(key, vectorBlob, element, null);
   }
 
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element) {
-    CommandArguments args = commandArguments(Command.VADD).key(key).add(Keyword.VALUES).add(vector.length);
-    for (float value : vector) {
-      args.add(value);
-    }
-    args.add(element);
-    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+    return vadd(key, vector, element, null);
   }
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
@@ -4779,19 +4773,22 @@ public class CommandObjects {
       args.add(value);
     }
     args.add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
-    return new CommandObject<>(commandArguments(Command.VADD).key(key).add(Keyword.FP32).add(vectorBlob).add(element),
-        BuilderFactory.BOOLEAN);
+    return vaddFP32(key, vectorBlob, element, null);
   }
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
@@ -4803,7 +4800,9 @@ public class CommandObjects {
       args.add(value);
     }
     args.add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
@@ -4823,7 +4822,9 @@ public class CommandObjects {
       args.add(value);
     }
     args.add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
@@ -4831,7 +4832,9 @@ public class CommandObjects {
     CommandArguments args = commandArguments(Command.VADD).key(key);
     args.add(Keyword.REDUCE).add(reduceDim);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
-    args.addParams(params);
+    if (params != null) {
+      args.addParams(params);
+    }
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 

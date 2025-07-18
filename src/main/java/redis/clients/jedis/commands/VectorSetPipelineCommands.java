@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
@@ -25,6 +26,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element that is being added to the vector set
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vadd(String key, float[] vector, String element);
 
   /**
@@ -38,6 +40,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vadd(String key, float[] vector, String element, VAddParams params);
 
   /**
@@ -50,6 +53,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element that is being added to the vector set
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element);
 
   /**
@@ -63,6 +67,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params);
 
   /**
@@ -77,6 +82,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params);
 
   /**
@@ -91,6 +97,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params);
 
   /**
@@ -102,6 +109,7 @@ public interface VectorSetPipelineCommands {
    * @param vector the vector to use as similarity reference
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<String>> vsim(String key, float[] vector);
 
   /**
@@ -114,6 +122,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VSIM command
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<String>> vsim(String key, float[] vector, VSimParams params);
 
   /**
@@ -126,6 +135,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return Response wrapping map of element names to their similarity scores
    */
+  @Experimental
   Response<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params);
 
   /**
@@ -137,6 +147,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element to use as similarity reference
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<String>> vsimByElement(String key, String element);
 
   /**
@@ -149,6 +160,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VSIM command
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<String>> vsimByElement(String key, String element, VSimParams params);
 
   /**
@@ -161,6 +173,7 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return Response wrapping map of element names to their similarity scores
    */
+  @Experimental
   Response<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params);
 
   /**
@@ -171,6 +184,7 @@ public interface VectorSetPipelineCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping the number of vector set elements
    */
+  @Experimental
   Response<Long> vdim(String key);
 
   /**
@@ -181,6 +195,7 @@ public interface VectorSetPipelineCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping the number of elements in the vector set
    */
+  @Experimental
   Response<Long> vcard(String key);
 
   /**
@@ -192,6 +207,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return Response wrapping list of real numbers representing the vector
    */
+  @Experimental
   Response<List<Double>> vemb(String key, String element);
 
   /**
@@ -203,6 +219,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return Response wrapping RawVector containing raw vector data, quantization type, and metadata
    */
+  @Experimental
   Response<RawVector> vembRaw(String key, String element);
 
   /**
@@ -214,6 +231,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element to remove from the vector set
    * @return Response wrapping true if the element was removed, false if either element or key do not exist
    */
+  @Experimental
   Response<Boolean> vrem(String key, String element);
 
   /**
@@ -225,6 +243,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping list of neighbor element names
    */
+  @Experimental
   Response<List<List<String>>> vlinks(String key, String element);
 
   /**
@@ -236,6 +255,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping map of neighbor element names to similarity scores
    */
+  @Experimental
   Response<List<Map<String, Double>>> vlinksWithScores(String key, String element);
 
   /**
@@ -246,6 +266,7 @@ public interface VectorSetPipelineCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping a random element name, or null if the key does not exist
    */
+  @Experimental
   Response<String> vrandmember(String key);
 
   /**
@@ -257,6 +278,7 @@ public interface VectorSetPipelineCommands {
    * @param count the number of elements to return. Positive values return distinct elements; negative values allow duplicates
    * @return Response wrapping list of random element names
    */
+  @Experimental
   Response<List<String>> vrandmember(String key, int count);
 
   /**
@@ -268,6 +290,7 @@ public interface VectorSetPipelineCommands {
    * @param element the name of the element whose attributes to retrieve
    * @return Response wrapping the attributes of the element as a JSON string, or null if the element doesn't exist or has no attributes
    */
+  @Experimental
   Response<String> vgetattr(String key, String element);
 
   /**
@@ -280,6 +303,7 @@ public interface VectorSetPipelineCommands {
    * @param attributes the attributes to set as a JSON string
    * @return Response wrapping true if the attributes were set successfully
    */
+  @Experimental
   Response<Boolean> vsetattr(String key, String element, String attributes);
 
   /**
@@ -290,5 +314,6 @@ public interface VectorSetPipelineCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping information about the vector set
    */
+  @Experimental
   Response<VectorInfo> vinfo(String key);
 }

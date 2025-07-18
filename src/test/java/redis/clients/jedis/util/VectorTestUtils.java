@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands.unified;
+package redis.clients.jedis.util;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -46,19 +46,4 @@ public class VectorTestUtils {
     return floats;
   }
 
-  /**
-   * Convert FP32 byte blob back to primitive float array.
-   * Convenience method that returns primitive array instead of List.
-   * 
-   * @param fp32Bytes the FP32 byte array to convert
-   * @return primitive float array reconstructed from the byte data
-   */
-  public static float[] fp32BytesToFloatPrimitiveArray(byte[] fp32Bytes) {
-    List<Float> floatList = fp32BytesToFloatArray(fp32Bytes);
-    float[] result = new float[floatList.size()];
-    for (int i = 0; i < floatList.size(); i++) {
-      result[i] = floatList.get(i);
-    }
-    return result;
-  }
 }

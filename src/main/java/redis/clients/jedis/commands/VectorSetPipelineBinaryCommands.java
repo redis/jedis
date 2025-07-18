@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
@@ -24,6 +25,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element that is being added to the vector set
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vadd(byte[] key, float[] vector, byte[] element);
 
   /**
@@ -37,6 +39,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params);
 
   /**
@@ -49,6 +52,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element that is being added to the vector set
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element);
 
   /**
@@ -62,6 +66,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params);
 
   /**
@@ -76,6 +81,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params);
 
   /**
@@ -90,6 +96,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  @Experimental
   Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params);
 
   /**
@@ -101,6 +108,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param vector the vector to use as similarity reference
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<byte[]>> vsim(byte[] key, float[] vector);
 
   /**
@@ -113,6 +121,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VSIM command
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<byte[]>> vsim(byte[] key, float[] vector, VSimParams params);
 
   /**
@@ -125,6 +134,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return Response wrapping map of element names to their similarity scores
    */
+  @Experimental
   Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params);
 
   /**
@@ -136,6 +146,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element to use as similarity reference
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<byte[]>> vsimByElement(byte[] key, byte[] element);
 
   /**
@@ -148,6 +159,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VSIM command
    * @return Response wrapping list of similar elements
    */
+  @Experimental
   Response<List<byte[]>> vsimByElement(byte[] key, byte[] element, VSimParams params);
 
   /**
@@ -160,6 +172,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically added)
    * @return Response wrapping map of element names to their similarity scores
    */
+  @Experimental
   Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params);
 
   /**
@@ -170,6 +183,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping the number of vector set elements
    */
+  @Experimental
   Response<Long> vdim(byte[] key);
 
   /**
@@ -180,6 +194,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping the number of elements in the vector set
    */
+  @Experimental
   Response<Long> vcard(byte[] key);
 
   /**
@@ -191,6 +206,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return Response wrapping list of real numbers representing the vector
    */
+  @Experimental
   Response<List<Double>> vemb(byte[] key, byte[] element);
 
   /**
@@ -202,6 +218,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose vector you want to retrieve
    * @return Response wrapping RawVector containing raw vector data, quantization type, and metadata
    */
+  @Experimental
   Response<RawVector> vembRaw(byte[] key, byte[] element);
 
   /**
@@ -213,6 +230,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element to remove from the vector set
    * @return Response wrapping true if the element was removed, false if either element or key do not exist
    */
+  @Experimental
   Response<Boolean> vrem(byte[] key, byte[] element);
 
   /**
@@ -224,6 +242,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping list of neighbor element names
    */
+  @Experimental
   Response<List<List<byte[]>>> vlinks(byte[] key, byte[] element);
 
   /**
@@ -235,6 +254,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose HNSW neighbors you want to inspect
    * @return Response wrapping map of neighbor element names to similarity scores
    */
+  @Experimental
   Response<List<Map<byte[], Double>>> vlinksWithScores(byte[] key, byte[] element);
 
   /**
@@ -245,6 +265,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @return Response wrapping a random element name, or null if the key does not exist
    */
+  @Experimental
   Response<byte[]> vrandmember(byte[] key);
 
   /**
@@ -256,6 +277,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param count the number of elements to return. Positive values return distinct elements; negative values allow duplicates
    * @return Response wrapping list of random element names
    */
+  @Experimental
   Response<List<byte[]>> vrandmember(byte[] key, int count);
 
   /**
@@ -267,6 +289,7 @@ public interface VectorSetPipelineBinaryCommands {
    * @param element the name of the element whose attributes to retrieve
    * @return Response wrapping the attributes of the element as a JSON string, or null if the element doesn't exist or has no attributes
    */
+  @Experimental
   Response<byte[]> vgetattr(byte[] key, byte[] element);
 
   /**
@@ -279,5 +302,6 @@ public interface VectorSetPipelineBinaryCommands {
    * @param attributes the attributes to set as a JSON string
    * @return Response wrapping true if the attributes were set successfully
    */
+  @Experimental
   Response<Boolean> vsetattr(byte[] key, byte[] element, byte[] attributes);
 }

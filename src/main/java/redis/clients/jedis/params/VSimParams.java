@@ -2,10 +2,12 @@ package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.Experimental;
 
 /**
  * Parameters for the VSIM command.
  */
+@Experimental
 public class VSimParams implements IParams {
 
   private Integer count;

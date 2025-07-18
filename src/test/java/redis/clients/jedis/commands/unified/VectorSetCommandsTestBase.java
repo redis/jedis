@@ -46,11 +46,6 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     super(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
-    jedis.flushAll();
-  }
-
   /**
    * Test the basic VADD method with float array.
    * Overload 1: vadd(String key, float[] vector, String element)

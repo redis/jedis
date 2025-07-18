@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -28,14 +29,13 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
     super(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return  ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @AfterEach
   public void tearDown() {
-    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

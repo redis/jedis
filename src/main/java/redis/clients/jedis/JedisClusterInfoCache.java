@@ -454,6 +454,16 @@ public class JedisClusterInfoCache {
       nodes.clear();
       Arrays.fill(slots, null);
       Arrays.fill(slotNodes, null);
+      if (clientSideCache != null) {
+        clientSideCache.flush();
+      }
+      if (clientConfig.isReadOnlyForRedisClusterReplicas() && replicaSlots != null) {
+        for (List<ConnectionPool> replicaList : replicaSlots) {
+          if (replicaList != null) {
+            replicaList.clear();
+          }
+        }
+      }
     } finally {
       w.unlock();
     }

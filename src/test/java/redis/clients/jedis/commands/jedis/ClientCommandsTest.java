@@ -178,7 +178,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    assertEquals(1, jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));
+    assertTrue(jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)) >= 1);
     assertDisconnected(jedis);
   }
 

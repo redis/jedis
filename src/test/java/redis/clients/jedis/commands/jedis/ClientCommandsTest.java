@@ -40,7 +40,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private Jedis client;
 
-
   public ClientCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
@@ -124,7 +123,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void clientUnblock() throws InterruptedException, TimeoutException {
     long clientId = client.clientId();
     assertEquals(0, jedis.clientUnblock(clientId, UnblockType.ERROR));
-    Future<?> future = Executors.newSingleThreadExecutor().submit(() -> client.brpop(100000, "foo"));
+    Future<?> future = Executors.newSingleThreadExecutor()
+        .submit(() -> client.brpop(100000, "foo"));
 
     try {
       // to make true command already executed
@@ -132,7 +132,9 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
       assertEquals(1, jedis.clientUnblock(clientId, UnblockType.ERROR));
       future.get(1, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
-      assertEquals("redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK", e.getMessage());
+      assertEquals(
+        "redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK",
+        e.getMessage());
     }
   }
 
@@ -178,7 +180,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    assertTrue(jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)) >= 1);
+    assertTrue(
+      jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)) >= 1);
     assertDisconnected(jedis);
   }
 
@@ -226,7 +229,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     matcher.find();
     String addr = matcher.group(1);
     int lastColon = addr.lastIndexOf(":");
-    String[] hp = new String[]{addr.substring(0, lastColon), addr.substring(lastColon + 1)};
+    String[] hp = new String[] { addr.substring(0, lastColon), addr.substring(lastColon + 1) };
 
     assertEquals(1, jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1]))));
 
@@ -304,8 +307,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void trackingInfoResp3() {
-    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-            .protocol(RedisProtocol.RESP3).build());
+    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
     TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
 
     assertEquals(1, trackingInfo.getFlags().size());

@@ -378,7 +378,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         log.info("Selecting initial cluster from {} configured clusters", sortedClusters.size());
 
-        // Select clusters in weight order
+        // Select cluster in weight order
         for (Map.Entry<Endpoint, Cluster> entry : sortedClusters) {
             Endpoint endpoint = entry.getKey();
             Cluster cluster = entry.getValue();
@@ -517,6 +517,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 + "the configured endpoints. Please use one from the configuration");
         }
         setActiveCluster(cluster, true);
+    }
+
+    public void forceActiveCluster(Endpoint endpoint, long forcedActiveDuration) {
+        Cluster cluster = multiClusterMap.get(endpoint);
+        cluster.clearGracePeriod();
+        if (!cluster.isHealthy()) {
+            throw new JedisValidationException("Provided endpoint: " + endpoint
+                + " is not healthy. Please consider a healthy endpoint from the configuration");
+        }
+        multiClusterMap.entrySet().stream().forEach(entry -> {
+            if (entry.getKey() != endpoint) {
+                entry.getValue().setGracePeriod(forcedActiveDuration);
+            }
+        });
+        setActiveCluster(endpoint);
     }
 
     private boolean setActiveCluster(Cluster cluster, boolean validateConnection) {
@@ -710,7 +725,17 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
          * Sets the grace period for this cluster
          */
         public void setGracePeriod() {
-            gracePeriodEndsAt = System.currentTimeMillis() + multiClusterClientConfig.getGracePeriod();
+            setGracePeriod(multiClusterClientConfig.getGracePeriod());
+        }
+
+        public void setGracePeriod(long gracePeriod) {
+            long endTime = System.currentTimeMillis() + gracePeriod;
+            if (endTime < gracePeriodEndsAt) return;
+            gracePeriodEndsAt = endTime;
+        }
+
+        public void clearGracePeriod() {
+            gracePeriodEndsAt = 0;
         }
 
         /**

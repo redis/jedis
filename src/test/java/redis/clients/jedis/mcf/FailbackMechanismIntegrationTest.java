@@ -49,12 +49,12 @@ class FailbackMechanismIntegrationTest {
     private void triggerHealthStatusChange(MultiClusterPooledConnectionProvider provider, HostAndPort endpoint,
         HealthStatus oldStatus, HealthStatus newStatus) {
         try {
-            Method handleStatusChangeMethod = MultiClusterPooledConnectionProvider.class
-                .getDeclaredMethod("handleStatusChange", HealthStatusChangeEvent.class);
-            handleStatusChangeMethod.setAccessible(true);
+            Method handleHealthStatusChange = MultiClusterPooledConnectionProvider.class
+                .getDeclaredMethod("handleHealthStatusChange", HealthStatusChangeEvent.class);
+            handleHealthStatusChange.setAccessible(true);
 
             HealthStatusChangeEvent event = new HealthStatusChangeEvent(endpoint, oldStatus, newStatus);
-            handleStatusChangeMethod.invoke(provider, event);
+            handleHealthStatusChange.invoke(provider, event);
         } catch (Exception e) {
             throw new RuntimeException("Failed to trigger health status change", e);
         }

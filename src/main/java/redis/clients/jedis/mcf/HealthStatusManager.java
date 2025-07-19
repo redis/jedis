@@ -72,6 +72,10 @@ public class HealthStatusManager {
 
     public HealthStatus getHealthStatus(Endpoint endpoint) {
         HealthCheck healthCheck = healthChecks.get(endpoint);
-        return healthCheck != null ? healthCheck.getStatus() : HealthStatus.UNHEALTHY;
+        return healthCheck != null ? healthCheck.getStatus() : HealthStatus.UNKNOWN;
+    }
+
+    public boolean hasHealthCheck(Endpoint endpoint) {
+        return healthChecks.get(endpoint) != null;
     }
 }

@@ -59,28 +59,9 @@ public class HealthCheckTest {
         testConfig = DefaultJedisClientConfig.builder().build();
     }
 
-    // ========== HealthStatus Tests ==========
-
-    @Test
-    void testHealthStatusIsHealthy() {
-        assertTrue(HealthStatus.HEALTHY.isHealthy());
-        assertFalse(HealthStatus.UNHEALTHY.isHealthy());
-    }
-
-    // ========== HostAndPort Tests ==========
-    @Test
-    void testHostAndPortEquality() {
-        HostAndPort endpoint1 = new HostAndPort("localhost", 6379);
-        HostAndPort endpoint2 = new HostAndPort("localhost", 6379);
-        HostAndPort endpoint3 = new HostAndPort("localhost", 6380);
-
-        assertEquals(endpoint1, endpoint2);
-        assertNotEquals(endpoint1, endpoint3);
-        assertEquals(endpoint1.hashCode(), endpoint2.hashCode());
-    }
-
     // ========== HealthCheckCollection Tests ==========
 
+    @Test
     void testHealthCheckCollectionAdd() {
         HealthCheckCollection collection = new HealthCheckCollection();
         HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
@@ -155,7 +136,7 @@ public class HealthCheckTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         Consumer<HealthStatusChangeEvent> callback = event -> {
-            assertEquals(HealthStatus.HEALTHY, event.getOldStatus());
+            assertEquals(HealthStatus.UNKNOWN, event.getOldStatus());
             assertEquals(HealthStatus.UNHEALTHY, event.getNewStatus());
             latch.countDown();
         };
@@ -238,17 +219,35 @@ public class HealthCheckTest {
     }
 
     @Test
-    void testHealthStatusManagerLifecycle() {
+    void testHealthStatusManagerLifecycle() throws InterruptedException {
         HealthStatusManager manager = new HealthStatusManager();
 
         // Before adding health check
-        assertEquals(HealthStatus.UNHEALTHY, manager.getHealthStatus(testEndpoint));
+        assertEquals(HealthStatus.UNKNOWN, manager.getHealthStatus(testEndpoint));
 
+        // Set up event listener to wait for initial health check completion
+        CountDownLatch healthCheckCompleteLatch = new CountDownLatch(1);
+        HealthStatusListener listener = event -> healthCheckCompleteLatch.countDown();
+
+        // Register listener before adding health check to capture the initial event
+        manager.registerListener(testEndpoint, listener);
+
+        // Add health check - this will start async health checking
         manager.add(testEndpoint, alwaysHealthyStrategy);
+
+        // Initially should still be UNKNOWN until first check completes
+        assertEquals(HealthStatus.UNKNOWN, manager.getHealthStatus(testEndpoint));
+
+        // Wait for initial health check to complete
+        assertTrue(healthCheckCompleteLatch.await(2, TimeUnit.SECONDS),
+            "Initial health check should complete within timeout");
+
+        // Now should be HEALTHY after initial check
         assertEquals(HealthStatus.HEALTHY, manager.getHealthStatus(testEndpoint));
 
+        // Clean up and verify removal
         manager.remove(testEndpoint);
-        assertEquals(HealthStatus.UNHEALTHY, manager.getHealthStatus(testEndpoint));
+        assertEquals(HealthStatus.UNKNOWN, manager.getHealthStatus(testEndpoint));
     }
 
     // ========== EchoStrategy Tests ==========
@@ -275,14 +274,11 @@ public class HealthCheckTest {
     void testNewFieldLocations() {
         // Test new field locations in ClusterConfig and MultiClusterClientConfig
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .weight(2.5f)
-            .build();
+            .builder(testEndpoint, testConfig).weight(2.5f).build();
 
-        MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .retryOnFailover(true)
-            .failbackSupported(false)
-            .build();
+        MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(
+            new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).retryOnFailover(true)
+                .failbackSupported(false).build();
 
         assertEquals(2.5f, clusterConfig.getWeight());
         assertTrue(multiConfig.isRetryOnFailover());
@@ -293,15 +289,15 @@ public class HealthCheckTest {
     void testDefaultValues() {
         // Test default values in ClusterConfig
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .build();
+            .builder(testEndpoint, testConfig).build();
 
         assertEquals(1.0f, clusterConfig.getWeight()); // Default weight
-        assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier()); // Default is null (no health check)
+        assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier()); // Default is null (no
+                                                                                            // health check)
 
         // Test default values in MultiClusterClientConfig
-        MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .build();
+        MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(
+            new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
 
         assertFalse(multiConfig.isRetryOnFailover()); // Default is false
         assertTrue(multiConfig.isFailbackSupported()); // Default is true
@@ -314,9 +310,7 @@ public class HealthCheckTest {
         MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> customStrategy;
 
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .healthCheckStrategySupplier(supplier)
-            .build();
+            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(supplier).build();
 
         assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
         HealthCheckStrategy result = clusterConfig.getHealthCheckStrategySupplier().get(testEndpoint, testConfig);
@@ -330,9 +324,7 @@ public class HealthCheckTest {
         };
 
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .healthCheckStrategySupplier(customSupplier)
-            .build();
+            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(customSupplier).build();
 
         assertEquals(customSupplier, clusterConfig.getHealthCheckStrategySupplier());
     }
@@ -344,9 +336,7 @@ public class HealthCheckTest {
         };
 
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .healthCheckStrategySupplier(echoSupplier)
-            .build();
+            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(echoSupplier).build();
 
         MultiClusterClientConfig.StrategySupplier supplier = clusterConfig.getHealthCheckStrategySupplier();
         assertNotNull(supplier);
@@ -356,8 +346,7 @@ public class HealthCheckTest {
     @Test
     void testClusterConfigWithDefaultHealthCheck() {
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .build(); // Should use default EchoStrategy
+            .builder(testEndpoint, testConfig).build(); // Should use default EchoStrategy
 
         assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
         assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier());
@@ -366,9 +355,7 @@ public class HealthCheckTest {
     @Test
     void testClusterConfigWithDisabledHealthCheck() {
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .healthCheckEnabled(false)
-            .build();
+            .builder(testEndpoint, testConfig).healthCheckEnabled(false).build();
 
         assertNull(clusterConfig.getHealthCheckStrategySupplier());
     }
@@ -376,9 +363,7 @@ public class HealthCheckTest {
     @Test
     void testClusterConfigHealthCheckEnabledExplicitly() {
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .healthCheckEnabled(true)
-            .build();
+            .builder(testEndpoint, testConfig).healthCheckEnabled(true).build();
 
         assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
         assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier());

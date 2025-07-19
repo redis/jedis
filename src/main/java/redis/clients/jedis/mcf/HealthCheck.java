@@ -27,7 +27,7 @@ public class HealthCheck {
         this.endpoint = endpoint;
         this.strategy = strategy;
         this.statusChangeCallback = statusChangeCallback;
-        statusRef.set(new SimpleEntry<>(0L, HealthStatus.HEALTHY));
+        statusRef.set(new SimpleEntry<>(0L, HealthStatus.UNKNOWN));
     }
 
     public Endpoint getEndpoint() {

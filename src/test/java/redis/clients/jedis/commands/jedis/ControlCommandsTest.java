@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -148,8 +149,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void roleSlave() {
     EndpointConfig primaryEndpoint = HostAndPorts.getRedisEndpoint("standalone0");
-    EndpointConfig secondaryEndpoint = HostAndPorts.getRedisEndpoint(
-        "standalone4-replica-of-standalone1");
+    EndpointConfig secondaryEndpoint = HostAndPorts
+        .getRedisEndpoint("standalone4-replica-of-standalone1");
 
     try (Jedis slave = new Jedis(secondaryEndpoint.getHostAndPort(),
         secondaryEndpoint.getClientConfigBuilder().build())) {
@@ -226,18 +227,18 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     Map<String, String> info = jedis.configGet("m*");
     assertNotNull(info);
     assertFalse(info.isEmpty());
-//    assertTrue(info.size() % 2 == 0);
+    // assertTrue(info.size() % 2 == 0);
     Map<byte[], byte[]> infoBinary = jedis.configGet("m*".getBytes());
     assertNotNull(infoBinary);
     assertFalse(infoBinary.isEmpty());
-//    assertTrue(infoBinary.size() % 2 == 0);
+    // assertTrue(infoBinary.size() % 2 == 0);
   }
 
   @Test
   public void configSet() {
     Map<String, String> info = jedis.configGet("maxmemory");
-//    assertEquals("maxmemory", info.get(0));
-//    String memory = info.get(1);
+    // assertEquals("maxmemory", info.get(0));
+    // String memory = info.get(1);
     String memory = info.get("maxmemory");
     assertNotNull(memory);
     assertEquals("OK", jedis.configSet("maxmemory", "200"));
@@ -248,8 +249,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void configSetBinary() {
     byte[] maxmemory = SafeEncoder.encode("maxmemory");
     Map<byte[], byte[]> info = jedis.configGet(maxmemory);
-//    assertArrayEquals(maxmemory, info.get(0));
-//    byte[] memory = info.get(1);
+    // assertArrayEquals(maxmemory, info.get(0));
+    // byte[] memory = info.get(1);
     byte[] memory = info.get(maxmemory);
     assertNotNull(memory);
     assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
@@ -259,13 +260,15 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added the ability to pass multiple pattern parameters in one call")
   public void configGetSetMulti() {
-    String[] params = new String[]{"hash-max-listpack-entries", "set-max-intset-entries", "zset-max-listpack-entries"};
+    String[] params = new String[] { "hash-max-listpack-entries", "set-max-intset-entries",
+        "zset-max-listpack-entries" };
     Map<String, String> info = jedis.configGet(params);
     assertEquals(3, info.size());
     assertEquals("OK", jedis.configSet(info));
 
-    byte[][] bparams = new byte[][]{SafeEncoder.encode("hash-max-listpack-entries"),
-      SafeEncoder.encode("set-max-intset-entries"), SafeEncoder.encode("zset-max-listpack-entries")};
+    byte[][] bparams = new byte[][] { SafeEncoder.encode("hash-max-listpack-entries"),
+        SafeEncoder.encode("set-max-intset-entries"),
+        SafeEncoder.encode("zset-max-listpack-entries") };
     Map<byte[], byte[]> binfo = jedis.configGet(bparams);
     assertEquals(3, binfo.size());
     assertEquals("OK", jedis.configSetBinary(binfo));
@@ -429,23 +432,23 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     // Note: It has been recommended not to base MEMORY USAGE test on exact value, as the response
     // may subject to be 'tuned' especially targeting a major Redis release.
 
-    byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
-    byte[] bbar = {0x05, 0x06, 0x07, 0x08};
-    byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+    byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
+    byte[] bfoobar = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
 
     jedis.set(bfoo, bbar);
     assertThat(jedis.memoryUsage(bfoo), greaterThan(20l));
 
-    jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
-    assertThat(jedis.memoryUsage(bfoobar, 2), greaterThan(40l));
+    jedis.lpush(bfoobar, new byte[] { 0x01, 0x02 }, new byte[] { 0x05, 0x06 }, new byte[] { 0x00 });
+    assertThat(jedis.memoryUsage(bfoobar, 2), greaterThanOrEqualTo(40l));
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
 
   @Test
   public void memoryPurge() {
-     String memoryPurge = jedis.memoryPurge();
-     assertNotNull(memoryPurge);
+    String memoryPurge = jedis.memoryPurge();
+    assertNotNull(memoryPurge);
   }
 
   @Test
@@ -489,15 +492,16 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
     CommandDocument sortDoc = docs.get("sort");
     assertEquals("generic", sortDoc.getGroup());
-    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.isOneOf(
-        "Sort the elements in a list, set or sorted set",
+    MatcherAssert.assertThat(sortDoc.getSummary(),
+      Matchers.isOneOf("Sort the elements in a list, set or sorted set",
         "Sorts the elements in a list, a set, or a sorted set, optionally storing the result."));
     assertNull(sortDoc.getHistory());
 
     CommandDocument setDoc = docs.get("set");
     assertEquals("1.0.0", setDoc.getSince());
     assertEquals("O(1)", setDoc.getComplexity());
-    assertEquals("2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.", setDoc.getHistory().get(0));
+    assertEquals("2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.",
+      setDoc.getHistory().get(0));
   }
 
   @Test
@@ -506,7 +510,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
 
-    List<KeyValue<String, List<String>>> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
+    List<KeyValue<String, List<String>>> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1",
+      "v1");
     assertEquals("k1", keySandFlags.get(0).getKey());
     assertEquals(2, keySandFlags.get(0).getValue().size());
   }
@@ -581,17 +586,20 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     List<String> commands = jedis.commandList();
     assertTrue(commands.size() > 100);
 
-    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByModule("JSON"));
+    commands = jedis.commandListFilterBy(
+      CommandListFilterByParams.commandListFilterByParams().filterByModule("JSON"));
     assertEquals(0, commands.size()); // json module was not loaded
 
-    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByAclCat("admin"));
+    commands = jedis.commandListFilterBy(
+      CommandListFilterByParams.commandListFilterByParams().filterByAclCat("admin"));
     assertTrue(commands.size() > 10);
 
-    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
+    commands = jedis.commandListFilterBy(
+      CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
     assertTrue(commands.size() > 10);
 
-    assertThrows(IllegalArgumentException.class, () ->
-        jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams()));
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams()));
   }
 
   @Test

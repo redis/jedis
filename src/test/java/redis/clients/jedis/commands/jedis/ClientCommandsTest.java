@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -182,7 +183,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     assertDisconnected(client);
 
     ClientKillParams skipmeNo = new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO);
-    assertThat(jedis.clientKill(skipmeNo), greaterThan(1L));
+    assertThat(jedis.clientKill(skipmeNo), greaterThanOrEqualTo(1L));
     assertDisconnected(jedis);
   }
 

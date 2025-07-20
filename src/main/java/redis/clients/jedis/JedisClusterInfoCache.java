@@ -491,7 +491,8 @@ public class JedisClusterInfoCache {
 
   @SuppressWarnings("unchecked")
   private List<Object> executeClusterSlots(Connection jedis) {
-    CommandArguments clusterSlotsCmd = new ClusterCommandArguments(Protocol.Command.CLUSTER).add("SLOTS");
+    CommandArguments clusterSlotsCmd = new ClusterCommandArguments(Protocol.Command.CLUSTER).add(
+        "SLOTS");
     return (List<Object>) jedis.executeCommand(clusterSlotsCmd);
   }
 

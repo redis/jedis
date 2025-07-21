@@ -11,8 +11,5 @@ public interface MaintenanceEventHandler {
   void removeListener(MaintenanceEventListener listener);
 
 
-  void removeAllListeners();
-
-
   Collection<MaintenanceEventListener> getListeners();
 }

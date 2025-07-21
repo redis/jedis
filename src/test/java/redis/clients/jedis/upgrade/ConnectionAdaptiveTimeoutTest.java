@@ -1,17 +1,20 @@
 package redis.clients.jedis.upgrade;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
@@ -21,7 +24,13 @@ import redis.clients.jedis.MaintenanceEventListener;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.util.ReflectionTestUtils;
+import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
+import redis.clients.jedis.util.server.CommandHandler;
+import org.mockito.Mockito;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Test that connection adaptive timeout works as expected.
@@ -34,16 +43,21 @@ public class ConnectionAdaptiveTimeoutTest {
     private Connection connection;
     private final int originalTimeoutMs = 2000;
     private final Duration relaxedTimeout = Duration.ofSeconds(10);
+    private final Duration relaxedBlockingTimeout = Duration.ofSeconds(15);
+    private final CommandObjects commandObjects = new CommandObjects();
+    private final CommandHandler mockHandler = Mockito.mock(CommandHandler.class);
 
     @BeforeEach
     public void setUp() throws IOException {
         // Start the mock TCP server
         mockServer = new TcpMockServer();
+        mockServer.setCommandHandler(mockHandler);
         mockServer.start();
         
         // Create client configuration with relaxed timeout and maintenance event handler
         TimeoutOptions timeoutOptions = TimeoutOptions.builder()
             .proactiveTimeoutsRelaxing(relaxedTimeout)
+            .proactiveBlockingTimeoutsRelaxing(relaxedBlockingTimeout)
             .build();
             
         MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandlerImpl();
@@ -178,7 +192,7 @@ public class ConnectionAdaptiveTimeoutTest {
             // Manually call relaxTimeouts() - should have no effect when disabled
             disabledConnection.relaxTimeouts();
 
-            // Verify that timeout was not changed
+            // Relaxed timeout should fallback to original timeout, if relaxed timeout is disabled
             assertFalse(disabledConnection.isRelaxedTimeoutActive());
             assertEquals(originalTimeoutMs, disabledSocket.getSoTimeout());
 
@@ -193,35 +207,78 @@ public class ConnectionAdaptiveTimeoutTest {
     }
 
     @Test
-    public void testNullTimeoutOptionsDisablesRelaxedTimeout() throws Exception {
+    public void testDefaultTimeoutOptionsDisablesRelaxedTimeout() throws Exception {
         // Create a connection with null timeout options
-        Connection nullTimeoutConnection = createConnectionWithNullTimeoutOptions();
-        Socket nullTimeoutSocket = ReflectionTestUtils.getField(nullTimeoutConnection, "socket");
+        Connection defaultTimeoutConnection = createConnectionWithDefaultTimeoutOptions();
+        Socket nullTimeoutSocket = ReflectionTestUtils.getField(defaultTimeoutConnection, "socket");
 
         try {
-            assertTrue(nullTimeoutConnection.isConnected());
+            assertTrue(defaultTimeoutConnection.isConnected());
             assertEquals(originalTimeoutMs, nullTimeoutSocket.getSoTimeout());
 
             // Verify that relaxed timeout is disabled
-            assertFalse(nullTimeoutConnection.isRelaxedTimeoutActive());
+            assertFalse(defaultTimeoutConnection.isRelaxedTimeoutActive());
 
             // Send maintenance push messages - should NOT activate relaxed timeout
             mockServer.sendMigratingPushToAll();
 
-            assertTrue(nullTimeoutConnection.ping());
-            assertFalse(nullTimeoutConnection.isRelaxedTimeoutActive());
+            assertTrue(defaultTimeoutConnection.ping());
+
+            // Relaxed timeout's are disabled by default
+            assertFalse(defaultTimeoutConnection.isRelaxedTimeoutActive());
             assertEquals(originalTimeoutMs, nullTimeoutSocket.getSoTimeout());
 
             // Manual call should also have no effect
-            nullTimeoutConnection.relaxTimeouts();
-            assertFalse(nullTimeoutConnection.isRelaxedTimeoutActive());
+            defaultTimeoutConnection.relaxTimeouts();
+            assertFalse(defaultTimeoutConnection.isRelaxedTimeoutActive());
             assertEquals(originalTimeoutMs, nullTimeoutSocket.getSoTimeout());
 
         } finally {
-            if (nullTimeoutConnection.isConnected()) {
-                nullTimeoutConnection.close();
+            if (defaultTimeoutConnection.isConnected()) {
+                defaultTimeoutConnection.close();
             }
         }
+    }
+
+    @Test
+    public void testRelaxedBlockingTimeoutAppliedDuringBlockingCommand()
+        throws IOException, InterruptedException {
+
+            // Verify initial timeout
+            Socket socket = ReflectionTestUtils.getField(connection, "socket");
+            assertEquals(originalTimeoutMs, socket.getSoTimeout());
+
+            CountDownLatch blpopLatch = new CountDownLatch(1);
+            CountDownLatch blpopLatchAfter = new CountDownLatch(1);
+            doAnswer(invocation -> {
+                blpopLatch.countDown();
+                return RespResponse.arrayOfBulkStrings("popped-item");
+            }).when(mockHandler).handleCommand(eq("BLPOP"), anyList(), anyString());
+
+            // Send MIGRATING push notification which should trigger relaxTimeouts()
+            mockServer.sendMigratingPushToAll();
+
+            Thread t1 = new Thread(() -> {
+                connection.executeCommand(commandObjects.blpop(5, "test:blpop:key"));
+                blpopLatchAfter.countDown();
+            });
+            t1.start();
+
+            // Verify that relaxed blocking timeout was applied
+            blpopLatch.await();
+            assertTrue(connection.isRelaxedTimeoutActive(), "Relaxed timeout should be active during blocking command");
+            assertEquals((int) relaxedBlockingTimeout.toMillis(), socket.getSoTimeout(), "Socket timeout should be relaxed blocking timeout during blocking command");
+
+            blpopLatchAfter.await();
+            assertTrue(connection.isRelaxedTimeoutActive(), "Relaxed timeout should be still active after blocking command");
+            assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout(), "Socket timeout should be restored to relaxed timeout for non blocking command");
+
+            // Send MIGRATED push notification to disable relaxed timeout
+            mockServer.sendMigratedPushToAll();
+            connection.executeCommand(commandObjects.ping());
+
+            assertFalse(connection.isRelaxedTimeoutActive(), "Relaxed timeout should be disabled after MIGRATED");
+            assertEquals(originalTimeoutMs, socket.getSoTimeout(), "Socket timeout should be restored to original timeout");
     }
 
     /**
@@ -229,7 +286,10 @@ public class ConnectionAdaptiveTimeoutTest {
      */
     private Connection createConnectionWithDisabledTimeoutRelaxation() throws IOException {
         // Create configuration with disabled timeout relaxation
-        TimeoutOptions disabledTimeoutOptions = TimeoutOptions.create(); // Uses default disabled timeout
+        TimeoutOptions disabledTimeoutOptions = TimeoutOptions.builder()
+            .proactiveTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT)
+            .proactiveBlockingTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT)
+            .build();
 
         MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandlerImpl();
 
@@ -251,7 +311,7 @@ public class ConnectionAdaptiveTimeoutTest {
     /**
      * Helper method to create a connection with null timeout options.
      */
-    private Connection createConnectionWithNullTimeoutOptions() throws IOException {
+    private Connection createConnectionWithDefaultTimeoutOptions() throws IOException {
         MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandlerImpl();
 
         DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()

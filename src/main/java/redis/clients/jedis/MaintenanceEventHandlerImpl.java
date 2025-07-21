@@ -18,11 +18,6 @@ public class MaintenanceEventHandlerImpl implements MaintenanceEventHandler {
   }
 
   @Override
-  public void removeAllListeners() {
-    listeners.clear();
-  }
-
-  @Override
   public Collection<MaintenanceEventListener> getListeners() {
     return listeners;
   }

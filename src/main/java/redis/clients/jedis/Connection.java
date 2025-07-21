@@ -46,8 +46,10 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private int soTimeout = 0;
+  private boolean relaxedTimeoutEnabled = false;
   private int relaxedTimeout = safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
+  private int relaxedBlockingTimeout = safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
+  private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
   private boolean strValActive;
@@ -56,7 +58,8 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
-  private boolean relaxedTimeoutActive = false;
+  private boolean isBlocking = false;
+  private boolean isRelaxed = false;
   private boolean rebindRequested = false;
 
   protected PushConsumerChain pushConsumer;
@@ -88,7 +91,9 @@ public class Connection implements Closeable {
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     this.relaxedTimeout = safeToInt(clientConfig.getTimeoutOptions().getRelaxedTimeout().toMillis());
-
+    this.relaxedBlockingTimeout = safeToInt(clientConfig.getTimeoutOptions().getRelaxedBlockingTimeout().toMillis());
+    this.relaxedTimeoutEnabled =  TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ||
+        TimeoutOptions.isRelaxedTimeoutEnabled(relaxedBlockingTimeout);
     initPushConsumers(clientConfig);
     initializeFromClientConfig(clientConfig);
   }
@@ -209,7 +214,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      int timeout = relaxedTimeoutActive? this.relaxedTimeout : this.soTimeout;
+      int timeout = getDesiredTimeout();
       socket.setSoTimeout(timeout);
     } catch (SocketException ex) {
       setBroken();
@@ -233,9 +238,11 @@ public class Connection implements Closeable {
       return commandObject.getBuilder().build(getOne());
     } else {
       try {
+        isBlocking = true;
         setTimeoutInfinite();
         return commandObject.getBuilder().build(getOne());
       } finally {
+        isBlocking = false;
         rollbackTimeout();
       }
     }
@@ -703,16 +710,42 @@ public class Connection implements Closeable {
 
   @Experimental
   public boolean isRelaxedTimeoutActive() {
-    return relaxedTimeoutActive;
+    return isRelaxed;
+  }
+
+  /**
+   * Calculate the desired timeout based on current state (blocking/non-blocking and relaxed/normal).
+   * When relaxed timeouts are enabled, use configured relaxed timeout if available, otherwise fallback to default timeout.
+   */
+  private int getDesiredTimeout() {
+    if (!isRelaxed) {
+      if (!isBlocking) {
+        return soTimeout;
+      } else {
+        return infiniteSoTimeout;
+      }
+    } else {
+      if (!isBlocking) {
+        // Use relaxed timeout if configured, otherwise fallback to normal timeout
+        return TimeoutOptions.isRelaxedTimeoutDisabled(relaxedTimeout) ? soTimeout : relaxedTimeout;
+      } else {
+        // Use relaxed blocking timeout if configured, otherwise fallback to infinite timeout
+        return TimeoutOptions.isRelaxedTimeoutDisabled(relaxedBlockingTimeout) ? infiniteSoTimeout : relaxedBlockingTimeout;
+      }
+    }
   }
 
   @Experimental
   public void relaxTimeouts() {
-    if (!relaxedTimeoutActive && !TimeoutOptions.isRelaxedTimeoutDisabled(relaxedTimeout)) {
-      relaxedTimeoutActive = true;
+    if (!relaxedTimeoutEnabled) {
+      return;
+    }
+
+    if (!isRelaxed) {
+      isRelaxed = true;
       try {
         if (isConnected()) {
-          socket.setSoTimeout(relaxedTimeout);
+          socket.setSoTimeout(getDesiredTimeout());
         }
       } catch (SocketException ex) {
         setBroken();
@@ -723,11 +756,11 @@ public class Connection implements Closeable {
 
   @Experimental
   public void disableRelaxedTimeout() {
-    if (relaxedTimeoutActive) {
-      relaxedTimeoutActive = false;
+    if (isRelaxed) {
+      isRelaxed = false;
       try {
         if (isConnected()) {
-          socket.setSoTimeout(soTimeout);
+          socket.setSoTimeout(getDesiredTimeout());
         }
       } catch (SocketException ex) {
         setBroken();
@@ -906,6 +939,13 @@ public class Connection implements Closeable {
       Connection connection = connectionRef.get();
       if (connection != null) {
         connection.disableRelaxedTimeout();
+      }
+    }
+
+    public void onRebind(HostAndPort target) {
+      Connection connection = connectionRef.get();
+      if (connection != null) {
+        connection.relaxTimeouts();
       }
     }
   }

@@ -27,10 +27,6 @@ public class TimeoutOptions {
     return  relaxedTimeout != null && !relaxedTimeout.equals(DISABLED_TIMEOUT);
   }
 
-  public static boolean isRelaxedTimeoutDisabled(Duration relaxedTimeout) {
-    return  relaxedTimeout == null || relaxedTimeout.equals(DISABLED_TIMEOUT);
-  }
-
   public static boolean isRelaxedTimeoutEnabled(int relaxedTimeout) {
     return  relaxedTimeout != DISABLED_TIMEOUT_MS;
   }

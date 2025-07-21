@@ -12,10 +12,15 @@ public class TimeoutOptions {
 
   public static final Duration DEFAULT_RELAXED_TIMEOUT = DISABLED_TIMEOUT;
 
+  public static final Duration DEFAULT_RELAXED_BLOCKING_TIMEOUT = DISABLED_TIMEOUT;
+
   private final Duration relaxedTimeout;
 
-  private TimeoutOptions(Duration relaxedTimeout) {
+  private final Duration relaxedBlockingTimeout;
+
+  private TimeoutOptions(Duration relaxedTimeout, Duration relaxedBlockingTimeout) {
     this.relaxedTimeout = relaxedTimeout;
+    this.relaxedBlockingTimeout = relaxedBlockingTimeout;
   }
 
   public static boolean isRelaxedTimeoutEnabled(Duration relaxedTimeout) {
@@ -24,6 +29,10 @@ public class TimeoutOptions {
 
   public static boolean isRelaxedTimeoutDisabled(Duration relaxedTimeout) {
     return  relaxedTimeout == null || relaxedTimeout.equals(DISABLED_TIMEOUT);
+  }
+
+  public static boolean isRelaxedTimeoutEnabled(int relaxedTimeout) {
+    return  relaxedTimeout != DISABLED_TIMEOUT_MS;
   }
 
   public static boolean isRelaxedTimeoutDisabled(int relaxedTimeout) {
@@ -35,6 +44,13 @@ public class TimeoutOptions {
    */
   public Duration getRelaxedTimeout() {
     return relaxedTimeout;
+  }
+
+  /**
+   * @return the {@link Duration} to relax timeouts proactively for blocking commands, {@link #DISABLED_TIMEOUT} if disabled.
+   */
+  public Duration getRelaxedBlockingTimeout() {
+    return relaxedBlockingTimeout;
   }
 
   /**
@@ -57,6 +73,7 @@ public class TimeoutOptions {
 
   public static class Builder {
     private Duration relaxedTimeout = DEFAULT_RELAXED_TIMEOUT;
+    private Duration relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_TIMEOUT;
 
     /**
      * Enable proactive timeout relaxing. Disabled by default, see {@link #DEFAULT_RELAXED_TIMEOUT}.
@@ -77,8 +94,26 @@ public class TimeoutOptions {
       return this;
     }
 
+    /**
+     * Enable proactive timeout relaxing for blocking commands. Disabled by default, see {@link #DEFAULT_RELAXED_BLOCKING_TIMEOUT}.
+     * <p>
+     * If the Redis server supports this, and the client is set up to use it, the client would listen to notifications that the current
+     * endpoint is about to go down (as part of some maintenance activity, for example). In such cases, the driver could
+     * extend the existing timeout settings for blocking commands that are in flight, to make sure they do not
+     * time out during this process. If not configured, the infinite timeout for blocking commands will be preserved.
+     * </p>
+     * @param duration {@link Duration} to relax timeouts proactively for blocking commands, must not be {@code null}.
+     * @return {@code this}
+     */
+    public Builder proactiveBlockingTimeoutsRelaxing(Duration duration) {
+      JedisAsserts.notNull(duration, "Duration must not be null");
+
+      this.relaxedBlockingTimeout = duration;
+      return this;
+    }
+
     public TimeoutOptions build() {
-      return new TimeoutOptions(relaxedTimeout);
+      return new TimeoutOptions(relaxedTimeout, relaxedBlockingTimeout);
     }
   }
 

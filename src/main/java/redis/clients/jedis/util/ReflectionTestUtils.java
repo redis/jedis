@@ -21,6 +21,22 @@ public class ReflectionTestUtils {
     }
   }
 
+  public static void setField(Object targetObject, String name, Object value) {
+
+    Class<?>  targetClass = targetObject.getClass();
+
+    Field field = findField(targetClass, name);
+
+    makeAccessible(field);
+
+    try {
+      field.set(targetObject, value);
+    } catch (IllegalAccessException ex) {
+      throw new IllegalStateException(
+          "Unexpected reflection exception - " + ex.getClass().getName() + ": " + ex.getMessage());
+    }
+  }
+
   public static Field findField(Class<?> clazz, String name) {
     Class<?> searchType = clazz;
     while (Object.class != searchType && searchType != null) {

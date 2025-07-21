@@ -3,6 +3,7 @@ package redis.clients.jedis.util.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol;
+
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -30,6 +31,8 @@ public class TcpMockServer {
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private int port;
     private final Map<String, ClientHandler> connectedClients = new ConcurrentHashMap<>();
+    private CommandHandler commandHandler;
+
 
     /**
      * Start the server on an available port
@@ -140,6 +143,24 @@ public class TcpMockServer {
     }
 
     /**
+     * Set a custom command handler for processing Redis commands.
+     *
+     * @param commandHandler The command handler to use, or null to use only built-in handlers
+     */
+    public void setCommandHandler(CommandHandler commandHandler) {
+        this.commandHandler = commandHandler;
+    }
+
+    /**
+     * Get the current command handler.
+     *
+     * @return The current command handler, or null if none is set
+     */
+    public CommandHandler getCommandHandler() {
+        return commandHandler;
+    }
+
+    /**
      * Close all active client connections
      */
     private void closeAllActiveConnections() {
@@ -190,17 +211,26 @@ public class TcpMockServer {
                         }
 
                         List<Object> cmdArgs = (List<Object>) input;
-                        String cmd = SafeEncoder.encode((byte[]) cmdArgs.get(0));
+                        String cmdString = SafeEncoder.encode((byte[]) cmdArgs.get(0));
 
-                        // Handle different commands
-                        if (cmd.equalsIgnoreCase("HELLO")) {
-                            sendHelloResponse(out);
-                        } else if (cmd.contains("PING")) {
-                            sendPongResponse(out);
-                        } else if (cmd.contains("CLIENT")) {
-                            sendOkResponse(out);
+                        // Convert arguments to strings (excluding command name)
+                        List<String> args = new java.util.ArrayList<>();
+                        for (int i = 1; i < cmdArgs.size(); i++) {
+                            args.add(SafeEncoder.encode((byte[]) cmdArgs.get(i)));
+                        }
+
+                        // Try custom handler first
+                        String customResponse = null;
+                        if (commandHandler != null) {
+                            customResponse = commandHandler.handleCommand(cmdString, args, clientId);
+                        }
+
+                        if (customResponse != null) {
+                            out.write(customResponse.getBytes());
+                            out.flush();
                         } else {
-                            throw new RuntimeException("Unknown command: " + cmd);
+                            // Handle with default built-in handlers
+                            handleBuiltinCommand(cmdString, out);
                         }
                     } catch (IOException e) {
                         logger.debug("Client " + clientId + " disconnected: " + e.getMessage());
@@ -243,6 +273,21 @@ public class TcpMockServer {
             String response = "+OK\r\n";
             out.write(response.getBytes());
             out.flush();
+        }
+
+        /**
+         * Handle a command with built-in handlers.
+         */
+        private void handleBuiltinCommand(String cmdString, OutputStream out) throws IOException {
+            if (cmdString.equalsIgnoreCase("HELLO")) {
+                sendHelloResponse(out);
+            } else if (cmdString.contains("PING")) {
+                sendPongResponse(out);
+            } else if (cmdString.contains("CLIENT")) {
+                sendOkResponse(out);
+            } else {
+                throw new RuntimeException("Unknown command: " + cmdString);
+            }
         }
 
         /**

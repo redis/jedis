@@ -2214,21 +2214,6 @@ public final class BuilderFactory {
 
   // Vector Set builders
 
-  // VEMB builders
-  public static final Builder<List<Double>> VEMB_RESULT = new Builder<List<Double>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Double> build(Object data) {
-      if (data == null) return null;
-      List<Object> list = (List<Object>) data;
-      return list.stream().map(DOUBLE::build).collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString() {
-      return "List<Double>";
-    }
-  };
 
   public static final Builder<RawVector> VEMB_RAW_RESULT = new Builder<RawVector>() {
     @Override

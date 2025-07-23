@@ -336,7 +336,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             // Process all queued events
             while ((event = pendingHealthStatusChanges.poll()) != null) {
                 Endpoint endpoint = event.getEndpoint();
-                boolean latestInTheQueue = !pendingHealthStatusChanges.stream().anyMatch(e -> e.getEndpoint().equals(endpoint));
+                boolean latestInTheQueue = !pendingHealthStatusChanges.stream()
+                    .anyMatch(e -> e.getEndpoint().equals(endpoint));
                 if (latestInTheQueue) {
                     processStatusChangeEvent(event);
                 }

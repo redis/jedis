@@ -100,9 +100,9 @@ public class TcpMockServer {
   /**
    * Generic method to send a push message to all connected clients.
    * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
-   * @param args optional arguments for the push message
+   * @param args optional arguments for the push message (can be String or Long)
    */
-  public void sendPushMessageToAll(String pushType, String... args) {
+  public void sendPushMessageToAll(String pushType, Object... args) {
     connectedClients.values().forEach(client -> client.sendPushMessage(pushType, args));
   }
 
@@ -110,7 +110,7 @@ public class TcpMockServer {
    * Send a MIGRATING push message to all connected clients
    */
   public void sendMigratingPushToAll() {
-    sendPushMessageToAll("MIGRATING", "30"); // Default slot 30
+    sendPushMessageToAll("MIGRATING", 30);
   }
 
   /**
@@ -124,7 +124,7 @@ public class TcpMockServer {
    * Send a FAILING_OVER push message to all connected clients
    */
   public void sendFailingOverPushToAll() {
-    sendPushMessageToAll("FAILING_OVER", "30"); // Default slot 30
+    sendPushMessageToAll("FAILING_OVER", 30);
   }
 
   /**
@@ -134,8 +134,14 @@ public class TcpMockServer {
     sendPushMessageToAll("FAILED_OVER");
   }
 
-  public void sendMovingPushToAll(String targetHost) {
-    sendPushMessageToAll("MOVING", "30", targetHost);
+  /**
+   * Send a MOVING push message according to RESP3 spec to all connected clients
+   * Format: >4\r\n+MOVING\r\n:<seq_number>\r\n:<time_s>\r\n+<new_name_or_ip>:<port>\r\n
+   * @param expiry the timestamp in seconds as Long
+   * @param targetHost the target host:port
+   */
+  public void sendMovingPushToAll( Long expiry, String targetHost) {
+    sendPushMessageToAll("MOVING", expiry, targetHost);
   }
 
   /**
@@ -301,9 +307,9 @@ public class TcpMockServer {
     /**
      * Generic method to send a push message to this client.
      * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
-     * @param args optional arguments for the push message
+     * @param args optional arguments for the push message (can be String or Long)
      */
-    public void sendPushMessage(String pushType, String... args) {
+    public void sendPushMessage(String pushType, Object... args) {
       try {
         StringBuilder pushMessage = new StringBuilder();
 
@@ -311,13 +317,23 @@ public class TcpMockServer {
         int elementCount = 1 + args.length;
         pushMessage.append(">").append(elementCount).append("\r\n");
 
-        // Add push type
-        pushMessage.append("$").append(pushType.length()).append("\r\n").append(pushType)
-            .append("\r\n");
+        // Add push type as simple string (RESP3 spec)
+        pushMessage.append("+").append(pushType).append("\r\n");
 
         // Add arguments
-        for (String arg : args) {
-          pushMessage.append("$").append(arg.length()).append("\r\n").append(arg).append("\r\n");
+        for (Object arg : args) {
+          if (arg instanceof Long || arg instanceof Integer) {
+            // Format numeric values as Redis integer
+            pushMessage.append(":").append(arg).append("\r\n");
+          } else if (arg instanceof String) {
+            // Format String as Redis simple string (RESP3 spec for push notifications)
+            String strArg = (String) arg;
+            pushMessage.append("+").append(strArg).append("\r\n");
+          } else {
+            // Convert other types to string and format as simple string
+            String strArg = arg.toString();
+            pushMessage.append("+").append(strArg).append("\r\n");
+          }
         }
 
         outputStream.write(pushMessage.toString().getBytes());

@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.annots.Experimental;
 
+import java.time.Duration;
+
 /**
  * Interface for components that support rebinding to a new host and port.
  * <p>
@@ -23,6 +25,7 @@ public interface RebindAware {
    * Components might decide to reject the re-bind request if they are not in a state to support it.
    * </p>
    * @param newHostAndPort The new host and port to use for new connections
+   * @param expiry The duration after which the rebind should be considered expired
    */
-  void rebind(HostAndPort newHostAndPort);
+  void rebind(HostAndPort newHostAndPort, Duration expiry);
 }

@@ -3,19 +3,19 @@ package redis.clients.jedis;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
+  private RebindHandler rebindHandler;
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig));
@@ -89,7 +89,7 @@ public class ConnectionPool extends Pool<Connection> {
 
   private void attachRebindHandler(JedisClientConfig clientConfig, ConnectionFactory factory) {
     if (clientConfig.isProactiveRebindEnabled()) {
-      RebindHandler rebindHandler = new RebindHandler(this, factory);
+      rebindHandler = new RebindHandler(this, factory);
       clientConfig.getMaintenanceEventHandler().addListener(rebindHandler);
     }
   }
@@ -102,13 +102,13 @@ public class ConnectionPool extends Pool<Connection> {
     public RebindHandler(ConnectionPool pool, ConnectionFactory factory) {
       this.pool = pool;
       this.factory = factory;
-    }
+     }
 
     @Override
-    public void onRebind(HostAndPort target) {
+    public void onRebind(HostAndPort target, Duration rebindTimeout) {
       HostAndPort previous = rebindTarget.getAndSet(target);
       if (previous != target) {
-        this.factory.rebind(target);
+        this.factory.rebind(target, rebindTimeout);
         this.pool.clear();
       }
     }

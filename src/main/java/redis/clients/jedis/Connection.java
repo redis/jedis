@@ -11,6 +11,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -839,8 +840,11 @@ public class Connection implements Closeable {
       }
     }
     private void onMoving(PushMessage message) {
-      HostAndPort rebindTarget = getRebindTarget(message);
-      eventHandler.getListeners().forEach(listener -> listener.onRebind(rebindTarget));
+      RebindEvent rebindEvent = getRebindTarget(message);
+      if (rebindEvent == null) {
+        return;
+      }
+      eventHandler.getListeners().forEach(listener -> listener.onRebind(rebindEvent.target,rebindEvent.rebindTimeout));
     }
 
     private void onMigrating() {
@@ -859,7 +863,7 @@ public class Connection implements Closeable {
       eventHandler.getListeners().forEach(MaintenanceEventListener::onFailedOver);
     }
 
-    private HostAndPort getRebindTarget(PushMessage message) {
+    private RebindEvent getRebindTarget(PushMessage message) {
       // Extract domain/ip and port from the message
       // MOVING push message format: ["MOVING", slot, "host:port"]
       List<Object> content = message.getContent();
@@ -868,6 +872,14 @@ public class Connection implements Closeable {
         logger.warn("MOVING push message is malformed: {}", message);
         return null;
       }
+
+      Object timeObject = content.get(1); // Get the 3rd element (index 2)
+      if (!(timeObject instanceof Long)) {
+        logger.warn("Invalid re-bind message format, expected 2rd element to be a <time> (Long), got {}",
+            timeObject.getClass());
+        return null;
+      }
+
 
       Object addressObject = content.get(2); // Get the 3rd element (index 2)
       if (!(addressObject instanceof byte[])) {
@@ -887,18 +899,29 @@ public class Connection implements Closeable {
 
         String address = parts[0];
         int port = Integer.parseInt(parts[1]);
-        return new HostAndPort(address, port);
+        return new RebindEvent(new HostAndPort(address, port), Duration.ofSeconds((Long) timeObject));
       } catch (Exception e) {
         logger.warn("Error parsing re-bind target from message: {}", message, e);
         return null;
       }
     }
+
+    private static class RebindEvent{
+      Duration rebindTimeout;
+      HostAndPort target;
+
+      public RebindEvent(HostAndPort target, Duration rebindTimeout) {
+        this.target = target;
+        this.rebindTimeout = rebindTimeout;
+      }
+    }
   }
 
   private class ConnectionRebindHandler implements MaintenanceEventListener {
-      public void onRebind(HostAndPort target) {
+    @Override
+    public void onRebind(HostAndPort target, Duration rebindTimeout) {
         rebindRequested = true;
-      }
+    }
   }
 
   private static class AdaptiveTimeoutHandler implements MaintenanceEventListener {
@@ -914,6 +937,7 @@ public class Connection implements Closeable {
       this.connectionRef = new WeakReference<>(connection);
     }
 
+    @Override
     public void onMigrating() {
       Connection connection = connectionRef.get();
       if (connection != null) {
@@ -921,6 +945,7 @@ public class Connection implements Closeable {
       }
     }
 
+    @Override
     public void onMigrated() {
       Connection connection = connectionRef.get();
       if (connection != null) {
@@ -928,6 +953,7 @@ public class Connection implements Closeable {
       }
     }
 
+    @Override
     public void onFailOver() {
       Connection connection = connectionRef.get();
       if (connection != null) {
@@ -935,6 +961,7 @@ public class Connection implements Closeable {
       }
     }
 
+    @Override
     public void onFailedOver() {
       Connection connection = connectionRef.get();
       if (connection != null) {
@@ -942,7 +969,8 @@ public class Connection implements Closeable {
       }
     }
 
-    public void onRebind(HostAndPort target) {
+    @Override
+    public void onRebind(HostAndPort target, Duration rebindTimeout) {
       Connection connection = connectionRef.get();
       if (connection != null) {
         connection.relaxTimeouts();

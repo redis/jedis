@@ -1,9 +1,11 @@
 package redis.clients.jedis.mcf;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisValidationException;
 
 /**
  * StatusTracker is responsible for tracking and waiting for health status changes for specific endpoints. It provides
@@ -57,7 +59,11 @@ public class StatusTracker {
             }
 
             // Wait for the health status change event
-            latch.await();
+            // just for safety to not block indefinitely
+            boolean completed = latch.await(60, TimeUnit.SECONDS);
+             if (!completed) {
+                throw new JedisValidationException("Timeout while waiting for health check result");
+            }
             return resultStatus.get();
 
         } catch (InterruptedException e) {

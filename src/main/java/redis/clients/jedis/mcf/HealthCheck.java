@@ -92,9 +92,9 @@ public class HealthCheck {
             }
             return current;
         });
-        if (oldStatus.getKey() != owner || oldStatus.getValue() != status) {
+        if (oldStatus.getValue() != status) {
             // notify listeners
-            notifyListeners(oldStatus.getValue(), newStatus.getValue());
+            notifyListeners(oldStatus.getValue(), status);
         }
     }
 

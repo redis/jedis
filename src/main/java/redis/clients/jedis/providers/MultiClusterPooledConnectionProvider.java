@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -97,8 +98,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private final ConcurrentLinkedQueue<HealthStatusChangeEvent> pendingHealthStatusChanges = new ConcurrentLinkedQueue<>();
 
     // Failback mechanism fields
+    private static final AtomicInteger failbackThreadCounter = new AtomicInteger(1);
     private final ScheduledExecutorService failbackScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread t = new Thread(r, "failback-scheduler");
+        Thread t = new Thread(r, "jedis-failback-" + failbackThreadCounter.getAndIncrement());
         t.setDaemon(true);
         return t;
     });
@@ -333,7 +335,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         synchronized (pendingHealthStatusChanges) {
             // Process all queued events
             while ((event = pendingHealthStatusChanges.poll()) != null) {
-                processStatusChangeEvent(event);
+                Endpoint endpoint = event.getEndpoint();
+                boolean latestInTheQueue = !pendingHealthStatusChanges.stream().anyMatch(e -> e.getEndpoint().equals(endpoint));
+                if (latestInTheQueue) {
+                    processStatusChangeEvent(event);
+                }
             }
         }
     }
@@ -345,7 +351,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private void processStatusChangeEvent(HealthStatusChangeEvent eventArgs) {
         Endpoint endpoint = eventArgs.getEndpoint();
         HealthStatus newStatus = eventArgs.getNewStatus();
-        log.info("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(), newStatus);
+        log.debug("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(), newStatus);
 
         Cluster clusterWithHealthChange = multiClusterMap.get(endpoint);
 
@@ -394,7 +400,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 status = statusTracker.waitForHealthStatus(endpoint);
             } else {
                 // No health check configured - assume healthy
-                log.info("No health check configured for cluster {}, deafulting to HEALTHY", endpoint);
+                log.info("No health check configured for cluster {}, defaulting to HEALTHY", endpoint);
                 status = HealthStatus.HEALTHY;
             }
 

@@ -650,6 +650,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         // Grace period tracking
         private volatile long gracePeriodEndsAt = 0;
+        private final Logger log = LoggerFactory.getLogger(getClass());
 
         public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
@@ -693,6 +694,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         public boolean isCBForcedOpen() {
             if (circuitBreaker.getState() == State.FORCED_OPEN && !isInGracePeriod()) {
+                log.info("Transitioning circuit breaker from FORCED_OPEN to CLOSED state due to end of grace period!");
                 circuitBreaker.transitionToClosedState();
             }
             return circuitBreaker.getState() == CircuitBreaker.State.FORCED_OPEN;

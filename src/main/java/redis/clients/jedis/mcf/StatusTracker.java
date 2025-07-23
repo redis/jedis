@@ -61,7 +61,7 @@ public class StatusTracker {
             // Wait for the health status change event
             // just for safety to not block indefinitely
             boolean completed = latch.await(60, TimeUnit.SECONDS);
-             if (!completed) {
+            if (!completed) {
                 throw new JedisValidationException("Timeout while waiting for health check result");
             }
             return resultStatus.get();

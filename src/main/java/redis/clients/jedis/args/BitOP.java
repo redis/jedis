@@ -7,7 +7,7 @@ import redis.clients.jedis.util.SafeEncoder;
  */
 public enum BitOP implements Rawable {
 
-  AND, OR, XOR, NOT;
+  AND, OR, XOR, NOT, DIFF, DIFF1, ANDOR, ONE;
 
   private final byte[] raw;
 

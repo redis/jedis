@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import java.util.concurrent.Executors;
@@ -245,8 +246,7 @@ public class JedisClusterInfoCache {
     }
     w.lock();
     try {
-      Arrays.fill(slots, null);
-      Arrays.fill(slotNodes, null);
+      resetSlots();
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
@@ -442,21 +442,39 @@ public class JedisClusterInfoCache {
   public void reset() {
     w.lock();
     try {
-      for (ConnectionPool pool : nodes.values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (RuntimeException e) {
-          // pass
-        }
-      }
-      nodes.clear();
-      Arrays.fill(slots, null);
-      Arrays.fill(slotNodes, null);
+      resetNodes();
+      resetSlots();
     } finally {
       w.unlock();
     }
+  }
+
+  private void resetSlots() {
+    Arrays.fill(slots, null);
+    Arrays.fill(slotNodes, null);
+    resetReplicaSlots();
+  }
+
+  private void resetReplicaSlots() {
+    if (replicaSlots == null) {
+      return;
+    }
+
+    Arrays.stream(replicaSlots).filter(Objects::nonNull).forEach(List::clear);
+    Arrays.fill(replicaSlots, null);
+  }
+
+  private void resetNodes() {
+    for (ConnectionPool pool : nodes.values()) {
+      try {
+        if (pool != null) {
+          pool.destroy();
+        }
+      } catch (RuntimeException e) {
+        // pass
+      }
+    }
+    nodes.clear();
   }
 
   public void close() {
@@ -468,13 +486,14 @@ public class JedisClusterInfoCache {
   }
 
   public static String getNodeKey(HostAndPort hnp) {
-    //return hnp.getHost() + ":" + hnp.getPort();
     return hnp.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private List<Object> executeClusterSlots(Connection jedis) {
-    jedis.sendCommand(Protocol.Command.CLUSTER, "SLOTS");
-    return jedis.getObjectMultiBulkReply();
+    CommandArguments clusterSlotsCmd = new ClusterCommandArguments(Protocol.Command.CLUSTER).add(
+        "SLOTS");
+    return (List<Object>) jedis.executeCommand(clusterSlotsCmd);
   }
 
   private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {

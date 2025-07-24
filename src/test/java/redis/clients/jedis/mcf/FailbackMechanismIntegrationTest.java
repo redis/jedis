@@ -16,7 +16,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import java.lang.reflect.Method;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProviderHelper;
 
 @ExtendWith(MockitoExtension.class)
 class FailbackMechanismIntegrationTest {
@@ -43,23 +43,6 @@ class FailbackMechanismIntegrationTest {
         });
     }
 
-    /**
-     * Helper method to trigger health status changes using reflection
-     */
-    private void triggerHealthStatusChange(MultiClusterPooledConnectionProvider provider, HostAndPort endpoint,
-        HealthStatus oldStatus, HealthStatus newStatus) {
-        try {
-            Method handleHealthStatusChange = MultiClusterPooledConnectionProvider.class
-                .getDeclaredMethod("handleHealthStatusChange", HealthStatusChangeEvent.class);
-            handleHealthStatusChange.setAccessible(true);
-
-            HealthStatusChangeEvent event = new HealthStatusChangeEvent(endpoint, oldStatus, newStatus);
-            handleHealthStatusChange.invoke(provider, event);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to trigger health status change", e);
-        }
-    }
-
     @Test
     void testFailbackDisabledDoesNotPerformFailback() throws InterruptedException {
         try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
@@ -81,13 +64,13 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                triggerHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1 (only healthy option)
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster2 healthy again (higher weight - would normally trigger failback)
-                triggerHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait longer than failback interval
                 Thread.sleep(200);
@@ -121,13 +104,13 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster1 unhealthy to force failover to cluster2
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (lower weight, but only healthy option)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster1 healthy again
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for failback check interval + some buffer
                 Thread.sleep(250);
@@ -163,14 +146,14 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint3), provider.getCluster());
 
                 // Make cluster3 unhealthy to force failover to cluster2 (medium weight)
-                triggerHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (highest weight among healthy clusters)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster1 (lowest weight) healthy - this should NOT trigger failback
                 // since we don't failback to lower weight clusters
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for failback check interval
                 Thread.sleep(250);
@@ -199,13 +182,13 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster1 unhealthy to force failover to cluster2
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (only healthy option)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster1 healthy again
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for failback check
                 Thread.sleep(150);
@@ -234,19 +217,19 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster1 unhealthy to force failover to cluster2
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (only healthy option)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster1 healthy again (should trigger failback attempt)
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait a bit
                 Thread.sleep(100);
 
                 // Make cluster1 unhealthy again before failback completes
-                triggerHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Wait past the original failback interval
                 Thread.sleep(150);
@@ -279,13 +262,13 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint3), provider.getCluster());
 
                 // Make cluster3 unhealthy to force failover to cluster2 (next highest weight)
-                triggerHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (highest weight among healthy clusters)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster3 healthy again
-                triggerHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for failback
                 Thread.sleep(200);
@@ -315,7 +298,7 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Now make cluster2 unhealthy - it should be disabled for grace period
-                triggerHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should failover to cluster1
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
@@ -346,7 +329,7 @@ class FailbackMechanismIntegrationTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to start grace period and force failover
-                triggerHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should failover to cluster1
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
@@ -355,7 +338,7 @@ class FailbackMechanismIntegrationTest {
                 assertTrue(provider.getCluster(endpoint2).isInGracePeriod());
 
                 // Make cluster2 healthy again while it's still in grace period
-                triggerHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Should still be on cluster1 because cluster2 is in grace period
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());

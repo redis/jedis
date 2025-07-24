@@ -311,7 +311,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * Handles health status changes for clusters. This method is called by the health status manager when the health
      * status of a cluster changes.
      */
-    private void onHealthStatusChange(HealthStatusChangeEvent eventArgs) {
+    @VisibleForTesting
+    void onHealthStatusChange(HealthStatusChangeEvent eventArgs) {
         Endpoint endpoint = eventArgs.getEndpoint();
         HealthStatus newStatus = eventArgs.getNewStatus();
         log.debug("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(), newStatus);
@@ -382,7 +383,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     /**
      * Periodic failback checker - runs at configured intervals to check for failback opportunities
      */
-    private void periodicFailbackCheck() {
+    @VisibleForTesting
+    void periodicFailbackCheck() {
         try {
             // Find the best candidate cluster for failback
             Cluster bestCandidate = null;

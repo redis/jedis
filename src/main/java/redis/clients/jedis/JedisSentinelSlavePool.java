@@ -298,7 +298,7 @@ public class JedisSentinelSlavePool implements AutoCloseable {
         PoolInfo poolInfo;
         synchronized (slavePools) {
             if (cnt >= slavePools.size()) {
-                throw new RuntimeException("can not get Jedis Object, all slave is invalid");
+                throw new JedisException("can not get Jedis Object, all slave is invalid");
             }
             poolInfo = slavePools.get(idx % slavePools.size());
         }

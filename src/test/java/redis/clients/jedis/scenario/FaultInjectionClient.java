@@ -89,8 +89,8 @@ public class FaultInjectionClient {
 
   private static CloseableHttpClient getHttpClient() {
     RequestConfig requestConfig = RequestConfig.custom()
-        .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
-        .setResponseTimeout(5000, TimeUnit.MILLISECONDS).build();
+        .setConnectionRequestTimeout(10000, TimeUnit.MILLISECONDS)
+        .setResponseTimeout(10000, TimeUnit.MILLISECONDS).build();
 
     return HttpClientBuilder.create()
         .setDefaultRequestConfig(requestConfig).build();

@@ -19,7 +19,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.FailoverOptions;
+
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -109,7 +109,7 @@ public class FailoverIntegrationTest {
 
         // Create default provider and client for most tests
         provider = createProvider();
-        failoverClient = createClient(provider, null);
+        failoverClient = new UnifiedJedis(provider);
     }
 
     @AfterEach
@@ -143,7 +143,8 @@ public class FailoverIntegrationTest {
         // 3. Subsequent calls should be routed to Endpoint 2
         assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
 
-        assertThat(provider.getCluster(1).getCircuitBreaker().getState(), equalTo(CircuitBreaker.State.OPEN));
+        assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
+            equalTo(CircuitBreaker.State.OPEN));
 
         // Check that the failoverClient is now using Endpoint 2
         assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
@@ -153,7 +154,8 @@ public class FailoverIntegrationTest {
 
         // Endpoint1 and Endpoint2 are NOT available,
         assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
-        assertThat(provider.getCluster(2).getCircuitBreaker().getState(), equalTo(CircuitBreaker.State.OPEN));
+        assertThat(provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker().getState(),
+            equalTo(CircuitBreaker.State.OPEN));
 
         // and since no other nodes are available, it should propagate the errors to the caller
         // subsequent calls
@@ -164,7 +166,7 @@ public class FailoverIntegrationTest {
     public void testManualFailoverNewCommandsAreSentToActiveCluster() throws InterruptedException {
         assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
 
-        provider.setActiveMultiClusterIndex(2);
+        provider.setActiveCluster(endpoint2.getHostAndPort());
 
         assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
     }
@@ -173,7 +175,7 @@ public class FailoverIntegrationTest {
         EndpointConfig... endpoints) {
 
         return Arrays.stream(endpoints)
-            .map(e -> new MultiClusterClientConfig.ClusterConfig(e.getHostAndPort(), clientConfig))
+            .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig).build())
             .collect(Collectors.toList());
     }
 
@@ -186,14 +188,15 @@ public class FailoverIntegrationTest {
         // We will trigger failover while this command is in-flight
         Future<List<String>> blpop = executor.submit(() -> failoverClient.blpop(1000, "test-list"));
 
-        provider.setActiveMultiClusterIndex(2);
+        provider.setActiveCluster(endpoint2.getHostAndPort());
 
         // After the manual failover, commands should be executed against Endpoint 2
         assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
 
         // Failover was manually triggered, and there were no errors
         // previous endpoint CB should still be in CLOSED state
-        assertThat(provider.getCluster(1).getCircuitBreaker().getState(), equalTo(CircuitBreaker.State.CLOSED));
+        assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
+            equalTo(CircuitBreaker.State.CLOSED));
 
         jedis1.rpush("test-list", "somevalue");
 
@@ -211,7 +214,7 @@ public class FailoverIntegrationTest {
         Future<List<String>> blpop = executor.submit(() -> failoverClient.blpop(10000, "test-list-1"));
 
         // trigger failover manually
-        provider.setActiveMultiClusterIndex(2);
+        provider.setActiveCluster(endpoint2.getHostAndPort());
         Future<String> infoCmd = executor.submit(() -> failoverClient.info("server"));
 
         // After the manual failover, commands should be executed against Endpoint 2
@@ -225,7 +228,8 @@ public class FailoverIntegrationTest {
         assertThat(exception.getCause(), instanceOf(JedisConnectionException.class));
 
         // Check that the circuit breaker for Endpoint 1 is open after the error
-        assertThat(provider.getCluster(1).getCircuitBreaker().getState(), equalTo(CircuitBreaker.State.OPEN));
+        assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
+            equalTo(CircuitBreaker.State.OPEN));
 
         // Ensure that the active cluster is still Endpoint 2
         assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
@@ -272,7 +276,8 @@ public class FailoverIntegrationTest {
             assertThrows(JedisConnectionException.class, () -> client.info("server"));
 
             // Circuit breaker should be open after just one command with retries
-            assertThat(provider.getCluster(1).getCircuitBreaker().getState(), equalTo(CircuitBreaker.State.OPEN));
+            assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
+                equalTo(CircuitBreaker.State.OPEN));
 
             // Next command should be routed to the second endpoint
             // Command 2
@@ -291,12 +296,13 @@ public class FailoverIntegrationTest {
     @Test
     public void testInflightCommandsAreRetriedAfterFailover() throws Exception {
 
-        MultiClusterPooledConnectionProvider customProvider = createProvider();
+        MultiClusterPooledConnectionProvider customProvider = createProvider(builder -> builder.retryOnFailover(true));
 
         // Create a custom client with retryOnFailover enabled for this specific test
-        try (UnifiedJedis customClient = createClient(customProvider, builder -> builder.retryOnFailover(true))) {
+        try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
 
             assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
+            Thread.sleep(1000);
 
             // We will trigger failover while this command is in-flight
             Future<List<String>> blpop = executor.submit(() -> customClient.blpop(10000, "test-list-1"));
@@ -311,7 +317,7 @@ public class FailoverIntegrationTest {
             // immediately when CB state change to OPEN/FORCED_OPENs
             assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS2_ID));
             // Check that the circuit breaker for Endpoint 1 is open
-            assertThat(customProvider.getCluster(1).getCircuitBreaker().getState(),
+            assertThat(customProvider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
                 equalTo(CircuitBreaker.State.FORCED_OPEN));
 
             // Disable redisProxy1 to enforce connection drop for the in-flight (blpop) command
@@ -329,9 +335,9 @@ public class FailoverIntegrationTest {
     @Test
     public void testInflightCommandsAreNotRetriedAfterFailover() throws Exception {
         // Create a custom provider and client with retry disabled for this specific test
-        MultiClusterPooledConnectionProvider customProvider = createProvider();
+        MultiClusterPooledConnectionProvider customProvider = createProvider(builder -> builder.retryOnFailover(false));
 
-        try (UnifiedJedis customClient = createClient(customProvider, builder -> builder.retryOnFailover(false))) {
+        try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
 
             assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
             Future<List<String>> blpop = executor.submit(() -> customClient.blpop(500, "test-list-2"));
@@ -342,7 +348,8 @@ public class FailoverIntegrationTest {
             assertThrows(JedisConnectionException.class, () -> customClient.set("test-key", generateTestValue(150)));
 
             // Check that the circuit breaker for Endpoint 1 is open
-            assertThat(customProvider.getCluster(1).getCircuitBreaker().getState(), equalTo(CircuitBreaker.State.OPEN));
+            assertThat(customProvider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
+                equalTo(CircuitBreaker.State.OPEN));
 
             // Disable redisProxy1 to enforce the current blpop command failure
             redisProxy1.disable();
@@ -398,18 +405,24 @@ public class FailoverIntegrationTest {
     }
 
     /**
-     * Creates a UnifiedJedis client with customizable failover options
-     * @param provider The connection provider to use
-     * @param optionsCustomizer A function that customizes the failover options (can be null for defaults)
-     * @return A configured failover client
+     * Creates a MultiClusterPooledConnectionProvider with standard configuration
+     * @return A configured provider
      */
-    private UnifiedJedis createClient(MultiClusterPooledConnectionProvider provider,
-        Function<FailoverOptions.Builder, FailoverOptions.Builder> optionsCustomizer) {
-        FailoverOptions.Builder builder = FailoverOptions.builder();
-        if (optionsCustomizer != null) {
-            builder = optionsCustomizer.apply(builder);
+    private MultiClusterPooledConnectionProvider createProvider(
+        Function<MultiClusterClientConfig.Builder, MultiClusterClientConfig.Builder> configCustomizer) {
+        JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+            .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
+            .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
+
+        MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
+            getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1).retryWaitDuration(1)
+                .circuitBreakerSlidingWindowType(COUNT_BASED).circuitBreakerSlidingWindowSize(1)
+                .circuitBreakerFailureRateThreshold(100).circuitBreakerSlidingWindowMinCalls(1);
+
+        if (configCustomizer != null) {
+            builder = configCustomizer.apply(builder);
         }
 
-        return new UnifiedJedis(provider, builder.build());
+        return new MultiClusterPooledConnectionProvider(builder.build());
     }
 }

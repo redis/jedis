@@ -78,9 +78,9 @@ public class TimeSeriesTutorialExample {
 
         // STEP_START madd
         List<Long> res8 = jedis.tsMAdd(
-            Map.entry("thermometer:1", new TSElement(1L, 9.2)),
-            Map.entry("thermometer:1", new TSElement(2L, 9.9)),
-            Map.entry("thermometer:2", new TSElement(2L, 10.3))
+            new AbstractMap.SimpleEntry<>("thermometer:1", new TSElement(1L, 9.2)),
+            new AbstractMap.SimpleEntry<>("thermometer:1", new TSElement(2L, 9.9)),
+            new AbstractMap.SimpleEntry<>("thermometer:2", new TSElement(2L, 10.3))
         );
         System.out.println(res8); // >>> [1, 2, 2]
         // STEP_END
@@ -106,11 +106,11 @@ public class TimeSeriesTutorialExample {
         System.out.println(res10); // >>> OK
 
         List<Long> res11 = jedis.tsMAdd(
-            Map.entry("rg:1", new TSElement(0L, 18.0)),
-            Map.entry("rg:1", new TSElement(1L, 14.0)),
-            Map.entry("rg:1", new TSElement(2L, 22.0)),
-            Map.entry("rg:1", new TSElement(3L, 18.0)),
-            Map.entry("rg:1", new TSElement(4L, 24.0))
+            new AbstractMap.SimpleEntry<>("rg:1", new TSElement(0L, 18.0)),
+            new AbstractMap.SimpleEntry<>("rg:1", new TSElement(1L, 14.0)),
+            new AbstractMap.SimpleEntry<>("rg:1", new TSElement(2L, 22.0)),
+            new AbstractMap.SimpleEntry<>("rg:1", new TSElement(3L, 18.0)),
+            new AbstractMap.SimpleEntry<>("rg:1", new TSElement(4L, 24.0))
         );
         System.out.println(res11); // >>> [0, 1, 2, 3, 4]
 
@@ -220,37 +220,37 @@ public class TimeSeriesTutorialExample {
         System.out.println(res22); // >>> OK
 
         List<Long> res23 = jedis.tsMAdd(
-            Map.entry("rg:2", new TSElement(0L, 1.8)),
-            Map.entry("rg:3", new TSElement(0L, 0.9)),
-            Map.entry("rg:4", new TSElement(0L, 25.0))
+            new AbstractMap.SimpleEntry<>("rg:2", new TSElement(0L, 1.8)),
+            new AbstractMap.SimpleEntry<>("rg:3", new TSElement(0L, 0.9)),
+            new AbstractMap.SimpleEntry<>("rg:4", new TSElement(0L, 25.0))
         );
         System.out.println(res23); // >>> [0, 0, 0]
 
         List<Long> res24 = jedis.tsMAdd(
-            Map.entry("rg:2", new TSElement(1L, 2.1)),
-            Map.entry("rg:3", new TSElement(1L, 0.77)),
-            Map.entry("rg:4", new TSElement(1L, 18.0))
+            new AbstractMap.SimpleEntry<>("rg:2", new TSElement(1L, 2.1)),
+            new AbstractMap.SimpleEntry<>("rg:3", new TSElement(1L, 0.77)),
+            new AbstractMap.SimpleEntry<>("rg:4", new TSElement(1L, 18.0))
         );
         System.out.println(res24); // >>> [1, 1, 1]
 
         List<Long> res25 = jedis.tsMAdd(
-            Map.entry("rg:2", new TSElement(2L, 2.3)),
-            Map.entry("rg:3", new TSElement(2L, 1.1)),
-            Map.entry("rg:4", new TSElement(2L, 21.0))
+            new AbstractMap.SimpleEntry<>("rg:2", new TSElement(2L, 2.3)),
+            new AbstractMap.SimpleEntry<>("rg:3", new TSElement(2L, 1.1)),
+            new AbstractMap.SimpleEntry<>("rg:4", new TSElement(2L, 21.0))
         );
         System.out.println(res25); // >>> [2, 2, 2]
         
         List<Long> res26 = jedis.tsMAdd(
-            Map.entry("rg:2", new TSElement(3L, 1.9)),
-            Map.entry("rg:3", new TSElement(3L, 0.81)),
-            Map.entry("rg:4", new TSElement(3L, 19.0))
+            new AbstractMap.SimpleEntry<>("rg:2", new TSElement(3L, 1.9)),
+            new AbstractMap.SimpleEntry<>("rg:3", new TSElement(3L, 0.81)),
+            new AbstractMap.SimpleEntry<>("rg:4", new TSElement(3L, 19.0))
         );
         System.out.println(res26); // >>> [3, 3, 3]
 
         List<Long> res27 = jedis.tsMAdd(
-            Map.entry("rg:2", new TSElement(4L, 1.78)),
-            Map.entry("rg:3", new TSElement(4L, 0.74)),
-            Map.entry("rg:4", new TSElement(4L, 23.0))
+            new AbstractMap.SimpleEntry<>("rg:2", new TSElement(4L, 1.78)),
+            new AbstractMap.SimpleEntry<>("rg:3", new TSElement(4L, 0.74)),
+            new AbstractMap.SimpleEntry<>("rg:4", new TSElement(4L, 23.0))
         );
         System.out.println(res27); // >>> [4, 4, 4]
 
@@ -385,13 +385,13 @@ public class TimeSeriesTutorialExample {
         System.out.println(res33); // >>> OK
 
         List<Long> res34 = jedis.tsMAdd(
-            Map.entry("sensor3", new TSElement(10L, 1000.0)),
-            Map.entry("sensor3", new TSElement(20L, 2000.0)),
-            Map.entry("sensor3", new TSElement(30L, 3000.0)),
-            Map.entry("sensor3", new TSElement(40L, 4000.0)),
-            Map.entry("sensor3", new TSElement(50L, 5000.0)),
-            Map.entry("sensor3", new TSElement(60L, 6000.0)),
-            Map.entry("sensor3", new TSElement(70L, 7000.0))
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(10L, 1000.0)),
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(20L, 2000.0)),
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(30L, 3000.0)),
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(40L, 4000.0)),
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(50L, 5000.0)),
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(60L, 6000.0)),
+            new AbstractMap.SimpleEntry<>("sensor3", new TSElement(70L, 7000.0))
         );
         System.out.println(res34); // >>> [10, 20, 30, 40, 50, 60, 70]
 
@@ -452,38 +452,38 @@ public class TimeSeriesTutorialExample {
         jedis.tsCreate("wind:4", TSCreateParams.createParams().labels(usCountry));
 
         jedis.tsMAdd(
-            Map.entry("wind:1", new TSElement(0L, 10.0)),
-            Map.entry("wind:2", new TSElement(0L, 12.0)),
-            Map.entry("wind:3", new TSElement(0L, 8.0)),
-            Map.entry("wind:4", new TSElement(0L, 15.0))
+            new AbstractMap.SimpleEntry<>("wind:1", new TSElement(0L, 10.0)),
+            new AbstractMap.SimpleEntry<>("wind:2", new TSElement(0L, 12.0)),
+            new AbstractMap.SimpleEntry<>("wind:3", new TSElement(0L, 8.0)),
+            new AbstractMap.SimpleEntry<>("wind:4", new TSElement(0L, 15.0))
         );
 
         jedis.tsMAdd(
-            Map.entry("wind:1", new TSElement(1L, 11.0)),
-            Map.entry("wind:2", new TSElement(1L, 13.0)),
-            Map.entry("wind:3", new TSElement(1L, 9.0)),
-            Map.entry("wind:4", new TSElement(1L, 16.0))
+            new AbstractMap.SimpleEntry<>("wind:1", new TSElement(1L, 11.0)),
+            new AbstractMap.SimpleEntry<>("wind:2", new TSElement(1L, 13.0)),
+            new AbstractMap.SimpleEntry<>("wind:3", new TSElement(1L, 9.0)),
+            new AbstractMap.SimpleEntry<>("wind:4", new TSElement(1L, 16.0))
         );
 
         jedis.tsMAdd(
-            Map.entry("wind:1", new TSElement(2L, 9.0)),
-            Map.entry("wind:2", new TSElement(2L, 11.0)),
-            Map.entry("wind:3", new TSElement(2L, 7.0)),
-            Map.entry("wind:4", new TSElement(2L, 14.0))
+            new AbstractMap.SimpleEntry<>("wind:1", new TSElement(2L, 9.0)),
+            new AbstractMap.SimpleEntry<>("wind:2", new TSElement(2L, 11.0)),
+            new AbstractMap.SimpleEntry<>("wind:3", new TSElement(2L, 7.0)),
+            new AbstractMap.SimpleEntry<>("wind:4", new TSElement(2L, 14.0))
         );
 
         jedis.tsMAdd(
-            Map.entry("wind:1", new TSElement(3L, 12.0)),
-            Map.entry("wind:2", new TSElement(3L, 14.0)),
-            Map.entry("wind:3", new TSElement(3L, 10.0)),
-            Map.entry("wind:4", new TSElement(3L, 17.0))
+            new AbstractMap.SimpleEntry<>("wind:1", new TSElement(3L, 12.0)),
+            new AbstractMap.SimpleEntry<>("wind:2", new TSElement(3L, 14.0)),
+            new AbstractMap.SimpleEntry<>("wind:3", new TSElement(3L, 10.0)),
+            new AbstractMap.SimpleEntry<>("wind:4", new TSElement(3L, 17.0))
         );
 
         jedis.tsMAdd(
-            Map.entry("wind:1", new TSElement(4L, 8.0)),
-            Map.entry("wind:2", new TSElement(4L, 10.0)),
-            Map.entry("wind:3", new TSElement(4L, 6.0)),
-            Map.entry("wind:4", new TSElement(4L, 13.0))
+            new AbstractMap.SimpleEntry<>("wind:1", new TSElement(4L, 8.0)),
+            new AbstractMap.SimpleEntry<>("wind:2", new TSElement(4L, 10.0)),
+            new AbstractMap.SimpleEntry<>("wind:3", new TSElement(4L, 6.0)),
+            new AbstractMap.SimpleEntry<>("wind:4", new TSElement(4L, 13.0))
         );
 
         // Group by country with max reduction

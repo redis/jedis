@@ -246,7 +246,7 @@ public class JedisSentinelSlavePool implements AutoCloseable {
 
     for (HostAndPort sentinel : sentinels) {
       SlaveListener slaveListener = new SlaveListener(masterName, sentinel.getHost(), sentinel.getPort());
-      // whether MasterListener threads are alive or not, process can be stopped
+      // whether SlaveListener threads are alive or not, process can be stopped
       slaveListener.setDaemon(true);
       slaveListeners.add(slaveListener);
       slaveListener.start();
@@ -360,41 +360,16 @@ public class JedisSentinelSlavePool implements AutoCloseable {
           j.subscribe(new JedisPubSub() {
             @Override
             public void onMessage(String channel, String message) {
-//              System.out.println("Sentinel " + hostPort + " channel: " + channel + " published: " + message);
               LOG.info("Sentinel: {}, channel: {}, published: {}.", hostPort, channel, message);
-              /*
-// 直接kill进行主观下线: 10.148.17.43:6379
-Sentinel 10.148.17.43:26381 channel: +sdown published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6380
-Sentinel 10.148.17.43:26379 channel: +sdown published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6380
-Sentinel 10.148.17.43:26380 channel: +sdown published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6380
-
-
-// 重启启动被kill的节点: 10.148.17.43:6379
-Sentinel 10.148.17.43:26381 channel: -sdown published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6380
-Sentinel 10.148.17.43:26379 channel: -sdown published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6380
-Sentinel 10.148.17.43:26380 channel: -sdown published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6380
-
-
-// 使用SENTINEL failover mymaster命令手动进行切主，切主前master为10.148.17.43:6380， 切主后为10.148.17.43:6381
-Sentinel 10.148.17.43:26381 channel: +slave published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6381
-Sentinel 10.148.17.43:26379 channel: +slave published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6381
-Sentinel 10.148.17.43:26379 channel: +slave published: slave 10.148.17.43:6380 10.148.17.43 6380 @ mymaster 10.148.17.43 6381
-Sentinel 10.148.17.43:26381 channel: +slave published: slave 10.148.17.43:6380 10.148.17.43 6380 @ mymaster 10.148.17.43 6381
-Sentinel 10.148.17.43:26380 channel: +sdown published: master mymaster 10.148.17.43 6380
-Sentinel 10.148.17.43:26380 channel: +slave published: slave 10.148.17.43:6379 10.148.17.43 6379 @ mymaster 10.148.17.43 6381
-Sentinel 10.148.17.43:26380 channel: +slave published: slave 10.148.17.43:6380 10.148.17.43 6380 @ mymaster 10.148.17.43 6381
-*/
               String[] switchMasterMsg = message.split(" ");
               String slaveIp;
               int slavePort;
               switch (channel) {
                 case "+sdown":
                   if (switchMasterMsg[0].equals("master")) {
-                    // 应该是手动切主的消息，忽略即可
                     return;
                   }
                   if (!masterName.equals(switchMasterMsg[5])) {
-                    // 不是我们监控的集群，也直接返回
                     return;
                   }
                   slaveIp = switchMasterMsg[2];
@@ -403,7 +378,6 @@ Sentinel 10.148.17.43:26380 channel: +slave published: slave 10.148.17.43:6380 1
                   break;
                 case "-sdown":
                   if (!masterName.equals(switchMasterMsg[5])) {
-                    // 不是我们监控的集群，直接返回
                     return;
                   }
                   slaveIp = switchMasterMsg[2];
@@ -412,14 +386,12 @@ Sentinel 10.148.17.43:26380 channel: +slave published: slave 10.148.17.43:6380 1
                   break;
                 case "+slave":
                   if (!masterName.equals(switchMasterMsg[5])) {
-                    // 不是我们监控的集群，直接返回
                     return;
                   }
-                  // 先尝试添加slave
                   slaveIp = switchMasterMsg[2];
                   slavePort = Integer.parseInt(switchMasterMsg[3]);
                   addSlave(new HostAndPort(slaveIp, slavePort));
-                  // 将新主节点移除
+
                   String masterIp = switchMasterMsg[6];
                   int masterPort = Integer.parseInt(switchMasterMsg[7]);
                   removeSlave(new HostAndPort(masterIp, masterPort));

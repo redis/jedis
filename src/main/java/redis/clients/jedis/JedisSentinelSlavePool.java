@@ -194,7 +194,7 @@ public class JedisSentinelSlavePool implements AutoCloseable {
 
     boolean sentinelAvailable = false;
 
-    LOG.info("Trying to find master from available Sentinels...");
+    LOG.info("Trying to find slave from available Sentinels...");
 
     List<HostAndPort> slaves = new ArrayList<>();
 

@@ -1261,6 +1261,42 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<StreamTrimResult> STREAM_ENTRY_DELETION_RESULT = new Builder<StreamTrimResult>() {
+    @Override
+    public StreamTrimResult build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      return StreamTrimResult.fromLong((Long) data);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamEntryDeletionResult";
+    }
+  };
+
+  public static final Builder<List<StreamTrimResult>> STREAM_ENTRY_DELETION_RESULT_LIST = new Builder<List<StreamTrimResult>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<StreamTrimResult> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      List<Object> objectList = (List<Object>) data;
+      List<StreamTrimResult> responses = new ArrayList<>(objectList.size());
+      for (Object object : objectList) {
+        responses.add(STREAM_ENTRY_DELETION_RESULT.build(object));
+      }
+      return responses;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamEntryDeletionResult>";
+    }
+  };
+
   public static final Builder<StreamEntry> STREAM_ENTRY = new Builder<StreamEntry>() {
     @Override
     @SuppressWarnings("unchecked")

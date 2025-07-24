@@ -2626,8 +2626,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
+  public final CommandObject<List<StreamTrimResult>> xackdel(String key, String group, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamTrimResult>> xackdel(String key, String group, StreamTrimMode trimMode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
   public final CommandObject<Long> xack(byte[] key, byte[] group, byte[]... ids) {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<StreamTrimResult>> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamTrimResult>> xackdel(byte[] key, byte[] group, StreamTrimMode trimMode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
@@ -2687,6 +2703,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
+  public final CommandObject<List<StreamTrimResult>> xdelex(String key, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamTrimResult>> xdelex(String key, StreamTrimMode trimMode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
   public final CommandObject<Long> xtrim(String key, long maxLen, boolean approximate) {
     CommandArguments args = commandArguments(XTRIM).key(key).add(MAXLEN);
     if (approximate) args.add(Protocol.BYTES_TILDE);
@@ -2700,6 +2724,14 @@ public class CommandObjects {
 
   public final CommandObject<Long> xdel(byte[] key, byte[]... ids) {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<StreamTrimResult>> xdelex(byte[] key, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamTrimResult>> xdelex(byte[] key, StreamTrimMode trimMode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
   public final CommandObject<Long> xtrim(byte[] key, long maxLen, boolean approximateLength) {

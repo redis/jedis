@@ -597,9 +597,9 @@ public class TimeSeriesTutorialExample {
 
         // STEP_START comp_add
         List<Long> res51 = jedis.tsMAdd(
-            Map.entry("hyg:1", new TSElement(0L, 75.0)),
-            Map.entry("hyg:1", new TSElement(1L, 77.0)),
-            Map.entry("hyg:1", new TSElement(2L, 78.0))
+            new AbstractMap.SimpleEntry<>("hyg:1", new TSElement(0L, 75.0)),
+            new AbstractMap.SimpleEntry<>("hyg:1", new TSElement(1L, 77.0)),
+            new AbstractMap.SimpleEntry<>("hyg:1", new TSElement(2L, 78.0))
         );
         System.out.println(res51); // >>> [0, 1, 2]
 

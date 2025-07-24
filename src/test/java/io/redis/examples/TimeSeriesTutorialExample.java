@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 // REMOVE_END
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.timeseries.TSElement;
 
 import java.util.*;
 

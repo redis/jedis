@@ -398,16 +398,6 @@ public class JedisSentinelSlavePool implements AutoCloseable {
                   break;
               }
             }
-
-            /*
-            +sdown：节点被判定为 subjective down（主观下线）
-
-            -sdown：节点恢复
-
-            +slave：某个 slave 添加或上线
-
-            -slave: 某个 slave 移除 这个通常只在 config 变更时才发，先进行监听，目前应该用不到这个channel
-            */
           }, "+sdown", "-sdown", "+slave", "-slave");
 
         } catch (JedisException e) {

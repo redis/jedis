@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -49,8 +50,8 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     stream2Entries.add(new StreamEntryBinary(new StreamEntryID("0-2"), HASH_1));
   }
 
-  public StreamsBinaryCommandsTestBase(RedisProtocol protocol) {
-    super(protocol);
+  public StreamsBinaryCommandsTestBase(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   /**

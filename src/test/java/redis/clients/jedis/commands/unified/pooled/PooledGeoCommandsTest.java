@@ -5,25 +5,29 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper#testParamsProvider")
 public class PooledGeoCommandsTest extends GeoCommandsTestBase {
 
-  public PooledGeoCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public PooledGeoCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
-    PooledCommandsTestHelper.clearData();
+    jedis = PooledCommandsTestHelper.getCleanClient(protocol, clientType);
   }
 
   @AfterEach
   public void cleanUp() {
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
   }
 }

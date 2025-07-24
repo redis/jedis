@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
@@ -21,21 +22,26 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.cluster.ClusterCommandsTestHelper#testParamsProvider")
 public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
 
-  public ClusterGeoCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public ClusterGeoCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol, clientType);
   }
 
   @AfterEach
   public void tearDown() {
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
+
     ClusterCommandsTestHelper.clearClusterData();
   }
 

@@ -137,12 +137,6 @@ public interface SortedSetBinaryCommands {
 
   List<Tuple> zdiffWithScores(byte[]... keys);
 
-  /**
-   * @deprecated Use {@link #zdiffstore(byte[], byte[][])}.
-   */
-  @Deprecated
-  long zdiffStore(byte[] dstkey, byte[]... keys);
-
   long zdiffstore(byte[] dstkey, byte[]... keys);
 
   List<byte[]> zinter(ZParams params, byte[]... keys);

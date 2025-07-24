@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.BaseRedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.unified.ListCommandsTestBase;
@@ -30,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.unified.cluster.ClusterCommandsTestHelper#testParamsProvider")
 public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -44,18 +45,22 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
           HostAndPorts.getStableClusterServers().get(0),
           DefaultJedisClientConfig.builder().password("cluster").build());
 
-  public ClusterListCommandsTest(RedisProtocol protocol) {
-    super(protocol);
+  public ClusterListCommandsTest(RedisProtocol protocol, Class<? extends BaseRedisClient> clientType) {
+    super(protocol, clientType);
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol, clientType);
   }
 
   @AfterEach
   public void tearDown() {
-    jedis.close();
+    try {
+      jedis.close();
+    } catch (Exception e) {
+      logger.warn("Exception while closing jedis", e);
+    }
     ClusterCommandsTestHelper.clearClusterData();
   }
 

@@ -94,9 +94,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     // Flag to control when handleHealthStatusChange should process events (only after initialization)
     private volatile boolean initializationComplete = false;
 
-    // Queue to hold health status events during initialization
-    private final ConcurrentLinkedQueue<HealthStatusChangeEvent> pendingHealthStatusChanges = new ConcurrentLinkedQueue<>();
-
     // Failback mechanism fields
     private static final AtomicInteger failbackThreadCounter = new AtomicInteger(1);
     private final ScheduledExecutorService failbackScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -174,11 +171,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         // Mark initialization as complete - handleHealthStatusChange can now process events
         initializationComplete = true;
-
-        // Process any events that were queued during initialization
-        processPendingHealthStatusChanges();
-        /// --- ///
-
+        if (!activeCluster.isHealthy()) {
+            activeCluster = waitForInitialHealthyCluster();
+        }
         this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
 
         // Start periodic failback checker
@@ -249,7 +244,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             }
 
             // Remove from health status manager first
-            healthStatusManager.unregisterListener(endpoint, this::handleHealthStatusChange);
+            healthStatusManager.unregisterListener(endpoint, this::onHealthStatusChange);
             healthStatusManager.remove(endpoint);
 
             // Remove from cluster map
@@ -305,64 +300,28 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         if (strategySupplier != null) {
             HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
             // Register listeners BEFORE adding clusters to avoid missing events
-            healthStatusManager.registerListener(config.getHostAndPort(), this::handleHealthStatusChange);
+            healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
             healthStatusManager.add(config.getHostAndPort(), hcs);
         } else {
             cluster.setHealthStatus(HealthStatus.HEALTHY);
         }
     }
 
-    private void handleHealthStatusChange(HealthStatusChangeEvent eventArgs) {
-        // Queue events during initialization to process them later
-        if (!initializationComplete) {
-            pendingHealthStatusChanges.offer(eventArgs);
-            return;
-        }
-        if (!pendingHealthStatusChanges.isEmpty()) {
-            processPendingHealthStatusChanges();
-        }
-        // Process the event immediately if initialization is complete
-        processStatusChangeEvent(eventArgs);
-    }
-
     /**
-     * Processes any health status events that were queued during initialization. This ensures that no events are lost
-     * during the initialization process.
+     * Handles health status changes for clusters. This method is called by the health status manager when the health
+     * status of a cluster changes.
      */
-    private void processPendingHealthStatusChanges() {
-        HealthStatusChangeEvent event;
-        // Synchronize to ensure the order of events when consuming the queue
-        synchronized (pendingHealthStatusChanges) {
-            // Process all queued events
-            while ((event = pendingHealthStatusChanges.poll()) != null) {
-                Endpoint endpoint = event.getEndpoint();
-                boolean latestInTheQueue = !pendingHealthStatusChanges.stream()
-                    .anyMatch(e -> e.getEndpoint().equals(endpoint));
-                if (latestInTheQueue) {
-                    processStatusChangeEvent(event);
-                }
-            }
-        }
-    }
-
-    /**
-     * Processes a health status change event. This method contains the actual logic for handling status changes and can
-     * be called both for queued events and real-time events.
-     */
-    private void processStatusChangeEvent(HealthStatusChangeEvent eventArgs) {
+    private void onHealthStatusChange(HealthStatusChangeEvent eventArgs) {
         Endpoint endpoint = eventArgs.getEndpoint();
         HealthStatus newStatus = eventArgs.getNewStatus();
         log.debug("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(), newStatus);
-
         Cluster clusterWithHealthChange = multiClusterMap.get(endpoint);
 
         if (clusterWithHealthChange == null) return;
 
         clusterWithHealthChange.setHealthStatus(newStatus);
-
-        if (!newStatus.isHealthy()) {
-            // Handle failover if this was the active cluster
-            if (clusterWithHealthChange == activeCluster) {
+        if (initializationComplete) {
+            if (!newStatus.isHealthy() && clusterWithHealthChange == activeCluster) {
                 clusterWithHealthChange.setGracePeriod();
                 if (iterateActiveCluster() != null) {
                     this.runClusterFailoverPostProcessor(activeCluster);
@@ -424,35 +383,39 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * Periodic failback checker - runs at configured intervals to check for failback opportunities
      */
     private void periodicFailbackCheck() {
-        // Find the best candidate cluster for failback
-        Cluster bestCandidate = null;
-        float bestWeight = activeCluster.getWeight();
+        try {
+            // Find the best candidate cluster for failback
+            Cluster bestCandidate = null;
+            float bestWeight = activeCluster.getWeight();
 
-        for (Map.Entry<Endpoint, Cluster> entry : multiClusterMap.entrySet()) {
-            Cluster cluster = entry.getValue();
+            for (Map.Entry<Endpoint, Cluster> entry : multiClusterMap.entrySet()) {
+                Cluster cluster = entry.getValue();
 
-            // Skip if this is already the active cluster
-            if (cluster == activeCluster) {
-                continue;
+                // Skip if this is already the active cluster
+                if (cluster == activeCluster) {
+                    continue;
+                }
+
+                // Skip if cluster is not healthy
+                if (!cluster.isHealthy()) {
+                    continue;
+                }
+
+                // This cluster is a valid candidate
+                if (cluster.getWeight() > bestWeight) {
+                    bestCandidate = cluster;
+                    bestWeight = cluster.getWeight();
+                }
             }
 
-            // Skip if cluster is not healthy
-            if (!cluster.isHealthy()) {
-                continue;
+            // Perform failback if we found a better candidate
+            if (bestCandidate != null) {
+                log.info("Performing failback from {} to {} (higher weight cluster available)",
+                    activeCluster.getCircuitBreaker().getName(), bestCandidate.getCircuitBreaker().getName());
+                setActiveCluster(bestCandidate, true);
             }
-
-            // This cluster is a valid candidate
-            if (cluster.getWeight() > bestWeight) {
-                bestCandidate = cluster;
-                bestWeight = cluster.getWeight();
-            }
-        }
-
-        // Perform failback if we found a better candidate
-        if (bestCandidate != null) {
-            log.info("Performing failback from {} to {} (higher weight cluster available)",
-                activeCluster.getCircuitBreaker().getName(), bestCandidate.getCircuitBreaker().getName());
-            setActiveCluster(bestCandidate, true);
+        } catch (Exception e) {
+            log.error("Error during periodic failback check", e);
         }
     }
 

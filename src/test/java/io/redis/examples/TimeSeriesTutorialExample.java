@@ -17,7 +17,7 @@ public class TimeSeriesTutorialExample {
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
-
+        // REMOVE_START
         // Clear any keys before using them in tests
         jedis.del(
             "thermometer:1", "thermometer:2", "thermometer:3",
@@ -26,6 +26,7 @@ public class TimeSeriesTutorialExample {
             "wind:1", "wind:2", "wind:3", "wind:4",
             "hyg:1", "hyg:compacted"
         );
+        // REMOVE_END
 
         // STEP_START create
         String res1 = jedis.tsCreate("thermometer:1");

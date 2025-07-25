@@ -60,6 +60,8 @@
 		<jackson.version>2.19.2</jackson.version>
 		<maven.surefire.version>3.5.3</maven.surefire.version>
 		<junit.version>5.13.3</junit.version>
+		<!-- Default JVM options for tests -->
+		<JVM_OPTS></JVM_OPTS>
 	</properties>
 
 	<dependencyManagement>
@@ -270,7 +272,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
-					<argLine>${JVM_OPTS}</argLine>
+					<argLine>@{argLine} ${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>

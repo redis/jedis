@@ -7,14 +7,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.commands.unified.StreamsBinaryCommandsTestBase;
+import redis.clients.jedis.commands.unified.StreamsCommandsTestBase;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class ClusterStreamsBinaryCommandsTest extends StreamsBinaryCommandsTestBase {
+public class ClusterStreamsCommandsTest extends StreamsCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -26,17 +25,18 @@ public class ClusterStreamsBinaryCommandsTest extends StreamsBinaryCommandsTestB
       HostAndPorts.getStableClusterServers().get(0),
       DefaultJedisClientConfig.builder().password("cluster").build());
 
-  public ClusterStreamsBinaryCommandsTest(RedisProtocol protocol) {
+  public ClusterStreamsCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
   @Override
-  protected UnifiedJedis createTestClient() {
-    return  ClusterCommandsTestHelper.getCleanCluster(protocol);
+  protected void setUpTestClient() {
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @AfterEach
   public void tearDown() {
+    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

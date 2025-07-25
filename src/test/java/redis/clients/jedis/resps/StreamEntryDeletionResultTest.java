@@ -10,7 +10,8 @@ public class StreamEntryDeletionResultTest {
   public void testFromCode() {
     assertEquals(StreamEntryDeletionResult.NOT_FOUND, StreamEntryDeletionResult.fromCode(-1));
     assertEquals(StreamEntryDeletionResult.DELETED, StreamEntryDeletionResult.fromCode(1));
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, StreamEntryDeletionResult.fromCode(2));
+    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED,
+      StreamEntryDeletionResult.fromCode(2));
   }
 
   @Test
@@ -24,7 +25,8 @@ public class StreamEntryDeletionResultTest {
   public void testFromLong() {
     assertEquals(StreamEntryDeletionResult.NOT_FOUND, StreamEntryDeletionResult.fromLong(-1L));
     assertEquals(StreamEntryDeletionResult.DELETED, StreamEntryDeletionResult.fromLong(1L));
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, StreamEntryDeletionResult.fromLong(2L));
+    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED,
+      StreamEntryDeletionResult.fromLong(2L));
   }
 
   @Test
@@ -43,6 +45,7 @@ public class StreamEntryDeletionResultTest {
   public void testToString() {
     assertEquals("NOT_FOUND(-1)", StreamEntryDeletionResult.NOT_FOUND.toString());
     assertEquals("DELETED(1)", StreamEntryDeletionResult.DELETED.toString());
-    assertEquals("ACKNOWLEDGED_NOT_DELETED(2)", StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED.toString());
+    assertEquals("ACKNOWLEDGED_NOT_DELETED(2)",
+      StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED.toString());
   }
 }

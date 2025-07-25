@@ -562,7 +562,8 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     StreamEntryID readMessageId = messages.get(0).getValue().get(0).getID();
 
     // Test XACKDEL - should acknowledge and delete the message
-    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readMessageId);
+    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME,
+      readMessageId);
     assertThat(results, hasSize(1));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
 
@@ -640,7 +641,8 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     // Test XACKDEL with multiple IDs
     StreamEntryID readId1 = messages.get(0).getValue().get(0).getID();
     StreamEntryID readId2 = messages.get(0).getValue().get(1).getID();
-    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readId1, readId2);
+    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readId1,
+      readId2);
     assertThat(results, hasSize(2));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(1));
@@ -680,8 +682,8 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
 
     // Test XDELEX with DELETE_REFERENCES mode
-    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, StreamDeletionPolicy.DELETE_REFERENCES,
-      id1);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1,
+      StreamDeletionPolicy.DELETE_REFERENCES, id1);
     assertThat(results, hasSize(1));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
 
@@ -754,11 +756,12 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     jedis.xack(STREAM_KEY_1, GROUP_NAME, readId1);
 
     // Test XDELEX with ACKNOWLEDGED mode - should only delete acknowledged entries
-    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, StreamDeletionPolicy.ACKNOWLEDGED,
-      readId1, readId2);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1,
+      StreamDeletionPolicy.ACKNOWLEDGED, readId1, readId2);
     assertThat(results, hasSize(2));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(0)); // id1 was acknowledged
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, results.get(1)); // id2 not acknowledged
+    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, results.get(1)); // id2 not
+                                                                                      // acknowledged
 
     // Verify only acknowledged entry was deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));

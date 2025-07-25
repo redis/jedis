@@ -1,22 +1,29 @@
 package redis.clients.jedis.resps;
 
 /**
- * Represents the result of a stream entry deletion operation for XDELEX and XACKDEL commands. -
- * NOT_FOUND (-1): ID doesn't exist in stream - DELETED (1): Entry was deleted/acknowledged and
- * deleted - ACKNOWLEDGED_NOT_DELETED (2): Entry was acknowledged but not deleted (still has
- * dangling references)
+ * Represents the result of a stream entry deletion operation for XDELEX and XACKDEL commands.
+ * <ul>
+ * <li>NOT_FOUND (-1): ID doesn't exist in stream</li>
+ * <li>DELETED (1): Entry was deleted/acknowledged and deleted</li>
+ * <li>ACKNOWLEDGED_NOT_DELETED (2): Entry was acknowledged but not deleted (still has dangling
+ * references)</li>
+ * </ul>
  */
 public enum StreamEntryDeletionResult {
 
   /**
-   * The stream entry ID doesn't exist in the stream. Returned when trying to delete/acknowledge a
-   * non-existent entry.
+   * The stream entry ID doesn't exist in the stream.
+   * <p>
+   * Returned when trying to delete/acknowledge a non-existent entry.
+   * </p>
    */
   NOT_FOUND(-1),
 
   /**
-   * The entry was successfully deleted/acknowledged and deleted. This is the typical successful
-   * case.
+   * The entry was successfully deleted/acknowledged and deleted.
+   * <p>
+   * This is the typical successful case.
+   * </p>
    */
   DELETED(1),
 

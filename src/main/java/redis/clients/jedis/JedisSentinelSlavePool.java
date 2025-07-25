@@ -190,6 +190,18 @@ public class JedisSentinelSlavePool implements AutoCloseable {
     }
   }
 
+  private static boolean isHealthy(String flags) {
+    for (String flag : flags.split(",")) {
+      switch (flag.trim()) {
+        case "s_down":
+        case "o_down":
+        case "disconnected":
+          return false;
+      }
+    }
+    return true;
+  }
+
   private List<HostAndPort> initSentinels(Set<HostAndPort> sentinels, final String masterName) {
 
     boolean sentinelAvailable = false;
@@ -213,13 +225,18 @@ public class JedisSentinelSlavePool implements AutoCloseable {
           continue;
         }
 
-        slaveInfos.forEach(slaveInfo -> {
+        for (int i = 0; i < slaveInfos.size(); i++) {
+          Map<String, String> slaveInfo = slaveInfos.get(i);
+          String flags = slaveInfo.get("flags");
+          if (flags == null || !isHealthy(flags)) {
+            continue;
+          }
           String ip = slaveInfo.get("ip");
           int port = Integer.parseInt(slaveInfo.get("port"));
           HostAndPort slave = new HostAndPort(ip, port);
           addSlave(slave);
           slaves.add(slave);
-        });
+        }
 
         LOG.debug("Found Redis slaves at {}", slaveInfos);
         break;

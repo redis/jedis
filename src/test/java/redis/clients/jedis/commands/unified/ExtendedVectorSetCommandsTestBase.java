@@ -22,8 +22,8 @@ import redis.clients.jedis.params.VSimParams;
 
 /**
  * Integration tests for Redis Vector Sets based on the examples from the Redis documentation.
- *
- * @see <a href="https://redis.io/docs/latest/develop/data-types/vector-sets/">Redis Vector Sets Documentation</a>
+ * @see <a href="https://redis.io/docs/latest/develop/data-types/vector-sets/">Redis Vector Sets
+ *      Documentation</a>
  */
 @Tag("integration")
 @Tag("vector-set")
@@ -42,11 +42,11 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
 
     // Add the example points from the Redis documentation
     // A: (1.0, 1.0), B: (-1.0, -1.0), C: (-1.0, 1.0), D: (1.0, -1.0), and E: (1.0, 0)
-    jedis.vadd(POINTS_KEY, new float[]{1.0f, 1.0f}, "pt:A");
-    jedis.vadd(POINTS_KEY, new float[]{-1.0f, -1.0f}, "pt:B");
-    jedis.vadd(POINTS_KEY, new float[]{-1.0f, 1.0f}, "pt:C");
-    jedis.vadd(POINTS_KEY, new float[]{1.0f, -1.0f}, "pt:D");
-    jedis.vadd(POINTS_KEY, new float[]{1.0f, 0.0f}, "pt:E");
+    jedis.vadd(POINTS_KEY, new float[] { 1.0f, 1.0f }, "pt:A");
+    jedis.vadd(POINTS_KEY, new float[] { -1.0f, -1.0f }, "pt:B");
+    jedis.vadd(POINTS_KEY, new float[] { -1.0f, 1.0f }, "pt:C");
+    jedis.vadd(POINTS_KEY, new float[] { 1.0f, -1.0f }, "pt:D");
+    jedis.vadd(POINTS_KEY, new float[] { 1.0f, 0.0f }, "pt:E");
   }
 
   /**
@@ -101,7 +101,7 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
   @SinceRedisVersion("8.0.0")
   public void testAddAndRemoveElements() {
     // Add a new point F at (0, 0)
-    boolean result = jedis.vadd(POINTS_KEY, new float[]{0.0f, 0.0f}, "pt:F");
+    boolean result = jedis.vadd(POINTS_KEY, new float[] { 0.0f, 0.0f }, "pt:F");
     assertTrue(result);
 
     // Check the updated cardinality
@@ -124,7 +124,7 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
   @SinceRedisVersion("8.0.0")
   public void testVectorSimilaritySearch() {
     // Search for vectors similar to (0.9, 0.1)
-    List<String> similar = jedis.vsim(POINTS_KEY, new float[]{0.9f, 0.1f});
+    List<String> similar = jedis.vsim(POINTS_KEY, new float[] { 0.9f, 0.1f });
     assertNotNull(similar);
     assertFalse(similar.isEmpty());
 
@@ -138,7 +138,8 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
 
     // Search for vectors similar to point A with scores
     VSimParams params = new VSimParams();
-    Map<String, Double> similarWithScores = jedis.vsimByElementWithScores(POINTS_KEY, "pt:A", params);
+    Map<String, Double> similarWithScores = jedis.vsimByElementWithScores(POINTS_KEY, "pt:A",
+      params);
     assertNotNull(similarWithScores);
     assertFalse(similarWithScores.isEmpty());
 
@@ -235,13 +236,13 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
   public void testQuantizationTypes() {
     // Test Q8 quantization
     VAddParams q8Params = new VAddParams().q8();
-    jedis.vadd("quantSetQ8", new float[]{1.262185f, 1.958231f}, "quantElement", q8Params);
+    jedis.vadd("quantSetQ8", new float[] { 1.262185f, 1.958231f }, "quantElement", q8Params);
     List<Double> q8Vector = jedis.vemb("quantSetQ8", "quantElement");
     assertEquals(2, q8Vector.size());
 
     // Test NOQUANT (no quantization)
     VAddParams noQuantParams = new VAddParams().noQuant();
-    jedis.vadd("quantSetNoQ", new float[]{1.262185f, 1.958231f}, "quantElement", noQuantParams);
+    jedis.vadd("quantSetNoQ", new float[] { 1.262185f, 1.958231f }, "quantElement", noQuantParams);
     List<Double> noQuantVector = jedis.vemb("quantSetNoQ", "quantElement");
     assertEquals(2, noQuantVector.size());
     assertEquals(1.262185, noQuantVector.get(0), 0.0001);
@@ -249,7 +250,7 @@ public abstract class ExtendedVectorSetCommandsTestBase extends UnifiedJedisComm
 
     // Test BIN (binary) quantization
     VAddParams binParams = new VAddParams().bin();
-    jedis.vadd("quantSetBin", new float[]{1.262185f, 1.958231f}, "quantElement", binParams);
+    jedis.vadd("quantSetBin", new float[] { 1.262185f, 1.958231f }, "quantElement", binParams);
     List<Double> binVector = jedis.vemb("quantSetBin", "quantElement");
     assertEquals(2, binVector.size());
     // Binary quantization will convert values to either 1 or -1

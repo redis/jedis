@@ -46,15 +46,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test the basic VADD method with float array.
-   * Overload 1: vadd(String key, float[] vector, String element)
+   * Test the basic VADD method with float array. Overload 1: vadd(String key, float[] vector,
+   * String element)
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithFloatArray(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:F";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Add a new element
     boolean result = jedis.vadd(testKey, vector, elementId);
@@ -79,15 +79,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD method with float array and parameters.
-   * Overload 2: vadd(String key, float[] vector, String element, VAddParams params)
+   * Test VADD method with float array and parameters. Overload 2: vadd(String key, float[] vector,
+   * String element, VAddParams params)
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithFloatArrayAndParams(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:G";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Create parameters
     VAddParams params = new VAddParams();
@@ -108,15 +108,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD method with FP32 byte blob.
-   * Overload 3: vaddFP32(String key, byte[] vectorBlob, String element)
+   * Test VADD method with FP32 byte blob. Overload 3: vaddFP32(String key, byte[] vectorBlob,
+   * String element)
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithFP32ByteBlob(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:H";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Convert float array to FP32 byte blob
     byte[] vectorBlob = floatArrayToFP32Bytes(vector);
@@ -137,15 +137,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD method with FP32 byte blob and parameters.
-   * Overload 4: vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params)
+   * Test VADD method with FP32 byte blob and parameters. Overload 4: vaddFP32(String key, byte[]
+   * vectorBlob, String element, VAddParams params)
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithFP32ByteBlobAndParams(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:I";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Convert float array to FP32 byte blob
     byte[] vectorBlob = floatArrayToFP32Bytes(vector);
@@ -169,14 +169,14 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD with quantization parameters.
-   * Demonstrates how quantization parameters can be used with VADD.
+   * Test VADD with quantization parameters. Demonstrates how quantization parameters can be used
+   * with VADD.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithQuantization(TestInfo testInfo) {
     String baseKey = testInfo.getDisplayName() + ":test:vector:set";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
     // Test with basic VADD first to establish a baseline
     String defaultKey = baseKey + ":default";
     jedis.del(defaultKey);
@@ -217,8 +217,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD with dimension reduction using float array.
-   * Verifies that high-dimensional vectors are reduced to target dimensions.
+   * Test VADD with dimension reduction using float array. Verifies that high-dimensional vectors
+   * are reduced to target dimensions.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -226,7 +226,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:REDUCED";
     // Use a 4-dimensional vector that will be reduced to 2 dimensions
-    float[] highDimVector = {1.0f, 2.0f, 3.0f, 4.0f};
+    float[] highDimVector = { 1.0f, 2.0f, 3.0f, 4.0f };
     int targetDim = 2;
 
     // Create parameters for dimension reduction
@@ -252,8 +252,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test vaddFP32 with dimension reduction using byte blob.
-   * Verifies that FP32 format vectors are properly reduced.
+   * Test vaddFP32 with dimension reduction using byte blob. Verifies that FP32 format vectors are
+   * properly reduced.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -261,7 +261,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:FP32_REDUCED";
     // Use a 4-dimensional vector that will be reduced to 2 dimensions
-    float[] highDimVector = {1.0f, 2.0f, 3.0f, 4.0f};
+    float[] highDimVector = { 1.0f, 2.0f, 3.0f, 4.0f };
     int targetDim = 2;
 
     // Convert to FP32 byte blob
@@ -290,8 +290,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD with dimension reduction and additional parameters.
-   * Verifies that REDUCE works alongside other VAddParams.
+   * Test VADD with dimension reduction and additional parameters. Verifies that REDUCE works
+   * alongside other VAddParams.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -299,7 +299,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:REDUCED_WITH_PARAMS";
     // Use a 6-dimensional vector that will be reduced to 3 dimensions
-    float[] highDimVector = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+    float[] highDimVector = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f };
     int targetDim = 3;
 
     // Create parameters with quantization and dimension reduction
@@ -326,15 +326,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD with SETATTR parameter.
-   * Verifies that attributes can be set when adding elements to vector sets.
+   * Test VADD with SETATTR parameter. Verifies that attributes can be set when adding elements to
+   * vector sets.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithSetAttr(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:WITH_ATTR";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Create simple text attributes for the element
     String attributes = "category=test,priority=high,score=95.5";
@@ -363,15 +363,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD with SETATTR and other parameters combined.
-   * Verifies that SETATTR works alongside quantization and other options.
+   * Test VADD with SETATTR and other parameters combined. Verifies that SETATTR works alongside
+   * quantization and other options.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddWithSetAttrAndQuantization(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:ATTR_QUANT";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Create simple text attributes
     String attributes = "type=quantized,method=Q8,timestamp=2024-01-01";
@@ -400,15 +400,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VADD with SETATTR using FP32 format.
-   * Verifies that attributes work with binary vector format.
+   * Test VADD with SETATTR using FP32 format. Verifies that attributes work with binary vector
+   * format.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVaddFP32WithSetAttr(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:FP32_ATTR";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Convert to FP32 byte blob
     byte[] vectorBlob = floatArrayToFP32Bytes(vector);
@@ -440,15 +440,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VGETATTR command functionality.
-   * Verifies that attributes can be retrieved from vector set elements.
+   * Test VGETATTR command functionality. Verifies that attributes can be retrieved from vector set
+   * elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVgetattr(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:GETATTR_TEST";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // First add an element without attributes
     boolean result = jedis.vadd(testKey, vector, elementId);
@@ -475,21 +475,19 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNull(nonExistentAttrs);
   }
 
-
   /**
-   * Test VGETATTR with binary key and element.
-   * Verifies that VGETATTR works with byte array keys and elements.
+   * Test VGETATTR with binary key and element. Verifies that VGETATTR works with byte array keys
+   * and elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVgetattrBinary(TestInfo testInfo) {
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
     byte[] elementId = "binary_element_with_attrs".getBytes();
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // VGETATTR should return null for element without attributes
     assertNull(jedis.vgetattr(testKey, elementId));
-
 
     // Now add an element with attributes using binary key and element
     String attributes = "name=binary_test_point,value=42,active=true";
@@ -507,15 +505,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VSETATTR command functionality.
-   * Verifies that attributes can be set on vector set elements.
+   * Test VSETATTR command functionality. Verifies that attributes can be set on vector set
+   * elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVsetattr(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:SETATTR_TEST";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // First add an element without attributes
     boolean result = jedis.vadd(testKey, vector, elementId);
@@ -543,15 +541,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VSETATTR with binary key and element.
-   * Verifies that VSETATTR works with byte array keys and elements.
+   * Test VSETATTR with binary key and element. Verifies that VSETATTR works with byte array keys
+   * and elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVsetattrBinary(TestInfo testInfo) {
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
     byte[] elementId = "binary_setattr_element".getBytes();
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // First add an element without attributes
     boolean result = jedis.vadd(testKey, vector, elementId);
@@ -568,7 +566,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNotNull(retrievedAttrs);
 
     // Convert back to string and verify
-    String retrievedAttrsString =SafeEncoder.encode(retrievedAttrs);
+    String retrievedAttrsString = SafeEncoder.encode(retrievedAttrs);
     assertEquals(attributes, retrievedAttrsString);
 
     // Update attributes with new values using binary VSETATTR
@@ -586,8 +584,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VLINKS command functionality.
-   * Verifies that vector set links can be retrieved correctly.
+   * Test VLINKS command functionality. Verifies that vector set links can be retrieved correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -595,9 +592,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
 
     // Add some vectors to create a vector set with links
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
-    float[] vector3 = {1.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
+    float[] vector3 = { 1.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
@@ -616,8 +613,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VLINKS command functionality.
-   * Verifies that vector set links can be retrieved correctly.
+   * Test VLINKS command functionality. Verifies that vector set links can be retrieved correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -625,9 +621,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
 
     // Add some vectors to create a vector set with links
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
-    float[] vector3 = {1.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
+    float[] vector3 = { 1.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
@@ -647,8 +643,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VLINKS with binary key and element.
-   * Verifies that VLINKS works with byte array keys and elements.
+   * Test VLINKS with binary key and element. Verifies that VLINKS works with byte array keys and
+   * elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -657,8 +653,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     byte[] elementId = "binary_element".getBytes();
 
     // Add vectors using binary key and elements
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, elementId);
     jedis.vadd(testKey, vector2, "element2".getBytes());
@@ -679,8 +675,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VLINKS command functionality.
-   * Verifies that vector set links can be retrieved correctly.
+   * Test VLINKS command functionality. Verifies that vector set links can be retrieved correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -688,9 +683,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
 
     // Add some vectors to create a vector set with links
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
-    float[] vector3 = {1.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
+    float[] vector3 = { 1.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "element1".getBytes());
     jedis.vadd(testKey, vector2, "element2".getBytes());
@@ -703,16 +698,16 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(links.isEmpty());
     for (Map<byte[], Double> scores : links) {
       for (byte[] element : scores.keySet()) {
-        assertTrue(
-            Arrays.equals(element, "element2".getBytes()) || Arrays.equals(element, "element3".getBytes()));
+        assertTrue(Arrays.equals(element, "element2".getBytes())
+            || Arrays.equals(element, "element3".getBytes()));
         assertTrue(scores.get(element) > 0.0);
       }
     }
   }
 
   /**
-   * Test VLINKS with non-existent element.
-   * Verifies that VLINKS handles non-existent elements correctly.
+   * Test VLINKS with non-existent element. Verifies that VLINKS handles non-existent elements
+   * correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -720,7 +715,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:nonexistent";
 
     // Add a vector first
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
     jedis.vadd(testKey, vector, "existing_element");
 
     // Try to get links for non-existent element
@@ -731,8 +726,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VRANDMEMBER command functionality.
-   * Verifies that random vector set members can be retrieved correctly.
+   * Test VRANDMEMBER command functionality. Verifies that random vector set members can be
+   * retrieved correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -740,9 +735,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
 
     // Add some vectors to the set
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
-    float[] vector3 = {1.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
+    float[] vector3 = { 1.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
@@ -753,14 +748,12 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNotNull(randomMember);
 
     // Should be one of the added elements
-    assertTrue(randomMember.equals("element1") ||
-               randomMember.equals("element2") ||
-               randomMember.equals("element3"));
+    assertTrue(randomMember.equals("element1") || randomMember.equals("element2")
+        || randomMember.equals("element3"));
   }
 
   /**
-   * Test VRANDMEMBER with count parameter.
-   * Verifies that multiple random members can be retrieved.
+   * Test VRANDMEMBER with count parameter. Verifies that multiple random members can be retrieved.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -769,7 +762,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Add multiple vectors
     for (int i = 1; i <= 5; i++) {
-      float[] vector = {(float) i, (float) i};
+      float[] vector = { (float) i, (float) i };
       jedis.vadd(testKey, vector, "element" + i);
     }
 
@@ -779,7 +772,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(3, randomMembers.size());
 
     // All returned members should be valid element IDs
-    String[] validElements = {"element1", "element2", "element3", "element4", "element5"};
+    String[] validElements = { "element1", "element2", "element3", "element4", "element5" };
     for (String member : randomMembers) {
       assertTrue(asList(validElements).contains(member));
     }
@@ -791,8 +784,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VRANDMEMBER with binary key.
-   * Verifies that VRANDMEMBER works with byte array keys.
+   * Test VRANDMEMBER with binary key. Verifies that VRANDMEMBER works with byte array keys.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -800,8 +792,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
 
     // Add vectors using binary key
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "binary_element1".getBytes());
     jedis.vadd(testKey, vector2, "binary_element2".getBytes());
@@ -812,8 +804,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Convert to string for comparison
     String randomMemberStr = SafeEncoder.encode(randomMember);
-    assertTrue(randomMemberStr.equals("binary_element1") ||
-               randomMemberStr.equals("binary_element2"));
+    assertTrue(
+      randomMemberStr.equals("binary_element1") || randomMemberStr.equals("binary_element2"));
 
     // Test with count using binary key
     List<byte[]> randomMembers = jedis.vrandmember(testKey, 2);
@@ -824,14 +816,12 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     for (byte[] member : randomMembers) {
       assertNotNull(member);
       String memberStr = SafeEncoder.encode(member);
-      assertTrue(memberStr.equals("binary_element1") ||
-                 memberStr.equals("binary_element2"));
+      assertTrue(memberStr.equals("binary_element1") || memberStr.equals("binary_element2"));
     }
   }
 
   /**
-   * Test VRANDMEMBER with empty vector set.
-   * Verifies that VRANDMEMBER handles empty sets correctly.
+   * Test VRANDMEMBER with empty vector set. Verifies that VRANDMEMBER handles empty sets correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -850,8 +840,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VRANDMEMBER with single element.
-   * Verifies that VRANDMEMBER works correctly with only one element.
+   * Test VRANDMEMBER with single element. Verifies that VRANDMEMBER works correctly with only one
+   * element.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -859,7 +849,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:single";
 
     // Add only one vector
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
     jedis.vadd(testKey, vector, "single_element");
 
     // Get random member (should always be the single element)
@@ -875,8 +865,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VRANDMEMBER with negative count.
-   * Verifies that VRANDMEMBER handles negative count (allows duplicates).
+   * Test VRANDMEMBER with negative count. Verifies that VRANDMEMBER handles negative count (allows
+   * duplicates).
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -884,8 +874,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:negative";
 
     // Add some vectors
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
@@ -893,7 +883,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Get random members with negative count (allows duplicates)
     List<String> randomMembers = jedis.vrandmember(testKey, -5);
     assertNotNull(randomMembers);
-    assertEquals(5, randomMembers.size()); // Should return exactly 5 elements (with possible duplicates)
+    assertEquals(5, randomMembers.size()); // Should return exactly 5 elements (with possible
+                                           // duplicates)
 
     // All returned members should be valid element IDs
     for (String member : randomMembers) {
@@ -902,8 +893,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VREM command functionality.
-   * Verifies that vector set elements can be removed correctly.
+   * Test VREM command functionality. Verifies that vector set elements can be removed correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -911,9 +901,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
 
     // Add some vectors to the set
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
-    float[] vector3 = {1.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
+    float[] vector3 = { 1.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
@@ -943,8 +933,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VREM with binary key and elements.
-   * Verifies that VREM works with byte array keys and elements.
+   * Test VREM with binary key and elements. Verifies that VREM works with byte array keys and
+   * elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -952,9 +942,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary").getBytes();
 
     // Add vectors using binary key and elements
-    float[] vector1 = {1.0f, 0.0f};
-    float[] vector2 = {0.0f, 1.0f};
-    float[] vector3 = {1.0f, 1.0f};
+    float[] vector1 = { 1.0f, 0.0f };
+    float[] vector2 = { 0.0f, 1.0f };
+    float[] vector3 = { 1.0f, 1.0f };
 
     jedis.vadd(testKey, vector1, "binary_element1".getBytes());
     jedis.vadd(testKey, vector2, "binary_element2".getBytes());
@@ -977,8 +967,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VREM with non-existent elements.
-   * Verifies that VREM handles non-existent elements correctly.
+   * Test VREM with non-existent elements. Verifies that VREM handles non-existent elements
+   * correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -986,7 +976,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:nonexistent";
 
     // Add one vector
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
     jedis.vadd(testKey, vector, "existing_element");
 
     // Try to remove non-existent element
@@ -1001,15 +991,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VSETATTR with empty attributes (attribute deletion).
-   * Verifies that setting empty attributes removes them.
+   * Test VSETATTR with empty attributes (attribute deletion). Verifies that setting empty
+   * attributes removes them.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVsetattrDelete(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
     String elementId = "point:DELETE_ATTR";
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
 
     // Add element with attributes
     String attributes = "category=test,priority=high";
@@ -1032,15 +1022,14 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VINFO command functionality.
-   * Verifies that vector set information can be retrieved.
+   * Test VINFO command functionality. Verifies that vector set information can be retrieved.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVinfo(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
-    float[] vector1 = {1.0f, 2.0f};
-    float[] vector2 = {3.0f, 4.0f};
+    float[] vector1 = { 1.0f, 2.0f };
+    float[] vector2 = { 3.0f, 4.0f };
 
     // Add some elements to the vector set
     VAddParams params = new VAddParams().setAttr("{\"type\": \"fruit\", \"color\": \"red\"}");
@@ -1062,15 +1051,14 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(2L, info.getSize());
     assertEquals(16L, info.getMaxNodes());
     assertThat(info.getMaxNodeUid(), greaterThan(0L));
-    assertThat(info.getVSetUid(), greaterThan(0L) );
+    assertThat(info.getVSetUid(), greaterThan(0L));
     assertEquals(0L, info.getProjectionInputDim());
     assertEquals(1L, info.getAttributesCount());
     assertNotNull(info.getMaxLevel());
   }
 
   /**
-   * Test VINFO with empty vector set.
-   * Verifies behavior when vector set doesn't exist.
+   * Test VINFO with empty vector set. Verifies behavior when vector set doesn't exist.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1082,15 +1070,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VCARD command functionality.
-   * Verifies that vector set cardinality can be retrieved correctly.
+   * Test VCARD command functionality. Verifies that vector set cardinality can be retrieved
+   * correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
   public void testVcard(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
-    float[] vector1 = {1.0f, 2.0f};
-    float[] vector2 = {3.0f, 4.0f};
+    float[] vector1 = { 1.0f, 2.0f };
+    float[] vector2 = { 3.0f, 4.0f };
 
     // Initially, cardinality should be 0 for non-existent vector set
     assertEquals(0L, jedis.vcard(testKey));
@@ -1140,8 +1128,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VDIM command functionality.
-   * Verifies that vector set dimension can be retrieved correctly.
+   * Test VDIM command functionality. Verifies that vector set dimension can be retrieved correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1149,7 +1136,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
 
     // Add 2D vector
-    float[] vector2D = {1.0f, 2.0f};
+    float[] vector2D = { 1.0f, 2.0f };
     boolean result = jedis.vadd(testKey, vector2D, "element1");
     assertTrue(result);
     assertEquals(2L, jedis.vdim(testKey));
@@ -1157,7 +1144,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test different dimensions
     String testKey3D = testInfo.getDisplayName() + ":test:vector:set:3d";
-    float[] vector3D = {1.0f, 2.0f, 3.0f};
+    float[] vector3D = { 1.0f, 2.0f, 3.0f };
     jedis.vadd(testKey3D, vector3D, "element3d");
     assertEquals(3L, jedis.vdim(testKey3D));
     assertEquals(3L, jedis.vdim(testKey3D.getBytes()));
@@ -1182,10 +1169,10 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   public void testVdimWithEmptySet(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
     // Add 2D vector
-    float[] vector2D = {1.0f, 2.0f};
+    float[] vector2D = { 1.0f, 2.0f };
     assertTrue(jedis.vadd(testKey, vector2D, "element1"));
     assertTrue(jedis.vrem(testKey, "element1"));
-    assertEquals(0L,(jedis.vcard(testKey)));
+    assertEquals(0L, (jedis.vcard(testKey)));
 
     JedisDataException thrown = assertThrows(JedisDataException.class, () -> jedis.vdim(testKey));
     assertThat(thrown.getMessage(), is("ERR key does not exist"));
@@ -1195,8 +1182,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VDIM with dimension reduction.
-   * Verifies that VDIM returns the reduced dimension when REDUCE is used.
+   * Test VDIM with dimension reduction. Verifies that VDIM returns the reduced dimension when
+   * REDUCE is used.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1204,7 +1191,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:reduced";
 
     // Add 4D vector with dimension reduction to 2D
-    float[] vector4D = {1.0f, 2.0f, 3.0f, 4.0f};
+    float[] vector4D = { 1.0f, 2.0f, 3.0f, 4.0f };
     VAddParams params = new VAddParams();
 
     boolean result = jedis.vadd(testKey, vector4D, "element_reduced", 2, params);
@@ -1216,8 +1203,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VEMB command functionality.
-   * Verifies that vector embeddings can be retrieved correctly.
+   * Test VEMB command functionality. Verifies that vector embeddings can be retrieved correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1225,7 +1211,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set";
 
     // Add vector to the set
-    float[] originalVector = {1.0f, 2.0f};
+    float[] originalVector = { 1.0f, 2.0f };
     VAddParams params = new VAddParams().noQuant();
     boolean result = jedis.vadd(testKey, originalVector, "element1", params);
     assertTrue(result);
@@ -1241,8 +1227,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VEMB with binary key and element.
-   * Verifies that VEMB works with byte array keys and elements.
+   * Test VEMB with binary key and element. Verifies that VEMB works with byte array keys and
+   * elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1251,7 +1237,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     byte[] elementId = "binary_element".getBytes();
 
     // Add vector to the set using binary key and element
-    float[] originalVector = {0.0f, 1.0f};
+    float[] originalVector = { 0.0f, 1.0f };
     boolean result = jedis.vadd(testKey, originalVector, elementId);
     assertTrue(result);
 
@@ -1266,8 +1252,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VEMB with RAW option.
-   * Verifies that VEMB can return raw vector data when RAW flag is used with FP32 format.
+   * Test VEMB with RAW option. Verifies that VEMB can return raw vector data when RAW flag is used
+   * with FP32 format.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1275,7 +1261,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:raw";
 
     // Add vector to the set using FP32 format
-    float[] originalVector = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
+    float[] originalVector = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f };
     byte[] vectorBlob = floatArrayToFP32Bytes(originalVector);
     VAddParams params = new VAddParams().noQuant();
     boolean result = jedis.vaddFP32(testKey, vectorBlob, "raw_element", params);
@@ -1304,13 +1290,13 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Verify the reconstructed vector matches the original
     assertEquals(originalVector.length, reconstructedVector.size());
     for (int i = 0; i < originalVector.length; i++) {
-      assertEquals(originalVector[i]/rawVector.getNorm(), reconstructedVector.get(i), 0.001f);
+      assertEquals(originalVector[i] / rawVector.getNorm(), reconstructedVector.get(i), 0.001f);
     }
   }
 
   /**
-   * Test VEMB with RAW option.
-   * Verifies that VEMB can return raw vector data when RAW flag is used with FP32 format.
+   * Test VEMB with RAW option. Verifies that VEMB can return raw vector data when RAW flag is used
+   * with FP32 format.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1318,7 +1304,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:raw";
 
     // Add vector to the set using FP32 format
-    float[] originalVector = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
+    float[] originalVector = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f };
     byte[] vectorBlob = floatArrayToFP32Bytes(originalVector);
     VAddParams params = new VAddParams().noQuant();
     boolean result = jedis.vaddFP32(testKey, vectorBlob, "raw_element", params);
@@ -1347,13 +1333,13 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Verify the reconstructed vector matches the original
     assertEquals(originalVector.length, reconstructedVector.size());
     for (int i = 0; i < originalVector.length; i++) {
-      assertEquals(originalVector[i]/rawVector.getNorm(), reconstructedVector.get(i), 0.001f);
+      assertEquals(originalVector[i] / rawVector.getNorm(), reconstructedVector.get(i), 0.001f);
     }
   }
 
   /**
-   * Test VEMB with non-existent element.
-   * Verifies that VEMB handles non-existent elements correctly.
+   * Test VEMB with non-existent element. Verifies that VEMB handles non-existent elements
+   * correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1361,7 +1347,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     String testKey = testInfo.getDisplayName() + ":test:vector:set:nonexistent";
 
     // Add a vector first
-    float[] vector = {1.0f, 2.0f};
+    float[] vector = { 1.0f, 2.0f };
     jedis.vadd(testKey, vector, "existing_element");
 
     // Try to retrieve non-existent element
@@ -1370,8 +1356,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VSIM command functionality.
-   * Verifies vector similarity search with vectors and elements.
+   * Test VSIM command functionality. Verifies vector similarity search with vectors and elements.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1381,7 +1366,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     setupVSimTestSet(testKey);
 
     // Test vsim with vector
-    List<String> similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f});
+    List<String> similar = jedis.vsim(testKey, new float[] { 0.15f, 0.25f, 0.35f });
     assertNotNull(similar);
     assertThat(similar, is(not(empty())));
     assertThat(similar.size(), is(3));
@@ -1396,7 +1381,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test vsim with vector and parameters
     VSimParams params = new VSimParams().count(2);
-    similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    similar = jedis.vsim(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertNotNull(similar);
     assertThat(similar.size(), is(2));
 
@@ -1408,9 +1393,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
   private void setupVSimTestSet(String testKey) {
     // Add test vectors
-    float[] vector1 = {0.1f, 0.2f, 0.3f};
-    float[] vector2 = {0.2f, 0.3f, 0.4f};
-    float[] vector3 = {0.3f, 0.4f, 0.5f};
+    float[] vector1 = { 0.1f, 0.2f, 0.3f };
+    float[] vector2 = { 0.2f, 0.3f, 0.4f };
+    float[] vector3 = { 0.3f, 0.4f, 0.5f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
@@ -1418,8 +1403,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VSIM command with scores functionality.
-   * Verifies vector similarity search returns scores correctly.
+   * Test VSIM command with scores functionality. Verifies vector similarity search returns scores
+   * correctly.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1430,7 +1415,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test vsim with vector and scores
     VSimParams params = new VSimParams();
-    Map<String, Double> similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    Map<String, Double> similarWithScores = jedis.vsimWithScores(testKey,
+      new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2", "element3"));
     assertThat(similarWithScores.values(), everyItem(greaterThanOrEqualTo(0.0)));
 
@@ -1442,14 +1428,14 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test with count parameter
     params = new VSimParams().count(2);
-    similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    similarWithScores = jedis.vsimWithScores(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2"));
     assertThat(similarWithScores.values(), everyItem(greaterThan(0.0)));
   }
 
   /**
-   * Test VSIM command with binary keys and elements.
-   * Verifies vector similarity search works with byte arrays.
+   * Test VSIM command with binary keys and elements. Verifies vector similarity search works with
+   * byte arrays.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1459,7 +1445,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     setupVSimTestSetBinary(testKey);
 
     // Test vsim with vector (binary)
-    List<byte[]> similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f});
+    List<byte[]> similar = jedis.vsim(testKey, new float[] { 0.15f, 0.25f, 0.35f });
     assertNotNull(similar);
     assertThat(similar, is(not(empty())));
     assertThat(similar.size(), is(3));
@@ -1474,7 +1460,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test vsim with vector and parameters (binary)
     VSimParams params = new VSimParams().count(2);
-    similar = jedis.vsim(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    similar = jedis.vsim(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertNotNull(similar);
     assertThat(similar.size(), is(2));
 
@@ -1485,8 +1471,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
-   * Test VSIM command with binary keys and scores.
-   * Verifies vector similarity search returns scores with binary data.
+   * Test VSIM command with binary keys and scores. Verifies vector similarity search returns scores
+   * with binary data.
    */
   @Test
   @SinceRedisVersion("8.0.0")
@@ -1497,7 +1483,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test vsim with vector and scores (binary)
     VSimParams params = new VSimParams();
-    Map<byte[], Double> similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    Map<byte[], Double> similarWithScores = jedis.vsimWithScores(testKey,
+      new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertNotNull(similarWithScores);
     assertThat(similarWithScores, is(not(anEmptyMap())));
 
@@ -1520,7 +1507,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Test with count parameter (binary)
     params = new VSimParams().count(2);
-    similarWithScores = jedis.vsimWithScores(testKey, new float[]{0.15f, 0.25f, 0.35f}, params);
+    similarWithScores = jedis.vsimWithScores(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertNotNull(similarWithScores);
     assertThat(similarWithScores.size(), is(2));
   }
@@ -1530,9 +1517,9 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    */
   private void setupVSimTestSetBinary(byte[] testKey) {
     // Add test vectors - same as non-binary version
-    float[] vector1 = {0.1f, 0.2f, 0.3f};
-    float[] vector2 = {0.15f, 0.25f, 0.35f};
-    float[] vector3 = {0.9f, 0.8f, 0.7f};
+    float[] vector1 = { 0.1f, 0.2f, 0.3f };
+    float[] vector2 = { 0.15f, 0.25f, 0.35f };
+    float[] vector3 = { 0.9f, 0.8f, 0.7f };
 
     jedis.vadd(testKey, vector1, "element1".getBytes());
     jedis.vadd(testKey, vector2, "element2".getBytes());
@@ -1543,9 +1530,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    * Helper method to convert binary element list to string names for assertions.
    */
   private List<String> getBinaryElementNames(List<byte[]> binaryElements) {
-    return binaryElements.stream()
-        .map(String::new)
-        .collect(java.util.stream.Collectors.toList());
+    return binaryElements.stream().map(String::new).collect(java.util.stream.Collectors.toList());
   }
 
   /**

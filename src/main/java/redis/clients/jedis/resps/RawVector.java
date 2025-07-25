@@ -1,11 +1,10 @@
 package redis.clients.jedis.resps;
 
-
 import redis.clients.jedis.annots.Experimental;
 
 /**
- * Result of a VEMB RAW command, containing raw vector data and metadata.
- * For regular VEMB commands (without RAW), use List&lt;Double&gt; directly.
+ * Result of a VEMB RAW command, containing raw vector data and metadata. For regular VEMB commands
+ * (without RAW), use List&lt;Double&gt; directly.
  */
 @Experimental
 public class RawVector {
@@ -63,9 +62,9 @@ public class RawVector {
 
   @Override
   public String toString() {
-    return "RawVector{quantizationType='" + quantizationType + "', norm=" + norm +
-           ", quantizationRange=" + quantizationRange + ", rawDataLength=" +
-           (rawData != null ? rawData.length : 0) + "}";
+    return "RawVector{quantizationType='" + quantizationType + "', norm=" + norm
+        + ", quantizationRange=" + quantizationRange + ", rawDataLength="
+        + (rawData != null ? rawData.length : 0) + "}";
   }
 
   @Override
@@ -75,10 +74,14 @@ public class RawVector {
 
     RawVector that = (RawVector) o;
 
-    if (quantizationType != null ? !quantizationType.equals(that.quantizationType) : that.quantizationType != null) return false;
-    if (rawData != null ? !java.util.Arrays.equals(rawData, that.rawData) : that.rawData != null) return false;
+    if (quantizationType != null ? !quantizationType.equals(that.quantizationType)
+        : that.quantizationType != null)
+      return false;
+    if (rawData != null ? !java.util.Arrays.equals(rawData, that.rawData) : that.rawData != null)
+      return false;
     if (norm != null ? !norm.equals(that.norm) : that.norm != null) return false;
-    return quantizationRange != null ? quantizationRange.equals(that.quantizationRange) : that.quantizationRange == null;
+    return quantizationRange != null ? quantizationRange.equals(that.quantizationRange)
+        : that.quantizationRange == null;
   }
 
   @Override

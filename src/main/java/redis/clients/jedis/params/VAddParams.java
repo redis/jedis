@@ -23,12 +23,10 @@ public class VAddParams implements IParams {
   public VAddParams() {
   }
 
-
-
   /**
-   * Performs the operation partially using threads, in a check-and-set style.
-   * The neighbor candidates collection, which is slow, is performed in the background,
-   * while the command is executed in the main thread.
+   * Performs the operation partially using threads, in a check-and-set style. The neighbor
+   * candidates collection, which is slow, is performed in the background, while the command is
+   * executed in the main thread.
    * @return VAddParams
    */
   public VAddParams cas() {
@@ -55,8 +53,8 @@ public class VAddParams implements IParams {
   }
 
   /**
-   * Forces the vector to use binary quantization instead of int8.
-   * This is much faster and uses less memory, but impacts the recall quality.
+   * Forces the vector to use binary quantization instead of int8. This is much faster and uses less
+   * memory, but impacts the recall quality.
    * @return VAddParams
    */
   public VAddParams bin() {
@@ -65,9 +63,9 @@ public class VAddParams implements IParams {
   }
 
   /**
-   * Plays a role in the effort made to find good candidates when connecting
-   * the new node to the existing Hierarchical Navigable Small World (HNSW) graph.
-   * The default is 200. Using a larger value may help in achieving a better recall.
+   * Plays a role in the effort made to find good candidates when connecting the new node to the
+   * existing Hierarchical Navigable Small World (HNSW) graph. The default is 200. Using a larger
+   * value may help in achieving a better recall.
    * @param buildExplorationFactor the exploration factor
    * @return VAddParams
    */
@@ -77,8 +75,8 @@ public class VAddParams implements IParams {
   }
 
   /**
-   * Associates attributes in the form of a JavaScript object to the newly created entry
-   * or updates the attributes (if they already exist).
+   * Associates attributes in the form of a JavaScript object to the newly created entry or updates
+   * the attributes (if they already exist).
    * @param attributes the attributes as a JSON string
    * @return VAddParams
    */
@@ -88,9 +86,9 @@ public class VAddParams implements IParams {
   }
 
   /**
-   * The maximum number of connections that each node of the graph will have with other nodes.
-   * The default is 16. More connections means more memory, but provides for more efficient
-   * graph exploration.
+   * The maximum number of connections that each node of the graph will have with other nodes. The
+   * default is 16. More connections means more memory, but provides for more efficient graph
+   * exploration.
    * @param numLinks the maximum number of connections
    * @return VAddParams
    */

@@ -6,15 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class for vector-related test operations.
- * Provides methods for converting between float arrays and FP32 byte representations.
+ * Utility class for vector-related test operations. Provides methods for converting between float
+ * arrays and FP32 byte representations.
  */
 public class VectorTestUtils {
 
   /**
-   * Convert float array to FP32 byte blob (IEEE 754 format).
-   * Each float is converted to 4 bytes in little-endian order.
-   * 
+   * Convert float array to FP32 byte blob (IEEE 754 format). Each float is converted to 4 bytes in
+   * little-endian order.
    * @param floats the float array to convert
    * @return byte array containing FP32 representation
    */
@@ -31,9 +30,8 @@ public class VectorTestUtils {
   }
 
   /**
-   * Convert FP32 byte blob back to float array (IEEE 754 format).
-   * Uses ByteBuffer for clean and readable conversion from little-endian bytes.
-   * 
+   * Convert FP32 byte blob back to float array (IEEE 754 format). Uses ByteBuffer for clean and
+   * readable conversion from little-endian bytes.
    * @param fp32Bytes the FP32 byte array to convert
    * @return List of Float values reconstructed from the byte data
    */

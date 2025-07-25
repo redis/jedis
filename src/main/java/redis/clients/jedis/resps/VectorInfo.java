@@ -6,9 +6,9 @@ import java.util.Map;
 import redis.clients.jedis.annots.Experimental;
 
 /**
- * This class holds information about a vector set returned by the {@code VINFO} command.
- * They can be accessed via getters. There is also {@link VectorInfo#getVectorInfo()} method
- * that returns a generic {@link Map} in case where more info are returned from the server.
+ * This class holds information about a vector set returned by the {@code VINFO} command. They can
+ * be accessed via getters. There is also {@link VectorInfo#getVectorInfo()} method that returns a
+ * generic {@link Map} in case where more info are returned from the server.
  */
 @Experimental
 public class VectorInfo implements Serializable {

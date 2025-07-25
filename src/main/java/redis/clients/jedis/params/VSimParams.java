@@ -31,8 +31,8 @@ public class VSimParams implements IParams {
   }
 
   /**
-   * Controls the search effort. Higher values explore more nodes,
-   * improving recall at the cost of speed. Typical values range from 50 to 1000.
+   * Controls the search effort. Higher values explore more nodes, improving recall at the cost of
+   * speed. Typical values range from 50 to 1000.
    * @param searchExplorationFactor the exploration factor
    * @return VSimParams
    */
@@ -62,8 +62,8 @@ public class VSimParams implements IParams {
   }
 
   /**
-   * Forces an exact linear scan of all elements, bypassing the HNSW graph.
-   * Use for benchmarking or to calculate recall. This is significantly slower (O(N)).
+   * Forces an exact linear scan of all elements, bypassing the HNSW graph. Use for benchmarking or
+   * to calculate recall. This is significantly slower (O(N)).
    * @return VSimParams
    */
   public VSimParams truth() {
@@ -72,8 +72,8 @@ public class VSimParams implements IParams {
   }
 
   /**
-   * Executes the search in the main thread instead of a background thread.
-   * Useful for small vector sets or benchmarks. This may block the server during execution.
+   * Executes the search in the main thread instead of a background thread. Useful for small vector
+   * sets or benchmarks. This may block the server during execution.
    * @return VSimParams
    */
   public VSimParams noThread() {

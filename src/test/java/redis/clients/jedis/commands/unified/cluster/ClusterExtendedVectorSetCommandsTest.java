@@ -28,13 +28,12 @@ public class ClusterExtendedVectorSetCommandsTest extends ExtendedVectorSetComma
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+      HostAndPorts.getStableClusterServers().get(0),
+      DefaultJedisClientConfig.builder().password("cluster").build());
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
-
+      HostAndPorts.getStableClusterServers().get(0),
+      DefaultJedisClientConfig.builder().password("cluster").build());
 
   @AfterEach
   public void tearDown() {

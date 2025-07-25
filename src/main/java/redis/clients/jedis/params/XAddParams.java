@@ -6,7 +6,7 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
-import redis.clients.jedis.args.StreamTrimMode;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 
 import java.util.Objects;
 
@@ -26,7 +26,7 @@ public class XAddParams implements IParams {
 
   private Long limit;
 
-  private StreamTrimMode trimMode;
+  private StreamDeletionPolicy trimMode;
 
   public static XAddParams xAddParams() {
     return new XAddParams();
@@ -86,11 +86,11 @@ public class XAddParams implements IParams {
 
   /**
    * When trimming, defines desired behaviour for handling consumer group references.
-   * see {@link StreamTrimMode} for details.
+   * see {@link StreamDeletionPolicy} for details.
    *
    * @return XAddParams
    */
-  public XAddParams trimmingMode(StreamTrimMode trimMode) {
+  public XAddParams trimmingMode(StreamDeletionPolicy trimMode) {
     this.trimMode = trimMode;
     return this;
   }

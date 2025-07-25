@@ -5,7 +5,7 @@ import java.util.Map;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.args.StreamTrimMode;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
@@ -95,12 +95,12 @@ public interface StreamPipelineCommands {
   /**
    * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
-  Response<List<StreamTrimResult>> xackdel(String key, String group, StreamEntryID... ids);
+  Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamEntryID... ids);
 
   /**
    * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
-  Response<List<StreamTrimResult>> xackdel(String key, String group, StreamTrimMode trimMode, StreamEntryID... ids);
+  Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids);
 
   /**
    * {@code XGROUP CREATE key groupName <id or $>}
@@ -145,12 +145,12 @@ public interface StreamPipelineCommands {
   /**
    * XDELEX key [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
-  Response<List<StreamTrimResult>> xdelex(String key, StreamEntryID... ids);
+  Response<List<StreamEntryDeletionResult>> xdelex(String key, StreamEntryID... ids);
 
   /**
    * XDELEX key [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
-  Response<List<StreamTrimResult>> xdelex(String key, StreamTrimMode trimMode, StreamEntryID... ids);
+  Response<List<StreamEntryDeletionResult>> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids);
 
   /**
    * XTRIM key MAXLEN [~] count

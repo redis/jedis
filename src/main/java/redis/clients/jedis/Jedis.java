@@ -4867,13 +4867,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xackdel(key, group, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(byte[] key, byte[] group, StreamTrimMode trimMode, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
   }
@@ -4915,13 +4915,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(byte[] key, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, byte[]... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xdelex(key, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(byte[] key, StreamTrimMode trimMode, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
@@ -9702,13 +9702,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(final String key, final String group, final StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xackdel(final String key, final String group, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xackdel(key, group, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(final String key, final String group, final StreamTrimMode trimMode, final StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xackdel(final String key, final String group, final StreamDeletionPolicy trimMode, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
   }
@@ -9751,13 +9751,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(final String key, final StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xdelex(final String key, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xdelex(key, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(final String key, final StreamTrimMode trimMode, final StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xdelex(final String key, final StreamDeletionPolicy trimMode, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }

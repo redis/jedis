@@ -3,7 +3,7 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.args.StreamTrimMode;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 
 import java.util.Objects;
 
@@ -19,7 +19,7 @@ public class XTrimParams implements IParams {
 
   private Long limit;
 
-  private StreamTrimMode trimMode;
+  private StreamDeletionPolicy trimMode;
 
   public static XTrimParams xTrimParams() {
     return new XTrimParams();
@@ -53,11 +53,11 @@ public class XTrimParams implements IParams {
 
   /**
    * Defines desired behaviour for handling consumer group references.
-   * see {@link StreamTrimMode} for details.
+   * see {@link StreamDeletionPolicy} for details.
    *
    * @return XAddParams
    */
-  public XTrimParams trimmingMode(StreamTrimMode trimMode) {
+  public XTrimParams trimmingMode(StreamDeletionPolicy trimMode) {
     this.trimMode = trimMode;
     return this;
   }

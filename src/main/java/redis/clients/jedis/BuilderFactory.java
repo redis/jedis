@@ -1261,13 +1261,13 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamTrimResult> STREAM_ENTRY_DELETION_RESULT = new Builder<StreamTrimResult>() {
+  public static final Builder<StreamEntryDeletionResult> STREAM_ENTRY_DELETION_RESULT = new Builder<StreamEntryDeletionResult>() {
     @Override
-    public StreamTrimResult build(Object data) {
+    public StreamEntryDeletionResult build(Object data) {
       if (data == null) {
         return null;
       }
-      return StreamTrimResult.fromLong((Long) data);
+      return StreamEntryDeletionResult.fromLong((Long) data);
     }
 
     @Override
@@ -1276,15 +1276,15 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamTrimResult>> STREAM_ENTRY_DELETION_RESULT_LIST = new Builder<List<StreamTrimResult>>() {
+  public static final Builder<List<StreamEntryDeletionResult>> STREAM_ENTRY_DELETION_RESULT_LIST = new Builder<List<StreamEntryDeletionResult>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public List<StreamTrimResult> build(Object data) {
+    public List<StreamEntryDeletionResult> build(Object data) {
       if (data == null) {
         return null;
       }
       List<Object> objectList = (List<Object>) data;
-      List<StreamTrimResult> responses = new ArrayList<>(objectList.size());
+      List<StreamEntryDeletionResult> responses = new ArrayList<>(objectList.size());
       for (Object object : objectList) {
         responses.add(STREAM_ENTRY_DELETION_RESULT.build(object));
       }

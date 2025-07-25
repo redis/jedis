@@ -5,14 +5,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.args.StreamTrimMode;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.StreamEntryBinary;
-import redis.clients.jedis.resps.StreamTrimResult;
+import redis.clients.jedis.resps.StreamEntryDeletionResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -281,9 +281,9 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
 
     // Test XACKDEL - should acknowledge and delete the message
-    List<StreamTrimResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readMessageId);
+    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readMessageId);
     assertThat(results, hasSize(1));
-    assertEquals(StreamTrimResult.DELETED, results.get(0));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
 
     // Verify message is deleted from stream
     assertEquals(0L, jedis.xlen(STREAM_KEY_1));
@@ -309,9 +309,9 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
     // Test XACKDEL with KEEP_REFERENCES mode
     byte[] readId1 = messages.get(0).getValue().get(0).getID().toString().getBytes();
-    List<StreamTrimResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, StreamTrimMode.KEEP_REFERENCES, readId1);
+    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, StreamDeletionPolicy.KEEP_REFERENCES, readId1);
     assertThat(results, hasSize(1));
-    assertEquals(StreamTrimResult.DELETED, results.get(0));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
 
     // Verify one message is deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -326,11 +326,11 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
 
     // Test XACKDEL on unread messages - should return NOT_FOUND for PEL
-    List<StreamTrimResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, id1);
+    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, id1);
 
     assertThat(results, hasSize(1));
     // Should return NOT_FOUND because message was never read by the consumer group
-    assertEquals(StreamTrimResult.NOT_FOUND, results.get(0));
+    assertEquals(StreamEntryDeletionResult.NOT_FOUND, results.get(0));
 
     // Stream should still contain the message
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -358,10 +358,10 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     // Test XACKDEL with multiple IDs
     byte[] readId1 = messages.get(0).getValue().get(0).getID().toString().getBytes();
     byte[] readId2 = messages.get(0).getValue().get(1).getID().toString().getBytes();
-    List<StreamTrimResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readId1, readId2);
+    List<StreamEntryDeletionResult> results = jedis.xackdel(STREAM_KEY_1, GROUP_NAME, readId1, readId2);
     assertThat(results, hasSize(2));
-    assertEquals(StreamTrimResult.DELETED, results.get(0));
-    assertEquals(StreamTrimResult.DELETED, results.get(1));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(1));
 
     // Verify two messages are deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -380,9 +380,9 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(2L, jedis.xlen(STREAM_KEY_1));
 
     // Test basic XDELEX without parameters (should behave like XDEL with KEEP_REFERENCES)
-    List<StreamTrimResult> results = jedis.xdelex(STREAM_KEY_1, id1);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, id1);
     assertThat(results, hasSize(1));
-    assertEquals(StreamTrimResult.DELETED, results.get(0));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
 
     // Verify entry is deleted from stream
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -398,9 +398,9 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
 
     // Test XDELEX with DELETE_REFERENCES mode
-    List<StreamTrimResult> results = jedis.xdelex(STREAM_KEY_1, StreamTrimMode.DELETE_REFERENCES, id1);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, StreamDeletionPolicy.DELETE_REFERENCES, id1);
     assertThat(results, hasSize(1));
-    assertEquals(StreamTrimResult.DELETED, results.get(0));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
 
     // Verify entry is deleted from stream
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -418,10 +418,10 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(3L, jedis.xlen(STREAM_KEY_1));
 
     // Test XDELEX with multiple IDs
-    List<StreamTrimResult> results = jedis.xdelex(STREAM_KEY_1, id1, id3);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, id1, id3);
     assertThat(results, hasSize(2));
-    assertEquals(StreamTrimResult.DELETED, results.get(0));
-    assertEquals(StreamTrimResult.DELETED, results.get(1));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0));
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(1));
 
     // Verify two entries are deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -438,10 +438,10 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
     // Test XDELEX with mix of existing and non-existent IDs
     byte[] nonExistentId = "999-0".getBytes();
-    List<StreamTrimResult> results = jedis.xdelex(STREAM_KEY_1, id1, nonExistentId);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, id1, nonExistentId);
     assertThat(results, hasSize(2));
-    assertEquals(StreamTrimResult.DELETED, results.get(0)); // Existing entry
-    assertEquals(StreamTrimResult.NOT_FOUND, results.get(1)); // Non-existent entry
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0)); // Existing entry
+    assertEquals(StreamEntryDeletionResult.NOT_FOUND, results.get(1)); // Non-existent entry
 
     // Verify existing entry is deleted
     assertEquals(0L, jedis.xlen(STREAM_KEY_1));
@@ -471,10 +471,10 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     jedis.xack(STREAM_KEY_1, GROUP_NAME, readId1);
 
     // Test XDELEX with ACKNOWLEDGED mode - should only delete acknowledged entries
-    List<StreamTrimResult> results = jedis.xdelex(STREAM_KEY_1, StreamTrimMode.ACKNOWLEDGED, readId1, readId2);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, StreamDeletionPolicy.ACKNOWLEDGED, readId1, readId2);
     assertThat(results, hasSize(2));
-    assertEquals(StreamTrimResult.DELETED, results.get(0)); // id1 was acknowledged
-    assertEquals(StreamTrimResult.ACKNOWLEDGED_NOT_DELETED, results.get(1)); // id2 not acknowledged
+    assertEquals(StreamEntryDeletionResult.DELETED, results.get(0)); // id1 was acknowledged
+    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, results.get(1)); // id2 not acknowledged
 
     // Verify only acknowledged entry was deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -487,9 +487,9 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
     // Test XDELEX on empty stream
     byte[] nonExistentId = "1-0".getBytes();
-    List<StreamTrimResult> results = jedis.xdelex(STREAM_KEY_1, nonExistentId);
+    List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, nonExistentId);
     assertThat(results, hasSize(1));
-    assertEquals(StreamTrimResult.NOT_FOUND, results.get(0));
+    assertEquals(StreamEntryDeletionResult.NOT_FOUND, results.get(0));
   }
 
   // ========== XTRIM Command Tests with trimmingMode ==========
@@ -510,7 +510,8 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(3), streams);
 
     // Test XTRIM with KEEP_REFERENCES mode - should preserve PEL references
-    long trimmed = jedis.xtrim(STREAM_KEY_1, XTrimParams.xTrimParams().maxLen(3).trimmingMode(StreamTrimMode.KEEP_REFERENCES));
+    long trimmed = jedis.xtrim(STREAM_KEY_1, XTrimParams.xTrimParams().maxLen(3).trimmingMode(
+        StreamDeletionPolicy.KEEP_REFERENCES));
     assertEquals(2L, trimmed); // Should trim 2 entries
     assertEquals(3L, jedis.xlen(STREAM_KEY_1));
   }
@@ -540,7 +541,8 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     jedis.xack(STREAM_KEY_1, GROUP_NAME, readId1, readId2);
 
     // Test XTRIM with ACKNOWLEDGED mode - should only trim acknowledged entries
-    long trimmed = jedis.xtrim(STREAM_KEY_1, XTrimParams.xTrimParams().maxLen(3).trimmingMode(StreamTrimMode.ACKNOWLEDGED));
+    long trimmed = jedis.xtrim(STREAM_KEY_1, XTrimParams.xTrimParams().maxLen(3).trimmingMode(
+        StreamDeletionPolicy.ACKNOWLEDGED));
     // The exact behavior depends on implementation, but it should respect acknowledgment status
     assertTrue(trimmed >= 0);
     assertTrue(jedis.xlen(STREAM_KEY_1) <= 5); // Should not exceed original length

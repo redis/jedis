@@ -6,7 +6,7 @@ package redis.clients.jedis.resps;
  * - DELETED (1): Entry was deleted/acknowledged and deleted
  * - ACKNOWLEDGED_NOT_DELETED (2): Entry was acknowledged but not deleted (still has dangling references)
  */
-public enum StreamTrimResult {
+public enum StreamEntryDeletionResult {
   
   /**
    * The stream entry ID doesn't exist in the stream.
@@ -28,7 +28,7 @@ public enum StreamTrimResult {
   
   private final int code;
   
-  StreamTrimResult(int code) {
+  StreamEntryDeletionResult(int code) {
     this.code = code;
   }
   
@@ -48,7 +48,7 @@ public enum StreamTrimResult {
    * @return the corresponding StreamEntryDeletionResult
    * @throws IllegalArgumentException if the code is not recognized
    */
-  public static StreamTrimResult fromCode(int code) {
+  public static StreamEntryDeletionResult fromCode(int code) {
     switch (code) {
       case -1:
         return NOT_FOUND;
@@ -68,7 +68,7 @@ public enum StreamTrimResult {
    * @return the corresponding StreamEntryDeletionResult
    * @throws IllegalArgumentException if the value is null or not recognized
    */
-  public static StreamTrimResult fromLong(Long value) {
+  public static StreamEntryDeletionResult fromLong(Long value) {
     if (value == null) {
       throw new IllegalArgumentException("Stream entry deletion result value cannot be null");
     }

@@ -3,10 +3,10 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Trim strategy for stream commands that handle consumer group references.
+ * Deletion policy for stream commands that handle consumer group references.
  * Used with XDELEX, XACKDEL, and enhanced XADD/XTRIM commands.
  */
-public enum StreamTrimMode implements Rawable {
+public enum StreamDeletionPolicy implements Rawable {
 
   /**
    * Preserves existing references to entries in all consumer groups' PEL.
@@ -27,7 +27,7 @@ public enum StreamTrimMode implements Rawable {
 
   private final byte[] raw;
 
-  StreamTrimMode(String redisParamName) {
+  StreamDeletionPolicy(String redisParamName) {
     raw = SafeEncoder.encode(redisParamName);
   }
 

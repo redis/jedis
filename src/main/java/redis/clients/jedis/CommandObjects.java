@@ -2626,11 +2626,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xackdel(String key, String group, StreamEntryID... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xackdel(String key, String group, StreamTrimMode trimMode, StreamEntryID... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
@@ -2638,11 +2638,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xackdel(byte[] key, byte[] group, byte[]... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, byte[]... ids) {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xackdel(byte[] key, byte[] group, StreamTrimMode trimMode, byte[]... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
@@ -2703,11 +2703,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xdelex(String key, StreamEntryID... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(String key, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XDELEX).key(key).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xdelex(String key, StreamTrimMode trimMode, StreamEntryID... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XDELEX).key(key).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
@@ -2726,11 +2726,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xdelex(byte[] key, byte[]... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(byte[] key, byte[]... ids) {
     return new CommandObject<>(commandArguments(XDELEX).key(key).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
-  public final CommandObject<List<StreamTrimResult>> xdelex(byte[] key, StreamTrimMode trimMode, byte[]... ids) {
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
     return new CommandObject<>(commandArguments(XDELEX).key(key).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 

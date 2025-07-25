@@ -36,7 +36,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.args.StreamTrimMode;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -225,7 +225,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamEntryID newId = jedis.xadd(streamKey, XAddParams.xAddParams()
         .id(new StreamEntryID("6-0"))
         .maxLen(3)
-        .trimmingMode(StreamTrimMode.KEEP_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.KEEP_REFERENCES), map);
     assertNotNull(newId);
 
     // Stream should be trimmed to 3 entries
@@ -263,7 +263,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamEntryID newId = jedis.xadd(streamKey, XAddParams.xAddParams()
         .id(new StreamEntryID("6-0"))
         .maxLen(3)
-        .trimmingMode(StreamTrimMode.DELETE_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.DELETE_REFERENCES), map);
     assertNotNull(newId);
 
     // Stream should be trimmed to 3 entries
@@ -308,7 +308,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamEntryID newId = jedis.xadd(streamKey, XAddParams.xAddParams()
         .id(new StreamEntryID("6-0"))
         .maxLen(3)
-        .trimmingMode(StreamTrimMode.ACKNOWLEDGED), map);
+        .trimmingMode(StreamDeletionPolicy.ACKNOWLEDGED), map);
     assertNotNull(newId);
 
     // Stream length should respect acknowledgment status
@@ -347,7 +347,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamEntryID newId = jedis.xadd(streamKey, XAddParams.xAddParams()
         .id(new StreamEntryID("0-6"))
         .minId("0-3")
-        .trimmingMode(StreamTrimMode.KEEP_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.KEEP_REFERENCES), map);
     assertNotNull(newId);
 
     // Stream should have entries >= 0-3 plus the new entry
@@ -386,7 +386,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamEntryID newId = jedis.xadd(streamKey, XAddParams.xAddParams()
         .id(new StreamEntryID("0-6"))
         .minId("0-3")
-        .trimmingMode(StreamTrimMode.DELETE_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.DELETE_REFERENCES), map);
     assertNotNull(newId);
 
     // Stream should have entries >= 0-3 plus the new entry
@@ -423,7 +423,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
         .id(new StreamEntryID("11-0"))
         .maxLen(5)
         .approximateTrimming()
-        .trimmingMode(StreamTrimMode.KEEP_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.KEEP_REFERENCES), map);
     assertNotNull(newId);
 
     // With approximate trimming, the exact length may vary but should be around the target
@@ -459,7 +459,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
         .id(new StreamEntryID("6-0"))
         .maxLen(3)
         .exactTrimming()
-        .trimmingMode(StreamTrimMode.DELETE_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.DELETE_REFERENCES), map);
     assertNotNull(newId);
 
     // With exact trimming, stream should be exactly 3 entries
@@ -496,7 +496,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
         .maxLen(5)
         .approximateTrimming() // Required for limit to work
         .limit(2) // Limit the number of entries to examine for trimming
-        .trimmingMode(StreamTrimMode.KEEP_REFERENCES), map);
+        .trimmingMode(StreamDeletionPolicy.KEEP_REFERENCES), map);
     assertNotNull(newId);
 
     // With limit, trimming may be less aggressive

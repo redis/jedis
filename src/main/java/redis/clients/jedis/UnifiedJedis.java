@@ -3202,12 +3202,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(String key, String group, StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamEntryID... ids) {
     return executeCommand(commandObjects.xackdel(key, group, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(String key, String group, StreamTrimMode trimMode, StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
     return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
   }
 
@@ -3252,12 +3252,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(String key, StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xdelex(String key, StreamEntryID... ids) {
     return executeCommand(commandObjects.xdelex(key, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(String key, StreamTrimMode trimMode, StreamEntryID... ids) {
+  public List<StreamEntryDeletionResult> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
     return executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
@@ -3377,12 +3377,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
     return executeCommand(commandObjects.xackdel(key, group, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xackdel(byte[] key, byte[] group, StreamTrimMode trimMode, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
   }
 
@@ -3417,12 +3417,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(byte[] key, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, byte[]... ids) {
     return executeCommand(commandObjects.xdelex(key, ids));
   }
 
   @Override
-  public List<StreamTrimResult> xdelex(byte[] key, StreamTrimMode trimMode, byte[]... ids) {
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
     return executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 

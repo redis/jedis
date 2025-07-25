@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -262,6 +263,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   // ========== XACKDEL Command Tests ==========
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdel() {
     // Add a message to the stream
     byte[] messageId = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -287,6 +289,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdelWithTrimMode() {
     // Add multiple messages
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -312,6 +315,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdelUnreadMessages() {
     // Add test entries but don't read them
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -328,6 +332,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdelMultipleMessages() {
     // Add multiple messages
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -358,6 +363,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   // ========== XDELEX Command Tests ==========
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelex() {
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -374,6 +380,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexWithTrimMode() {
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -389,6 +396,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexMultipleEntries() {
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -407,6 +415,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexNonExistentEntries() {
     // Add one entry
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -424,6 +433,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexWithConsumerGroups() {
     // Add test entries
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
@@ -454,6 +464,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexEmptyStream() {
     // Test XDELEX on empty stream
     byte[] nonExistentId = "1-0".getBytes();
@@ -465,6 +476,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   // ========== XTRIM Command Tests with trimmingMode ==========
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXtrimWithKeepReferences() {
     // Add test entries
     for (int i = 1; i <= 5; i++) {
@@ -483,6 +495,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXtrimWithAcknowledged() {
     // Add test entries
     for (int i = 1; i <= 5; i++) {

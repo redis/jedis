@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
@@ -261,6 +262,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   // ========== XACKDEL Command Tests ==========
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdel() {
     setUpTestStream();
 
@@ -288,6 +290,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdelWithTrimMode() {
     setUpTestStream();
 
@@ -315,6 +318,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdelUnreadMessages() {
     setUpTestStream();
 
@@ -333,6 +337,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXackdelMultipleMessages() {
     setUpTestStream();
 
@@ -365,6 +370,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   // ========== XDELEX Command Tests ==========
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelex() {
     setUpTestStream();
 
@@ -383,6 +389,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexWithTrimMode() {
     setUpTestStream();
 
@@ -400,6 +407,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexMultipleEntries() {
     setUpTestStream();
 
@@ -420,6 +428,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexNonExistentEntries() {
     setUpTestStream();
 
@@ -439,6 +448,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexWithConsumerGroups() {
     setUpTestStream();
 
@@ -471,6 +481,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXdelexEmptyStream() {
     setUpTestStream();
 
@@ -484,6 +495,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   // ========== XTRIM Command Tests with trimmingMode ==========
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXtrimWithKeepReferences() {
     setUpTestStream();
 
@@ -504,6 +516,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testXtrimWithAcknowledged() {
     setUpTestStream();
 

@@ -199,6 +199,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithTrimmingModeKeepReferences() {
     String streamKey = "xadd-trim-keep-ref-stream";
     String groupName = "test-group";
@@ -236,6 +237,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithTrimmingModeDeleteReferences() {
     String streamKey = "xadd-trim-del-ref-stream";
     String groupName = "test-group";
@@ -274,6 +276,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithTrimmingModeAcknowledged() {
     String streamKey = "xadd-trim-acked-stream";
     String groupName = "test-group";
@@ -318,6 +321,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithMinIdTrimmingModeKeepReferences() {
     String streamKey = "xadd-minid-keep-ref-stream";
     String groupName = "test-group";
@@ -356,6 +360,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithMinIdTrimmingModeDeleteReferences() {
     String streamKey = "xadd-minid-del-ref-stream";
     String groupName = "test-group";
@@ -395,6 +400,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithApproximateTrimmingAndTrimmingMode() {
     String streamKey = "xadd-approx-trim-stream";
     String groupName = "test-group";
@@ -430,6 +436,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithExactTrimmingAndTrimmingMode() {
     String streamKey = "xadd-exact-trim-mode-stream";
     String groupName = "test-group";
@@ -465,6 +472,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void xaddWithLimitAndTrimmingMode() {
     String streamKey = "xadd-limit-trim-mode-stream";
     String groupName = "test-group";
@@ -531,7 +539,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xrange() {
-    List<StreamEntry> range = jedis.xrange("xrange-stream", null,
+    List<StreamEntry> range = jedis.xrange("xrange-stream", (StreamEntryID) null,
       (StreamEntryID) null, Integer.MAX_VALUE);
     assertEquals(0, range.size());
 
@@ -539,7 +547,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xrange-stream", (StreamEntryID) null, map);
     StreamEntryID id2 = jedis.xadd("xrange-stream", (StreamEntryID) null, map);
-    List<StreamEntry> range2 = jedis.xrange("xrange-stream", null,
+    List<StreamEntry> range2 = jedis.xrange("xrange-stream", (StreamEntryID) null,
       (StreamEntryID) null, 3);
     assertEquals(2, range2.size());
     assertEquals(range2.get(0).toString(), id1 + " " + map);
@@ -560,7 +568,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range7 = jedis.xrange("xrange-stream", id3, id3, 4);
     assertEquals(1, range7.size());
 
-    List<StreamEntry> range8 = jedis.xrange("xrange-stream", null, (StreamEntryID) null);
+    List<StreamEntry> range8 = jedis.xrange("xrange-stream", (StreamEntryID) null, (StreamEntryID) null);
     assertEquals(3, range8.size());
     range8 = jedis.xrange("xrange-stream", StreamEntryID.MINIMUM_ID, StreamEntryID.MAXIMUM_ID);
     assertEquals(3, range8.size());
@@ -595,7 +603,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd(key1, (StreamEntryID) null, map);
-    jedis.xadd(key2, (StreamEntryID) null, map);
+    StreamEntryID id2 = jedis.xadd(key2, (StreamEntryID) null, map);
 
     // Read only a single Stream
     List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(XReadParams.xReadParams().count(1).block(1), streamQeury1);

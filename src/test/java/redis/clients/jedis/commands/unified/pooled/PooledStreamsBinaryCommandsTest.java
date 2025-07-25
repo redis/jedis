@@ -1,8 +1,6 @@
 package redis.clients.jedis.commands.unified.pooled;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;

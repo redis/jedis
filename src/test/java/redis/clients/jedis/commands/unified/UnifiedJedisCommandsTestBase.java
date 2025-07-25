@@ -44,13 +44,13 @@ public abstract class UnifiedJedisCommandsTestBase {
   }
 
   @BeforeEach
-  void setUp() {
+  void setUpBase() {
     jedis = createTestClient();
     clearData();
   }
 
   @AfterEach
-  void tearDown() {
+  void tearDownBase() {
     if (jedis != null) {
       jedis.close();
     }

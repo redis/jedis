@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 
 @ParameterizedClass
@@ -16,14 +17,14 @@ public class PooledGeoCommandsTest extends GeoCommandsTestBase {
     super(protocol);
   }
 
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return PooledCommandsTestHelper.getPooled(protocol);
+  }
+
   @BeforeEach
   public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
     PooledCommandsTestHelper.clearData();
   }
 
-  @AfterEach
-  public void cleanUp() {
-    jedis.close();
-  }
 }

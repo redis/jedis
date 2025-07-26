@@ -64,14 +64,10 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @BeforeEach
   public void setUp() {
-    setUpTestClient();
     setUpTestStream();
   }
 
-  protected void setUpTestClient() {
-  }
-
-  public void setUpTestStream() {
+  private void setUpTestStream() {
     jedis.del(STREAM_KEY_1);
     jedis.del(STREAM_KEY_2);
     try {

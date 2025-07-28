@@ -106,8 +106,12 @@ public class ConnectionPool extends Pool<Connection> {
 
     @Override
     public void onRebind(HostAndPort target) {
+      if (target == null) {
+        return;
+      }
+
       HostAndPort previous = rebindTarget.getAndSet(target);
-      if (previous != target) {
+      if (!target.equals(previous)) {
         this.factory.rebind(target);
         this.pool.clear();
       }

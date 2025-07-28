@@ -31,10 +31,6 @@ public class TimeoutOptions {
     return relaxedTimeout != DISABLED_TIMEOUT_MS;
   }
 
-  public static boolean isRelaxedTimeoutDisabled(int relaxedTimeout) {
-    return relaxedTimeout == DISABLED_TIMEOUT_MS;
-  }
-
   /**
    * @return the {@link Duration} to relax timeouts proactively, {@link #DISABLED_TIMEOUT} if
    *         disabled.

@@ -570,7 +570,12 @@
 						<include>**/*TestUtil.java</include>
 						<include>**/executors/aggregators/*.java</include>
 						<include>**/*MapMatcher.java</include>
-					</includes>
+                        <include>**/Maintenance*.java</include>
+                        <include>**/Push*.java</include>
+                        <include>**/Rebind*.java</include>
+                        <include>src/test/java/redis/clients/jedis/upgrade/*.java</include>
+                        <include>src/test/java/redis/clients/jedis/util/server/*.java</include>
+                    </includes>
 				</configuration>
 				<executions>
 					<execution>

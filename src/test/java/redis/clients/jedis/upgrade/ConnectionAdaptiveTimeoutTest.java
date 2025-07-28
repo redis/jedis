@@ -264,24 +264,24 @@ public class ConnectionAdaptiveTimeoutTest {
     // Verify that relaxed blocking timeout was applied
     blpopLatch.await();
     assertTrue(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should be active during blocking command");
+      "Relaxed timeout should be active during blocking command");
     assertEquals((int) relaxedBlockingTimeout.toMillis(), socket.getSoTimeout(),
-        "Socket timeout should be relaxed blocking timeout during blocking command");
+      "Socket timeout should be relaxed blocking timeout during blocking command");
 
     blpopLatchAfter.await();
     assertTrue(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should be still active after blocking command");
+      "Relaxed timeout should be still active after blocking command");
     assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout(),
-        "Socket timeout should be restored to relaxed timeout for non blocking command");
+      "Socket timeout should be restored to relaxed timeout for non blocking command");
 
     // Send MIGRATED push notification to disable relaxed timeout
     mockServer.sendMigratedPushToAll();
     connection.executeCommand(commandObjects.ping());
 
     assertFalse(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should be disabled after MIGRATED");
+      "Relaxed timeout should be disabled after MIGRATED");
     assertEquals(originalTimeoutMs, socket.getSoTimeout(),
-        "Socket timeout should be restored to original timeout");
+      "Socket timeout should be restored to original timeout");
   }
 
   /**

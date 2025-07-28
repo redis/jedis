@@ -35,7 +35,6 @@ public interface PushHandler {
 
   /**
    * A no-operation implementation of PushHandler that doesn't maintain any listeners
-   *
    * <p>
    * All operations are no-ops and getPushListeners() returns an empty list.
    * </p>

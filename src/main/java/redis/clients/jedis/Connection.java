@@ -33,6 +33,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.NumberUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -80,8 +81,8 @@ public class Connection implements Closeable {
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
   private boolean relaxedTimeoutEnabled = false;
-  private int relaxedTimeout = safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
-  private int relaxedBlockingTimeout = safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
+  private int relaxedTimeout = NumberUtils.safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
+  private int relaxedBlockingTimeout = NumberUtils.safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
@@ -795,11 +796,9 @@ public class Connection implements Closeable {
       }
     } else {
       if (!isBlocking) {
-        // Use relaxed timeout if configured, otherwise fallback to normal timeout
-        return TimeoutOptions.isRelaxedTimeoutDisabled(relaxedTimeout) ? soTimeout : relaxedTimeout;
+        return TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ? relaxedTimeout : soTimeout;
       } else {
-        // Use relaxed blocking timeout if configured, otherwise fallback to infinite timeout
-        return TimeoutOptions.isRelaxedTimeoutDisabled(relaxedBlockingTimeout) ? infiniteSoTimeout : relaxedBlockingTimeout;
+        return TimeoutOptions.isRelaxedTimeoutEnabled(relaxedBlockingTimeout) ? relaxedBlockingTimeout : infiniteSoTimeout;
       }
     }
   }
@@ -838,13 +837,6 @@ public class Connection implements Closeable {
     }
   }
 
-  private static int safeToInt(long millis) {
-    if (millis > Integer.MAX_VALUE) {
-      return Integer.MAX_VALUE;
-    }
-
-    return (int) millis;
-  }
   /**
    * Push consumer that delegates to a {@link PushHandler} for listener notification.
    */

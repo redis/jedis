@@ -12,7 +12,9 @@ import java.util.Set;
 
 /**
  * A chain of PushHandlers that processes events in order.
+ * <p>
  * Uses a context object for tracking the processed state.
+ * </p>
  */
 @Internal
 public final class PushConsumerChain implements PushConsumer {
@@ -37,13 +39,14 @@ public final class PushConsumerChain implements PushConsumer {
     context.setProcessed(false);
   };
 
-
   /**
-   * Handler that allows only pub/sub related events to be propagated to the client.
+   * Handler that allows only pub/sub related events to be propagated to the client
+   * <p>
    * Marks non-pub/sub events as processed, preventing their propagation.
+   * </p>
    */
-  public static final PushConsumer PUBSUB_ONLY_HANDLER = new PushConsumer(){
-    final Set<String> pubSubCommands =  new HashSet<>();
+  public static final PushConsumer PUBSUB_ONLY_HANDLER = new PushConsumer() {
+    final Set<String> pubSubCommands = new HashSet<>();
     {
       pubSubCommands.add("message");
       pubSubCommands.add("pmessage");
@@ -69,7 +72,6 @@ public final class PushConsumerChain implements PushConsumer {
     }
   };
 
-
   /**
    * Create a new empty handler chain.
    */
@@ -79,7 +81,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Create a chain with the specified handlers.
-   *
    * @param consumers The handlers to add to the chain
    */
   public PushConsumerChain(PushConsumer... consumers) {
@@ -88,7 +89,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Create a chain with a single handler.
-   *
    * @param handler The handler to include in the chain
    * @return A new handler chain with the specified handler
    */
@@ -98,7 +98,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Create a chain with the specified handlers.
-   *
    * @param handlers The handlers to add to the chain
    * @return A new handler chain with the specified handlers
    */
@@ -108,7 +107,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Add a handler to be executed after this chain.
-   *
    * @param handler The handler to add
    * @return A new chain with the handler added
    */
@@ -126,7 +124,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Add a handler to the end of the chain.
-   *
    * @param handler The handler to add
    * @return this chain for method chaining
    */
@@ -139,7 +136,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Insert a handler at the specified position.
-   *
    * @param index The position to insert at (0-based)
    * @param handler The handler to insert
    * @return this chain for method chaining
@@ -153,7 +149,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Remove a handler from the chain.
-   *
    * @param handler The handler to remove
    * @return true if the handler was removed
    */
@@ -163,7 +158,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Remove the handler at the specified position.
-   *
    * @param index The position to remove from (0-based)
    * @return The removed handler
    */
@@ -173,7 +167,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Get the handler at the specified position.
-   *
    * @param index The position to get (0-based)
    * @return The handler at that position
    */
@@ -183,7 +176,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Get the number of handlers in the chain.
-   *
    * @return The number of handlers
    */
   public int size() {

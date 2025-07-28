@@ -246,11 +246,10 @@ public class TcpMockServer {
 
     private void sendHelloResponse(OutputStream out) throws IOException {
       // RESP3 HELLO response
-      String response =
-          "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n" + "$7\r\nversion\r\n$5\r\n7.0.0\r\n"
-              + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n"
-              + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
-              + "$7\r\nmodules\r\n*0\r\n";
+      String response = "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n"
+          + "$7\r\nversion\r\n$5\r\n7.0.0\r\n" + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n"
+          + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
+          + "$7\r\nmodules\r\n*0\r\n";
       out.write(response.getBytes());
       out.flush();
     }
@@ -325,9 +324,8 @@ public class TcpMockServer {
         outputStream.flush();
 
       } catch (IOException e) {
-        logger.error(
-            "Error sending " + pushType + " push to " + clientId + " (client disconnected): "
-                + e.getMessage());
+        logger.error("Error sending " + pushType + " push to " + clientId
+            + " (client disconnected): " + e.getMessage());
         cleanup();
       }
     }

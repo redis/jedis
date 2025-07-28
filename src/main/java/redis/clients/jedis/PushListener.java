@@ -4,9 +4,8 @@ package redis.clients.jedis;
 public interface PushListener {
 
   /**
-   * Interface to be implemented by push message listeners that are interested in listening to {@link PushMessage}. Requires Redis
-   * 6+ using RESP3.
-   *
+   * Interface to be implemented by push message listeners that are interested in listening to
+   * {@link PushMessage}. Requires Redis 6+ using RESP3.
    * @author Ivo Gaydajiev
    * @since 6.1
    * @see PushMessage

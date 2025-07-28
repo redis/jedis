@@ -15,11 +15,11 @@ public class PushMessage {
     }
   }
 
- public  String getType(){
-    return  type;
+  public String getType() {
+    return type;
   }
 
-  public List<Object> getContent(){
+  public List<Object> getContent() {
     return content;
   }
 }

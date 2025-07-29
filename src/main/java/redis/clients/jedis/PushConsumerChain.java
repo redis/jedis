@@ -19,19 +19,11 @@ import java.util.Set;
 @Internal
 public final class PushConsumerChain implements PushConsumer {
   /**
-   * Handler that consumes all push events, preventing them from being propagated to the client.
-   * Always marks events as processed.
-   */
-  public static final PushConsumer CONSUME_ALL_HANDLER = (context) -> {
-    // Always mark as processed, never propagate
-    context.setProcessed(true);
-  };
-  /**
    * Handler that allows all push events to be propagated to the client.
    */
   public static final PushConsumer PROPAGATE_ALL_HANDLER = (context) -> {
     // mark as not-processed, always propagate
-    context.setProcessed(false);
+    context.setForwardToClient(true);
   };
   /**
    * Handler that allows only pub/sub related events to be propagated to the client
@@ -58,7 +50,7 @@ public final class PushConsumerChain implements PushConsumer {
     public void accept(PushConsumerContext context) {
       if (pubSubCommands.contains(context.getMessage().getType())) {
         // Ensure pub/sub events are propagated to application
-        context.setProcessed(false);
+        context.setForwardToClient(true);
       }
     }
   };

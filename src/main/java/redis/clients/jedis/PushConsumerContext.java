@@ -5,7 +5,8 @@ import redis.clients.jedis.annots.Internal;
 @Internal
 public class PushConsumerContext {
   private final PushMessage message;
-  private boolean processed = false;
+
+  private boolean forwardToClient = false;
 
   public PushConsumerContext(PushMessage message) {
     this.message = message;
@@ -15,12 +16,12 @@ public class PushConsumerContext {
     return message;
   }
 
-  public boolean isProcessed() {
-    return processed;
+  public boolean isForwardToClient() {
+    return forwardToClient;
   }
 
-  public void setProcessed(boolean processed) {
-    this.processed = processed;
+  public void setForwardToClient(boolean forwardToClient) {
+    this.forwardToClient = forwardToClient;
   }
 
 }

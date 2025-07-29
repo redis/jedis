@@ -32,7 +32,7 @@ public class CacheConnection extends Connection {
     public void accept(PushConsumerContext event) {
       if (event.getMessage().getType().equals("invalidate")) {
         cache.deleteByRedisKeys((List) event.getMessage().getContent().get(1));
-        event.setProcessed(true);
+        event.setForwardToClient(false);
       }
     }
   }

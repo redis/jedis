@@ -107,7 +107,6 @@ public class Connection implements Closeable {
      * Pub/sub messages are propagated to the client.
      */
     this.pushConsumer = PushConsumerChain.of(
-        PushConsumerChain.CONSUME_ALL_HANDLER,
         PushConsumerChain.PUBSUB_ONLY_HANDLER
     );
 

@@ -18,10 +18,6 @@ import java.util.Set;
  */
 @Internal
 public final class PushConsumerChain implements PushConsumer {
-  private static final Logger log = LoggerFactory.getLogger(PushConsumerChain.class);
-
-  private final List<PushConsumer> consumers;
-
   /**
    * Handler that consumes all push events, preventing them from being propagated to the client.
    * Always marks events as processed.
@@ -30,7 +26,6 @@ public final class PushConsumerChain implements PushConsumer {
     // Always mark as processed, never propagate
     context.setProcessed(true);
   };
-
   /**
    * Handler that allows all push events to be propagated to the client.
    */
@@ -38,7 +33,6 @@ public final class PushConsumerChain implements PushConsumer {
     // mark as not-processed, always propagate
     context.setProcessed(false);
   };
-
   /**
    * Handler that allows only pub/sub related events to be propagated to the client
    * <p>
@@ -47,6 +41,7 @@ public final class PushConsumerChain implements PushConsumer {
    */
   public static final PushConsumer PUBSUB_ONLY_HANDLER = new PushConsumer() {
     final Set<String> pubSubCommands = new HashSet<>();
+
     {
       pubSubCommands.add("message");
       pubSubCommands.add("pmessage");
@@ -61,16 +56,14 @@ public final class PushConsumerChain implements PushConsumer {
 
     @Override
     public void accept(PushConsumerContext context) {
-      if (isPubSubType(context.getMessage().getType())) {
+      if (pubSubCommands.contains(context.getMessage().getType())) {
         // Ensure pub/sub events are propagated to application
         context.setProcessed(false);
       }
     }
-
-    private boolean isPubSubType(String type) {
-      return pubSubCommands.contains(type);
-    }
   };
+  private static final Logger log = LoggerFactory.getLogger(PushConsumerChain.class);
+  private final List<PushConsumer> consumers;
 
   /**
    * Create a new empty handler chain.
@@ -88,38 +81,12 @@ public final class PushConsumerChain implements PushConsumer {
   }
 
   /**
-   * Create a chain with a single handler.
-   * @param handler The handler to include in the chain
-   * @return A new handler chain with the specified handler
-   */
-  public static PushConsumerChain of(PushConsumer handler) {
-    return new PushConsumerChain(handler);
-  }
-
-  /**
    * Create a chain with the specified handlers.
    * @param handlers The handlers to add to the chain
    * @return A new handler chain with the specified handlers
    */
   public static PushConsumerChain of(PushConsumer... handlers) {
     return new PushConsumerChain(handlers);
-  }
-
-  /**
-   * Add a handler to be executed after this chain.
-   * @param handler The handler to add
-   * @return A new chain with the handler added
-   */
-  public PushConsumerChain then(PushConsumer handler) {
-    if (handler != null) {
-      PushConsumerChain newChain = new PushConsumerChain();
-      for (PushConsumer h : consumers) {
-        newChain.add(h);
-      }
-      newChain.add(handler);
-      return newChain;
-    }
-    return this;
   }
 
   /**
@@ -157,24 +124,6 @@ public final class PushConsumerChain implements PushConsumer {
   }
 
   /**
-   * Remove the handler at the specified position.
-   * @param index The position to remove from (0-based)
-   * @return The removed handler
-   */
-  public PushConsumer removeAt(int index) {
-    return consumers.remove(index);
-  }
-
-  /**
-   * Get the handler at the specified position.
-   * @param index The position to get (0-based)
-   * @return The handler at that position
-   */
-  public PushConsumer get(int index) {
-    return consumers.get(index);
-  }
-
-  /**
    * Get the number of handlers in the chain.
    * @return The number of handlers
    */
@@ -199,4 +148,5 @@ public final class PushConsumerChain implements PushConsumer {
       handler.accept(context);
     }
   }
+
 }

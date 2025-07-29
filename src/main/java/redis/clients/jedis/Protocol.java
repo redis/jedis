@@ -242,17 +242,13 @@ public final class Protocol {
     do {
       reply = process(is, pushConsumer);
 
-    } while (isPush(reply) && isProcessed((PushConsumerContext) reply) );
+    } while (isPush(reply) && ((PushConsumerContext) reply).isProcessed());
 
-    if ( isPush(reply)) {
+    if (isPush(reply)) {
       return ((PushConsumerContext) reply).getMessage().getContent();
     }
 
     return reply;
-  }
-
-  private static boolean isProcessed(PushConsumerContext reply) {
-    return reply.isProcessed();
   }
 
   private static boolean isPush(Object reply) {

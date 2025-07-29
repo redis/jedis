@@ -787,7 +787,7 @@ public class Connection implements Closeable {
 
     private void notifyListeners(PushMessage pushMessage) {
       try {
-        pushHandler.getPushListeners().forEach(pushListener -> {
+        pushHandler.getListeners().forEach(pushListener -> {
           try {
             pushListener.onPush(pushMessage);
           } catch (Exception e) {

@@ -38,7 +38,8 @@ public class StreamEntryDeletionResultTest {
   public void testGetCode() {
     assertEquals(-1, StreamEntryDeletionResult.NOT_FOUND.getCode());
     assertEquals(1, StreamEntryDeletionResult.DELETED.getCode());
-    assertEquals(2, StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED.getCode());
+    assertEquals(2,
+      StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED.getCode());
   }
 
   @Test

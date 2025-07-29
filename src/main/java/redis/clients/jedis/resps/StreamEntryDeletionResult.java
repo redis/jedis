@@ -5,8 +5,7 @@ package redis.clients.jedis.resps;
  * <ul>
  * <li>NOT_FOUND (-1): ID doesn't exist in stream</li>
  * <li>DELETED (1): Entry was deleted/acknowledged and deleted</li>
- * <li>ACKNOWLEDGED_NOT_DELETED (2): Entry was acknowledged but not deleted (still has dangling
- * references)</li>
+ * <li>NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED (2): Entry wasn't deleted.</li>
  * </ul>
  */
 public enum StreamEntryDeletionResult {

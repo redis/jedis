@@ -576,8 +576,9 @@
                         <include>src/test/java/redis/clients/jedis/upgrade/*.java</include>
                         <include>src/test/java/redis/clients/jedis/util/server/*.java</include>
                         <include>**/TimeoutOptions.java</include>
-                        <include>**/*Handler.java</include>                   </includes>
-				</configuration>
+                        <include>**/*Handler.java</include>
+                        <include>**/ConnectionTestHelper.java</include>
+                </configuration>
 				<executions>
 					<execution>
 						<goals>

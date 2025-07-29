@@ -8,30 +8,7 @@ import java.util.Collections;
  * @author Ivo Gaydajiev
  * @since 6.1
  */
-public interface PushHandler {
-
-  /**
-   * Add a new {@link PushListener listener}.
-   * @param listener the listener, must not be {@code null}.
-   */
-  void addListener(PushListener listener);
-
-  /**
-   * Remove an existing {@link PushListener listener}.
-   * @param listener the listener, must not be {@code null}.
-   */
-  void removeListener(PushListener listener);
-
-  /**
-   * Remove all existing {@link PushListener listeners}.
-   */
-  void removeAllListeners();
-
-  /**
-   * Returns a collection of {@link PushListener}.
-   * @return the collection of listeners.
-   */
-  Collection<PushListener> getPushListeners();
+public interface PushHandler extends ListenerHandler<PushListener> {
 
   /**
    * A no-operation implementation of PushHandler that doesn't maintain any listeners
@@ -64,7 +41,7 @@ final class NoOpPushHandler implements PushHandler {
   }
 
   @Override
-  public Collection<PushListener> getPushListeners() {
+  public Collection<PushListener> getListeners() {
     return Collections.emptyList();
   }
 }

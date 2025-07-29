@@ -113,7 +113,7 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected Object protocolRead(RedisInputStream inputStream, PushConsumer listener) {
+  protected Object protocolRead(RedisInputStream inputStream, PushConsumer consumer) {
     lock.lock();
     try {
       // return Protocol.read(inputStream, cache);

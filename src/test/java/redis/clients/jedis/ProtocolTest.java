@@ -147,7 +147,7 @@ public class ProtocolTest {
     final List<PushMessage> receivedMessages = new ArrayList<>();
     PushConsumer handler = pushContext -> {
         receivedMessages.add(pushContext.getMessage());
-        pushContext.setProcessed(true);
+        pushContext.setForwardToClient(false);
     };
 
     // Create a stream with a push message followed by a regular response
@@ -178,7 +178,7 @@ public class ProtocolTest {
   public void readMultiplePushEventsAreNotPropagatedAsReadOutputIfProcessed() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
-    PushConsumer handler = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setProcessed(true); };
+    PushConsumer handler = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setForwardToClient(false); };
 
 
     // Create a stream with multiple push messages followed by a regular response
@@ -223,7 +223,7 @@ public class ProtocolTest {
     final List<PushMessage> receivedMessages = new ArrayList<>();
     PushConsumer handler = pushContext -> {
       receivedMessages.add(pushContext.getMessage());
-      pushContext.setProcessed(false);
+      pushContext.setForwardToClient(true);
     };
 
     // Create a stream with a push message followed by a regular response

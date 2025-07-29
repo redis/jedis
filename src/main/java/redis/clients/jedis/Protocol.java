@@ -225,10 +225,11 @@ public final class Protocol {
     Object reply = process(is, PROPAGATE_ALL_HANDLER);
 
     if (reply != null & reply instanceof PushConsumerContext) {
-      if (((PushConsumerContext) reply).isProcessed()) {
+      PushConsumerContext context = (PushConsumerContext) reply;
+      if (!context.isForwardToClient()) {
         return null;
       }
-      return ((PushConsumerContext) reply).getMessage().getContent();
+      return context.getMessage().getContent();
     }
 
     return reply;
@@ -242,7 +243,7 @@ public final class Protocol {
     do {
       reply = process(is, pushConsumer);
 
-    } while (isPush(reply) && ((PushConsumerContext) reply).isProcessed());
+    } while (isPush(reply) && !((PushConsumerContext) reply).isForwardToClient());
 
     if (isPush(reply)) {
       return ((PushConsumerContext) reply).getMessage().getContent();

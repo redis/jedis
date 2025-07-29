@@ -150,48 +150,37 @@ public class Connection implements Closeable {
          * Pub/sub messages are propagated to the client.
          */
         this.pushConsumer = PushConsumerChain.of(
-                PushConsumerChain.CONSUME_ALL_HANDLER,
                 PushConsumerChain.PUBSUB_ONLY_HANDLER
         );
 
-    if (config != null) {
-
-      /*
-       * Add consumer to handle server maintenance events.
-       * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
-       */
-      MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
-      if (maintenanceEventHandler != null) {
-        this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler));
-
-        if (config.isProactiveRebindEnabled()) {
-          maintenanceEventHandler.addListener(new ConnectionRebindHandler());
-        }
-
-        if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
-          maintenanceEventHandler.addListener(new AdaptiveTimeoutHandler(Connection.this));
-        }
-      }
+        if (config != null) {
 
             /*
-             * If the user has provided a {@link PushHandler},
-             * add consumer to notify {@link PushListener}s, without changing the processed flag.
+             * Add consumer to handle server maintenance events.
+             * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
              */
-            pushHandler = config.getPushHandler();
-            if (this.pushHandler != null) {
+            MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
+            if (maintenanceEventHandler != null) {
+                this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler));
+
+                if (config.isProactiveRebindEnabled()) {
+                    maintenanceEventHandler.addListener(new ConnectionRebindHandler());
+                }
+
+                if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
+                    maintenanceEventHandler.addListener(new AdaptiveTimeoutHandler(Connection.this));
+                }
+            }
+
+            /*
+             * Add consumer to notify registered {@link PushListener}s.
+             */
+            PushHandler pushHandler = config.getPushHandler();
+            if (pushHandler != null) {
                 this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
             }
         }
     }
-      /*
-       * Add consumer to notify registered {@link PushListener}s.
-       */
-      PushHandler pushHandler = config.getPushHandler();
-      if (pushHandler != null) {
-        this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
-      }
-    }
-  }
 
   @Override
   public String toString() {

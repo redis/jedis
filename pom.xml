@@ -355,6 +355,7 @@
 						<include>src/test/java/redis/clients/jedis/util/server/*.java</include>
 						<include>**/TimeoutOptions.java</include>
 						<include>**/*Handler.java</include>
+						<include>**/ConnectionTestHelper.java</include>
 					</includes>
 				</configuration>
 				<executions>

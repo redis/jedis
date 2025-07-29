@@ -28,10 +28,13 @@ public enum StreamEntryDeletionResult {
   DELETED(1),
 
   /**
-   * The entry was acknowledged but not deleted because it still has dangling references in other
-   * consumer groups' pending entry lists.
+   * The entry was not deleted due to one of the following reasons:
+   * <ul>
+   * <li>For XDELEX: The entry was not acknowledged by any consumer group</li>
+   * <li>For XACKDEL: The entry still has pending references in other consumer groups</li>
+   * </ul>
    */
-  ACKNOWLEDGED_NOT_DELETED(2);
+  NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED(2);
 
   private final int code;
 
@@ -60,7 +63,7 @@ public enum StreamEntryDeletionResult {
       case 1:
         return DELETED;
       case 2:
-        return ACKNOWLEDGED_NOT_DELETED;
+        return NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED;
       default:
         throw new IllegalArgumentException("Unknown stream entry deletion result code: " + code);
     }

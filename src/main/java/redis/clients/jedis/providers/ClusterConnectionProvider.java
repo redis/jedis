@@ -112,6 +112,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     return cache.getNodes();
   }
 
+  public Map<String, ConnectionPool> getPrimaryNodes() {
+    return cache.getPrimaryNodes();
+  }
+
   public HostAndPort getNode(int slot) {
     return slot >= 0 ? cache.getSlotNode(slot) : null;
   }
@@ -208,5 +212,9 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   @Override
   public Map<String, ConnectionPool> getConnectionMap() {
     return Collections.unmodifiableMap(getNodes());
+  }
+
+  public Map<String, ConnectionPool> getPrimaryConnectionMap() {
+    return Collections.unmodifiableMap(getPrimaryNodes());
   }
 }

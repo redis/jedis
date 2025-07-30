@@ -2,7 +2,10 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -20,6 +23,16 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisAsserts;
 
 public class ClusterCommandExecutor implements CommandExecutor {
+
+  private static final Set<String> PRIMARY_ONLY_COMMANDS;
+  static {
+    Set<String> commands = new HashSet<>();
+    commands.add("FUNCTION_DELETE");
+    commands.add("FUNCTION_FLUSH");
+    commands.add("FUNCTION_LOAD");
+    commands.add("FUNCTION_RESTORE");
+    PRIMARY_ONLY_COMMANDS = Collections.unmodifiableSet(commands);
+  }
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -45,7 +58,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
+    Map<String, ConnectionPool> connectionMap = requiresPrimaryOnly(commandObject)
+            ? provider.getPrimaryConnectionMap()
+            : provider.getConnectionMap();
 
     boolean isErrored = false;
     T reply = null;
@@ -74,6 +89,15 @@ public class ClusterCommandExecutor implements CommandExecutor {
       throw bcastError;
     }
     return reply;
+  }
+
+  private boolean requiresPrimaryOnly(CommandObject<?> commandObject) {
+	  try {
+        String commandName = new String(commandObject.getArguments().getCommand().getRaw());
+        return PRIMARY_ONLY_COMMANDS.contains(commandName);
+	  } catch (Exception e) {
+        return false;
+	  }
   }
 
   @Override

@@ -2,6 +2,7 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,12 +27,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   private static final Set<String> PRIMARY_ONLY_COMMANDS;
   static {
-    Set<String> commands = new HashSet<>();
-    commands.add("FUNCTION_DELETE");
-    commands.add("FUNCTION_FLUSH");
-    commands.add("FUNCTION_LOAD");
-    commands.add("FUNCTION_RESTORE");
-    PRIMARY_ONLY_COMMANDS = Collections.unmodifiableSet(commands);
+    PRIMARY_ONLY_COMMANDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+        "FUNCTION_DELETE", "FUNCTION_FLUSH", "FUNCTION_LOAD", "FUNCTION_RESTORE"
+    )));
   }
 
   private final Logger log = LoggerFactory.getLogger(getClass());

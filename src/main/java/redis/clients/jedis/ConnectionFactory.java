@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.AuthXManager;
@@ -21,12 +22,15 @@ import redis.clients.jedis.exceptions.JedisException;
  */
 public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
+  public interface MakerInjector extends UnaryOperator<Supplier<Connection>> {
+  };
+
   private static final Logger logger = LoggerFactory.getLogger(ConnectionFactory.class);
 
   private final JedisSocketFactory jedisSocketFactory;
   private final JedisClientConfig clientConfig;
   private final Cache clientSideCache;
-  private final Supplier<Connection> objectMaker;
+  private Supplier<Connection> objectMaker;
 
   private final AuthXEventListener authXEventListener;
 
@@ -71,6 +75,10 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private Supplier<Connection> connectionSupplier() {
     return clientSideCache == null ? () -> new Connection(jedisSocketFactory, clientConfig)
         : () -> new CacheConnection(jedisSocketFactory, clientConfig, clientSideCache);
+  }
+
+  public void injectMaker(MakerInjector injector) {
+    this.objectMaker = injector.apply(objectMaker);
   }
 
   @Override

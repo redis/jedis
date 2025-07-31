@@ -41,6 +41,7 @@ import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 import redis.clients.jedis.mcf.HealthStatusManager;
 import redis.clients.jedis.mcf.StatusTracker;
 import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.mcf.TrackingConnectionPool;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
@@ -292,11 +293,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         circuitBreakerEventPublisher.onFailureRateExceeded(event -> log.error(String.valueOf(event)));
         circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
 
-        ConnectionPool pool;
+        TrackingConnectionPool pool;
         if (poolConfig != null) {
-            pool = new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(), poolConfig);
+            pool = new TrackingConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(), poolConfig);
         } else {
-            pool = new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig());
+            pool = new TrackingConnectionPool(config.getHostAndPort(), config.getJedisClientConfig());
         }
         Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
         multiClusterMap.put(config.getHostAndPort(), cluster);
@@ -546,6 +547,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 oldCluster.circuitBreaker.getName());
             oldCluster.forceDisconnect();
             log.info("Disconnected all active connections in old cluster: {}", oldCluster.circuitBreaker.getName());
+
         }
         return switched;
 
@@ -630,7 +632,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public static class Cluster {
 
-        private final ConnectionPool connectionPool;
+        private final TrackingConnectionPool connectionPool;
         private final Retry retry;
         private final CircuitBreaker circuitBreaker;
         private final float weight;
@@ -643,7 +645,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         private volatile long gracePeriodEndsAt = 0;
         private final Logger log = LoggerFactory.getLogger(getClass());
 
-        private Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
+        private Cluster(TrackingConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
             this.connectionPool = connectionPool;
             this.retry = retry;
@@ -741,8 +743,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public void forceDisconnect() {
-            log.info("Forcing disconnect of all active connections in old cluster: {}", circuitBreaker.getName());
-            // TODO: disconnect all active connections here
+            connectionPool.forceDisconnect();
         }
 
         public void close() {

@@ -2,6 +2,7 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static redis.clients.jedis.providers.MultiClusterPooledConnectionProviderHelper.onHealthStatusChange;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,7 +93,7 @@ class PeriodicFailbackTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1 (cluster2 is in grace period)
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
@@ -101,7 +102,7 @@ class PeriodicFailbackTest {
                 assertTrue(provider.getCluster(endpoint2).isInGracePeriod());
 
                 // Make cluster2 healthy again (but it's still in grace period)
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Trigger periodic check immediately - should still be on cluster1
                 MultiClusterPooledConnectionProviderHelper.periodicFailbackCheck(provider);
@@ -137,13 +138,13 @@ class PeriodicFailbackTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster2 healthy again
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for stability period
                 Thread.sleep(100);
@@ -181,20 +182,20 @@ class PeriodicFailbackTest {
                 assertEquals(provider.getCluster(endpoint3), provider.getCluster());
 
                 // Make cluster3 unhealthy to force failover to cluster2 (next highest weight)
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (weight 2.0f, higher than cluster1's 1.0f)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1 (only healthy cluster left)
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster2 and cluster3 healthy again
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for grace period to expire
                 Thread.sleep(150);

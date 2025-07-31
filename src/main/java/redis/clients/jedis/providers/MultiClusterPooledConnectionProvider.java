@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.concurrent.locks.Lock;
@@ -41,9 +40,11 @@ import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 import redis.clients.jedis.mcf.HealthStatusManager;
 import redis.clients.jedis.mcf.StatusTracker;
+import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.Endpoint;
 
 import redis.clients.jedis.mcf.HealthCheckStrategy;
@@ -80,11 +81,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private final Lock activeClusterIndexLock = new ReentrantLock(true);
 
     /**
-     * Functional interface typically used for activeMultiClusterIndex persistence or custom logging after a successful
-     * failover of a cluster/database endpoint (connection pool). Cluster/database endpoint info is passed as the sole
-     * parameter Example: cluster:redis-smart-cache.demo.com:12000
+     * Functional interface for listening to cluster switch events. The event args contain the reason for the switch,
+     * the endpoint, and the cluster.
      */
-    private Consumer<String> clusterFailoverPostProcessor;
+    private Consumer<ClusterSwitchEventArgs> clusterSwitchListener;
 
     private List<Class<? extends Throwable>> fallbackExceptionList;
 
@@ -111,6 +111,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         if (multiClusterClientConfig == null) throw new JedisValidationException(
             "MultiClusterClientConfig must not be NULL for MultiClusterPooledConnectionProvider");
+
+        this.multiClusterClientConfig = multiClusterClientConfig;
 
         ////////////// Configure Retry ////////////////////
 
@@ -233,10 +235,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             if (isActiveCluster) {
                 log.info("Active cluster is being removed. Finding a new active cluster...");
-                Map.Entry<Endpoint, Cluster> candidateCluster = findWeightedHealthyClusterToIterate();
-                if (candidateCluster != null) {
-                    setActiveCluster(candidateCluster.getValue(), true);
-                    log.info("New active cluster set to {}", candidateCluster.getKey());
+                Map.Entry<Endpoint, Cluster> candidate = findWeightedHealthyClusterToIterate();
+                if (candidate != null) {
+                    Cluster selectedCluster = candidate.getValue();
+                    if (setActiveCluster(selectedCluster, true)) {
+                        log.info("New active cluster set to {}", candidate.getKey());
+                        onClusterSwitch(SwitchReason.FORCED, candidate.getKey(), selectedCluster);
+                    }
                 } else {
                     throw new JedisException(
                         "Cluster can not be removed due to no healthy cluster available to switch!");
@@ -253,7 +258,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             // Close the cluster resources
             if (clusterToRemove != null) {
                 clusterToRemove.setDisabled(true);
-                clusterToRemove.getConnectionPool().close();
+                clusterToRemove.close();
             }
         } finally {
             activeClusterIndexLock.unlock();
@@ -324,9 +329,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         if (initializationComplete) {
             if (!newStatus.isHealthy() && clusterWithHealthChange == activeCluster) {
                 clusterWithHealthChange.setGracePeriod();
-                if (iterateActiveCluster() != null) {
-                    this.runClusterFailoverPostProcessor(activeCluster);
-                }
+                iterateActiveCluster(SwitchReason.HEALTH_CHECK);
             }
         }
     }
@@ -387,7 +390,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     void periodicFailbackCheck() {
         try {
             // Find the best candidate cluster for failback
-            Cluster bestCandidate = null;
+            Map.Entry<Endpoint, Cluster> bestCandidate = null;
             float bestWeight = activeCluster.getWeight();
 
             for (Map.Entry<Endpoint, Cluster> entry : multiClusterMap.entrySet()) {
@@ -405,23 +408,26 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
                 // This cluster is a valid candidate
                 if (cluster.getWeight() > bestWeight) {
-                    bestCandidate = cluster;
+                    bestCandidate = entry;
                     bestWeight = cluster.getWeight();
                 }
             }
 
             // Perform failback if we found a better candidate
             if (bestCandidate != null) {
+                Cluster selectedCluster = bestCandidate.getValue();
                 log.info("Performing failback from {} to {} (higher weight cluster available)",
-                    activeCluster.getCircuitBreaker().getName(), bestCandidate.getCircuitBreaker().getName());
-                setActiveCluster(bestCandidate, true);
+                    activeCluster.getCircuitBreaker().getName(), selectedCluster.getCircuitBreaker().getName());
+                if (setActiveCluster(selectedCluster, true)) {
+                    onClusterSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedCluster);
+                }
             }
         } catch (Exception e) {
             log.error("Error during periodic failback check", e);
         }
     }
 
-    public Endpoint iterateActiveCluster() {
+    public Endpoint iterateActiveCluster(SwitchReason reason) {
         Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate();
         if (clusterToIterate == null) {
             throw new JedisConnectionException(
@@ -432,6 +438,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         Cluster cluster = clusterToIterate.getValue();
         boolean changed = setActiveCluster(cluster, false);
         if (!changed) return null;
+        onClusterSwitch(reason, clusterToIterate.getKey(), cluster);
         return clusterToIterate.getKey();
     }
 
@@ -488,7 +495,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             throw new JedisValidationException("Provided endpoint: " + endpoint + " is not within "
                 + "the configured endpoints. Please use one from the configuration");
         }
-        setActiveCluster(cluster, true);
+        if (setActiveCluster(cluster, true)) {
+            onClusterSwitch(SwitchReason.FORCED, endpoint, cluster);
+        }
     }
 
     public void forceActiveCluster(Endpoint endpoint, long forcedActiveDuration) {
@@ -511,7 +520,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         // Field-level synchronization is used to avoid the edge case in which
         // incrementActiveMultiClusterIndex() is called at the same time
         activeClusterIndexLock.lock();
-
+        Cluster oldCluster;
         try {
 
             // Allows an attempt to reset the current cluster from a FORCED_OPEN to CLOSED state in the event that no
@@ -526,12 +535,20 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 log.warn("Cluster/database endpoint '{}' successfully closed its circuit breaker", originalClusterName);
             else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName,
                 cluster.circuitBreaker.getName());
-            Cluster temp = activeCluster;
+            oldCluster = activeCluster;
             activeCluster = cluster;
-            return temp != activeCluster;
         } finally {
             activeClusterIndexLock.unlock();
         }
+        boolean switched = oldCluster != cluster;
+        if (switched && this.multiClusterClientConfig.isFastFailover()) {
+            log.info("Forcing disconnect of all active connections in old cluster: {}",
+                oldCluster.circuitBreaker.getName());
+            oldCluster.forceDisconnect();
+            log.info("Disconnected all active connections in old cluster: {}", oldCluster.circuitBreaker.getName());
+        }
+        return switched;
+
     }
 
     @Override
@@ -549,7 +566,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         // Close all cluster connection pools
         for (Cluster cluster : multiClusterMap.values()) {
-            cluster.getConnectionPool().close();
+            cluster.close();
         }
     }
 
@@ -569,7 +586,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     @Override
     public Map<?, Pool<Connection>> getConnectionMap() {
-        ConnectionPool connectionPool = activeCluster.getConnectionPool();
+        ConnectionPool connectionPool = activeCluster.connectionPool;
         return Collections.singletonMap(connectionPool.getFactory(), connectionPool);
     }
 
@@ -596,13 +613,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         return e != null;
     }
 
-    public void runClusterFailoverPostProcessor(Cluster cluster) {
-        if (clusterFailoverPostProcessor != null)
-            clusterFailoverPostProcessor.accept(cluster.getCircuitBreaker().getName());
+    public void onClusterSwitch(SwitchReason reason, Endpoint endpoint, Cluster cluster) {
+        if (clusterSwitchListener != null) {
+            ClusterSwitchEventArgs eventArgs = new ClusterSwitchEventArgs(reason, endpoint, cluster);
+            clusterSwitchListener.accept(eventArgs);
+        }
     }
 
-    public void setClusterFailoverPostProcessor(Consumer<String> clusterFailoverPostProcessor) {
-        this.clusterFailoverPostProcessor = clusterFailoverPostProcessor;
+    public void setClusterSwitchListener(Consumer<ClusterSwitchEventArgs> clusterSwitchListener) {
+        this.clusterSwitchListener = clusterSwitchListener;
     }
 
     public List<Class<? extends Throwable>> getFallbackExceptionList() {
@@ -624,7 +643,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         private volatile long gracePeriodEndsAt = 0;
         private final Logger log = LoggerFactory.getLogger(getClass());
 
-        public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
+        private Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
             this.connectionPool = connectionPool;
             this.retry = retry;
@@ -634,9 +653,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public Connection getConnection() {
+            if (!isHealthy()) throw new JedisConnectionException("Cluster is not healthy");
             return connectionPool.getResource();
         }
 
+        @VisibleForTesting
         public ConnectionPool getConnectionPool() {
             return connectionPool;
         }
@@ -717,6 +738,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
          */
         public boolean isFailbackSupported() {
             return multiClusterClientConfig.isFailbackSupported();
+        }
+
+        public void forceDisconnect() {
+            log.info("Forcing disconnect of all active connections in old cluster: {}", circuitBreaker.getName());
+            // TODO: disconnect all active connections here
+        }
+
+        public void close() {
+            connectionPool.close();
         }
 
         @Override

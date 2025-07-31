@@ -59,12 +59,7 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                 // Iterating the active cluster will allow subsequent calls to the executeCommand() to use the next
                 // cluster's connection pool - according to the configuration's prioritization/order/weight
                 // int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex1();
-                if (provider.iterateActiveCluster() != null) {
-
-                    // Implementation is optionally provided during configuration. Typically, used for
-                    // activeMultiClusterIndex persistence or custom logging
-                    provider.runClusterFailoverPostProcessor(provider.getCluster());
-                }
+                provider.iterateActiveCluster(SwitchReason.CIRCUIT_BREAKER);
             }
             // this check relies on the fact that many failover attempts can hit with the same CB,
             // only the first one will trigger a failover, and make the CB FORCED_OPEN.

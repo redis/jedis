@@ -1,10 +1,8 @@
 package redis.clients.jedis.mcf;
 
-import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
@@ -20,12 +18,7 @@ public class EchoStrategy implements HealthCheckStrategy {
     public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout) {
         this.interval = interval;
         this.timeout = timeout;
-        ConnectionFactory connFactory = new ConnectionFactory(hostAndPort, jedisClientConfig);
-        try {
-            this.jedis = new UnifiedJedis(connFactory.makeObject().getObject());
-        } catch (Exception e) {
-            throw new JedisConnectionException("HealthCheck connection Failed!", e);
-        }
+        this.jedis = new UnifiedJedis(hostAndPort, jedisClientConfig);
     }
 
     @Override
@@ -41,6 +34,11 @@ public class EchoStrategy implements HealthCheckStrategy {
     @Override
     public HealthStatus doHealthCheck(Endpoint endpoint) {
         return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+    }
+
+    @Override
+    public void close() {
+        jedis.close();
     }
 
     public static final StrategySupplier DEFAULT = (hostAndPort, jedisClientConfig) -> {

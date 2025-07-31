@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
@@ -65,7 +67,7 @@ public class AutomaticFailoverTest {
             AbstractPipeline pipe = client.pipelined();
             pipe.set("pstr", "foobar");
             pipe.hset("phash", "foo", "bar");
-            provider.iterateActiveCluster();
+            provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
             pipe.sync();
         }
 
@@ -83,7 +85,7 @@ public class AutomaticFailoverTest {
             AbstractTransaction tx = client.multi();
             tx.set("tstr", "foobar");
             tx.hset("thash", "foo", "bar");
-            provider.iterateActiveCluster();
+            provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
             assertEquals(Arrays.asList("OK", 1L), tx.exec());
         }
 
@@ -106,7 +108,7 @@ public class AutomaticFailoverTest {
         RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
         MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
             builder.build());
-        connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
+        connectionProvider.setClusterSwitchListener(failoverReporter);
 
         UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
@@ -145,7 +147,7 @@ public class AutomaticFailoverTest {
 
         RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
         MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
-        cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+        cacheProvider.setClusterSwitchListener(failoverReporter);
 
         UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
@@ -178,7 +180,7 @@ public class AutomaticFailoverTest {
 
         RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
         MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
-        cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+        cacheProvider.setClusterSwitchListener(failoverReporter);
 
         UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
@@ -194,13 +196,13 @@ public class AutomaticFailoverTest {
         jedis.close();
     }
 
-    static class RedisFailoverReporter implements Consumer<String> {
+    static class RedisFailoverReporter implements Consumer<ClusterSwitchEventArgs> {
 
         boolean failedOver = false;
 
         @Override
-        public void accept(String clusterName) {
-            log.info("Jedis fail over to cluster: " + clusterName);
+        public void accept(ClusterSwitchEventArgs e) {
+            log.info("Jedis fail over to cluster: " + e.getClusterName());
             failedOver = true;
         }
     }

@@ -63,7 +63,7 @@ class PeriodicFailbackTest {
                 provider.getCluster(endpoint2).setDisabled(true);
 
                 // Force failover to cluster1 since cluster2 is disabled
-                provider.iterateActiveCluster();
+                provider.iterateActiveCluster(SwitchReason.FORCED);
 
                 // Manually trigger periodic check
                 MultiClusterPooledConnectionProviderHelper.periodicFailbackCheck(provider);

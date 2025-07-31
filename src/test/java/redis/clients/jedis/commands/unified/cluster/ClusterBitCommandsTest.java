@@ -1,12 +1,12 @@
 package redis.clients.jedis.commands.unified.cluster;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -36,14 +36,13 @@ public class ClusterBitCommandsTest extends BitCommandsTestBase {
     super(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @AfterEach
   public void tearDown() {
-    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

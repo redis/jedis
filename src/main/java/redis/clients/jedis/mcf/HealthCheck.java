@@ -24,7 +24,7 @@ public class HealthCheck {
     private AtomicReference<SimpleEntry<Long, HealthStatus>> statusRef = new AtomicReference<SimpleEntry<Long, HealthStatus>>();
     private Consumer<HealthStatusChangeEvent> statusChangeCallback;
 
-    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduler;
     private ExecutorService executor = Executors.newCachedThreadPool();
 
     HealthCheck(Endpoint endpoint, HealthCheckStrategy strategy,
@@ -33,6 +33,12 @@ public class HealthCheck {
         this.strategy = strategy;
         this.statusChangeCallback = statusChangeCallback;
         statusRef.set(new SimpleEntry<>(0L, HealthStatus.UNKNOWN));
+
+        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     public Endpoint getEndpoint() {

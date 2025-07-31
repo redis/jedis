@@ -133,9 +133,9 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
 
     /**
-     * Externally unblock ALL waiting connection creation threads.
+     * Unblock ALL waiting connection creation threads.
      */
-    public void unblockConnectionCreation() {
+    private void unblockConnectionCreation() {
         CountDownLatch oldLatch = unblockLatch;
         unblockLatch = new CountDownLatch(1); // Reset first
         oldLatch.countDown(); // Then signal old one

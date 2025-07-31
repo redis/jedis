@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
@@ -28,7 +30,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
   private static final Set<String> PRIMARY_ONLY_COMMANDS;
   static {
     PRIMARY_ONLY_COMMANDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-        "FUNCTION_DELETE", "FUNCTION_FLUSH", "FUNCTION_LOAD", "FUNCTION_RESTORE"
+        "FUNCTION_DELETE", "FUNCTION_FLUSH", "FUNCTION_LOAD", "FUNCTION_RESTORE", "FUNCTION_KILL"
     )));
   }
 
@@ -57,8 +59,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
   @Override
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
     Map<String, ConnectionPool> connectionMap = requiresPrimaryOnly(commandObject)
-            ? provider.getPrimaryConnectionMap()
-            : provider.getConnectionMap();
+        ? provider.getPrimaryConnectionMap()
+        : provider.getConnectionMap();
 
     boolean isErrored = false;
     T reply = null;
@@ -90,12 +92,42 @@ public class ClusterCommandExecutor implements CommandExecutor {
   }
 
   private boolean requiresPrimaryOnly(CommandObject<?> commandObject) {
-	  try {
-        String commandName = new String(commandObject.getArguments().getCommand().getRaw());
-        return PRIMARY_ONLY_COMMANDS.contains(commandName);
-	  } catch (Exception e) {
+    try {
+      String commandName = new String(commandObject.getArguments().getCommand().getRaw());
+
+      if ("FUNCTION".equals(commandName)) {
+        CommandArguments args = commandObject.getArguments();
+        Iterator<?> iterator = args.iterator();
+
+        if (iterator.hasNext()) {
+          iterator.next();
+
+          if (iterator.hasNext()) {
+            Object subCommandObj = iterator.next();
+
+              if (subCommandObj != null) {
+                try {
+                  java.lang.reflect.Method getRawMethod = subCommandObj.getClass().getMethod("getRaw");
+                  Object rawValue = getRawMethod.invoke(subCommandObj);
+
+                  if (rawValue instanceof byte[]) {
+                    String subCommand = new String((byte[]) rawValue);
+                    String fullCommand = "FUNCTION_" + subCommand.toUpperCase();
+                    return PRIMARY_ONLY_COMMANDS.contains(fullCommand);
+                  }
+                } catch (Exception e) {
+                  return false;
+                }
+              }
+          }
+        }
         return false;
-	  }
+      }
+
+      return PRIMARY_ONLY_COMMANDS.contains(commandName);
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   @Override

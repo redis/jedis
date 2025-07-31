@@ -287,15 +287,18 @@ public class JedisSentinelSlavePool implements AutoCloseable {
 
   private void removeSlave(HostAndPort slave) {
     String newSlaveHost = slave.toString();
+    PoolInfo removed = null;
     synchronized (this.slavePools) {
       for (int i = 0; i < this.slavePools.size(); i++) {
         PoolInfo poolInfo = this.slavePools.get(i);
         if (poolInfo.host.equals(newSlaveHost)) {
-          PoolInfo removed = slavePools.remove(i);
-          removed.pool.destroy();
-          return;
+          removed = slavePools.remove(i);
+          break;
         }
       }
+    }
+    if (removed != null) {
+      removed.pool.destroy();
     }
   }
 

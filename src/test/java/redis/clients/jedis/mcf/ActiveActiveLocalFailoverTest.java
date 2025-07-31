@@ -83,28 +83,8 @@ public class ActiveActiveLocalFailoverTest {
     });
   }
 
-  // @Test
-  // public void dummy() {
-  // PooledConnectionProvider p = new PooledConnectionProvider(endpoint1.getHostAndPort(),
-  // endpoint1.getClientConfigBuilder().build());
-  // Connection a1 = p.getConnection();
-  // Connection a2 = p.getConnection();
-  // Connection a3 = p.getConnection();
-  // Connection a4 = p.getConnection();
-  // Connection a5 = p.getConnection();
-  // Connection a6 = p.getConnection();
-  // Connection a7 = p.getConnection();
-  // Connection a8 = p.getConnection();
-  // Connection a9 = p.getConnection();
-  // Connection a10 = p.getConnection();
-
-  // }
-
   @ParameterizedTest
-  // @CsvSource({ "false, 2, 30", "true, 0, 2" })
   @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9", "true, 0, 2, 12", })
-  // @CsvSource({ "true, 0, 2, 12", })
-
   public void testFailover(boolean fastFailover, long minFailoverCompletionDuration, long maxFailoverCompletionDuration,
     int numberOfThreads) {
 

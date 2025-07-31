@@ -1,65 +1,106 @@
-package redis.clients.jedis.scenario;
+package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import eu.rekawek.toxiproxy.Proxy;
+import eu.rekawek.toxiproxy.ToxiproxyClient;
+import eu.rekawek.toxiproxy.model.Toxic;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.scenario.ActiveActiveFailoverTest;
+import redis.clients.jedis.scenario.MultiThreadedFakeApp;
+import redis.clients.jedis.scenario.RecommendedSettings;
+import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
-public class ActiveActiveFailoverTest {
+public class ActiveActiveLocalFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
 
-  private static EndpointConfig endpoint;
-
-  private final FaultInjectionClient faultClient = new FaultInjectionClient();
+  private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
+  private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
+  private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
+  private static Proxy redisProxy1;
+  private static Proxy redisProxy2;
 
   @BeforeAll
-  public static void beforeClass() {
-    try {
-      ActiveActiveFailoverTest.endpoint = HostAndPorts.getRedisEndpoint("re-active-active");
-    } catch (IllegalArgumentException e) {
-      log.warn("Skipping test because no Redis endpoint is configured");
-      assumeTrue(false);
+  public static void setupAdminClients() throws IOException {
+    if (tp.getProxyOrNull("redis-1") != null) {
+      tp.getProxy("redis-1").delete();
     }
+    if (tp.getProxyOrNull("redis-2") != null) {
+      tp.getProxy("redis-2").delete();
+    }
+
+    redisProxy1 = tp.createProxy("redis-1", "0.0.0.0:29379", "redis-failover-1:9379");
+    redisProxy2 = tp.createProxy("redis-2", "0.0.0.0:29380", "redis-failover-2:9380");
   }
 
-  @Test
-  public void testFailover() {
+  @AfterAll
+  public static void cleanupAdminClients() throws IOException {
+    if (redisProxy1 != null) redisProxy1.delete();
+    if (redisProxy2 != null) redisProxy2.delete();
+  }
+
+  @BeforeEach
+  public void setup() throws IOException {
+    tp.getProxies().forEach(proxy -> {
+      try {
+        proxy.enable();
+        for (Toxic toxic : proxy.toxics().getAll()) {
+          toxic.remove();
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  @ParameterizedTest
+  @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9", "true, 0, 2, 12", })
+  public void testFailover(boolean fastFailover, long minFailoverCompletionDuration, long maxFailoverCompletionDuration,
+    int numberOfThreads) {
+
+    log.info(
+      "TESTING WITH PARAMETERS: fastFailover: {} numberOfThreads: {} minFailoverCompletionDuration: {} maxFailoverCompletionDuration: {] ",
+      fastFailover, numberOfThreads, minFailoverCompletionDuration, maxFailoverCompletionDuration);
 
     MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
 
-    JedisClientConfig config = endpoint.getClientConfigBuilder()
+    JedisClientConfig config = endpoint1.getClientConfigBuilder()
       .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
       .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-    clusterConfig[0] = ClusterConfig.builder(endpoint.getHostAndPort(0), config)
+    clusterConfig[0] = ClusterConfig.builder(endpoint1.getHostAndPort(), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
-    clusterConfig[1] = ClusterConfig.builder(endpoint.getHostAndPort(1), config)
+    clusterConfig[1] = ClusterConfig.builder(endpoint2.getHostAndPort(), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfig);
@@ -69,13 +110,16 @@ public class ActiveActiveFailoverTest {
     builder.circuitBreakerSlidingWindowMinCalls(1);
     builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
 
-    builder.failbackSupported(true);
-    builder.failbackCheckInterval(1000);
+    builder.failbackSupported(false);
+    // builder.failbackCheckInterval(1000);
     builder.gracePeriod(10000);
 
     builder.retryWaitDuration(10);
     builder.retryMaxAttempts(1);
     builder.retryWaitDurationExponentialBackoffMultiplier(1);
+
+    // Use the parameterized fastFailover setting
+    builder.fastFailover(fastFailover);
 
     class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
 
@@ -96,15 +140,15 @@ public class ActiveActiveFailoverTest {
       @Override
       public void accept(ClusterSwitchEventArgs e) {
         this.currentClusterName = e.getClusterName();
-        log.info("\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n",
+        log.info("\n\n===={}=== \nJedis switching to cluster: {}\n====End of log===\n", e.getReason(),
           e.getClusterName());
-
-        if (failoverHappened) {
-          failbackHappened = true;
-          failbackAt = Instant.now();
-        } else {
+        if ((e.getReason() == SwitchReason.CIRCUIT_BREAKER || e.getReason() == SwitchReason.HEALTH_CHECK)) {
           failoverHappened = true;
           failoverAt = Instant.now();
+        }
+        if (e.getReason() == SwitchReason.FAILBACK) {
+          failbackHappened = true;
+          failbackAt = Instant.now();
         }
       }
     }
@@ -112,13 +156,16 @@ public class ActiveActiveFailoverTest {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
     provider.setClusterSwitchListener(reporter);
-    provider.setActiveCluster(endpoint.getHostAndPort(0));
+    provider.setActiveCluster(endpoint1.getHostAndPort());
 
     UnifiedJedis client = new UnifiedJedis(provider);
 
     AtomicLong retryingThreadsCounter = new AtomicLong(0);
     AtomicLong failedCommandsAfterFailover = new AtomicLong(0);
     AtomicReference<Instant> lastFailedCommandAt = new AtomicReference<>();
+    AtomicReference<Instant> lastFailedBeforeFailover = new AtomicReference<>();
+    AtomicBoolean errorOccuredAfterFailover = new AtomicBoolean(false);
+    AtomicBoolean unexpectedErrors = new AtomicBoolean(false);
 
     // Start thread that imitates an application that uses the client
     MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(client, (UnifiedJedis c) -> {
@@ -145,8 +192,11 @@ public class ActiveActiveFailoverTest {
 
           break;
         } catch (JedisConnectionException e) {
+          lastFailedBeforeFailover.set(Instant.now());
 
           if (reporter.failoverHappened) {
+            errorOccuredAfterFailover.set(true);
+
             long failedCommands = failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
             log.warn("Thread {} failed to execute command after failover. Failed commands after failover: {}", threadId,
@@ -163,51 +213,69 @@ public class ActiveActiveFailoverTest {
             throw new RuntimeException(ie);
           }
           if (++attempt == maxTries) throw e;
+        } catch (Exception e) {
+          unexpectedErrors.set(true);
+          lastFailedBeforeFailover.set(Instant.now());
+          log.error("UNEXPECTED exception", e);
+          if (reporter.failoverHappened) {
+            errorOccuredAfterFailover.set(true);
+            lastFailedCommandAt.set(Instant.now());
+          }
         }
       }
       return true;
-    }, 4);
+    }, numberOfThreads);
     fakeApp.setKeepExecutingForSeconds(30);
     Thread t = new Thread(fakeApp);
     t.start();
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("bdb_id", endpoint.getBdbId());
-    params.put("actions",
-      "[{\"type\":\"execute_rlutil_command\",\"params\":{\"rlutil_command\":\"pause_bdb\"}},{\"type\":\"wait\",\"params\":{\"wait_time\":\"15\"}},{\"type\":\"execute_rlutil_command\",\"params\":{\"rlutil_command\":\"resume_bdb\"}}]");
-
-    FaultInjectionClient.TriggerActionResponse actionResponse = null;
-
-    try {
-      log.info("Triggering bdb_pause + wait 15 seconds + bdb_resume");
-      actionResponse = faultClient.triggerAction("sequence_of_actions", params);
-    } catch (IOException e) {
-      fail("Fault Injection Server error:" + e.getMessage());
+    log.info("Triggering issue on endpoint1");
+    try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())) {
+      jedis.clientPause(20000);
     }
 
-    log.info("Action id: {}", actionResponse.getActionId());
-    fakeApp.setAction(actionResponse);
+    fakeApp.setAction(new TriggerActionResponse(null) {
+      private long completeAt = System.currentTimeMillis() + 10000;
 
+      @Override
+      public boolean isCompleted(Duration checkInterval, Duration delayAfter, Duration timeout) {
+        return System.currentTimeMillis() > completeAt;
+      }
+    });
+
+    log.info("Waiting for fake app to complete");
     try {
       t.join();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+    log.info("Fake app completed");
 
-    ConnectionPool pool = provider.getCluster(endpoint.getHostAndPort(0)).getConnectionPool();
+    ConnectionPool pool = provider.getCluster(endpoint1.getHostAndPort()).getConnectionPool();
 
     log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(), pool.getNumIdle());
     log.info("Failover happened at: {}", reporter.failoverAt);
     log.info("Failback happened at: {}", reporter.failbackAt);
-    log.info("Last failed command at: {}", lastFailedCommandAt.get());
-    Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
-    log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
 
     assertEquals(0, pool.getNumActive());
     assertTrue(fakeApp.capturedExceptions().isEmpty());
     assertTrue(reporter.failoverHappened);
-    assertTrue(reporter.failbackHappened);
-    assertThat(fullFailoverTime.getSeconds(), Matchers.greaterThanOrEqualTo(30L));
+    if (errorOccuredAfterFailover.get()) {
+      log.info("Last failed command at: {}", lastFailedCommandAt.get());
+      Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
+      log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
+
+      // assertTrue(reporter.failbackHappened);
+      assertThat(fullFailoverTime.getSeconds(), Matchers.greaterThanOrEqualTo(minFailoverCompletionDuration));
+      assertThat(fullFailoverTime.getSeconds(), Matchers.lessThanOrEqualTo(maxFailoverCompletionDuration));
+    } else {
+      log.info("No failed commands after failover!");
+    }
+
+    if (lastFailedBeforeFailover.get() != null) {
+      log.info("Last failed command before failover at: {}", lastFailedBeforeFailover.get());
+    }
+    assertFalse(unexpectedErrors.get());
 
     client.close();
   }

@@ -1,13 +1,21 @@
 package redis.clients.jedis.providers;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
+import redis.clients.jedis.mcf.Endpoint;
+import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,16 +34,27 @@ public class MultiClusterPooledConnectionProviderTest {
     public void setUp() {
 
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build());
-        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build());
+        clusterConfigs[0] = ClusterConfig
+            .builder(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build())
+            .weight(0.5f).build();
+        clusterConfigs[1] = ClusterConfig
+            .builder(endpointStandalone1.getHostAndPort(), endpointStandalone1.getClientConfigBuilder().build())
+            .weight(0.3f).build();
 
-        provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterConfigs).build());
+        provider = new MultiClusterPooledConnectionProvider(
+            new MultiClusterClientConfig.Builder(clusterConfigs).build());
+    }
+
+    @AfterEach
+    public void destroy() {
+        provider.close();
+        provider = null;
     }
 
     @Test
     public void testCircuitBreakerForcedTransitions() {
 
-        CircuitBreaker circuitBreaker = provider.getClusterCircuitBreaker(1);
+        CircuitBreaker circuitBreaker = provider.getClusterCircuitBreaker();
         circuitBreaker.getState();
 
         if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))
@@ -49,45 +68,56 @@ public class MultiClusterPooledConnectionProviderTest {
     }
 
     @Test
-    public void testIncrementActiveMultiClusterIndex() {
-        int index = provider.incrementActiveMultiClusterIndex();
-        assertEquals(2, index);
+    public void testIterateActiveCluster() throws InterruptedException {
+        waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
+            provider.getCluster(endpointStandalone1.getHostAndPort()));
+
+        Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+        assertEquals(endpointStandalone1.getHostAndPort(), e2);
     }
 
     @Test
-    public void testIncrementActiveMultiClusterIndexOutOfRange() {
-        provider.setActiveMultiClusterIndex(1);
+    public void testIterateActiveClusterOutOfRange() {
+        waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
+            provider.getCluster(endpointStandalone1.getHostAndPort()));
 
-        int index = provider.incrementActiveMultiClusterIndex();
-        assertEquals(2, index);
+        provider.setActiveCluster(endpointStandalone0.getHostAndPort());
+        provider.getCluster().setDisabled(true);
 
-        assertThrows(JedisConnectionException.class,
-            () -> provider.incrementActiveMultiClusterIndex()); // Should throw an exception
+        Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+        provider.getCluster().setDisabled(true);
+
+        assertEquals(endpointStandalone1.getHostAndPort(), e2);
+        // Should throw an exception
+        assertThrows(JedisConnectionException.class, () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK));
     }
 
     @Test
-    public void testIsLastClusterCircuitBreakerForcedOpen() {
-        provider.setActiveMultiClusterIndex(1);
+    public void testCanIterateOnceMore() {
+        waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
+            provider.getCluster(endpointStandalone1.getHostAndPort()));
 
-        try {
-            provider.incrementActiveMultiClusterIndex();
-        } catch (Exception e) {}
+        provider.setActiveCluster(endpointStandalone0.getHostAndPort());
+        provider.getCluster().setDisabled(true);
+        provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+        
+        assertFalse(provider.canIterateOnceMore());
+    }
 
-        // This should set the isLastClusterCircuitBreakerForcedOpen to true
-        try {
-            provider.incrementActiveMultiClusterIndex();
-        } catch (Exception e) {}
-
-      assertTrue(provider.isLastClusterCircuitBreakerForcedOpen());
+    private void waitForClustersToGetHealthy(Cluster... clusters) {
+        Awaitility.await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).atMost(Durations.TWO_SECONDS)
+            .until(() -> Arrays.stream(clusters).allMatch(Cluster::isHealthy));
     }
 
     @Test
     public void testRunClusterFailoverPostProcessor() {
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(new HostAndPort("purposefully-incorrect", 0000),
-                                                                    DefaultJedisClientConfig.builder().build());
-        clusterConfigs[1] = new ClusterConfig(new HostAndPort("purposefully-incorrect", 0001),
-                                                                    DefaultJedisClientConfig.builder().build());
+        clusterConfigs[0] = ClusterConfig
+            .builder(new HostAndPort("purposefully-incorrect", 0000), DefaultJedisClientConfig.builder().build())
+            .weight(0.5f).healthCheckEnabled(false).build();
+        clusterConfigs[1] = ClusterConfig
+            .builder(new HostAndPort("purposefully-incorrect", 0001), DefaultJedisClientConfig.builder().build())
+            .weight(0.4f).healthCheckEnabled(false).build();
 
         MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
 
@@ -98,41 +128,48 @@ public class MultiClusterPooledConnectionProviderTest {
         AtomicBoolean isValidTest = new AtomicBoolean(false);
 
         MultiClusterPooledConnectionProvider localProvider = new MultiClusterPooledConnectionProvider(builder.build());
-        localProvider.setClusterFailoverPostProcessor(a -> { isValidTest.set(true); });
+        localProvider.setClusterSwitchListener(a -> {
+            isValidTest.set(true);
+        });
 
         try (UnifiedJedis jedis = new UnifiedJedis(localProvider)) {
 
-            // This should fail after 3 retries and meet the requirements to open the circuit on the next iteration
+            // This will fail due to unable to connect and open the circuit which will trigger the post processor
             try {
                 jedis.get("foo");
-            } catch (Exception e) {}
-
-            // This should fail after 3 retries and open the circuit which will trigger the post processor
-            try {
-                jedis.get("foo");
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
         }
 
-      assertTrue(isValidTest.get());
+        assertTrue(isValidTest.get());
     }
 
     @Test
     public void testSetActiveMultiClusterIndexEqualsZero() {
-        assertThrows(JedisValidationException.class,
-            () -> provider.setActiveMultiClusterIndex(0)); // Should throw an exception
+        assertThrows(JedisValidationException.class, () -> provider.setActiveCluster(null)); // Should throw an
+                                                                                             // exception
     }
 
     @Test
     public void testSetActiveMultiClusterIndexLessThanZero() {
-        assertThrows(JedisValidationException.class,
-            () -> provider.setActiveMultiClusterIndex(-1)); // Should throw an exception
+        assertThrows(JedisValidationException.class, () -> provider.setActiveCluster(null)); // Should throw an
+                                                                                             // exception
     }
 
     @Test
     public void testSetActiveMultiClusterIndexOutOfRange() {
-        assertThrows(JedisValidationException.class,
-            () -> provider.setActiveMultiClusterIndex(3)); // Should throw an exception
+        assertThrows(JedisValidationException.class, () -> provider.setActiveCluster(new Endpoint() {
+            @Override
+            public String getHost() {
+                return "purposefully-incorrect";
+            }
+
+            @Override
+            public int getPort() {
+                return 0000;
+            }
+        })); // Should throw an exception
     }
 
     @Test
@@ -142,10 +179,12 @@ public class MultiClusterPooledConnectionProviderTest {
         poolConfig.setMaxIdle(4);
         poolConfig.setMinIdle(1);
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
-        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(),
+            endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(),
+            endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
         try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
-                new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
+            new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
             MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
             ConnectionPool connectionPool = activeCluster.getConnectionPool();
             assertEquals(8, connectionPool.getMaxTotal());

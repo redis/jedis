@@ -22,11 +22,8 @@ import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluste
 @Experimental
 public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase implements CommandExecutor {
 
-    private final FailoverOptions options;
-
-    public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider, FailoverOptions options) {
+    public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider) {
         super(provider);
-        this.options = options != null ? options : FailoverOptions.builder().build();
     }
 
     @Override
@@ -50,8 +47,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
         try (Connection connection = cluster.getConnection()) {
             return connection.executeCommand(commandObject);
         } catch (Exception e) {
-
-            if (retryOnFailover() && !isActiveCluster(cluster)
+            if (cluster.retryOnFailover() && !isActiveCluster(cluster)
                 && isCircuitBreakerTrackedException(e, cluster.getCircuitBreaker())) {
                 throw new ConnectionFailoverException(
                     "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
@@ -63,10 +59,6 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
 
     private boolean isCircuitBreakerTrackedException(Exception e, CircuitBreaker cb) {
         return cb.getCircuitBreakerConfig().getRecordExceptionPredicate().test(e);
-    }
-
-    private boolean retryOnFailover() {
-        return options.isRetryOnFailover();
     }
 
     private boolean isActiveCluster(Cluster cluster) {

@@ -138,6 +138,21 @@ public class Schema {
     return this;
   }
 
+  /**
+   * Add a Vamana vector field to the schema using the SVS-VAMANA algorithm.
+   * This method provides a convenient way to add SVS-VAMANA vector fields.
+   *
+   * @param name the field's name
+   * @param attributes the SVS-Vamana algorithm configuration attributes
+   * @return the schema object
+   */
+  public Schema addSvsVamanaVectorField(String name, Map<String, Object> attributes) {
+    // Use the existing VectorField with SVS_VAMANA algorithm
+    Map<String, Object> vamanaAttributes = new java.util.HashMap<>(attributes);
+    fields.add(new VectorField(name, VectorField.VectorAlgo.SVS_VAMANA, vamanaAttributes));
+    return this;
+  }
+
   public Schema addField(Field field) {
     fields.add(field);
     return this;
@@ -350,7 +365,8 @@ public class Schema {
 
     public enum VectorAlgo {
       FLAT,
-      HNSW
+      HNSW,
+      SVS_VAMANA
     }
 
     private final VectorAlgo algorithm;

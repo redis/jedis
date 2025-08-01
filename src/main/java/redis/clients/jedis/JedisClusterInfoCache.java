@@ -425,6 +425,27 @@ public class JedisClusterInfoCache {
     }
   }
 
+  public Map<String, ConnectionPool> getPrimaryNodes() {
+    r.lock();
+    try {
+      Map<String, ConnectionPool> primaryNodes = new HashMap<>();
+      Set<ConnectionPool> addedPools = new HashSet<>();
+
+      for (int slot = 0; slot < slots.length; slot++) {
+        ConnectionPool pool = slots[slot];
+        if (pool != null && addedPools.add(pool)) {
+          HostAndPort hostAndPort = slotNodes[slot];
+          if (hostAndPort != null) {
+            primaryNodes.put(getNodeKey(hostAndPort), pool);
+          }
+        }
+      }
+      return primaryNodes;
+    } finally {
+      r.unlock();
+    }
+  }
+
   public List<ConnectionPool> getShuffledNodesPool() {
     r.lock();
     try {

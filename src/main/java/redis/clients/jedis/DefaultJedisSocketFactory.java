@@ -8,6 +8,7 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -23,6 +24,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       Protocol.DEFAULT_PORT);
 
   private volatile HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
+  private volatile Supplier<HostAndPort> hostAndPortSupplier;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int socketTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean ssl = false;
@@ -33,6 +35,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private HostAndPortMapper hostAndPortMapper = null;
 
   public DefaultJedisSocketFactory() {
+    hostAndPortSupplier = ()->this.hostAndPort;
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort) {
@@ -40,12 +43,14 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   public DefaultJedisSocketFactory(JedisClientConfig config) {
-    this(null, config);
+    this((HostAndPort) null, config);
+    hostAndPortSupplier = ()->this.hostAndPort;
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
     if (hostAndPort != null) {
       this.hostAndPort = hostAndPort;
+      hostAndPortSupplier = ()->this.hostAndPort;
     }
     if (config != null) {
       this.connectionTimeout = config.getConnectionTimeoutMillis();
@@ -154,17 +159,55 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return new SSLSocketWrapper(sslSocket, plainSocket);
   }
 
+  /**
+   *  Updates the HostAndPort used to create the socket.
+   *  <p>
+   *  Note: if Supplier<HostAndPort> is set it has precedence over provided hostAndPort.
+   *  </p>
+   * */
   public void updateHostAndPort(HostAndPort hostAndPort) {
     this.hostAndPort = hostAndPort;
   }
 
+
+  /**
+   * Returns the HostAndPort that is used to create the socket.
+   * <p>
+   * Note: if Supplier<HostAndPort> is set it has precedence over HostAndPort.
+   *</p>
+   * @return the HostAndPort that is used to create the socket.
+   */
   public HostAndPort getHostAndPort() {
     return this.hostAndPort;
   }
 
+
+  /**
+   * Returns the Supplier<HostAndPort> that is used to create the socket.
+   * @return the Supplier<HostAndPort> that is used to create the socket.
+   */
+  public Supplier<HostAndPort> getHostAndPortSupplier() {
+    return this.hostAndPortSupplier;
+  }
+
+  /**
+   * Sets the Supplier<HostAndPort> that is used to create the socket.
+   * @param hostAndPortSupplier the Supplier<HostAndPort> that is used to create the socket.
+   */
+  public void setHostAndPortSupplier(Supplier<HostAndPort> hostAndPortSupplier) {
+    this.hostAndPortSupplier = hostAndPortSupplier;
+  }
+
   protected HostAndPort getSocketHostAndPort() {
     HostAndPortMapper mapper = hostAndPortMapper;
-    HostAndPort hap = this.hostAndPort;
+
+    HostAndPort hap;
+    if (this.hostAndPortSupplier != null) {
+      hap = this.hostAndPortSupplier.get();
+    } else {
+      hap = this.hostAndPort;
+    }
+
     if (mapper != null) {
       HostAndPort mapped = mapper.getHostAndPort(hap);
       if (mapped != null) {

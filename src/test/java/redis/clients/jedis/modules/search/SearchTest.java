@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;

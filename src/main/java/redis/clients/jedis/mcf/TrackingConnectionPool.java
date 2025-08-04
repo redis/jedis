@@ -49,6 +49,14 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
 
     private Connection make(Supplier<Connection> supplier) {
+        if (forcingDisconnect) {
+            return new Connection(){
+                @Override
+                public void connect() {
+                    throw new JedisConnectionException("Forced disconnect in progress!");
+                }
+            };
+        }
         // Create CompletableFutures for both the connection task and unblock signal
         CompletableFuture<Connection> connectionFuture = CompletableFuture.supplyAsync(() -> supplier.get(),
             connectionCreationExecutor);

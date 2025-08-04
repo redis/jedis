@@ -1180,6 +1180,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.1.240")
   public void testSvsVamanaVectorSimilarity() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");

@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Schema abstracts the schema definition when creating an index. Documents can contain fields not
@@ -363,10 +365,65 @@ public class Schema {
 
   public static class VectorField extends Field {
 
-    public enum VectorAlgo {
-      FLAT,
-      HNSW,
-      SVS_VAMANA
+
+    /**
+     * Enumeration of supported vector indexing algorithms in Redis.
+     * Each algorithm has different performance characteristics and use cases.
+     */
+    public enum VectorAlgo implements Rawable {
+
+      /**
+       * FLAT algorithm provides exact vector search with perfect accuracy.
+       * Best suited for smaller datasets (&lt; 1M vectors) where search accuracy
+       * is more important than search latency.
+       */
+      FLAT("FLAT"),
+
+      /**
+       * HNSW (Hierarchical Navigable Small World) algorithm provides approximate
+       * vector search with configurable accuracy-performance trade-offs.
+       * Best suited for larger datasets (&gt; 1M vectors) where search performance
+       * and scalability are more important than perfect accuracy.
+       */
+      HNSW("HNSW"),
+
+      /**
+       * SVS_VAMANA algorithm provides high-performance approximate vector search
+       * optimized for specific use cases with advanced compression and optimization features.
+       *
+       * <p>Characteristics:
+       * <ul>
+       *   <li>High-performance approximate search</li>
+       *   <li>Support for vector compression (LVQ, LeanVec)</li>
+       *   <li>Configurable graph construction and search parameters</li>
+       *   <li>Optimized for Intel platforms with fallback support</li>
+       * </ul>
+       *
+       * <p>Note: This algorithm may have specific requirements and limitations.
+       * Consult the Redis documentation for detailed usage guidelines.
+       */
+      SVS_VAMANA("SVS-VAMANA");
+
+      private final byte[] raw;
+
+      /**
+       * Creates a VectorAlgorithm enum value.
+       *
+       * @param redisParamName the Redis parameter name for this algorithm
+       */
+      VectorAlgo(String redisParamName) {
+        raw = SafeEncoder.encode(redisParamName);
+      }
+
+      /**
+       * Returns the raw byte representation of the algorithm name for Redis commands.
+       *
+       * @return the raw bytes of the algorithm name
+       */
+      @Override
+      public byte[] getRaw() {
+        return raw;
+      }
     }
 
     private final VectorAlgo algorithm;
@@ -380,7 +437,9 @@ public class Schema {
 
     @Override
     public void addTypeArgs(CommandArguments args) {
+
       args.add(algorithm);
+
       args.add(attributes.size() << 1);
       for (Map.Entry<String, Object> entry : attributes.entrySet()) {
         args.add(entry.getKey());

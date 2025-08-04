@@ -3,10 +3,10 @@
 package io.redis.examples;
 
 import redis.clients.jedis.UnifiedJedis;
-// REMOVE_START
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
+// REMOVE_START
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // REMOVE_END
 
 public class SetGetExample {
@@ -15,8 +15,8 @@ public class SetGetExample {
   public void run() {
 
     UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
-
     // HIDE_END
+
     String status = jedis.set("bike:1", "Process 134");
 
     if ("OK".equals(status)) System.out.println("Successfully added a bike.");
@@ -24,12 +24,14 @@ public class SetGetExample {
     String value = jedis.get("bike:1");
 
     if (value != null) System.out.println("The name of the bike is: " + value + ".");
-    // HIDE_START
 
     // REMOVE_START
     assertEquals("OK", status);
     assertEquals("Process 134", value);
     // REMOVE_END
+
+// HIDE_START
+    jedis.close();
   }
 }
 // HIDE_END

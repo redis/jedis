@@ -19,14 +19,8 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.gears.*;
-import redis.clients.jedis.gears.RedisGearsProtocol.*;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.json.DefaultGsonObjectMapper;
-import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -57,7 +51,7 @@ public class CommandObjects {
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private Lock mapperLock = new ReentrantLock(true);    
   private volatile JsonObjectMapper jsonObjectMapper;
-  private final AtomicInteger searchDialect = new AtomicInteger(0);
+  private final AtomicInteger searchDialect = new AtomicInteger(2); // DEFAULT_SEARCH_DIALECT = 2;
 
   @Experimental
   void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
@@ -94,6 +88,17 @@ public class CommandObjects {
 
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
+      BuilderFactory.STRING);
+
+  public final CommandObject<String> info() {
+    return INFO_COMMAND_OBJECT;
+  }
+
+  public final CommandObject<String> info(String section) {
+    return new CommandObject<>(commandArguments(Command.INFO).add(section), BuilderFactory.STRING);
   }
 
   // Key commands
@@ -1013,8 +1018,28 @@ public class CommandObjects {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> hsetex(String key, HSetExParams params, String field, String value) {
+    return new CommandObject<>(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(1).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
+  }
+
   public final CommandObject<String> hget(String key, String field) {
     return new CommandObject<>(commandArguments(HGET).key(key).add(field), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> hgetex(String key, HGetExParams params, String... fields) {
+    return new CommandObject<>(commandArguments(Command.HGETEX).key(key)
+      .addParams(params).add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> hgetdel(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HGETDEL).key(key)
+      .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<Long> hsetnx(String key, String field, String value) {
@@ -1037,8 +1062,28 @@ public class CommandObjects {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    return new CommandObject<>(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(1).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX).key(key)
+      .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
+  }
+
   public final CommandObject<byte[]> hget(byte[] key, byte[] field) {
     return new CommandObject<>(commandArguments(HGET).key(key).add(field), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return new CommandObject<>(commandArguments(Command.HGETEX).key(key)
+      .addParams(params).add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> hgetdel(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HGETDEL).key(key).add(FIELDS)
+      .add(fields.length).addObjects((Object[]) fields), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> hsetnx(byte[] key, byte[] field, byte[] value) {
@@ -2006,7 +2051,7 @@ public class CommandObjects {
   }
 
   /**
-   * @deprecated Use {@link #zdiffstore(byte..., byte[]...)}.
+   * @deprecated Use {@link #zdiffstore(byte[], byte[][])}.
    */
   @Deprecated
   public final CommandObject<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
@@ -2581,8 +2626,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
   public final CommandObject<Long> xack(byte[] key, byte[] group, byte[]... ids) {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
@@ -2642,6 +2703,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(String key, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
   public final CommandObject<Long> xtrim(String key, long maxLen, boolean approximate) {
     CommandArguments args = commandArguments(XTRIM).key(key).add(MAXLEN);
     if (approximate) args.add(Protocol.BYTES_TILDE);
@@ -2655,6 +2724,14 @@ public class CommandObjects {
 
   public final CommandObject<Long> xdel(byte[] key, byte[]... ids) {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(byte[] key, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<List<StreamEntryDeletionResult>> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XDELEX).key(key).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
   public final CommandObject<Long> xtrim(byte[] key, long maxLen, boolean approximateLength) {
@@ -2836,6 +2913,11 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STREAM_READ_MAP_RESPONSE);
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, replaced by {@link #xreadBinary(XReadParams, Map)} or
+   * {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry parsing.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
     for (Map.Entry<byte[], byte[]> entry : streams) {
@@ -2847,6 +2929,35 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
+  public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(
+      XReadParams xReadParams, Map.Entry<byte[], StreamEntryID>... streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadBinaryAsMap(
+      XReadParams xReadParams, Map.Entry<byte[], StreamEntryID>... streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
+  }
+
+  /**
+   * @deprecated As of Jedis 6.1.0, use {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   * {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
@@ -2860,6 +2971,78 @@ public class CommandObjects {
     }
     return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
+
+  public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      Map.Entry<byte[], StreamEntryID>... streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .add(GROUP).add(groupName).add(consumer)
+        .addParams(xReadGroupParams).add(STREAMS);
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      Map.Entry<byte[], StreamEntryID>... streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .add(GROUP).add(groupName).add(consumer)
+        .addParams(xReadGroupParams).add(STREAMS);
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.key(entry.getKey());
+    }
+    for (Map.Entry<byte[], StreamEntryID> entry : streams) {
+      args.add(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
+  }
+
+  public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(
+          XReadParams xReadParams, Map<byte[], StreamEntryID> streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+    Set<Map.Entry<byte[], StreamEntryID>> entrySet = streams.entrySet();
+    entrySet.forEach(entry -> args.key(entry.getKey()));
+    entrySet.forEach(entry -> args.add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadBinaryAsMap(
+          XReadParams xReadParams, Map<byte[], StreamEntryID> streams) {
+      CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+      Set<Map.Entry<byte[], StreamEntryID>> entrySet = streams.entrySet();
+      entrySet.forEach(entry -> args.key(entry.getKey()));
+      entrySet.forEach(entry -> args.add(entry.getValue()));
+      return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
+  }
+
+  public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
+          byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
+          Map<byte[], StreamEntryID> streams) {
+      CommandArguments args = commandArguments(XREADGROUP)
+              .add(GROUP).add(groupName).add(consumer)
+              .addParams(xReadGroupParams).add(STREAMS);
+      Set<Map.Entry<byte[], StreamEntryID>> entrySet = streams.entrySet();
+      entrySet.forEach(entry -> args.key(entry.getKey()));
+      entrySet.forEach(entry -> args.add(entry.getValue()));
+      return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_RESPONSE);
+  }
+
+    public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(
+            byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
+            Map<byte[], StreamEntryID> streams) {
+        CommandArguments args = commandArguments(XREADGROUP)
+                .add(GROUP).add(groupName).add(consumer)
+                .addParams(xReadGroupParams).add(STREAMS);
+        Set<Map.Entry<byte[], StreamEntryID>> entrySet = streams.entrySet();
+        entrySet.forEach(entry -> args.key(entry.getKey()));
+        entrySet.forEach(entry -> args.add(entry.getValue()));
+        return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
+    }
   // Stream commands
 
   // Scripting commands
@@ -3437,7 +3620,7 @@ public class CommandObjects {
         .key(indexName).add(cursorId), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> ftProfileAggregate(
+  public final CommandObject<Map.Entry<AggregationResult, ProfilingInfo>> ftProfileAggregate(
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
@@ -3446,7 +3629,7 @@ public class CommandObjects {
         : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
 
-  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, ProfilingInfo>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
@@ -3455,7 +3638,7 @@ public class CommandObjects {
             () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true))));
   }
 
-  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, ProfilingInfo>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.PROFILE, indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
@@ -3531,19 +3714,23 @@ public class CommandObjects {
         .add(fieldName), BuilderFactory.STRING_SET);
   }
 
+  @Deprecated
   public final CommandObject<Map<String, Object>> ftConfigGet(String option) {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option),
         protocol == RedisProtocol.RESP3 ? BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP : BuilderFactory.ENCODED_OBJECT_MAP_FROM_PAIRS);
   }
 
+  @Deprecated
   public final CommandObject<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return directSearchCommand(ftConfigGet(option), indexName);
   }
 
+  @Deprecated
   public final CommandObject<String> ftConfigSet(String option, String value) {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.SET).add(option).add(value), BuilderFactory.STRING);
   }
 
+  @Deprecated
   public final CommandObject<String> ftConfigSet(String indexName, String option, String value) {
     return directSearchCommand(ftConfigSet(option, value), indexName);
   }
@@ -4381,70 +4568,6 @@ public class CommandObjects {
   }
   // RedisBloom commands
 
-  // RedisGraph commands
-  @Deprecated
-  public final CommandObject<List<String>> graphList() {
-    return new CommandObject<>(commandArguments(GraphCommand.LIST), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<String>> graphProfile(String graphName, String query) {
-    return new CommandObject<>(commandArguments(GraphCommand.PROFILE).key(graphName).add(query), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<String>> graphExplain(String graphName, String query) {
-    return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<List<Object>>> graphSlowlog(String graphName) {
-    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<String> graphConfigSet(String configName, Object value) {
-    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
-    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
-  }
-  // RedisGraph commands
-
-  // RedisGears commands
-  @Deprecated
-  public final CommandObject<String> tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LOAD)
-        .addParams(params).add(libraryCode), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<String> tFunctionDelete(String libraryName) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.DELETE)
-        .add(libraryName), BuilderFactory.STRING);
-  }
-
-  @Deprecated
-  public final CommandObject<List<GearsLibraryInfo>> tFunctionList(TFunctionListParams params) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LIST)
-        .addParams(params), GearsLibraryInfo.GEARS_LIBRARY_INFO_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFCALL).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
-  }
-
-  @Deprecated
-  public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(GearsCommand.TFCALLASYNC).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
-  }
-  // RedisGears commands
-
   // Transaction commands
   public final CommandObject<String> watch(String... keys) {
     return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
@@ -4492,32 +4615,51 @@ public class CommandObjects {
     this.searchDialect.set(dialect);
   }
 
-  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
+  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, ProfilingInfo>> {
 
-    private static final String PROFILE_STR = "profile";
+    private static final String PROFILE_STR_REDIS7 = "profile";
+    private static final String PROFILE_STR_REDIS8 = "Profile";
+    private static final String RESULTS_STR_REDIS7 = "results";
+    private static final String RESULTS_STR_REDIS8 = "Results";
 
-    private final Builder<T> replyBuilder;
+    private final Builder<T> resultsBuilder;
 
-    public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
-      this.replyBuilder = replyBuilder;
+    public SearchProfileResponseBuilder(Builder<T> resultsBuilder) {
+      this.resultsBuilder = resultsBuilder;
     }
 
     @Override
-    public Map.Entry<T, Map<String, Object>> build(Object data) {
+    public Map.Entry<T, ProfilingInfo> build(Object data) {
       List list = (List) data;
       if (list == null || list.isEmpty()) return null;
 
-      if (list.get(0) instanceof KeyValue) {
+      if (list.get(0) instanceof KeyValue) { // RESP3
+        Object resultsData = null, profileData = null;
+
         for (KeyValue keyValue : (List<KeyValue>) data) {
-          if (PROFILE_STR.equals(BuilderFactory.STRING.build(keyValue.getKey()))) {
-            return KeyValue.of(replyBuilder.build(data),
-                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(keyValue.getValue()));
+          String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
+          switch (keyStr) {
+            case PROFILE_STR_REDIS7:
+            case PROFILE_STR_REDIS8:
+              profileData = keyValue.getValue();
+              break;
+            case RESULTS_STR_REDIS7:
+              resultsData = data;
+              break;
+            case RESULTS_STR_REDIS8:
+              resultsData = keyValue.getValue();
+              break;
           }
         }
+
+        assert resultsData != null : "Could not detect Results data.";
+        assert profileData != null : "Could not detect Profile data.";
+        return KeyValue.of(resultsBuilder.build(resultsData),
+                ProfilingInfo.PROFILING_INFO_BUILDER.build(profileData));
       }
 
-      return KeyValue.of(replyBuilder.build(list.get(0)),
-          SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
+      return KeyValue.of(resultsBuilder.build(list.get(0)),
+          ProfilingInfo.PROFILING_INFO_BUILDER.build(list.get(1)));
     }
   }
 

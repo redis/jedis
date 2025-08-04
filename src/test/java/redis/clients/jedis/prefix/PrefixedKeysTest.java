@@ -1,16 +1,15 @@
 package redis.clients.jedis.prefix;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.After;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor;
 import redis.clients.jedis.util.SafeEncoder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class PrefixedKeysTest<T extends UnifiedJedis> {
 
@@ -22,7 +21,7 @@ public abstract class PrefixedKeysTest<T extends UnifiedJedis> {
         return jedis;
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         try (UnifiedJedis jedis = prefixingJedis()) {
             jedis.flushAll();

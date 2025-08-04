@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import java.util.concurrent.Executors;
@@ -23,7 +24,9 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
@@ -47,6 +50,7 @@ public class JedisClusterInfoCache {
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
+  private final Cache clientSideCache;
   private final Set<HostAndPort> startNodes;
 
   private static final int MASTER_NODE_INDEX = 2;
@@ -66,20 +70,43 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, null, startNodes);
+    this(clientConfig, null, null, startNodes);
+  }
+
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final Set<HostAndPort> startNodes) {
+    this(clientConfig, clientSideCache, null, startNodes);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, poolConfig, startNodes, null);
+    this(clientConfig, null, poolConfig, startNodes);
+  }
+
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
+    this(clientConfig, clientSideCache, poolConfig, startNodes, null);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
+    this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
+  }
+
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
+      final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
+    this.clientSideCache = clientSideCache;
     this.startNodes = startNodes;
+    if (clientConfig.getAuthXManager() != null) {
+      clientConfig.getAuthXManager().start();
+    }
     if (topologyRefreshPeriod != null) {
       logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -219,8 +246,10 @@ public class JedisClusterInfoCache {
     }
     w.lock();
     try {
-      Arrays.fill(slots, null);
-      Arrays.fill(slotNodes, null);
+      resetSlots();
+      if (clientSideCache != null) {
+        clientSideCache.flush();
+      }
       Set<String> hostAndPortKeys = new HashSet<>();
 
       for (Object slotInfoObj : slotsInfo) {
@@ -284,12 +313,27 @@ public class JedisClusterInfoCache {
       ConnectionPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      ConnectionPool nodePool = poolConfig == null ? new ConnectionPool(node, clientConfig)
-          : new ConnectionPool(node, clientConfig, poolConfig);
+      ConnectionPool nodePool = createNodePool(node);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {
       w.unlock();
+    }
+  }
+
+  private ConnectionPool createNodePool(HostAndPort node) {
+    if (poolConfig == null) {
+      if (clientSideCache == null) {
+        return new ConnectionPool(node, clientConfig);
+      } else {
+        return new ConnectionPool(node, clientConfig, clientSideCache);
+      }
+    } else {
+      if (clientSideCache == null) {
+        return new ConnectionPool(node, clientConfig, poolConfig);
+      } else {
+        return new ConnectionPool(node, clientConfig, clientSideCache, poolConfig);
+      }
     }
   }
 
@@ -398,21 +442,39 @@ public class JedisClusterInfoCache {
   public void reset() {
     w.lock();
     try {
-      for (ConnectionPool pool : nodes.values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (RuntimeException e) {
-          // pass
-        }
-      }
-      nodes.clear();
-      Arrays.fill(slots, null);
-      Arrays.fill(slotNodes, null);
+      resetNodes();
+      resetSlots();
     } finally {
       w.unlock();
     }
+  }
+
+  private void resetSlots() {
+    Arrays.fill(slots, null);
+    Arrays.fill(slotNodes, null);
+    resetReplicaSlots();
+  }
+
+  private void resetReplicaSlots() {
+    if (replicaSlots == null) {
+      return;
+    }
+
+    Arrays.stream(replicaSlots).filter(Objects::nonNull).forEach(List::clear);
+    Arrays.fill(replicaSlots, null);
+  }
+
+  private void resetNodes() {
+    for (ConnectionPool pool : nodes.values()) {
+      try {
+        if (pool != null) {
+          pool.destroy();
+        }
+      } catch (RuntimeException e) {
+        // pass
+      }
+    }
+    nodes.clear();
   }
 
   public void close() {
@@ -424,13 +486,14 @@ public class JedisClusterInfoCache {
   }
 
   public static String getNodeKey(HostAndPort hnp) {
-    //return hnp.getHost() + ":" + hnp.getPort();
     return hnp.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private List<Object> executeClusterSlots(Connection jedis) {
-    jedis.sendCommand(Protocol.Command.CLUSTER, "SLOTS");
-    return jedis.getObjectMultiBulkReply();
+    CommandArguments clusterSlotsCmd = new ClusterCommandArguments(Protocol.Command.CLUSTER).add(
+        "SLOTS");
+    return (List<Object>) jedis.executeCommand(clusterSlotsCmd);
   }
 
   private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {

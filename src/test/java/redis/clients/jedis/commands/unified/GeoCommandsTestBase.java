@@ -1,14 +1,11 @@
 package redis.clients.jedis.commands.unified;
 
-import static org.junit.Assert.*;
-import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
@@ -17,7 +14,16 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.SafeEncoder;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -303,7 +309,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    AssertUtil.assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test
@@ -447,7 +453,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    AssertUtil.assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test
@@ -529,7 +535,8 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(1, members.size());
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
-    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
+    assertThat(members.get(0).getCoordinate(),
+        GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523));
   }
 
   @Test

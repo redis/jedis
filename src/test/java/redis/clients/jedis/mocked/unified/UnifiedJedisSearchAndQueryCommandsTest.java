@@ -15,16 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.resps.Tuple;
-import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.FTProfileParams;
-import redis.clients.jedis.search.FTSearchParams;
-import redis.clients.jedis.search.FTSpellCheckParams;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
@@ -773,13 +766,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String indexName = "myIndex";
     FTProfileParams profileParams = new FTProfileParams();
     AggregationBuilder aggr = new AggregationBuilder().groupBy("@field");
-    Map.Entry<AggregationResult, Map<String, Object>> expectedResponse = new AbstractMap.SimpleEntry<>(
-        mock(AggregationResult.class), Collections.singletonMap("Profile", "Data"));
+    Map.Entry<AggregationResult, ProfilingInfo> expectedResponse = new AbstractMap.SimpleEntry<>(
+        mock(AggregationResult.class), mock(ProfilingInfo.class));
 
     when(commandObjects.ftProfileAggregate(indexName, profileParams, aggr)).thenReturn(entryAggregationResultMapStringObjectCommandObject);
     when(commandExecutor.executeCommand(entryAggregationResultMapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<AggregationResult, Map<String, Object>> result = jedis.ftProfileAggregate(indexName, profileParams, aggr);
+    Map.Entry<AggregationResult, ProfilingInfo> result = jedis.ftProfileAggregate(indexName, profileParams, aggr);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -792,13 +785,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String indexName = "myIndex";
     FTProfileParams profileParams = new FTProfileParams();
     Query query = new Query("hello world").limit(0, 10);
-    Map.Entry<SearchResult, Map<String, Object>> expectedResponse = new AbstractMap.SimpleEntry<>(
-        mock(SearchResult.class), Collections.singletonMap("Profile", "Data"));
+    Map.Entry<SearchResult, ProfilingInfo> expectedResponse = new AbstractMap.SimpleEntry<>(
+        mock(SearchResult.class), mock(ProfilingInfo.class));
 
     when(commandObjects.ftProfileSearch(indexName, profileParams, query)).thenReturn(entrySearchResultMapStringObjectCommandObject);
     when(commandExecutor.executeCommand(entrySearchResultMapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<SearchResult, Map<String, Object>> result = jedis.ftProfileSearch(indexName, profileParams, query);
+    Map.Entry<SearchResult, ProfilingInfo> result = jedis.ftProfileSearch(indexName, profileParams, query);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -812,13 +805,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     FTProfileParams profileParams = new FTProfileParams();
     String query = "hello world";
     FTSearchParams searchParams = new FTSearchParams().noContent().limit(0, 10);
-    Map.Entry<SearchResult, Map<String, Object>> expectedResponse = new AbstractMap.SimpleEntry<>(
-        mock(SearchResult.class), Collections.singletonMap("Profile", "Data"));
+    Map.Entry<SearchResult, ProfilingInfo> expectedResponse = new AbstractMap.SimpleEntry<>(
+        mock(SearchResult.class), mock(ProfilingInfo.class));
 
     when(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams)).thenReturn(entrySearchResultMapStringObjectCommandObject);
     when(commandExecutor.executeCommand(entrySearchResultMapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<SearchResult, Map<String, Object>> result = jedis.ftProfileSearch(indexName, profileParams, query, searchParams);
+    Map.Entry<SearchResult, ProfilingInfo> result = jedis.ftProfileSearch(indexName, profileParams, query, searchParams);
 
     assertThat(result, equalTo(expectedResponse));
 

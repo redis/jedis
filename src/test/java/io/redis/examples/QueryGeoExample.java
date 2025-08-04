@@ -2,21 +2,27 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
+
 // HIDE_START
 import java.util.List;
+import java.util.stream.Stream;
+
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // HIDE_END
 
 // HIDE_START
 public class QueryGeoExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -223,16 +229,16 @@ public class QueryGeoExample {
 
         List<Document> docs1 = res1.getDocuments();
 
-        for (int i = 0; i < docs1.size(); i++) {
-            System.out.println(docs1.get(i).getId());
+        for (Document document : docs1) {
+            System.out.println(document.getId());
         }
         // >>> bicycle:5
         // STEP_END
 
         // Tests for 'geo1' step.
         // REMOVE_START
-        Assert.assertEquals(1, res1.getTotalResults());
-        Assert.assertEquals("bicycle:5", docs1.get(0).getId());
+        assertEquals(1, res1.getTotalResults());
+        assertEquals("bicycle:5", docs1.get(0).getId());
         // REMOVE_END
 
 
@@ -247,16 +253,16 @@ public class QueryGeoExample {
 
         List<Document> docs2 = res2.getDocuments();
 
-        for (int i = 0; i < docs2.size(); i++) {
-            System.out.println(docs2.get(i).getId());
+        for (Document document : docs2) {
+            System.out.println(document.getId());
         }
         // >>> bicycle:5
         // STEP_END
 
         // Tests for 'geo2' step.
         // REMOVE_START
-        Assert.assertEquals(1, res2.getTotalResults());
-        Assert.assertEquals("bicycle:5", docs2.get(0).getId());
+        assertEquals(1, res2.getTotalResults());
+        assertEquals("bicycle:5", docs2.get(0).getId());
         // REMOVE_END
 
 
@@ -271,8 +277,8 @@ public class QueryGeoExample {
 
         List<Document> docs3 = res3.getDocuments();
 
-        for (int i = 0; i < docs3.size(); i++) {
-            System.out.println(docs3.get(i).getId());
+        for (Document document : docs3) {
+            System.out.println(document.getId());
         }
         // >>> bicycle:5
         // >>> bicycle:6
@@ -283,12 +289,10 @@ public class QueryGeoExample {
 
         // Tests for 'geo3' step.
         // REMOVE_START
-        Assert.assertEquals(5, res3.getTotalResults());
-        Assert.assertEquals("bicycle:5", docs3.get(0).getId());
-        Assert.assertEquals("bicycle:6", docs3.get(1).getId());
-        Assert.assertEquals("bicycle:7", docs3.get(2).getId());
-        Assert.assertEquals("bicycle:8", docs3.get(3).getId());
-        Assert.assertEquals("bicycle:9", docs3.get(4).getId());
+        assertEquals(5, res3.getTotalResults());
+        assertArrayEquals(
+            Stream.of("bicycle:5", "bicycle:6", "bicycle:7", "bicycle:8", "bicycle:9").sorted()
+                .toArray(), docs3.stream().map(Document::getId).sorted().toArray());
         // REMOVE_END
 
 // HIDE_START

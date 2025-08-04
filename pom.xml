@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>5.2.0-SNAPSHOT</version>
+	<version>6.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -40,18 +40,41 @@
 	<scm>
 		<connection>scm:git:git@github.com:redis/jedis.git</connection>
 		<url>scm:git:git@github.com:redis/jedis.git</url>
-		<developerConnection>scm:git:git@github.com:redis/jedis.git</developerConnection>
-		<tag>jedis-3.4.1</tag>
+		<developerConnection>https://github.com/redis/jedis/tree/master</developerConnection>
 	</scm>
+
+	<developers>
+		<developer>
+			<id>redis</id>
+			<name>Redis Ltd.</name>
+			<organization>Redis</organization>
+			<organizationUrl>https://redis.io</organizationUrl>
+		</developer>
+	</developers>
 
 	<properties>
 		<github.global.server>github</github.global.server>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.17.2</jackson.version>
-		<maven.surefire.version>3.5.0</maven.surefire.version>
+		<jackson.version>2.19.2</jackson.version>
+		<maven.surefire.version>3.5.3</maven.surefire.version>
+		<junit.version>5.13.3</junit.version>
+		<!-- Default JVM options for tests -->
+		<JVM_OPTS></JVM_OPTS>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -62,24 +85,32 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
-			<version>2.12.0</version>
+			<version>2.12.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20240303</version>
+			<version>20250517</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.11.0</version>
+			<version>2.13.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>redis.clients.authentication</groupId>
+			<artifactId>redis-authx-core</artifactId>
+			<version>0.1.1-beta2</version>
+		</dependency>
+
+		<!-- Optional dependencies -->
 
 		<!-- UNIX socket connection support -->
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
-			<version>2.10.0</version>
+			<version>2.10.1</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
@@ -90,11 +121,27 @@
 			<version>1.20.0</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- test -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>4.11.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -136,7 +183,21 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5-fluent</artifactId>
-			<version>5.4</version>
+			<version>5.5</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>4.3.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>redis.clients.authentication</groupId>
+			<artifactId>redis-authx-entraid</artifactId>
+			<version>0.1.1-beta2</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -162,14 +223,14 @@
 	</dependencies>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>central</id>
+			<url>https://central.sonatype.com/api/v1/publisher/deployments/upload/</url>
 		</repository>
+		<snapshotRepository>
+			<id>central</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<build>
@@ -183,7 +244,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.12</version>
+				<version>0.8.13</version>
 				<executions>
 					<execution>
 						<goals>
@@ -201,7 +262,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.13.0</version>
+				<version>3.14.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -211,6 +272,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
+					<argLine>@{argLine} ${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
@@ -237,7 +299,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.10.0</version>
+				<version>3.11.2</version>
 				<configuration>
 					<source>8</source><!-- Until JDK 11+ -->
 					<detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->
@@ -258,23 +320,43 @@
 				<version>3.1.1</version>
 			</plugin>
 			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.7.0</version>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.8.0</version>
 				<extensions>true</extensions>
 				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<publishingServerId>central</publishingServerId>
+					<autoPublish>true</autoPublish>
+					<waitUntil>published</waitUntil>
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.googlecode.maven-java-formatter-plugin</groupId>
-				<artifactId>maven-java-formatter-plugin</artifactId>
-				<version>0.4</version>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>2.16.0</version>
 				<configuration>
 					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
+					<directories>
+						<directory>${project.basedir}</directory>
+					</directories>
+					<includes>
+						<!-- Specific files -->
+						<include>src/main/java/redis/clients/jedis/annots/*.java</include>
+						<include>src/main/java/redis/clients/jedis/resps/StreamEntryDeletionResult.java</include>
+						<include>src/main/java/redis/clients/jedisargs/StreamDeletionPolicy.java</include>
+						<include>src/test/java/redis/clients/jedis/commands/StreamsCommandsTestBase.java</include>
+						<include>src/test/java/redis/clients/jedis/commands/jedis/ClusterStreamsCommandsTest.java</include>
+						<include>src/test/java/redis/clients/jedis/commands/jedis/PooledStreamsCommandsTest.java</include>
+						<include>src/test/java/redis/clients/jedis/resps/StreamEntryDeletionResultTest.java</include>
+					</includes>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -325,7 +407,7 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.2.6</version>
+						<version>3.2.8</version>
 						<configuration>
 							<gpgArguments>
 								<arg>--pinentry-mode</arg>

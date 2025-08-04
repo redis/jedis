@@ -5,13 +5,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,12 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.awaitility.Awaitility;
 
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
@@ -34,7 +37,8 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class PipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -246,13 +250,13 @@ public class PipeliningTest extends JedisCommandsTestBase {
     assertNull(score.get());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void pipelineResponseWithinPipeline() {
     jedis.set("string", "foo");
 
     Pipeline p = jedis.pipelined();
     Response<String> string = p.get("string");
-    string.get();
+    assertThrows(IllegalStateException.class,string::get);
     p.sync();
   }
 
@@ -290,12 +294,11 @@ public class PipeliningTest extends JedisCommandsTestBase {
     assertEquals(r.get(), "bar");
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testJedisThrowExceptionWhenInPipeline() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.set("foo", "3");
-    jedis.get("somekey");
-    fail("Can't use jedis instance when in Pipeline");
+    assertThrows(IllegalStateException.class, () -> jedis.get("somekey"));
   }
 
   @Test
@@ -342,7 +345,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
-      assertEquals("aof", j.get("wait"));
+      Awaitility.await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertEquals("aof", j.get("wait")));
     }
   }
 

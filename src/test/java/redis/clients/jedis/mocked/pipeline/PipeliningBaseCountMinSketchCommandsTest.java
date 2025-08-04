@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 
 public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMockedTestBase {

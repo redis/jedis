@@ -2,7 +2,7 @@
 package io.redis.examples;
 
 // REMOVE_START
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.UnifiedJedis;
@@ -12,9 +12,10 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeoExample {
+
   @Test
   public void run() {
     try (UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379")) {

@@ -7,21 +7,20 @@ import redis.clients.jedis.UnifiedJedis;
 //HIDE_END
 
 //REMOVE_START
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 //REMOVE_END
 
 public class StreamsExample {
 
   @Test
-  public void run(){
-
+  public void run() {
     //HIDE_START
     UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
     //HIDE_END
@@ -265,6 +264,10 @@ public class StreamsExample {
     List<StreamEntry> res42 = jedis.xrange("race:italy","-","+");
     System.out.println(res42); // >>> [1701771517639-1 {rider=Henshaw}]
     //STEP_END
+
+    //HIDE_START
+    jedis.close();
+    //HIDE_END
   }
 
 }

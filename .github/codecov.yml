@@ -1,0 +1,20 @@
+codecov:                                    # see https://docs.codecov.com/docs/codecovyml-reference
+  branch: master
+
+coverage:
+  status:                                   # see https://docs.codecov.com/docs/commit-status
+    project:
+      default:
+        target: auto                        # minimum coverage ratio that the commit must meet to be considered a success
+        threshold: 5                        # Allow the coverage to drop by <number>%, and posting a success status
+        branches:
+          - master
+          - '[0-9].*'
+
+comment:                                    # see https://docs.codecov.com/docs/pull-request-comments
+  layout: "condensed_header, condensed_files, condensed_footer"
+  behavior: new
+  require_changes: true
+
+ignore:
+  - "**/*.txt"

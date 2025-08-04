@@ -2,16 +2,18 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 // REMOVE_END
+
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // HIDE_END
 
 // HIDE_START
 public class CmdsStringExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -35,13 +37,14 @@ public class CmdsStringExample {
 
         // Tests for 'incr' step.
         // REMOVE_START
-        Assert.assertEquals("OK", incrResult1);
-        Assert.assertEquals(11, incrResult2);
-        Assert.assertEquals("11", incrResult3);
+        assertEquals("OK", incrResult1);
+        assertEquals(11, incrResult2);
+        assertEquals("11", incrResult3);
         jedis.del("mykey");
         // REMOVE_END
 
 // HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

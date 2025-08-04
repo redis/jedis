@@ -2,8 +2,7 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 // HIDE_START
 import java.util.List;
@@ -12,6 +11,9 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // HIDE_END
 
 // HIDE_START
@@ -221,9 +223,11 @@ public class QueryFtExample {
 
         // Tests for 'ft1' step.
         // REMOVE_START
-        Assert.assertEquals(2, res1.getTotalResults());
-        Assert.assertEquals("bicycle:2", docs1.get(0).getId());
-        Assert.assertEquals("bicycle:1", docs1.get(1).getId());
+        assertEquals(2, res1.getTotalResults());
+        assertArrayEquals(
+            new String[] {"bicycle:1", "bicycle:2" },
+            docs1.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -241,8 +245,8 @@ public class QueryFtExample {
 
         // Tests for 'ft2' step.
         // REMOVE_START
-        Assert.assertEquals(1, res2.getTotalResults());
-        Assert.assertEquals("bicycle:4", docs2.get(0).getId());
+        assertEquals(1, res2.getTotalResults());
+        assertEquals("bicycle:4", docs2.get(0).getId());
         // REMOVE_END
 
 
@@ -261,9 +265,11 @@ public class QueryFtExample {
 
         // Tests for 'ft3' step.
         // REMOVE_START
-        Assert.assertEquals(2, res3.getTotalResults());
-        Assert.assertEquals("bicycle:6", docs3.get(0).getId());
-        Assert.assertEquals("bicycle:4", docs3.get(1).getId());
+        assertEquals(2, res3.getTotalResults());
+        assertArrayEquals(
+            new String[] {"bicycle:4", "bicycle:6" },
+            docs3.stream().map(Document::getId).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -281,8 +287,8 @@ public class QueryFtExample {
 
         // Tests for 'ft4' step.
         // REMOVE_START
-        Assert.assertEquals(1, res4.getTotalResults());
-        Assert.assertEquals("bicycle:3", docs4.get(0).getId());
+        assertEquals(1, res4.getTotalResults());
+        assertEquals("bicycle:3", docs4.get(0).getId());
         // REMOVE_END
 
 
@@ -300,8 +306,8 @@ public class QueryFtExample {
 
         // Tests for 'ft5' step.
         // REMOVE_START
-        Assert.assertEquals(1, res5.getTotalResults());
-        Assert.assertEquals("bicycle:3", docs5.get(0).getId());
+        assertEquals(1, res5.getTotalResults());
+        assertEquals("bicycle:3", docs5.get(0).getId());
         // REMOVE_END
 
 // HIDE_START

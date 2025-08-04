@@ -7,18 +7,17 @@ import redis.clients.jedis.resps.Tuple;
 //HIDE_END
 
 //REMOVE_START
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 //REMOVE_END
 
 public class SortedSetsExample {
 
   @Test
   public void run() {
-
     //HIDE_START
     UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
     //HIDE_END
@@ -119,6 +118,10 @@ public class SortedSetsExample {
     double res20 = jedis.zincrby("racer_scores", 50d, "Henshaw");
     System.out.println(res20); // >>> 200.0
     //STEP_END
+
+    //HIDE_START
+    jedis.close();
+    //HIDE_END
   }
 }
 

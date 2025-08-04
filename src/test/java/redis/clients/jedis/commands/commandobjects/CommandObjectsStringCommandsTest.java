@@ -10,7 +10,8 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 
-import org.junit.Test;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
@@ -298,6 +299,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testLcs() {
     String keyA = "keyA";
     String keyB = "keyB";
@@ -338,6 +340,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testLcsBinary() {
     byte[] keyA = "keyA".getBytes();
     byte[] keyB = "keyB".getBytes();

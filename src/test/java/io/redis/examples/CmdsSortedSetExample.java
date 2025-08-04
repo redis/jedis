@@ -2,12 +2,9 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 // REMOVE_END
-// HIDE_START
-// HIDE_END
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -15,8 +12,11 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 // HIDE_START
 public class CmdsSortedSetExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -88,13 +88,13 @@ public class CmdsSortedSetExample {
 
         // Tests for 'zadd' step.
         // REMOVE_START
-        Assert.assertEquals(1, zAddResult1);
-        Assert.assertEquals(1, zAddResult2);
-        Assert.assertEquals(2, zAddResult3);
-        Assert.assertEquals(new Tuple("one", 1.0), zAddResult4.get(0));
-        Assert.assertEquals(new Tuple("uno", 1.0), zAddResult4.get(1));
-        Assert.assertEquals(new Tuple("two", 2.0), zAddResult4.get(2));
-        Assert.assertEquals(new Tuple("three", 3.0), zAddResult4.get(3));
+        assertEquals(1, zAddResult1);
+        assertEquals(1, zAddResult2);
+        assertEquals(2, zAddResult3);
+        assertEquals(new Tuple("one", 1.0), zAddResult4.get(0));
+        assertEquals(new Tuple("uno", 1.0), zAddResult4.get(1));
+        assertEquals(new Tuple("two", 2.0), zAddResult4.get(2));
+        assertEquals(new Tuple("three", 3.0), zAddResult4.get(3));
         jedis.del("myzset");
         // REMOVE_END
 
@@ -259,10 +259,10 @@ public class CmdsSortedSetExample {
 
         // Tests for 'zrange1' step.
         // REMOVE_START
-        Assert.assertEquals(3, zRangeResult1);
-        Assert.assertEquals("one, two, three", String.join(", ", zRangeResult2));
-        Assert.assertEquals("three", String.join(", ", zRangeResult3));
-        Assert.assertEquals("two, three", String.join(", ", zRangeResult4));
+        assertEquals(3, zRangeResult1);
+        assertEquals("one, two, three", String.join(", ", zRangeResult2));
+        assertEquals("three", String.join(", ", zRangeResult3));
+        assertEquals("two, three", String.join(", ", zRangeResult4));
         jedis.del("myzset");
         // REMOVE_END
 
@@ -286,9 +286,9 @@ public class CmdsSortedSetExample {
 
         // Tests for 'zrange2' step.
         // REMOVE_START
-        Assert.assertEquals(3, zRangeResult5);
-        Assert.assertEquals(new Tuple("one", 1.0), zRangeResult6.get(0));
-        Assert.assertEquals(new Tuple("two", 2.0), zRangeResult6.get(1));
+        assertEquals(3, zRangeResult5);
+        assertEquals(new Tuple("one", 1.0), zRangeResult6.get(0));
+        assertEquals(new Tuple("two", 2.0), zRangeResult6.get(1));
         jedis.del("myzset");
         // REMOVE_END
 
@@ -307,8 +307,8 @@ public class CmdsSortedSetExample {
 
         // Tests for 'zrange3' step.
         // REMOVE_START
-        Assert.assertEquals(3, zRangeResult7);
-        Assert.assertEquals("three", String.join(", ", zRangeResult8));
+        assertEquals(3, zRangeResult7);
+        assertEquals("three", String.join(", ", zRangeResult8));
         jedis.del("myzset");
         // REMOVE_END
 
@@ -474,6 +474,7 @@ public class CmdsSortedSetExample {
 
 
 // HIDE_START
+        jedis.close();
     }
 }
 // HIDE_END

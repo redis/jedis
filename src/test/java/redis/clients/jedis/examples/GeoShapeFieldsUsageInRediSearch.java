@@ -1,7 +1,5 @@
 package redis.clients.jedis.examples;
 
-import org.junit.Assert;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -15,6 +13,8 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.schemafields.GeoShapeField;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * As of RediSearch 2.8.4, advanced GEO querying with GEOSHAPE fields is supported.
@@ -95,14 +95,14 @@ public class GeoShapeFieldsUsageInRediSearch {
             .addParam("poly", within)
             .dialect(3)                 // DIALECT '3' is required for this query
     ); 
-    Assert.assertEquals(1, res.getTotalResults());
-    Assert.assertEquals(1, res.getDocuments().size());
+    assertEquals(1, res.getTotalResults());
+    assertEquals(1, res.getDocuments().size());
 
     // We can parse geometry objects with WKTReader
     try {
       final WKTReader reader = new WKTReader();
       Geometry object = reader.read(res.getDocuments().get(0).getString("geometry"));
-      Assert.assertEquals(small, object);
+      assertEquals(small, object);
     } catch (ParseException ex) { // WKTReader#read throws ParseException
       ex.printStackTrace(System.err);
     }

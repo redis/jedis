@@ -65,7 +65,7 @@ public class ConnectionPool extends Pool<Connection> {
     }
   }
 
-  private void attachAuthenticationListener(AuthXManager authXManager) {
+  protected void attachAuthenticationListener(AuthXManager authXManager) {
     this.authXManager = authXManager;
     if (authXManager != null) {
       authXManager.addPostAuthenticationHook(token -> {

@@ -1,14 +1,11 @@
 package redis.clients.jedis.mcf;
 
+import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,74 +14,65 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.InitializationTracker;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class TrackingConnectionPool extends ConnectionPool {
-    private static final Logger log = LoggerFactory.getLogger(TrackingConnectionPool.class);
 
-    private final Set<Connection> allCreatedObjects = ConcurrentHashMap.newKeySet();
-    private volatile boolean forcingDisconnect;
-    private ConnectionFactory factory;
+    private static class FailFastFactory extends ConnectionFactory {
+        private volatile boolean failFast = false;
 
-    // Executor for running connection creation subtasks
-    private final ExecutorService connectionCreationExecutor = Executors.newCachedThreadPool(r -> {
-        Thread t = new Thread(r, "connection-creator");
-        t.setDaemon(true);
-        return t;
-    });
+        public FailFastFactory(ConnectionFactory.Builder builder) {
+            super(builder);
+        }
 
-    // Simple latch for external unblocking of all connection creation threads
-    private volatile CountDownLatch unblockLatch = new CountDownLatch(1);
+        @Override
+        public PooledObject<Connection> makeObject() throws Exception {
+            if (failFast) {
+                return new DefaultPooledObject<>(new Connection() {
+                    @Override
+                    public void connect() throws JedisConnectionException {
+                        throw new JedisConnectionException("Fail fast mode on!");
+                    }
 
-    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-        GenericObjectPoolConfig<Connection> poolConfig) {
-        super(hostAndPort, clientConfig, poolConfig);
-        this.factory = (ConnectionFactory) this.getFactory();
-        factory.injectMaker(this::injector);
-    }
-
-    private Supplier<Connection> injector(Supplier<Connection> supplier) {
-        return () -> make(supplier);
-    }
-
-    private Connection make(Supplier<Connection> supplier) {
-        // Create CompletableFutures for both the connection task and unblock signal
-        CompletableFuture<Connection> connectionFuture = CompletableFuture.supplyAsync(() -> supplier.get(),
-            connectionCreationExecutor);
-
-        CompletableFuture<Void> unblockFuture = CompletableFuture.runAsync(() -> {
-            try {
-                unblockLatch.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                });
             }
-        }, connectionCreationExecutor);
+            return super.makeObject();
 
-        try {
-            // Wait for whichever completes first
-            CompletableFuture.anyOf(connectionFuture, unblockFuture).join();
+        }
 
-            if (connectionFuture.isDone() && !connectionFuture.isCompletedExceptionally()) {
-                return connectionFuture.join();
-            } else {
-                connectionFuture.cancel(true);
-                throw new JedisConnectionException("Connection creation was cancelled due to forced disconnect!");
-            }
-        } catch (JedisConnectionException e) {
-            connectionFuture.cancel(true);
-            unblockFuture.cancel(true);
-            throw e;
-        } catch (Exception e) {
-            connectionFuture.cancel(true);
-            unblockFuture.cancel(true);
-            throw new JedisConnectionException("Connection creation failed", e);
+        public void setFailFast(boolean failFast) {
+            this.failFast = failFast;
         }
     }
 
+    private static final Logger log = LoggerFactory.getLogger(TrackingConnectionPool.class);
+
+    private volatile boolean forcingDisconnect;
+    private InitializationTracker<Connection> tracker;
+
     public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-        super(hostAndPort, clientConfig);
-        this.factory = (ConnectionFactory) this.getFactory();
+        this(ConnectionFactory.builder().setHostAndPort(hostAndPort).setClientConfig(clientConfig)
+            .setTracker(createSimpleTracker()));
+    }
+
+    private TrackingConnectionPool(ConnectionFactory.Builder builder) {
+        super(new FailFastFactory(builder));
+        this.tracker = builder.getTracker();
+        this.attachAuthenticationListener(builder.getClientConfig().getAuthXManager());
+    }
+
+    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+        GenericObjectPoolConfig<Connection> poolConfig) {
+        this(ConnectionFactory.builder().setHostAndPort(hostAndPort).setClientConfig(clientConfig)
+            .setTracker(createSimpleTracker()), poolConfig);
+    }
+
+    private TrackingConnectionPool(ConnectionFactory.Builder builder, GenericObjectPoolConfig<Connection> poolConfig) {
+        super(new FailFastFactory(builder), poolConfig);
+        this.tracker = builder.getTracker();
+        this.attachAuthenticationListener(builder.getClientConfig().getAuthXManager());
     }
 
     @Override
@@ -94,14 +82,14 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
 
         Connection conn = super.getResource();
-        allCreatedObjects.add(conn);
+        tracker.add(conn);
         return conn;
     }
 
     @Override
     public void returnResource(final Connection resource) {
         super.returnResource(resource);
-        allCreatedObjects.remove(resource);
+        tracker.remove(resource);
     }
 
     @Override
@@ -111,17 +99,14 @@ public class TrackingConnectionPool extends ConnectionPool {
         } else {
             super.returnBrokenResource(resource);
         }
-        allCreatedObjects.remove(resource);
+        tracker.remove(resource);
     }
 
     public void forceDisconnect() {
+        ((FailFastFactory) this.getFactory()).setFailFast(true);
         this.forcingDisconnect = true;
-
-        // First, unblock any pending connection creation
-        unblockConnectionCreation();
-
         this.clear();
-        for (Connection connection : allCreatedObjects) {
+        for (Connection connection : tracker) {
             try {
                 connection.forceDisconnect();
             } catch (Exception e) {
@@ -130,31 +115,27 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
         this.clear();
         this.forcingDisconnect = false;
+        ((FailFastFactory) this.getFactory()).setFailFast(false);
     }
 
-    /**
-     * Unblock ALL waiting connection creation threads.
-     */
-    private void unblockConnectionCreation() {
-        CountDownLatch oldLatch = unblockLatch;
-        unblockLatch = new CountDownLatch(1); // Reset first
-        oldLatch.countDown(); // Then signal old one
-        log.info("Externally unblocked waiting connection creation threads");
-    }
+    private static InitializationTracker<Connection> createSimpleTracker() {
+        return new InitializationTracker<Connection>() {
+            private final Set<Connection> allCreatedObjects = ConcurrentHashMap.newKeySet();
 
-    @Override
-    public void close() {
-        // Shutdown the connection creation executor
-        connectionCreationExecutor.shutdown();
-        try {
-            if (!connectionCreationExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
-                connectionCreationExecutor.shutdownNow();
+            @Override
+            public void add(Connection target) {
+                allCreatedObjects.add(target);
             }
-        } catch (InterruptedException e) {
-            connectionCreationExecutor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
 
-        super.close();
+            @Override
+            public void remove(Connection target) {
+                allCreatedObjects.remove(target);
+            }
+
+            @Override
+            public Iterator<Connection> iterator() {
+                return allCreatedObjects.iterator();
+            }
+        };
     }
 }

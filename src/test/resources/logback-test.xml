@@ -23,6 +23,7 @@
   
   <!-- Set Redis client logging to DEBUG level -->
   <logger name="redis.clients.jedis" level="DEBUG" />
+  <logger name="redis.clients.jedis.mcf.HealthCheck" level="ERROR" />
   
   <!-- Set other libraries to appropriate levels -->
   <logger name="org.apache.http" level="INFO" />

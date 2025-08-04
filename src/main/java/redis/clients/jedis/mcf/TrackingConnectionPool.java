@@ -50,7 +50,7 @@ public class TrackingConnectionPool extends ConnectionPool {
 
     private Connection make(Supplier<Connection> supplier) {
         if (forcingDisconnect) {
-            return new Connection(){
+            return new Connection() {
                 @Override
                 public void connect() {
                     throw new JedisConnectionException("Forced disconnect in progress!");

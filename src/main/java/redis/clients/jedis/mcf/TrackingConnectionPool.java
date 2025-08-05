@@ -110,6 +110,16 @@ public class TrackingConnectionPool extends ConnectionPool {
             }
         }
         this.clear();
+
+        if (this.getNumWaiters() > 0) {
+            log.info("Unblocking {} waiting threads", this.getNumWaiters());
+        }
+        try {
+            this.preparePool();
+        } catch (Exception e) {
+            log.warn("Error while preparing pool after forced disconnect!", e);
+        }
+
         this.forcingDisconnect = false;
         ((FailFastFactory) this.getFactory()).setFailFast(false);
     }

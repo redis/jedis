@@ -49,9 +49,11 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                 // To recover/transition from this forced state the user will need to manually failback
 
                 Cluster activeCluster = provider.getCluster();
-                // This should never happen in theory !!
-                if (activeCluster.getCircuitBreaker() != circuitBreaker) throw new IllegalStateException(
-                    "A circuitbreaker failover can be triggered only by the active cluster!");
+                // This should be possible only if active cluster is switched from by other reasons than circuit
+                // breaker, just before circuit breaker triggers
+                if (activeCluster.getCircuitBreaker() != circuitBreaker) {
+                    return;
+                }
 
                 activeCluster.setGracePeriod();
                 circuitBreaker.transitionToForcedOpenState();

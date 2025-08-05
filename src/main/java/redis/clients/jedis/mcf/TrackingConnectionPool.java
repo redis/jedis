@@ -94,11 +94,7 @@ public class TrackingConnectionPool extends ConnectionPool {
 
     @Override
     public void returnBrokenResource(final Connection resource) {
-        if (forcingDisconnect) {
-            super.returnResource(resource);
-        } else {
-            super.returnBrokenResource(resource);
-        }
+        super.returnBrokenResource(resource);
         tracker.remove(resource);
     }
 

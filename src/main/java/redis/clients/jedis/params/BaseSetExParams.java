@@ -20,7 +20,7 @@ import java.util.Objects;
  * 
  * @param <T> the type of the subclass extending this base class
  */
-class BaseSetExParams<T extends BaseSetExParams> implements IParams {
+class BaseSetExParams<T extends BaseSetExParams<T>> implements IParams {
 
   private Keyword expiration;
   private Long expirationValue;

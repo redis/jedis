@@ -81,7 +81,8 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
 
     public void forceDisconnect() {
-        log.info("Closing pool and interrupting waiters. Unblocking approximately {} waiting threads", this.getNumWaiters());
+        log.info("Closing pool and interrupting waiters. Unblocking approximately {} waiting threads",
+            this.getNumWaiters());
         this.close();
         this.clear();
 

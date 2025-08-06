@@ -33,10 +33,10 @@ class PeriodicFailbackTest {
         clientConfig = DefaultJedisClientConfig.builder().build();
     }
 
-    private MockedConstruction<ConnectionPool> mockPool() {
+    private MockedConstruction<TrackingConnectionPool> mockPool() {
         Connection mockConnection = mock(Connection.class);
         lenient().when(mockConnection.ping()).thenReturn(true);
-        return mockConstruction(ConnectionPool.class, (mock, context) -> {
+        return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
             when(mock.getResource()).thenReturn(mockConnection);
             doNothing().when(mock).close();
         });
@@ -44,7 +44,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckWithDisabledCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -77,7 +77,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckWithHealthyCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -122,7 +122,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckWithFailbackDisabled() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -160,7 +160,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckSelectsHighestWeightCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             HostAndPort endpoint3 = new HostAndPort("localhost", 6381);
 
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig

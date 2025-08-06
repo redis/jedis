@@ -34,10 +34,10 @@ class FailbackMechanismIntegrationTest {
         clientConfig = DefaultJedisClientConfig.builder().build();
     }
 
-    private MockedConstruction<ConnectionPool> mockPool() {
+    private MockedConstruction<TrackingConnectionPool> mockPool() {
         Connection mockConnection = mock(Connection.class);
         lenient().when(mockConnection.ping()).thenReturn(true);
-        return mockConstruction(ConnectionPool.class, (mock, context) -> {
+        return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
             when(mock.getResource()).thenReturn(mockConnection);
             doNothing().when(mock).close();
         });
@@ -45,7 +45,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testFailbackDisabledDoesNotPerformFailback() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             // Create clusters with different weights
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower weight
@@ -83,7 +83,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testFailbackToHigherWeightCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             // Create clusters with different weights
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(2.0f) // Higher weight
@@ -123,7 +123,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testNoFailbackToLowerWeightCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             // Create three clusters with different weights to properly test no failback to lower weight
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f) // Lowest weight
@@ -166,7 +166,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testFailbackToHigherWeightClusterImmediately() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Higher weight
 
@@ -201,7 +201,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testUnhealthyClusterCancelsFailback() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Higher weight
 
@@ -242,7 +242,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testMultipleClusterFailbackPriority() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lowest weight
 
@@ -281,7 +281,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testGracePeriodDisablesClusterOnUnhealthy() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower weight
 
@@ -311,7 +311,7 @@ class FailbackMechanismIntegrationTest {
 
     @Test
     void testGracePeriodReEnablesClusterAfterPeriod() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower weight
 

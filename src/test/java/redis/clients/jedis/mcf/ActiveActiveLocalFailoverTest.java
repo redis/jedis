@@ -84,7 +84,7 @@ public class ActiveActiveLocalFailoverTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9", "true, 0, 2, 12", })
+  @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9", "true, 0, 2, 16", })
   public void testFailover(boolean fastFailover, long minFailoverCompletionDuration, long maxFailoverCompletionDuration,
     int numberOfThreads) {
 

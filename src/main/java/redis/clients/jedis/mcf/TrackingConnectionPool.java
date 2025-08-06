@@ -3,6 +3,7 @@ package redis.clients.jedis.mcf;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ public class TrackingConnectionPool extends ConnectionPool {
     private final InitializationTracker<Connection> tracker;
     private final GenericObjectPoolConfig poolConfig;
     private final JedisClientConfig clientConfig;
+    private final AtomicInteger numWaiters = new AtomicInteger();
 
     public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
         GenericObjectPoolConfig<Connection> poolConfig) {
@@ -38,6 +40,10 @@ public class TrackingConnectionPool extends ConnectionPool {
         this.attachAuthenticationListener(builder.getClientConfig().getAuthXManager());
     }
 
+    public static TrackingConnectionPool from(TrackingConnectionPool pool) {
+        return new TrackingConnectionPool(pool);
+    }
+
     private TrackingConnectionPool(TrackingConnectionPool pool) {
         super(pool.getFactory());
         this.tracker = pool.tracker;
@@ -50,13 +56,10 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
     }
 
-    public static TrackingConnectionPool from(TrackingConnectionPool pool) {
-        return new TrackingConnectionPool(pool);
-    }
-
     @Override
     public Connection getResource() {
         try {
+            numWaiters.incrementAndGet();
             Connection conn = super.getResource();
             tracker.add(conn);
             return conn;
@@ -65,6 +68,8 @@ public class TrackingConnectionPool extends ConnectionPool {
                 throw new JedisConnectionException("Pool is closed", e);
             }
             throw e;
+        } finally {
+            numWaiters.decrementAndGet();
         }
     }
 
@@ -81,12 +86,9 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
 
     public void forceDisconnect() {
-        log.info("Closing pool and interrupting waiters. Unblocking approximately {} waiting threads",
-            this.getNumWaiters());
         this.close();
-        this.clear();
-
-        while (tracker.iterator().hasNext() || this.getNumWaiters() > 0) {
+        while (numWaiters.get() > 0 || getNumWaiters() > 0 || getNumActive() > 0 || getNumIdle() > 0) {
+            this.clear();
             for (Connection connection : tracker) {
                 try {
                     connection.forceDisconnect();
@@ -95,7 +97,6 @@ public class TrackingConnectionPool extends ConnectionPool {
                 }
             }
         }
-        this.clear();
     }
 
     private static InitializationTracker<Connection> createSimpleTracker() {

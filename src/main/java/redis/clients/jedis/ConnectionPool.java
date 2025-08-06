@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
@@ -68,14 +69,22 @@ public class ConnectionPool extends Pool<Connection> {
   protected void attachAuthenticationListener(AuthXManager authXManager) {
     this.authXManager = authXManager;
     if (authXManager != null) {
-      authXManager.addPostAuthenticationHook(token -> {
-        try {
-          // this is to trigger validations on each connection via ConnectionFactory
-          evict();
-        } catch (Exception e) {
-          throw new JedisException("Failed to evict connections from pool", e);
-        }
-      });
+      authXManager.addPostAuthenticationHook(this::postAuthentication);
+    }
+  }
+
+  protected void detachAuthenticationListener() {
+    if (authXManager != null) {
+      authXManager.removePostAuthenticationHook(this::postAuthentication);
+    }
+  }
+
+  private void postAuthentication(Token token) {
+    try {
+      // this is to trigger validations on each connection via ConnectionFactory
+      evict();
+    } catch (Exception e) {
+      throw new JedisException("Failed to evict connections from pool", e);
     }
   }
 }

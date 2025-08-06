@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,48 +18,11 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class TrackingConnectionPool extends ConnectionPool {
 
-    private static class FailFastFactory extends ConnectionFactory {
-        private volatile boolean failFast = false;
-
-        public FailFastFactory(ConnectionFactory.Builder builder) {
-            super(builder);
-        }
-
-        @Override
-        public PooledObject<Connection> makeObject() throws Exception {
-            if (failFast) {
-                return new DefaultPooledObject<>(new Connection() {
-                    @Override
-                    public void connect() throws JedisConnectionException {
-                        throw new JedisConnectionException("Fail fast mode on!");
-                    }
-
-                });
-            }
-            return super.makeObject();
-
-        }
-
-        public void setFailFast(boolean failFast) {
-            this.failFast = failFast;
-        }
-    }
-
     private static final Logger log = LoggerFactory.getLogger(TrackingConnectionPool.class);
 
-    private volatile boolean forcingDisconnect;
-    private InitializationTracker<Connection> tracker;
-
-    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-        this(ConnectionFactory.builder().setHostAndPort(hostAndPort).setClientConfig(clientConfig)
-            .setTracker(createSimpleTracker()));
-    }
-
-    private TrackingConnectionPool(ConnectionFactory.Builder builder) {
-        super(new FailFastFactory(builder));
-        this.tracker = builder.getTracker();
-        this.attachAuthenticationListener(builder.getClientConfig().getAuthXManager());
-    }
+    private final InitializationTracker<Connection> tracker;
+    private final GenericObjectPoolConfig poolConfig;
+    private final JedisClientConfig clientConfig;
 
     public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
         GenericObjectPoolConfig<Connection> poolConfig) {
@@ -70,20 +31,41 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
 
     private TrackingConnectionPool(ConnectionFactory.Builder builder, GenericObjectPoolConfig<Connection> poolConfig) {
-        super(new FailFastFactory(builder), poolConfig);
+        super(new ConnectionFactory(builder), poolConfig);
         this.tracker = builder.getTracker();
+        this.clientConfig = builder.getClientConfig();
+        this.poolConfig = poolConfig;
         this.attachAuthenticationListener(builder.getClientConfig().getAuthXManager());
+    }
+
+    private TrackingConnectionPool(TrackingConnectionPool pool) {
+        super(pool.getFactory());
+        this.tracker = pool.tracker;
+        this.clientConfig = pool.clientConfig;
+        this.attachAuthenticationListener(clientConfig.getAuthXManager());
+
+        this.poolConfig = pool.poolConfig;
+        if (pool.poolConfig != null) {
+            this.setConfig(pool.poolConfig);
+        }
+    }
+
+    public static TrackingConnectionPool from(TrackingConnectionPool pool) {
+        return new TrackingConnectionPool(pool);
     }
 
     @Override
     public Connection getResource() {
-        if (forcingDisconnect) {
-            throw new JedisConnectionException("Forced disconnect in progress!");
+        try {
+            Connection conn = super.getResource();
+            tracker.add(conn);
+            return conn;
+        } catch (Exception e) {
+            if (this.isClosed()) {
+                throw new JedisConnectionException("Pool is closed", e);
+            }
+            throw e;
         }
-
-        Connection conn = super.getResource();
-        tracker.add(conn);
-        return conn;
     }
 
     @Override
@@ -99,29 +81,20 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
 
     public void forceDisconnect() {
-        ((FailFastFactory) this.getFactory()).setFailFast(true);
-        this.forcingDisconnect = true;
+        log.info("Closing pool and interrupting waiters. Unblocking approximately {} waiting threads", this.getNumWaiters());
+        this.close();
         this.clear();
-        for (Connection connection : tracker) {
-            try {
-                connection.forceDisconnect();
-            } catch (Exception e) {
-                log.warn("Error while force disconnecting connection: " + connection.toIdentityString());
+
+        while (tracker.iterator().hasNext() || this.getNumWaiters() > 0) {
+            for (Connection connection : tracker) {
+                try {
+                    connection.forceDisconnect();
+                } catch (Exception e) {
+                    log.warn("Error while force disconnecting connection: " + connection.toIdentityString());
+                }
             }
         }
         this.clear();
-
-        if (this.getNumWaiters() > 0) {
-            log.info("Unblocking {} waiting threads", this.getNumWaiters());
-        }
-        try {
-            this.preparePool();
-        } catch (Exception e) {
-            log.warn("Error while preparing pool after forced disconnect!", e);
-        }
-
-        this.forcingDisconnect = false;
-        ((FailFastFactory) this.getFactory()).setFailFast(false);
     }
 
     private static InitializationTracker<Connection> createSimpleTracker() {
@@ -143,5 +116,11 @@ public class TrackingConnectionPool extends ConnectionPool {
                 return allCreatedObjects.iterator();
             }
         };
+    }
+
+    @Override
+    public void close() {
+        this.destroy();
+        this.detachAuthenticationListener();
     }
 }

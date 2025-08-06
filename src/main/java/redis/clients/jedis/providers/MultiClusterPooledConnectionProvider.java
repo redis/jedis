@@ -293,12 +293,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         circuitBreakerEventPublisher.onFailureRateExceeded(event -> log.error(String.valueOf(event)));
         circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
 
-        TrackingConnectionPool pool;
-        if (poolConfig != null) {
-            pool = new TrackingConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(), poolConfig);
-        } else {
-            pool = new TrackingConnectionPool(config.getHostAndPort(), config.getJedisClientConfig());
-        }
+        TrackingConnectionPool pool = new TrackingConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(),
+            poolConfig);
         Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
         multiClusterMap.put(config.getHostAndPort(), cluster);
 
@@ -632,7 +628,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public static class Cluster {
 
-        private final TrackingConnectionPool connectionPool;
+        private TrackingConnectionPool connectionPool;
         private final Retry retry;
         private final CircuitBreaker circuitBreaker;
         private final float weight;
@@ -656,6 +652,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         public Connection getConnection() {
             if (!isHealthy()) throw new JedisConnectionException("Cluster is not healthy");
+            if (connectionPool.isClosed()) {
+                connectionPool = TrackingConnectionPool.from(connectionPool);
+            }
             return connectionPool.getResource();
         }
 

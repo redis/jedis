@@ -14,6 +14,32 @@ import redis.clients.jedis.util.RedisInputStream;
 
 public class CacheConnection extends Connection {
 
+  public static class Builder extends Connection.Builder {
+    private Cache cache;
+
+    public Builder(Cache cache) {
+      this.cache = cache;
+    }
+
+    public Builder setCache(Cache cache) {
+      this.cache = cache;
+      return this;
+    }
+
+    public Cache getCache() {
+      return cache;
+    }
+
+    @Override
+    public CacheConnection build() {
+      return new CacheConnection(this);
+    }
+  }
+
+  public static Builder builder(Cache cache) {
+    return new Builder(cache);
+  }
+
   private final Cache cache;
   private ReentrantLock lock;
   private static final String REDIS = "redis";
@@ -21,18 +47,13 @@ public class CacheConnection extends Connection {
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
+    this.cache = cache;
+    initializeClientSideCache();
+  }
 
-    if (protocol != RedisProtocol.RESP3) {
-      throw new JedisException("Client side caching is only supported with RESP3.");
-    }
-    if (!cache.compatibilityMode()) {
-      RedisVersion current = new RedisVersion(version);
-      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
-      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
-        throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
-      }
-    }
-    this.cache = Objects.requireNonNull(cache);
+  CacheConnection(Builder builder) {
+    super(builder);
+    this.cache = builder.getCache();
     initializeClientSideCache();
   }
 
@@ -102,6 +123,19 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
+    if (protocol != RedisProtocol.RESP3) {
+      throw new JedisException("Client side caching is only supported with RESP3.");
+    }
+    Objects.requireNonNull(cache);
+    if (!cache.compatibilityMode()) {
+      RedisVersion current = new RedisVersion(version);
+      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
+      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
+        throw new JedisException(
+          String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
+      }
+    }
+
     sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
     String reply = getStatusCodeReply();
     if (!"OK".equals(reply)) {

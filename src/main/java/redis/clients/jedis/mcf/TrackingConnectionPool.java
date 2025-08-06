@@ -26,34 +26,61 @@ public class TrackingConnectionPool extends ConnectionPool {
     private final JedisClientConfig clientConfig;
     private final AtomicInteger numWaiters = new AtomicInteger();
 
-    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-        GenericObjectPoolConfig<Connection> poolConfig) {
-        this(ConnectionFactory.builder().setHostAndPort(hostAndPort).setClientConfig(clientConfig)
-            .setTracker(createSimpleTracker()), poolConfig);
+    public static class Builder {
+        private HostAndPort hostAndPort;
+        private JedisClientConfig clientConfig;
+        private GenericObjectPoolConfig<Connection> poolConfig;
+        private InitializationTracker<Connection> tracker;
+
+        public Builder hostAndPort(HostAndPort hostAndPort) {
+            this.hostAndPort = hostAndPort;
+            return this;
+        }
+
+        public Builder clientConfig(JedisClientConfig clientConfig) {
+            this.clientConfig = clientConfig;
+            return this;
+        }
+
+        public Builder poolConfig(GenericObjectPoolConfig<Connection> poolConfig) {
+            this.poolConfig = poolConfig;
+            return this;
+        }
+
+        public Builder tracker(InitializationTracker<Connection> tracker) {
+            this.tracker = tracker;
+            return this;
+        }
+
+        public TrackingConnectionPool build() {
+            return new TrackingConnectionPool(this);
+        }
     }
 
-    private TrackingConnectionPool(ConnectionFactory.Builder builder, GenericObjectPoolConfig<Connection> poolConfig) {
-        super(new ConnectionFactory(builder), poolConfig);
-        this.tracker = builder.getTracker();
-        this.clientConfig = builder.getClientConfig();
-        this.poolConfig = poolConfig;
-        this.attachAuthenticationListener(builder.getClientConfig().getAuthXManager());
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+        GenericObjectPoolConfig<Connection> poolConfig) {
+        this(builder().hostAndPort(hostAndPort).clientConfig(clientConfig).poolConfig(poolConfig)
+            .tracker(createSimpleTracker()));
+    }
+
+    private TrackingConnectionPool(Builder builder) {
+        super(
+            ConnectionFactory.builder().setHostAndPort(builder.hostAndPort).setClientConfig(builder.clientConfig)
+                .setTracker(builder.tracker).build(),
+            builder.poolConfig != null ? builder.poolConfig : new GenericObjectPoolConfig<>());
+
+        this.tracker = builder.tracker;
+        this.clientConfig = builder.clientConfig;
+        this.poolConfig = builder.poolConfig;
+        this.attachAuthenticationListener(builder.clientConfig.getAuthXManager());
     }
 
     public static TrackingConnectionPool from(TrackingConnectionPool pool) {
-        return new TrackingConnectionPool(pool);
-    }
-
-    private TrackingConnectionPool(TrackingConnectionPool pool) {
-        super(pool.getFactory());
-        this.tracker = pool.tracker;
-        this.clientConfig = pool.clientConfig;
-        this.attachAuthenticationListener(clientConfig.getAuthXManager());
-
-        this.poolConfig = pool.poolConfig;
-        if (pool.poolConfig != null) {
-            this.setConfig(pool.poolConfig);
-        }
+        return builder().clientConfig(pool.clientConfig).poolConfig(pool.poolConfig).tracker(pool.tracker).build();
     }
 
     @Override

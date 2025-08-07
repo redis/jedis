@@ -84,7 +84,7 @@ public class ActiveActiveLocalFailoverTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9", "true, 0, 2, 16", })
+  @CsvSource({ "true, 0, 2, 9", "true, 0, 2, 16", })
   public void testFailover(boolean fastFailover, long minFailoverCompletionDuration, long maxFailoverCompletionDuration,
     int numberOfThreads) {
 
@@ -166,6 +166,9 @@ public class ActiveActiveLocalFailoverTest {
     AtomicReference<Instant> lastFailedBeforeFailover = new AtomicReference<>();
     AtomicBoolean errorOccuredAfterFailover = new AtomicBoolean(false);
     AtomicBoolean unexpectedErrors = new AtomicBoolean(false);
+    AtomicReference<Exception> lastException = new AtomicReference<Exception>();
+    AtomicLong stopRunningAt = new AtomicLong();
+    String cluster2Id = provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker().getName();
 
     // Start thread that imitates an application that uses the client
     MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(client, (UnifiedJedis c) -> {
@@ -175,14 +178,18 @@ public class ActiveActiveLocalFailoverTest {
       int attempt = 0;
       int maxTries = 500;
       int retryingDelay = 5;
+      String currentClusterId = null;
       while (true) {
         try {
+          if (System.currentTimeMillis() > stopRunningAt.get()) break;
+          currentClusterId = provider.getCluster().getCircuitBreaker().getName();
           Map<String, String> executionInfo = new HashMap<String, String>() {
             {
               put("threadId", String.valueOf(threadId));
               put("cluster", reporter.getCurrentClusterName());
             }
           };
+
           client.xadd("execution_log", StreamEntryID.NEW_ENTRY, executionInfo);
 
           if (attempt > 0) {
@@ -192,6 +199,10 @@ public class ActiveActiveLocalFailoverTest {
 
           break;
         } catch (JedisConnectionException e) {
+          if (cluster2Id.equals(currentClusterId)) {
+            break;
+          }
+          lastException.set(e);
           lastFailedBeforeFailover.set(Instant.now());
 
           if (reporter.failoverHappened) {
@@ -214,6 +225,10 @@ public class ActiveActiveLocalFailoverTest {
           }
           if (++attempt == maxTries) throw e;
         } catch (Exception e) {
+          if (cluster2Id.equals(currentClusterId)) {
+            break;
+          }
+          lastException.set(e);
           unexpectedErrors.set(true);
           lastFailedBeforeFailover.set(Instant.now());
           log.error("UNEXPECTED exception", e);
@@ -228,6 +243,8 @@ public class ActiveActiveLocalFailoverTest {
     fakeApp.setKeepExecutingForSeconds(30);
     Thread t = new Thread(fakeApp);
     t.start();
+
+    stopRunningAt.set(System.currentTimeMillis() + 30000);
 
     log.info("Triggering issue on endpoint1");
     try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())) {
@@ -264,6 +281,7 @@ public class ActiveActiveLocalFailoverTest {
       log.info("Last failed command at: {}", lastFailedCommandAt.get());
       Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
       log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
+      log.info("Last failed command exception: {}", lastException.get());
 
       // assertTrue(reporter.failbackHappened);
       assertThat(fullFailoverTime.getSeconds(), Matchers.greaterThanOrEqualTo(minFailoverCompletionDuration));

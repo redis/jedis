@@ -9,13 +9,18 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
+  private RebindHandler rebindHandler;
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig));
     attachAuthenticationListener(clientConfig.getAuthXManager());
+    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   @Experimental
@@ -23,6 +28,7 @@ public class ConnectionPool extends Pool<Connection> {
       Cache clientSideCache) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
     attachAuthenticationListener(clientConfig.getAuthXManager());
+    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
@@ -33,6 +39,7 @@ public class ConnectionPool extends Pool<Connection> {
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
+    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   @Experimental
@@ -40,6 +47,7 @@ public class ConnectionPool extends Pool<Connection> {
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
+    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
@@ -76,6 +84,33 @@ public class ConnectionPool extends Pool<Connection> {
           throw new JedisException("Failed to evict connections from pool", e);
         }
       });
+    }
+  }
+
+  private void attachRebindHandler(JedisClientConfig clientConfig, ConnectionFactory factory) {
+    if (clientConfig.isProactiveRebindEnabled()) {
+      rebindHandler = new RebindHandler(this, factory);
+      clientConfig.getMaintenanceEventHandler().addListener(rebindHandler);
+    }
+  }
+
+  private static class RebindHandler implements MaintenanceEventListener {
+    private final ConnectionPool pool;
+    private final ConnectionFactory factory;
+    private final AtomicReference<HostAndPort> rebindTarget = new AtomicReference<>();
+
+    public RebindHandler(ConnectionPool pool, ConnectionFactory factory) {
+      this.pool = pool;
+      this.factory = factory;
+     }
+
+    @Override
+    public void onRebind(HostAndPort target, Duration rebindTimeout) {
+      HostAndPort previous = rebindTarget.getAndSet(target);
+      if (previous != target) {
+        this.factory.rebind(target, rebindTimeout);
+        this.pool.clear();
+      }
     }
   }
 }

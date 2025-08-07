@@ -24,6 +24,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusListener;
 import redis.clients.jedis.mcf.HealthStatusManager;
+import redis.clients.jedis.mcf.TrackingConnectionPool;
 
 /**
  * Tests for MultiClusterPooledConnectionProvider event handling behavior during initialization and throughout its
@@ -45,10 +46,10 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
         clientConfig = DefaultJedisClientConfig.builder().build();
     }
 
-    private MockedConstruction<ConnectionPool> mockConnectionPool() {
+    private MockedConstruction<TrackingConnectionPool> mockConnectionPool() {
         Connection mockConnection = mock(Connection.class);
         lenient().when(mockConnection.ping()).thenReturn(true);
-        return mockConstruction(ConnectionPool.class, (mock, context) -> {
+        return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
             when(mock.getResource()).thenReturn(mockConnection);
             doNothing().when(mock).close();
         });
@@ -56,7 +57,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testEventsProcessedAfterInitialization() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             // Create clusters without health checks
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -82,7 +83,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testMultipleEventsProcessedSequentially() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
             MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
@@ -118,7 +119,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testEventsForMultipleEndpointsPreserveOrder() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -144,7 +145,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testEventProcessingWithMixedHealthCheckConfiguration() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             // One cluster with health checks disabled, one with enabled (but mocked)
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false) // No health checks
@@ -175,7 +176,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testNoEventsLostDuringInitialization() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -199,7 +200,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testPostInitEventOrderingWithMultipleEndpoints() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -232,7 +233,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
     @Test
     void testPostInitRapidEventsOptimization() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 

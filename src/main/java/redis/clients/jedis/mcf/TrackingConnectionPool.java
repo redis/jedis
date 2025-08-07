@@ -7,6 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -26,6 +27,7 @@ public class TrackingConnectionPool extends ConnectionPool {
     private final Set<Connection> allCreatedObjects = ConcurrentHashMap.newKeySet();
     private volatile boolean forcingDisconnect;
     private ConnectionFactory factory;
+    private AtomicInteger waiters = new AtomicInteger();
 
     // Executor for running connection creation subtasks
     private final ExecutorService connectionCreationExecutor = Executors.newCachedThreadPool(r -> {
@@ -44,18 +46,18 @@ public class TrackingConnectionPool extends ConnectionPool {
         factory.injectMaker(this::injector);
     }
 
+    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+        super(hostAndPort, clientConfig);
+        this.factory = (ConnectionFactory) this.getFactory();
+    }
+
     private Supplier<Connection> injector(Supplier<Connection> supplier) {
         return () -> make(supplier);
     }
 
     private Connection make(Supplier<Connection> supplier) {
         if (forcingDisconnect) {
-            return new Connection() {
-                @Override
-                public void connect() {
-                    throw new JedisConnectionException("Forced disconnect in progress!");
-                }
-            };
+            throw new JedisConnectionException("Forced disconnect in progress!");
         }
         // Create CompletableFutures for both the connection task and unblock signal
         CompletableFuture<Connection> connectionFuture = CompletableFuture.supplyAsync(() -> supplier.get(),
@@ -90,20 +92,19 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
     }
 
-    public TrackingConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-        super(hostAndPort, clientConfig);
-        this.factory = (ConnectionFactory) this.getFactory();
-    }
-
     @Override
     public Connection getResource() {
         if (forcingDisconnect) {
             throw new JedisConnectionException("Forced disconnect in progress!");
         }
-
-        Connection conn = super.getResource();
-        allCreatedObjects.add(conn);
-        return conn;
+        waiters.incrementAndGet();
+        try {
+            Connection conn = super.getResource();
+            allCreatedObjects.add(conn);
+            return conn;
+        } finally {
+            waiters.decrementAndGet();
+        }
     }
 
     @Override
@@ -129,14 +130,16 @@ public class TrackingConnectionPool extends ConnectionPool {
         unblockConnectionCreation();
 
         this.clear();
-        for (Connection connection : allCreatedObjects) {
-            try {
-                connection.forceDisconnect();
-            } catch (Exception e) {
-                log.warn("Error while force disconnecting connection: " + connection.toIdentityString());
+        while (waiters.get() > 0) {
+            this.clear();
+            for (Connection connection : allCreatedObjects) {
+                try {
+                    connection.forceDisconnect();
+                } catch (Exception e) {
+                    log.warn("Error while force disconnecting connection: " + connection.toIdentityString());
+                }
             }
         }
-        this.clear();
         this.forcingDisconnect = false;
     }
 
@@ -144,9 +147,7 @@ public class TrackingConnectionPool extends ConnectionPool {
      * Unblock ALL waiting connection creation threads.
      */
     private void unblockConnectionCreation() {
-        CountDownLatch oldLatch = unblockLatch;
-        unblockLatch = new CountDownLatch(1); // Reset first
-        oldLatch.countDown(); // Then signal old one
+        unblockLatch.countDown();
         log.info("Externally unblocked waiting connection creation threads");
     }
 

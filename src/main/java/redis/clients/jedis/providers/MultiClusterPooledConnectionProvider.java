@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -275,7 +274,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             throw new JedisValidationException(
                 "Endpoint " + config.getHostAndPort() + " already exists in the provider");
         }
-        GenericObjectPoolConfig<Connection> poolConfig = config.getConnectionPoolConfig();
 
         String clusterId = "cluster:" + config.getHostAndPort();
 
@@ -293,8 +291,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         circuitBreakerEventPublisher.onFailureRateExceeded(event -> log.error(String.valueOf(event)));
         circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
 
-        TrackingConnectionPool pool = new TrackingConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(),
-            poolConfig);
+        TrackingConnectionPool pool = TrackingConnectionPool.builder().hostAndPort(config.getHostAndPort())
+            .clientConfig(config.getJedisClientConfig()).poolConfig(config.getConnectionPoolConfig()).build();
+
         Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
         multiClusterMap.put(config.getHostAndPort(), cluster);
 

@@ -36,7 +36,6 @@ public class Connection implements Closeable {
   public static class Builder {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
-    private InitializationTracker<Connection> tracker;
 
     public Builder setSocketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -48,11 +47,6 @@ public class Connection implements Closeable {
       return this;
     }
 
-    public Builder setTracker(InitializationTracker<Connection> tracker) {
-      this.tracker = tracker;
-      return this;
-    }
-
     public JedisSocketFactory getSocketFactory() {
       return socketFactory;
     }
@@ -61,16 +55,12 @@ public class Connection implements Closeable {
       return clientConfig;
     }
 
-    public InitializationTracker<Connection> getTracker() {
-      return tracker;
-    }
-
     public Connection build() {
       return new Connection(this);
     }
   }
 
-  public static Builder builder(){
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -89,6 +79,7 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
+  private JedisClientConfig clientConfig;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -113,23 +104,13 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
+    this.clientConfig = clientConfig;
     initializeFromClientConfig(clientConfig);
   }
 
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
-    InitializationTracker<Connection> tracker = builder.getTracker();
-
-    if (tracker != null) {
-      tracker.add(this);
-      try {
-        initializeFromClientConfig(builder.getClientConfig());
-      } finally {
-        tracker.remove(this);
-      }
-    } else {
-      initializeFromClientConfig(builder.getClientConfig());
-    }
+    this.clientConfig = builder.getClientConfig();
   }
 
   @Override
@@ -507,6 +488,10 @@ public class Connection implements Closeable {
       }
     }
     return true;
+  }
+
+  public void initializeFromClientConfig() {
+    this.initializeFromClientConfig(clientConfig);
   }
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {

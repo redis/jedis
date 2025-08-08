@@ -40,6 +40,10 @@ public class CacheConnection extends Connection {
     return new Builder(cache);
   }
 
+  public static Builder builder(){
+    throw new UnsupportedOperationException("Cache is required to build CacheConnection.");
+  }
+
   private final Cache cache;
   private ReentrantLock lock;
   private static final String REDIS = "redis";
@@ -54,13 +58,13 @@ public class CacheConnection extends Connection {
   CacheConnection(Builder builder) {
     super(builder);
     this.cache = builder.getCache();
-    initializeClientSideCache();
   }
 
   @Override
   protected void initializeFromClientConfig(JedisClientConfig config) {
     lock = new ReentrantLock();
     super.initializeFromClientConfig(config);
+    initializeClientSideCache();
   }
 
   @Override
@@ -123,6 +127,7 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
+    if(cache == null) return;
     if (protocol != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }

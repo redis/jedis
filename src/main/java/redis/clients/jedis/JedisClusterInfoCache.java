@@ -174,7 +174,6 @@ public class JedisClusterInfoCache {
           }
 
           HostAndPort targetNode = generateHostAndPort(hostInfos);
-          setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {

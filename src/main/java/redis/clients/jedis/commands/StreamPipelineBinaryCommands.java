@@ -5,8 +5,10 @@ import java.util.Map;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.StreamEntryBinary;
+import redis.clients.jedis.resps.StreamEntryDeletionResult;
 
 public interface StreamPipelineBinaryCommands {
 
@@ -28,6 +30,10 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Long> xack(byte[] key, byte[] group, byte[]... ids);
 
+  Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, byte[]... ids);
+
+  Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids);
+
   Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 
   Response<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id);
@@ -39,6 +45,10 @@ public interface StreamPipelineBinaryCommands {
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
+
+  Response<List<StreamEntryDeletionResult>> xdelex(byte[] key, byte[]... ids);
+
+  Response<List<StreamEntryDeletionResult>> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids);
 
   Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
 

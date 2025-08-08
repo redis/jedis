@@ -154,21 +154,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     return connectionBuilder.build();
   }
 
-  // private Connection.Builder defaultConnectionBuilder() {
-  // Connection.Builder connBuilder = clientSideCache == null ? Connection.builder()
-  // : CacheConnection.builder(clientSideCache);
-  // connBuilder.setSocketFactory(jedisSocketFactory).setClientConfig(clientConfig);
-  // return connBuilder;
-  // }
-
-  // public Connection.Builder getConnectionBuilder() {
-  // return connectionBuilder;
-  // }
-
-  // public void setConnectionBuilder(Connection.Builder connectionBuilder) {
-  // this.connectionBuilder = connectionBuilder;
-  // }
-
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
     // what to do ??

@@ -9,6 +9,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
 
@@ -52,6 +53,7 @@ public class CacheConnection extends Connection {
     return new Builder(cache);
   }
 
+  @VisibleForTesting
   public static Builder builder() {
     throw new UnsupportedOperationException("Cache is required to build CacheConnection.");
   }
@@ -63,10 +65,8 @@ public class CacheConnection extends Connection {
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
-    if (cache == null) {
-      throw new IllegalArgumentException("Cache cannot be null");
-    }
-    this.cache = cache;
+
+    this.cache = Objects.requireNonNull(cache);
     initializeClientSideCache();
   }
 

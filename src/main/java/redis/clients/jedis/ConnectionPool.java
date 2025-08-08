@@ -14,20 +14,20 @@ public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
 
+  // Primary constructors using factory
+  public ConnectionPool(PooledObjectFactory<Connection> factory) {
+    super(factory);
+  }
+
+  public ConnectionPool(PooledObjectFactory<Connection> factory,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    super(factory, poolConfig);
+  }
+
+  // Convenience constructors
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig));
     attachAuthenticationListener(clientConfig.getAuthXManager());
-  }
-
-  @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      Cache clientSideCache) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
-    attachAuthenticationListener(clientConfig.getAuthXManager());
-  }
-
-  public ConnectionPool(PooledObjectFactory<Connection> factory) {
-    super(factory);
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
@@ -38,14 +38,16 @@ public class ConnectionPool extends Pool<Connection> {
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
+      Cache clientSideCache) {
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
-  public ConnectionPool(PooledObjectFactory<Connection> factory,
-      GenericObjectPoolConfig<Connection> poolConfig) {
-    super(factory, poolConfig);
+  @Experimental
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
+    attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Override

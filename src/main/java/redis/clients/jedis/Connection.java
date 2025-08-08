@@ -37,12 +37,12 @@ public class Connection implements Closeable {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
 
-    public Builder setSocketFactory(JedisSocketFactory socketFactory) {
+    public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
       return this;
     }
 
-    public Builder setClientConfig(JedisClientConfig clientConfig) {
+    public Builder clientConfig(JedisClientConfig clientConfig) {
       this.clientConfig = clientConfig;
       return this;
     }
@@ -56,7 +56,9 @@ public class Connection implements Closeable {
     }
 
     public Connection build() {
-      return new Connection(this);
+      Connection conn = new Connection(this);
+      conn.initializeFromClientConfig();
+      return conn;
     }
   }
 
@@ -99,7 +101,6 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
-    this.authXManager = null;
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
@@ -134,8 +135,7 @@ public class Connection implements Closeable {
     SocketAddress remoteAddr = socket.getRemoteSocketAddress();
     SocketAddress localAddr = socket.getLocalSocketAddress();
     if (remoteAddr != null) {
-      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id, localAddr,
-        (broken ? '!' : '-'), remoteAddr);
+      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id, localAddr, (broken ? '!' : '-'), remoteAddr);
     } else if (localAddr != null) {
       strVal = String.format("%s{id: 0x%X, L:%s}", className, id, localAddr);
     } else {
@@ -241,8 +241,8 @@ public class Connection implements Closeable {
       Protocol.sendCommand(outputStream, args);
     } catch (JedisConnectionException ex) {
       /*
-       * When client send request which formed by invalid protocol, Redis send back error message
-       * before close connection. We try to read it to provide reason of failure.
+       * When client send request which formed by invalid protocol, Redis send back error message before close
+       * connection. We try to read it to provide reason of failure.
        */
       try {
         String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
@@ -251,9 +251,8 @@ public class Connection implements Closeable {
         }
       } catch (Exception e) {
         /*
-         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
-         * ignore. This approach is safe because reading error message is optional and connection
-         * will eventually be closed.
+         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just ignore. This
+         * approach is safe because reading error message is optional and connection will eventually be closed.
          */
       }
       // Any other exceptions related to connection?
@@ -266,7 +265,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); //?
+        soTimeout = socket.getSoTimeout(); // ?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -329,8 +328,8 @@ public class Connection implements Closeable {
   }
 
   public boolean isConnected() {
-    return socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected()
-        && !socket.isInputShutdown() && !socket.isOutputShutdown();
+    return socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected() && !socket.isInputShutdown()
+      && !socket.isOutputShutdown();
   }
 
   public boolean isBroken() {
@@ -474,7 +473,6 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
-   *
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -483,8 +481,7 @@ public class Connection implements Closeable {
     for (int i = 0; i < info.length(); i++) {
       char c = info.charAt(i);
       if (c < '!' || c > '~') {
-        throw new JedisValidationException(
-            "client info cannot contain spaces, " + "newlines or special characters.");
+        throw new JedisValidationException("client info cannot contain spaces, " + "newlines or special characters.");
       }
     }
     return true;
@@ -520,15 +517,14 @@ public class Connection implements Closeable {
         }
       } else {
         helloAndAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
-            : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
+          : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
       List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
 
       String clientName = config.getClientName();
       if (clientName != null && validateClientInfo(clientName)) {
-        fireAndForgetMsg
-            .add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
@@ -544,13 +540,13 @@ public class Connection implements Closeable {
             libName = libName + '(' + libNameSuffix + ')';
           }
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-              .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
+            .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
         }
 
         String libVersion = JedisMetaInfo.getVersion();
         if (libVersion != null && validateClientInfo(libVersion)) {
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-              .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
+            .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
         }
       }
 
@@ -584,8 +580,7 @@ public class Connection implements Closeable {
     if (protocol != null && credentials != null && credentials.getUser() != null) {
       byte[] rawPass = encodeToBytes(credentials.getPassword());
       try {
-        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(),
-          encode(credentials.getUser()), rawPass);
+        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
       } finally {
         Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }

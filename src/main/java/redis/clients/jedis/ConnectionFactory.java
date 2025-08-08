@@ -22,15 +22,36 @@ import redis.clients.jedis.exceptions.JedisException;
 public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   public static class Builder {
-
     private JedisClientConfig clientConfig;
     private Connection.Builder connectionBuilder;
     private JedisSocketFactory jedisSocketFactory;
     private Cache cache;
     private HostAndPort hostAndPort;
 
-    public JedisClientConfig getClientConfig() {
-      return clientConfig;
+    // Fluent API methods (preferred)
+    public Builder clientConfig(JedisClientConfig clientConfig) {
+      this.clientConfig = clientConfig;
+      return this;
+    }
+
+    public Builder connectionBuilder(Connection.Builder connectionBuilder) {
+      this.connectionBuilder = connectionBuilder;
+      return this;
+    }
+
+    public Builder socketFactory(JedisSocketFactory jedisSocketFactory) {
+      this.jedisSocketFactory = jedisSocketFactory;
+      return this;
+    }
+
+    public Builder cache(Cache cache) {
+      this.cache = cache;
+      return this;
+    }
+
+    public Builder hostAndPort(HostAndPort hostAndPort) {
+      this.hostAndPort = hostAndPort;
+      return this;
     }
 
     public Connection.Builder getConnectionBuilder() {
@@ -41,55 +62,42 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       return jedisSocketFactory;
     }
 
+    public JedisClientConfig getClientConfig() {
+      return clientConfig;
+    }
+
     public Cache getCache() {
       return cache;
     }
 
-    public Builder setClientConfig(JedisClientConfig clientConfig) {
-      this.clientConfig = clientConfig;
-      return this;
-    }
-
-    public Builder setConnectionBuilder(Connection.Builder connectionBuilder) {
-      this.connectionBuilder = connectionBuilder;
-      return this;
-    }
-
-    public Builder setJedisSocketFactory(JedisSocketFactory jedisSocketFactory) {
-      this.jedisSocketFactory = jedisSocketFactory;
-      return this;
-    }
-
-    public Builder setCache(Cache cache) {
-      this.cache = cache;
-      return this;
-    }
-
-    public Builder setHostAndPort(HostAndPort hostAndPort) {
-      this.hostAndPort = hostAndPort;
-      return this;
-    }
-
     public ConnectionFactory build() {
-      if (jedisSocketFactory == null) {
-        this.jedisSocketFactory = defaultJedisSocketFactory();
-      }
-      if (connectionBuilder == null) {
-        this.connectionBuilder = defaultConnectionBuilder();
-      }
+      withDefaults();
       return new ConnectionFactory(this);
     }
 
-    private JedisSocketFactory defaultJedisSocketFactory() {
+    private Builder withDefaults() {
+      if (jedisSocketFactory == null) {
+        this.jedisSocketFactory = createDefaultSocketFactory();
+      }
+      if (connectionBuilder == null) {
+        this.connectionBuilder = createDefaultConnectionBuilder();
+      }
+      return this;
+    }
+
+    private JedisSocketFactory createDefaultSocketFactory() {
       if (clientConfig == null) {
         clientConfig = DefaultJedisClientConfig.builder().build();
+      }
+      if (hostAndPort == null) {
+        throw new IllegalStateException("HostAndPort is required when no socketFactory is provided");
       }
       return new DefaultJedisSocketFactory(hostAndPort, clientConfig);
     }
 
-    private Connection.Builder defaultConnectionBuilder() {
+    private Connection.Builder createDefaultConnectionBuilder() {
       Connection.Builder connBuilder = cache == null ? Connection.builder() : CacheConnection.builder(cache);
-      connBuilder.setSocketFactory(jedisSocketFactory).setClientConfig(clientConfig);
+      connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig);
       return connBuilder;
     }
   }
@@ -107,26 +115,20 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private AuthXEventListener authXEventListener;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
-    this(hostAndPort, DefaultJedisClientConfig.builder().build(), null);
+    this(builder().hostAndPort(hostAndPort).withDefaults());
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(clientConfig, Connection.builder().setSocketFactory(new DefaultJedisSocketFactory(hostAndPort, clientConfig)));
+    this(builder().hostAndPort(hostAndPort).clientConfig(clientConfig).withDefaults());
   }
 
   @Experimental
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache csCache) {
-    this(clientConfig,
-    // TODO: not sure if we need to check cache is null or not.
-      CacheConnection.builder(csCache).setSocketFactory(new DefaultJedisSocketFactory(hostAndPort, clientConfig)));
+    this(builder().hostAndPort(hostAndPort).clientConfig(clientConfig).cache(csCache).withDefaults());
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this(clientConfig, Connection.builder().setClientConfig(clientConfig).setSocketFactory(jedisSocketFactory));
-  }
-
-  private ConnectionFactory(JedisClientConfig clientConfig, Connection.Builder connectionBuilder) {
-    this(builder().setClientConfig(clientConfig).setConnectionBuilder(connectionBuilder));
+    this(builder().socketFactory(jedisSocketFactory).clientConfig(clientConfig).withDefaults());
   }
 
   public ConnectionFactory(Builder builder) {

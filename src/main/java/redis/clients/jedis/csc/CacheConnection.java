@@ -17,13 +17,11 @@ public class CacheConnection extends Connection {
   public static class Builder extends Connection.Builder {
     private Cache cache;
 
-    public Builder(Cache cache) {
+    private Builder(Cache cache) {
+      if (cache == null) {
+        throw new IllegalArgumentException("Cache cannot be null!");
+      }
       this.cache = cache;
-    }
-
-    public Builder setCache(Cache cache) {
-      this.cache = cache;
-      return this;
     }
 
     public Cache getCache() {
@@ -31,8 +29,22 @@ public class CacheConnection extends Connection {
     }
 
     @Override
-    public CacheConnection build() {
-      return new CacheConnection(this);
+    public Builder socketFactory(JedisSocketFactory socketFactory) {
+      super.socketFactory(socketFactory);
+      return this;
+    }
+
+    @Override
+    public Builder clientConfig(JedisClientConfig clientConfig) {
+      super.clientConfig(clientConfig);
+      return this;
+    }
+
+    @Override
+    public Connection build() {
+      CacheConnection conn = new CacheConnection(this);
+      conn.initializeFromClientConfig();
+      return conn;
     }
   }
 
@@ -40,7 +52,7 @@ public class CacheConnection extends Connection {
     return new Builder(cache);
   }
 
-  public static Builder builder(){
+  public static Builder builder() {
     throw new UnsupportedOperationException("Cache is required to build CacheConnection.");
   }
 
@@ -51,11 +63,14 @@ public class CacheConnection extends Connection {
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
+    if (cache == null) {
+      throw new IllegalArgumentException("Cache cannot be null");
+    }
     this.cache = cache;
     initializeClientSideCache();
   }
 
-  CacheConnection(Builder builder) {
+  private CacheConnection(Builder builder) {
     super(builder);
     this.cache = builder.getCache();
   }
@@ -64,6 +79,9 @@ public class CacheConnection extends Connection {
   protected void initializeFromClientConfig(JedisClientConfig config) {
     lock = new ReentrantLock();
     super.initializeFromClientConfig(config);
+    // this is required for the case ctor(builder).
+    // will also be called for the case ctor(socketFactory, clientConfig, cache) but will return
+    if (cache == null) return;
     initializeClientSideCache();
   }
 
@@ -117,7 +135,7 @@ public class CacheConnection extends Connection {
     T value = super.executeCommand(commandObject);
     cacheEntry = new CacheEntry<>(cacheKey, value, this);
     cache.set(cacheKey, cacheEntry);
-    // this line actually provides a deep copy of cached object instance 
+    // this line actually provides a deep copy of cached object instance
     value = cacheEntry.getValue();
     return value;
   }
@@ -127,7 +145,6 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
-    if(cache == null) return;
     if (protocol != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }

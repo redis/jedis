@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -24,18 +25,16 @@ public class TrackingConnectionPool extends ConnectionPool {
         private boolean failFast = false;
         private final Set<Connection> factoryTrackedObjects = ConcurrentHashMap.newKeySet();
 
-        public FailFastConnectionFactory(ConnectionFactory.Builder factoryBuilder) {
-            super(factoryBuilder.setConnectionBuilder(
-                customConnectionBuilder(factoryBuilder).setClientConfig(factoryBuilder.getClientConfig())));
+        public FailFastConnectionFactory(ConnectionFactory.Builder factoryBuilder, JedisClientConfig clientConfig) {
+            super(factoryBuilder.connectionBuilder(createCustomConnectionBuilder(factoryBuilder, clientConfig)));
         }
 
-        private static Connection.Builder customConnectionBuilder(ConnectionFactory.Builder factoryBuilder) {
+        private static Connection.Builder createCustomConnectionBuilder(ConnectionFactory.Builder factoryBuilder,
+            JedisClientConfig clientConfig) {
             Connection.Builder connBuilder = factoryBuilder.getCache() == null ? Connection.builder()
                 : CacheConnection.builder(factoryBuilder.getCache());
 
-            connBuilder.setSocketFactory(factoryBuilder.getJedisSocketFactory())
-                .setClientConfig(factoryBuilder.getClientConfig());
-            return connBuilder;
+            return connBuilder.socketFactory(factoryBuilder.getJedisSocketFactory()).clientConfig(clientConfig);
         }
 
         @Override
@@ -91,7 +90,17 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
 
         public TrackingConnectionPool build() {
+            applyDefaults();
             return new TrackingConnectionPool(this);
+        }
+
+        private void applyDefaults() {
+            if (clientConfig == null) {
+                clientConfig = DefaultJedisClientConfig.builder().build();
+            }
+            if (poolConfig == null) {
+                poolConfig = new GenericObjectPoolConfig<>();
+            }
         }
     }
 
@@ -99,7 +108,7 @@ public class TrackingConnectionPool extends ConnectionPool {
 
     private final HostAndPort hostAndPort;
     private final JedisClientConfig clientConfig;
-    private final GenericObjectPoolConfig poolConfig;
+    private final GenericObjectPoolConfig<Connection> poolConfig;
     private final AtomicInteger numWaiters = new AtomicInteger();
     private final Set<Connection> poolTrackedObjects = ConcurrentHashMap.newKeySet();
 
@@ -117,9 +126,10 @@ public class TrackingConnectionPool extends ConnectionPool {
         this.attachAuthenticationListener(builder.clientConfig.getAuthXManager());
     }
 
-    private static FailFastConnectionFactory createfailFastFactory(Builder builder) {
-        return new FailFastConnectionFactory(ConnectionFactory.builder().setClientConfig(builder.clientConfig)
-            .setJedisSocketFactory(new DefaultJedisSocketFactory(builder.hostAndPort, builder.clientConfig)));
+    private static FailFastConnectionFactory createfailFastFactory(Builder poolBuilder) {
+        ConnectionFactory.Builder factoryBuilder = ConnectionFactory.builder().clientConfig(poolBuilder.clientConfig)
+            .socketFactory(new DefaultJedisSocketFactory(poolBuilder.hostAndPort, poolBuilder.clientConfig));
+        return new FailFastConnectionFactory(factoryBuilder, poolBuilder.clientConfig);
     }
 
     public static TrackingConnectionPool from(TrackingConnectionPool existing) {

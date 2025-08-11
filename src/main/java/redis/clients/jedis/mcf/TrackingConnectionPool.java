@@ -62,7 +62,7 @@ public class TrackingConnectionPool extends ConnectionPool {
                 try {
                     connection.forceDisconnect();
                 } catch (Exception e) {
-                    log.warn("Error while force disconnecting connection: " + connection.toIdentityString());
+                    log.warn("Error while force disconnecting connection: " + connection.toIdentityString(), e);
                 }
             }
         }
@@ -176,7 +176,7 @@ public class TrackingConnectionPool extends ConnectionPool {
                 try {
                     connection.forceDisconnect();
                 } catch (Exception e) {
-                    log.warn("Error while force disconnecting connection: " + connection.toIdentityString());
+                    log.warn("Error while force disconnecting connection: " + connection.toIdentityString(), e);
                 }
             }
         }

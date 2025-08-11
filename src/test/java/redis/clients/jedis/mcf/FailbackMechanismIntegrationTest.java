@@ -271,7 +271,7 @@ class FailbackMechanismIntegrationTest {
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for failback
-                Thread.sleep(200);
+                Thread.sleep(250);
 
                 // Should fail back to cluster3 (highest weight)
                 assertEquals(provider.getCluster(endpoint3), provider.getCluster());

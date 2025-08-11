@@ -179,6 +179,10 @@ public class TrackingConnectionPool extends ConnectionPool {
                     log.warn("Error while force disconnecting connection: " + connection.toIdentityString(), e);
                 }
             }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+            }
         }
         ((FailFastConnectionFactory) this.getFactory()).failFast = false;
     }

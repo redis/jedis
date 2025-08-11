@@ -119,4 +119,8 @@ public class HealthCheck {
         }
     }
 
+    public long getMaxWaitDuration() {
+        return strategy.getMaxWaitDuration();
+    }
+
 }

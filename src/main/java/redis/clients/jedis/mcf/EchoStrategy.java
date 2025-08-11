@@ -10,14 +10,17 @@ public class EchoStrategy implements HealthCheckStrategy {
     private int interval;
     private int timeout;
     private UnifiedJedis jedis;
+    private int minConsecutiveSuccessCount;
 
     public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
-        this(hostAndPort, jedisClientConfig, 1000, 1000);
+        this(hostAndPort, jedisClientConfig, 1000, 1000, 3);
     }
 
-    public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout) {
+    public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout,
+        int minConsecutiveSuccessCount) {
         this.interval = interval;
         this.timeout = timeout;
+        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
         this.jedis = new UnifiedJedis(hostAndPort, jedisClientConfig);
     }
 
@@ -29,6 +32,11 @@ public class EchoStrategy implements HealthCheckStrategy {
     @Override
     public int getTimeout() {
         return timeout;
+    }
+
+    @Override
+    public int minConsecutiveSuccessCount() {
+        return minConsecutiveSuccessCount;
     }
 
     @Override

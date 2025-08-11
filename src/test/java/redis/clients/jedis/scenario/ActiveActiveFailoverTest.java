@@ -166,7 +166,7 @@ public class ActiveActiveFailoverTest {
         }
       }
       return true;
-    }, 4);
+    }, 18);
     fakeApp.setKeepExecutingForSeconds(30);
     Thread t = new Thread(fakeApp);
     t.start();

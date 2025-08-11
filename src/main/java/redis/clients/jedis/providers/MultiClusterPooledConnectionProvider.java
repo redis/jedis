@@ -89,7 +89,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private List<Class<? extends Throwable>> fallbackExceptionList;
 
     private HealthStatusManager healthStatusManager = new HealthStatusManager();
-    private StatusTracker statusTracker;
 
     // Flag to control when handleHealthStatusChange should process events (only after initialization)
     private volatile boolean initializationComplete = false;
@@ -166,15 +165,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         // Initialize StatusTracker for waiting on health check results
-        statusTracker = new StatusTracker(healthStatusManager);
+        StatusTracker statusTracker = new StatusTracker(healthStatusManager);
 
         // Wait for initial health check results and select active cluster based on weights
-        activeCluster = waitForInitialHealthyCluster();
+        activeCluster = waitForInitialHealthyCluster(statusTracker);
 
         // Mark initialization as complete - handleHealthStatusChange can now process events
         initializationComplete = true;
         if (!activeCluster.isHealthy()) {
-            activeCluster = waitForInitialHealthyCluster();
+            activeCluster = waitForInitialHealthyCluster(statusTracker);
         }
         this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
 
@@ -333,10 +332,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     /**
      * Waits for initial health check results and selects the first healthy cluster based on weight priority. Blocks
      * until at least one cluster becomes healthy or all clusters are determined to be unhealthy.
+     * @param statusTracker the status tracker to use for waiting on health check results
      * @return the first healthy cluster found, ordered by weight (highest first)
      * @throws JedisConnectionException if all clusters are unhealthy
      */
-    private Cluster waitForInitialHealthyCluster() {
+    private Cluster waitForInitialHealthyCluster(StatusTracker statusTracker) {
         // Sort clusters by weight in descending order
         List<Map.Entry<Endpoint, Cluster>> sortedClusters = multiClusterMap.entrySet().stream()
             .sorted(Map.Entry.<Endpoint, Cluster> comparingByValue(Comparator.comparing(Cluster::getWeight).reversed()))

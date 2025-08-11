@@ -12,6 +12,8 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.ConnectionFailoverException;
+import redis.clients.jedis.mcf.EchoStrategy;
+import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -30,6 +32,19 @@ import redis.clients.jedis.mcf.ConnectionFailoverException;
 // TODO: move
 @Experimental
 public final class MultiClusterClientConfig {
+
+    /**
+     * Interface for creating HealthCheckStrategy instances for specific endpoints
+     */
+    public static interface StrategySupplier {
+        /**
+         * Creates a HealthCheckStrategy for the given endpoint.
+         * @param hostAndPort the endpoint to create a strategy for
+         * @param jedisClientConfig the client configuration, may be null for implementations that don't need it
+         * @return a HealthCheckStrategy instance
+         */
+        HealthCheckStrategy get(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig);
+    }
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
     private static final int RETRY_WAIT_DURATION_DEFAULT = 500; // measured in milliseconds
@@ -129,6 +144,14 @@ public final class MultiClusterClientConfig {
 
     private List<Class<? extends Throwable>> fallbackExceptionList;
 
+    //////////// Failover Config ////////////
+
+    /** Whether to retry failed commands during failover */
+    private boolean retryOnFailover = false;
+
+    /** Whether failback is enabled */
+    private boolean failback = false;
+
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
     }
@@ -193,12 +216,22 @@ public final class MultiClusterClientConfig {
         return fallbackExceptionList;
     }
 
+    public boolean isRetryOnFailover() {
+        return retryOnFailover;
+    }
+
+    public boolean isFailback() {
+        return failback;
+    }
+
     public static class ClusterConfig {
 
-        private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
         private GenericObjectPoolConfig<Connection> connectionPoolConfig;
+
+        private float weight = 1.0f;
+        private StrategySupplier healthCheckStrategySupplier;
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
@@ -212,16 +245,20 @@ public final class MultiClusterClientConfig {
             this.connectionPoolConfig = connectionPoolConfig;
         }
 
-        public int getPriority() {
-            return priority;
-        }
-
-        private void setPriority(int priority) {
-            this.priority = priority;
+        private ClusterConfig(Builder builder) {
+            this.hostAndPort = builder.hostAndPort;
+            this.clientConfig = builder.clientConfig;
+            this.connectionPoolConfig = builder.connectionPoolConfig;
+            this.weight = builder.weight;
+            this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
         }
 
         public HostAndPort getHostAndPort() {
             return hostAndPort;
+        }
+
+        public static Builder builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+            return new Builder(hostAndPort, clientConfig);
         }
 
         public JedisClientConfig getJedisClientConfig() {
@@ -230,6 +267,69 @@ public final class MultiClusterClientConfig {
 
         public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
             return connectionPoolConfig;
+        }
+
+        public float getWeight() {
+            return weight;
+        }
+
+        public StrategySupplier getHealthCheckStrategySupplier() {
+            return healthCheckStrategySupplier;
+        }
+
+        public static class Builder {
+            private HostAndPort hostAndPort;
+            private JedisClientConfig clientConfig;
+            private GenericObjectPoolConfig<Connection> connectionPoolConfig;
+
+            private float weight = 1.0f;
+            private StrategySupplier healthCheckStrategySupplier = EchoStrategy.DEFAULT;
+            private boolean healthCheckEnabled = true;
+
+            public Builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+                this.hostAndPort = hostAndPort;
+                this.clientConfig = clientConfig;
+            }
+
+            public Builder connectionPoolConfig(GenericObjectPoolConfig<Connection> connectionPoolConfig) {
+                this.connectionPoolConfig = connectionPoolConfig;
+                return this;
+            }
+
+            public Builder weight(float weight) {
+                this.weight = weight;
+                return this;
+            }
+
+            public Builder healthCheckStrategySupplier(StrategySupplier healthCheckStrategySupplier) {
+                if (healthCheckStrategySupplier == null) {
+                    throw new IllegalArgumentException("healthCheckStrategySupplier must not be null");
+                }
+                this.healthCheckStrategySupplier = healthCheckStrategySupplier;
+                return this;
+            }
+
+            public Builder healthCheckStrategy(HealthCheckStrategy healthCheckStrategy) {
+                if (healthCheckStrategy == null) {
+                    throw new IllegalArgumentException("healthCheckStrategy must not be null");
+                }
+                this.healthCheckStrategySupplier = (hostAndPort, jedisClientConfig) -> healthCheckStrategy;
+                return this;
+            }
+
+            public Builder healthCheckEnabled(boolean healthCheckEnabled) {
+                this.healthCheckEnabled = healthCheckEnabled;
+                if (!healthCheckEnabled) {
+                    this.healthCheckStrategySupplier = null;
+                } else if (healthCheckStrategySupplier == null) {
+                    this.healthCheckStrategySupplier = EchoStrategy.DEFAULT;
+                }
+                return this;
+            }
+
+            public ClusterConfig build() {
+                return new ClusterConfig(this);
+            }
         }
     }
 
@@ -253,13 +353,13 @@ public final class MultiClusterClientConfig {
         private List<Class> circuitBreakerIgnoreExceptionList = null;
         private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
 
+        private boolean retryOnFailover = false;
+        private boolean failback = false;
+
         public Builder(ClusterConfig[] clusterConfigs) {
 
             if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
                 "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
-
-            for (int i = 0; i < clusterConfigs.length; i++)
-                clusterConfigs[i].setPriority(i + 1);
 
             this.clusterConfigs = clusterConfigs;
         }
@@ -348,6 +448,16 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
+        public Builder retryOnFailover(boolean retryOnFailover) {
+            this.retryOnFailover = retryOnFailover;
+            return this;
+        }
+
+        public Builder failback(boolean failback) {
+            this.failback = failback;
+            return this;
+        }
+
         public MultiClusterClientConfig build() {
             MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterConfigs);
 
@@ -372,6 +482,9 @@ public final class MultiClusterClientConfig {
             config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
 
             config.fallbackExceptionList = this.fallbackExceptionList;
+
+            config.retryOnFailover = this.retryOnFailover;
+            config.failback = this.failback;
 
             return config;
         }

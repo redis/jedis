@@ -16,6 +16,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -82,6 +86,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     private HealthStatusManager healthStatusManager = new HealthStatusManager();
 
+    // Failback mechanism fields
+    private final ScheduledExecutorService failbackScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "failback-scheduler");
+        t.setDaemon(true);
+        return t;
+    });
     // Store retry and circuit breaker configs for dynamic cluster addition/removal
     private RetryConfig retryConfig;
     private CircuitBreakerConfig circuitBreakerConfig;
@@ -151,6 +161,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         /// --- ///
 
         this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
+
+        // Start periodic failback checker
+        if (multiClusterClientConfig.isFailbackSupported()) {
+            long failbackInterval = multiClusterClientConfig.getFailbackCheckInterval();
+            failbackScheduler.scheduleAtFixedRate(this::periodicFailbackCheck, failbackInterval, failbackInterval,
+                TimeUnit.MILLISECONDS);
+        }
     }
 
     /**
@@ -194,6 +211,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         if (multiClusterMap.size() < 2) {
             throw new JedisValidationException("Cannot remove the last remaining endpoint");
         }
+        log.debug("Removing endpoint {}", endpoint);
 
         activeClusterIndexLock.lock();
         try {
@@ -251,7 +269,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         circuitBreakerEventPublisher.onError(event -> log.error(String.valueOf(event)));
         circuitBreakerEventPublisher.onFailureRateExceeded(event -> log.error(String.valueOf(event)));
         circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
-        circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
 
         ConnectionPool pool;
         if (poolConfig != null) {
@@ -281,19 +298,50 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         clusterWithHealthChange.setHealthStatus(newStatus);
 
-        if (newStatus.isHealthy()) {
-            if (clusterWithHealthChange.isFailbackSupported() && activeCluster != clusterWithHealthChange) {
-                // lets check if weighted switching is possible
-                Map.Entry<Endpoint, Cluster> failbackCluster = findWeightedHealthyClusterToIterate();
-                if (failbackCluster == clusterWithHealthChange
-                    && clusterWithHealthChange.getWeight() > activeCluster.getWeight()) {
-                    setActiveCluster(clusterWithHealthChange, false);
+        if (!newStatus.isHealthy()) {
+            // Handle failover if this was the active cluster
+            if (clusterWithHealthChange == activeCluster) {
+                clusterWithHealthChange.setGracePeriod();
+                if (iterateActiveCluster() != null) {
+                    this.runClusterFailoverPostProcessor(activeCluster);
                 }
             }
-        } else if (clusterWithHealthChange == activeCluster) {
-            if (iterateActiveCluster() != null) {
-                this.runClusterFailoverPostProcessor(activeCluster);
+        }
+    }
+
+    /**
+     * Periodic failback checker - runs at configured intervals to check for failback opportunities
+     */
+    private void periodicFailbackCheck() {
+        // Find the best candidate cluster for failback
+        Cluster bestCandidate = null;
+        float bestWeight = activeCluster.getWeight();
+
+        for (Map.Entry<Endpoint, Cluster> entry : multiClusterMap.entrySet()) {
+            Cluster cluster = entry.getValue();
+
+            // Skip if this is already the active cluster
+            if (cluster == activeCluster) {
+                continue;
             }
+
+            // Skip if cluster is not healthy
+            if (!cluster.isHealthy()) {
+                continue;
+            }
+
+            // This cluster is a valid candidate
+            if (cluster.getWeight() > bestWeight) {
+                bestCandidate = cluster;
+                bestWeight = cluster.getWeight();
+            }
+        }
+
+        // Perform failback if we found a better candidate
+        if (bestCandidate != null) {
+            log.info("Performing failback from {} to {} (higher weight cluster available)",
+                activeCluster.getCircuitBreaker().getName(), bestCandidate.getCircuitBreaker().getName());
+            setActiveCluster(bestCandidate, true);
         }
     }
 
@@ -397,7 +445,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     @Override
     public void close() {
-        activeCluster.getConnectionPool().close();
+        // Shutdown the failback scheduler
+        failbackScheduler.shutdown();
+        try {
+            if (!failbackScheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                failbackScheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            failbackScheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
+        // Close all cluster connection pools
+        for (Cluster cluster : multiClusterMap.values()) {
+            cluster.getConnectionPool().close();
+        }
     }
 
     @Override
@@ -425,15 +487,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     @VisibleForTesting
-    public Cluster getCluster(Endpoint multiClusterIndex) {
-        return multiClusterMap.get(multiClusterIndex);
+    public Cluster getCluster(Endpoint endpoint) {
+        return multiClusterMap.get(endpoint);
     }
 
     public CircuitBreaker getClusterCircuitBreaker() {
-        return activeCluster.getCircuitBreaker();
-    }
-
-    public CircuitBreaker getClusterCircuitBreaker(int multiClusterIndex) {
         return activeCluster.getCircuitBreaker();
     }
 
@@ -444,7 +502,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     public boolean canIterateOnceMore() {
         Map.Entry<Endpoint, Cluster> e = findWeightedHealthyClusterToIterate();
-
         return e != null;
     }
 
@@ -471,6 +528,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         private HealthStatus healthStatus = HealthStatus.HEALTHY;
         private MultiClusterClientConfig multiClusterClientConfig;
         private boolean disabled = false;
+
+        // Grace period tracking
+        private volatile long gracePeriodEndsAt = 0;
 
         public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
@@ -513,11 +573,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public boolean isCBForcedOpen() {
+            if (circuitBreaker.getState() == State.FORCED_OPEN && !isInGracePeriod()) {
+                circuitBreaker.transitionToClosedState();
+            }
             return circuitBreaker.getState() == CircuitBreaker.State.FORCED_OPEN;
         }
 
         public boolean isHealthy() {
-            return healthStatus.isHealthy() && !isCBForcedOpen() && !disabled;
+            return healthStatus.isHealthy() && !isCBForcedOpen() && !disabled && !isInGracePeriod();
         }
 
         public boolean retryOnFailover() {
@@ -530,6 +593,20 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         public void setDisabled(boolean disabled) {
             this.disabled = disabled;
+        }
+
+        /**
+         * Checks if the cluster is currently in grace period
+         */
+        public boolean isInGracePeriod() {
+            return System.currentTimeMillis() < gracePeriodEndsAt;
+        }
+
+        /**
+         * Sets the grace period for this cluster
+         */
+        public void setGracePeriod() {
+            gracePeriodEndsAt = System.currentTimeMillis() + multiClusterClientConfig.getGracePeriod();
         }
 
         /**

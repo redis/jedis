@@ -281,12 +281,12 @@ public class HealthCheckTest {
 
         MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
             .retryOnFailover(true)
-            .failback(true)
+            .failbackSupported(false)
             .build();
 
         assertEquals(2.5f, clusterConfig.getWeight());
         assertTrue(multiConfig.isRetryOnFailover());
-        assertTrue(multiConfig.isFailback());
+        assertFalse(multiConfig.isFailbackSupported());
     }
 
     @Test
@@ -304,7 +304,7 @@ public class HealthCheckTest {
             .build();
 
         assertFalse(multiConfig.isRetryOnFailover()); // Default is false
-        assertFalse(multiConfig.isFailback()); // Default is false
+        assertTrue(multiConfig.isFailbackSupported()); // Default is true
     }
 
     @Test

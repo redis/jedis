@@ -28,6 +28,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusChangeEvent;
@@ -81,6 +82,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     private HealthStatusManager healthStatusManager = new HealthStatusManager();
 
+    // Store retry and circuit breaker configs for dynamic cluster addition/removal
+    private RetryConfig retryConfig;
+    private CircuitBreakerConfig circuitBreakerConfig;
+    private MultiClusterClientConfig multiClusterClientConfig;
+
     public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
         if (multiClusterClientConfig == null) throw new JedisValidationException(
@@ -101,7 +107,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         if (retryIgnoreExceptionList != null)
             retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
 
-        RetryConfig retryConfig = retryConfigBuilder.build();
+        this.retryConfig = retryConfigBuilder.build();
 
         ////////////// Configure Circuit Breaker ////////////////////
 
@@ -126,50 +132,18 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         if (circuitBreakerIgnoreExceptionList != null) circuitBreakerConfigBuilder
             .ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
 
-        CircuitBreakerConfig circuitBreakerConfig = circuitBreakerConfigBuilder.build();
+        this.circuitBreakerConfig = circuitBreakerConfigBuilder.build();
 
         ////////////// Configure Cluster Map ////////////////////
 
         ClusterConfig[] clusterConfigs = multiClusterClientConfig.getClusterConfigs();
         for (ClusterConfig config : clusterConfigs) {
-            GenericObjectPoolConfig<Connection> poolConfig = config.getConnectionPoolConfig();
-
-            String clusterId = "cluster:" + config.getHostAndPort();
-
-            Retry retry = RetryRegistry.of(retryConfig).retry(clusterId);
-
-            Retry.EventPublisher retryPublisher = retry.getEventPublisher();
-            retryPublisher.onRetry(event -> log.warn(String.valueOf(event)));
-            retryPublisher.onError(event -> log.error(String.valueOf(event)));
-
-            CircuitBreaker circuitBreaker = CircuitBreakerRegistry.of(circuitBreakerConfig).circuitBreaker(clusterId);
-
-            CircuitBreaker.EventPublisher circuitBreakerEventPublisher = circuitBreaker.getEventPublisher();
-            circuitBreakerEventPublisher.onCallNotPermitted(event -> log.error(String.valueOf(event)));
-            circuitBreakerEventPublisher.onError(event -> log.error(String.valueOf(event)));
-            circuitBreakerEventPublisher.onFailureRateExceeded(event -> log.error(String.valueOf(event)));
-            circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
-            circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
-
-            ConnectionPool pool;
-            if (poolConfig != null) {
-                pool = new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(), poolConfig);
-            } else {
-                pool = new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig());
-            }
-            Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
-            multiClusterMap.put(config.getHostAndPort(), cluster);
-
-            StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
-            if (strategySupplier != null) {
-                HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
-                healthStatusManager.add(config.getHostAndPort(), hcs);
-            }
+            addClusterInternal(multiClusterClientConfig, config);
         }
 
         // selecting activeCluster with configuration values.
         // all health status would be HEALTHY at this point
-        activeCluster = findWeightedHealthyCluster().getValue();
+        activeCluster = findWeightedHealthyClusterToIterate().getValue();
 
         for (Endpoint endpoint : multiClusterMap.keySet()) {
             healthStatusManager.registerListener(endpoint, this::handleStatusChange);
@@ -177,6 +151,122 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         /// --- ///
 
         this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
+    }
+
+    /**
+     * Adds a new cluster endpoint to the provider.
+     * @param clusterConfig the configuration for the new cluster
+     * @throws JedisValidationException if the endpoint already exists
+     */
+    public void add(ClusterConfig clusterConfig) {
+        if (clusterConfig == null) {
+            throw new JedisValidationException("ClusterConfig must not be null");
+        }
+
+        Endpoint endpoint = clusterConfig.getHostAndPort();
+        if (multiClusterMap.containsKey(endpoint)) {
+            throw new JedisValidationException("Endpoint " + endpoint + " already exists in the provider");
+        }
+
+        activeClusterIndexLock.lock();
+        try {
+            addClusterInternal(multiClusterClientConfig, clusterConfig);
+            healthStatusManager.registerListener(endpoint, this::handleStatusChange);
+        } finally {
+            activeClusterIndexLock.unlock();
+        }
+    }
+
+    /**
+     * Removes a cluster endpoint from the provider.
+     * @param endpoint the endpoint to remove
+     * @throws JedisValidationException if the endpoint doesn't exist or is the last remaining endpoint
+     */
+    public void remove(Endpoint endpoint) {
+        if (endpoint == null) {
+            throw new JedisValidationException("Endpoint must not be null");
+        }
+
+        if (!multiClusterMap.containsKey(endpoint)) {
+            throw new JedisValidationException("Endpoint " + endpoint + " does not exist in the provider");
+        }
+
+        if (multiClusterMap.size() < 2) {
+            throw new JedisValidationException("Cannot remove the last remaining endpoint");
+        }
+
+        activeClusterIndexLock.lock();
+        try {
+            Cluster clusterToRemove = multiClusterMap.get(endpoint);
+            boolean isActiveCluster = (activeCluster == clusterToRemove);
+
+            if (isActiveCluster) {
+                log.info("Active cluster is being removed. Finding a new active cluster...");
+                Map.Entry<Endpoint, Cluster> candidateCluster = findWeightedHealthyClusterToIterate();
+                if (candidateCluster != null) {
+                    setActiveCluster(candidateCluster.getValue(), true);
+                    log.info("New active cluster set to {}", candidateCluster.getKey());
+                } else {
+                    throw new JedisException(
+                        "Cluster can not be removed due to no healthy cluster available to switch!");
+                }
+            }
+
+            // Remove from health status manager first
+            healthStatusManager.unregisterListener(endpoint, this::handleStatusChange);
+            healthStatusManager.remove(endpoint);
+
+            // Remove from cluster map
+            multiClusterMap.remove(endpoint);
+
+            // Close the cluster resources
+            if (clusterToRemove != null) {
+                clusterToRemove.setDisabled(true);
+                clusterToRemove.getConnectionPool().close();
+            }
+        } finally {
+            activeClusterIndexLock.unlock();
+        }
+    }
+
+    /**
+     * Internal method to add a cluster configuration. This method is not thread-safe and should be called within
+     * appropriate locks.
+     */
+    private void addClusterInternal(MultiClusterClientConfig multiClusterClientConfig, ClusterConfig config) {
+        GenericObjectPoolConfig<Connection> poolConfig = config.getConnectionPoolConfig();
+
+        String clusterId = "cluster:" + config.getHostAndPort();
+
+        Retry retry = RetryRegistry.of(retryConfig).retry(clusterId);
+
+        Retry.EventPublisher retryPublisher = retry.getEventPublisher();
+        retryPublisher.onRetry(event -> log.warn(String.valueOf(event)));
+        retryPublisher.onError(event -> log.error(String.valueOf(event)));
+
+        CircuitBreaker circuitBreaker = CircuitBreakerRegistry.of(circuitBreakerConfig).circuitBreaker(clusterId);
+
+        CircuitBreaker.EventPublisher circuitBreakerEventPublisher = circuitBreaker.getEventPublisher();
+        circuitBreakerEventPublisher.onCallNotPermitted(event -> log.error(String.valueOf(event)));
+        circuitBreakerEventPublisher.onError(event -> log.error(String.valueOf(event)));
+        circuitBreakerEventPublisher.onFailureRateExceeded(event -> log.error(String.valueOf(event)));
+        circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
+        circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
+
+        ConnectionPool pool;
+        if (poolConfig != null) {
+            pool = new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig(), poolConfig);
+        } else {
+            pool = new ConnectionPool(config.getHostAndPort(), config.getJedisClientConfig());
+        }
+        Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
+        multiClusterMap.put(config.getHostAndPort(), cluster);
+
+        StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
+        if (strategySupplier != null) {
+            HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
+            healthStatusManager.add(config.getHostAndPort(), hcs);
+        }
     }
 
     private void handleStatusChange(HealthStatusChangeEvent eventArgs) {
@@ -188,14 +278,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         Cluster clusterWithHealthChange = multiClusterMap.get(endpoint);
 
         if (clusterWithHealthChange == null) return;
-        if (clusterWithHealthChange.isDisabled()) return;
 
         clusterWithHealthChange.setHealthStatus(newStatus);
 
         if (newStatus.isHealthy()) {
-            if (clusterWithHealthChange.isFailbackEnabled() && activeCluster != clusterWithHealthChange) {
+            if (clusterWithHealthChange.isFailbackSupported() && activeCluster != clusterWithHealthChange) {
                 // lets check if weighted switching is possible
-                Map.Entry<Endpoint, Cluster> failbackCluster = findWeightedFailbackCluster();
+                Map.Entry<Endpoint, Cluster> failbackCluster = findWeightedHealthyClusterToIterate();
                 if (failbackCluster == clusterWithHealthChange
                     && clusterWithHealthChange.getWeight() > activeCluster.getWeight()) {
                     setActiveCluster(clusterWithHealthChange, false);
@@ -209,33 +298,27 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     public Endpoint iterateActiveCluster() {
-        Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyCluster();
+        Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate();
         if (clusterToIterate == null) {
             throw new JedisConnectionException(
                 "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "
                     + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
                     + "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
         }
-        boolean changed = setActiveCluster(clusterToIterate.getValue(), false);
-        return changed ? clusterToIterate.getKey() : null;
+        Cluster cluster = clusterToIterate.getValue();
+        boolean changed = setActiveCluster(cluster, false);
+        if (!changed) return null;
+        return clusterToIterate.getKey();
     }
 
     private static Comparator<Map.Entry<Endpoint, Cluster>> maxByWeight = Map.Entry
         .<Endpoint, Cluster> comparingByValue(Comparator.comparing(Cluster::getWeight));
 
     private static Predicate<Map.Entry<Endpoint, Cluster>> filterByHealth = c -> c.getValue().isHealthy();
-    private static Predicate<Map.Entry<Endpoint, Cluster>> filterByFailback = c -> c.getValue().isFailbackEnabled();
 
-    private Map.Entry<Endpoint, Cluster> findWeightedHealthyCluster() {
-        Cluster current = activeCluster;
-        return multiClusterMap.entrySet().stream().filter(filterByHealth).filter(entry -> entry.getValue() != current)
-            .max(maxByWeight).orElse(null);
-    }
-
-    private Map.Entry<Endpoint, Cluster> findWeightedFailbackCluster() {
-        Cluster current = activeCluster;
-        return multiClusterMap.entrySet().stream().filter(filterByHealth).filter(filterByFailback)
-            .filter(entry -> entry.getValue() != current).max(maxByWeight).orElse(null);
+    private Map.Entry<Endpoint, Cluster> findWeightedHealthyClusterToIterate() {
+        return multiClusterMap.entrySet().stream().filter(filterByHealth)
+            .filter(entry -> entry.getValue() != activeCluster).max(maxByWeight).orElse(null);
     }
 
     /**
@@ -304,9 +387,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 log.warn("Cluster/database endpoint '{}' successfully closed its circuit breaker", originalClusterName);
             else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName,
                 cluster.circuitBreaker.getName());
-            if (!activeCluster.isFailbackEnabled()) {
-                activeCluster.disable();
-            }
             Cluster temp = activeCluster;
             activeCluster = cluster;
             return temp != activeCluster;
@@ -363,7 +443,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * manually failback to an available cluster
      */
     public boolean canIterateOnceMore() {
-        Map.Entry<Endpoint, Cluster> e = findWeightedHealthyCluster();
+        Map.Entry<Endpoint, Cluster> e = findWeightedHealthyClusterToIterate();
+
         return e != null;
     }
 
@@ -398,10 +479,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             this.circuitBreaker = circuitBreaker;
             this.weight = weight;
             this.multiClusterClientConfig = multiClusterClientConfig;
-        }
-
-        public void disable() {
-            disabled = true;
         }
 
         public Connection getConnection() {
@@ -443,23 +520,30 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             return healthStatus.isHealthy() && !isCBForcedOpen() && !disabled;
         }
 
-        public boolean isFailbackEnabled() {
-            return multiClusterClientConfig.isFailback();
+        public boolean retryOnFailover() {
+            return multiClusterClientConfig.isRetryOnFailover();
         }
 
         public boolean isDisabled() {
             return disabled;
         }
 
-        public boolean retryOnFailover() {
-            return multiClusterClientConfig.isRetryOnFailover();
+        public void setDisabled(boolean disabled) {
+            this.disabled = disabled;
+        }
+
+        /**
+         * Whether failback is supported by client
+         */
+        public boolean isFailbackSupported() {
+            return multiClusterClientConfig.isFailbackSupported();
         }
 
         @Override
         public String toString() {
             return circuitBreaker.getName() + "{" + "connectionPool=" + connectionPool + ", retry=" + retry
                 + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus=" + healthStatus
-                + ", multiClusterClientConfig=" + multiClusterClientConfig + ", disabled=" + disabled + '}';
+                + ", multiClusterClientConfig=" + multiClusterClientConfig + '}';
         }
     }
 

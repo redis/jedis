@@ -160,7 +160,6 @@ public final class MultiClusterClientConfig {
 
     /** Grace period in milliseconds to keep clusters disabled after they become unhealthy */
     private long gracePeriod;
-
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
     }
@@ -241,7 +240,6 @@ public final class MultiClusterClientConfig {
     public long getGracePeriod() {
         return gracePeriod;
     }
-
     public static Builder builder(ClusterConfig[] clusterConfigs) {
         return new Builder(clusterConfigs);
     }
@@ -489,7 +487,6 @@ public final class MultiClusterClientConfig {
             this.gracePeriod = gracePeriod;
             return this;
         }
-
         public MultiClusterClientConfig build() {
             MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterConfigs);
 

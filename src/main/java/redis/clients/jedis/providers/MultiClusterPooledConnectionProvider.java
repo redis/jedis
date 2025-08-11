@@ -444,6 +444,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     public boolean canIterateOnceMore() {
         Map.Entry<Endpoint, Cluster> e = findWeightedHealthyClusterToIterate();
+
         return e != null;
     }
 

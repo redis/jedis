@@ -531,7 +531,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         // Grace period tracking
         private volatile long gracePeriodEndsAt = 0;
-      
+
         public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
             this.connectionPool = connectionPool;

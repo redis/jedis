@@ -25,8 +25,7 @@ public class JedisSentinelSlavePoolTest {
 
     protected final Set<String> sentinels = new HashSet<>();
 
-//    private final String password = "foobared";
-    private final String password = "0a2eb141353cf115";
+    private final String password = "foobared";
 
     @BeforeEach
     public void setUp() throws Exception {

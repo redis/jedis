@@ -15,4 +15,9 @@ public interface ConnectionProvider extends AutoCloseable {
     final Connection c = getConnection();
     return Collections.singletonMap(c.toString(), c);
   }
+
+  default Map<?, ?> getPrimaryNodesConnectionMap() {
+    final Connection c = getConnection();
+    return Collections.singletonMap(c.toString(), c);
+  }
 }

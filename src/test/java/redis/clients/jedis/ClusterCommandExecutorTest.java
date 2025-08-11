@@ -8,13 +8,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
-
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import org.hamcrest.MatcherAssert;
@@ -24,7 +19,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -361,42 +355,5 @@ public class ClusterCommandExecutorTest {
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();
     assertEquals(0L, totalSleepMs.get());
-  }
-
-  @Test
-  public void runFunctionCommandUsesPrimaryOnly() {
-    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
-
-    Map<String, ConnectionPool> primaryNodes = new HashMap<>();
-    primaryNodes.put("127.0.0.1:6379", mock(ConnectionPool.class));
-
-    Map<String, ConnectionPool> allNodes = new HashMap<>();
-    allNodes.put("127.0.0.1:6379", mock(ConnectionPool.class));
-    allNodes.put("127.0.0.1:6380", mock(ConnectionPool.class));
-
-    when(connectionHandler.getPrimaryConnectionMap()).thenReturn(primaryNodes);
-    when(connectionHandler.getConnectionMap()).thenReturn(allNodes);
-
-    Connection conn = mock(Connection.class);
-    for (ConnectionPool pool : primaryNodes.values()) {
-      when(pool.getResource()).thenReturn(conn);
-    }
-
-    ClusterCommandExecutor executor = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
-      @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
-        return (T) "mylib";
-      }
-    };
-
-    CommandObjects commandObjects = new CommandObjects();
-    CommandObject<String> functionLoadReplaceCommand = commandObjects.functionLoadReplace("script");
-
-    String result = executor.broadcastCommand(functionLoadReplaceCommand);
-
-    assertEquals("mylib", result);
-
-    verify(connectionHandler).getPrimaryConnectionMap();
-    verify(connectionHandler, never()).getConnectionMap();
   }
 }

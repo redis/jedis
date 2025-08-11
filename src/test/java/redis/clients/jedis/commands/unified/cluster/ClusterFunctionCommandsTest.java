@@ -29,20 +29,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class ClusterFunctionsCommandsTest extends FunctionCommandsTestBase {
+public class ClusterFunctionCommandsTest extends FunctionCommandsTestBase {
 
-  public ClusterFunctionsCommandsTest(RedisProtocol protocol) {
+  public ClusterFunctionCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+      HostAndPorts.getStableClusterServers().get(0),
+      DefaultJedisClientConfig.builder().password("cluster").build());
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+      HostAndPorts.getStableClusterServers().get(0),
+      DefaultJedisClientConfig.builder().password("cluster").build());
 
   @BeforeEach
   public void setUp(TestInfo testInfo) {
@@ -61,12 +61,11 @@ public class ClusterFunctionsCommandsTest extends FunctionCommandsTestBase {
   @SinceRedisVersion(value = "7.0.0")
   @Override
   public void testFunctionKill() {
-    JedisException e = assertThrows(JedisException.class,
-            () -> jedis.functionKill());
+    JedisException e = assertThrows(JedisException.class, () -> jedis.functionKill());
     assertThat(e, instanceOf(JedisBroadcastException.class));
     JedisBroadcastException jbe = (JedisBroadcastException) e;
-    List<String> replies = jbe.getReplies().values().stream().map(e1 -> (Exception) e1).map(Exception::getMessage)
-            .collect(Collectors.toList());
+    List<String> replies = jbe.getReplies().values().stream().map(e1 -> (Exception) e1)
+        .map(Exception::getMessage).collect(Collectors.toList());
     assertThat(replies.size(), equalTo(3));
     assertThat(replies, everyItem(containsString("No scripts in execution right now")));
   }

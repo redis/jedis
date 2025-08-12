@@ -24,9 +24,10 @@ public class SentineledConnectionProviderTest {
   private static final String MASTER_NAME = "mymaster";
 
   protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
-  protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
+  protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(2);
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
+  protected String password = "foobared";
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -39,9 +40,8 @@ public class SentineledConnectionProviderTest {
   @Test
   public void repeatedSentinelPoolInitialization() {
     for (int i = 0; i < 20; ++i) {
-
       try (SentineledConnectionProvider provider = new SentineledConnectionProvider(MASTER_NAME,
-          DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+          DefaultJedisClientConfig.builder().timeoutMillis(1000).password(password).database(2).build(),
           sentinels, DefaultJedisClientConfig.builder().build())) {
 
         provider.getConnection().close();
@@ -76,7 +76,7 @@ public class SentineledConnectionProviderTest {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
 
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
-        DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+        DefaultJedisClientConfig.builder().timeoutMillis(1000).password(password).database(2).build(),
         config, sentinels, DefaultJedisClientConfig.builder().build())) {
       assertSame(SentineledConnectionProvider.class, jedis.provider.getClass());
       jedis.set("foo", "bar");
@@ -91,7 +91,7 @@ public class SentineledConnectionProviderTest {
     config.setBlockWhenExhausted(false);
 
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
-        DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+        DefaultJedisClientConfig.builder().timeoutMillis(1000).password(password).database(2).build(),
         config, sentinels, DefaultJedisClientConfig.builder().build())) {
 
       Connection conn = jedis.provider.getConnection();
@@ -113,7 +113,7 @@ public class SentineledConnectionProviderTest {
   @Test
   public void testResetInvalidPassword() {
     DefaultRedisCredentialsProvider credentialsProvider
-        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "foobared"));
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, password));
 
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, DefaultJedisClientConfig.builder()
         .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
@@ -154,7 +154,7 @@ public class SentineledConnectionProviderTest {
         fail("Should not get resource from pool");
       } catch (JedisException e) { }
 
-      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, password));
 
       try (Connection conn2 = jedis.provider.getConnection()) {
         new Jedis(conn2).set("foo", "bar");

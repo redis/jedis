@@ -283,45 +283,64 @@ public final class Protocol {
 
   public static enum Command implements ProtocolCommand {
 
-    PING, AUTH, HELLO, SET, GET, GETDEL, GETEX, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, FLUSHALL, MOVE,
-    KEYS, RANDOMKEY, RENAME, RENAMENX, DUMP, RESTORE, DBSIZE, SELECT, SWAPDB, MIGRATE, ECHO, //
-    EXPIRE, EXPIREAT, EXPIRETIME, PEXPIRE, PEXPIREAT, PEXPIRETIME, TTL, PTTL, // <-- key expiration
-    MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, SORT_RO, INFO, SHUTDOWN, MONITOR, CONFIG, LCS, //
-    GETSET, MGET, SETNX, SETEX, PSETEX, MSET, MSETNX, DECR, DECRBY, INCR, INCRBY, INCRBYFLOAT,
-    STRLEN, APPEND, SUBSTR, // <-- string
-    SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, BITCOUNT, BITOP, BITFIELD, BITFIELD_RO, // <-- bit (string)
-    HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HSTRLEN,
-    HEXPIRE, HPEXPIRE, HEXPIREAT, HPEXPIREAT, HTTL, HPTTL, HEXPIRETIME, HPEXPIRETIME, HPERSIST,
-    HRANDFIELD, HINCRBYFLOAT, HSETEX, HGETEX, HGETDEL, // <-- hash
-    RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, BLPOP, BRPOP, LINSERT, LPOS,
-    RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, LMPOP, BLMPOP, LPUSHX, RPUSHX, // <-- list
-    SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE,
-    SDIFF, SDIFFSTORE, SISMEMBER, SMISMEMBER, SINTERCARD, // <-- set
-    ZADD, ZDIFF, ZDIFFSTORE, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZRANDMEMBER, ZCARD,
-    ZSCORE, ZPOPMAX, ZPOPMIN, ZCOUNT, ZUNION, ZUNIONSTORE, ZINTER, ZINTERSTORE, ZRANGEBYSCORE,
-    ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZLEXCOUNT, ZRANGEBYLEX, ZREVRANGEBYLEX,
-    ZREMRANGEBYLEX, ZMSCORE, ZRANGESTORE, ZINTERCARD, ZMPOP, BZMPOP, BZPOPMIN, BZPOPMAX, // <-- zset
-    GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEOSEARCH, GEOSEARCHSTORE,
-    GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, // <-- geo
-    PFADD, PFCOUNT, PFMERGE, // <-- hyper log log
-    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
-    XAUTOCLAIM, XINFO, // <-- stream
-    EVAL, EVALSHA, SCRIPT, EVAL_RO, EVALSHA_RO, FUNCTION, FCALL, FCALL_RO, // <-- program
-    SUBSCRIBE, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBLISH, PUBSUB,
-    SSUBSCRIBE, SUNSUBSCRIBE, SPUBLISH, // <-- pub sub
-    SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST, ROLE, FAILOVER, SLOWLOG, OBJECT, CLIENT, TIME,
-    SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF, COPY,
-    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF;
+    PING(false), AUTH(false), HELLO(false), SET(true), GET(false), GETDEL(true),
+    GETEX(true), EXISTS(false), DEL(true), UNLINK(true), TYPE(false), FLUSHDB(true),
+    FLUSHALL(true), MOVE(true), KEYS(false), RANDOMKEY(false), RENAME(true), RENAMENX(true),
+    DUMP(false), RESTORE(true), DBSIZE(false), SELECT(false), SWAPDB(true), MIGRATE(true),
+    ECHO(false), //
+
+    EXPIRE(true), EXPIREAT(true), EXPIRETIME(false), PEXPIRE(true), PEXPIREAT(true), PEXPIRETIME(false),
+    TTL(false), PTTL(false), // <-- key expiration
+    MULTI(true), DISCARD(true), EXEC(true), WATCH(true), UNWATCH(true), SORT(true), SORT_RO(false),
+    INFO(false), SHUTDOWN(true), MONITOR(false), CONFIG(true), LCS(false), //
+    GETSET(true), MGET(false), SETNX(true), SETEX(true), PSETEX(true), MSET(true), MSETNX(true),
+    DECR(true), DECRBY(true), INCR(true), INCRBY(true), INCRBYFLOAT(true),
+    STRLEN(false), APPEND(true), SUBSTR(false), // <-- string
+    SETBIT(true), GETBIT(false), BITPOS(false), SETRANGE(true), GETRANGE(false), BITCOUNT(false), BITOP(true),
+    BITFIELD(true), BITFIELD_RO(false), // <-- bit (string)
+    HSET(true), HGET(false), HSETNX(true), HMSET(true), HMGET(false), HINCRBY(true), HEXISTS(false),
+    HDEL(true), HLEN(false), HKEYS(false), HVALS(false), HGETALL(false), HSTRLEN(false),
+    HEXPIRE(true), HPEXPIRE(true), HEXPIREAT(true), HPEXPIREAT(true), HTTL(false), HPTTL(false),
+    HEXPIRETIME(false), HPEXPIRETIME(false), HPERSIST(true),
+    HRANDFIELD(false), HINCRBYFLOAT(true), HSETEX(true), HGETEX(true), HGETDEL(true), // <-- hash
+    RPUSH(true), LPUSH(true), LLEN(false), LRANGE(false), LTRIM(true), LINDEX(false), LSET(true),
+    LREM(true), LPOP(true), RPOP(true), BLPOP(true), BRPOP(true), LINSERT(true), LPOS(false),
+    RPOPLPUSH(true), BRPOPLPUSH(true), BLMOVE(true), LMOVE(true), LMPOP(true), BLMPOP(true), LPUSHX(true), RPUSHX(true), // <-- list
+    SADD(true), SMEMBERS(false), SREM(true), SPOP(true), SMOVE(true), SCARD(false), SRANDMEMBER(false), SINTER(false), SINTERSTORE(true), SUNION(false), SUNIONSTORE(true),
+    SDIFF(false), SDIFFSTORE(true), SISMEMBER(false), SMISMEMBER(false), SINTERCARD(false), // <-- set
+    ZADD(true), ZDIFF(false), ZDIFFSTORE(true), ZRANGE(false), ZREM(true), ZINCRBY(true), ZRANK(false), ZREVRANK(false), ZREVRANGE(false), ZRANDMEMBER(false), ZCARD(false),
+    ZSCORE(false), ZPOPMAX(true), ZPOPMIN(true), ZCOUNT(false), ZUNION(false), ZUNIONSTORE(true), ZINTER(false), ZINTERSTORE(true), ZRANGEBYSCORE(false),
+    ZREVRANGEBYSCORE(false), ZREMRANGEBYRANK(true), ZREMRANGEBYSCORE(true), ZLEXCOUNT(false), ZRANGEBYLEX(false), ZREVRANGEBYLEX(false),
+    ZREMRANGEBYLEX(true), ZMSCORE(false), ZRANGESTORE(true), ZINTERCARD(false), ZMPOP(true), BZMPOP(true), BZPOPMIN(true), BZPOPMAX(true), // <-- zset
+    GEOADD(true), GEODIST(false), GEOHASH(false), GEOPOS(false), GEORADIUS(true), GEORADIUS_RO(false), GEOSEARCH(true), GEOSEARCHSTORE(true),
+    GEORADIUSBYMEMBER(true), GEORADIUSBYMEMBER_RO(false), // <-- geo
+    PFADD(true), PFCOUNT(false), PFMERGE(true), // <-- hyper log log
+    XADD(true), XLEN(false), XDEL(true), XTRIM(true), XRANGE(false), XREVRANGE(false), XREAD(false), XACK(true), XGROUP(true), XREADGROUP(false), XPENDING(false), XCLAIM(true),
+    XAUTOCLAIM(true), XINFO(false), // <-- stream
+    EVAL(true), EVALSHA(true), SCRIPT(true), EVAL_RO(true), EVALSHA_RO(true), FUNCTION(true), FCALL(true), FCALL_RO(false), // <-- program
+    SUBSCRIBE(false), UNSUBSCRIBE(false), PSUBSCRIBE(false), PUNSUBSCRIBE(false), PUBLISH(true), PUBSUB(false),
+    SSUBSCRIBE(false), SUNSUBSCRIBE(false), SPUBLISH(true), // <-- pub sub
+    SAVE(true), BGSAVE(true), BGREWRITEAOF(true), LASTSAVE(false), PERSIST(true), ROLE(false), FAILOVER(true), SLOWLOG(true), OBJECT(false), CLIENT(true), TIME(false),
+    SCAN(false), HSCAN(false), SSCAN(false), ZSCAN(false), WAIT(true), CLUSTER(true), ASKING(true), READONLY(true), READWRITE(true), SLAVEOF(true), REPLICAOF(true), COPY(true),
+    SENTINEL(true), MODULE(true), ACL(true), TOUCH(true), MEMORY(true), LOLWUT(false), COMMAND(false), RESET(true), LATENCY(true), WAITAOF(true);
 
     private final byte[] raw;
 
-    private Command() {
+    private final boolean isWriteCommand;
+
+    private Command(boolean isWriteCommand) {
       raw = SafeEncoder.encode(name());
+      this.isWriteCommand = isWriteCommand;
     }
 
     @Override
     public byte[] getRaw() {
       return raw;
+    }
+
+    @Override
+    public boolean isWriteCommand() {
+      return isWriteCommand;
     }
   }
 

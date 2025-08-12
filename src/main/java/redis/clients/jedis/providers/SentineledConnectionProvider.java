@@ -18,12 +18,23 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
+
+class PoolInfo {
+  public String host;
+  public JedisPool pool;
+
+  public PoolInfo(String host, JedisPool pool) {
+    this.host = host;
+    this.pool = pool;
+  }
+}
 
 public class SentineledConnectionProvider implements ConnectionProvider {
 
@@ -50,6 +61,10 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   private final long subscribeRetryWaitTimeMillis;
 
   private final Lock initPoolLock = new ReentrantLock(true);
+
+  private final List<PoolInfo> slavePools = new ArrayList<>();
+
+  private int poolIndex;
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
@@ -109,6 +124,10 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Override
   public Connection getConnection(CommandArguments args) {
+    boolean writeCommand = args.getCommand().isWriteCommand();
+    if (!writeCommand) {
+
+    }
     return pool.getResource();
   }
 
@@ -274,6 +293,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
             @Override
             public void onMessage(String channel, String message) {
               LOG.debug("Sentinel {} published: {}.", node, message);
+
 
               String[] switchMasterMsg = message.split(" ");
 

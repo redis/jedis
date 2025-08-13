@@ -11,33 +11,41 @@ public class TimeSeriesProtocol {
 
   public enum TimeSeriesCommand implements ProtocolCommand {
 
-    CREATE("TS.CREATE"),
-    RANGE("TS.RANGE"),
-    REVRANGE("TS.REVRANGE"),
-    MRANGE("TS.MRANGE"),
-    MREVRANGE("TS.MREVRANGE"),
-    CREATERULE("TS.CREATERULE"),
-    DELETERULE("TS.DELETERULE"),
-    ADD("TS.ADD"),
-    MADD("TS.MADD"),
-    DEL("TS.DEL"),
-    INCRBY("TS.INCRBY"),
-    DECRBY("TS.DECRBY"),
-    INFO("TS.INFO"),
-    GET("TS.GET"),
-    MGET("TS.MGET"),
-    ALTER("TS.ALTER"),
-    QUERYINDEX("TS.QUERYINDEX");
+    CREATE("TS.CREATE", true),
+    RANGE("TS.RANGE", false),
+    REVRANGE("TS.REVRANGE", false),
+    MRANGE("TS.MRANGE", false),
+    MREVRANGE("TS.MREVRANGE", false),
+    CREATERULE("TS.CREATERULE", true),
+    DELETERULE("TS.DELETERULE", true),
+    ADD("TS.ADD", true),
+    MADD("TS.MADD", true),
+    DEL("TS.DEL", true),
+    INCRBY("TS.INCRBY", true),
+    DECRBY("TS.DECRBY", true),
+    INFO("TS.INFO", false),
+    GET("TS.GET", false),
+    MGET("TS.MGET", false),
+    ALTER("TS.ALTER", true),
+    QUERYINDEX("TS.QUERYINDEX", false);
 
     private final byte[] raw;
 
-    private TimeSeriesCommand(String alt) {
+    private final boolean isWriteCommand;
+
+    private TimeSeriesCommand(String alt, boolean isWriteCommand) {
       raw = SafeEncoder.encode(alt);
+      this.isWriteCommand = isWriteCommand;
     }
 
     @Override
     public byte[] getRaw() {
       return raw;
+    }
+
+    @Override
+    public boolean isWriteCommand() {
+      return isWriteCommand;
     }
   }
 

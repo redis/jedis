@@ -8,42 +8,50 @@ public class SearchProtocol {
 
   public enum SearchCommand implements ProtocolCommand {
 
-    CREATE("FT.CREATE"),
-    ALTER("FT.ALTER"),
-    INFO("FT.INFO"),
-    SEARCH("FT.SEARCH"),
-    EXPLAIN("FT.EXPLAIN"),
-    EXPLAINCLI("FT.EXPLAINCLI"),
-    AGGREGATE("FT.AGGREGATE"),
-    CURSOR("FT.CURSOR"),
-    @Deprecated CONFIG("FT.CONFIG"),
-    ALIASADD("FT.ALIASADD"),
-    ALIASUPDATE("FT.ALIASUPDATE"),
-    ALIASDEL("FT.ALIASDEL"),
-    SYNUPDATE("FT.SYNUPDATE"),
-    SYNDUMP("FT.SYNDUMP"),
-    SUGADD("FT.SUGADD"),
-    SUGGET("FT.SUGGET"),
-    SUGDEL("FT.SUGDEL"),
-    SUGLEN("FT.SUGLEN"),
-    DROPINDEX("FT.DROPINDEX"),
-    DICTADD("FT.DICTADD"),
-    DICTDEL("FT.DICTDEL"),
-    DICTDUMP("FT.DICTDUMP"),
-    SPELLCHECK("FT.SPELLCHECK"),
-    TAGVALS("FT.TAGVALS"),
-    PROFILE("FT.PROFILE"),
-    _LIST("FT._LIST");
+    CREATE("FT.CREATE", true),
+    ALTER("FT.ALTER", true),
+    INFO("FT.INFO", false),
+    SEARCH("FT.SEARCH", false),
+    EXPLAIN("FT.EXPLAIN", false),
+    EXPLAINCLI("FT.EXPLAINCLI", false),
+    AGGREGATE("FT.AGGREGATE", false),
+    CURSOR("FT.CURSOR", false),
+    @Deprecated CONFIG("FT.CONFIG", true),
+    ALIASADD("FT.ALIASADD", true),
+    ALIASUPDATE("FT.ALIASUPDATE", true),
+    ALIASDEL("FT.ALIASDEL", true),
+    SYNUPDATE("FT.SYNUPDATE", true),
+    SYNDUMP("FT.SYNDUMP", false),
+    SUGADD("FT.SUGADD", true),
+    SUGGET("FT.SUGGET", false),
+    SUGDEL("FT.SUGDEL", true),
+    SUGLEN("FT.SUGLEN", false),
+    DROPINDEX("FT.DROPINDEX", true),
+    DICTADD("FT.DICTADD", true),
+    DICTDEL("FT.DICTDEL", true),
+    DICTDUMP("FT.DICTDUMP", false),
+    SPELLCHECK("FT.SPELLCHECK", false),
+    TAGVALS("FT.TAGVALS", false),
+    PROFILE("FT.PROFILE", false),
+    _LIST("FT._LIST", false);
 
     private final byte[] raw;
 
-    private SearchCommand(String alt) {
+    private final boolean isWriteCommand;
+
+    private SearchCommand(String alt, boolean isWriteCommand) {
       raw = SafeEncoder.encode(alt);
+      this.isWriteCommand = isWriteCommand;
     }
 
     @Override
     public byte[] getRaw() {
       return raw;
+    }
+
+    @Override
+    public boolean isWriteCommand() {
+      return isWriteCommand;
     }
   }
 

@@ -253,7 +253,13 @@ initialNodes.add(new HostAndPort("localhost", 7001));
 
 HostAndPortMapper mapper = new DockerNATMapper(nodeMapping);
 
-JedisCluster jedisCluster = new JedisCluster(initialNodes, "myuser", "mypassword", mapper);
+JedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .user("myuser")
+        .password("mypassword")
+        .hostAndPortMapper(mapper)
+        .build();
+
+JedisCluster jedisCluster = new JedisCluster(initialNodes, jedisClientConfig);
 ```
 
 Now, when JedisCluster discovers a node at "172.18.0.2:6379", the mapper will translate it to "localhost:7001" before attempting to connect.
@@ -271,7 +277,13 @@ initialNodes.add(new HostAndPort("localhost", 7001));
 
 HostAndPortMapper mapper = internalAddress -> nodeMapping.getOrDefault(internalAddress, internalAddress);
 
-JedisCluster jedisCluster = new JedisCluster(initialNodes, "myuser", "mypassword", mapper);
+JedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .user("myuser")
+        .password("mypassword")
+        .hostAndPortMapper(mapper)
+        .build();
+
+JedisCluster jedisCluster = new JedisCluster(initialNodes, jedisClientConfig);
 ```
 
 ## Miscellaneous 

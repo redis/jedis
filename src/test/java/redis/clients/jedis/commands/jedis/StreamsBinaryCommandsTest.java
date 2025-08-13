@@ -457,7 +457,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
     List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, StreamDeletionPolicy.ACKNOWLEDGED, readId1, readId2);
     assertThat(results, hasSize(2));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(0)); // id1 was acknowledged
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, results.get(1)); // id2 not acknowledged
+    assertEquals(StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED, results.get(1)); // id2 not acknowledged
 
     // Verify only acknowledged entry was deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));

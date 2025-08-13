@@ -10,7 +10,7 @@ public class StreamEntryDeletionResultTest {
   public void testFromCode() {
     assertEquals(StreamEntryDeletionResult.NOT_FOUND, StreamEntryDeletionResult.fromCode(-1));
     assertEquals(StreamEntryDeletionResult.DELETED, StreamEntryDeletionResult.fromCode(1));
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED,
+    assertEquals(StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED,
       StreamEntryDeletionResult.fromCode(2));
   }
 
@@ -25,7 +25,7 @@ public class StreamEntryDeletionResultTest {
   public void testFromLong() {
     assertEquals(StreamEntryDeletionResult.NOT_FOUND, StreamEntryDeletionResult.fromLong(-1L));
     assertEquals(StreamEntryDeletionResult.DELETED, StreamEntryDeletionResult.fromLong(1L));
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED,
+    assertEquals(StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED,
       StreamEntryDeletionResult.fromLong(2L));
   }
 
@@ -38,14 +38,15 @@ public class StreamEntryDeletionResultTest {
   public void testGetCode() {
     assertEquals(-1, StreamEntryDeletionResult.NOT_FOUND.getCode());
     assertEquals(1, StreamEntryDeletionResult.DELETED.getCode());
-    assertEquals(2, StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED.getCode());
+    assertEquals(2,
+      StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED.getCode());
   }
 
   @Test
   public void testToString() {
     assertEquals("NOT_FOUND(-1)", StreamEntryDeletionResult.NOT_FOUND.toString());
     assertEquals("DELETED(1)", StreamEntryDeletionResult.DELETED.toString());
-    assertEquals("ACKNOWLEDGED_NOT_DELETED(2)",
-      StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED.toString());
+    assertEquals("NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED(2)",
+      StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED.toString());
   }
 }

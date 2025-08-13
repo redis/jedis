@@ -13,9 +13,7 @@ import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XTrimParams;
-import redis.clients.jedis.resps.StreamEntry;
-import redis.clients.jedis.resps.StreamPendingEntry;
-import redis.clients.jedis.resps.StreamEntryDeletionResult;
+import redis.clients.jedis.resps.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -756,8 +754,9 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
       StreamDeletionPolicy.ACKNOWLEDGED, readId1, readId2);
     assertThat(results, hasSize(2));
     assertEquals(StreamEntryDeletionResult.DELETED, results.get(0)); // id1 was acknowledged
-    assertEquals(StreamEntryDeletionResult.ACKNOWLEDGED_NOT_DELETED, results.get(1)); // id2 not
-                                                                                      // acknowledged
+    assertEquals(StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED,
+      results.get(1)); // id2 not
+    // acknowledged
 
     // Verify only acknowledged entry was deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -773,5 +772,45 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, nonExistentId);
     assertThat(results, hasSize(1));
     assertEquals(StreamEntryDeletionResult.NOT_FOUND, results.get(0));
+  }
+
+  @Test
+  @SinceRedisVersion("8.1.240")
+  public void xdelexNotAcknowledged() {
+    setUpTestStream();
+
+    String groupName = "test_group";
+
+    // Add initial entries and create consumer group
+    Map<String, String> entry1 = singletonMap("field1", "value1");
+    jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), entry1);
+    jedis.xgroupCreate(STREAM_KEY_1, groupName, new StreamEntryID("0-0"), true);
+
+    // Read one message to create PEL entry
+    String consumerName = "consumer1";
+    Map<String, StreamEntryID> streamQuery = singletonMap(STREAM_KEY_1,
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(groupName, consumerName, XReadGroupParams.xReadGroupParams().count(1),
+      streamQuery);
+
+    // Add a new entry that was never delivered to any consumer
+    Map<String, String> entry2 = singletonMap("field4", "value4");
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), entry2);
+
+    // Verify initial state
+    StreamPendingSummary pending = jedis.xpending(STREAM_KEY_1, groupName);
+    assertEquals(1L, pending.getTotal()); // Only id1 is in PEL
+
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY_1);
+    assertEquals(2L, info.getLength()); // Stream has 2 entries
+
+    // Test XDELEX with ACKNOWLEDGED policy on entry that was never delivered
+    // This should return NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED since id2 was never
+    // delivered to any consumer
+    List<StreamEntryDeletionResult> result = jedis.xdelex(STREAM_KEY_1,
+      StreamDeletionPolicy.ACKNOWLEDGED, id2);
+    assertThat(result, hasSize(1));
+    assertEquals(StreamEntryDeletionResult.NOT_DELETED_UNACKNOWLEDGED_OR_STILL_REFERENCED,
+      result.get(0));
   }
 }

@@ -33,8 +33,7 @@ public class SentineledConnectionProviderTest {
   protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
-//  protected String password = "foobared";
-  protected String password = "0a2eb141353cf115";
+  protected String password = "foobared";
 
   @BeforeEach
   public void setUp() throws Exception {

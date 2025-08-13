@@ -25,7 +25,7 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
 
   private static final Set<HostAndPort> sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
 
-  private static final JedisClientConfig masterClientConfig = DefaultJedisClientConfig.builder().resp3().password("foobared").build();
+  private static final JedisClientConfig masterClientConfig = DefaultJedisClientConfig.builder().resp3().password("0a2eb141353cf115").build();
 
   private static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder().resp3().build();
 
@@ -43,8 +43,8 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
     public static void prepare() {
         try (JedisSentineled sentinelClient = new JedisSentineled(MASTER_NAME, masterClientConfig, sentinels, sentinelClientConfig);
             Jedis master = new Jedis(sentinelClient.getCurrentMaster(),masterClientConfig)) {
-            assumeTrue(RedisVersionUtil.getRedisVersion(master).isGreaterThanOrEqualTo(RedisVersion.V7_4),
-                "Jedis Client side caching is only supported with 'Redis 7.4' or later.");
+//            assumeTrue(RedisVersionUtil.getRedisVersion(master).isGreaterThanOrEqualTo(RedisVersion.V7_4),
+//                "Jedis Client side caching is only supported with 'Redis 7.4' or later.");
         }
     }
 }

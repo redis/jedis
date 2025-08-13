@@ -162,6 +162,12 @@ public final class MultiClusterClientConfig {
     private long gracePeriod;
 
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
+        if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
+            "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
+        for (ClusterConfig clusterConfig : clusterConfigs) {
+            if (clusterConfig == null)
+                throw new IllegalArgumentException("ClusterClientConfigs must not contain null elements");
+        }
         this.clusterConfigs = clusterConfigs;
     }
 

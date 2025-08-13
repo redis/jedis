@@ -72,7 +72,8 @@ public class HealthCheckIntegrationTest {
                 public HealthStatus doHealthCheck(Endpoint endpoint) {
                     // Create connection per health check to avoid resource leak
                     try (UnifiedJedis pinger = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
-                        return "OK".equals(pinger.ping()) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+                        String result = pinger.ping();
+                        return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
                     } catch (Exception e) {
                         return HealthStatus.UNHEALTHY;
                     }

@@ -14,6 +14,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,6 +40,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 import redis.clients.jedis.mcf.HealthStatusManager;
+import redis.clients.jedis.mcf.StatusTracker;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
@@ -85,13 +89,19 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private List<Class<? extends Throwable>> fallbackExceptionList;
 
     private HealthStatusManager healthStatusManager = new HealthStatusManager();
+    private StatusTracker statusTracker;
+
+    // Flag to control when handleHealthStatusChange should process events (only after initialization)
+    private volatile boolean initializationComplete = false;
 
     // Failback mechanism fields
+    private static final AtomicInteger failbackThreadCounter = new AtomicInteger(1);
     private final ScheduledExecutorService failbackScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread t = new Thread(r, "failback-scheduler");
+        Thread t = new Thread(r, "jedis-failback-" + failbackThreadCounter.getAndIncrement());
         t.setDaemon(true);
         return t;
     });
+
     // Store retry and circuit breaker configs for dynamic cluster addition/removal
     private RetryConfig retryConfig;
     private CircuitBreakerConfig circuitBreakerConfig;
@@ -147,19 +157,23 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         ////////////// Configure Cluster Map ////////////////////
 
         ClusterConfig[] clusterConfigs = multiClusterClientConfig.getClusterConfigs();
+
+        // Now add clusters - health checks will start but events will be queued
         for (ClusterConfig config : clusterConfigs) {
             addClusterInternal(multiClusterClientConfig, config);
         }
 
-        // selecting activeCluster with configuration values.
-        // all health status would be HEALTHY at this point
-        activeCluster = findWeightedHealthyClusterToIterate().getValue();
+        // Initialize StatusTracker for waiting on health check results
+        statusTracker = new StatusTracker(healthStatusManager);
 
-        for (Endpoint endpoint : multiClusterMap.keySet()) {
-            healthStatusManager.registerListener(endpoint, this::handleStatusChange);
+        // Wait for initial health check results and select active cluster based on weights
+        activeCluster = waitForInitialHealthyCluster();
+
+        // Mark initialization as complete - handleHealthStatusChange can now process events
+        initializationComplete = true;
+        if (!activeCluster.isHealthy()) {
+            activeCluster = waitForInitialHealthyCluster();
         }
-        /// --- ///
-
         this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
 
         // Start periodic failback checker
@@ -188,7 +202,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         activeClusterIndexLock.lock();
         try {
             addClusterInternal(multiClusterClientConfig, clusterConfig);
-            healthStatusManager.registerListener(endpoint, this::handleStatusChange);
         } finally {
             activeClusterIndexLock.unlock();
         }
@@ -231,7 +244,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             }
 
             // Remove from health status manager first
-            healthStatusManager.unregisterListener(endpoint, this::handleStatusChange);
+            healthStatusManager.unregisterListener(endpoint, this::onHealthStatusChange);
             healthStatusManager.remove(endpoint);
 
             // Remove from cluster map
@@ -252,6 +265,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * appropriate locks.
      */
     private void addClusterInternal(MultiClusterClientConfig multiClusterClientConfig, ClusterConfig config) {
+        if (multiClusterMap.containsKey(config.getHostAndPort())) {
+            throw new JedisValidationException(
+                "Endpoint " + config.getHostAndPort() + " already exists in the provider");
+        }
         GenericObjectPoolConfig<Connection> poolConfig = config.getConnectionPoolConfig();
 
         String clusterId = "cluster:" + config.getHostAndPort();
@@ -282,25 +299,30 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
         if (strategySupplier != null) {
             HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
+            // Register listeners BEFORE adding clusters to avoid missing events
+            healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
             healthStatusManager.add(config.getHostAndPort(), hcs);
+        } else {
+            cluster.setHealthStatus(HealthStatus.HEALTHY);
         }
     }
 
-    private void handleStatusChange(HealthStatusChangeEvent eventArgs) {
-
+    /**
+     * Handles health status changes for clusters. This method is called by the health status manager when the health
+     * status of a cluster changes.
+     */
+    @VisibleForTesting
+    void onHealthStatusChange(HealthStatusChangeEvent eventArgs) {
         Endpoint endpoint = eventArgs.getEndpoint();
         HealthStatus newStatus = eventArgs.getNewStatus();
-        log.info("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(), newStatus);
-
+        log.debug("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(), newStatus);
         Cluster clusterWithHealthChange = multiClusterMap.get(endpoint);
 
         if (clusterWithHealthChange == null) return;
 
         clusterWithHealthChange.setHealthStatus(newStatus);
-
-        if (!newStatus.isHealthy()) {
-            // Handle failover if this was the active cluster
-            if (clusterWithHealthChange == activeCluster) {
+        if (initializationComplete) {
+            if (!newStatus.isHealthy() && clusterWithHealthChange == activeCluster) {
                 clusterWithHealthChange.setGracePeriod();
                 if (iterateActiveCluster() != null) {
                     this.runClusterFailoverPostProcessor(activeCluster);
@@ -310,38 +332,92 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     /**
-     * Periodic failback checker - runs at configured intervals to check for failback opportunities
+     * Waits for initial health check results and selects the first healthy cluster based on weight priority. Blocks
+     * until at least one cluster becomes healthy or all clusters are determined to be unhealthy.
+     * @return the first healthy cluster found, ordered by weight (highest first)
+     * @throws JedisConnectionException if all clusters are unhealthy
      */
-    private void periodicFailbackCheck() {
-        // Find the best candidate cluster for failback
-        Cluster bestCandidate = null;
-        float bestWeight = activeCluster.getWeight();
+    private Cluster waitForInitialHealthyCluster() {
+        // Sort clusters by weight in descending order
+        List<Map.Entry<Endpoint, Cluster>> sortedClusters = multiClusterMap.entrySet().stream()
+            .sorted(Map.Entry.<Endpoint, Cluster> comparingByValue(Comparator.comparing(Cluster::getWeight).reversed()))
+            .collect(Collectors.toList());
 
-        for (Map.Entry<Endpoint, Cluster> entry : multiClusterMap.entrySet()) {
+        log.info("Selecting initial cluster from {} configured clusters", sortedClusters.size());
+
+        // Select cluster in weight order
+        for (Map.Entry<Endpoint, Cluster> entry : sortedClusters) {
+            Endpoint endpoint = entry.getKey();
             Cluster cluster = entry.getValue();
 
-            // Skip if this is already the active cluster
-            if (cluster == activeCluster) {
-                continue;
+            log.info("Evaluating cluster {} (weight: {})", endpoint, cluster.getWeight());
+
+            HealthStatus status;
+
+            // Check if health checks are enabled for this endpoint
+            if (healthStatusManager.hasHealthCheck(endpoint)) {
+                log.info("Health checks enabled for {}, waiting for result", endpoint);
+                // Wait for this cluster's health status to be determined
+                status = statusTracker.waitForHealthStatus(endpoint);
+            } else {
+                // No health check configured - assume healthy
+                log.info("No health check configured for cluster {}, defaulting to HEALTHY", endpoint);
+                status = HealthStatus.HEALTHY;
             }
 
-            // Skip if cluster is not healthy
-            if (!cluster.isHealthy()) {
-                continue;
-            }
+            cluster.setHealthStatus(status);
 
-            // This cluster is a valid candidate
-            if (cluster.getWeight() > bestWeight) {
-                bestCandidate = cluster;
-                bestWeight = cluster.getWeight();
+            if (status.isHealthy()) {
+                log.info("Found healthy cluster: {} (weight: {})", endpoint, cluster.getWeight());
+                return cluster;
+            } else {
+                log.info("Cluster {} is unhealthy, trying next cluster", endpoint);
             }
         }
 
-        // Perform failback if we found a better candidate
-        if (bestCandidate != null) {
-            log.info("Performing failback from {} to {} (higher weight cluster available)",
-                activeCluster.getCircuitBreaker().getName(), bestCandidate.getCircuitBreaker().getName());
-            setActiveCluster(bestCandidate, true);
+        // All clusters are unhealthy
+        throw new JedisConnectionException(
+            "All configured clusters are unhealthy. Cannot initialize MultiClusterPooledConnectionProvider.");
+    }
+
+    /**
+     * Periodic failback checker - runs at configured intervals to check for failback opportunities
+     */
+    @VisibleForTesting
+    void periodicFailbackCheck() {
+        try {
+            // Find the best candidate cluster for failback
+            Cluster bestCandidate = null;
+            float bestWeight = activeCluster.getWeight();
+
+            for (Map.Entry<Endpoint, Cluster> entry : multiClusterMap.entrySet()) {
+                Cluster cluster = entry.getValue();
+
+                // Skip if this is already the active cluster
+                if (cluster == activeCluster) {
+                    continue;
+                }
+
+                // Skip if cluster is not healthy
+                if (!cluster.isHealthy()) {
+                    continue;
+                }
+
+                // This cluster is a valid candidate
+                if (cluster.getWeight() > bestWeight) {
+                    bestCandidate = cluster;
+                    bestWeight = cluster.getWeight();
+                }
+            }
+
+            // Perform failback if we found a better candidate
+            if (bestCandidate != null) {
+                log.info("Performing failback from {} to {} (higher weight cluster available)",
+                    activeCluster.getCircuitBreaker().getName(), bestCandidate.getCircuitBreaker().getName());
+                setActiveCluster(bestCandidate, true);
+            }
+        } catch (Exception e) {
+            log.error("Error during periodic failback check", e);
         }
     }
 
@@ -413,6 +489,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 + "the configured endpoints. Please use one from the configuration");
         }
         setActiveCluster(cluster, true);
+    }
+
+    public void forceActiveCluster(Endpoint endpoint, long forcedActiveDuration) {
+        Cluster cluster = multiClusterMap.get(endpoint);
+        cluster.clearGracePeriod();
+        if (!cluster.isHealthy()) {
+            throw new JedisValidationException("Provided endpoint: " + endpoint
+                + " is not healthy. Please consider a healthy endpoint from the configuration");
+        }
+        multiClusterMap.entrySet().stream().forEach(entry -> {
+            if (entry.getKey() != endpoint) {
+                entry.getValue().setGracePeriod(forcedActiveDuration);
+            }
+        });
+        setActiveCluster(endpoint);
     }
 
     private boolean setActiveCluster(Cluster cluster, boolean validateConnection) {
@@ -524,13 +615,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         private final Retry retry;
         private final CircuitBreaker circuitBreaker;
         private final float weight;
-        // it starts its life with the assumption of being healthy
-        private HealthStatus healthStatus = HealthStatus.HEALTHY;
+        // it starts its life with unknown health status, waiting for initial health check
+        private HealthStatus healthStatus = HealthStatus.UNKNOWN;
         private MultiClusterClientConfig multiClusterClientConfig;
         private boolean disabled = false;
 
         // Grace period tracking
         private volatile long gracePeriodEndsAt = 0;
+        private final Logger log = LoggerFactory.getLogger(getClass());
 
         public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
@@ -574,6 +666,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         public boolean isCBForcedOpen() {
             if (circuitBreaker.getState() == State.FORCED_OPEN && !isInGracePeriod()) {
+                log.info("Transitioning circuit breaker from FORCED_OPEN to CLOSED state due to end of grace period!");
                 circuitBreaker.transitionToClosedState();
             }
             return circuitBreaker.getState() == CircuitBreaker.State.FORCED_OPEN;
@@ -606,7 +699,17 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
          * Sets the grace period for this cluster
          */
         public void setGracePeriod() {
-            gracePeriodEndsAt = System.currentTimeMillis() + multiClusterClientConfig.getGracePeriod();
+            setGracePeriod(multiClusterClientConfig.getGracePeriod());
+        }
+
+        public void setGracePeriod(long gracePeriod) {
+            long endTime = System.currentTimeMillis() + gracePeriod;
+            if (endTime < gracePeriodEndsAt) return;
+            gracePeriodEndsAt = endTime;
+        }
+
+        public void clearGracePeriod() {
+            gracePeriodEndsAt = 0;
         }
 
         /**

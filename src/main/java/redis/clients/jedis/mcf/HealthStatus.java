@@ -1,7 +1,7 @@
 package redis.clients.jedis.mcf;
 
 public enum HealthStatus {
-    HEALTHY(0x01), UNHEALTHY(0x02);
+    UNKNOWN(0x00), HEALTHY(0x01), UNHEALTHY(0x02);
 
     private final int value;
 

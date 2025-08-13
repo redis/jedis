@@ -34,7 +34,7 @@ public class VSimParams implements IParams {
   /**
    * Sets the epsilon (delta) parameter for distance-based filtering. Only elements with a
    * similarity score of (1 - epsilon) or better are returned. For example, epsilon=0.2 means only
-   * elements with similarity >= 0.8 are returned.
+   * elements with similarity &gt;= 0.8 are returned.
    * @param delta a floating point number between 0 and 1
    * @return VSimParams
    */

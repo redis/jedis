@@ -1369,15 +1369,15 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     List<String> similar = jedis.vsim(testKey, new float[] { 0.15f, 0.25f, 0.35f });
     assertNotNull(similar);
     assertThat(similar, is(not(empty())));
-    assertThat(similar.size(), is(3));
-    assertThat(similar, hasItems("element1", "element2", "element3"));
+    assertThat(similar.size(), is(4));
+    assertThat(similar, hasItems("element1", "element2", "element3", "element4"));
 
     // Test vsim with element
     similar = jedis.vsimByElement(testKey, "element1");
     assertNotNull(similar);
     assertThat(similar, is(not(empty())));
-    assertThat(similar.size(), is(3));
-    assertThat(similar, hasItems("element1", "element2", "element3"));
+    assertThat(similar.size(), is(4));
+    assertThat(similar, hasItems("element1", "element2", "element3", "element4"));
 
     // Test vsim with vector and parameters
     VSimParams params = new VSimParams().count(2);
@@ -1396,10 +1396,12 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     float[] vector1 = { 0.1f, 0.2f, 0.3f };
     float[] vector2 = { 0.2f, 0.3f, 0.4f };
     float[] vector3 = { 0.3f, 0.4f, 0.5f };
+    float[] vector4 = { -0.1f, -0.2f, -0.3f };
 
     jedis.vadd(testKey, vector1, "element1");
     jedis.vadd(testKey, vector2, "element2");
     jedis.vadd(testKey, vector3, "element3");
+    jedis.vadd(testKey, vector4, "element4");
   }
 
   /**
@@ -1423,7 +1425,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Test vsim with element and scores
     similarWithScores = jedis.vsimByElementWithScores(testKey, "element1", params);
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2", "element3"));
-    assertThat(similarWithScores.values(), everyItem(greaterThan(0.0)));
+    assertThat(similarWithScores.get("element1"), closeTo(1, 0.01));
+    assertThat(similarWithScores.get("element4"), closeTo(0, 0.01));
     assertEquals(1.0, similarWithScores.get("element1"), 0.001);
 
     // Test with count parameter
@@ -1431,6 +1434,16 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     similarWithScores = jedis.vsimWithScores(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2"));
     assertThat(similarWithScores.values(), everyItem(greaterThan(0.0)));
+
+    // Test with epsilon parameter (distance-based filtering)
+    params = new VSimParams().epsilon(0.2); // Only elements with similarity >= 0.8
+    similarWithScores = jedis.vsimWithScores(testKey, new float[] { -0.1f, -0.2f, -0.3f }, params);
+    assertNotNull(similarWithScores);
+    assertThat(similarWithScores.keySet(), hasItems("element4"));
+    // Verify all returned scores meet the epsilon threshold
+    for (Double score : similarWithScores.values()) {
+      assertTrue(score >= (1.0 - 0.2)); // score >= 0.8
+    }
   }
 
   /**

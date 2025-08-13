@@ -11,6 +11,7 @@ import redis.clients.jedis.annots.Experimental;
 public class VSimParams implements IParams {
 
   private Integer count;
+  private Double epsilon;
   private Integer ef;
   private String filter;
   private Integer filterEf;
@@ -27,6 +28,18 @@ public class VSimParams implements IParams {
    */
   public VSimParams count(int num) {
     this.count = num;
+    return this;
+  }
+
+  /**
+   * Sets the epsilon (delta) parameter for distance-based filtering. Only elements with a
+   * similarity score of (1 - epsilon) or better are returned. For example, epsilon=0.2 means only
+   * elements with similarity >= 0.8 are returned.
+   * @param delta a floating point number between 0 and 1
+   * @return VSimParams
+   */
+  public VSimParams epsilon(double delta) {
+    this.epsilon = delta;
     return this;
   }
 
@@ -85,6 +98,10 @@ public class VSimParams implements IParams {
   public void addParams(CommandArguments args) {
     if (count != null) {
       args.add(Protocol.Keyword.COUNT).add(count);
+    }
+
+    if (epsilon != null) {
+      args.add(Protocol.Keyword.EPSILON).add(epsilon);
     }
 
     if (ef != null) {

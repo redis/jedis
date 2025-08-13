@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "::group::Changed Java Files"
           echo Base Branch: ${{ github.event.pull_request.base.ref }}
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} | grep '\.java$' || true)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=A origin/${{ github.event.pull_request.base.ref }} | grep '\.java$' || true)
           echo "$CHANGED_FILES"
           echo "::endgroup::"
           # Write the multiline content to a file

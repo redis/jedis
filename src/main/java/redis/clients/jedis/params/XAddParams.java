@@ -6,6 +6,7 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 
 import java.util.Objects;
 
@@ -24,6 +25,8 @@ public class XAddParams implements IParams {
   private String minId;
 
   private Long limit;
+
+  private StreamDeletionPolicy trimMode;
 
   public static XAddParams xAddParams() {
     return new XAddParams();
@@ -81,6 +84,17 @@ public class XAddParams implements IParams {
     return this;
   }
 
+  /**
+   * When trimming, defines desired behaviour for handling consumer group references.
+   * see {@link StreamDeletionPolicy} for details.
+   *
+   * @return XAddParams
+   */
+  public XAddParams trimmingMode(StreamDeletionPolicy trimMode) {
+    this.trimMode = trimMode;
+    return this;
+  }
+
   @Override
   public void addParams(CommandArguments args) {
 
@@ -114,6 +128,10 @@ public class XAddParams implements IParams {
       args.add(Keyword.LIMIT).add(limit);
     }
 
+    if (trimMode != null) {
+      args.add(trimMode);
+    }
+
     args.add(id != null ? id : StreamEntryID.NEW_ENTRY);
   }
 
@@ -122,11 +140,12 @@ public class XAddParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     XAddParams that = (XAddParams) o;
-    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming && nomkstream == that.nomkstream && Objects.equals(id, that.id) && Objects.equals(maxLen, that.maxLen) && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit);
+    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming && nomkstream == that.nomkstream && Objects.equals(id, that.id) && Objects.equals(maxLen, that.maxLen) && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit) && trimMode == that.trimMode;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, maxLen, approximateTrimming, exactTrimming, nomkstream, minId, limit);
+    return Objects.hash(id, maxLen, approximateTrimming, exactTrimming, nomkstream, minId, limit,
+        trimMode);
   }
 }

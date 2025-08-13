@@ -1553,6 +1553,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -1590,6 +1600,16 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> xdel(String key, StreamEntryID... ids) {
     return appendCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(String key, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -3265,6 +3285,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3292,6 +3322,16 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> xdel(byte[] key, byte[]... ids) {
     return appendCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(byte[] key, byte[]... ids) {
+    return appendCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return appendCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override

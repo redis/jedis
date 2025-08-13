@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
@@ -99,6 +100,20 @@ public interface StreamCommands {
   long xack(String key, String group, StreamEntryID... ids);
 
   /**
+   * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   * Combines XACK and XDEL functionalities. Acknowledges specified message IDs
+   * in the given consumer group and attempts to delete corresponding stream entries.
+   */
+  List<StreamEntryDeletionResult> xackdel(String key, String group, StreamEntryID... ids);
+
+  /**
+   * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   * Combines XACK and XDEL functionalities. Acknowledges specified message IDs
+   * in the given consumer group and attempts to delete corresponding stream entries.
+   */
+  List<StreamEntryDeletionResult> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids);
+
+  /**
    * {@code XGROUP CREATE key groupName <id or $>}
    */
   String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream);
@@ -127,6 +142,20 @@ public interface StreamCommands {
    * XDEL key ID [ID ...]
    */
   long xdel(String key, StreamEntryID... ids);
+
+  /**
+   * XDELEX key [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   * Extended XDEL command with enhanced control over message entry deletion
+   * with respect to consumer groups.
+   */
+  List<StreamEntryDeletionResult> xdelex(String key, StreamEntryID... ids);
+
+  /**
+   * XDELEX key [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   * Extended XDEL command with enhanced control over message entry deletion
+   * with respect to consumer groups.
+   */
+  List<StreamEntryDeletionResult> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids);
 
   /**
    * XTRIM key MAXLEN [~] count

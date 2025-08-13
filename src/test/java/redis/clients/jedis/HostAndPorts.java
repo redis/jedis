@@ -21,9 +21,9 @@ public final class HostAndPorts {
     }
 
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
-    sentinelHostAndPortList.add(new HostAndPort("10.148.17.43", Protocol.DEFAULT_SENTINEL_PORT + 1));
+    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2));
-    sentinelHostAndPortList.add(new HostAndPort("10.148.17.43", Protocol.DEFAULT_SENTINEL_PORT + 3));
+    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 3));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 4));
 
     clusterHostAndPortList.add(new HostAndPort("localhost", 7379));

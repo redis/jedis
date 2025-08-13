@@ -316,7 +316,7 @@ public final class Protocol {
     GEORADIUSBYMEMBER(true), GEORADIUSBYMEMBER_RO(false), // <-- geo
     PFADD(true), PFCOUNT(false), PFMERGE(true), // <-- hyper log log
     XADD(true), XLEN(false), XDEL(true), XTRIM(true), XRANGE(false), XREVRANGE(false), XREAD(false), XACK(true), XGROUP(true), XREADGROUP(false), XPENDING(false), XCLAIM(true),
-    XAUTOCLAIM(true), XINFO(false), // <-- stream
+    XAUTOCLAIM(true), XINFO(false), XDELEX(true), XACKDEL(true), // <-- stream
     EVAL(true), EVALSHA(true), SCRIPT(true), EVAL_RO(true), EVALSHA_RO(true), FUNCTION(true), FCALL(true), FCALL_RO(false), // <-- program
     SUBSCRIBE(false), UNSUBSCRIBE(false), PSUBSCRIBE(false), PUNSUBSCRIBE(false), PUBLISH(true), PUBSUB(false),
     SSUBSCRIBE(false), SUNSUBSCRIBE(false), SPUBLISH(true), // <-- pub sub

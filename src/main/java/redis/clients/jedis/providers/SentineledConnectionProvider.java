@@ -230,10 +230,6 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   private void initSlaves(List<HostAndPort> slaves) {
-    if (slaves == null || slaves.isEmpty()) {
-      return;
-    }
-
     List<PoolInfo> removedSlavePools = new ArrayList<>();
     try {
       synchronized (slavePools) {

@@ -81,7 +81,6 @@ public class HealthStatusManager {
 
     public long getMaxWaitFor(Endpoint endpoint) {
         HealthCheck healthCheck = healthChecks.get(endpoint);
-        // this is by default 100 milliseconds just to give some space for waiters/handlers to signal and/or react
-        return healthCheck != null ? healthCheck.getMaxWaitDuration() : 100;
+        return healthCheck != null ? healthCheck.getMaxWaitDuration() : 0;
     }
 }

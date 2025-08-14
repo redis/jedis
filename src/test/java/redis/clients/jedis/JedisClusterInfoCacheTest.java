@@ -15,12 +15,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 import static redis.clients.jedis.Protocol.Command.CLUSTER;
 import static redis.clients.jedis.util.CommandArgumentMatchers.commandWithArgs;
 
@@ -49,7 +53,7 @@ public class JedisClusterInfoCacheTest {
 
     // Mock the cluster slots responses
     when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS")))).thenReturn(
-            masterReplicaSlotsResponse()).thenReturn(masterOnlySlotsResponse())
+            masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST)).thenReturn(masterOnlySlotsResponse())
         .thenReturn(masterReplica2SlotsResponse());
 
     // Initial discovery with one master and one replica (replica-1)
@@ -78,7 +82,7 @@ public class JedisClusterInfoCacheTest {
 
     // Mock the cluster slots responses
     when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS")))).thenReturn(
-        masterReplicaSlotsResponse());
+        masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST));
 
     // Initial discovery
     cache.discoverClusterNodesAndSlots(mockConnection);
@@ -94,10 +98,68 @@ public class JedisClusterInfoCacheTest {
     assertReplicasAvailable(cache, REPLICA_1_HOST);
   }
 
-  private List<Object> masterReplicaSlotsResponse() {
+  @Test
+  public void getPrimaryNodesAfterReplicaNodeRemovalAndRediscovery() {
+    // Create client config with read-only replicas enabled
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+            .readOnlyForRedisClusterReplicas().build();
+
+    Set<HostAndPort> startNodes = new HashSet<>();
+    startNodes.add(MASTER_HOST);
+
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(clientConfig, startNodes);
+
+    // Mock the cluster slots responses
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS")))).thenReturn(
+                    masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST)).thenReturn(masterOnlySlotsResponse())
+            .thenReturn(masterReplica2SlotsResponse());
+
+    // Initial discovery with one master and one replica (replica-1)
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getPrimaryNodes(),aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(),
+                    hasEntry(equalTo(getNodeKey(MASTER_HOST)), equalTo(cache.getNode(MASTER_HOST))));
+
+    // Simulate rediscovery - master only
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(  cache.getPrimaryNodes(),aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(),
+            hasEntry(equalTo(getNodeKey(MASTER_HOST)), equalTo(cache.getNode(MASTER_HOST))));
+  }
+
+  @Test
+  public void getPrimaryNodesAfterMasterReplicaFailover() {
+    // Create client config with read-only replicas enabled
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+            .readOnlyForRedisClusterReplicas().build();
+
+    Set<HostAndPort> startNodes = new HashSet<>();
+    startNodes.add(MASTER_HOST);
+
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(clientConfig, startNodes);
+
+    // Mock the cluster slots responses
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+            .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST))
+            .thenReturn(masterReplicaSlotsResponse(REPLICA_1_HOST, MASTER_HOST));
+
+    // Initial discovery with one master and one replica (replica-1)
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getPrimaryNodes(),aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(),
+            hasEntry(equalTo(getNodeKey(MASTER_HOST)), equalTo(cache.getNode(MASTER_HOST))));
+
+    // Simulate rediscovery - master only
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(  cache.getPrimaryNodes(),aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(),
+            hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)), equalTo(cache.getNode(REPLICA_1_HOST))));
+  }
+
+  private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {
     return createClusterSlotsResponse(
-        new SlotRange.Builder(0, 16383).master(MASTER_HOST, "master-id-1")
-            .replica(REPLICA_1_HOST, "replica-id-1").build());
+            new SlotRange.Builder(0, 16383).master(masterHost, masterHost.toString() + "-id")
+                    .replica(replicaHost, replicaHost.toString() + "-id").build());
   }
 
   private List<Object> masterOnlySlotsResponse() {

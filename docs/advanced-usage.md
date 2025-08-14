@@ -217,6 +217,20 @@ When running Jedis in certain network environments, such as behind a NAT gateway
 
 This allows you to dynamically map the address reported by a Redis node to a different address that the client can actually reach. You can implement this either by creating a dedicated class or by using a concise lambda expression.
 
+### Example use case: NAT or Docker with different advertised ports
+Suppose you run a Redis cluster inside Docker on a remote host.
+Inside the cluster config, nodes announce addresses like:
+```
+172.18.0.2:6379
+172.18.0.3:6379
+172.18.0.4:6379
+```
+But externally, you reach them through the host IP with mapped ports:
+```
+my-redis.example.com:7001
+my-redis.example.com:7002
+my-redis.example.com:7003
+```
 ### Implementing with a Dedicated Class
 
 You can provide your mapping logic by creating a class that implements the `HostAndPortMapper` interface. This approach is useful for more complex mapping logic or for reusability.
@@ -245,11 +259,13 @@ Then, instantiate this class and pass it to the JedisCluster constructor:
 
 ```java
 Map<HostAndPort, HostAndPort> nodeMapping = new HashMap<>();
-nodeMapping.put(new HostAndPort("172.18.0.2", 6379), new HostAndPort("localhost", 7001));  
-nodeMapping.put(new HostAndPort("172.18.0.3", 6379), new HostAndPort("localhost", 7002));
+nodeMapping.put(new HostAndPort("172.18.0.2", 6379), new HostAndPort("my-redis.example.com", 7001));  
+nodeMapping.put(new HostAndPort("172.18.0.3", 6379), new HostAndPort("my-redis.example.com", 7002));
+nodeMapping.put(new HostAndPort("172.18.0.4", 6379), new HostAndPort("my-redis.example.com", 7002));
 
 Set<HostAndPort> initialNodes = new HashSet<>();
-initialNodes.add(new HostAndPort("localhost", 7001));
+// seed node 
+initialNodes.add(new HostAndPort("my-redis.example.com", 7001));
 
 HostAndPortMapper mapper = new DockerNATMapper(nodeMapping);
 
@@ -269,11 +285,12 @@ Since HostAndPortMapper is a functional interface (it has only one abstract meth
 
 ```java
 Map<HostAndPort, HostAndPort> nodeMapping = new HashMap<>();
-nodeMapping.put(new HostAndPort("172.18.0.2", 6379), new HostAndPort("localhost", 7001));
-nodeMapping.put(new HostAndPort("172.18.0.3", 6379), new HostAndPort("localhost", 7002));
+nodeMapping.put(new HostAndPort("172.18.0.2", 6379), new HostAndPort("my-redis.example.com", 7001));
+nodeMapping.put(new HostAndPort("172.18.0.3", 6379), new HostAndPort("my-redis.example.com", 7002));
+nodeMapping.put(new HostAndPort("172.18.0.4", 6379), new HostAndPort("my-redis.example.com", 7002));
 
 Set<HostAndPort> initialNodes = new HashSet<>();
-initialNodes.add(new HostAndPort("localhost", 7001));
+initialNodes.add(new HostAndPort("my-redis.example.com", 7001));
 
 HostAndPortMapper mapper = internalAddress -> nodeMapping.getOrDefault(internalAddress, internalAddress);
 

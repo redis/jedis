@@ -39,6 +39,7 @@ public class JedisClusterInfoCache {
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
+  private final Map<String, ConnectionPool> primaryNodesCache = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
   private final List<ConnectionPool>[] replicaSlots;
@@ -176,6 +177,7 @@ public class JedisClusterInfoCache {
           HostAndPort targetNode = generateHostAndPort(hostInfos);
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
+            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
@@ -425,6 +427,26 @@ public class JedisClusterInfoCache {
     }
   }
 
+  public Map<String, ConnectionPool> getPrimaryNodes() {
+    r.lock();
+    try {
+      return new HashMap<>(primaryNodesCache);
+    } finally {
+      r.unlock();
+    }
+  }
+
+  public List<ConnectionPool> getShuffledPrimaryNodesPool() {
+    r.lock();
+    try {
+      List<ConnectionPool> pools = new ArrayList<>(primaryNodesCache.values());
+      Collections.shuffle(pools);
+      return pools;
+    } finally {
+      r.unlock();
+    }
+  }
+
   public List<ConnectionPool> getShuffledNodesPool() {
     r.lock();
     try {
@@ -475,6 +497,7 @@ public class JedisClusterInfoCache {
       }
     }
     nodes.clear();
+    primaryNodesCache.clear();
   }
 
   public void close() {

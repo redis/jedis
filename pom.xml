@@ -59,7 +59,7 @@
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.19.2</jackson.version>
 		<maven.surefire.version>3.5.3</maven.surefire.version>
-		<junit.version>5.13.3</junit.version>
+		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
 	</properties>
@@ -352,6 +352,7 @@
 						<include>**/VectorTestUtils.java</include>
 						<include>**/VAddParams.java</include>
 						<include>**/VSimParams.java</include>
+						<include>**/*FunctionCommandsTest*</include>
 					</includes>
 				</configuration>
 				<executions>

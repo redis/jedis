@@ -235,7 +235,7 @@ public class DockerNATMapper implements HostAndPortMapper {
     }
 
     @Override
-    public HostAndPort get(HostAndPort hostAndPort) {
+    public HostAndPort getHostAndPort(HostAndPort hostAndPort) {
         return mapping.getOrDefault(hostAndPort, hostAndPort);
     }
 }

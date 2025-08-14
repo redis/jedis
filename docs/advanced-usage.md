@@ -211,6 +211,98 @@ To use Microsoft EntraID with AMR or ACR, for sure you will need to set up and c
 
 [Use Microsoft Entra](https://learn.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad?tabs=workforce-configuration)
 
+## HostAndPortMapper
+
+When running Jedis in certain network environments, such as behind a NAT gateway, or within container orchestration systems like Docker or Kubernetes, the host and port that the client needs to connect to might be different from the host and port that the Redis Cluster nodes report. To handle this discrepancy, Jedis provides the `HostAndPortMapper` interface.
+
+This allows you to dynamically map the address reported by a Redis node to a different address that the client can actually reach. You can implement this either by creating a dedicated class or by using a concise lambda expression.
+
+### Example use case: NAT or Docker with different advertised ports
+Suppose you run a Redis cluster inside Docker on a remote host.
+Inside the cluster config, nodes announce addresses like:
+```
+172.18.0.2:6379
+172.18.0.3:6379
+172.18.0.4:6379
+```
+But externally, you reach them through the host IP with mapped ports:
+```
+my-redis.example.com:7001
+my-redis.example.com:7002
+my-redis.example.com:7003
+```
+### Implementing with a Dedicated Class
+
+You can provide your mapping logic by creating a class that implements the `HostAndPortMapper` interface. This approach is useful for more complex mapping logic or for reusability.
+
+First, define your custom mapper class:
+
+```java
+public class DockerNATMapper implements HostAndPortMapper {
+
+    // Key: The address reported by Redis (internal).
+    // Value: The address the client should connect to (external).
+    private final Map<HostAndPort, HostAndPort> mapping;
+
+    public DockerNATMapper(Map<HostAndPort, HostAndPort> mapping) {
+        this.mapping = mapping;
+    }
+
+    @Override
+    public HostAndPort getHostAndPort(HostAndPort hostAndPort) {
+        return mapping.getOrDefault(hostAndPort, hostAndPort);
+    }
+}
+```
+
+Then, instantiate this class and pass it to the JedisCluster constructor:
+
+```java
+Map<HostAndPort, HostAndPort> nodeMapping = new HashMap<>();
+nodeMapping.put(new HostAndPort("172.18.0.2", 6379), new HostAndPort("my-redis.example.com", 7001));  
+nodeMapping.put(new HostAndPort("172.18.0.3", 6379), new HostAndPort("my-redis.example.com", 7002));
+nodeMapping.put(new HostAndPort("172.18.0.4", 6379), new HostAndPort("my-redis.example.com", 7002));
+
+Set<HostAndPort> initialNodes = new HashSet<>();
+// seed node 
+initialNodes.add(new HostAndPort("my-redis.example.com", 7001));
+
+HostAndPortMapper mapper = new DockerNATMapper(nodeMapping);
+
+JedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .user("myuser")
+        .password("mypassword")
+        .hostAndPortMapper(mapper)
+        .build();
+
+JedisCluster jedisCluster = new JedisCluster(initialNodes, jedisClientConfig);
+```
+
+Now, when JedisCluster discovers a node at "172.18.0.2:6379", the mapper will translate it to "localhost:7001" before attempting to connect.
+
+### Implementing with a Lambda Expression
+Since HostAndPortMapper is a functional interface (it has only one abstract method), you can also provide the implementation more concisely using a lambda expression. This is often preferred for simpler, inline mapping logic.
+
+```java
+Map<HostAndPort, HostAndPort> nodeMapping = new HashMap<>();
+nodeMapping.put(new HostAndPort("172.18.0.2", 6379), new HostAndPort("my-redis.example.com", 7001));
+nodeMapping.put(new HostAndPort("172.18.0.3", 6379), new HostAndPort("my-redis.example.com", 7002));
+nodeMapping.put(new HostAndPort("172.18.0.4", 6379), new HostAndPort("my-redis.example.com", 7002));
+
+Set<HostAndPort> initialNodes = new HashSet<>();
+initialNodes.add(new HostAndPort("my-redis.example.com", 7001));
+
+HostAndPortMapper mapper = internalAddress -> nodeMapping.getOrDefault(internalAddress, internalAddress);
+
+JedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
+        .user("myuser")
+        .password("mypassword")
+        .hostAndPortMapper(mapper)
+        .build();
+
+JedisCluster jedisCluster = new JedisCluster(initialNodes, jedisClientConfig);
+```
+
 ## Miscellaneous 
 
 ### A note about String and Binary - what is native?

@@ -6,6 +6,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.csc.TrackingConfig;
 
 public interface JedisClientConfig {
 
@@ -114,5 +115,13 @@ public interface JedisClientConfig {
    */
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
+  }
+
+  /**
+   * Modify Tracking config(tracking mode, tracking prefixes)
+   * @return Tracking config
+   */
+  default TrackingConfig getTrackingConfig() {
+    return TrackingConfig.DEFAULT;
   }
 }

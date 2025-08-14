@@ -14,6 +14,10 @@ import redis.clients.jedis.util.RedisInputStream;
 
 public class CacheConnection extends Connection {
 
+  /**
+   * tracking mode(true:default; false:broadcast)
+   */
+  private boolean isDefaultMode = true;
   private final Cache cache;
   private ReentrantLock lock;
   private static final String REDIS = "redis";
@@ -21,7 +25,6 @@ public class CacheConnection extends Connection {
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
-
     if (protocol != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
@@ -33,7 +36,11 @@ public class CacheConnection extends Connection {
       }
     }
     this.cache = Objects.requireNonNull(cache);
-    initializeClientSideCache();
+    this.isDefaultMode = clientConfig.getTrackingConfig().isTrackingModeOnDefault();
+    // only default mode
+    if (isDefaultMode) {
+      initializeClientSideCache();
+    }
   }
 
   @Override
@@ -66,7 +73,10 @@ public class CacheConnection extends Connection {
   @Override
   public void disconnect() {
     super.disconnect();
-    cache.flush();
+    if (isDefaultMode) {
+      // The cache is cleared when the connection is disconnected only in default mode
+      cache.flush();
+    }
   }
 
   @Override
@@ -79,6 +89,11 @@ public class CacheConnection extends Connection {
 
     CacheEntry<T> cacheEntry = cache.get(cacheKey);
     if (cacheEntry != null) { // (probable) CACHE HIT !!
+      if (!isDefaultMode) {
+        // broadcast mode returns directly
+        cache.getStats().hit();
+        return cacheEntry.getValue();
+      }
       cacheEntry = validateEntry(cacheEntry);
       if (cacheEntry != null) {
         // CACHE HIT confirmed !!!

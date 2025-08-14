@@ -78,7 +78,7 @@ public class MultiClusterDynamicEndpointUnitTest {
         Connection mockConnection = mock(Connection.class);
         when(mockConnection.ping()).thenReturn(true);
 
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool(mockConnection)) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool(mockConnection)) {
             // Create initial provider with endpoint1
             ClusterConfig clusterConfig1 = createClusterConfig(endpoint1.getHostAndPort(), 1.0f);
 
@@ -103,8 +103,8 @@ public class MultiClusterDynamicEndpointUnitTest {
         }
     }
 
-    private MockedConstruction<ConnectionPool> mockPool(Connection mockConnection) {
-        return mockConstruction(ConnectionPool.class, (mock, context) -> {
+    private MockedConstruction<TrackingConnectionPool> mockPool(Connection mockConnection) {
+        return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
             when(mock.getResource()).thenReturn(mockConnection);
             doNothing().when(mock).close();
         });
@@ -174,7 +174,7 @@ public class MultiClusterDynamicEndpointUnitTest {
         Connection mockConnection = mock(Connection.class);
         when(mockConnection.ping()).thenReturn(true);
 
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool(mockConnection)) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool(mockConnection)) {
             // Create initial provider with endpoint1
             ClusterConfig clusterConfig1 = createClusterConfig(endpoint1.getHostAndPort(), 1.0f);
 

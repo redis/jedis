@@ -2,6 +2,7 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static redis.clients.jedis.providers.MultiClusterPooledConnectionProviderHelper.onHealthStatusChange;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,6 @@ import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -32,10 +32,10 @@ class PeriodicFailbackTest {
         clientConfig = DefaultJedisClientConfig.builder().build();
     }
 
-    private MockedConstruction<ConnectionPool> mockPool() {
+    private MockedConstruction<TrackingConnectionPool> mockPool() {
         Connection mockConnection = mock(Connection.class);
         lenient().when(mockConnection.ping()).thenReturn(true);
-        return mockConstruction(ConnectionPool.class, (mock, context) -> {
+        return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
             when(mock.getResource()).thenReturn(mockConnection);
             doNothing().when(mock).close();
         });
@@ -43,7 +43,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckWithDisabledCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -63,7 +63,7 @@ class PeriodicFailbackTest {
                 provider.getCluster(endpoint2).setDisabled(true);
 
                 // Force failover to cluster1 since cluster2 is disabled
-                provider.iterateActiveCluster();
+                provider.iterateActiveCluster(SwitchReason.FORCED);
 
                 // Manually trigger periodic check
                 MultiClusterPooledConnectionProviderHelper.periodicFailbackCheck(provider);
@@ -76,7 +76,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckWithHealthyCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -92,7 +92,7 @@ class PeriodicFailbackTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1 (cluster2 is in grace period)
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
@@ -101,7 +101,7 @@ class PeriodicFailbackTest {
                 assertTrue(provider.getCluster(endpoint2).isInGracePeriod());
 
                 // Make cluster2 healthy again (but it's still in grace period)
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Trigger periodic check immediately - should still be on cluster1
                 MultiClusterPooledConnectionProviderHelper.periodicFailbackCheck(provider);
@@ -121,7 +121,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckWithFailbackDisabled() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -137,13 +137,13 @@ class PeriodicFailbackTest {
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster2 healthy again
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for stability period
                 Thread.sleep(100);
@@ -159,7 +159,7 @@ class PeriodicFailbackTest {
 
     @Test
     void testPeriodicFailbackCheckSelectsHighestWeightCluster() throws InterruptedException {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+        try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
             HostAndPort endpoint3 = new HostAndPort("localhost", 6381);
 
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
@@ -181,20 +181,20 @@ class PeriodicFailbackTest {
                 assertEquals(provider.getCluster(endpoint3), provider.getCluster());
 
                 // Make cluster3 unhealthy to force failover to cluster2 (next highest weight)
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster2 (weight 2.0f, higher than cluster1's 1.0f)
                 assertEquals(provider.getCluster(endpoint2), provider.getCluster());
 
                 // Make cluster2 unhealthy to force failover to cluster1
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
                 // Should now be on cluster1 (only healthy cluster left)
                 assertEquals(provider.getCluster(endpoint1), provider.getCluster());
 
                 // Make cluster2 and cluster3 healthy again
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
-                MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
                 // Wait for grace period to expire
                 Thread.sleep(150);

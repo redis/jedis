@@ -7,10 +7,12 @@ public class LagAwareStrategy implements HealthCheckStrategy {
 
     private int interval;
     private int timeout;
+    private int minConsecutiveSuccessCount;
 
-    public LagAwareStrategy(int healthCheckInterval, int healthCheckTimeout) {
+    public LagAwareStrategy(int healthCheckInterval, int healthCheckTimeout, int minConsecutiveSuccessCount) {
         this.interval = healthCheckInterval;
         this.timeout = healthCheckTimeout;
+        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
     }
 
     @Override
@@ -21,6 +23,11 @@ public class LagAwareStrategy implements HealthCheckStrategy {
     @Override
     public int getTimeout() {
         return timeout;
+    }
+
+    @Override
+    public int minConsecutiveSuccessCount() {
+        return minConsecutiveSuccessCount;
     }
 
     @Override

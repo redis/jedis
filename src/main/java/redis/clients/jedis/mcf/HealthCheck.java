@@ -12,14 +12,19 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HealthCheck {
+
+    private static final Logger log = LoggerFactory.getLogger(HealthCheck.class);
 
     private Endpoint endpoint;
     private HealthCheckStrategy strategy;
     private AtomicReference<SimpleEntry<Long, HealthStatus>> statusRef = new AtomicReference<SimpleEntry<Long, HealthStatus>>();
     private Consumer<HealthStatusChangeEvent> statusChangeCallback;
 
-    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduler;
     private ExecutorService executor = Executors.newCachedThreadPool();
 
     HealthCheck(Endpoint endpoint, HealthCheckStrategy strategy,
@@ -28,6 +33,12 @@ public class HealthCheck {
         this.strategy = strategy;
         this.statusChangeCallback = statusChangeCallback;
         statusRef.set(new SimpleEntry<>(0L, HealthStatus.UNKNOWN));
+
+        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     public Endpoint getEndpoint() {
@@ -43,6 +54,7 @@ public class HealthCheck {
     }
 
     public void stop() {
+        strategy.close();
         this.statusChangeCallback = null;
         scheduler.shutdown();
         executor.shutdown();
@@ -67,6 +79,7 @@ public class HealthCheck {
         Future<?> future = executor.submit(() -> {
             HealthStatus newStatus = strategy.doHealthCheck(endpoint);
             safeUpdate(me, newStatus);
+            log.trace("Health check completed for {} with status {}", endpoint, newStatus);
         });
 
         try {
@@ -75,11 +88,13 @@ public class HealthCheck {
             // Cancel immediately on timeout or exec exception
             future.cancel(true);
             safeUpdate(me, HealthStatus.UNHEALTHY);
+            log.warn("Health check timed out or failed for {}", endpoint, e);
         } catch (InterruptedException e) {
             // Health check thread was interrupted
             future.cancel(true);
             safeUpdate(me, HealthStatus.UNHEALTHY);
             Thread.currentThread().interrupt(); // Restore interrupted status
+            log.warn("Health check interrupted for {}", endpoint, e);
         }
     }
 
@@ -102,6 +117,10 @@ public class HealthCheck {
         if (statusChangeCallback != null) {
             statusChangeCallback.accept(new HealthStatusChangeEvent(endpoint, oldStatus, newStatus));
         }
+    }
+
+    public long getMaxWaitDuration() {
+        return strategy.getMaxWaitDuration();
     }
 
 }

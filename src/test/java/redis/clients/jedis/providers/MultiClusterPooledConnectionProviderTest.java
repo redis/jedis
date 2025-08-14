@@ -12,6 +12,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.Endpoint;
+import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 import java.util.Arrays;
@@ -71,7 +72,7 @@ public class MultiClusterPooledConnectionProviderTest {
         waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
             provider.getCluster(endpointStandalone1.getHostAndPort()));
 
-        Endpoint e2 = provider.iterateActiveCluster();
+        Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
         assertEquals(endpointStandalone1.getHostAndPort(), e2);
     }
 
@@ -83,12 +84,12 @@ public class MultiClusterPooledConnectionProviderTest {
         provider.setActiveCluster(endpointStandalone0.getHostAndPort());
         provider.getCluster().setDisabled(true);
 
-        Endpoint e2 = provider.iterateActiveCluster();
+        Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
         provider.getCluster().setDisabled(true);
 
         assertEquals(endpointStandalone1.getHostAndPort(), e2);
         // Should throw an exception
-        assertThrows(JedisConnectionException.class, () -> provider.iterateActiveCluster());
+        assertThrows(JedisConnectionException.class, () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK));
     }
 
     @Test
@@ -98,7 +99,7 @@ public class MultiClusterPooledConnectionProviderTest {
 
         provider.setActiveCluster(endpointStandalone0.getHostAndPort());
         provider.getCluster().setDisabled(true);
-        provider.iterateActiveCluster();
+        provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
         
         assertFalse(provider.canIterateOnceMore());
     }
@@ -127,7 +128,7 @@ public class MultiClusterPooledConnectionProviderTest {
         AtomicBoolean isValidTest = new AtomicBoolean(false);
 
         MultiClusterPooledConnectionProvider localProvider = new MultiClusterPooledConnectionProvider(builder.build());
-        localProvider.setClusterFailoverPostProcessor(a -> {
+        localProvider.setClusterSwitchListener(a -> {
             isValidTest.set(true);
         });
 

@@ -1,6 +1,8 @@
 package redis.clients.jedis.scenario;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
@@ -11,8 +13,10 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
 public class ActiveActiveFailoverTest {
@@ -72,7 +77,7 @@ public class ActiveActiveFailoverTest {
     builder.retryMaxAttempts(1);
     builder.retryWaitDurationExponentialBackoffMultiplier(1);
 
-    class FailoverReporter implements Consumer<String> {
+    class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
 
       String currentClusterName = "not set";
 
@@ -89,9 +94,10 @@ public class ActiveActiveFailoverTest {
       }
 
       @Override
-      public void accept(String clusterName) {
-        this.currentClusterName = clusterName;
-        log.info("\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n", clusterName);
+      public void accept(ClusterSwitchEventArgs e) {
+        this.currentClusterName = e.getClusterName();
+        log.info("\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n",
+          e.getClusterName());
 
         if (failoverHappened) {
           failbackHappened = true;
@@ -105,7 +111,7 @@ public class ActiveActiveFailoverTest {
 
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
-    provider.setClusterFailoverPostProcessor(reporter);
+    provider.setClusterSwitchListener(reporter);
     provider.setActiveCluster(endpoint.getHostAndPort(0));
 
     UnifiedJedis client = new UnifiedJedis(provider);
@@ -160,7 +166,7 @@ public class ActiveActiveFailoverTest {
         }
       }
       return true;
-    }, 4);
+    }, 18);
     fakeApp.setKeepExecutingForSeconds(30);
     Thread t = new Thread(fakeApp);
     t.start();
@@ -194,11 +200,14 @@ public class ActiveActiveFailoverTest {
     log.info("Failover happened at: {}", reporter.failoverAt);
     log.info("Failback happened at: {}", reporter.failbackAt);
     log.info("Last failed command at: {}", lastFailedCommandAt.get());
+    Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
+    log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
 
     assertEquals(0, pool.getNumActive());
     assertTrue(fakeApp.capturedExceptions().isEmpty());
     assertTrue(reporter.failoverHappened);
     assertTrue(reporter.failbackHappened);
+    assertThat(fullFailoverTime.getSeconds(), Matchers.greaterThanOrEqualTo(30L));
 
     client.close();
   }

@@ -161,6 +161,9 @@ public final class MultiClusterClientConfig {
     /** Grace period in milliseconds to keep clusters disabled after they become unhealthy */
     private long gracePeriod;
 
+    /** Whether to force terminate connections forcefully on failover */
+    private boolean fastFailover;
+
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
             "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
@@ -246,6 +249,10 @@ public final class MultiClusterClientConfig {
 
     public long getGracePeriod() {
         return gracePeriod;
+    }
+
+    public boolean isFastFailover() {
+        return fastFailover;
     }
 
     public static Builder builder(ClusterConfig[] clusterConfigs) {
@@ -384,6 +391,8 @@ public final class MultiClusterClientConfig {
         private long failbackCheckInterval = FAILBACK_CHECK_INTERVAL_DEFAULT;
         private long gracePeriod = GRACE_PERIOD_DEFAULT;
 
+        private boolean fastFailover = false;
+
         public Builder(ClusterConfig[] clusterConfigs) {
 
             if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
@@ -496,6 +505,11 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
+        public Builder fastFailover(boolean fastFailover) {
+            this.fastFailover = fastFailover;
+            return this;
+        }
+
         public MultiClusterClientConfig build() {
             MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterConfigs);
 
@@ -525,6 +539,7 @@ public final class MultiClusterClientConfig {
             config.isFailbackSupported = this.isFailbackSupported;
             config.failbackCheckInterval = this.failbackCheckInterval;
             config.gracePeriod = this.gracePeriod;
+            config.fastFailover = this.fastFailover;
 
             return config;
         }

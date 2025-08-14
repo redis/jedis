@@ -78,4 +78,9 @@ public class HealthStatusManager {
     public boolean hasHealthCheck(Endpoint endpoint) {
         return healthChecks.get(endpoint) != null;
     }
+
+    public long getMaxWaitFor(Endpoint endpoint) {
+        HealthCheck healthCheck = healthChecks.get(endpoint);
+        return healthCheck != null ? healthCheck.getMaxWaitDuration() : 0;
+    }
 }

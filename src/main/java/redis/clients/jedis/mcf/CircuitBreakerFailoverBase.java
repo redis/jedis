@@ -49,9 +49,11 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                 // To recover/transition from this forced state the user will need to manually failback
 
                 Cluster activeCluster = provider.getCluster();
-                // This should never happen in theory !!
-                if (activeCluster.getCircuitBreaker() != circuitBreaker) throw new IllegalStateException(
-                    "A circuitbreaker failover can be triggered only by the active cluster!");
+                // This should be possible only if active cluster is switched from by other reasons than circuit
+                // breaker, just before circuit breaker triggers
+                if (activeCluster.getCircuitBreaker() != circuitBreaker) {
+                    return;
+                }
 
                 activeCluster.setGracePeriod();
                 circuitBreaker.transitionToForcedOpenState();
@@ -59,12 +61,7 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
                 // Iterating the active cluster will allow subsequent calls to the executeCommand() to use the next
                 // cluster's connection pool - according to the configuration's prioritization/order/weight
                 // int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex1();
-                if (provider.iterateActiveCluster() != null) {
-
-                    // Implementation is optionally provided during configuration. Typically, used for
-                    // activeMultiClusterIndex persistence or custom logging
-                    provider.runClusterFailoverPostProcessor(provider.getCluster());
-                }
+                provider.iterateActiveCluster(SwitchReason.CIRCUIT_BREAKER);
             }
             // this check relies on the fact that many failover attempts can hit with the same CB,
             // only the first one will trigger a failover, and make the CB FORCED_OPEN.

@@ -47,6 +47,7 @@ public class StatusTrackerTest {
         when(mockHealthStatusManager.getHealthStatus(testEndpoint))
             .thenReturn(HealthStatus.UNKNOWN)  // First call
             .thenReturn(HealthStatus.UNKNOWN); // Second call after registering listener
+        when(mockHealthStatusManager.getMaxWaitFor(testEndpoint)).thenReturn(3000L);
 
         // Capture the registered listener
         final HealthStatusListener[] capturedListener = new HealthStatusListener[1];
@@ -85,6 +86,7 @@ public class StatusTrackerTest {
     void testWaitForHealthStatus_IgnoresUnknownStatus() throws InterruptedException {
         // Given: Health status is initially UNKNOWN
         when(mockHealthStatusManager.getHealthStatus(testEndpoint)).thenReturn(HealthStatus.UNKNOWN);
+        when(mockHealthStatusManager.getMaxWaitFor(testEndpoint)).thenReturn(3000L);
 
         // Capture the registered listener
         final HealthStatusListener[] capturedListener = new HealthStatusListener[1];
@@ -127,6 +129,7 @@ public class StatusTrackerTest {
     void testWaitForHealthStatus_IgnoresOtherEndpoints() throws InterruptedException {
         // Given: Health status is initially UNKNOWN
         when(mockHealthStatusManager.getHealthStatus(testEndpoint)).thenReturn(HealthStatus.UNKNOWN);
+        when(mockHealthStatusManager.getMaxWaitFor(testEndpoint)).thenReturn(3000L);
         HostAndPort otherEndpoint = new HostAndPort("other", 6379);
 
         // Capture the registered listener

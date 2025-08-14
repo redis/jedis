@@ -1,10 +1,8 @@
 package redis.clients.jedis.mcf;
 
-import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
@@ -12,20 +10,18 @@ public class EchoStrategy implements HealthCheckStrategy {
     private int interval;
     private int timeout;
     private UnifiedJedis jedis;
+    private int minConsecutiveSuccessCount;
 
     public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
-        this(hostAndPort, jedisClientConfig, 1000, 1000);
+        this(hostAndPort, jedisClientConfig, 1000, 1000, 3);
     }
 
-    public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout) {
+    public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout,
+        int minConsecutiveSuccessCount) {
         this.interval = interval;
         this.timeout = timeout;
-        ConnectionFactory connFactory = new ConnectionFactory(hostAndPort, jedisClientConfig);
-        try {
-            this.jedis = new UnifiedJedis(connFactory.makeObject().getObject());
-        } catch (Exception e) {
-            throw new JedisConnectionException("HealthCheck connection Failed!", e);
-        }
+        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+        this.jedis = new UnifiedJedis(hostAndPort, jedisClientConfig);
     }
 
     @Override
@@ -39,8 +35,18 @@ public class EchoStrategy implements HealthCheckStrategy {
     }
 
     @Override
+    public int minConsecutiveSuccessCount() {
+        return minConsecutiveSuccessCount;
+    }
+
+    @Override
     public HealthStatus doHealthCheck(Endpoint endpoint) {
         return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+    }
+
+    @Override
+    public void close() {
+        jedis.close();
     }
 
     public static final StrategySupplier DEFAULT = (hostAndPort, jedisClientConfig) -> {

@@ -687,6 +687,11 @@ public class PipeliningTest extends JedisCommandsTestBase {
     public byte[] getRaw() {
       return SafeEncoder.encode(name());
     }
+
+    @Override
+    public boolean isWriteCommand() {
+      return true;
+    }
   }
 
   @Test

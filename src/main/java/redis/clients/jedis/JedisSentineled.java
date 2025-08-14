@@ -37,6 +37,13 @@ public class JedisSentineled extends UnifiedJedis {
         masterClientConfig.getRedisProtocol());
   }
 
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
+                         final GenericObjectPoolConfig<Connection> poolConfig,
+                         Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, boolean fallbackToMaster) {
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, fallbackToMaster),
+            masterClientConfig.getRedisProtocol());
+  }
+
   @Experimental
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig,

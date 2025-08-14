@@ -45,6 +45,11 @@ public class ModuleTest extends JedisCommandsTestBase {
     public byte[] getRaw() {
       return raw;
     }
+
+    @Override
+    public boolean isWriteCommand() {
+      return true;
+    }
   }
 
   public ModuleTest(RedisProtocol protocol) {

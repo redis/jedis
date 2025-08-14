@@ -201,6 +201,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+			<version>2.0.2</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- circuit breaker / failover -->
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>

@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands.unified;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
@@ -36,12 +38,15 @@ public abstract class FunctionCommandsTestBase extends UnifiedJedisCommandsTestB
     super(protocol);
   }
 
-  protected void setUpFunctions(TestInfo info) {
+  @BeforeEach
+  public void setUp(TestInfo info) {
     functionName = info.getDisplayName().replaceAll("[^a-zA-Z0-9]", "_");
     jedis.functionLoad(String.format(TEST_LUA_SCRIPT_TMPL, libraryName, functionName, "42"));
   }
 
-  protected void cleanUpFunctions() {
+  @AfterEach
+  public void cleanUpFunctions() {
+
     try {
       jedis.functionDelete(libraryName);
     } catch (JedisException e) {

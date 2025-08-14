@@ -2,15 +2,14 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.FunctionCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -44,16 +43,13 @@ public class ClusterFunctionCommandsTest extends FunctionCommandsTestBase {
       HostAndPorts.getStableClusterServers().get(0),
       DefaultJedisClientConfig.builder().password("cluster").build());
 
-  @BeforeEach
-  public void setUp(TestInfo testInfo) {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
-    super.setUpFunctions(testInfo);
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @AfterEach
   public void tearDown() {
-    super.cleanUpFunctions();
-    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

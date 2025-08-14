@@ -17,6 +17,7 @@ ClusterPipeline
 ClusterPubSub
 ConnectionPool
 CoreCommands
+config
 Dockerfile
 EVAL
 EVALSHA
@@ -34,6 +35,7 @@ GeoUnit
 GraphCommands
 Grokzen's
 HostAndPort
+HostAndPortMapper
 HostnameVerifier
 INCR
 IOError
@@ -83,6 +85,7 @@ RedisInstrumentor
 RedisJSON
 RedisTimeSeries
 Redislabs
+reusability
 SHA
 SSLParameters
 SSLSocketFactory
@@ -199,6 +202,7 @@ keyspace
 keysvalues
 kllayn
 kwarg
+Kubernetes
 lastName
 lastsave
 learningpath

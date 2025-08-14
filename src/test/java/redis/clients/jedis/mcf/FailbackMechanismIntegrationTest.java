@@ -354,6 +354,4 @@ class FailbackMechanismIntegrationTest {
             }
         }
     }
-
-
 }

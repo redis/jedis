@@ -755,5 +755,4 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 + ", multiClusterClientConfig=" + multiClusterClientConfig + '}';
         }
     }
-
 }

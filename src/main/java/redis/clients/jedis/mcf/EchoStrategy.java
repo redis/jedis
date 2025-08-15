@@ -41,7 +41,11 @@ public class EchoStrategy implements HealthCheckStrategy {
 
     @Override
     public HealthStatus doHealthCheck(Endpoint endpoint) {
-        return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+        try {
+            return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+        } catch (Exception e) {
+            return HealthStatus.UNHEALTHY;
+        }
     }
 
     @Override

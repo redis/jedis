@@ -629,7 +629,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         private final CircuitBreaker circuitBreaker;
         private final float weight;
         private final HealthCheck healthCheck;
-        private final boolean noHealtChecks;
+        private final boolean noHealthChecks;
         private final MultiClusterClientConfig multiClusterClientConfig;
         private boolean disabled = false;
 
@@ -645,7 +645,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             this.circuitBreaker = circuitBreaker;
             this.weight = weight;
             this.multiClusterClientConfig = multiClusterClientConfig;
-            this.noHealtChecks = true;
+            this.noHealthChecks = true;
             this.healthCheck = null;
         }
 
@@ -657,7 +657,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             this.circuitBreaker = circuitBreaker;
             this.weight = weight;
             this.multiClusterClientConfig = multiClusterClientConfig;
-            this.noHealtChecks = false;
+            this.noHealthChecks = false;
             this.healthCheck = hc;
         }
 
@@ -683,7 +683,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public HealthStatus getHealthStatus() {
-            return noHealtChecks ? HealthStatus.HEALTHY : healthCheck.getStatus();
+            return noHealthChecks ? HealthStatus.HEALTHY : healthCheck.getStatus();
         }
 
         /**

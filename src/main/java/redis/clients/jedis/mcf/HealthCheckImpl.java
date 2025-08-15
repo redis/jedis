@@ -48,6 +48,7 @@ public class HealthCheckImpl implements HealthCheck {
 
     HealthCheckImpl(Endpoint endpoint, HealthCheckStrategy strategy,
         Consumer<HealthStatusChangeEvent> statusChangeCallback) {
+
         this.endpoint = endpoint;
         this.strategy = strategy;
         this.statusChangeCallback = statusChangeCallback;

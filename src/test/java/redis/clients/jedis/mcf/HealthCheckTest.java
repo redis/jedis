@@ -29,7 +29,7 @@ public class HealthCheckTest {
     @Mock
     private HealthCheckStrategy mockStrategy;
 
-    private HealthCheckStrategy alwaysHealthyStrategy = new HealthCheckStrategy() {
+    private final HealthCheckStrategy alwaysHealthyStrategy = new HealthCheckStrategy() {
         @Override
         public int getInterval() {
             return 100;
@@ -156,7 +156,7 @@ public class HealthCheckTest {
         HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
         healthCheck.start();
 
-        assertDoesNotThrow(() -> healthCheck.stop());
+        assertDoesNotThrow(healthCheck::stop);
     }
 
     // ========== HealthStatusManager Tests ==========
@@ -370,6 +370,46 @@ public class HealthCheckTest {
     }
 
     // ========== Integration Tests ==========
+    @Test
+    @Timeout(5)
+    void testHealthCheckRecoversAfterException() throws InterruptedException {
+        // Create a mock strategy that alternates between healthy and throwing an exception
+        HealthCheckStrategy alternatingStrategy = new HealthCheckStrategy() {
+            volatile boolean isHealthy = true;
+
+            @Override
+            public int getInterval() {
+                return 1;
+            }
+
+            @Override
+            public int getTimeout() {
+                return 5;
+            }
+
+            @Override
+            public HealthStatus doHealthCheck(Endpoint endpoint) {
+                if (isHealthy) {
+                    isHealthy = false;
+                    throw new RuntimeException("Simulated exception");
+                } else {
+                    isHealthy = true;
+                    return HealthStatus.HEALTHY;
+                }
+            }
+        };
+
+        CountDownLatch statusChangeLatch = new CountDownLatch(2); // Wait for 2 status changes
+        HealthStatusListener listener = event -> statusChangeLatch.countDown();
+
+        HealthStatusManager manager = new HealthStatusManager();
+        manager.registerListener(listener);
+        manager.add(testEndpoint, alternatingStrategy);
+
+        assertTrue(statusChangeLatch.await(1, TimeUnit.SECONDS));
+
+        manager.remove(testEndpoint);
+    }
 
     @Test
     @Timeout(5)

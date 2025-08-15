@@ -1,11 +1,14 @@
 package redis.clients.jedis.mcf;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
+    private static final Logger log = LoggerFactory.getLogger(EchoStrategy.class);
 
     private int interval;
     private int timeout;
@@ -44,6 +47,7 @@ public class EchoStrategy implements HealthCheckStrategy {
         try {
             return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
         } catch (Exception e) {
+            log.error("Error while performing health check", e);
             return HealthStatus.UNHEALTHY;
         }
     }

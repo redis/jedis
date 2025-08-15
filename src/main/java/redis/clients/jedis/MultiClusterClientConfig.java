@@ -39,8 +39,7 @@ public final class MultiClusterClientConfig {
     public static interface StrategySupplier<T> {
         /**
          * Creates a HealthCheckStrategy for the given endpoint.
-         * @param hostAndPort the endpoint to create a strategy for
-         * @param jedisClientConfig the client configuration, may be null for implementations that don't need it
+         * @param strategyConfig the configuration data for the strategy
          * @return a HealthCheckStrategy instance
          */
         HealthCheckStrategy get(T strategyConfig);

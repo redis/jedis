@@ -40,16 +40,16 @@ public class LagAwareStrategyUnitTest {
 
   @Test
   void healthy_when_bdb_available_and_cached_uid_used_on_next_check() throws Exception {
-    AtomicReference<RedisRestAPI> ref = new AtomicReference<RedisRestAPI>();
+    RedisRestAPI[] reference = new RedisRestAPI[1];
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class, (mock, context) -> {
       when(mock.getBdbs()).thenReturn(Arrays.asList("1"));
       when(mock.checkBdbAvailability("1", true)).thenReturn(true);
-      ref.set(mock);
+      reference[0] = mock;
     })) {
 
       try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 2))) {
         assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
-        RedisRestAPI api = ref.get();
+        RedisRestAPI api = reference[0];
         reset(api);
         when(api.checkBdbAvailability("1", true)).thenReturn(true);
 

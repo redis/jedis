@@ -1,14 +1,11 @@
 package redis.clients.jedis.mcf;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 import redis.clients.jedis.RedisCredentials;
 
@@ -74,7 +71,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
                 }
             }
             if (bdb == null) {
-                log.warn("No available database found for health check for endpoint %s", endpoint);
+                log.warn("No available database found for health check for endpoint {}", endpoint);
                 return HealthStatus.UNHEALTHY;
             }
             if (redisRestAPI.checkBdbAvailability(bdb, true)) {

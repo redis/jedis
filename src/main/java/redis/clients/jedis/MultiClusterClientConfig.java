@@ -36,14 +36,14 @@ public final class MultiClusterClientConfig {
     /**
      * Interface for creating HealthCheckStrategy instances for specific endpoints
      */
-    public static interface StrategySupplier {
+    public static interface StrategySupplier<T> {
         /**
          * Creates a HealthCheckStrategy for the given endpoint.
          * @param hostAndPort the endpoint to create a strategy for
          * @param jedisClientConfig the client configuration, may be null for implementations that don't need it
          * @return a HealthCheckStrategy instance
          */
-        HealthCheckStrategy get(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig);
+        HealthCheckStrategy get(T strategyConfig);
     }
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
@@ -262,30 +262,32 @@ public final class MultiClusterClientConfig {
     public static class ClusterConfig {
 
         private HostAndPort hostAndPort;
-        private JedisClientConfig clientConfig;
+        private JedisClientConfig jedisClientConfig;
         private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
         private float weight = 1.0f;
         private StrategySupplier healthCheckStrategySupplier;
+        private Object healthCheckMetaConfig;
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
-            this.clientConfig = clientConfig;
+            this.jedisClientConfig = clientConfig;
         }
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
             GenericObjectPoolConfig<Connection> connectionPoolConfig) {
             this.hostAndPort = hostAndPort;
-            this.clientConfig = clientConfig;
+            this.jedisClientConfig = clientConfig;
             this.connectionPoolConfig = connectionPoolConfig;
         }
 
         private ClusterConfig(Builder builder) {
             this.hostAndPort = builder.hostAndPort;
-            this.clientConfig = builder.clientConfig;
+            this.jedisClientConfig = builder.jedisClientConfig;
             this.connectionPoolConfig = builder.connectionPoolConfig;
             this.weight = builder.weight;
             this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
+            this.healthCheckMetaConfig = builder.healthCheckMetaConfig;
         }
 
         public HostAndPort getHostAndPort() {
@@ -297,7 +299,7 @@ public final class MultiClusterClientConfig {
         }
 
         public JedisClientConfig getJedisClientConfig() {
-            return clientConfig;
+            return jedisClientConfig;
         }
 
         public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
@@ -312,17 +314,23 @@ public final class MultiClusterClientConfig {
             return healthCheckStrategySupplier;
         }
 
-        public static class Builder {
-            private HostAndPort hostAndPort;
-            private JedisClientConfig clientConfig;
-            private GenericObjectPoolConfig<Connection> connectionPoolConfig;
+        public Object getHealthCheckMetaConfig() {
+            return healthCheckMetaConfig;
+        }
 
+        public static class Builder<T> {
+            private HostAndPort hostAndPort;
+            private JedisClientConfig jedisClientConfig;
+            private T healthCheckMetaConfig;
+            private GenericObjectPoolConfig<Connection> connectionPoolConfig;
             private float weight = 1.0f;
-            private StrategySupplier healthCheckStrategySupplier = EchoStrategy.DEFAULT;
+            private StrategySupplier healthCheckStrategySupplier;
 
             public Builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
                 this.hostAndPort = hostAndPort;
-                this.clientConfig = clientConfig;
+                this.jedisClientConfig = clientConfig;
+                this.healthCheckMetaConfig = (T) new EchoStrategy.Config(hostAndPort, clientConfig);
+                this.healthCheckStrategySupplier = EchoStrategy.DEFAULT;
             }
 
             public Builder connectionPoolConfig(GenericObjectPoolConfig<Connection> connectionPoolConfig) {
@@ -335,10 +343,12 @@ public final class MultiClusterClientConfig {
                 return this;
             }
 
-            public Builder healthCheckStrategySupplier(StrategySupplier healthCheckStrategySupplier) {
+            public Builder healthCheckStrategySupplier(StrategySupplier healthCheckStrategySupplier,
+                T healthCheckMetaConfig) {
                 if (healthCheckStrategySupplier == null) {
                     throw new IllegalArgumentException("healthCheckStrategySupplier must not be null");
                 }
+                this.healthCheckMetaConfig = healthCheckMetaConfig;
                 this.healthCheckStrategySupplier = healthCheckStrategySupplier;
                 return this;
             }
@@ -347,7 +357,7 @@ public final class MultiClusterClientConfig {
                 if (healthCheckStrategy == null) {
                     throw new IllegalArgumentException("healthCheckStrategy must not be null");
                 }
-                this.healthCheckStrategySupplier = (hostAndPort, jedisClientConfig) -> healthCheckStrategy;
+                this.healthCheckStrategySupplier = (config) -> healthCheckStrategy;
                 return this;
             }
 
@@ -356,6 +366,7 @@ public final class MultiClusterClientConfig {
                     this.healthCheckStrategySupplier = null;
                 } else if (healthCheckStrategySupplier == null) {
                     this.healthCheckStrategySupplier = EchoStrategy.DEFAULT;
+                    this.healthCheckMetaConfig = (T) new EchoStrategy.Config(hostAndPort, jedisClientConfig);
                 }
                 return this;
             }

@@ -4,27 +4,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
+import redis.clients.jedis.UnifiedJedis;
 
 public class EchoStrategy implements HealthCheckStrategy {
     private static final Logger log = LoggerFactory.getLogger(EchoStrategy.class);
+
+    public static class Config extends HealthCheckStrategy.Config {
+        protected final HostAndPort hostAndPort;
+        protected final JedisClientConfig jedisClientConfig;
+
+        public Config(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
+            this(hostAndPort, jedisClientConfig, 1000, 1000, 3);
+        }
+
+        public Config(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout,
+            int minConsecutiveSuccessCount) {
+            super(interval, timeout, minConsecutiveSuccessCount);
+
+            this.hostAndPort = hostAndPort;
+            this.jedisClientConfig = jedisClientConfig;
+        }
+    }
 
     private int interval;
     private int timeout;
     private UnifiedJedis jedis;
     private int minConsecutiveSuccessCount;
 
-    public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
-        this(hostAndPort, jedisClientConfig, 1000, 1000, 3);
-    }
-
-    public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig, int interval, int timeout,
-        int minConsecutiveSuccessCount) {
-        this.interval = interval;
-        this.timeout = timeout;
-        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
-        this.jedis = new UnifiedJedis(hostAndPort, jedisClientConfig);
+    public EchoStrategy(Config config) {
+        this.interval = config.interval;
+        this.timeout = config.timeout;
+        this.minConsecutiveSuccessCount = config.minConsecutiveSuccessCount;
+        this.jedis = new UnifiedJedis(config.hostAndPort, config.jedisClientConfig);
     }
 
     @Override
@@ -57,8 +69,7 @@ public class EchoStrategy implements HealthCheckStrategy {
         jedis.close();
     }
 
-    public static final StrategySupplier DEFAULT = (hostAndPort, jedisClientConfig) -> {
-        return new EchoStrategy(hostAndPort, jedisClientConfig);
+    public static final StrategySupplier<Config> DEFAULT = (Config config) -> {
+        return new EchoStrategy(config);
     };
-
 }

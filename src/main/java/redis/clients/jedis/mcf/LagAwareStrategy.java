@@ -8,10 +8,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 import redis.clients.jedis.RedisCredentials;
 
 public class LagAwareStrategy implements HealthCheckStrategy {
+
+    public static class Config extends HealthCheckStrategy.Config {
+
+        private final Endpoint endpoint;
+        private final Supplier<RedisCredentials> credentialsSupplier;
+
+        public Config(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
+            this(endpoint, credentialsSupplier, 1000, 1000, 3);
+        }
+
+        public Config(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier, int interval, int timeout,
+            int minConsecutiveSuccessCount) {
+            super(interval, timeout, minConsecutiveSuccessCount);
+
+            this.endpoint = endpoint;
+            this.credentialsSupplier = credentialsSupplier;
+        }
+    }
 
     private static Logger log = LoggerFactory.getLogger(LagAwareStrategy.class);
 
@@ -21,16 +40,11 @@ public class LagAwareStrategy implements HealthCheckStrategy {
     private RedisRestAPI redisRestAPI;
     private String bdbId;
 
-    public LagAwareStrategy(HostAndPort hostAndPort, Supplier<RedisCredentials> credentialsSupplier) {
-        this(hostAndPort, credentialsSupplier, 1000, 1000, 3);
-    }
-
-    public LagAwareStrategy(Endpoint restEndpoint, Supplier<RedisCredentials> credentialsSupplier,
-        int healthCheckInterval, int healthCheckTimeout, int minConsecutiveSuccessCount) {
-        this.interval = healthCheckInterval;
-        this.timeout = healthCheckTimeout;
-        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
-        this.redisRestAPI = new RedisRestAPI(restEndpoint, credentialsSupplier, healthCheckTimeout);
+    public LagAwareStrategy(Config config) {
+        this.interval = config.interval;
+        this.timeout = config.timeout;
+        this.minConsecutiveSuccessCount = config.minConsecutiveSuccessCount;
+        this.redisRestAPI = new RedisRestAPI(config.endpoint, config.credentialsSupplier, config.timeout);
     }
 
     @Override
@@ -73,9 +87,15 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         return HealthStatus.UNHEALTHY;
     }
 
-    public static StrategySupplier getDefaultSupplier(Map<Endpoint, LagAwareStrategy> lagAwareStrategies) {
-        return (hostAndPort, jedisClientConfig) -> {
-            return lagAwareStrategies.get(hostAndPort);
-        };
+    public static HealthCheckStrategy getDefault(Endpoint endpoint, RedisCredentials credentials) {
+        return new LagAwareStrategy(new Config(endpoint, () -> credentials));
     }
+
+    public static HealthCheckStrategy getDefault(Endpoint endpoint, Supplier<RedisCredentials> credentialSupplier) {
+        return new LagAwareStrategy(new Config(endpoint, credentialSupplier));
+    }
+
+    public static final StrategySupplier<Config> DEFAULT = (config) -> {
+        return new LagAwareStrategy(config);
+    };
 }

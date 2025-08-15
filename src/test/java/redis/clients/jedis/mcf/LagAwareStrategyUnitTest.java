@@ -15,6 +15,7 @@ import org.mockito.MockedConstruction;
 
 import redis.clients.jedis.DefaultRedisCredentials;
 import redis.clients.jedis.RedisCredentials;
+import redis.clients.jedis.mcf.LagAwareStrategy.Config;
 
 public class LagAwareStrategyUnitTest {
 
@@ -46,7 +47,7 @@ public class LagAwareStrategyUnitTest {
       ref.set(mock);
     })) {
 
-      try (LagAwareStrategy strategy = new LagAwareStrategy(endpoint, creds, 500, 250, 2)) {
+      try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 2))) {
         assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
         RedisRestAPI api = ref.get();
         reset(api);
@@ -67,7 +68,7 @@ public class LagAwareStrategyUnitTest {
       ref.set(mock);
     })) {
 
-      try (LagAwareStrategy strategy = new LagAwareStrategy(endpoint, creds, 500, 250, 1)) {
+      try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 1))) {
         assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
         RedisRestAPI api = ref.get();
         verify(api, never()).checkBdbAvailability(anyString(), anyBoolean());
@@ -83,7 +84,7 @@ public class LagAwareStrategyUnitTest {
       ref.set(mock);
     })) {
 
-      try (LagAwareStrategy strategy = new LagAwareStrategy(endpoint, creds, 500, 250, 1)) {
+      try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 1))) {
         RedisRestAPI api = ref.get();
         assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
 

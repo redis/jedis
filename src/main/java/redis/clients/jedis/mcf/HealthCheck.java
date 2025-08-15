@@ -1,7 +1,6 @@
 
 package redis.clients.jedis.mcf;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,11 +16,28 @@ import org.slf4j.LoggerFactory;
 
 public class HealthCheck {
 
+    private static class HealthCheckResult{
+        private final long timestamp;
+        private final HealthStatus status;
+
+        public HealthCheckResult(long timestamp, HealthStatus status) {
+            this.timestamp = timestamp;
+            this.status = status;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public HealthStatus getStatus() {
+            return status;
+        }
+    }
     private static final Logger log = LoggerFactory.getLogger(HealthCheck.class);
 
     private Endpoint endpoint;
     private HealthCheckStrategy strategy;
-    private AtomicReference<SimpleEntry<Long, HealthStatus>> statusRef = new AtomicReference<SimpleEntry<Long, HealthStatus>>();
+    private AtomicReference<HealthCheckResult> resultRef = new AtomicReference<HealthCheckResult>();
     private Consumer<HealthStatusChangeEvent> statusChangeCallback;
 
     private ScheduledExecutorService scheduler;
@@ -32,7 +48,7 @@ public class HealthCheck {
         this.endpoint = endpoint;
         this.strategy = strategy;
         this.statusChangeCallback = statusChangeCallback;
-        statusRef.set(new SimpleEntry<>(0L, HealthStatus.UNKNOWN));
+        resultRef.set(new HealthCheckResult(0L, HealthStatus.UNKNOWN));
 
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
@@ -46,7 +62,7 @@ public class HealthCheck {
     }
 
     public HealthStatus getStatus() {
-        return statusRef.get().getValue();
+        return resultRef.get().getStatus();
     }
 
     public void start() {
@@ -100,16 +116,16 @@ public class HealthCheck {
 
     // just to avoid to replace status with an outdated result from another healthCheck
     private void safeUpdate(long owner, HealthStatus status) {
-        SimpleEntry<Long, HealthStatus> newStatus = new SimpleEntry<>(owner, status);
-        SimpleEntry<Long, HealthStatus> oldStatus = statusRef.getAndUpdate(current -> {
-            if (current.getKey() < owner) {
-                return newStatus;
+        HealthCheckResult newResult = new HealthCheckResult(owner, status);
+        HealthCheckResult oldResult = resultRef.getAndUpdate(current -> {
+            if (current.getTimestamp() < owner) {
+                return newResult;
             }
             return current;
         });
-        if (oldStatus.getValue() != status) {
+        if (oldResult.getStatus() != status) {
             // notify listeners
-            notifyListeners(oldStatus.getValue(), status);
+            notifyListeners(oldResult.getStatus(), status);
         }
     }
 

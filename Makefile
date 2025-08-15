@@ -473,7 +473,7 @@ start: cleanup compile-module
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
-	docker run -p 6479:6379 --name jedis-stack -e PORT=6379 -d redislabs/client-libs-test:8.2
+	docker run -p 6479:6379 --name jedis-stack -e PORT=6379 -d redislabs/client-libs-test:8.2.1-pre
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null

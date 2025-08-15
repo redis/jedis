@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class HealthCheck {
 
-    private static class HealthCheckResult{
+    private static class HealthCheckResult {
         private final long timestamp;
         private final HealthStatus status;
 
@@ -33,6 +33,7 @@ public class HealthCheck {
             return status;
         }
     }
+
     private static final Logger log = LoggerFactory.getLogger(HealthCheck.class);
 
     private Endpoint endpoint;

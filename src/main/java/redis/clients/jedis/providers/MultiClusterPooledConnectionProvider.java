@@ -46,7 +46,7 @@ import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.Endpoint;
-
+import redis.clients.jedis.mcf.HealthCheck;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
@@ -293,18 +293,19 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         TrackingConnectionPool pool = TrackingConnectionPool.builder().hostAndPort(config.getHostAndPort())
             .clientConfig(config.getJedisClientConfig()).poolConfig(config.getConnectionPoolConfig()).build();
 
-        Cluster cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
-        multiClusterMap.put(config.getHostAndPort(), cluster);
-
+        Cluster cluster;
         StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
         if (strategySupplier != null) {
             HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
             // Register listeners BEFORE adding clusters to avoid missing events
             healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
-            healthStatusManager.add(config.getHostAndPort(), hcs);
+            HealthCheck hc = healthStatusManager.add(config.getHostAndPort(), hcs);
+            cluster = new Cluster(pool, retry, hc, circuitBreaker, config.getWeight(), multiClusterClientConfig);
         } else {
-            cluster.setHealthStatus(HealthStatus.HEALTHY);
+            cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(), multiClusterClientConfig);
         }
+
+        multiClusterMap.put(config.getHostAndPort(), cluster);
     }
 
     /**
@@ -320,7 +321,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         if (clusterWithHealthChange == null) return;
 
-        clusterWithHealthChange.setHealthStatus(newStatus);
         if (initializationComplete) {
             if (!newStatus.isHealthy() && clusterWithHealthChange == activeCluster) {
                 clusterWithHealthChange.setGracePeriod();
@@ -363,8 +363,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 log.info("No health check configured for cluster {}, defaulting to HEALTHY", endpoint);
                 status = HealthStatus.HEALTHY;
             }
-
-            cluster.setHealthStatus(status);
 
             if (status.isHealthy()) {
                 log.info("Found healthy cluster: {} (weight: {})", endpoint, cluster.getWeight());
@@ -631,9 +629,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         private final Retry retry;
         private final CircuitBreaker circuitBreaker;
         private final float weight;
-        // it starts its life with unknown health status, waiting for initial health check
-        private HealthStatus healthStatus = HealthStatus.UNKNOWN;
-        private MultiClusterClientConfig multiClusterClientConfig;
+        private final HealthCheck healthCheck;
+        private final boolean noHealtChecks;
+        private final MultiClusterClientConfig multiClusterClientConfig;
         private boolean disabled = false;
 
         // Grace period tracking
@@ -642,11 +640,26 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         private Cluster(TrackingConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker, float weight,
             MultiClusterClientConfig multiClusterClientConfig) {
+
             this.connectionPool = connectionPool;
             this.retry = retry;
             this.circuitBreaker = circuitBreaker;
             this.weight = weight;
             this.multiClusterClientConfig = multiClusterClientConfig;
+            this.noHealtChecks = true;
+            this.healthCheck = null;
+        }
+
+        private Cluster(TrackingConnectionPool connectionPool, Retry retry, HealthCheck hc,
+            CircuitBreaker circuitBreaker, float weight, MultiClusterClientConfig multiClusterClientConfig) {
+
+            this.connectionPool = connectionPool;
+            this.retry = retry;
+            this.circuitBreaker = circuitBreaker;
+            this.weight = weight;
+            this.multiClusterClientConfig = multiClusterClientConfig;
+            this.noHealtChecks = false;
+            this.healthCheck = hc;
         }
 
         public Connection getConnection() {
@@ -671,11 +684,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public HealthStatus getHealthStatus() {
-            return healthStatus;
-        }
-
-        public void setHealthStatus(HealthStatus healthStatus) {
-            this.healthStatus = healthStatus;
+            return noHealtChecks ? HealthStatus.HEALTHY : healthCheck.getStatus();
         }
 
         /**
@@ -694,7 +703,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         }
 
         public boolean isHealthy() {
-            return healthStatus.isHealthy() && !isCBForcedOpen() && !disabled && !isInGracePeriod();
+            return getHealthStatus().isHealthy() && !isCBForcedOpen() && !disabled && !isInGracePeriod();
         }
 
         public boolean retryOnFailover() {
@@ -751,7 +760,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         @Override
         public String toString() {
             return circuitBreaker.getName() + "{" + "connectionPool=" + connectionPool + ", retry=" + retry
-                + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus=" + healthStatus
+                + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus=" + getHealthStatus()
                 + ", multiClusterClientConfig=" + multiClusterClientConfig + '}';
         }
     }

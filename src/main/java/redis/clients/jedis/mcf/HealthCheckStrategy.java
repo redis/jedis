@@ -36,14 +36,4 @@ public interface HealthCheckStrategy extends Closeable {
     default int minConsecutiveSuccessCount() {
         return 1;
     }
-
-    /**
-     * Get the maximum wait duration (in milliseconds) for the endpoint to enter into a stable state.
-     * @return the maximum wait duration in milliseconds
-     */
-    default int getMaxWaitDuration() {
-        // Add one to account for the initial check
-        return ((minConsecutiveSuccessCount() + 1) * (getInterval() + getTimeout()));
-    }
-
 }

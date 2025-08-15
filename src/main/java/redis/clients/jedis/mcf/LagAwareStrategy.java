@@ -1,18 +1,47 @@
 package redis.clients.jedis.mcf;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
+import redis.clients.jedis.RedisCredentials;
 
 public class LagAwareStrategy implements HealthCheckStrategy {
+
+    public static class Config extends HealthCheckStrategy.Config {
+
+        private final Endpoint endpoint;
+        private final Supplier<RedisCredentials> credentialsSupplier;
+
+        public Config(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
+            this(endpoint, credentialsSupplier, 1000, 1000, 3);
+        }
+
+        public Config(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier, int interval, int timeout,
+            int minConsecutiveSuccessCount) {
+            super(interval, timeout, minConsecutiveSuccessCount);
+
+            this.endpoint = endpoint;
+            this.credentialsSupplier = credentialsSupplier;
+        }
+    }
+
+    private static Logger log = LoggerFactory.getLogger(LagAwareStrategy.class);
 
     private int interval;
     private int timeout;
     private int minConsecutiveSuccessCount;
+    private RedisRestAPI redisRestAPI;
+    private String bdbId;
 
-    public LagAwareStrategy(int healthCheckInterval, int healthCheckTimeout, int minConsecutiveSuccessCount) {
-        this.interval = healthCheckInterval;
-        this.timeout = healthCheckTimeout;
-        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+    public LagAwareStrategy(Config config) {
+        this.interval = config.interval;
+        this.timeout = config.timeout;
+        this.minConsecutiveSuccessCount = config.minConsecutiveSuccessCount;
+        this.redisRestAPI = new RedisRestAPI(config.endpoint, config.credentialsSupplier, config.timeout);
     }
 
     @Override
@@ -32,19 +61,38 @@ public class LagAwareStrategy implements HealthCheckStrategy {
 
     @Override
     public HealthStatus doHealthCheck(Endpoint endpoint) {
-        RedisRestAPIHelper helper = new RedisRestAPIHelper(endpoint.getHost(), String.valueOf(endpoint.getPort()),
-            "admin", "admin");
         try {
-            List<String> bdbs = helper.getBdbs();
-            if (bdbs.size() > 0) {
-                if ("available".equals(helper.checkBdbAvailability(bdbs.get(0)))) {
-                    return HealthStatus.HEALTHY;
+            String bdb = bdbId;
+            if (bdb == null) {
+                List<String> bdbs = redisRestAPI.getBdbs();
+                if (bdbs.size() > 0) {
+                    bdb = bdbs.get(0);
+                    bdbId = bdb;
                 }
             }
-        } catch (IOException e) {
-            // log error
-            return HealthStatus.UNHEALTHY;
+            if (bdb == null) {
+                log.warn("No available database found for health check for endpoint {}", endpoint);
+                return HealthStatus.UNHEALTHY;
+            }
+            if (redisRestAPI.checkBdbAvailability(bdb, true)) {
+                return HealthStatus.HEALTHY;
+            }
+        } catch (Exception e) {
+            log.error("Error while checking database availability", e);
+            bdbId = null;
         }
         return HealthStatus.UNHEALTHY;
     }
+
+    public static HealthCheckStrategy getDefault(Endpoint endpoint, RedisCredentials credentials) {
+        return new LagAwareStrategy(new Config(endpoint, () -> credentials));
+    }
+
+    public static HealthCheckStrategy getDefault(Endpoint endpoint, Supplier<RedisCredentials> credentialSupplier) {
+        return new LagAwareStrategy(new Config(endpoint, credentialSupplier));
+    }
+
+    public static final StrategySupplier<Config> DEFAULT = (config) -> {
+        return new LagAwareStrategy(config);
+    };
 }

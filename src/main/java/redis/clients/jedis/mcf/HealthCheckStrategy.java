@@ -4,6 +4,18 @@ import java.io.Closeable;
 
 public interface HealthCheckStrategy extends Closeable {
 
+    public static class Config {
+        protected final int interval;
+        protected final int timeout;
+        protected final int minConsecutiveSuccessCount;
+
+        public Config(int interval, int timeout, int minConsecutiveSuccessCount) {
+            this.interval = interval;
+            this.timeout = timeout;
+            this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+        }
+    }
+
     /**
      * Get the interval (in milliseconds) between health checks.
      * @return the interval in milliseconds

@@ -2,6 +2,8 @@ package redis.clients.jedis.mcf;
 
 import java.io.Closeable;
 
+import redis.clients.jedis.Endpoint;
+
 public interface HealthCheckStrategy extends Closeable {
 
     /**

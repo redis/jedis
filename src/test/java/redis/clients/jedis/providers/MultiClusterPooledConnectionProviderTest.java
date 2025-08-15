@@ -11,7 +11,6 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.Endpoint;
 import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 

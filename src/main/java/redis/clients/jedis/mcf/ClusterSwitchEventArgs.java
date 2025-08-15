@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 public class ClusterSwitchEventArgs {

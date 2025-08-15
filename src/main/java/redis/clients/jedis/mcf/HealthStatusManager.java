@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import redis.clients.jedis.Endpoint;
+
 public class HealthStatusManager {
 
     private HealthCheckCollection healthChecks = new HealthCheckCollection();

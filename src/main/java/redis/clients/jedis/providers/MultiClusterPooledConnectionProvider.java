@@ -45,7 +45,6 @@ import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.Endpoint;
 import redis.clients.jedis.mcf.HealthCheck;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 

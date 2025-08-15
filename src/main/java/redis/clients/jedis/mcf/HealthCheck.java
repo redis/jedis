@@ -1,6 +1,8 @@
 
 package redis.clients.jedis.mcf;
 
+import redis.clients.jedis.Endpoint;
+
 public interface HealthCheck {
 
     Endpoint getEndpoint();

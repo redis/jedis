@@ -3,6 +3,8 @@ package redis.clients.jedis.mcf;
 import java.io.IOException;
 import java.util.List;
 
+import redis.clients.jedis.Endpoint;
+
 public class LagAwareStrategy implements HealthCheckStrategy {
 
     private int interval;

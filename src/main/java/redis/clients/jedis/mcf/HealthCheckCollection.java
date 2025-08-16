@@ -3,6 +3,8 @@ package redis.clients.jedis.mcf;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import redis.clients.jedis.Endpoint;
+
 public class HealthCheckCollection {
 
     private Map<Endpoint, HealthCheck> healthChecks = new ConcurrentHashMap<Endpoint, HealthCheck>();

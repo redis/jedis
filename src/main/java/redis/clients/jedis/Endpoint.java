@@ -1,4 +1,4 @@
-package redis.clients.jedis.mcf;
+package redis.clients.jedis;
 
 public interface Endpoint {
 

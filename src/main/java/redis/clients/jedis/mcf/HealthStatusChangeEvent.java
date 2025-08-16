@@ -1,5 +1,7 @@
 package redis.clients.jedis.mcf;
 
+import redis.clients.jedis.Endpoint;
+
 public class HealthStatusChangeEvent {
 
     private final Endpoint endpoint;

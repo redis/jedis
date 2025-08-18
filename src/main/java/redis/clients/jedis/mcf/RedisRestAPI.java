@@ -67,8 +67,23 @@ class RedisRestAPI {
     }
 
     public boolean checkBdbAvailability(String uid, boolean lagAware) throws IOException {
-        String availabilityUri = String.format(lagAware ? LAGAWARE_AVAILABILITY_URL : AVAILABILITY_URL,
-            endpoint.getHost(), endpoint.getPort(), uid);
+        return checkBdbAvailability(uid, lagAware, null);
+    }
+
+    public boolean checkBdbAvailability(String uid, boolean extendedCheckEnabled, Long availabilityLagToleranceMs)
+        throws IOException {
+        String availabilityUri;
+        if (extendedCheckEnabled) {
+            // Use extended check with lag validation
+            availabilityUri = String.format(LAGAWARE_AVAILABILITY_URL, endpoint.getHost(), endpoint.getPort(), uid);
+            if (availabilityLagToleranceMs != null) {
+                availabilityUri = availabilityUri + "&availability_lag_tolerance_ms=" + availabilityLagToleranceMs;
+            }
+        } else {
+            // Use standard datapath validation only
+            availabilityUri = String.format(AVAILABILITY_URL, endpoint.getHost(), endpoint.getPort(), uid);
+        }
+
         HttpURLConnection conn = null;
         try {
             conn = createConnection(availabilityUri, "GET", credentialsSupplier.get());

@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,23 +49,20 @@ public class LagAwareStrategyUnitTest {
         try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
             (mock, context) -> {
                 when(mock.getBdbs()).thenReturn(Arrays.asList(bdbInfo));
-                when(mock.checkBdbAvailability("1", true)).thenReturn(true);
+                when(mock.checkBdbAvailability("1", true, 100L)).thenReturn(true);
                 reference[0] = mock;
             })) {
-            Config lagCheckConfig = Config.builder(endpoint, creds)
-                .interval(500)
-                .timeout(250)
-                .minConsecutiveSuccessCount(2)
-                .build();
+            Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
+                .minConsecutiveSuccessCount(2).build();
             try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = reference[0];
                 reset(api);
-                when(api.checkBdbAvailability("1", true)).thenReturn(true);
+                when(api.checkBdbAvailability("1", true, 100L)).thenReturn(true);
 
                 assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
                 verify(api, never()).getBdbs(); // Should not call getBdbs again when cached
-                verify(api, times(1)).checkBdbAvailability("1", true);
+                verify(api, times(1)).checkBdbAvailability("1", true, 100L);
             }
         }
     }
@@ -78,11 +76,8 @@ public class LagAwareStrategyUnitTest {
                 ref.set(mock);
             })) {
 
-            Config lagCheckConfig = Config.builder(endpoint, creds)
-                .interval(500)
-                .timeout(250)
-                .minConsecutiveSuccessCount(1)
-                .build();
+            Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
+                .minConsecutiveSuccessCount(1).build();
             try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = ref.get();
@@ -104,9 +99,7 @@ public class LagAwareStrategyUnitTest {
                 ref.set(mock);
             })) {
 
-            Config lagCheckConfig = Config.builder(endpoint, creds)
-                .interval(500)
-                .timeout(250)
+            Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
                 .minConsecutiveSuccessCount(1).build();
             try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 RedisRestAPI api = ref.get();
@@ -114,7 +107,7 @@ public class LagAwareStrategyUnitTest {
 
                 reset(api);
                 when(api.getBdbs()).thenReturn(Arrays.asList(bdbInfo));
-                when(api.checkBdbAvailability("42", true)).thenReturn(true);
+                when(api.checkBdbAvailability("42", true, 100L)).thenReturn(true);
 
                 assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
             }
@@ -130,19 +123,17 @@ public class LagAwareStrategyUnitTest {
         try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
             (mock, context) -> {
                 when(mock.getBdbs()).thenReturn(Arrays.asList(matchingBdb));
-                when(mock.checkBdbAvailability("matched-bdb-123", true)).thenReturn(true);
+                when(mock.checkBdbAvailability("matched-bdb-123", true, 100L)).thenReturn(true);
                 reference[0] = mock;
             })) {
-            Config lagCheckConfig = Config.builder(endpoint, creds)
-                .interval(500)
-                .timeout(250)
-                .minConsecutiveSuccessCount(2)
-                .build();
+            Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
+                .minConsecutiveSuccessCount(2).extendedCheckEnabled(true)
+                .availabilityLagTolerance(Duration.ofMillis(100)).build();
             try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = reference[0];
                 verify(api, times(1)).getBdbs();
-                verify(api, times(1)).checkBdbAvailability("matched-bdb-123", true);
+                verify(api, times(1)).checkBdbAvailability("matched-bdb-123", true, 100L);
             }
         }
     }
@@ -158,11 +149,8 @@ public class LagAwareStrategyUnitTest {
                 when(mock.getBdbs()).thenReturn(Arrays.asList(nonMatchingBdb)); // BDB that doesn't match localhost
                 reference[0] = mock;
             })) {
-            Config lagCheckConfig = Config.builder(endpoint, creds)
-                .interval(500)
-                .timeout(250)
-                .minConsecutiveSuccessCount(2)
-                .build();
+            Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
+                .minConsecutiveSuccessCount(2).build();
             try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = reference[0];
@@ -179,7 +167,7 @@ public class LagAwareStrategyUnitTest {
         assertEquals(1000, config.interval);
         assertEquals(1000, config.timeout);
         assertEquals(3, config.minConsecutiveSuccessCount);
-        assertEquals(100, config.getAvailabilityLagTolerance());
+        assertEquals(Duration.ofMillis(100), config.getAvailabilityLagTolerance());
         assertEquals(endpoint, config.getEndpoint());
         assertEquals(creds, config.getCredentialsSupplier());
     }
@@ -187,12 +175,12 @@ public class LagAwareStrategyUnitTest {
     @Test
     void config_builder_creates_config_with_custom_values() {
         Config config = Config.builder(endpoint, creds).interval(500).timeout(250).minConsecutiveSuccessCount(2)
-            .availabilityLagTolerance(50).build();
+            .availabilityLagTolerance(Duration.ofMillis(50)).build();
 
         assertEquals(500, config.interval);
         assertEquals(250, config.timeout);
         assertEquals(2, config.minConsecutiveSuccessCount);
-        assertEquals(50, config.getAvailabilityLagTolerance());
+        assertEquals(Duration.ofMillis(50), config.getAvailabilityLagTolerance());
         assertEquals(endpoint, config.getEndpoint());
         assertEquals(creds, config.getCredentialsSupplier());
     }
@@ -201,12 +189,79 @@ public class LagAwareStrategyUnitTest {
     void config_builder_allows_fluent_chaining() {
         // Test that all builder methods return the builder instance for chaining
         Config config = Config.builder(endpoint, creds).interval(800).timeout(400).minConsecutiveSuccessCount(5)
-            .availabilityLagTolerance(200).build();
+            .availabilityLagTolerance(Duration.ofMillis(200)).build();
 
         assertNotNull(config);
         assertEquals(800, config.interval);
         assertEquals(400, config.timeout);
         assertEquals(5, config.minConsecutiveSuccessCount);
-        assertEquals(200, config.getAvailabilityLagTolerance());
+        assertEquals(Duration.ofMillis(200), config.getAvailabilityLagTolerance());
+    }
+
+    @Test
+    void config_builder_creates_config_with_extended_check_enabled() {
+        Config config = Config.builder(endpoint, creds).extendedCheckEnabled(true)
+            .availabilityLagTolerance(Duration.ofMillis(150)).build();
+
+        assertTrue(config.isExtendedCheckEnabled());
+        assertEquals(Duration.ofMillis(150), config.getAvailabilityLagTolerance());
+    }
+
+    @Test
+    void config_builder_creates_config_with_extended_check_disabled_by_default() {
+        Config config = Config.builder(endpoint, creds).build();
+
+        assertTrue(config.isExtendedCheckEnabled());
+    }
+
+    @Test
+    void healthy_when_extended_check_enabled_and_lag_check_passes() throws Exception {
+        RedisRestAPI.BdbInfo bdbInfo = new RedisRestAPI.BdbInfo("1",
+            Arrays.asList(new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+
+        RedisRestAPI[] reference = new RedisRestAPI[1];
+        try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
+            (mock, context) -> {
+                when(mock.getBdbs()).thenReturn(Arrays.asList(bdbInfo));
+                when(mock.checkBdbAvailability("1", true, 100L)).thenReturn(true);
+                reference[0] = mock;
+            })) {
+
+            Config config = Config.builder(endpoint, creds).extendedCheckEnabled(true)
+                .availabilityLagTolerance(Duration.ofMillis(100)).build();
+
+            try (LagAwareStrategy strategy = new LagAwareStrategy(config)) {
+                assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
+                RedisRestAPI api = reference[0];
+                verify(api, times(1)).getBdbs();
+                verify(api, times(1)).checkBdbAvailability("1", true, 100L);
+                verify(api, never()).checkBdbAvailability("1", false);
+            }
+        }
+    }
+
+    @Test
+    void healthy_when_extended_check_disabled_and_standard_check_passes() throws Exception {
+        RedisRestAPI.BdbInfo bdbInfo = new RedisRestAPI.BdbInfo("1",
+            Arrays.asList(new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+
+        RedisRestAPI[] reference = new RedisRestAPI[1];
+        try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
+            (mock, context) -> {
+                when(mock.getBdbs()).thenReturn(Arrays.asList(bdbInfo));
+                when(mock.checkBdbAvailability("1", false)).thenReturn(true);
+                reference[0] = mock;
+            })) {
+
+            Config config = Config.builder(endpoint, creds).extendedCheckEnabled(false).build();
+
+            try (LagAwareStrategy strategy = new LagAwareStrategy(config)) {
+                assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
+                RedisRestAPI api = reference[0];
+                verify(api, times(1)).getBdbs();
+                verify(api, times(1)).checkBdbAvailability("1", false);
+                verify(api, never()).checkBdbAvailability(eq("1"), eq(true), any());
+            }
+        }
     }
 }

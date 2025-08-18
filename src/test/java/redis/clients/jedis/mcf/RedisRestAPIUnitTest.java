@@ -82,6 +82,48 @@ public class RedisRestAPIUnitTest {
         assertFalse(api.checkBdbAvailability("123", false));
     }
 
+    @Test
+    void testCheckBdbAvailabilityWithExtendedCheck() throws Exception {
+        RedisRestAPI api = spy(new RedisRestAPI(new TestEndpoint(), () -> new DefaultRedisCredentials("user", "pass")));
+        HttpURLConnection conn = mock(HttpURLConnection.class);
+
+        doReturn(conn).when(api).createConnection(any(), any(), any());
+        when(conn.getResponseCode()).thenReturn(200);
+        assertTrue(api.checkBdbAvailability("123", true, 100L));
+
+        // Verify the correct URL was constructed with extended check parameters
+        verify(api).createConnection(
+            eq("https://localhost:8443/v1/bdbs/123/availability?extend_check=lag&availability_lag_tolerance_ms=100"),
+            eq("GET"), any());
+    }
+
+    @Test
+    void testCheckBdbAvailabilityWithExtendedCheckNoTolerance() throws Exception {
+        RedisRestAPI api = spy(new RedisRestAPI(new TestEndpoint(), () -> new DefaultRedisCredentials("user", "pass")));
+        HttpURLConnection conn = mock(HttpURLConnection.class);
+
+        doReturn(conn).when(api).createConnection(any(), any(), any());
+        when(conn.getResponseCode()).thenReturn(200);
+        assertTrue(api.checkBdbAvailability("123", true, null));
+
+        // Verify the correct URL was constructed with extended check but no tolerance parameter
+        verify(api).createConnection(eq("https://localhost:8443/v1/bdbs/123/availability?extend_check=lag"), eq("GET"),
+            any());
+    }
+
+    @Test
+    void testCheckBdbAvailabilityWithStandardCheck() throws Exception {
+        RedisRestAPI api = spy(new RedisRestAPI(new TestEndpoint(), () -> new DefaultRedisCredentials("user", "pass")));
+        HttpURLConnection conn = mock(HttpURLConnection.class);
+
+        doReturn(conn).when(api).createConnection(any(), any(), any());
+        when(conn.getResponseCode()).thenReturn(200);
+        assertTrue(api.checkBdbAvailability("123", false, null));
+
+        // Verify the correct URL was constructed for standard check (no query parameters)
+        verify(api).createConnection(eq("https://localhost:8443/v1/bdbs/123/availability"), eq("GET"), any());
+    }
+
     // ========== Parsing and BDB Matching Tests ==========
 
     @Test

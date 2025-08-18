@@ -259,6 +259,10 @@ public final class MultiClusterClientConfig {
         return new Builder(clusterConfigs);
     }
 
+    public static Builder builder(List<ClusterConfig> clusterConfigs) {
+        return new Builder(clusterConfigs);
+    }
+
     public static class ClusterConfig {
 
         private HostAndPort hostAndPort;

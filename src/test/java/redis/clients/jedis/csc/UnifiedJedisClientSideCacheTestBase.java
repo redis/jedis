@@ -145,7 +145,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
   }
 
   @Test
-  public void invalidationTest() {
+  public void invalidationTest() throws InterruptedException {
     try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
       jedis.set("{csc}1", "one");
@@ -161,6 +161,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(0, cache.getStats().getInvalidationCount());
 
       jedis.set("{csc}1", "new-one");
+      Thread.sleep(1000);
       List<String> reply2 = jedis.mget("{csc}1", "{csc}2", "{csc}3");
       assertEquals(Arrays.asList("new-one", "two", "three"), reply2);
 

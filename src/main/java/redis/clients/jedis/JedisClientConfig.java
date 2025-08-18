@@ -6,6 +6,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.util.Commands;
 
 public interface JedisClientConfig {
 
@@ -114,5 +115,22 @@ public interface JedisClientConfig {
    */
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
+  }
+
+  /**
+   * fallback when no replicas are healthy, default to master
+   * @return {@code true} - to execute command by master. {@code false} - throw exception.
+   */
+  default boolean isFallbackToMaster() {
+    return true;
+  }
+
+  /**
+   * check a Command is READONLY
+   * @param args
+   * @return
+   */
+  default boolean isReadCommand(CommandArguments args) {
+    return Commands.ReadOnlyCommands.contains(args.getCommand());
   }
 }

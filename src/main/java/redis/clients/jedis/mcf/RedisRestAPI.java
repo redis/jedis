@@ -5,14 +5,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import redis.clients.jedis.RedisCredentials;
@@ -23,7 +26,7 @@ import redis.clients.jedis.RedisCredentials;
 class RedisRestAPI {
 
     private static final Logger log = LoggerFactory.getLogger(RedisRestAPI.class);
-    private static final String BDBS_URL = "https://%s:%s/v1/bdbs?fields=uid";
+    private static final String BDBS_URL = "https://%s:%s/v1/bdbs?fields=uid,endpoints";
     private static final String AVAILABILITY_URL = "https://%s:%s/v1/bdbs/%s/availability";
     private static final String LAGAWARE_AVAILABILITY_URL = "https://%s:%s/v1/bdbs/%s/availability?extend_check=lag";
 
@@ -42,7 +45,7 @@ class RedisRestAPI {
         this.timeoutMs = timeoutMs;
     }
 
-    public List<String> getBdbs() throws IOException {
+    public List<RedisRestAPI.BdbInfo> getBdbs() throws IOException {
         if (bdbsUri == null) {
             bdbsUri = String.format(BDBS_URL, endpoint.getHost(), endpoint.getPort());
         }
@@ -57,7 +60,7 @@ class RedisRestAPI {
                 throw new IOException("Unexpected response code '" + code + "' for getBdbs: '" + responseBody
                     + "' from '" + bdbsUri + "'");
             }
-            return parseUidsFromResponse(responseBody);
+            return parseBdbInfoFromResponse(responseBody);
         } finally {
             if (conn != null) conn.disconnect();
         }
@@ -121,15 +124,61 @@ class RedisRestAPI {
     }
 
     /**
-     * Parses the response body and extracts the list of UIDs.
+     * Parses the response body and extracts BDB information including endpoints.
+     * @param responseBody the JSON response containing BDBs with endpoints
+     * @return list of BDB information objects
      */
-    static List<String> parseUidsFromResponse(String responseBody) {
-        return JsonParser.parseString(responseBody).getAsJsonArray().asList().stream().map(e -> {
-            if (e.isJsonObject() && e.getAsJsonObject().has("uid")) {
-                return e.getAsJsonObject().get("uid").getAsString();
+    static List<RedisRestAPI.BdbInfo> parseBdbInfoFromResponse(String responseBody) {
+        JsonArray bdbs = JsonParser.parseString(responseBody).getAsJsonArray();
+        List<RedisRestAPI.BdbInfo> bdbInfoList = new ArrayList<>();
+
+        for (JsonElement bdbElement : bdbs) {
+            if (!bdbElement.isJsonObject()) {
+                continue;
             }
-            return e.getAsString();
-        }).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toList());
+
+            JsonObject bdb = bdbElement.getAsJsonObject();
+            if (!bdb.has("uid")) {
+                continue;
+            }
+
+            String bdbId = bdb.get("uid").getAsString();
+            List<RedisRestAPI.EndpointInfo> endpoints = new ArrayList<>();
+
+            if (bdb.has("endpoints") && bdb.get("endpoints").isJsonArray()) {
+                JsonArray endpointsArray = bdb.getAsJsonArray("endpoints");
+
+                for (JsonElement endpointElement : endpointsArray) {
+                    if (!endpointElement.isJsonObject()) {
+                        continue;
+                    }
+
+                    JsonObject endpoint = endpointElement.getAsJsonObject();
+
+                    // Extract addr array
+                    List<String> addrList = new ArrayList<>();
+                    if (endpoint.has("addr") && endpoint.get("addr").isJsonArray()) {
+                        JsonArray addresses = endpoint.getAsJsonArray("addr");
+                        for (JsonElement addrElement : addresses) {
+                            if (addrElement.isJsonPrimitive()) {
+                                addrList.add(addrElement.getAsString());
+                            }
+                        }
+                    }
+
+                    // Extract other fields
+                    String dnsName = endpoint.has("dns_name") ? endpoint.get("dns_name").getAsString() : null;
+                    Integer port = endpoint.has("port") ? endpoint.get("port").getAsInt() : null;
+                    String endpointUid = endpoint.has("uid") ? endpoint.get("uid").getAsString() : null;
+
+                    endpoints.add(new RedisRestAPI.EndpointInfo(addrList, dnsName, port, endpointUid));
+                }
+            }
+
+            bdbInfoList.add(new RedisRestAPI.BdbInfo(bdbId, endpoints));
+        }
+
+        return bdbInfoList;
     }
 
     static String readResponse(HttpURLConnection connection) throws IOException {
@@ -158,6 +207,98 @@ class RedisRestAPI {
 
         inputStream.close();
         return response.toString();
+    }
+
+    /**
+     * Information about a Redis Enterprise BDB (database) including its endpoints.
+     */
+    static class BdbInfo {
+        private final String uid;
+        private final List<EndpointInfo> endpoints;
+
+        BdbInfo(String uid, List<EndpointInfo> endpoints) {
+            this.uid = uid;
+            this.endpoints = endpoints;
+        }
+
+        String getUid() {
+            return uid;
+        }
+
+        List<EndpointInfo> getEndpoints() {
+            return endpoints;
+        }
+
+        /**
+         * Find the BDB that matches the given database host by comparing endpoints.
+         * @param bdbs list of BDB information
+         * @param dbHost the database host to match
+         * @return the matching BDB, or null if no match is found
+         */
+        static BdbInfo findMatchingBdb(List<BdbInfo> bdbs, String dbHost) {
+            for (BdbInfo bdb : bdbs) {
+                for (EndpointInfo endpoint : bdb.getEndpoints()) {
+                    // First check dns_name
+                    if (dbHost.equals(endpoint.getDnsName())) {
+                        return bdb;
+                    }
+
+                    // Then check addr array for IP addresses
+                    if (endpoint.getAddr() != null) {
+                        for (String addr : endpoint.getAddr()) {
+                            if (dbHost.equals(addr)) {
+                                return bdb;
+                            }
+                        }
+                    }
+                }
+            }
+            return null; // No matching BDB found
+        }
+
+        @Override
+        public String toString() {
+            return "BdbInfo{" + "uid='" + uid + '\'' + ", endpoints=" + endpoints + '}';
+        }
+    }
+
+    /**
+     * Information about a Redis Enterprise BDB endpoint.
+     */
+    static class EndpointInfo {
+        private final List<String> addr;
+        private final String dnsName;
+        private final Integer port;
+        private final String uid;
+
+        EndpointInfo(List<String> addr, String dnsName, Integer port, String uid) {
+            this.addr = addr;
+            this.dnsName = dnsName;
+            this.port = port;
+            this.uid = uid;
+        }
+
+        List<String> getAddr() {
+            return addr;
+        }
+
+        String getDnsName() {
+            return dnsName;
+        }
+
+        Integer getPort() {
+            return port;
+        }
+
+        String getUid() {
+            return uid;
+        }
+
+        @Override
+        public String toString() {
+            return "EndpointInfo{" + "addr=" + addr + ", dnsName='" + dnsName + '\'' + ", port=" + port + ", uid='"
+                + uid + '\'' + '}';
+        }
     }
 
 }

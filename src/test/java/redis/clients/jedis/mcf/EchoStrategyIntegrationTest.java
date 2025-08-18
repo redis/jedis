@@ -57,8 +57,7 @@ public class EchoStrategyIntegrationTest {
     public void testEchoStrategyRecoversAfterDisconnect() throws Exception {
         JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(1000)
             .connectionTimeoutMillis(1000).build();
-        EchoStrategy.Config echoConfig = new EchoStrategy.Config(proxyHostAndPort, config, 1000,
-            500, 1);
+        EchoStrategy.Config echoConfig = new EchoStrategy.Config(proxyHostAndPort, config, 1000, 500, 1);
         try (EchoStrategy strategy = new EchoStrategy(echoConfig)) {
 
             // Initial health check should work
@@ -86,8 +85,7 @@ public class EchoStrategyIntegrationTest {
         JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(100)
             .connectionTimeoutMillis(100).build();
 
-        EchoStrategy.Config echoConfig = new EchoStrategy.Config(proxyHostAndPort, config, 1000,
-            500, 1);
+        EchoStrategy.Config echoConfig = new EchoStrategy.Config(proxyHostAndPort, config, 1000, 500, 1);
         try (EchoStrategy strategy = new EchoStrategy(echoConfig)) {
 
             // Initial health check should work
@@ -112,8 +110,7 @@ public class EchoStrategyIntegrationTest {
     @Test
     public void testConnectionDropDuringHealthCheck() throws Exception {
         JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(2000).build();
-        EchoStrategy.Config echoConfig = new EchoStrategy.Config(proxyHostAndPort, config, 1000,
-            500, 1);
+        EchoStrategy.Config echoConfig = new EchoStrategy.Config(proxyHostAndPort, config, 1000, 500, 1);
         try (EchoStrategy strategy = new EchoStrategy(echoConfig)) {
 
             // Initial health check

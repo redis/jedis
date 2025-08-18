@@ -101,19 +101,26 @@ public class RedisRestAPIIntegrationTest {
   void testGetBdbs() throws Exception {
     RedisRestAPI api = new RedisRestAPI(restAPIEndpoint, credentialsSupplier);
 
-    List<String> uids = api.getBdbs();
-    assertEquals(3, uids.size());
-    assertFalse(uids.isEmpty());
+    List<RedisRestAPI.BdbInfo> bdbs = api.getBdbs();
+    assertEquals(3, bdbs.size());
+    assertFalse(bdbs.isEmpty());
+
+    // Verify that each BDB has a UID and endpoints
+    for (RedisRestAPI.BdbInfo bdb : bdbs) {
+      assertNotNull(bdb.getUid());
+      assertNotNull(bdb.getEndpoints());
+    }
   }
 
   @Test
   void testCheckAvailability() throws Exception {
     RedisRestAPI api = new RedisRestAPI(restAPIEndpoint, credentialsSupplier);
 
-    List<String> uids = api.getBdbs();
-    assertFalse(uids.isEmpty());
-    assertTrue(api.checkBdbAvailability(uids.get(0), false));
-    assertFalse(api.checkBdbAvailability(uids.get(0), true));
+    List<RedisRestAPI.BdbInfo> bdbs = api.getBdbs();
+    assertFalse(bdbs.isEmpty());
+    String firstBdbUid = bdbs.get(0).getUid();
+    assertTrue(api.checkBdbAvailability(firstBdbUid, false));
+    assertFalse(api.checkBdbAvailability(firstBdbUid, true));
   }
 
   private static Endpoint getRestAPIEndpoint(EndpointConfig config) {

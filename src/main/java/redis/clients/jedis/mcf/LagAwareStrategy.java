@@ -31,10 +31,10 @@ public class LagAwareStrategy implements HealthCheckStrategy {
 
     private static Logger log = LoggerFactory.getLogger(LagAwareStrategy.class);
 
-    private int interval;
-    private int timeout;
-    private int minConsecutiveSuccessCount;
-    private RedisRestAPI redisRestAPI;
+    private final int interval;
+    private final int timeout;
+    private final int minConsecutiveSuccessCount;
+    private final RedisRestAPI redisRestAPI;
     private String bdbId;
 
     public LagAwareStrategy(Config config) {
@@ -64,15 +64,19 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         try {
             String bdb = bdbId;
             if (bdb == null) {
-                List<String> bdbs = redisRestAPI.getBdbs();
-                if (bdbs.size() > 0) {
-                    bdb = bdbs.get(0);
+                // Try to find BDB that matches the database host
+                String dbHost = endpoint.getHost();
+                List<RedisRestAPI.BdbInfo> bdbs = redisRestAPI.getBdbs();
+                RedisRestAPI.BdbInfo matchingBdb = RedisRestAPI.BdbInfo.findMatchingBdb(bdbs, dbHost);
+
+                if (matchingBdb == null) {
+                    log.warn("No BDB found matching host '{}' for health check", dbHost);
+                    return HealthStatus.UNHEALTHY;
+                } else {
+                    bdb = matchingBdb.getUid();
+                    log.debug("Found matching BDB '{}' for host '{}'", bdb, dbHost);
                     bdbId = bdb;
                 }
-            }
-            if (bdb == null) {
-                log.warn("No available database found for health check for endpoint {}", endpoint);
-                return HealthStatus.UNHEALTHY;
             }
             if (redisRestAPI.checkBdbAvailability(bdb, true)) {
                 return HealthStatus.HEALTHY;
@@ -92,7 +96,5 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         return new LagAwareStrategy(new Config(endpoint, credentialSupplier));
     }
 
-    public static final StrategySupplier<Config> DEFAULT = (config) -> {
-        return new LagAwareStrategy(config);
-    };
+    public static final StrategySupplier<Config> DEFAULT = LagAwareStrategy::new;
 }

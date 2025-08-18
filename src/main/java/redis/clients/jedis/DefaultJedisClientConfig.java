@@ -6,6 +6,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.csc.TrackingConfig;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -33,6 +34,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
+  private final TrackingConfig trackingConfig;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -50,6 +53,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
+    this.trackingConfig = builder.trackingConfig;
   }
 
   @Override
@@ -143,6 +147,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+  @Override
+  public TrackingConfig getTrackingConfig() {
+    return trackingConfig;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -174,6 +183,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean readOnlyForRedisClusterReplicas = false;
 
     private AuthXManager authXManager = null;
+
+    private TrackingConfig trackingConfig = TrackingConfig.DEFAULT;
 
     private Builder() {
     }
@@ -297,6 +308,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder trackingConfig(TrackingConfig trackingConfig) {
+      this.trackingConfig = trackingConfig;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -314,6 +330,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
+      this.trackingConfig = instance.getTrackingConfig();
       return this;
     }
   }
@@ -375,6 +392,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
+    builder.trackingConfig(copy.getTrackingConfig());
 
     return builder.build();
   }

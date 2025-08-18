@@ -10,7 +10,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.mcf.EchoStrategy.Config;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -255,7 +254,7 @@ public class HealthCheckTest {
 
     @Test
     void testEchoStrategyCustomIntervalTimeout() {
-        EchoStrategy strategy = new EchoStrategy(new Config(testEndpoint, testConfig, 2000, 1500, 1));
+        EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig, HealthCheckStrategy.Config.create());
 
         assertEquals(2000, strategy.getInterval());
         assertEquals(1500, strategy.getTimeout());
@@ -264,7 +263,7 @@ public class HealthCheckTest {
     @Test
     void testEchoStrategyDefaultSupplier() {
         MultiClusterClientConfig.StrategySupplier supplier = EchoStrategy.DEFAULT;
-        HealthCheckStrategy strategy = supplier.get(new Config(testEndpoint, testConfig));
+        HealthCheckStrategy strategy = supplier.get(testEndpoint, testConfig);
 
         assertInstanceOf(EchoStrategy.class, strategy);
     }
@@ -308,41 +307,40 @@ public class HealthCheckTest {
     void testClusterConfigWithHealthCheckStrategy() {
         HealthCheckStrategy customStrategy = mock(HealthCheckStrategy.class);
 
-        MultiClusterClientConfig.StrategySupplier supplier = (config) -> customStrategy;
+        MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> customStrategy;
 
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(supplier, null).build();
+            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(supplier).build();
 
         assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
-        HealthCheckStrategy result = clusterConfig.getHealthCheckStrategySupplier().get(null);
+        HealthCheckStrategy result = clusterConfig.getHealthCheckStrategySupplier().get(testEndpoint, testConfig);
         assertEquals(customStrategy, result);
     }
 
     @Test
     void testClusterConfigWithStrategySupplier() {
-        MultiClusterClientConfig.StrategySupplier customSupplier = (config) -> {
+        MultiClusterClientConfig.StrategySupplier customSupplier = (hostAndPort, jedisClientConfig) -> {
             return mock(HealthCheckStrategy.class);
         };
 
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(customSupplier, null).build();
+            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(customSupplier).build();
 
         assertEquals(customSupplier, clusterConfig.getHealthCheckStrategySupplier());
     }
 
     @Test
     void testClusterConfigWithEchoStrategy() {
-        MultiClusterClientConfig.StrategySupplier<Config> echoSupplier = (config) -> {
-            return new EchoStrategy(config);
+        MultiClusterClientConfig.StrategySupplier echoSupplier = (hostAndPort, jedisClientConfig) -> {
+            return new EchoStrategy(hostAndPort, jedisClientConfig);
         };
 
         MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(testEndpoint, testConfig)
-            .healthCheckStrategySupplier(echoSupplier, new Config(testEndpoint, testConfig)).build();
+            .builder(testEndpoint, testConfig).healthCheckStrategySupplier(echoSupplier).build();
 
         MultiClusterClientConfig.StrategySupplier supplier = clusterConfig.getHealthCheckStrategySupplier();
         assertNotNull(supplier);
-        assertInstanceOf(EchoStrategy.class, supplier.get(clusterConfig.getHealthCheckMetaConfig()));
+        assertInstanceOf(EchoStrategy.class, supplier.get(testEndpoint, testConfig));
     }
 
     @Test
@@ -452,22 +450,22 @@ public class HealthCheckTest {
     @Test
     void testStrategySupplierPolymorphism() {
         // Test that the polymorphic design works correctly
-        MultiClusterClientConfig.StrategySupplier<Config> supplier = (config) -> {
-            if (config.jedisClientConfig != null) {
-                return new EchoStrategy(new Config(config.hostAndPort, config.jedisClientConfig, 500, 250, 1));
+        MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
+            if (jedisClientConfig != null) {
+                return new EchoStrategy(hostAndPort, jedisClientConfig, new HealthCheckStrategy.Config(500, 250, 1));
             } else {
-                return new EchoStrategy(new Config(config.hostAndPort, DefaultJedisClientConfig.builder().build()));
+                return new EchoStrategy(hostAndPort, DefaultJedisClientConfig.builder().build());
             }
         };
 
         // Test with config
-        HealthCheckStrategy strategyWithConfig = supplier.get(new Config(testEndpoint, testConfig));
+        HealthCheckStrategy strategyWithConfig = supplier.get(testEndpoint, testConfig);
         assertNotNull(strategyWithConfig);
         assertEquals(500, strategyWithConfig.getInterval());
         assertEquals(250, strategyWithConfig.getTimeout());
 
         // Test without config
-        HealthCheckStrategy strategyWithoutConfig = supplier.get(new Config(testEndpoint, null));
+        HealthCheckStrategy strategyWithoutConfig = supplier.get(testEndpoint, null);
         assertNotNull(strategyWithoutConfig);
         assertEquals(1000, strategyWithoutConfig.getInterval()); // Default values
         assertEquals(1000, strategyWithoutConfig.getTimeout());

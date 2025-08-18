@@ -56,9 +56,7 @@ public class MultiClusterInitializationTest {
 
             MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint2, clientConfig).weight(2.0f)
-                .healthCheckStrategySupplier(EchoStrategy.DEFAULT, new EchoStrategy.Config(endpoint2, clientConfig)) // With
-                                                                                                                     // health
-                                                                                                                     // check
+                .healthCheckStrategySupplier(EchoStrategy.DEFAULT) // With  health check
                 .build();
 
             MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(

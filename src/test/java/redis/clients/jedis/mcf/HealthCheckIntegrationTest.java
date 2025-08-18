@@ -16,7 +16,6 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.mcf.EchoStrategy.Config;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -42,8 +41,8 @@ public class HealthCheckIntegrationTest {
     @Test
     public void testDefaultStrategySupplier() {
         // Create a default strategy supplier that creates EchoStrategy instances
-        MultiClusterClientConfig.StrategySupplier defaultSupplier = (config) -> {
-            return new EchoStrategy((Config) config);
+        MultiClusterClientConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
+            return new EchoStrategy(hostAndPort, jedisClientConfig);
         };
         MultiClusterPooledConnectionProvider customProvider = getMCCF(defaultSupplier);
         try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
@@ -56,9 +55,7 @@ public class HealthCheckIntegrationTest {
     @Test
     public void testCustomStrategySupplier() {
         // Create a StrategySupplier that uses the JedisClientConfig when available
-        MultiClusterClientConfig.StrategySupplier strategySupplier = (config) -> {
-
-            Config echoConfig = (Config) config;
+        MultiClusterClientConfig.StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
             return new HealthCheckStrategy() {
 
                 @Override
@@ -74,7 +71,7 @@ public class HealthCheckIntegrationTest {
                 @Override
                 public HealthStatus doHealthCheck(Endpoint endpoint) {
                     // Create connection per health check to avoid resource leak
-                    try (UnifiedJedis pinger = new UnifiedJedis(echoConfig.hostAndPort, echoConfig.jedisClientConfig)) {
+                    try (UnifiedJedis pinger = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
                         String result = pinger.ping();
                         return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
                     } catch (Exception e) {
@@ -96,8 +93,7 @@ public class HealthCheckIntegrationTest {
     private MultiClusterPooledConnectionProvider getMCCF(MultiClusterClientConfig.StrategySupplier strategySupplier) {
         Function<ClusterConfig.Builder, ClusterConfig.Builder> modifier = builder -> strategySupplier == null
             ? builder.healthCheckEnabled(false)
-            : builder.healthCheckStrategySupplier(strategySupplier,
-                new EchoStrategy.Config(endpoint1.getHostAndPort(), clientConfig));
+            : builder.healthCheckStrategySupplier(strategySupplier);
 
         List<ClusterConfig> clusterConfigs = Arrays
             .stream(new EndpointConfig[] { endpoint1 }).map(e -> modifier

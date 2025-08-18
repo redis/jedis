@@ -298,7 +298,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
         if (strategySupplier != null) {
-            HealthCheckStrategy hcs = strategySupplier.get(config.getHealthCheckMetaConfig());
+            HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(), config.getJedisClientConfig());
             // Register listeners BEFORE adding clusters to avoid missing events
             healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
             healthStatusManager.add(config.getHostAndPort(), hcs);

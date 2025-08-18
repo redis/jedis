@@ -14,6 +14,56 @@ public interface HealthCheckStrategy extends Closeable {
             this.timeout = timeout;
             this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
         }
+
+        /**
+         * Base builder for HealthCheckStrategy.Config and its subclasses.
+         * @param <T> the builder type (for fluent API)
+         * @param <C> the config type being built
+         */
+        public static abstract class Builder<T extends Builder<T, C>, C extends Config> {
+            protected int interval = 1000;
+            protected int timeout = 1000;
+            protected int minConsecutiveSuccessCount = 3;
+
+            /**
+             * Set the interval between health checks in milliseconds.
+             * @param interval the interval in milliseconds (default: 1000)
+             * @return this builder
+             */
+            @SuppressWarnings("unchecked")
+            public T interval(int interval) {
+                this.interval = interval;
+                return (T) this;
+            }
+
+            /**
+             * Set the timeout for health checks in milliseconds.
+             * @param timeout the timeout in milliseconds (default: 1000)
+             * @return this builder
+             */
+            @SuppressWarnings("unchecked")
+            public T timeout(int timeout) {
+                this.timeout = timeout;
+                return (T) this;
+            }
+
+            /**
+             * Set the minimum number of consecutive successful health checks required.
+             * @param minConsecutiveSuccessCount the minimum count (default: 3)
+             * @return this builder
+             */
+            @SuppressWarnings("unchecked")
+            public T minConsecutiveSuccessCount(int minConsecutiveSuccessCount) {
+                this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+                return (T) this;
+            }
+
+            /**
+             * Build the Config instance.
+             * @return a new Config instance
+             */
+            public abstract C build();
+        }
     }
 
     /**

@@ -51,8 +51,12 @@ public class LagAwareStrategyUnitTest {
                 when(mock.checkBdbAvailability("1", true)).thenReturn(true);
                 reference[0] = mock;
             })) {
-
-            try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 2))) {
+            Config lagCheckConfig = Config.builder(endpoint, creds)
+                .interval(500)
+                .timeout(250)
+                .minConsecutiveSuccessCount(2)
+                .build();
+            try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = reference[0];
                 reset(api);
@@ -74,7 +78,12 @@ public class LagAwareStrategyUnitTest {
                 ref.set(mock);
             })) {
 
-            try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 1))) {
+            Config lagCheckConfig = Config.builder(endpoint, creds)
+                .interval(500)
+                .timeout(250)
+                .minConsecutiveSuccessCount(1)
+                .build();
+            try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = ref.get();
                 verify(api, times(1)).getBdbs();
@@ -95,7 +104,11 @@ public class LagAwareStrategyUnitTest {
                 ref.set(mock);
             })) {
 
-            try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 1))) {
+            Config lagCheckConfig = Config.builder(endpoint, creds)
+                .interval(500)
+                .timeout(250)
+                .minConsecutiveSuccessCount(1).build();
+            try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 RedisRestAPI api = ref.get();
                 assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
 
@@ -120,8 +133,12 @@ public class LagAwareStrategyUnitTest {
                 when(mock.checkBdbAvailability("matched-bdb-123", true)).thenReturn(true);
                 reference[0] = mock;
             })) {
-
-            try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 2))) {
+            Config lagCheckConfig = Config.builder(endpoint, creds)
+                .interval(500)
+                .timeout(250)
+                .minConsecutiveSuccessCount(2)
+                .build();
+            try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = reference[0];
                 verify(api, times(1)).getBdbs();
@@ -141,13 +158,55 @@ public class LagAwareStrategyUnitTest {
                 when(mock.getBdbs()).thenReturn(Arrays.asList(nonMatchingBdb)); // BDB that doesn't match localhost
                 reference[0] = mock;
             })) {
-
-            try (LagAwareStrategy strategy = new LagAwareStrategy(new Config(endpoint, creds, 500, 250, 2))) {
+            Config lagCheckConfig = Config.builder(endpoint, creds)
+                .interval(500)
+                .timeout(250)
+                .minConsecutiveSuccessCount(2)
+                .build();
+            try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
                 assertEquals(HealthStatus.UNHEALTHY, strategy.doHealthCheck(endpoint));
                 RedisRestAPI api = reference[0];
                 verify(api, times(1)).getBdbs();
                 verify(api, never()).checkBdbAvailability(anyString(), anyBoolean()); // Should not check availability
             }
         }
+    }
+
+    @Test
+    void config_builder_creates_config_with_default_values() {
+        Config config = Config.builder(endpoint, creds).build();
+
+        assertEquals(1000, config.interval);
+        assertEquals(1000, config.timeout);
+        assertEquals(3, config.minConsecutiveSuccessCount);
+        assertEquals(100, config.getAvailabilityLagTolerance());
+        assertEquals(endpoint, config.getEndpoint());
+        assertEquals(creds, config.getCredentialsSupplier());
+    }
+
+    @Test
+    void config_builder_creates_config_with_custom_values() {
+        Config config = Config.builder(endpoint, creds).interval(500).timeout(250).minConsecutiveSuccessCount(2)
+            .availabilityLagTolerance(50).build();
+
+        assertEquals(500, config.interval);
+        assertEquals(250, config.timeout);
+        assertEquals(2, config.minConsecutiveSuccessCount);
+        assertEquals(50, config.getAvailabilityLagTolerance());
+        assertEquals(endpoint, config.getEndpoint());
+        assertEquals(creds, config.getCredentialsSupplier());
+    }
+
+    @Test
+    void config_builder_allows_fluent_chaining() {
+        // Test that all builder methods return the builder instance for chaining
+        Config config = Config.builder(endpoint, creds).interval(800).timeout(400).minConsecutiveSuccessCount(5)
+            .availabilityLagTolerance(200).build();
+
+        assertNotNull(config);
+        assertEquals(800, config.interval);
+        assertEquals(400, config.timeout);
+        assertEquals(5, config.minConsecutiveSuccessCount);
+        assertEquals(200, config.getAvailabilityLagTolerance());
     }
 }

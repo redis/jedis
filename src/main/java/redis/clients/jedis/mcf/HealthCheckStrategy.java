@@ -78,6 +78,14 @@ public interface HealthCheckStrategy extends Closeable {
         }
 
         /**
+         * Create a new builder for HealthCheckStrategy.Config.
+         * @return a new Builder instance
+         */
+        public static Builder<?, Config> builder() {
+            return new Builder<>();
+        }
+
+        /**
          * Base builder for HealthCheckStrategy.Config and its subclasses.
          * @param <T> the builder type (for fluent API)
          * @param <C> the config type being built
@@ -124,9 +132,8 @@ public interface HealthCheckStrategy extends Closeable {
              * Build the Config instance.
              * @return a new Config instance
              */
-            @SuppressWarnings("unchecked")
-            public C build() {
-                return (C) new Config(interval, timeout, minConsecutiveSuccessCount);
+            public Config build() {
+                return new Config(interval, timeout, minConsecutiveSuccessCount);
             }
         }
     }

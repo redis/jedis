@@ -87,7 +87,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         // Maximum acceptable lag in milliseconds (default: 100);
         private final Duration availability_lag_tolerance;
 
-        // Enable extended lag checking (default: true - performs standard datapath validation and lag validation)
+        // Enable extended lag checking (default: true - performs lag validation in addition to standard datapath
+        // validation )
         private final boolean extendedCheckEnabled;
 
         public Config(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
@@ -151,7 +152,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * </p>
          */
         public static Config standard(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
-            return new ConfigBuilder(endpoint, credentialsSupplier).extendedCheckEnabled(EXTENDED_CHECK_DEFAULT) // Should be false
+            return new ConfigBuilder(endpoint, credentialsSupplier).extendedCheckEnabled(false)
                 .build();
         }
 

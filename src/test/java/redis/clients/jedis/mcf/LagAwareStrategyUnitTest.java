@@ -264,4 +264,23 @@ public class LagAwareStrategyUnitTest {
             }
         }
     }
+
+    @Test
+    void base_config_builder_factory_method_works() {
+        HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder().interval(2000).timeout(1500)
+            .minConsecutiveSuccessCount(5).build();
+
+        assertEquals(2000, config.getInterval());
+        assertEquals(1500, config.getTimeout());
+        assertEquals(5, config.getMinConsecutiveSuccessCount());
+    }
+
+    @Test
+    void base_config_create_factory_method_uses_defaults() {
+        HealthCheckStrategy.Config config = HealthCheckStrategy.Config.create();
+
+        assertEquals(1000, config.getInterval());
+        assertEquals(1000, config.getTimeout());
+        assertEquals(3, config.getMinConsecutiveSuccessCount());
+    }
 }

@@ -171,12 +171,13 @@ public class FailoverIntegrationTest {
         assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
     }
 
-    private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(JedisClientConfig clientConfig,
-        EndpointConfig... endpoints) {
+    private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(
+        JedisClientConfig clientConfig, EndpointConfig... endpoints) {
 
-        return Arrays.stream(endpoints)
-            .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig).build())
-            .collect(Collectors.toList());
+        return Arrays.stream(endpoints).map(
+            e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig)
+                // Disable health checks to avoid interference during tests
+                .healthCheckEnabled(false).build()).collect(Collectors.toList());
     }
 
     @Test

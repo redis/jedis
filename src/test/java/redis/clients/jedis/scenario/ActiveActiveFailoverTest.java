@@ -41,7 +41,7 @@ public class ActiveActiveFailoverTest {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ActiveActiveFailoverTest.endpoint = HostAndPorts.getRedisEndpoint("re-active-active");
+      ActiveActiveFailoverTest.endpoint = HostAndPorts.getRedisEndpoint("active-active");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);
@@ -76,6 +76,8 @@ public class ActiveActiveFailoverTest {
     builder.retryWaitDuration(10);
     builder.retryMaxAttempts(1);
     builder.retryWaitDurationExponentialBackoffMultiplier(1);
+    builder.fastFailover(true);
+    builder.retryOnFailover(false);
 
     class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
 
@@ -116,6 +118,7 @@ public class ActiveActiveFailoverTest {
 
     UnifiedJedis client = new UnifiedJedis(provider);
 
+    AtomicLong executedCommands = new AtomicLong(0);
     AtomicLong retryingThreadsCounter = new AtomicLong(0);
     AtomicLong failedCommandsAfterFailover = new AtomicLong(0);
     AtomicReference<Instant> lastFailedCommandAt = new AtomicReference<>();
@@ -137,6 +140,7 @@ public class ActiveActiveFailoverTest {
             }
           };
           client.xadd("execution_log", StreamEntryID.NEW_ENTRY, executionInfo);
+          executedCommands.incrementAndGet();
 
           if (attempt > 0) {
             log.info("Thread {} recovered after {} ms. Threads still not recovered: {}", threadId,
@@ -147,10 +151,7 @@ public class ActiveActiveFailoverTest {
         } catch (JedisConnectionException e) {
 
           if (reporter.failoverHappened) {
-            long failedCommands = failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
-            log.warn("Thread {} failed to execute command after failover. Failed commands after failover: {}", threadId,
-              failedCommands);
           }
 
           if (attempt == 0) {
@@ -171,16 +172,25 @@ public class ActiveActiveFailoverTest {
     Thread t = new Thread(fakeApp);
     t.start();
 
+    while (executedCommands.get() == 0) {
+      // Wait for fake app to start
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    log.info("Fake app started.");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("bdb_id", endpoint.getBdbId());
-    params.put("actions",
-      "[{\"type\":\"execute_rlutil_command\",\"params\":{\"rlutil_command\":\"pause_bdb\"}},{\"type\":\"wait\",\"params\":{\"wait_time\":\"15\"}},{\"type\":\"execute_rlutil_command\",\"params\":{\"rlutil_command\":\"resume_bdb\"}}]");
+    params.put("delay", 15);
 
     FaultInjectionClient.TriggerActionResponse actionResponse = null;
 
     try {
-      log.info("Triggering bdb_pause + wait 15 seconds + bdb_resume");
-      actionResponse = faultClient.triggerAction("sequence_of_actions", params);
+      log.info("Triggering network_failure for ~15 seconds");
+      actionResponse = faultClient.triggerAction("network_failure", params);
     } catch (IOException e) {
       fail("Fault Injection Server error:" + e.getMessage());
     }
@@ -200,6 +210,7 @@ public class ActiveActiveFailoverTest {
     log.info("Failover happened at: {}", reporter.failoverAt);
     log.info("Failback happened at: {}", reporter.failbackAt);
     log.info("Last failed command at: {}", lastFailedCommandAt.get());
+    log.info("Failed commands after failover: {}", failedCommandsAfterFailover.get());
     Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
     log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
 

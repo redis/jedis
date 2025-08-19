@@ -27,8 +27,8 @@ class RedisRestAPI {
 
     private static final Logger log = LoggerFactory.getLogger(RedisRestAPI.class);
     private static final String BDBS_URL = "https://%s:%s/v1/bdbs?fields=uid,endpoints";
-    private static final String AVAILABILITY_URL = "https://%s:%s/v1/bdbs/%s/availability";
-    private static final String LAGAWARE_AVAILABILITY_URL = "https://%s:%s/v1/bdbs/%s/availability?extend_check=lag";
+    private static final String AVAILABILITY_URL = "https://%s:%s/v1/local/bdbs/%s/availability";
+    private static final String LAGAWARE_AVAILABILITY_URL = "https://%s:%s/v1/local/bdbs/%s/availability?extend_check=lag";
 
     private Endpoint endpoint;
     private Supplier<RedisCredentials> credentialsSupplier;

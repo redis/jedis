@@ -254,7 +254,8 @@ public class HealthCheckTest {
 
     @Test
     void testEchoStrategyCustomIntervalTimeout() {
-        EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig, HealthCheckStrategy.Config.create());
+        EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig,
+            new HealthCheckStrategy.Config(2000, 1500, 1000));
 
         assertEquals(2000, strategy.getInterval());
         assertEquals(1500, strategy.getTimeout());

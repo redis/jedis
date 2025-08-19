@@ -152,8 +152,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * </p>
          */
         public static Config standard(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
-            return new ConfigBuilder(endpoint, credentialsSupplier).extendedCheckEnabled(false)
-                .build();
+            return new ConfigBuilder(endpoint, credentialsSupplier).extendedCheckEnabled(false).build();
         }
 
         /**

@@ -151,6 +151,7 @@ public class ActiveActiveFailoverTest {
         } catch (JedisConnectionException e) {
 
           if (reporter.failoverHappened) {
+            failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
           }
 

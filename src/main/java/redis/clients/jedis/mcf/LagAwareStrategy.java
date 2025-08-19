@@ -71,8 +71,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * Create a new Config instance with default values.
          * <p>
          * Extended checks like lag validation is enabled by default. With a default lag tolerance of 100ms. To perform
-         * only standard datapath validation, use {@link #standard(Endpoint, Supplier)}. To configure a custom lag
-         * tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier)}
+         * only standard datapath validation, use {@link #standard(Endpoint, Supplier<RedisCredentials>)}. To configure a custom lag
+         * tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier<RedisCredentials>, Duration)}
          * </p>
          */
         public static Config create(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
@@ -83,7 +83,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * Perform standard datapath validation only.
          * <p>
          * Extended checks like lag validation is disabled by default. To enable extended checks, use
-         * {@link #lagAware(Endpoint, Supplier)} or {@link #lagAwareWithTolerance(Endpoint, Supplier)}
+         * {@link #lagAware(Endpoint, Supplier<RedisCredentials>)} or {@link #lagAwareWithTolerance(Endpoint, Supplier<RedisCredentials>, Duration)}
          * </p>
          */
         public static Config standard(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
@@ -94,7 +94,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         /**
          * Perform standard datapath validation and lag validation using the default lag tolerance.
          * <p>
-         * To configure a custom lag tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier)}
+         * To configure a custom lag tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier<RedisCredentials>, Duration)}
          * </p>
          */
         public static Config lagAware(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {

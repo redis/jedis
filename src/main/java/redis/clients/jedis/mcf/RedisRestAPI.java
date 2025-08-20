@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.RedisCredentials;
 
 /**

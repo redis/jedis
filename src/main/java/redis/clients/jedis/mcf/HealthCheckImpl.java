@@ -139,7 +139,8 @@ public class HealthCheckImpl implements HealthCheck {
         }
     }
 
-    public long getTimeout() {
+    @Override
+    public long getMaxWaitFor() {
         return (strategy.getTimeout() + strategy.getInterval()) * strategy.minConsecutiveSuccessCount();
     }
 

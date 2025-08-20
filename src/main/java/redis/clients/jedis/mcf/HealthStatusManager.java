@@ -84,6 +84,6 @@ public class HealthStatusManager {
 
     public long getMaxWaitFor(Endpoint endpoint) {
         HealthCheck healthCheck = healthChecks.get(endpoint);
-        return healthCheck != null ? healthCheck.getTimeout() : 0;
+        return healthCheck != null ? healthCheck.getMaxWaitFor() : 0;
     }
 }

@@ -550,9 +550,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     @Override
     public void close() {
-         if (healthStatusManager != null) {
-             healthStatusManager.close();
-         }
+        if (healthStatusManager != null) {
+            healthStatusManager.close();
+        }
 
         // Shutdown the failback scheduler
         failbackScheduler.shutdown();

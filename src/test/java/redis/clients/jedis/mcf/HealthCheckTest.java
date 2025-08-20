@@ -131,7 +131,7 @@ public class HealthCheckTest {
         HealthCheckCollection collection = new HealthCheckCollection();
 
         // Create mock health checks
-        HealthCheck mockHealthCheck1 = spy( new HealthCheck(testEndpoint, mockStrategy, mockCallback));
+        HealthCheck mockHealthCheck1 = spy(new HealthCheck(testEndpoint, mockStrategy, mockCallback));
 
         collection.add(mockHealthCheck1);
 

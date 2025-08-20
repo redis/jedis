@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Timeout;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
@@ -64,7 +65,7 @@ public class HealthCheckTest {
     @Test
     void testHealthCheckCollectionAdd() {
         HealthCheckCollection collection = new HealthCheckCollection();
-        HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
+        HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, mockCallback);
 
         HealthCheck previous = collection.add(healthCheck);
         assertNull(previous);
@@ -75,7 +76,7 @@ public class HealthCheckTest {
     @Test
     void testHealthCheckCollectionRemoveByEndpoint() {
         HealthCheckCollection collection = new HealthCheckCollection();
-        HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
+        HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, mockCallback);
 
         collection.add(healthCheck);
         HealthCheck removed = collection.remove(testEndpoint);
@@ -87,8 +88,8 @@ public class HealthCheckTest {
     @Test
     void testHealthCheckCollectionAddAll() {
         HealthCheckCollection collection = new HealthCheckCollection();
-        HealthCheck[] healthChecks = { new HealthCheck(new HostAndPort("host1", 6379), mockStrategy, mockCallback),
-                new HealthCheck(new HostAndPort("host2", 6379), mockStrategy, mockCallback) };
+        HealthCheck[] healthChecks = { new HealthCheckImpl(new HostAndPort("host1", 6379), mockStrategy, mockCallback),
+                new HealthCheckImpl(new HostAndPort("host2", 6379), mockStrategy, mockCallback) };
 
         HealthCheck[] previous = collection.addAll(healthChecks);
 
@@ -104,8 +105,8 @@ public class HealthCheckTest {
     @Test
     void testHealthCheckCollectionReplacement() {
         HealthCheckCollection collection = new HealthCheckCollection();
-        HealthCheck healthCheck1 = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
-        HealthCheck healthCheck2 = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
+        HealthCheck healthCheck1 = new HealthCheckImpl(testEndpoint, mockStrategy, mockCallback);
+        HealthCheck healthCheck2 = new HealthCheckImpl(testEndpoint, mockStrategy, mockCallback);
 
         collection.add(healthCheck1);
         HealthCheck previous = collection.add(healthCheck2);
@@ -117,7 +118,7 @@ public class HealthCheckTest {
     @Test
     void testHealthCheckCollectionRemoveByHealthCheck() {
         HealthCheckCollection collection = new HealthCheckCollection();
-        HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
+        HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, mockCallback);
 
         collection.add(healthCheck);
         HealthCheck removed = collection.remove(healthCheck);
@@ -141,7 +142,7 @@ public class HealthCheckTest {
             latch.countDown();
         };
 
-        HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, callback);
+        HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, callback);
         healthCheck.start();
 
         assertTrue(latch.await(2, TimeUnit.SECONDS));
@@ -153,7 +154,7 @@ public class HealthCheckTest {
         when(mockStrategy.getInterval()).thenReturn(1000);
         when(mockStrategy.getTimeout()).thenReturn(500);
 
-        HealthCheck healthCheck = new HealthCheck(testEndpoint, mockStrategy, mockCallback);
+        HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, mockCallback);
         healthCheck.start();
 
         assertDoesNotThrow(healthCheck::stop);

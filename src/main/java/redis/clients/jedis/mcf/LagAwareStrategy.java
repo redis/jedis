@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.RedisCredentials;
 
+import redis.clients.jedis.Endpoint;
+
 public class LagAwareStrategy implements HealthCheckStrategy {
 
     private static final Logger log = LoggerFactory.getLogger(LagAwareStrategy.class);

@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.DefaultRedisCredentials;
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.RedisCredentials;
 
 public class RedisRestAPIUnitTest {

@@ -1,6 +1,6 @@
 package redis.clients.jedis.providers;
 
-import redis.clients.jedis.mcf.Endpoint;
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 

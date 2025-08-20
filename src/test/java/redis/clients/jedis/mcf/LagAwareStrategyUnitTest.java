@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
 import redis.clients.jedis.DefaultRedisCredentials;
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.mcf.LagAwareStrategy.Config;
 

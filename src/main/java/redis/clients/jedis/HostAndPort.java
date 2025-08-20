@@ -2,8 +2,6 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 
-import redis.clients.jedis.mcf.Endpoint;
-
 public class HostAndPort implements Serializable, Endpoint {
 
     private static final long serialVersionUID = -519876229978427751L;

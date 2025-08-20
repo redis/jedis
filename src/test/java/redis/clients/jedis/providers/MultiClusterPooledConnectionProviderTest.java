@@ -12,7 +12,6 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.Endpoint;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.SwitchReason;
@@ -206,10 +205,14 @@ public class MultiClusterPooledConnectionProviderTest {
         // Custom strategy that counts health checks
         HealthCheckStrategy countingStrategy = new HealthCheckStrategy() {
             @Override
-            public int getInterval() { return 5; } // Fast interval for testing
+            public int getInterval() {
+                return 5;
+            } // Fast interval for testing
 
             @Override
-            public int getTimeout() { return 50; }
+            public int getTimeout() {
+                return 50;
+            }
 
             @Override
             public HealthStatus doHealthCheck(Endpoint endpoint) {
@@ -225,20 +228,15 @@ public class MultiClusterPooledConnectionProviderTest {
 
         // Create new provider with health check strategy (don't use the setUp() provider)
         ClusterConfig config = ClusterConfig
-            .builder(endpointStandalone0.getHostAndPort(),
-                    endpointStandalone0.getClientConfigBuilder().build())
-            .healthCheckStrategy(countingStrategy)
-            .build();
+            .builder(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build())
+            .healthCheckStrategy(countingStrategy).build();
 
-        MultiClusterPooledConnectionProvider testProvider =
-            new MultiClusterPooledConnectionProvider(
-                new MultiClusterClientConfig.Builder(Collections.singletonList(config)).build());
+        MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
+            new MultiClusterClientConfig.Builder(Collections.singletonList(config)).build());
 
         try {
             // Wait for some health checks to occur
-            Awaitility.await()
-                .atMost(Durations.ONE_SECOND)
-                .until(() -> healthCheckCount.get() > 2);
+            Awaitility.await().atMost(Durations.ONE_SECOND).until(() -> healthCheckCount.get() > 2);
 
             int checksBeforeClose = healthCheckCount.get();
 
@@ -251,8 +249,7 @@ public class MultiClusterPooledConnectionProviderTest {
             int checksAfterClose = healthCheckCount.get();
 
             // Health check count should not increase after close
-            assertEquals(checksBeforeClose, checksAfterClose,
-                "Health checks should stop after provider is closed");
+            assertEquals(checksBeforeClose, checksAfterClose, "Health checks should stop after provider is closed");
 
         } finally {
             // Ensure cleanup even if test fails

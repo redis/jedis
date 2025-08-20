@@ -9,7 +9,7 @@ import redis.clients.jedis.Endpoint;
 
 public class HealthStatusManager {
 
-    private HealthCheckCollection healthChecks = new HealthCheckCollection();
+    private final HealthCheckCollection healthChecks = new HealthCheckCollection();
     private final List<HealthStatusListener> listeners = new CopyOnWriteArrayList<>();
     private final Map<Endpoint, List<HealthStatusListener>> endpointListeners = new ConcurrentHashMap<Endpoint, List<HealthStatusListener>>();
 
@@ -85,5 +85,9 @@ public class HealthStatusManager {
     public long getMaxWaitFor(Endpoint endpoint) {
         HealthCheck healthCheck = healthChecks.get(endpoint);
         return healthCheck != null ? healthCheck.getMaxWaitFor() : 0;
+    }
+
+    public void close() {
+        healthChecks.close();
     }
 }

@@ -93,7 +93,7 @@ public class RedisRestAPIUnitTest {
 
         // Verify the correct URL was constructed with extended check parameters
         verify(api).createConnection(eq(
-            "https://localhost:8443/v1/local/bdbs/123/availability?extend_check=lag&availability_lag_tolerance_ms=100"),
+            "https://localhost:8443/v1/bdbs/123/availability?extend_check=lag&availability_lag_tolerance_ms=100"),
             eq("GET"), any());
     }
 
@@ -107,7 +107,7 @@ public class RedisRestAPIUnitTest {
         assertTrue(api.checkBdbAvailability("123", true, null));
 
         // Verify the correct URL was constructed with extended check but no tolerance parameter
-        verify(api).createConnection(eq("https://localhost:8443/v1/local/bdbs/123/availability?extend_check=lag"),
+        verify(api).createConnection(eq("https://localhost:8443/v1/bdbs/123/availability?extend_check=lag"),
             eq("GET"), any());
     }
 
@@ -121,7 +121,7 @@ public class RedisRestAPIUnitTest {
         assertTrue(api.checkBdbAvailability("123", false, null));
 
         // Verify the correct URL was constructed for standard check (no query parameters)
-        verify(api).createConnection(eq("https://localhost:8443/v1/local/bdbs/123/availability"), eq("GET"), any());
+        verify(api).createConnection(eq("https://localhost:8443/v1/bdbs/123/availability"), eq("GET"), any());
     }
 
     // ========== Parsing and BDB Matching Tests ==========

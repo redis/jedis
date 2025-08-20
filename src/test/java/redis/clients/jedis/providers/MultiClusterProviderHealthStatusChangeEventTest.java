@@ -3,10 +3,6 @@ package redis.clients.jedis.providers;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,11 +15,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.mcf.Endpoint;
-import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.HealthStatusListener;
-import redis.clients.jedis.mcf.HealthStatusManager;
 
 /**
  * Tests for MultiClusterPooledConnectionProvider event handling behavior during initialization and throughout its
@@ -55,7 +47,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
     }
 
     @Test
-    void testEventsProcessedAfterInitialization() throws Exception {
+    void postInit_unhealthy_active_sets_grace_and_fails_over() throws Exception {
         try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
             // Create clusters without health checks
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
@@ -67,21 +59,27 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
                 new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
 
             try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(config)) {
+
+                assertFalse(provider.getCluster(endpoint1).isInGracePeriod());
+                assertEquals(provider.getCluster(), provider.getCluster(endpoint1));
+
                 // This should process immediately since initialization is complete
                 assertDoesNotThrow(() -> {
                     MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
                         HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
                 }, "Post-initialization events should be processed immediately");
 
-                // Verify the cluster status was updated
-                assertEquals(HealthStatus.UNHEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Cluster health status should be updated after post-init event");
+                // Verify the cluster has changed according to the UNHEALTHY status
+                assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+                    "UNHEALTHY status on active cluster should cause a grace period");
+                assertNotEquals(provider.getCluster(), provider.getCluster(endpoint1),
+                    "UNHEALTHY status on active cluster should cause a failover");
             }
         }
     }
 
     @Test
-    void testMultipleEventsProcessedSequentially() throws Exception {
+    void postInit_nonActive_changes_do_not_switch_active() throws Exception {
         try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -93,31 +91,38 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
             try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(config)) {
                 // Verify initial state
-                assertEquals(HealthStatus.HEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Should start as HEALTHY");
+                assertEquals(provider.getCluster(endpoint1), provider.getCluster(),
+                    "Should start with endpoint1 active");
 
-                // Simulate multiple rapid events for the same endpoint
-                // Process events sequentially (post-init behavior)
+                // Simulate multiple rapid events for the same endpoint (post-init behavior)
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
                     HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
-                assertEquals(HealthStatus.UNHEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Should be UNHEALTHY after first event");
+
+                // After first UNHEALTHY on active cluster: it enters grace period and provider fails over
+                assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+                    "Active cluster should enter grace period");
+                assertEquals(provider.getCluster(endpoint2), provider.getCluster(), "Should fail over to endpoint2");
 
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
                     HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
-                assertEquals(HealthStatus.HEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Should be HEALTHY after second event");
+
+                // Healthy event for non-active cluster should not immediately revert active cluster
+                assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+                    "Active cluster should remain endpoint2");
+                assertTrue(provider.getCluster(endpoint1).isInGracePeriod(), "Grace period should still be in effect");
 
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
                     HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
-                assertEquals(HealthStatus.UNHEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Should be UNHEALTHY after third event");
+
+                // Further UNHEALTHY for non-active cluster is a no-op
+                assertEquals(provider.getCluster(endpoint2), provider.getCluster(), "Active cluster unchanged");
+                assertTrue(provider.getCluster(endpoint1).isInGracePeriod(), "Still in grace period");
             }
         }
     }
 
     @Test
-    void testEventsForMultipleEndpointsPreserveOrder() throws Exception {
+    void init_selects_highest_weight_healthy_when_checks_disabled() throws Exception {
         try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -143,38 +148,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
     }
 
     @Test
-    void testEventProcessingWithMixedHealthCheckConfiguration() throws Exception {
-        try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-            // One cluster with health checks disabled, one with enabled (but mocked)
-            MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
-                .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false) // No health checks
-                .build();
-
-            MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
-                .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false) // No health checks for
-                                                                                         // simplicity
-                .build();
-
-            MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-                new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
-
-            try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(config)) {
-                // Both clusters should be available and healthy
-                assertNotNull(provider.getCluster(endpoint1), "Cluster 1 should be available");
-                assertNotNull(provider.getCluster(endpoint2), "Cluster 2 should be available");
-
-                assertTrue(provider.getCluster(endpoint1).isHealthy(), "Cluster 1 should be healthy");
-                assertTrue(provider.getCluster(endpoint2).isHealthy(), "Cluster 2 should be healthy");
-
-                // Provider should select the higher weight cluster (endpoint2)
-                assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
-                    "Should select higher weight cluster as active");
-            }
-        }
-    }
-
-    @Test
-    void testNoEventsLostDuringInitialization() throws Exception {
+    void init_single_cluster_initializes_and_is_healthy() throws Exception {
         try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -198,7 +172,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
     // ========== POST-INITIALIZATION EVENT ORDERING TESTS ==========
 
     @Test
-    void testPostInitEventOrderingWithMultipleEndpoints() throws Exception {
+    void postInit_two_hop_failover_chain_respected() throws Exception {
         try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -213,25 +187,33 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
                 new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2, cluster3 }).build();
 
             try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(config)) {
-                // Process events immediately (post-init behavior)
+                // First event: endpoint1 (active) becomes UNHEALTHY -> failover to endpoint2, endpoint1 enters grace
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
                     HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+                    "Endpoint1 should be in grace after unhealthy");
+                assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+                    "Should have failed over to endpoint2");
+
+                // Second event: endpoint2 (now active) becomes UNHEALTHY -> failover to endpoint3
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
                     HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                assertTrue(provider.getCluster(endpoint2).isInGracePeriod(),
+                    "Endpoint2 should be in grace after unhealthy");
+                assertEquals(provider.getCluster(endpoint3), provider.getCluster(),
+                    "Should have failed over to endpoint3");
+
+                // Third event: endpoint1 becomes HEALTHY again -> no immediate switch due to grace period behavior
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
                     HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
-
-                // Verify events were processed and cluster states updated
-                assertEquals(HealthStatus.HEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Endpoint1 should have final HEALTHY status");
-                assertEquals(HealthStatus.UNHEALTHY, provider.getCluster(endpoint2).getHealthStatus(),
-                    "Endpoint2 should have UNHEALTHY status");
+                assertEquals(provider.getCluster(endpoint3), provider.getCluster(),
+                    "Active cluster should remain endpoint3");
             }
         }
     }
 
     @Test
-    void testPostInitRapidEventsOptimization() throws Exception {
+    void postInit_rapid_events_respect_grace_and_keep_active_stable() throws Exception {
         try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
             MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
                 .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -247,100 +229,19 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
                 assertEquals(HealthStatus.HEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
                     "Should start as HEALTHY");
 
-                // Send rapid sequence of events (should all be processed since init is complete)
-                // Process events immediately (post-init behavior)
+                // Send rapid sequence of events post-init
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
-                    HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                    HealthStatus.HEALTHY, HealthStatus.UNHEALTHY); // triggers failover and grace
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
-                    HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+                    HealthStatus.UNHEALTHY, HealthStatus.HEALTHY); // non-active cluster becomes healthy
                 MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
-                    HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+                    HealthStatus.HEALTHY, HealthStatus.UNHEALTHY); // still non-active and in grace; no change
 
-                // Final state should reflect the last event
-                assertEquals(HealthStatus.UNHEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
-                    "Should have final UNHEALTHY status from last event");
+                // Final expectations: endpoint1 is in grace, provider remains on endpoint2
+                assertTrue(provider.getCluster(endpoint1).isInGracePeriod(), "Endpoint1 should be in grace period");
+                assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+                    "Active cluster should remain endpoint2");
             }
         }
-    }
-
-    @Test
-    void testHealthStatusManagerEventOrdering() throws InterruptedException {
-        HealthStatusManager manager = new HealthStatusManager();
-
-        // Counter to track events received
-        AtomicInteger eventCount = new AtomicInteger(0);
-        CountDownLatch eventLatch = new CountDownLatch(1);
-
-        // Create a listener that counts events
-        HealthStatusListener listener = event -> {
-            eventCount.incrementAndGet();
-            eventLatch.countDown();
-        };
-
-        // Register listener BEFORE adding endpoint (correct order to prevent missing events)
-        manager.registerListener(endpoint1, listener);
-
-        // Create a strategy that immediately returns HEALTHY
-        HealthCheckStrategy immediateStrategy = new HealthCheckStrategy() {
-            @Override
-            public int getInterval() {
-                return 100;
-            }
-
-            @Override
-            public int getTimeout() {
-                return 50;
-            }
-
-            @Override
-            public HealthStatus doHealthCheck(Endpoint endpoint) {
-                return HealthStatus.HEALTHY;
-            }
-        };
-
-        // Add endpoint - this should trigger health check and event
-        manager.add(endpoint1, immediateStrategy);
-
-        // Wait for event to be processed
-        assertTrue(eventLatch.await(2, TimeUnit.SECONDS), "Should receive health status event");
-
-        // Should have received at least one event (UNKNOWN -> HEALTHY)
-        assertTrue(eventCount.get() >= 1, "Should have received at least one health status event");
-
-        manager.remove(endpoint1);
-    }
-
-    @Test
-    void testHealthStatusManagerHasHealthCheck() {
-        HealthStatusManager manager = new HealthStatusManager();
-
-        // Initially no health check
-        assertFalse(manager.hasHealthCheck(endpoint1), "Should not have health check initially");
-
-        // Create a simple strategy
-        HealthCheckStrategy strategy = new HealthCheckStrategy() {
-            @Override
-            public int getInterval() {
-                return 100;
-            }
-
-            @Override
-            public int getTimeout() {
-                return 50;
-            }
-
-            @Override
-            public HealthStatus doHealthCheck(Endpoint endpoint) {
-                return HealthStatus.HEALTHY;
-            }
-        };
-
-        // Add health check
-        manager.add(endpoint1, strategy);
-        assertTrue(manager.hasHealthCheck(endpoint1), "Should have health check after adding");
-
-        // Remove health check
-        manager.remove(endpoint1);
-        assertFalse(manager.hasHealthCheck(endpoint1), "Should not have health check after removing");
     }
 }

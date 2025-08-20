@@ -105,7 +105,7 @@ public class MultiClusterPooledConnectionProviderTest {
         provider.setActiveCluster(endpointStandalone0.getHostAndPort());
         provider.getCluster().setDisabled(true);
         provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
-        
+
         assertFalse(provider.canIterateOnceMore());
     }
 

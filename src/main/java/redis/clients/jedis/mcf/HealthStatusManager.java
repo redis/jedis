@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import redis.clients.jedis.Endpoint;
+
 public class HealthStatusManager {
 
     private final HealthCheckCollection healthChecks = new HealthCheckCollection();
@@ -42,13 +44,14 @@ public class HealthStatusManager {
         }
     }
 
-    public void add(Endpoint endpoint, HealthCheckStrategy strategy) {
-        HealthCheck hc = new HealthCheck(endpoint, strategy, this::notifyListeners);
+    public HealthCheck add(Endpoint endpoint, HealthCheckStrategy strategy) {
+        HealthCheck hc = new HealthCheckImpl(endpoint, strategy, this::notifyListeners);
         HealthCheck old = healthChecks.add(hc);
         hc.start();
         if (old != null) {
             old.stop();
         }
+        return hc;
     }
 
     public void addAll(Endpoint[] endpoints, HealthCheckStrategy strategy) {
@@ -81,7 +84,7 @@ public class HealthStatusManager {
 
     public long getMaxWaitFor(Endpoint endpoint) {
         HealthCheck healthCheck = healthChecks.get(endpoint);
-        return healthCheck != null ? healthCheck.getMaxWaitDuration() : 0;
+        return healthCheck != null ? healthCheck.getMaxWaitFor() : 0;
     }
 
     public void close() {

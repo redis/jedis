@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
@@ -94,7 +94,7 @@ public class HealthCheckIntegrationTest {
         Function<ClusterConfig.Builder, ClusterConfig.Builder> modifier = builder -> strategySupplier == null
             ? builder.healthCheckEnabled(false)
             : builder.healthCheckStrategySupplier(strategySupplier);
-            
+
         List<ClusterConfig> clusterConfigs = Arrays
             .stream(new EndpointConfig[] { endpoint1 }).map(e -> modifier
                 .apply(MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig)).build())

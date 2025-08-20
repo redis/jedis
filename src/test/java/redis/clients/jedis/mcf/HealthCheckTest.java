@@ -126,6 +126,21 @@ public class HealthCheckTest {
         assertNull(collection.get(testEndpoint));
     }
 
+    @Test
+    void testHealthCheckCollectionClose() {
+        HealthCheckCollection collection = new HealthCheckCollection();
+
+        // Create mock health checks
+        HealthCheck mockHealthCheck1 = spy( new HealthCheck(testEndpoint, mockStrategy, mockCallback));
+
+        collection.add(mockHealthCheck1);
+
+        // Call close
+        collection.close();
+
+        // Verify stop was called on all health checks
+        verify(mockHealthCheck1).stop();
+    }
     // ========== HealthCheck Tests ==========
 
     @Test
@@ -248,6 +263,25 @@ public class HealthCheckTest {
         // Clean up and verify removal
         manager.remove(testEndpoint);
         assertEquals(HealthStatus.UNKNOWN, manager.getHealthStatus(testEndpoint));
+    }
+
+    @Test
+    void testHealthStatusManagerClose() {
+        HealthCheckStrategy closeableStrategy = mock(HealthCheckStrategy.class);
+        when(closeableStrategy.getInterval()).thenReturn(1000);
+        when(closeableStrategy.getTimeout()).thenReturn(500);
+        when(closeableStrategy.doHealthCheck(any(Endpoint.class))).thenReturn(HealthStatus.HEALTHY);
+
+        HealthStatusManager manager = new HealthStatusManager();
+
+        // Add health check
+        manager.add(testEndpoint, closeableStrategy);
+
+        // Close manager
+        manager.close();
+
+        // Verify health check is stopped
+        verify(closeableStrategy).close();
     }
 
     // ========== EchoStrategy Tests ==========

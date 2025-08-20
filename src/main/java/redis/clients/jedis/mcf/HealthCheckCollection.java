@@ -43,4 +43,10 @@ public class HealthCheckCollection {
         return healthChecks.get(endpoint);
     }
 
+   public void close() {
+        for (HealthCheck healthCheck : healthChecks.values()) {
+            healthCheck.stop();
+        }
+    }
+
 }

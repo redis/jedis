@@ -255,7 +255,8 @@ public class HealthCheckTest {
 
     @Test
     void testEchoStrategyCustomIntervalTimeout() {
-        EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig, 2000, 1500, 1);
+        EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig,
+            new HealthCheckStrategy.Config(2000, 1500, 1000));
 
         assertEquals(2000, strategy.getInterval());
         assertEquals(1500, strategy.getTimeout());
@@ -453,7 +454,7 @@ public class HealthCheckTest {
         // Test that the polymorphic design works correctly
         MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
             if (jedisClientConfig != null) {
-                return new EchoStrategy(hostAndPort, jedisClientConfig, 500, 250, 1);
+                return new EchoStrategy(hostAndPort, jedisClientConfig, new HealthCheckStrategy.Config(500, 250, 1));
             } else {
                 return new EchoStrategy(hostAndPort, DefaultJedisClientConfig.builder().build());
             }

@@ -19,7 +19,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
 
     public LagAwareStrategy(Config config) {
         this.config = config;
-        this.redisRestAPI = new RedisRestAPI(config.endpoint, config.credentialsSupplier, config.timeout);
+        this.redisRestAPI = new RedisRestAPI(config.restEndpoint, config.credentialsSupplier, config.timeout);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         public static final boolean EXTENDED_CHECK_DEFAULT = true;
         public static final Duration AVAILABILITY_LAG_TOLERANCE_DEFAULT = Duration.ofMillis(100);
 
-        private final Endpoint endpoint;
+        private final Endpoint restEndpoint;
         private final Supplier<RedisCredentials> credentialsSupplier;
 
         // Maximum acceptable lag in milliseconds (default: 100);
@@ -90,8 +90,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         // validation )
         private final boolean extendedCheckEnabled;
 
-        public Config(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
-            this(builder(endpoint, credentialsSupplier).interval(1000).timeout(1000).minConsecutiveSuccessCount(3)
+        public Config(Endpoint restEndpoint, Supplier<RedisCredentials> credentialsSupplier) {
+            this(builder(restEndpoint, credentialsSupplier).interval(1000).timeout(1000).minConsecutiveSuccessCount(3)
                 .availabilityLagTolerance(AVAILABILITY_LAG_TOLERANCE_DEFAULT)
                 .extendedCheckEnabled(EXTENDED_CHECK_DEFAULT));
         }
@@ -99,14 +99,14 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         private Config(ConfigBuilder builder) {
             super(builder.interval, builder.timeout, builder.minConsecutiveSuccessCount);
 
-            this.endpoint = builder.endpoint;
+            this.restEndpoint = builder.endpoint;
             this.credentialsSupplier = builder.credentialsSupplier;
             this.availability_lag_tolerance = builder.availabilityLagTolerance;
             this.extendedCheckEnabled = builder.extendedCheckEnabled;
         }
 
-        public Endpoint getEndpoint() {
-            return endpoint;
+        public Endpoint getRestEndpoint() {
+            return restEndpoint;
         }
 
         public Supplier<RedisCredentials> getCredentialsSupplier() {
@@ -135,7 +135,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * Create a new Config instance with default values.
          * <p>
          * Extended checks like lag validation is enabled by default. With a default lag tolerance of 100ms. To perform
-         * only standard datapath validation, use {@link #dataPathAvailability(Endpoint, Supplier)}. To configure a
+         * only standard datapath validation, use {@link #databaseAvailability(Endpoint, Supplier)}. To configure a
          * custom lag tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
          * </p>
          */
@@ -150,7 +150,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * {@link #lagAware(Endpoint, Supplier)} or {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
          * </p>
          */
-        public static Config dataPathAvailability(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
+        public static Config databaseAvailability(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
             return new ConfigBuilder(endpoint, credentialsSupplier).extendedCheckEnabled(false).build();
         }
 
@@ -183,7 +183,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
             // Maximum acceptable lag in milliseconds (default: 100);
             private Duration availabilityLagTolerance = AVAILABILITY_LAG_TOLERANCE_DEFAULT;
 
-            // Enable extended lag checking (default: false - performs only standard datapath validation)
+            // Enable extended lag checking
             private boolean extendedCheckEnabled = EXTENDED_CHECK_DEFAULT;
 
             private ConfigBuilder(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {

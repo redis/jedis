@@ -168,7 +168,7 @@ public class LagAwareStrategyUnitTest {
         assertEquals(1000, config.timeout);
         assertEquals(3, config.minConsecutiveSuccessCount);
         assertEquals(Duration.ofMillis(100), config.getAvailabilityLagTolerance());
-        assertEquals(endpoint, config.getEndpoint());
+        assertEquals(endpoint, config.getRestEndpoint());
         assertEquals(creds, config.getCredentialsSupplier());
     }
 
@@ -181,7 +181,7 @@ public class LagAwareStrategyUnitTest {
         assertEquals(250, config.timeout);
         assertEquals(2, config.minConsecutiveSuccessCount);
         assertEquals(Duration.ofMillis(50), config.getAvailabilityLagTolerance());
-        assertEquals(endpoint, config.getEndpoint());
+        assertEquals(endpoint, config.getRestEndpoint());
         assertEquals(creds, config.getCredentialsSupplier());
     }
 

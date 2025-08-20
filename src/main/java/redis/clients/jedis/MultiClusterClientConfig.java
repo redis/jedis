@@ -259,10 +259,14 @@ public final class MultiClusterClientConfig {
         return new Builder(clusterConfigs);
     }
 
+    public static Builder builder(List<ClusterConfig> clusterConfigs) {
+        return new Builder(clusterConfigs);
+    }
+
     public static class ClusterConfig {
 
         private HostAndPort hostAndPort;
-        private JedisClientConfig clientConfig;
+        private JedisClientConfig jedisClientConfig;
         private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
         private float weight = 1.0f;
@@ -270,19 +274,19 @@ public final class MultiClusterClientConfig {
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
-            this.clientConfig = clientConfig;
+            this.jedisClientConfig = clientConfig;
         }
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
             GenericObjectPoolConfig<Connection> connectionPoolConfig) {
             this.hostAndPort = hostAndPort;
-            this.clientConfig = clientConfig;
+            this.jedisClientConfig = clientConfig;
             this.connectionPoolConfig = connectionPoolConfig;
         }
 
         private ClusterConfig(Builder builder) {
             this.hostAndPort = builder.hostAndPort;
-            this.clientConfig = builder.clientConfig;
+            this.jedisClientConfig = builder.jedisClientConfig;
             this.connectionPoolConfig = builder.connectionPoolConfig;
             this.weight = builder.weight;
             this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
@@ -297,7 +301,7 @@ public final class MultiClusterClientConfig {
         }
 
         public JedisClientConfig getJedisClientConfig() {
-            return clientConfig;
+            return jedisClientConfig;
         }
 
         public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
@@ -314,7 +318,7 @@ public final class MultiClusterClientConfig {
 
         public static class Builder {
             private HostAndPort hostAndPort;
-            private JedisClientConfig clientConfig;
+            private JedisClientConfig jedisClientConfig;
             private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
             private float weight = 1.0f;
@@ -322,7 +326,7 @@ public final class MultiClusterClientConfig {
 
             public Builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
                 this.hostAndPort = hostAndPort;
-                this.clientConfig = clientConfig;
+                this.jedisClientConfig = clientConfig;
             }
 
             public Builder connectionPoolConfig(GenericObjectPoolConfig<Connection> connectionPoolConfig) {

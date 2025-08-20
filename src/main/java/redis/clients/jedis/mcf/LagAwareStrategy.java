@@ -7,7 +7,6 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 import redis.clients.jedis.RedisCredentials;
 
 public class LagAwareStrategy implements HealthCheckStrategy {
@@ -136,7 +135,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * Create a new Config instance with default values.
          * <p>
          * Extended checks like lag validation is enabled by default. With a default lag tolerance of 100ms. To perform
-         * only standard datapath validation, use {@link #standard(Endpoint, Supplier)}. To configure a custom lag
+         * only standard datapath validation, use {@link #dataPathAvailability(Endpoint, Supplier)}. To configure a custom lag
          * tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
          * </p>
          */
@@ -151,7 +150,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * {@link #lagAware(Endpoint, Supplier)} or {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
          * </p>
          */
-        public static Config standard(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
+        public static Config dataPathAvailability(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
             return new ConfigBuilder(endpoint, credentialsSupplier).extendedCheckEnabled(false).build();
         }
 

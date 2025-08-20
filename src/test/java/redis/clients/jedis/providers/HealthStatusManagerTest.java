@@ -31,9 +31,20 @@ public class HealthStatusManagerTest {
         manager.registerListener(endpoint, listener);
 
         HealthCheckStrategy immediateHealthy = new HealthCheckStrategy() {
-            @Override public int getInterval() { return 50; }
-            @Override public int getTimeout() { return 25; }
-            @Override public HealthStatus doHealthCheck(Endpoint endpoint) { return HealthStatus.HEALTHY; }
+            @Override
+            public int getInterval() {
+                return 50;
+            }
+
+            @Override
+            public int getTimeout() {
+                return 25;
+            }
+
+            @Override
+            public HealthStatus doHealthCheck(Endpoint endpoint) {
+                return HealthStatus.HEALTHY;
+            }
         };
 
         manager.add(endpoint, immediateHealthy);
@@ -49,9 +60,20 @@ public class HealthStatusManagerTest {
         assertFalse(manager.hasHealthCheck(endpoint));
 
         HealthCheckStrategy strategy = new HealthCheckStrategy() {
-            @Override public int getInterval() { return 50; }
-            @Override public int getTimeout() { return 25; }
-            @Override public HealthStatus doHealthCheck(Endpoint endpoint) { return HealthStatus.HEALTHY; }
+            @Override
+            public int getInterval() {
+                return 50;
+            }
+
+            @Override
+            public int getTimeout() {
+                return 25;
+            }
+
+            @Override
+            public HealthStatus doHealthCheck(Endpoint endpoint) {
+                return HealthStatus.HEALTHY;
+            }
         };
 
         manager.add(endpoint, strategy);
@@ -60,4 +82,3 @@ public class HealthStatusManagerTest {
         assertFalse(manager.hasHealthCheck(endpoint));
     }
 }
-

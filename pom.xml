@@ -343,7 +343,7 @@
 						<include>src/test/java/redis/clients/jedis/mcf/EchoStrategyIntegrationTest.java</include>
 						<include>src/test/java/redis/clients/jedis/mcf/LagAwareStrategyUnitTest.java</include>
 						<include>src/test/java/redis/clients/jedis/mcf/RedisRestAPI*.java</include>
-						<include>src/test/java/redis/clients/jedis/mcf/HealthCheckTest.java</include>
+						<include>**/Health*.java</include>
 						<include>src/test/java/redis/clients/jedis/misc/AutomaticFailoverTest.java</include>
 						<include>src/test/java/redis/clients/jedis/scenario/ActiveActiveFailoverTest.java</include>
 						<include>src/main/java/redis/clients/jedis/providers/MultiClusterPooledConnectionProvider.java</include>

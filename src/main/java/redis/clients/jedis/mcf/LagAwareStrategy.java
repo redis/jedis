@@ -135,8 +135,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
          * Create a new Config instance with default values.
          * <p>
          * Extended checks like lag validation is enabled by default. With a default lag tolerance of 100ms. To perform
-         * only standard datapath validation, use {@link #dataPathAvailability(Endpoint, Supplier)}. To configure a custom lag
-         * tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
+         * only standard datapath validation, use {@link #dataPathAvailability(Endpoint, Supplier)}. To configure a
+         * custom lag tolerance, use {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
          * </p>
          */
         public static Config create(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {

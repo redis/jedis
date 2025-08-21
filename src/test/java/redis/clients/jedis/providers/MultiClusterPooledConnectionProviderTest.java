@@ -7,16 +7,20 @@ import org.awaitility.Durations;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.Endpoint;
+import redis.clients.jedis.mcf.HealthCheckStrategy;
+import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -100,7 +104,7 @@ public class MultiClusterPooledConnectionProviderTest {
         provider.setActiveCluster(endpointStandalone0.getHostAndPort());
         provider.getCluster().setDisabled(true);
         provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
-        
+
         assertFalse(provider.canIterateOnceMore());
     }
 
@@ -190,6 +194,66 @@ public class MultiClusterPooledConnectionProviderTest {
             assertEquals(8, connectionPool.getMaxTotal());
             assertEquals(4, connectionPool.getMaxIdle());
             assertEquals(1, connectionPool.getMinIdle());
+        }
+    }
+
+    @Test
+    @Timeout(5)
+    void testHealthChecksStopAfterProviderClose() throws InterruptedException {
+        AtomicInteger healthCheckCount = new AtomicInteger(0);
+
+        // Custom strategy that counts health checks
+        HealthCheckStrategy countingStrategy = new HealthCheckStrategy() {
+            @Override
+            public int getInterval() {
+                return 5;
+            } // Fast interval for testing
+
+            @Override
+            public int getTimeout() {
+                return 50;
+            }
+
+            @Override
+            public HealthStatus doHealthCheck(Endpoint endpoint) {
+                healthCheckCount.incrementAndGet();
+                return HealthStatus.HEALTHY;
+            }
+
+            @Override
+            public void close() {
+                // No-op for test
+            }
+        };
+
+        // Create new provider with health check strategy (don't use the setUp() provider)
+        ClusterConfig config = ClusterConfig
+            .builder(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build())
+            .healthCheckStrategy(countingStrategy).build();
+
+        MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
+            new MultiClusterClientConfig.Builder(Collections.singletonList(config)).build());
+
+        try {
+            // Wait for some health checks to occur
+            Awaitility.await().atMost(Durations.ONE_SECOND).until(() -> healthCheckCount.get() > 2);
+
+            int checksBeforeClose = healthCheckCount.get();
+
+            // Close provider
+            testProvider.close();
+
+            // Wait longer than health check interval
+            Thread.sleep(100);
+
+            int checksAfterClose = healthCheckCount.get();
+
+            // Health check count should not increase after close
+            assertEquals(checksBeforeClose, checksAfterClose, "Health checks should stop after provider is closed");
+
+        } finally {
+            // Ensure cleanup even if test fails
+            testProvider.close();
         }
     }
 }

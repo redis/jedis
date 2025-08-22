@@ -149,6 +149,155 @@ Jedis uses the following circuit breaker settings:
 | Circuit breaker included exception list | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                                                                               |
 | Circuit breaker ignored exception list  | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                                                                               |                                                                                                               |
 
+### Health Check Configuration and Customization
+
+The `MultiClusterPooledConnectionProvider` includes a comprehensive health check system that continuously monitors the availability of Redis clusters to enable automatic failover and failback.
+
+The health check system serves several critical purposes in the failover architecture:
+
+1. **Proactive Monitoring**: Continuously monitors passive clusters that aren't currently receiving traffic
+2. **Failback Detection**: Determines when a previously failed cluster has recovered and is ready to accept traffic
+3. **Circuit Breaker Integration**: Works with the circuit breaker pattern to manage cluster state transitions
+4. **Customizable Strategies**: Supports pluggable health check implementations for different deployment scenarios
+
+The health check system operates independently of your application traffic, running background checks at configurable intervals to assess cluster health without impacting performance.
+
+#### Available Health Check Types
+
+##### 1. EchoStrategy (Default)
+
+The `EchoStrategy` is the default health check implementation that uses Redis's `ECHO` command to verify both connectivity and write capability.
+
+**Use Cases:**
+- General-purpose health checking for most Redis deployments
+- Verifying both read and write operations
+- Simple connectivity validation
+
+**How it works:**
+- Sends `ECHO "HealthCheck"` command to the Redis server
+- Expects exact response `"HealthCheck"` to consider the server healthy
+- Any exception or unexpected response marks the server as unhealthy
+
+##### 2. LagAwareStrategy [PREVIEW] (Redis Enterprise)
+
+The `LagAwareStrategy` is designed specifically for Redis Enterprise Active-Active deployments and uses the Redis Enterprise REST API to check database availability and replication lag.
+
+**Use Cases:**
+- Redis Enterprise Active-Active (CRDB) deployments
+- Scenarios where replication lag tolerance is critical
+- Enterprise environments with REST API access
+
+**How it works:**
+- Queries Redis Enterprise REST API for database availability
+- Optionally validates replication lag against configurable thresholds
+- Automatically discovers database IDs based on endpoint hostnames
+
+**Example Configuration:**
+```java
+// Configure REST API endpoint and credentials
+Endpoint restEndpoint = new HostAndPort("redis-enterprise-cluster-fqdn", 9443);
+Supplier<RedisCredentials> credentialsSupplier = () ->
+    new RedisCredentials("admin", "password");
+
+// Create LagAwareStrategy configuration
+LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder()
+    .restEndpoint(restEndpoint)
+    .credentialsSupplier(credentialsSupplier)
+    .interval(5000)                                          // Check every 5 seconds
+    .timeout(3000)                                           // 3 second timeout
+    .minConsecutiveSuccessCount(2)                           // Require 2 consecutive successes
+    .extendedCheckEnabled(true)                              // Enable lag validation
+    .availabilityLagTolerance(Duration.ofMillis(200))        // Max 200ms lag tolerance
+    .build();
+
+MultiClusterClientConfig.StrategySupplier lagAwareStrategy =
+    (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
+
+MultiClusterClientConfig.ClusterConfig clusterConfig =
+    MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
+        .healthCheckStrategySupplier(lagAwareStrategy)
+        .build();
+```
+
+##### 3. Custom Health Check Strategies
+
+You can implement custom health check strategies by implementing the `HealthCheckStrategy` interface.
+
+**Use Cases:**
+- Application-specific health validation logic
+- Integration with external monitoring systems
+- Custom performance or latency-based health checks
+
+Use the `healthCheckStrategySupplier()` method to provide a custom health check implementation:
+
+```java
+// Custom strategy supplier
+MultiClusterClientConfig.StrategySupplier customStrategy =
+    (hostAndPort, jedisClientConfig) -> {
+        // Return your custom HealthCheckStrategy implementation
+        return new MyCustomHealthCheckStrategy(hostAndPort, jedisClientConfig);
+    };
+
+MultiClusterClientConfig.ClusterConfig clusterConfig =
+    MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
+        .healthCheckStrategySupplier(customStrategy)
+        .weight(1.0f)
+        .build();
+```
+
+You can implement custom health check strategies by implementing the `HealthCheckStrategy` interface:
+
+```java
+MultiClusterClientConfig.StrategySupplier pingStrategy = (hostAndPort, jedisClientConfig) -> {
+    return new HealthCheckStrategy() {
+        @Override
+        public int getInterval() {
+            return 1000; // Check every second
+        }
+
+        @Override
+        public int getTimeout() {
+            return 500; // 500ms timeout
+        }
+
+        @Override
+        public int minConsecutiveSuccessCount() {
+            return 1; // Single success required
+        }
+
+        @Override
+        public HealthStatus doHealthCheck(Endpoint endpoint) {
+            try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+                String result = jedis.ping();
+                return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+            } catch (Exception e) {
+                return HealthStatus.UNHEALTHY;
+            }
+        }
+
+        @Override
+        public void close() {
+            // Cleanup resources if needed
+        }
+    };
+};
+
+MultiClusterClientConfig.ClusterConfig clusterConfig =
+    MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
+        .healthCheckStrategySupplier(pingStrategy)
+        .build();
+```
+
+#### Disabling Health Checks
+
+Use the `healthCheckEnabled(false)` method to completely disable health checks:
+
+```java
+clusterConfig[0] = ClusterConfig.builder(east, config)
+    .healthCheckEnabled(false) // Disable health checks entirely
+    .build();
+```
+
 ### Fallback configuration
 
 Jedis uses the following fallback settings:
@@ -208,9 +357,15 @@ If `redis-east` becomes unavailable (and the circuit breaker transitions), then 
 Now suppose that `redis-east` eventually comes back online.
 You will likely want to fail your application back to `redis-east`.
 
-## Automatic failback based on health checks
+### Automatic failback based on health checks
 
-TBD
+When health checks are enabled, Jedis automatically monitors the health of all configured clusters, including those that are currently inactive due to previous failures. 
+The automatic failback process works as follows:
+
+1. **Continuous Monitoring**: Health checks run continuously for all clusters, regardless of their current active status
+2. **Recovery Detection**: When a previously failed cluster passes the required number of consecutive health checks, it's marked as healthy
+3. **Weight-Based Failback**: If automatic failback is enabled and a recovered cluster has a higher weight than the currently active cluster, Jedis will automatically switch to the recovered cluster
+4. **Grace Period Respect**: Failback only occurs after the configured grace period has elapsed since the cluster was marked as unhealthy
 
 ## Manual Failback using the cluster selection API
 
@@ -229,6 +384,50 @@ If you decide to implement manual failback, you will need a way for external sys
 application. For example, if your application exposes a REST API, you might consider creating a REST endpoint
 to call `setActiveCluster` and fail back the application.
 
+## Troubleshooting Failover and Failback Issues
+
+#### Health Checks Always Report Unhealthy
+
+**Common causes:**
+- Timeout too aggressive for network conditions
+- Authentication issues with Redis server
+- Network connectivity problems
+
+**Solutions:**
+```java
+// Increase timeout values
+HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
+    .timeout(3000)  // Increase from default 1000ms
+    .build();
+```
+
+#### Intermittent Health Check Failures
+
+**Solutions:**
+```java
+// Require more consecutive successes for stability
+HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
+    .minConsecutiveSuccessCount(5)  // Increase from default 3
+    .interval(5000)                 // Less frequent checks
+    .timeout(2000)                  // More generous timeout
+    .build();
+```
+
+#### Slow Failback After Recovery
+
+**Solutions:**
+```java
+// Faster recovery configuration
+HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
+    .interval(1000)                    // More frequent checks
+    .minConsecutiveSuccessCount(1)     // Single success for faster recovery
+    .build();
+
+// Adjust failback timing
+MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(clusterConfigs)
+    .gracePeriod(5000)                 // Shorter grace period
+    .build();
+```
 
 ## Need help or have questions?
 For assistance with this automatic failover and failback feature,

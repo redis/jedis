@@ -47,7 +47,6 @@ public class HealthCheckImpl implements HealthCheck {
 
     private final ScheduledExecutorService scheduler;
     private final ExecutorService executor;
-    private volatile boolean running = false;
 
     HealthCheckImpl(Endpoint endpoint, HealthCheckStrategy strategy,
         Consumer<HealthStatusChangeEvent> statusChangeCallback) {
@@ -63,7 +62,7 @@ public class HealthCheckImpl implements HealthCheck {
             return t;
         });
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "jedis-healthcheck-scheduler-" + this.endpoint);
+            Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
             t.setDaemon(true);
             return t;
         });
@@ -78,13 +77,10 @@ public class HealthCheckImpl implements HealthCheck {
     }
 
     public void start() {
-        running = true;
-        // Schedule the first health check immediately
-        scheduleNextHealthCheck(0);
+        scheduler.scheduleAtFixedRate(this::healthCheck, 0, strategy.getInterval(), TimeUnit.MILLISECONDS);
     }
 
     public void stop() {
-        running = false; // Stop scheduling new health checks
         strategy.close();
         this.statusChangeCallback = null;
         scheduler.shutdown();
@@ -105,22 +101,7 @@ public class HealthCheckImpl implements HealthCheck {
         }
     }
 
-    /**
-     * Schedules the next health check after the specified delay
-     */
-    private void scheduleNextHealthCheck(long delayMs) {
-        if (!running) {
-            return; // Don't schedule if stopped
-        }
-
-        scheduler.schedule(this::healthCheck, delayMs, TimeUnit.MILLISECONDS);
-    }
-
     private void healthCheck() {
-        if (!running) {
-            return; // Don't execute if stopped
-        }
-
         long me = System.currentTimeMillis();
         Future<?> future = executor.submit(() -> {
             HealthStatus newStatus = strategy.doHealthCheck(endpoint);
@@ -141,9 +122,6 @@ public class HealthCheckImpl implements HealthCheck {
             safeUpdate(me, HealthStatus.UNHEALTHY);
             Thread.currentThread().interrupt(); // Restore interrupted status
             log.warn("Health check interrupted for {}", endpoint, e);
-        } finally {
-            // Schedule the next health check after this one completes (success, timeout, or failure)
-            scheduleNextHealthCheck(strategy.getInterval());
         }
     }
 

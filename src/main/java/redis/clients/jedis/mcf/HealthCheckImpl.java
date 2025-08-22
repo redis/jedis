@@ -8,6 +8,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Endpoint;
+import redis.clients.jedis.annots.VisibleForTesting;
 
 public class HealthCheckImpl implements HealthCheck {
 
@@ -36,15 +38,15 @@ public class HealthCheckImpl implements HealthCheck {
         }
     }
 
-    private static final Logger log = LoggerFactory.getLogger(HealthCheck.class);
+    private static final Logger log = LoggerFactory.getLogger(HealthCheckImpl.class);
 
     private Endpoint endpoint;
     private HealthCheckStrategy strategy;
     private AtomicReference<HealthCheckResult> resultRef = new AtomicReference<HealthCheckResult>();
     private Consumer<HealthStatusChangeEvent> statusChangeCallback;
 
-    private ScheduledExecutorService scheduler;
-    private ExecutorService executor = Executors.newCachedThreadPool();
+    private final ScheduledExecutorService scheduler;
+    private final ExecutorService executor;
 
     HealthCheckImpl(Endpoint endpoint, HealthCheckStrategy strategy,
         Consumer<HealthStatusChangeEvent> statusChangeCallback) {
@@ -54,6 +56,11 @@ public class HealthCheckImpl implements HealthCheck {
         this.statusChangeCallback = statusChangeCallback;
         resultRef.set(new HealthCheckResult(0L, HealthStatus.UNKNOWN));
 
+        executor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r, "jedis-healthcheck-worker-" + this.endpoint);
+            t.setDaemon(true);
+            return t;
+        });
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
             t.setDaemon(true);
@@ -118,16 +125,28 @@ public class HealthCheckImpl implements HealthCheck {
         }
     }
 
+    // -> 0 -> Unhealthy
+    // -> 1 ->
+    // -> 2 -> Healthy
+    // -> 1 -> Unhealthy
+
     // just to avoid to replace status with an outdated result from another healthCheck
-    private void safeUpdate(long owner, HealthStatus status) {
+    @VisibleForTesting
+    void safeUpdate(long owner, HealthStatus status) {
         HealthCheckResult newResult = new HealthCheckResult(owner, status);
+        AtomicBoolean wasUpdated = new AtomicBoolean(false);
+
         HealthCheckResult oldResult = resultRef.getAndUpdate(current -> {
             if (current.getTimestamp() < owner) {
+                wasUpdated.set(true);
                 return newResult;
             }
+            wasUpdated.set(false);
             return current;
         });
-        if (oldResult.getStatus() != status) {
+
+        if (wasUpdated.get() && oldResult.getStatus() != status) {
+            log.info("Health status changed for {} from {} to {}", endpoint, oldResult.getStatus(), status);
             // notify listeners
             notifyListeners(oldResult.getStatus(), status);
         }

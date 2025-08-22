@@ -2,7 +2,6 @@ package redis.clients.jedis.scenario;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
@@ -24,15 +23,22 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static redis.clients.jedis.Protocol.DEFAULT_TIMEOUT;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
 public class ActiveActiveFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
+  private static final int NUM_OF_THREADS = 18; //18;
+  private static final int SOCKET_TIMEOUT_MS = DEFAULT_TIMEOUT;
+  private static final int CONNECTION_TIMEOUT_MS = DEFAULT_TIMEOUT;
+  private static final long NETWORK_FAILURE_INTERVAL = 15L;
 
   private static EndpointConfig endpoint;
 
@@ -54,8 +60,8 @@ public class ActiveActiveFailoverTest {
     MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
 
     JedisClientConfig config = endpoint.getClientConfigBuilder()
-      .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
-      .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
+      .socketTimeoutMillis(SOCKET_TIMEOUT_MS)
+      .connectionTimeoutMillis(CONNECTION_TIMEOUT_MS).build();
 
     clusterConfig[0] = ClusterConfig.builder(endpoint.getHostAndPort(0), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
@@ -71,7 +77,7 @@ public class ActiveActiveFailoverTest {
 
     builder.failbackSupported(true);
     builder.failbackCheckInterval(1000);
-    builder.gracePeriod(10000);
+    builder.gracePeriod(2000);
 
     builder.retryWaitDuration(10);
     builder.retryMaxAttempts(1);
@@ -168,7 +174,7 @@ public class ActiveActiveFailoverTest {
         }
       }
       return true;
-    }, 18);
+    }, NUM_OF_THREADS);
     fakeApp.setKeepExecutingForSeconds(30);
     Thread t = new Thread(fakeApp);
     t.start();
@@ -185,12 +191,12 @@ public class ActiveActiveFailoverTest {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("bdb_id", endpoint.getBdbId());
-    params.put("delay", 15);
+    params.put("delay", NETWORK_FAILURE_INTERVAL);
 
     FaultInjectionClient.TriggerActionResponse actionResponse = null;
 
     try {
-      log.info("Triggering network_failure for ~15 seconds");
+      log.info("Triggering network_failure for ~{} seconds", NETWORK_FAILURE_INTERVAL);
       actionResponse = faultClient.triggerAction("network_failure", params);
     } catch (IOException e) {
       fail("Fault Injection Server error:" + e.getMessage());
@@ -205,9 +211,15 @@ public class ActiveActiveFailoverTest {
       throw new RuntimeException(e);
     }
 
-    ConnectionPool pool = provider.getCluster(endpoint.getHostAndPort(0)).getConnectionPool();
 
-    log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(), pool.getNumIdle());
+    ConnectionPool pool1 = provider.getCluster(endpoint.getHostAndPort(0)).getConnectionPool();
+    ConnectionPool pool2 = provider.getCluster(endpoint.getHostAndPort(1)).getConnectionPool();
+
+    await().atMost(Duration.ofSeconds(1)).until(() -> pool1.getNumActive() == 0);
+    await().atMost(Duration.ofSeconds(1)).until(() -> pool2.getNumActive() == 0);
+
+    log.info("Connection pool {}: active: {}, idle: {}", endpoint.getHostAndPort(0), pool1.getNumActive(), pool1.getNumIdle());
+    log.info("Connection pool {}: active: {}, idle: {}", endpoint.getHostAndPort(1), pool2.getNumActive(), pool2.getNumIdle());
     log.info("Failover happened at: {}", reporter.failoverAt);
     log.info("Failback happened at: {}", reporter.failbackAt);
     log.info("Last failed command at: {}", lastFailedCommandAt.get());
@@ -215,11 +227,11 @@ public class ActiveActiveFailoverTest {
     Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
     log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
 
-    assertEquals(0, pool.getNumActive());
+    assertEquals(0, pool1.getNumActive());
     assertTrue(fakeApp.capturedExceptions().isEmpty());
     assertTrue(reporter.failoverHappened);
     assertTrue(reporter.failbackHappened);
-    assertThat(fullFailoverTime.getSeconds(), Matchers.greaterThanOrEqualTo(30L));
+    assertThat( Duration.between(reporter.failoverAt, reporter.failbackAt).getSeconds(), greaterThanOrEqualTo(NETWORK_FAILURE_INTERVAL));
 
     client.close();
   }

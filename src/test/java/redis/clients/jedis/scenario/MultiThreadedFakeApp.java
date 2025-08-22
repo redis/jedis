@@ -8,7 +8,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class MultiThreadedFakeApp extends FakeApp {
@@ -22,8 +23,14 @@ public class MultiThreadedFakeApp extends FakeApp {
 
   public MultiThreadedFakeApp(UnifiedJedis client, FakeApp.ExecutedAction action, int numThreads, RateLimiterConfig config) {
     super(client, action);
-    this.executorService = Executors.newFixedThreadPool(numThreads);
-
+    this.executorService = new ThreadPoolExecutor(
+        numThreads,
+        numThreads,
+        0L,
+        TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(100000),
+        new ThreadPoolExecutor.CallerRunsPolicy()
+    );
     if (config != null) {
       this.rateLimiter = RateLimiterRegistry.of(config).rateLimiter("fakeAppLimiter");
     } else {

@@ -173,7 +173,7 @@ public class HealthCheckTest {
         HealthCheckImpl healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, callback);
 
         // Simulate concurrent health checks with different results
-        healthCheck.safeUpdate(2000, HealthStatus.HEALTHY);   // Newer timestamp
+        healthCheck.safeUpdate(2000, HealthStatus.HEALTHY); // Newer timestamp
         healthCheck.safeUpdate(1000, HealthStatus.UNHEALTHY); // Older timestamp (should be ignored)
 
         // Should only have 1 notification (for the first update), not 2
@@ -189,7 +189,7 @@ public class HealthCheckTest {
         HealthCheckImpl healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, callback);
 
         // Test the exact scenario: newer result first, then older result
-        healthCheck.safeUpdate(2000, HealthStatus.HEALTHY);   // Should update and notify
+        healthCheck.safeUpdate(2000, HealthStatus.HEALTHY); // Should update and notify
         assertEquals(1, notificationCount.get());
         assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());
 

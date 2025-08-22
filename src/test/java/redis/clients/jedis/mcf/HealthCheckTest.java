@@ -14,6 +14,7 @@ import redis.clients.jedis.UnifiedJedis;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -146,7 +147,7 @@ public class HealthCheckTest {
 
     @Test
     void testHealthCheckStatusUpdate() throws InterruptedException {
-        when(mockStrategy.getInterval()).thenReturn(100);
+        when(mockStrategy.getInterval()).thenReturn(1);
         when(mockStrategy.getTimeout()).thenReturn(50);
         when(mockStrategy.doHealthCheck(any(Endpoint.class))).thenReturn(HealthStatus.UNHEALTHY);
 
@@ -162,6 +163,39 @@ public class HealthCheckTest {
 
         assertTrue(latch.await(2, TimeUnit.SECONDS));
         healthCheck.stop();
+    }
+
+    @Test
+    void testSafeUpdateChecksDoNotTriggerFalseNotifications() {
+        AtomicInteger notificationCount = new AtomicInteger(0);
+        Consumer<HealthStatusChangeEvent> callback = event -> notificationCount.incrementAndGet();
+
+        HealthCheckImpl healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, callback);
+
+        // Simulate concurrent health checks with different results
+        healthCheck.safeUpdate(2000, HealthStatus.HEALTHY); // Newer timestamp
+        healthCheck.safeUpdate(1000, HealthStatus.UNHEALTHY); // Older timestamp (should be ignored)
+
+        // Should only have 1 notification (for the first update), not 2
+        assertEquals(1, notificationCount.get());
+        assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());
+    }
+
+    @Test
+    void testSafeUpdateWithConcurrentResults() {
+        AtomicInteger notificationCount = new AtomicInteger(0);
+        Consumer<HealthStatusChangeEvent> callback = event -> notificationCount.incrementAndGet();
+
+        HealthCheckImpl healthCheck = new HealthCheckImpl(testEndpoint, mockStrategy, callback);
+
+        // Test the exact scenario: newer result first, then older result
+        healthCheck.safeUpdate(2000, HealthStatus.HEALTHY); // Should update and notify
+        assertEquals(1, notificationCount.get());
+        assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());
+
+        healthCheck.safeUpdate(1000, HealthStatus.UNHEALTHY); // Should NOT update or notify
+        assertEquals(1, notificationCount.get()); // Still 1, no additional notification
+        assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus()); // Status unchanged
     }
 
     @Test

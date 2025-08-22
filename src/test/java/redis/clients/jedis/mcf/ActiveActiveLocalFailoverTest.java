@@ -2,6 +2,7 @@ package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -47,6 +49,7 @@ public class ActiveActiveLocalFailoverTest {
   private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
   private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
+  public static final int ENDPOINT_PAUSE_TIME = 10000;
   private static Proxy redisProxy1;
   private static Proxy redisProxy2;
 
@@ -81,6 +84,7 @@ public class ActiveActiveLocalFailoverTest {
         throw new RuntimeException(e);
       }
     });
+
   }
 
   @ParameterizedTest
@@ -153,6 +157,13 @@ public class ActiveActiveLocalFailoverTest {
       }
     }
 
+    // Ensure endpoints are healthy
+    assertTrue(redisProxy1.isEnabled());
+    assertTrue(redisProxy2.isEnabled());
+    ensureEndpointAvailability(endpoint1.getHostAndPort(), config);
+    ensureEndpointAvailability(endpoint2.getHostAndPort(), config);
+
+    // Create the connection provider
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
     provider.setClusterSwitchListener(reporter);
@@ -171,6 +182,11 @@ public class ActiveActiveLocalFailoverTest {
     String cluster2Id = provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker().getName();
 
     // Start thread that imitates an application that uses the client
+    RateLimiterConfig rateLimiterConfig = RateLimiterConfig.custom()
+      .limitForPeriod(100)
+      .limitRefreshPeriod(Duration.ofSeconds(1))
+      .timeoutDuration(Duration.ofSeconds(1)).build();
+
     MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(client, (UnifiedJedis c) -> {
 
       long threadId = Thread.currentThread().getId();
@@ -239,7 +255,7 @@ public class ActiveActiveLocalFailoverTest {
         }
       }
       return true;
-    }, numberOfThreads);
+    }, numberOfThreads, rateLimiterConfig);
     fakeApp.setKeepExecutingForSeconds(30);
     Thread t = new Thread(fakeApp);
     t.start();
@@ -248,7 +264,7 @@ public class ActiveActiveLocalFailoverTest {
 
     log.info("Triggering issue on endpoint1");
     try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())) {
-      jedis.clientPause(20000);
+      jedis.clientPause(ENDPOINT_PAUSE_TIME);
     }
 
     fakeApp.setAction(new TriggerActionResponse(null) {
@@ -296,6 +312,17 @@ public class ActiveActiveLocalFailoverTest {
     assertFalse(unexpectedErrors.get());
 
     client.close();
+  }
+
+  private static void ensureEndpointAvailability(HostAndPort endpoint, JedisClientConfig config) {
+    await().atMost(Duration.ofSeconds(ENDPOINT_PAUSE_TIME)).until(() -> {
+      try (Jedis jedis = new Jedis(endpoint, config)) {
+        return "PONG".equals(jedis.ping());
+      } catch (Exception e) {
+        log.info("Waiting for endpoint {} to become available...", endpoint);
+        return false;
+      }
+    });
   }
 
 }

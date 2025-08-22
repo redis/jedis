@@ -326,7 +326,8 @@ public class Connection implements Closeable {
   }
 
   public void forceDisconnect() throws IOException {
-    socket.close();
+    setBroken();
+    IOUtils.closeQuietly(socket);
   }
 
   public boolean isConnected() {

@@ -175,7 +175,9 @@ public class FailoverIntegrationTest {
         EndpointConfig... endpoints) {
 
         return Arrays.stream(endpoints)
-            .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig).build())
+            .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig)
+                // Disable health checks to avoid interference during tests
+                .healthCheckEnabled(false).build())
             .collect(Collectors.toList());
     }
 

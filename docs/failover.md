@@ -194,28 +194,28 @@ The `LagAwareStrategy` is designed specifically for Redis Enterprise Active-Acti
 
 **Example Configuration:**
 ```java
+BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiClusterClientConfig.StrategySupplier> healthCheckStrategySupplier =
+(HostAndPort clusterHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
+  LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(clusterHostPort, credentialsSupplier)
+      .interval(5000)                                          // Check every 5 seconds
+      .timeout(3000)                                           // 3 second timeout
+      .extendedCheckEnabled(true)
+      .build();
+
+  return (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
+};
+
 // Configure REST API endpoint and credentials
 Endpoint restEndpoint = new HostAndPort("redis-enterprise-cluster-fqdn", 9443);
-Supplier<RedisCredentials> credentialsSupplier = () ->
-    new RedisCredentials("admin", "password");
+Supplier<RedisCredentials> credentialsSupplier = () -> 
+    new DefaultRedisCredentials("rest-api-user", "pwd");
 
-// Create LagAwareStrategy configuration
-LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder()
-    .restEndpoint(restEndpoint)
-    .credentialsSupplier(credentialsSupplier)
-    .interval(5000)                                          // Check every 5 seconds
-    .timeout(3000)                                           // 3 second timeout
-    .minConsecutiveSuccessCount(2)                           // Require 2 consecutive successes
-    .extendedCheckEnabled(true)                              // Enable lag validation
-    .availabilityLagTolerance(Duration.ofMillis(200))        // Max 200ms lag tolerance
-    .build();
-
-MultiClusterClientConfig.StrategySupplier lagAwareStrategy =
-    (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
+MultiClusterClientConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
+    restEndpoint, credentialsSupplier);
 
 MultiClusterClientConfig.ClusterConfig clusterConfig =
     MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
-        .healthCheckStrategySupplier(lagAwareStrategy)
+        .healthCheckStrategySupplier(lagawareStrategySupplier)
         .build();
 ```
 
@@ -407,7 +407,6 @@ HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
 ```java
 // Require more consecutive successes for stability
 HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
-    .minConsecutiveSuccessCount(5)  // Increase from default 3
     .interval(5000)                 // Less frequent checks
     .timeout(2000)                  // More generous timeout
     .build();
@@ -420,7 +419,6 @@ HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
 // Faster recovery configuration
 HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
     .interval(1000)                    // More frequent checks
-    .minConsecutiveSuccessCount(1)     // Single success for faster recovery
     .build();
 
 // Adjust failback timing

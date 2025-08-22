@@ -1,9 +1,10 @@
-# Failover with Jedis
+# Automatic Failover and Failback with Jedis
 
-Jedis supports failover for your Redis deployments. This is useful when:
+Jedis supports failover and failback for your Redis deployments. This is useful when:
 1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
 2. You want your application to connect to and use one deployment at a time.
 3. You want your application to fail over to the next available deployment if the current deployment becomes unavailable.
+4. You want your application to fail back to the original deployment when it becomes available again.
 
 Jedis will fail over to a subsequent Redis deployment after reaching a configurable failure threshold.
 This failure threshold is implemented using a [circuit breaker pattern](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern).
@@ -11,10 +12,12 @@ This failure threshold is implemented using a [circuit breaker pattern](https://
 You can also configure Jedis to retry failed calls to Redis.
 Once a maximum number of retries have been exhausted, the circuit breaker will record a failure.
 When the circuit breaker reaches its failure threshold, a failover will be triggered on the subsequent operation.
+In the background, Jedis executes configured health checks to determine when a Redis deployment is available again.
+When this occurs, Jedis will fail back to the original deployment after a configurable grace period.
 
 The remainder of this guide describes:
 
-* A basic failover configuration
+* A basic failover and health check configuration
 * Supported retry and circuit breaker settings
 * Failback and the cluster selection API
 
@@ -23,9 +26,10 @@ in production.
 
 ## Basic usage
 
-To configure Jedis for failover, you specify an ordered list of Redis databases.
-By default, Jedis will connect to the first Redis database in the list. If the first database becomes unavailable,
-Jedis will attempt to connect to the next database in the list, and so on.
+To configure Jedis for failover, you specify a weighted list of Redis databases.
+Jedis will connect to the Redis database in the list with the highest weight. 
+If the highest-weighted database becomes unavailable,
+Jedis will attempt to connect to the database with the next highest weight in the list, and so on.
 
 Suppose you run two Redis deployments.
 We'll call them `redis-east` and `redis-west`.
@@ -37,11 +41,24 @@ Let's look at one way of configuring Jedis for this scenario.
 First, create an array of `ClusterConfig` objects, one for each Redis database.
 
 ```java
-JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret").build();
+JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret")
+    .socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
 
-ClusterConfig[] clientConfigs = new ClusterConfig[2];
-clientConfigs[0] = new ClusterConfig(new HostAndPort("redis-east.example.com", 14000), config);
-clientConfigs[1] = new ClusterConfig(new HostAndPort("redis-west.example.com", 14000), config);
+ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+poolConfig.setMaxTotal(8);
+poolConfig.setMaxIdle(8);
+poolConfig.setMinIdle(0);
+poolConfig.setBlockWhenExhausted(true);
+poolConfig.setMaxWait(Duration.ofSeconds(1));
+poolConfig.setTestWhileIdle(true);
+poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+
+MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
+HostAndPort east = new HostAndPort("redis-east.example.com", 14000);
+clusterConfig[0] = ClusterConfig.builder(east, config).connectionPoolConfig(poolConfig).weight(1.0f).build();
+
+HostAndPort west = new HostAndPort("redis-west.example.com", 14000);
+clusterConfig[1] = ClusterConfig.builder(west, config).connectionPoolConfig(poolConfig).weight(0.5f).build();
 ```
 
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
@@ -52,9 +69,22 @@ Then build a `MultiClusterPooledConnectionProvider`.
 
 ```java
 MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clientConfigs);
-builder.circuitBreakerSlidingWindowSize(10);
+builder.circuitBreakerSlidingWindowSize(10); // Sliding window size in number of calls
 builder.circuitBreakerSlidingWindowMinCalls(1);
-builder.circuitBreakerFailureRateThreshold(50.0f);
+builder.circuitBreakerFailureRateThreshold(50.0f); // percentage of failures to trigger circuit breaker
+
+builder.failbackSupported(true); // Enable failback
+builder.failbackCheckInterval(1000); // Check every second the unhealthy cluster to see if it has recovered
+builder.gracePeriod(10000); // Keep cluster disabled for 10 seconds after it becomes unhealthy
+
+// Optional: configure retry settings
+builder.retryMaxAttempts(3); // Maximum number of retry attempts (including the initial call)
+builder.retryWaitDuration(500); // Number of milliseconds to wait between retry attempts
+builder.retryWaitDurationExponentialBackoffMultiplier(2); // Exponential backoff factor multiplied against wait duration between retries
+
+// Optional: configure fast failover
+builder.fastFailover(true); // Force closing connections to unhealthy cluster on failover
+builder.retryOnFailover(false); // Do not retry failed commands during failover
 
 MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
 ```
@@ -84,7 +114,7 @@ If the call continues to fail after the maximum number of retry attempts, then t
 The circuit breaker maintains a record of failures in a sliding window data structure.
 If the failure rate reaches a configured threshold (e.g., when 50% of the last 10 calls have failed),
 then the circuit breaker's state transitions from `CLOSED` to `OPEN`.
-When this occurs, Jedis will attempt to connect to the next Redis database in its client configuration list.
+When this occurs, Jedis will attempt to connect to the next Redis database with the highest weight in its client configuration list.
 
 The supported retry and circuit breaker settings, and their default values, are described below.
 You can configure any of these settings using the `MultiClusterClientConfig.Builder` builder.
@@ -143,12 +173,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class FailoverReporter implements Consumer<String> {
+public class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
 
     @Override
-    public void accept(String clusterName) {
+    public void accept(ClusterSwitchEventArgs e) {
         Logger logger = LoggerFactory.getLogger(FailoverReporter.class);
-        logger.warn("Jedis failover to cluster: " + clusterName);
+        logger.warn("Jedis failover to cluster: " + e.getClusterName() + " due to " + e.getReason());
     }
 }
 ```
@@ -157,22 +187,18 @@ You can then pass an instance of this class to your `MultiPooledConnectionProvid
 
 ```
 FailoverReporter reporter = new FailoverReporter();
-provider.setClusterFailoverPostProcessor(reporter);
+provider.setClusterSwitchListener(reporter);
 ```
 
-The provider will call your `accept` whenever a faoliver occurs.
+The provider will call your `accept` whenever a failover occurs.
 
 ## Failing back
 
-We believe that failback should not be automatic.
-If Jedis fails over to a new cluster, Jedis will _not_ automatically fail back to the cluster that it was previously connected to.
-This design prevents a scenario in which Jedis fails back to a cluster that may not be entirely healthy yet.
-
-That said, we do provide an API that you can use to implement automated failback when this is appropriate for your application.
+Jedis supports automatic failback based on health checks or manual failback using the cluster selection API.
 
 ## Failback scenario
 
-When a failover is triggered, Jedis will attempt to connect to the next Redis server in the list of server configurations
+When a failover is triggered, Jedis will attempt to connect to the next Redis server based on the weights of server configurations
 you provide at setup.
 
 For example, recall the `redis-east` and `redis-west` deployments from the basic usage example above.
@@ -181,53 +207,29 @@ If `redis-east` becomes unavailable (and the circuit breaker transitions), then 
 
 Now suppose that `redis-east` eventually comes back online.
 You will likely want to fail your application back to `redis-east`.
-However, Jedis will not fail back to `redis-east` automatically.
 
-In this case, we recommend that you first ensure that your `redis-east` deployment is healthy before you fail back your application.
+## Automatic failback based on health checks
 
-## Failback behavior and cluster selection API
+TBD
+
+## Manual Failback using the cluster selection API
 
 Once you've determined that it's safe to fail back to a previously-unavailable cluster,
 you need to decide how to trigger the failback. There are two ways to accomplish this:
 
-1. Use the cluster selection API
-2. Restart your application
-
-### Fail back using the cluster selection API
-
 `MultiClusterPooledConnectionProvider` exposes a method that you can use to manually select which cluster Jedis should use.
-To select a different cluster to use, pass the cluster's numeric index to `setActiveMultiClusterIndex()`.
-
-The cluster's index is a 1-based index derived from its position in the client configuration.
-For example, suppose you configure Jedis with the following client configs:
-
+To select a different cluster to use, pass the cluster's `HostAndPort` to `setActiveCluster()`:
 ```
-ClusterConfig[] clientConfigs = new ClusterConfig[2];
-clientConfigs[0] = new ClusterConfig(new HostAndPort("redis-east.example.com", 14000), config);
-clientConfigs[1] = new ClusterConfig(new HostAndPort("redis-west.example.com", 14000), config);
-```
-
-In this case, `redis-east` will have an index of `1`, and `redis-west` will have an index of `2`.
-To select and fail back to `redis-east`, you would call the function like so:
-
-```
-provider.setActiveMultiClusterIndex(1);
+provider.setActiveCluster(west);
 ```
 
 This method is thread-safe.
 
 If you decide to implement manual failback, you will need a way for external systems to trigger this method in your
 application. For example, if your application exposes a REST API, you might consider creating a REST endpoint
-to call `setActiveMultiClusterIndex` and fail back the application.
+to call `setActiveCluster` and fail back the application.
 
-### Fail back by restarting the application
 
-When your application starts, Jedis will attempt to connect to each cluster in the order that the clusters appear
-in your client configuration. It's important to understand this, especially in the case where Jedis has failed over.
-If Jedis has failed over to a new cluster, then restarting the application may result in an inadvertent failback.
-This can happen only if a failed cluster comes back online and the application subsequently restarts. 
-
-If you need to avoid this scenario, consider using a failover callback, as described above, to externally record
-the name of the cluster that your application was most recently connected to. You can then check this state on startup
-to ensure that you application only connects to the most recently used cluster. For assistance with this technique,
+## Need help or have questions?
+For assistance with this automatic failover and failback feature,
 [start a discussion](https://github.com/redis/jedis/discussions/new?category=q-a).

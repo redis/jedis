@@ -17,9 +17,12 @@ ClusterPipeline
 ClusterPubSub
 ConnectionPool
 CoreCommands
+Customizable
+CRDB
 Dockerfile
 EVAL
 EVALSHA
+EchoStrategy
 FTCreateParams
 FTSearchParams
 Failback
@@ -35,6 +38,7 @@ GraphCommands
 Grokzen's
 HostAndPort
 HostnameVerifier
+hostnames
 INCR
 IOError
 Instrumentations
@@ -50,6 +54,7 @@ JedisPool
 JedisPooled
 JedisPubSub
 JedisShardInfo
+LagAwareStrategy
 ListPosition
 Ludovico
 Magnocavallo
@@ -68,6 +73,7 @@ POJO
 POJOs
 PoolConfig
 PubSub
+pluggable
 Queable
 README
 READONLY

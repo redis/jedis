@@ -163,6 +163,7 @@ public class HealthCheckImpl implements HealthCheck {
                 wasUpdated.set(true);
                 return newResult;
             }
+            wasUpdated.set(false);
             return current;
         });
 

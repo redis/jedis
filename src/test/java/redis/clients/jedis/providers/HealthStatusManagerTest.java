@@ -18,67 +18,67 @@ import redis.clients.jedis.mcf.HealthStatusManager;
 
 public class HealthStatusManagerTest {
 
-    private final HostAndPort endpoint = new HostAndPort("localhost", 6379);
-    private final JedisClientConfig config = DefaultJedisClientConfig.builder().build();
+  private final HostAndPort endpoint = new HostAndPort("localhost", 6379);
+  private final JedisClientConfig config = DefaultJedisClientConfig.builder().build();
 
-    @Test
-    void manager_event_emission_order_basic() throws InterruptedException {
-        HealthStatusManager manager = new HealthStatusManager();
+  @Test
+  void manager_event_emission_order_basic() throws InterruptedException {
+    HealthStatusManager manager = new HealthStatusManager();
 
-        CountDownLatch eventLatch = new CountDownLatch(1);
-        HealthStatusListener listener = event -> eventLatch.countDown();
+    CountDownLatch eventLatch = new CountDownLatch(1);
+    HealthStatusListener listener = event -> eventLatch.countDown();
 
-        manager.registerListener(endpoint, listener);
+    manager.registerListener(endpoint, listener);
 
-        HealthCheckStrategy immediateHealthy = new HealthCheckStrategy() {
-            @Override
-            public int getInterval() {
-                return 50;
-            }
+    HealthCheckStrategy immediateHealthy = new HealthCheckStrategy() {
+      @Override
+      public int getInterval() {
+        return 50;
+      }
 
-            @Override
-            public int getTimeout() {
-                return 25;
-            }
+      @Override
+      public int getTimeout() {
+        return 25;
+      }
 
-            @Override
-            public HealthStatus doHealthCheck(Endpoint endpoint) {
-                return HealthStatus.HEALTHY;
-            }
-        };
+      @Override
+      public HealthStatus doHealthCheck(Endpoint endpoint) {
+        return HealthStatus.HEALTHY;
+      }
+    };
 
-        manager.add(endpoint, immediateHealthy);
+    manager.add(endpoint, immediateHealthy);
 
-        assertTrue(eventLatch.await(2, TimeUnit.SECONDS), "Should receive health status event");
+    assertTrue(eventLatch.await(2, TimeUnit.SECONDS), "Should receive health status event");
 
-        manager.remove(endpoint);
-    }
+    manager.remove(endpoint);
+  }
 
-    @Test
-    void manager_hasHealthCheck_add_remove() {
-        HealthStatusManager manager = new HealthStatusManager();
-        assertFalse(manager.hasHealthCheck(endpoint));
+  @Test
+  void manager_hasHealthCheck_add_remove() {
+    HealthStatusManager manager = new HealthStatusManager();
+    assertFalse(manager.hasHealthCheck(endpoint));
 
-        HealthCheckStrategy strategy = new HealthCheckStrategy() {
-            @Override
-            public int getInterval() {
-                return 50;
-            }
+    HealthCheckStrategy strategy = new HealthCheckStrategy() {
+      @Override
+      public int getInterval() {
+        return 50;
+      }
 
-            @Override
-            public int getTimeout() {
-                return 25;
-            }
+      @Override
+      public int getTimeout() {
+        return 25;
+      }
 
-            @Override
-            public HealthStatus doHealthCheck(Endpoint endpoint) {
-                return HealthStatus.HEALTHY;
-            }
-        };
+      @Override
+      public HealthStatus doHealthCheck(Endpoint endpoint) {
+        return HealthStatus.HEALTHY;
+      }
+    };
 
-        manager.add(endpoint, strategy);
-        assertTrue(manager.hasHealthCheck(endpoint));
-        manager.remove(endpoint);
-        assertFalse(manager.hasHealthCheck(endpoint));
-    }
+    manager.add(endpoint, strategy);
+    assertTrue(manager.hasHealthCheck(endpoint));
+    manager.remove(endpoint);
+    assertFalse(manager.hasHealthCheck(endpoint));
+  }
 }

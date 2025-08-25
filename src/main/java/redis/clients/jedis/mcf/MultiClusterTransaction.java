@@ -23,188 +23,188 @@ import redis.clients.jedis.util.KeyValue;
 @Experimental
 public class MultiClusterTransaction extends TransactionBase {
 
-    private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
+  private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
-    private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
+  private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
-    private final CircuitBreakerFailoverConnectionProvider failoverProvider;
-    private final AtomicInteger extraCommandCount = new AtomicInteger();
-    private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
+  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
+  private final AtomicInteger extraCommandCount = new AtomicInteger();
+  private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
-    private boolean inWatch = false;
-    private boolean inMulti = false;
+  private boolean inWatch = false;
+  private boolean inMulti = false;
 
-    /**
-     * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be called with this
-     * object.
-     * @param provider
-     */
-    @Deprecated
-    public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider) {
-        this(provider, true);
+  /**
+   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
+   * called with this object.
+   * @param provider
+   */
+  @Deprecated
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider) {
+    this(provider, true);
+  }
+
+  /**
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   * @param provider
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   */
+  @Deprecated
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+
+    try (Connection connection = failoverProvider.getConnection()) {
+      RedisProtocol proto = connection.getRedisProtocol();
+      if (proto != null) this.commandObjects.setProtocol(proto);
     }
 
-    /**
-     * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should be
-     * {@code doMulti=false}.
-     * @param provider
-     * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
-     */
-    @Deprecated
-    public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
-        this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+    if (doMulti) multi();
+  }
 
-        try (Connection connection = failoverProvider.getConnection()) {
-            RedisProtocol proto = connection.getRedisProtocol();
-            if (proto != null) this.commandObjects.setProtocol(proto);
-        }
+  /**
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   * @param provider
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param commandObjects command objects
+   */
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti,
+      CommandObjects commandObjects) {
+    super(commandObjects);
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
-        if (doMulti) multi();
+    if (doMulti) multi();
+  }
+
+  @Override
+  public final void multi() {
+    appendCommand(new CommandObject<>(new CommandArguments(MULTI), NO_OP_BUILDER));
+    extraCommandCount.incrementAndGet();
+    inMulti = true;
+  }
+
+  /**
+   * @param keys
+   * @return {@code null}
+   */
+  @Override
+  public final String watch(String... keys) {
+    appendCommand(commandObjects.watch(keys));
+    extraCommandCount.incrementAndGet();
+    inWatch = true;
+    return null;
+  }
+
+  /**
+   * @param keys
+   * @return {@code null}
+   */
+  @Override
+  public final String watch(byte[]... keys) {
+    appendCommand(commandObjects.watch(keys));
+    extraCommandCount.incrementAndGet();
+    inWatch = true;
+    return null;
+  }
+
+  /**
+   * @return {@code null}
+   */
+  @Override
+  public final String unwatch() {
+    appendCommand(new CommandObject<>(new CommandArguments(UNWATCH), NO_OP_BUILDER));
+    extraCommandCount.incrementAndGet();
+    inWatch = false;
+    return null;
+  }
+
+  @Override
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+    CommandArguments args = commandObject.getArguments();
+    Response<T> response = new Response<>(commandObject.getBuilder());
+    commands.add(KeyValue.of(args, response));
+    return response;
+  }
+
+  @Override
+  public void close() {
+    clear();
+  }
+
+  private void clear() {
+    if (inMulti) {
+      discard();
+    } else if (inWatch) {
+      unwatch();
+    }
+  }
+
+  @Override
+  public final List<Object> exec() {
+    if (!inMulti) {
+      throw new IllegalStateException("EXEC without MULTI");
     }
 
-    /**
-     * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should be
-     * {@code doMulti=false}.
-     * @param provider
-     * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
-     * @param commandObjects command objects
-     */
-    public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti,
-        CommandObjects commandObjects) {
-        super(commandObjects);
-        this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+    try (Connection connection = failoverProvider.getConnection()) {
 
-        if (doMulti) multi();
-    }
+      commands.forEach((command) -> connection.sendCommand(command.getKey()));
+      // following connection.getMany(int) flushes anyway, so no flush here.
 
-    @Override
-    public final void multi() {
-        appendCommand(new CommandObject<>(new CommandArguments(MULTI), NO_OP_BUILDER));
-        extraCommandCount.incrementAndGet();
-        inMulti = true;
-    }
+      // ignore QUEUED (or ERROR)
+      connection.getMany(commands.size());
 
-    /**
-     * @param keys
-     * @return {@code null}
-     */
-    @Override
-    public final String watch(String... keys) {
-        appendCommand(commandObjects.watch(keys));
-        extraCommandCount.incrementAndGet();
-        inWatch = true;
+      // remove extra response builders
+      for (int idx = 0; idx < extraCommandCount.get(); ++idx) {
+        commands.poll();
+      }
+
+      connection.sendCommand(EXEC);
+
+      List<Object> unformatted = connection.getObjectMultiBulkReply();
+      if (unformatted == null) {
+        commands.clear();
         return null;
-    }
+      }
 
-    /**
-     * @param keys
-     * @return {@code null}
-     */
-    @Override
-    public final String watch(byte[]... keys) {
-        appendCommand(commandObjects.watch(keys));
-        extraCommandCount.incrementAndGet();
-        inWatch = true;
-        return null;
-    }
-
-    /**
-     * @return {@code null}
-     */
-    @Override
-    public final String unwatch() {
-        appendCommand(new CommandObject<>(new CommandArguments(UNWATCH), NO_OP_BUILDER));
-        extraCommandCount.incrementAndGet();
-        inWatch = false;
-        return null;
-    }
-
-    @Override
-    protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
-        CommandArguments args = commandObject.getArguments();
-        Response<T> response = new Response<>(commandObject.getBuilder());
-        commands.add(KeyValue.of(args, response));
-        return response;
-    }
-
-    @Override
-    public void close() {
-        clear();
-    }
-
-    private void clear() {
-        if (inMulti) {
-            discard();
-        } else if (inWatch) {
-            unwatch();
+      List<Object> formatted = new ArrayList<>(unformatted.size() - extraCommandCount.get());
+      for (Object rawReply : unformatted) {
+        try {
+          Response<?> response = commands.poll().getValue();
+          response.set(rawReply);
+          formatted.add(response.get());
+        } catch (JedisDataException e) {
+          formatted.add(e);
         }
+      }
+      return formatted;
+
+    } finally {
+      inMulti = false;
+      inWatch = false;
+    }
+  }
+
+  @Override
+  public final String discard() {
+    if (!inMulti) {
+      throw new IllegalStateException("DISCARD without MULTI");
     }
 
-    @Override
-    public final List<Object> exec() {
-        if (!inMulti) {
-            throw new IllegalStateException("EXEC without MULTI");
-        }
+    try (Connection connection = failoverProvider.getConnection()) {
 
-        try (Connection connection = failoverProvider.getConnection()) {
+      commands.forEach((command) -> connection.sendCommand(command.getKey()));
+      // following connection.getMany(int) flushes anyway, so no flush here.
 
-            commands.forEach((command) -> connection.sendCommand(command.getKey()));
-            // following connection.getMany(int) flushes anyway, so no flush here.
+      // ignore QUEUED (or ERROR)
+      connection.getMany(commands.size());
 
-            // ignore QUEUED (or ERROR)
-            connection.getMany(commands.size());
+      connection.sendCommand(DISCARD);
 
-            // remove extra response builders
-            for (int idx = 0; idx < extraCommandCount.get(); ++idx) {
-                commands.poll();
-            }
-
-            connection.sendCommand(EXEC);
-
-            List<Object> unformatted = connection.getObjectMultiBulkReply();
-            if (unformatted == null) {
-                commands.clear();
-                return null;
-            }
-
-            List<Object> formatted = new ArrayList<>(unformatted.size() - extraCommandCount.get());
-            for (Object rawReply : unformatted) {
-                try {
-                    Response<?> response = commands.poll().getValue();
-                    response.set(rawReply);
-                    formatted.add(response.get());
-                } catch (JedisDataException e) {
-                    formatted.add(e);
-                }
-            }
-            return formatted;
-
-        } finally {
-            inMulti = false;
-            inWatch = false;
-        }
+      return connection.getStatusCodeReply();
+    } finally {
+      inMulti = false;
+      inWatch = false;
     }
-
-    @Override
-    public final String discard() {
-        if (!inMulti) {
-            throw new IllegalStateException("DISCARD without MULTI");
-        }
-
-        try (Connection connection = failoverProvider.getConnection()) {
-
-            commands.forEach((command) -> connection.sendCommand(command.getKey()));
-            // following connection.getMany(int) flushes anyway, so no flush here.
-
-            // ignore QUEUED (or ERROR)
-            connection.getMany(commands.size());
-
-            connection.sendCommand(DISCARD);
-
-            return connection.getStatusCodeReply();
-        } finally {
-            inMulti = false;
-            inWatch = false;
-        }
-    }
+  }
 }

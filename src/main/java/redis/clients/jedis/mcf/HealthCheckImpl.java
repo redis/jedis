@@ -20,147 +20,149 @@ import redis.clients.jedis.annots.VisibleForTesting;
 
 public class HealthCheckImpl implements HealthCheck {
 
-    private static class HealthCheckResult {
-        private final long timestamp;
-        private final HealthStatus status;
+  private static class HealthCheckResult {
+    private final long timestamp;
+    private final HealthStatus status;
 
-        public HealthCheckResult(long timestamp, HealthStatus status) {
-            this.timestamp = timestamp;
-            this.status = status;
-        }
-
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        public HealthStatus getStatus() {
-            return status;
-        }
+    public HealthCheckResult(long timestamp, HealthStatus status) {
+      this.timestamp = timestamp;
+      this.status = status;
     }
 
-    private static final Logger log = LoggerFactory.getLogger(HealthCheckImpl.class);
-
-    private Endpoint endpoint;
-    private HealthCheckStrategy strategy;
-    private AtomicReference<HealthCheckResult> resultRef = new AtomicReference<HealthCheckResult>();
-    private Consumer<HealthStatusChangeEvent> statusChangeCallback;
-
-    private final ScheduledExecutorService scheduler;
-    private final ExecutorService executor;
-
-    HealthCheckImpl(Endpoint endpoint, HealthCheckStrategy strategy,
-        Consumer<HealthStatusChangeEvent> statusChangeCallback) {
-
-        this.endpoint = endpoint;
-        this.strategy = strategy;
-        this.statusChangeCallback = statusChangeCallback;
-        resultRef.set(new HealthCheckResult(0L, HealthStatus.UNKNOWN));
-
-        executor = Executors.newCachedThreadPool(r -> {
-            Thread t = new Thread(r, "jedis-healthcheck-worker-" + this.endpoint);
-            t.setDaemon(true);
-            return t;
-        });
-        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
-            t.setDaemon(true);
-            return t;
-        });
-    }
-
-    public Endpoint getEndpoint() {
-        return endpoint;
+    public long getTimestamp() {
+      return timestamp;
     }
 
     public HealthStatus getStatus() {
-        return resultRef.get().getStatus();
+      return status;
     }
+  }
 
-    public void start() {
-        scheduler.scheduleAtFixedRate(this::healthCheck, 0, strategy.getInterval(), TimeUnit.MILLISECONDS);
+  private static final Logger log = LoggerFactory.getLogger(HealthCheckImpl.class);
+
+  private Endpoint endpoint;
+  private HealthCheckStrategy strategy;
+  private AtomicReference<HealthCheckResult> resultRef = new AtomicReference<HealthCheckResult>();
+  private Consumer<HealthStatusChangeEvent> statusChangeCallback;
+
+  private final ScheduledExecutorService scheduler;
+  private final ExecutorService executor;
+
+  HealthCheckImpl(Endpoint endpoint, HealthCheckStrategy strategy,
+      Consumer<HealthStatusChangeEvent> statusChangeCallback) {
+
+    this.endpoint = endpoint;
+    this.strategy = strategy;
+    this.statusChangeCallback = statusChangeCallback;
+    resultRef.set(new HealthCheckResult(0L, HealthStatus.UNKNOWN));
+
+    executor = Executors.newCachedThreadPool(r -> {
+      Thread t = new Thread(r, "jedis-healthcheck-worker-" + this.endpoint);
+      t.setDaemon(true);
+      return t;
+    });
+    scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+      Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
+      t.setDaemon(true);
+      return t;
+    });
+  }
+
+  public Endpoint getEndpoint() {
+    return endpoint;
+  }
+
+  public HealthStatus getStatus() {
+    return resultRef.get().getStatus();
+  }
+
+  public void start() {
+    scheduler.scheduleAtFixedRate(this::healthCheck, 0, strategy.getInterval(),
+      TimeUnit.MILLISECONDS);
+  }
+
+  public void stop() {
+    strategy.close();
+    this.statusChangeCallback = null;
+    scheduler.shutdown();
+    executor.shutdown();
+    try {
+      // Wait for graceful shutdown then force if required
+      if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+        scheduler.shutdownNow();
+      }
+      if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+        executor.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      // Force shutdown immediately
+      scheduler.shutdownNow();
+      executor.shutdownNow();
+      Thread.currentThread().interrupt();
     }
+  }
 
-    public void stop() {
-        strategy.close();
-        this.statusChangeCallback = null;
-        scheduler.shutdown();
-        executor.shutdown();
-        try {
-            // Wait for graceful shutdown then force if required
-            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
-                scheduler.shutdownNow();
-            }
-            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            // Force shutdown immediately
-            scheduler.shutdownNow();
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
+  private void healthCheck() {
+    long me = System.currentTimeMillis();
+    Future<?> future = executor.submit(() -> {
+      HealthStatus newStatus = strategy.doHealthCheck(endpoint);
+      safeUpdate(me, newStatus);
+      log.trace("Health check completed for {} with status {}", endpoint, newStatus);
+    });
+
+    try {
+      future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
+    } catch (TimeoutException | ExecutionException e) {
+      // Cancel immediately on timeout or exec exception
+      future.cancel(true);
+      safeUpdate(me, HealthStatus.UNHEALTHY);
+      log.warn("Health check timed out or failed for {}", endpoint, e);
+    } catch (InterruptedException e) {
+      // Health check thread was interrupted
+      future.cancel(true);
+      safeUpdate(me, HealthStatus.UNHEALTHY);
+      Thread.currentThread().interrupt(); // Restore interrupted status
+      log.warn("Health check interrupted for {}", endpoint, e);
     }
+  }
 
-    private void healthCheck() {
-        long me = System.currentTimeMillis();
-        Future<?> future = executor.submit(() -> {
-            HealthStatus newStatus = strategy.doHealthCheck(endpoint);
-            safeUpdate(me, newStatus);
-            log.trace("Health check completed for {} with status {}", endpoint, newStatus);
-        });
+  // -> 0 -> Unhealthy
+  // -> 1 ->
+  // -> 2 -> Healthy
+  // -> 1 -> Unhealthy
 
-        try {
-            future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
-        } catch (TimeoutException | ExecutionException e) {
-            // Cancel immediately on timeout or exec exception
-            future.cancel(true);
-            safeUpdate(me, HealthStatus.UNHEALTHY);
-            log.warn("Health check timed out or failed for {}", endpoint, e);
-        } catch (InterruptedException e) {
-            // Health check thread was interrupted
-            future.cancel(true);
-            safeUpdate(me, HealthStatus.UNHEALTHY);
-            Thread.currentThread().interrupt(); // Restore interrupted status
-            log.warn("Health check interrupted for {}", endpoint, e);
-        }
+  // just to avoid to replace status with an outdated result from another healthCheck
+  @VisibleForTesting
+  void safeUpdate(long owner, HealthStatus status) {
+    HealthCheckResult newResult = new HealthCheckResult(owner, status);
+    AtomicBoolean wasUpdated = new AtomicBoolean(false);
+
+    HealthCheckResult oldResult = resultRef.getAndUpdate(current -> {
+      if (current.getTimestamp() < owner) {
+        wasUpdated.set(true);
+        return newResult;
+      }
+      wasUpdated.set(false);
+      return current;
+    });
+
+    if (wasUpdated.get() && oldResult.getStatus() != status) {
+      log.info("Health status changed for {} from {} to {}", endpoint, oldResult.getStatus(),
+        status);
+      // notify listeners
+      notifyListeners(oldResult.getStatus(), status);
     }
+  }
 
-    // -> 0 -> Unhealthy
-    // -> 1 ->
-    // -> 2 -> Healthy
-    // -> 1 -> Unhealthy
-
-    // just to avoid to replace status with an outdated result from another healthCheck
-    @VisibleForTesting
-    void safeUpdate(long owner, HealthStatus status) {
-        HealthCheckResult newResult = new HealthCheckResult(owner, status);
-        AtomicBoolean wasUpdated = new AtomicBoolean(false);
-
-        HealthCheckResult oldResult = resultRef.getAndUpdate(current -> {
-            if (current.getTimestamp() < owner) {
-                wasUpdated.set(true);
-                return newResult;
-            }
-            wasUpdated.set(false);
-            return current;
-        });
-
-        if (wasUpdated.get() && oldResult.getStatus() != status) {
-            log.info("Health status changed for {} from {} to {}", endpoint, oldResult.getStatus(), status);
-            // notify listeners
-            notifyListeners(oldResult.getStatus(), status);
-        }
+  private void notifyListeners(HealthStatus oldStatus, HealthStatus newStatus) {
+    if (statusChangeCallback != null) {
+      statusChangeCallback.accept(new HealthStatusChangeEvent(endpoint, oldStatus, newStatus));
     }
+  }
 
-    private void notifyListeners(HealthStatus oldStatus, HealthStatus newStatus) {
-        if (statusChangeCallback != null) {
-            statusChangeCallback.accept(new HealthStatusChangeEvent(endpoint, oldStatus, newStatus));
-        }
-    }
-
-    @Override
-    public long getMaxWaitFor() {
-        return (strategy.getTimeout() + strategy.getInterval()) * strategy.minConsecutiveSuccessCount();
-    }
+  @Override
+  public long getMaxWaitFor() {
+    return (strategy.getTimeout() + strategy.getInterval()) * strategy.minConsecutiveSuccessCount();
+  }
 
 }

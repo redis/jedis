@@ -359,6 +359,7 @@
 						<include>**/VAddParams.java</include>
 						<include>**/VSimParams.java</include>
 						<include>**/*FunctionCommandsTest*</include>
+						<include>**/Endpoint.java</include>
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
 						<include>src/test/java/redis/clients/jedis/mcf/EchoStrategyIntegrationTest.java</include>

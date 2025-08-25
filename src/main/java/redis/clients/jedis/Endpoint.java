@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 public interface Endpoint {
 
-    String getHost();
+  String getHost();
 
-    int getPort();
+  int getPort();
 
 }

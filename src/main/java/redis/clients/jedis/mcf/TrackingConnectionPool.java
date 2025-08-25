@@ -55,8 +55,10 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
         return object;
 
+      } catch (JedisConnectionException e) {
+        throw e;
       } catch (Exception e) {
-        throw new JedisConnectionException("Failed to create connection!", e);
+        throw new JedisConnectionException(e);
       }
     }
 

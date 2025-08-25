@@ -67,7 +67,9 @@ public class AutomaticFailoverTest {
   @Test
   public void pipelineWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
+        new MultiClusterClientConfig.Builder(
+            getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+                .build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractPipeline pipe = client.pipelined();
@@ -84,7 +86,9 @@ public class AutomaticFailoverTest {
   @Test
   public void transactionWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
+        new MultiClusterClientConfig.Builder(
+            getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+                .build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractTransaction tx = client.multi();
@@ -105,15 +109,15 @@ public class AutomaticFailoverTest {
 
     HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, unresolvableHostAndPort,
-            workingEndpoint.getHostAndPort())).retryWaitDuration(1).retryMaxAttempts(1)
-        .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
-        .circuitBreakerSlidingWindowSize(slidingWindowSize);
+        getClusterConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
+            .retryWaitDuration(1).retryMaxAttempts(1)
+            .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
+            .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
         builder.build());
-    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
+    connectionProvider.setClusterSwitchListener(failoverReporter);
 
     UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
@@ -123,7 +127,7 @@ public class AutomaticFailoverTest {
 
     for (int attempt = 0; attempt < slidingWindowMinCalls; attempt++) {
       Throwable thrown = assertThrows(JedisConnectionException.class,
-          () -> jedis.hset(key, "f1", "v1"));
+        () -> jedis.hset(key, "f1", "v1"));
       assertThat(thrown.getCause(), instanceOf(UnknownHostException.class));
       assertFalse(failoverReporter.failedOver);
     }

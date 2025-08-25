@@ -14,171 +14,137 @@ import redis.clients.jedis.MultiClusterClientConfig;
 @ExtendWith(MockitoExtension.class)
 class FailbackMechanismUnitTest {
 
-    private HostAndPort endpoint1;
-    private JedisClientConfig clientConfig;
+  private HostAndPort endpoint1;
+  private JedisClientConfig clientConfig;
 
-    @BeforeEach
-    void setUp() {
-        endpoint1 = new HostAndPort("localhost", 6379);
-        clientConfig = DefaultJedisClientConfig.builder().build();
-    }
+  @BeforeEach
+  void setUp() {
+    endpoint1 = new HostAndPort("localhost", 6379);
+    clientConfig = DefaultJedisClientConfig.builder().build();
+  }
 
-    @Test
-    void testFailbackCheckIntervalConfiguration() {
-        // Test default value
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
+  @Test
+  void testFailbackCheckIntervalConfiguration() {
+    // Test default value
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
+
+    MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
+
+    assertEquals(5000, defaultConfig.getFailbackCheckInterval());
+
+    // Test custom value
+    MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackCheckInterval(3000)
             .build();
 
-        MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .build();
-            
-        assertEquals(5000, defaultConfig.getFailbackCheckInterval());
+    assertEquals(3000, customConfig.getFailbackCheckInterval());
+  }
 
-        // Test custom value
-        MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .failbackCheckInterval(3000)
-            .build();
-            
-        assertEquals(3000, customConfig.getFailbackCheckInterval());
-    }
+  @Test
+  void testFailbackSupportedConfiguration() {
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-    @Test
-    void testFailbackSupportedConfiguration() {
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
+    // Test default (should be true)
+    MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
+
+    assertTrue(defaultConfig.isFailbackSupported());
+
+    // Test disabled
+    MultiClusterClientConfig disabledConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackSupported(false)
             .build();
 
-        // Test default (should be true)
-        MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .build();
-            
-        assertTrue(defaultConfig.isFailbackSupported());
+    assertFalse(disabledConfig.isFailbackSupported());
+  }
 
-        // Test disabled
-        MultiClusterClientConfig disabledConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .failbackSupported(false)
-            .build();
-            
-        assertFalse(disabledConfig.isFailbackSupported());
-    }
+  @Test
+  void testFailbackCheckIntervalValidation() {
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-    @Test
-    void testFailbackCheckIntervalValidation() {
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
+    // Test zero interval (should be allowed)
+    MultiClusterClientConfig zeroConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackCheckInterval(0)
             .build();
 
-        // Test zero interval (should be allowed)
-        MultiClusterClientConfig zeroConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .failbackCheckInterval(0)
-            .build();
-            
-        assertEquals(0, zeroConfig.getFailbackCheckInterval());
+    assertEquals(0, zeroConfig.getFailbackCheckInterval());
 
-        // Test negative interval (should be allowed - implementation decision)
-        MultiClusterClientConfig negativeConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .failbackCheckInterval(-1000)
-            .build();
-            
-        assertEquals(-1000, negativeConfig.getFailbackCheckInterval());
-    }
-
-    @Test
-    void testBuilderChaining() {
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
+    // Test negative interval (should be allowed - implementation decision)
+    MultiClusterClientConfig negativeConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackCheckInterval(-1000)
             .build();
 
-        // Test that builder methods can be chained
-        MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .failbackSupported(true)
-            .failbackCheckInterval(2000)
-            .retryOnFailover(true)
-            .build();
-            
-        assertTrue(config.isFailbackSupported());
-        assertEquals(2000, config.getFailbackCheckInterval());
-        assertTrue(config.isRetryOnFailover());
-    }
+    assertEquals(-1000, negativeConfig.getFailbackCheckInterval());
+  }
 
-    @Test
-    void testGracePeriodConfiguration() {
-        // Test default value
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
-            .build();
+  @Test
+  void testBuilderChaining() {
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-        MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .build();
+    // Test that builder methods can be chained
+    MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackSupported(true)
+            .failbackCheckInterval(2000).retryOnFailover(true).build();
 
-        assertEquals(10000, defaultConfig.getGracePeriod()); // Default is 10 seconds
+    assertTrue(config.isFailbackSupported());
+    assertEquals(2000, config.getFailbackCheckInterval());
+    assertTrue(config.isRetryOnFailover());
+  }
 
-        // Test custom value
-        MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .gracePeriod(5000)
-            .build();
+  @Test
+  void testGracePeriodConfiguration() {
+    // Test default value
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-        assertEquals(5000, customConfig.getGracePeriod());
-    }
+    MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
 
-    @Test
-    void testGracePeriodValidation() {
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
-            .build();
+    assertEquals(10000, defaultConfig.getGracePeriod()); // Default is 10 seconds
 
-        // Test zero grace period (should be allowed)
-        MultiClusterClientConfig zeroConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .gracePeriod(0)
-            .build();
+    // Test custom value
+    MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).gracePeriod(5000).build();
 
-        assertEquals(0, zeroConfig.getGracePeriod());
+    assertEquals(5000, customConfig.getGracePeriod());
+  }
 
-        // Test negative grace period (should be allowed - implementation decision)
-        MultiClusterClientConfig negativeConfig = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .gracePeriod(-1000)
-            .build();
+  @Test
+  void testGracePeriodValidation() {
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-        assertEquals(-1000, negativeConfig.getGracePeriod());
-    }
+    // Test zero grace period (should be allowed)
+    MultiClusterClientConfig zeroConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).gracePeriod(0).build();
 
-    @Test
-    void testGracePeriodBuilderChaining() {
-        MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint1, clientConfig)
-            .healthCheckEnabled(false)
-            .build();
+    assertEquals(0, zeroConfig.getGracePeriod());
 
-        // Test that builder methods can be chained
-        MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-            new MultiClusterClientConfig.ClusterConfig[]{clusterConfig})
-            .failbackSupported(true)
-            .failbackCheckInterval(2000)
-            .gracePeriod(8000)
-            .retryOnFailover(true)
-            .build();
+    // Test negative grace period (should be allowed - implementation decision)
+    MultiClusterClientConfig negativeConfig = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).gracePeriod(-1000).build();
 
-        assertTrue(config.isFailbackSupported());
-        assertEquals(2000, config.getFailbackCheckInterval());
-        assertEquals(8000, config.getGracePeriod());
-        assertTrue(config.isRetryOnFailover());
-    }
+    assertEquals(-1000, negativeConfig.getGracePeriod());
+  }
+
+  @Test
+  void testGracePeriodBuilderChaining() {
+    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+        .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
+
+    // Test that builder methods can be chained
+    MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
+        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackSupported(true)
+            .failbackCheckInterval(2000).gracePeriod(8000).retryOnFailover(true).build();
+
+    assertTrue(config.isFailbackSupported());
+    assertEquals(2000, config.getFailbackCheckInterval());
+    assertEquals(8000, config.getGracePeriod());
+    assertTrue(config.isRetryOnFailover());
+  }
 }

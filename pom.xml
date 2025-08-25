@@ -362,12 +362,16 @@
 						<include>**/Endpoint.java</include>
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
-						<include>src/test/java/redis/clients/jedis/mcf/EchoStrategyIntegrationTest.java</include>
-						<include>src/test/java/redis/clients/jedis/mcf/LagAwareStrategyUnitTest.java</include>
-						<include>src/test/java/redis/clients/jedis/mcf/RedisRestAPI*.java</include>
+						<include>**/mcf/EchoStrategyIntegrationTest.java</include>
+						<include>**/mcf/LagAwareStrategyUnitTest.java</include>
+						<include>**/mcf/RedisRestAPI*.java</include>
+						<include>**/mcf/ActiveActiveLocalFailoverTest*</include>
+						<include>**/mcf/FailbackMechanism*</include>
+						<include>**/mcf/PeriodicFailbackTest*</include>
+						<include>**/mcf/AutomaticFailoverTest*</include>
+						<include>**/mcf/MultiCluster*</include>
+						<include>**/mcf/StatusTracker*</include>
 						<include>**/Health*.java</include>
-						<include>src/test/java/redis/clients/jedis/misc/AutomaticFailoverTest.java</include>
-						<include>**/MultiCluster*.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 					</includes>

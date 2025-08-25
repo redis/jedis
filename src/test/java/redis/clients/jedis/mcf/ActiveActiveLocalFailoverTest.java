@@ -88,9 +88,10 @@ public class ActiveActiveLocalFailoverTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9", "true, 0, 2, 16", })
-  public void testFailover(boolean fastFailover, long minFailoverCompletionDuration, long maxFailoverCompletionDuration,
-    int numberOfThreads) {
+  @CsvSource({ "true, 0, 2, 4", "true, 0, 2, 6", "true, 0, 2, 7", "true, 0, 2, 8", "true, 0, 2, 9",
+      "true, 0, 2, 16", })
+  public void testFailover(boolean fastFailover, long minFailoverCompletionDuration,
+      long maxFailoverCompletionDuration, int numberOfThreads) {
 
     log.info(
       "TESTING WITH PARAMETERS: fastFailover: {} numberOfThreads: {} minFailoverCompletionDuration: {} maxFailoverCompletionDuration: {] ",
@@ -99,20 +100,21 @@ public class ActiveActiveLocalFailoverTest {
     MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
 
     JedisClientConfig config = endpoint1.getClientConfigBuilder()
-      .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
-      .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
+        .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
+        .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
     clusterConfig[0] = ClusterConfig.builder(endpoint1.getHostAndPort(), config)
-      .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
+        .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
     clusterConfig[1] = ClusterConfig.builder(endpoint2.getHostAndPort(), config)
-      .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
+        .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfig);
 
     builder.circuitBreakerSlidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED);
     builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
     builder.circuitBreakerSlidingWindowMinCalls(1);
-    builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
+    builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit
+                                                       // breaker
 
     builder.failbackSupported(false);
     // builder.failbackCheckInterval(1000);
@@ -144,9 +146,10 @@ public class ActiveActiveLocalFailoverTest {
       @Override
       public void accept(ClusterSwitchEventArgs e) {
         this.currentClusterName = e.getClusterName();
-        log.info("\n\n===={}=== \nJedis switching to cluster: {}\n====End of log===\n", e.getReason(),
-          e.getClusterName());
-        if ((e.getReason() == SwitchReason.CIRCUIT_BREAKER || e.getReason() == SwitchReason.HEALTH_CHECK)) {
+        log.info("\n\n===={}=== \nJedis switching to cluster: {}\n====End of log===\n",
+          e.getReason(), e.getClusterName());
+        if ((e.getReason() == SwitchReason.CIRCUIT_BREAKER
+            || e.getReason() == SwitchReason.HEALTH_CHECK)) {
           failoverHappened = true;
           failoverAt = Instant.now();
         }
@@ -164,7 +167,8 @@ public class ActiveActiveLocalFailoverTest {
     ensureEndpointAvailability(endpoint2.getHostAndPort(), config);
 
     // Create the connection provider
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
+    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
+        builder.build());
     FailoverReporter reporter = new FailoverReporter();
     provider.setClusterSwitchListener(reporter);
     provider.setActiveCluster(endpoint1.getHostAndPort());
@@ -179,13 +183,12 @@ public class ActiveActiveLocalFailoverTest {
     AtomicBoolean unexpectedErrors = new AtomicBoolean(false);
     AtomicReference<Exception> lastException = new AtomicReference<Exception>();
     AtomicLong stopRunningAt = new AtomicLong();
-    String cluster2Id = provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker().getName();
+    String cluster2Id = provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker()
+        .getName();
 
     // Start thread that imitates an application that uses the client
-    RateLimiterConfig rateLimiterConfig = RateLimiterConfig.custom()
-      .limitForPeriod(100)
-      .limitRefreshPeriod(Duration.ofSeconds(1))
-      .timeoutDuration(Duration.ofSeconds(1)).build();
+    RateLimiterConfig rateLimiterConfig = RateLimiterConfig.custom().limitForPeriod(100)
+        .limitRefreshPeriod(Duration.ofSeconds(1)).timeoutDuration(Duration.ofSeconds(1)).build();
 
     MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(client, (UnifiedJedis c) -> {
 
@@ -226,13 +229,15 @@ public class ActiveActiveLocalFailoverTest {
 
             long failedCommands = failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
-            log.warn("Thread {} failed to execute command after failover. Failed commands after failover: {}", threadId,
-              failedCommands);
+            log.warn(
+              "Thread {} failed to execute command after failover. Failed commands after failover: {}",
+              threadId, failedCommands);
           }
 
           if (attempt == 0) {
             long failedThreads = retryingThreadsCounter.incrementAndGet();
-            log.warn("Thread {} failed to execute command. Failed threads: {}", threadId, failedThreads);
+            log.warn("Thread {} failed to execute command. Failed threads: {}", threadId,
+              failedThreads);
           }
           try {
             Thread.sleep(retryingDelay);
@@ -263,7 +268,8 @@ public class ActiveActiveLocalFailoverTest {
     stopRunningAt.set(System.currentTimeMillis() + 30000);
 
     log.info("Triggering issue on endpoint1");
-    try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())) {
+    try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(),
+        endpoint1.getClientConfigBuilder().build())) {
       jedis.clientPause(ENDPOINT_PAUSE_TIME);
     }
 
@@ -286,7 +292,8 @@ public class ActiveActiveLocalFailoverTest {
 
     ConnectionPool pool = provider.getCluster(endpoint1.getHostAndPort()).getConnectionPool();
 
-    log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(), pool.getNumIdle());
+    log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(),
+      pool.getNumIdle());
     log.info("Failover happened at: {}", reporter.failoverAt);
     log.info("Failback happened at: {}", reporter.failbackAt);
 
@@ -300,8 +307,10 @@ public class ActiveActiveLocalFailoverTest {
       log.info("Last failed command exception: {}", lastException.get());
 
       // assertTrue(reporter.failbackHappened);
-      assertThat(fullFailoverTime.getSeconds(), Matchers.greaterThanOrEqualTo(minFailoverCompletionDuration));
-      assertThat(fullFailoverTime.getSeconds(), Matchers.lessThanOrEqualTo(maxFailoverCompletionDuration));
+      assertThat(fullFailoverTime.getSeconds(),
+        Matchers.greaterThanOrEqualTo(minFailoverCompletionDuration));
+      assertThat(fullFailoverTime.getSeconds(),
+        Matchers.lessThanOrEqualTo(maxFailoverCompletionDuration));
     } else {
       log.info("No failed commands after failover!");
     }

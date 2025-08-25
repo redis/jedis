@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 
-public class HostAndPort implements Serializable {
+public class HostAndPort implements Serializable, Endpoint {
 
   private static final long serialVersionUID = -519876229978427751L;
 
@@ -14,10 +14,12 @@ public class HostAndPort implements Serializable {
     this.port = port;
   }
 
+  @Override
   public String getHost() {
     return host;
   }
 
+  @Override
   public int getPort() {
     return port;
   }

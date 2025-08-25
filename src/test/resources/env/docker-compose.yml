@@ -151,15 +151,15 @@ services:
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
     container_name: cluster-stable-1
     #network_mode: host
-    command: --cluster-announce-ip 127.0.0.1
+    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150
     environment:
       - REDIS_CLUSTER=yes
       - REDIS_PASSWORD=cluster
       - PORT=7479
-      - NODES=3
-      - REPLICAS=0
+      - NODES=6
+      - REPLICAS=1
     ports:
-      - "7479-7481:7479-7481"
+      - "7479-7484:7479-7484"
     volumes:
       - ${REDIS_ENV_CONF_DIR}/cluster-stable/config:/redis/config:r
       - ${REDIS_ENV_WORK_DIR}/cluster-stable/work:/redis/work:rw

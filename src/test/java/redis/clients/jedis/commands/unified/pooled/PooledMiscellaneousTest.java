@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -22,6 +21,7 @@ import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
@@ -40,15 +40,14 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
     super(protocol);
   }
 
-  @BeforeEach
-  public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
-    PooledCommandsTestHelper.clearData();
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return PooledCommandsTestHelper.getPooled(protocol);
   }
 
-  @AfterEach
-  public void cleanUp() {
-    jedis.close();
+  @BeforeEach
+  public void setUp() {
+    PooledCommandsTestHelper.clearData();
   }
 
   @Test

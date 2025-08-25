@@ -1,8 +1,8 @@
 PATH := ./redis-git/src:${PATH}
 
 # Supported test env versions
-SUPPORTED_TEST_ENV_VERSIONS := 8.0 7.4 7.2 6.2
-DEFAULT_TEST_ENV_VERSION := 8.0
+SUPPORTED_TEST_ENV_VERSIONS := 8.2 8.0 7.4 7.2 6.2
+DEFAULT_TEST_ENV_VERSION := 8.2
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
 
 define REDIS1_CONF
@@ -473,7 +473,7 @@ start: cleanup compile-module
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
-	docker run -p 6479:6379 --name jedis-stack -e PORT=6379 -d redislabs/client-libs-test:8.0-M04-pre
+	docker run -p 6479:6379 --name jedis-stack -e PORT=6379 -d redislabs/client-libs-test:8.2
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null

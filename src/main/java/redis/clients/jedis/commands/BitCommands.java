@@ -99,7 +99,7 @@ public interface BitCommands {
   /**
    * <b><a href="http://redis.io/commands/bitop">Bitop Command</a></b>
    * Perform a bitwise operation between multiple keys (containing string values) and store the result in the destKey.
-   * @param op can be AND, OR, XOR or NOT
+   * @param op can be AND, OR, XOR, NOT, DIFF, DIFF1, ANDOR and ONE
    * @param destKey
    * @param srcKeys
    * @return The size of the string stored in the destKey

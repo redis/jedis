@@ -17,6 +17,7 @@ ClusterPipeline
 ClusterPubSub
 ConnectionPool
 CoreCommands
+config
 Customizable
 CRDB
 Dockerfile
@@ -37,6 +38,7 @@ GeoUnit
 GraphCommands
 Grokzen's
 HostAndPort
+HostAndPortMapper
 HostnameVerifier
 hostnames
 INCR
@@ -89,6 +91,7 @@ RedisInstrumentor
 RedisJSON
 RedisTimeSeries
 Redislabs
+reusability
 SHA
 SSLParameters
 SSLSocketFactory
@@ -205,6 +208,7 @@ keyspace
 keysvalues
 kllayn
 kwarg
+Kubernetes
 lastName
 lastsave
 learningpath

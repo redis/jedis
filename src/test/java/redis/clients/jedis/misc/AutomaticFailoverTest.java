@@ -1,5 +1,6 @@
 package redis.clients.jedis.misc;
 
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +22,8 @@ import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -64,9 +67,7 @@ public class AutomaticFailoverTest {
   @Test
   public void pipelineWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(
-            getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-                .build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractPipeline pipe = client.pipelined();
@@ -83,9 +84,7 @@ public class AutomaticFailoverTest {
   @Test
   public void transactionWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(
-            getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-                .build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractTransaction tx = client.multi();
@@ -97,6 +96,46 @@ public class AutomaticFailoverTest {
 
     assertEquals("foobar", jedis2.get("tstr"));
     assertEquals("bar", jedis2.hget("thash", "foo"));
+  }
+
+  @Test
+  public void commandFailoverUnresolvableHost() {
+    int slidingWindowMinCalls = 2;
+    int slidingWindowSize = 2;
+
+    HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
+    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
+        getClusterConfigs(clientConfig, unresolvableHostAndPort,
+            workingEndpoint.getHostAndPort())).retryWaitDuration(1).retryMaxAttempts(1)
+        .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
+        .circuitBreakerSlidingWindowSize(slidingWindowSize);
+
+    RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
+    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
+        builder.build());
+    connectionProvider.setClusterFailoverPostProcessor(failoverReporter);
+
+    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
+
+    String key = "hash-" + System.nanoTime();
+    log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
+
+    for (int attempt = 0; attempt < slidingWindowMinCalls; attempt++) {
+      Throwable thrown = assertThrows(JedisConnectionException.class,
+          () -> jedis.hset(key, "f1", "v1"));
+      assertThat(thrown.getCause(), instanceOf(UnknownHostException.class));
+      assertFalse(failoverReporter.failedOver);
+    }
+
+    // should failover now
+    jedis.hset(key, "f1", "v1");
+    assertTrue(failoverReporter.failedOver);
+
+    assertEquals(Collections.singletonMap("f1", "v1"), jedis.hgetAll(key));
+    jedis.flushAll();
+
+    jedis.close();
   }
 
   @Test

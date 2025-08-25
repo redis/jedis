@@ -31,6 +31,66 @@ public class SetParams extends BaseSetExParams<SetParams> {
     return this;
   }
 
+  /**
+   * Set the specified expire time, in seconds.
+   * @param remainingSeconds
+   * @return SetParams
+   */
+  @Override
+  public SetParams ex(long remainingSeconds) {
+    return super.ex(remainingSeconds);
+  }
+
+  /**
+   * Set the specified expire time, in milliseconds.
+   * @param remainingMilliseconds
+   * @return SetParams
+   */
+  @Override
+  public SetParams px(long remainingMilliseconds) {
+    return super.px(remainingMilliseconds);
+  }
+
+  /**
+   * Set the specified Unix time at which the key will expire, in seconds.
+   * @param timestampSeconds
+   * @return SetParams
+   */
+  @Override
+  public SetParams exAt(long timestampSeconds) {
+    return super.exAt(timestampSeconds);
+  }
+
+  /**
+   * Set the specified Unix time at which the key will expire, in milliseconds.
+   * @param timestampMilliseconds
+   * @return SetParams
+   */
+  @Override
+  public SetParams pxAt(long timestampMilliseconds) {
+    return super.pxAt(timestampMilliseconds);
+  }
+
+  /**
+   * Retain the time to live associated with the key.
+   *
+   * @deprecated Since 6.1.0 use {@link #keepTtl()} instead.
+   * @return SetParams
+   */
+  @Override
+  public SetParams keepttl() {
+    return keepTtl();
+  }
+
+  /**
+   * Retain the time to live associated with the key.
+   * @return SetParams
+   */
+  @Override
+  public SetParams keepTtl() {
+    return super.keepTtl();
+  }
+
   @Override
   public void addParams(CommandArguments args) {
     if (existance != null) {

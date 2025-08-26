@@ -3,8 +3,8 @@ package redis.clients.jedis.resps;
 import redis.clients.jedis.annots.Experimental;
 
 /**
- * Response object containing both similarity score and attributes for VSIM command
- * when used with WITHSCORES and WITHATTRIBS options.
+ * Response object containing both similarity score and attributes for VSIM command when used with
+ * WITHSCORES and WITHATTRIBS options.
  */
 @Experimental
 public class VSimScoreAttribs {
@@ -40,10 +40,7 @@ public class VSimScoreAttribs {
 
   @Override
   public String toString() {
-    return "VSimScoreAttribs{" +
-        "score=" + score +
-        ", attributes='" + attributes + '\'' +
-        '}';
+    return "VSimScoreAttribs{" + "score=" + score + ", attributes='" + attributes + '\'' + '}';
   }
 
   @Override

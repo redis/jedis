@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -2249,6 +2250,48 @@ public final class BuilderFactory {
   };
 
   // Vector Set builders
+  public static final Builder<Map<String, VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_MAP =
+      vsimScoreAttribsMapBuilder(STRING::build);
+
+  public static final Builder<Map<byte[], VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_BINARY_MAP =
+      vsimScoreAttribsMapBuilder(BINARY::build);
+
+  private static <K> Builder<Map<K,  VSimScoreAttribs>> vsimScoreAttribsMapBuilder(Function <Object, K> keyBuilder) {
+    return new Builder<Map<K, VSimScoreAttribs>>() {
+
+      @Override
+      @SuppressWarnings("unchecked")
+      public Map<K, VSimScoreAttribs> build(Object data) {
+        if (data == null) return null;
+        List<Object> list = (List<Object>) data;
+        if (list.isEmpty()) return Collections.emptyMap();
+
+        if (list.get(0) instanceof KeyValue) {
+          final Map<K, VSimScoreAttribs> result = new LinkedHashMap<>(list.size(), 1f);
+          for (Object o : list) {
+            KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+            List<Object> scoreAndAttribs = (List<Object>) kv.getValue();
+            result.put(keyBuilder.apply(kv.getKey()),
+                new VSimScoreAttribs(DOUBLE.build(scoreAndAttribs.get(0)),
+                    STRING.build(scoreAndAttribs.get(1))));
+          }
+          return result;
+        } else {
+          final Map<K, VSimScoreAttribs> result = new LinkedHashMap<>(list.size() / 3, 1f);
+          for (int i = 0; i < list.size(); i += 3) {
+            result.put(keyBuilder.apply(list.get(i)),
+                new VSimScoreAttribs(DOUBLE.build(list.get(i + 1)), STRING.build(list.get(i + 2))));
+          }
+          return result;
+        }
+      }
+
+      @Override
+      public String toString() {
+        return "Map<byte[], VSimScoreAttribs>";
+      }
+    };
+  }
 
 
   public static final Builder<RawVector> VEMB_RAW_RESULT = new Builder<RawVector>() {

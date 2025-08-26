@@ -27,6 +27,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
+import redis.clients.jedis.resps.VSimScoreAttribs;
 import redis.clients.jedis.resps.VectorInfo;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.VectorTestUtils;
@@ -1447,6 +1448,81 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   /**
+   * Test VSIM with scores and attributes.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimWithScoresAndAttribs(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:scores:attribs";
+
+    // Add test vectors with attributes
+    VAddParams addParams1 = new VAddParams().setAttr("category=test,priority=high");
+    jedis.vadd(testKey, new float[] { 0.1f, 0.2f, 0.3f }, "element1", addParams1);
+
+    VAddParams addParams2 = new VAddParams().setAttr("category=prod,priority=low");
+    jedis.vadd(testKey, new float[] { 0.15f, 0.25f, 0.35f }, "element2", addParams2);
+
+    // Add element without attributes
+    jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "element3");
+
+    VSimParams params = new VSimParams();
+    Map<String, VSimScoreAttribs> similarWithScoresAndAttribs = jedis
+        .vsimWithScoresAndAttribs(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
+    assertNotNull(similarWithScoresAndAttribs);
+    assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
+
+    // Verify scores and attributes are present
+    for (Map.Entry<String, VSimScoreAttribs> entry : similarWithScoresAndAttribs.entrySet()) {
+      String element = entry.getKey();
+      VSimScoreAttribs data = entry.getValue();
+
+      assertNotNull(data);
+      assertNotNull(data.getScore());
+      assertThat(data.getScore(), is(both(greaterThanOrEqualTo(0.0)).and(lessThanOrEqualTo(1.0))));
+
+      // Check attributes based on element
+      if ("element1".equals(element)) {
+        assertEquals("category=test,priority=high", data.getAttributes());
+      } else if ("element2".equals(element)) {
+        assertEquals("category=prod,priority=low", data.getAttributes());
+      } else if ("element3".equals(element)) {
+        assertNull(data.getAttributes()); // No attributes set
+      }
+    }
+  }
+
+  /**
+   * Test VSIM by element with scores and attributes.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimByElementWithScoresAndAttribs(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set:element:scores:attribs";
+
+    // Add test vectors with attributes
+    VAddParams addParams1 = new VAddParams().setAttr("type=reference,quality=high");
+    jedis.vadd(testKey, new float[] { 0.1f, 0.2f, 0.3f }, "reference", addParams1);
+
+    VAddParams addParams2 = new VAddParams().setAttr("type=similar,quality=medium");
+    jedis.vadd(testKey, new float[] { 0.12f, 0.22f, 0.32f }, "similar1", addParams2);
+
+    VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
+    jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "different", addParams3);
+
+    VSimParams params = new VSimParams();
+    Map<String, VSimScoreAttribs> similarWithScoresAndAttribs = jedis
+        .vsimByElementWithScoresAndAttribs(testKey, "reference", params);
+    assertNotNull(similarWithScoresAndAttribs);
+    assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
+
+    // Reference element should have perfect similarity with itself
+    assertTrue(similarWithScoresAndAttribs.containsKey("reference"));
+    VSimScoreAttribs referenceData = similarWithScoresAndAttribs.get("reference");
+    assertThat(referenceData.getScore(), is(closeTo(1.0, 0.001)));
+    assertEquals("type=reference,quality=high", referenceData.getAttributes());
+  }
+
+  /**
    * Test VSIM command with binary keys and elements. Verifies vector similarity search works with
    * byte arrays.
    */
@@ -1552,6 +1628,133 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
   private Double getBinaryScoreForElement(Map<byte[], Double> scoreMap, String elementName) {
     byte[] elementBytes = elementName.getBytes();
     for (Map.Entry<byte[], Double> entry : scoreMap.entrySet()) {
+      if (java.util.Arrays.equals(entry.getKey(), elementBytes)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Test VSIM command with binary keys and scores and attributes. Verifies vector similarity search
+   * returns scores and attributes with binary data.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimBinaryWithScoresAndAttribs(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary:scores:attribs")
+        .getBytes();
+
+    setupVSimTestSetBinaryWithAttribs(testKey);
+
+    // Test vsim with vector, scores and attributes (binary)
+    VSimParams params = new VSimParams();
+    Map<byte[], VSimScoreAttribs> similarWithScoresAndAttribs = jedis
+        .vsimWithScoresAndAttribs(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
+    assertNotNull(similarWithScoresAndAttribs);
+    assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
+
+    // Verify scores and attributes are present and valid
+    for (Map.Entry<byte[], VSimScoreAttribs> entry : similarWithScoresAndAttribs.entrySet()) {
+      byte[] element = entry.getKey();
+      VSimScoreAttribs data = entry.getValue();
+
+      assertNotNull(data);
+      assertNotNull(data.getScore());
+      assertThat(data.getScore(), is(both(greaterThanOrEqualTo(0.0)).and(lessThanOrEqualTo(1.0))));
+
+      // Check attributes based on element
+      String elementName = new String(element);
+      if ("element1".equals(elementName)) {
+        assertEquals("category=test,priority=high", data.getAttributes());
+      } else if ("element2".equals(elementName)) {
+        assertEquals("category=prod,priority=low", data.getAttributes());
+      } else if ("element3".equals(elementName)) {
+        assertNull(data.getAttributes()); // No attributes set
+      }
+    }
+
+  }
+
+  /**
+   * Test VSIM by element command with binary keys and scores and attributes. Verifies element-based
+   * vector similarity search returns scores and attributes with binary data.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVsimByElementBinaryWithScoresAndAttribs(TestInfo testInfo) {
+    byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:element:binary:scores:attribs")
+        .getBytes();
+
+    // Add test vectors with attributes
+    VAddParams addParams1 = new VAddParams().setAttr("type=reference,quality=high");
+    jedis.vadd(testKey, new float[] { 0.1f, 0.2f, 0.3f }, "reference".getBytes(), addParams1);
+
+    VAddParams addParams2 = new VAddParams().setAttr("type=similar,quality=medium");
+    jedis.vadd(testKey, new float[] { 0.12f, 0.22f, 0.32f }, "similar1".getBytes(), addParams2);
+
+    VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
+    jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "different".getBytes(), addParams3);
+
+    VSimParams params = new VSimParams();
+    Map<byte[], VSimScoreAttribs> similarWithScoresAndAttribs = jedis
+        .vsimByElementWithScoresAndAttribs(testKey, "reference".getBytes(), params);
+    assertNotNull(similarWithScoresAndAttribs);
+    assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
+
+    // Reference element should have perfect similarity with itself
+    assertTrue(similarWithScoresAndAttribs.containsKey("reference"));
+    VSimScoreAttribs referenceData = similarWithScoresAndAttribs.get("reference");
+    assertThat(referenceData.getScore(), is(closeTo(1.0, 0.001)));
+    assertEquals("type=reference,quality=high", referenceData.getAttributes());
+
+  }
+
+  /**
+   * Helper method to set up test vector set for binary VSIM tests with attributes.
+   */
+  private void setupVSimTestSetBinaryWithAttribs(byte[] testKey) {
+    // Add test vectors with attributes - same as non-binary version
+    float[] vector1 = { 0.1f, 0.2f, 0.3f };
+    float[] vector2 = { 0.15f, 0.25f, 0.35f };
+    float[] vector3 = { 0.9f, 0.8f, 0.7f };
+
+    VAddParams addParams1 = new VAddParams().setAttr("category=test,priority=high");
+    jedis.vadd(testKey, vector1, "element1".getBytes(), addParams1);
+
+    VAddParams addParams2 = new VAddParams().setAttr("category=prod,priority=low");
+    jedis.vadd(testKey, vector2, "element2".getBytes(), addParams2);
+
+    // Element without attributes
+    jedis.vadd(testKey, vector3, "element3".getBytes());
+  }
+
+  /**
+   * Helper method to set up test vector set for binary VSIM by element tests with attributes.
+   */
+  private void setupVSimByElementTestSetBinaryWithAttribs(byte[] testKey) {
+    // Add test vectors with attributes for element-based similarity
+    float[] vector1 = { 0.1f, 0.2f, 0.3f };
+    float[] vector2 = { 0.12f, 0.22f, 0.32f };
+    float[] vector3 = { 0.9f, 0.8f, 0.7f };
+
+    VAddParams addParams1 = new VAddParams().setAttr("type=reference,quality=high");
+    jedis.vadd(testKey, vector1, "reference".getBytes(), addParams1);
+
+    VAddParams addParams2 = new VAddParams().setAttr("type=similar,quality=medium");
+    jedis.vadd(testKey, vector2, "similar1".getBytes(), addParams2);
+
+    VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
+    jedis.vadd(testKey, vector3, "different".getBytes(), addParams3);
+  }
+
+  /**
+   * Helper method to get VSimScoreAttribs for a specific element from binary score map.
+   */
+  private VSimScoreAttribs getBinaryScoreAttribsForElement(Map<byte[], VSimScoreAttribs> scoreMap,
+      String elementName) {
+    byte[] elementBytes = elementName.getBytes();
+    for (Map.Entry<byte[], VSimScoreAttribs> entry : scoreMap.entrySet()) {
       if (java.util.Arrays.equals(entry.getKey(), elementBytes)) {
         return entry.getValue();
       }

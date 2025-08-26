@@ -515,15 +515,14 @@ public final class BuilderFactory {
       final List<Object> list = (List<Object>) data;
       if (list.isEmpty()) return Collections.emptyMap();
 
+      final JedisByteMap<Double> map = new JedisByteMap<>();
       if (list.get(0) instanceof KeyValue) {
-        final Map<byte[], Double> map = new LinkedHashMap<>(list.size(), 1f);
         for (Object o : list) {
           KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
           map.put(BINARY.build(kv.getKey()), DOUBLE.build(kv.getValue()));
         }
         return map;
       } else {
-        final Map<byte[], Double> map = new LinkedHashMap<>(list.size() / 2, 1f);
         final Iterator iterator = list.iterator();
         while (iterator.hasNext()) {
           map.put(BINARY.build(iterator.next()), DOUBLE.build(iterator.next()));
@@ -2250,49 +2249,73 @@ public final class BuilderFactory {
   };
 
   // Vector Set builders
-  public static final Builder<Map<String, VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_MAP =
-      vsimScoreAttribsMapBuilder(STRING::build);
+  public static final Builder<Map<String, VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_MAP = new Builder<Map<String, VSimScoreAttribs>>() {
 
-  public static final Builder<Map<byte[], VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_BINARY_MAP =
-      vsimScoreAttribsMapBuilder(BINARY::build);
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, VSimScoreAttribs> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
 
-  private static <K> Builder<Map<K,  VSimScoreAttribs>> vsimScoreAttribsMapBuilder(Function <Object, K> keyBuilder) {
-    return new Builder<Map<K, VSimScoreAttribs>>() {
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, VSimScoreAttribs> result = new LinkedHashMap<>(list.size(), 1f);
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          List<Object> scoreAndAttribs = (List<Object>) kv.getValue();
+          result.put(STRING.build(kv.getKey()),
+              new VSimScoreAttribs(DOUBLE.build(scoreAndAttribs.get(0)),
+                  STRING.build(scoreAndAttribs.get(1))));
+        }
+        return result;
+      } else {
+        final Map<String, VSimScoreAttribs> result = new LinkedHashMap<>(list.size() / 3, 1f);
+        for (int i = 0; i < list.size(); i += 3) {
+          result.put(STRING.build(list.get(i)),
+              new VSimScoreAttribs(DOUBLE.build(list.get(i + 1)), STRING.build(list.get(i + 2))));
+        }
+        return result;
+      }
+    }
 
-      @Override
-      @SuppressWarnings("unchecked")
-      public Map<K, VSimScoreAttribs> build(Object data) {
-        if (data == null) return null;
-        List<Object> list = (List<Object>) data;
-        if (list.isEmpty()) return Collections.emptyMap();
+    @Override
+    public String toString() {
+      return "Map<String, VSimScoreAttribs>";
+    }
+  };
 
-        if (list.get(0) instanceof KeyValue) {
-          final Map<K, VSimScoreAttribs> result = new LinkedHashMap<>(list.size(), 1f);
-          for (Object o : list) {
-            KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
-            List<Object> scoreAndAttribs = (List<Object>) kv.getValue();
-            result.put(keyBuilder.apply(kv.getKey()),
-                new VSimScoreAttribs(DOUBLE.build(scoreAndAttribs.get(0)),
-                    STRING.build(scoreAndAttribs.get(1))));
-          }
-          return result;
-        } else {
-          final Map<K, VSimScoreAttribs> result = new LinkedHashMap<>(list.size() / 3, 1f);
-          for (int i = 0; i < list.size(); i += 3) {
-            result.put(keyBuilder.apply(list.get(i)),
-                new VSimScoreAttribs(DOUBLE.build(list.get(i + 1)), STRING.build(list.get(i + 2))));
-          }
-          return result;
+  public static final Builder<Map<byte[], VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_BINARY_MAP = new Builder<Map<byte[], VSimScoreAttribs>>() {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], VSimScoreAttribs> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      JedisByteMap<VSimScoreAttribs> result = new JedisByteMap<>();
+      if (list.get(0) instanceof KeyValue) {
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          List<Object> scoreAndAttribs = (List<Object>) kv.getValue();
+          result.put(BINARY.build(kv.getKey()),
+              new VSimScoreAttribs(DOUBLE.build(scoreAndAttribs.get(0)),
+                  STRING.build(scoreAndAttribs.get(1))));
+        }
+      } else {
+        for (int i = 0; i < list.size(); i += 3) {
+          result.put(BINARY.build(list.get(i)),
+              new VSimScoreAttribs(DOUBLE.build(list.get(i + 1)), STRING.build(list.get(i + 2))));
         }
       }
+      return result;
+    }
 
-      @Override
-      public String toString() {
-        return "Map<byte[], VSimScoreAttribs>";
-      }
-    };
-  }
-
+    @Override
+    public String toString() {
+      return "Map<byte[], VSimScoreAttribs>";
+    }
+  };
 
   public static final Builder<RawVector> VEMB_RAW_RESULT = new Builder<RawVector>() {
     @Override

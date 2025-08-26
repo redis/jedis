@@ -1446,7 +1446,7 @@ public class VectorSetCommandsTest extends JedisCommandsTestBase {
    * Test VSIM with scores and attributes.
    */
   @Test
-  @SinceRedisVersion("8.0.0")
+  @SinceRedisVersion("8.2.0")
   public void testVsimWithScoresAndAttribs(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set:scores:attribs";
 
@@ -1490,7 +1490,7 @@ public class VectorSetCommandsTest extends JedisCommandsTestBase {
    * Test VSIM by element with scores and attributes.
    */
   @Test
-  @SinceRedisVersion("8.0.0")
+  @SinceRedisVersion("8.2.0")
   public void testVsimByElementWithScoresAndAttribs(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set:element:scores:attribs";
 

@@ -1451,7 +1451,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    * Test VSIM with scores and attributes.
    */
   @Test
-  @SinceRedisVersion("8.0.0")
+  @SinceRedisVersion("8.2.0")
   public void testVsimWithScoresAndAttribs(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set:scores:attribs";
 
@@ -1495,7 +1495,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    * Test VSIM by element with scores and attributes.
    */
   @Test
-  @SinceRedisVersion("8.0.0")
+  @SinceRedisVersion("8.2.0")
   public void testVsimByElementWithScoresAndAttribs(TestInfo testInfo) {
     String testKey = testInfo.getDisplayName() + ":test:vector:set:element:scores:attribs";
 
@@ -1590,7 +1590,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertThat(similarWithScores, is(not(anEmptyMap())));
 
     // Element1 should have perfect similarity with itself
-    Double element1Score = getBinaryScoreForElement(similarWithScores, "element1");
+    Double element1Score = similarWithScores.get("element1".getBytes());
     assertNotNull(element1Score);
     assertThat(element1Score, is(closeTo(1.0, 0.001)));
 
@@ -1620,19 +1620,6 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    */
   private List<String> getBinaryElementNames(List<byte[]> binaryElements) {
     return binaryElements.stream().map(String::new).collect(java.util.stream.Collectors.toList());
-  }
-
-  /**
-   * Helper method to get score for a specific element from binary score map.
-   */
-  private Double getBinaryScoreForElement(Map<byte[], Double> scoreMap, String elementName) {
-    byte[] elementBytes = elementName.getBytes();
-    for (Map.Entry<byte[], Double> entry : scoreMap.entrySet()) {
-      if (java.util.Arrays.equals(entry.getKey(), elementBytes)) {
-        return entry.getValue();
-      }
-    }
-    return null;
   }
 
   /**
@@ -1687,24 +1674,26 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
         .getBytes();
 
     // Add test vectors with attributes
+    byte[] referenceElement = "reference".getBytes();
     VAddParams addParams1 = new VAddParams().setAttr("type=reference,quality=high");
-    jedis.vadd(testKey, new float[] { 0.1f, 0.2f, 0.3f }, "reference".getBytes(), addParams1);
+    jedis.vadd(testKey, new float[] { 0.1f, 0.2f, 0.3f }, referenceElement, addParams1);
 
+    byte[] similar1Element = "similar1".getBytes();
     VAddParams addParams2 = new VAddParams().setAttr("type=similar,quality=medium");
     jedis.vadd(testKey, new float[] { 0.12f, 0.22f, 0.32f }, "similar1".getBytes(), addParams2);
 
+    byte[] differentElement = "different".getBytes();
     VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
     jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "different".getBytes(), addParams3);
 
     VSimParams params = new VSimParams();
     Map<byte[], VSimScoreAttribs> similarWithScoresAndAttribs = jedis
-        .vsimByElementWithScoresAndAttribs(testKey, "reference".getBytes(), params);
+        .vsimByElementWithScoresAndAttribs(testKey, referenceElement, params);
     assertNotNull(similarWithScoresAndAttribs);
     assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
 
     // Reference element should have perfect similarity with itself
-    assertTrue(similarWithScoresAndAttribs.containsKey("reference"));
-    VSimScoreAttribs referenceData = similarWithScoresAndAttribs.get("reference");
+    VSimScoreAttribs referenceData = similarWithScoresAndAttribs.get(referenceElement);
     assertThat(referenceData.getScore(), is(closeTo(1.0, 0.001)));
     assertEquals("type=reference,quality=high", referenceData.getAttributes());
 

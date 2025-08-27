@@ -1718,37 +1718,4 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.vadd(testKey, vector3, "element3".getBytes());
   }
 
-  /**
-   * Helper method to set up test vector set for binary VSIM by element tests with attributes.
-   */
-  private void setupVSimByElementTestSetBinaryWithAttribs(byte[] testKey) {
-    // Add test vectors with attributes for element-based similarity
-    float[] vector1 = { 0.1f, 0.2f, 0.3f };
-    float[] vector2 = { 0.12f, 0.22f, 0.32f };
-    float[] vector3 = { 0.9f, 0.8f, 0.7f };
-
-    VAddParams addParams1 = new VAddParams().setAttr("type=reference,quality=high");
-    jedis.vadd(testKey, vector1, "reference".getBytes(), addParams1);
-
-    VAddParams addParams2 = new VAddParams().setAttr("type=similar,quality=medium");
-    jedis.vadd(testKey, vector2, "similar1".getBytes(), addParams2);
-
-    VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
-    jedis.vadd(testKey, vector3, "different".getBytes(), addParams3);
-  }
-
-  /**
-   * Helper method to get VSimScoreAttribs for a specific element from binary score map.
-   */
-  private VSimScoreAttribs getBinaryScoreAttribsForElement(Map<byte[], VSimScoreAttribs> scoreMap,
-      String elementName) {
-    byte[] elementBytes = elementName.getBytes();
-    for (Map.Entry<byte[], VSimScoreAttribs> entry : scoreMap.entrySet()) {
-      if (java.util.Arrays.equals(entry.getKey(), elementBytes)) {
-        return entry.getValue();
-      }
-    }
-    return null;
-  }
-
 }

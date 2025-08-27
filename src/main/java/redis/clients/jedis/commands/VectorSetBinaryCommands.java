@@ -345,5 +345,4 @@ public interface VectorSetBinaryCommands {
    */
   @Experimental
   boolean vsetattr(byte[] key, byte[] element, byte[] attributes);
-
 }

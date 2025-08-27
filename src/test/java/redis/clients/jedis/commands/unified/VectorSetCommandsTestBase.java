@@ -1627,7 +1627,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    * returns scores and attributes with binary data.
    */
   @Test
-  @SinceRedisVersion("8.0.0")
+  @SinceRedisVersion("8.2.0")
   public void testVsimBinaryWithScoresAndAttribs(TestInfo testInfo) {
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:binary:scores:attribs")
         .getBytes();
@@ -1668,7 +1668,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
    * vector similarity search returns scores and attributes with binary data.
    */
   @Test
-  @SinceRedisVersion("8.0.0")
+  @SinceRedisVersion("8.2.0")
   public void testVsimByElementBinaryWithScoresAndAttribs(TestInfo testInfo) {
     byte[] testKey = (testInfo.getDisplayName() + ":test:vector:set:element:binary:scores:attribs")
         .getBytes();

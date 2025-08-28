@@ -352,6 +352,7 @@
 						<include>**/VectorTestUtils.java</include>
 						<include>**/VAddParams.java</include>
 						<include>**/VSimParams.java</include>
+						<include>**/VSimScoreAttribs.java</include>
 						<include>**/*FunctionCommandsTest*</include>
 					</includes>
 				</configuration>

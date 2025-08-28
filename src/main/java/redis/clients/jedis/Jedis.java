@@ -10049,6 +10049,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
   public List<String> vsimByElement(String key, String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElement(key, element));
@@ -10064,6 +10070,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override
@@ -10194,6 +10206,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
   public List<byte[]> vsimByElement(byte[] key, byte[] element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElement(key, element));
@@ -10209,6 +10227,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override

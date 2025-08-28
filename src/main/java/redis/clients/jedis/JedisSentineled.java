@@ -56,6 +56,12 @@ public class JedisSentineled extends UnifiedJedis {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
   }
 
+  /**
+   * Fluent builder for {@link JedisSentineled} (Redis Sentinel).
+   * <p>
+   * Obtain an instance via {@link #builder()}.
+   * </p>
+   */
   static public class Builder extends SentinelClientBuilder<JedisSentineled> {
 
     @Override
@@ -68,7 +74,7 @@ public class JedisSentineled extends UnifiedJedis {
   /**
    * Create a new builder for configuring JedisSentineled instances.
    *
-   * @return a new SentinelClientBuilder instance
+   * @return a new {@link JedisSentineled.Builder} instance
    */
   public static Builder builder() {
     return new Builder();

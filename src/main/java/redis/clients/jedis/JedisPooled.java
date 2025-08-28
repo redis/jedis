@@ -432,6 +432,12 @@ public class JedisPooled extends UnifiedJedis {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
   }
 
+  /**
+   * Fluent builder for {@link JedisPooled} (standalone).
+   * <p>
+   * Obtain an instance via {@link #builder()}.
+   * </p>
+   */
   static public class Builder extends StandaloneClientBuilder<JedisPooled> {
 
     @Override
@@ -443,7 +449,7 @@ public class JedisPooled extends UnifiedJedis {
 
   /**
    * Create a new builder for configuring JedisPooled instances.
-   * @return a new StandaloneClientBuilder instance
+   * @return a new {@link JedisPooled.Builder} instance
    */
   public static Builder builder() {
     return new Builder();

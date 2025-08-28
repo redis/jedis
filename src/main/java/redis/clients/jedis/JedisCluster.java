@@ -341,6 +341,12 @@ public class JedisCluster extends UnifiedJedis {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
   }
 
+  /**
+   * Fluent builder for {@link JedisCluster} (Redis Cluster).
+   * <p>
+   * Obtain an instance via {@link #builder()}.
+   * </p>
+   */
   static public class Builder extends ClusterClientBuilder<JedisCluster> {
 
     @Override
@@ -352,7 +358,7 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Create a new builder for configuring JedisCluster instances.
-   * @return a new ClusterClientBuilder instance
+   * @return a new {@link JedisCluster.Builder} instance
    */
   public static Builder builder() {
     return new Builder();

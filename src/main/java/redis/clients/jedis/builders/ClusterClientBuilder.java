@@ -13,9 +13,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <p>
  * This builder provides methods specific to Redis Cluster deployments, including cluster nodes
  * configuration, retry settings, and topology refresh configuration.
- * <p>
- * Example usage:
- *
+ * </p>
  */
 public abstract class ClusterClientBuilder<C extends JedisCluster>
     extends AbstractClientBuilder<ClusterClientBuilder<C>, C> {

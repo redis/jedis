@@ -11,7 +11,7 @@ import redis.clients.jedis.providers.SentineledConnectionProvider;
  * This builder provides methods specific to Redis Sentinel deployments, including master name
  * configuration, sentinel nodes configuration, and separate client configurations for master and
  * sentinel connections.
- * <p>
+ * </p>
  */
 public abstract class SentinelClientBuilder<C>
     extends AbstractClientBuilder<SentinelClientBuilder<C>, C> {
@@ -30,7 +30,7 @@ public abstract class SentinelClientBuilder<C>
    * @param masterName the master name (must not be null or empty)
    * @return this builder
    */
-  public SentinelClientBuilder<C>  masterName(String masterName) {
+  public SentinelClientBuilder<C> masterName(String masterName) {
     this.masterName = masterName;
     return this;
   }
@@ -43,7 +43,7 @@ public abstract class SentinelClientBuilder<C>
    * @param sentinels the set of sentinel nodes
    * @return this builder
    */
-  public SentinelClientBuilder<C>  sentinels(Set<HostAndPort> sentinels) {
+  public SentinelClientBuilder<C> sentinels(Set<HostAndPort> sentinels) {
     this.sentinels = sentinels;
     return this;
   }
@@ -56,7 +56,7 @@ public abstract class SentinelClientBuilder<C>
    * @param clientConfig the client configuration for master connections
    * @return this builder
    */
-  public SentinelClientBuilder<C>  clientConfig(JedisClientConfig clientConfig) {
+  public SentinelClientBuilder<C> clientConfig(JedisClientConfig clientConfig) {
     this.clientConfig = clientConfig;
     return this;
   }
@@ -69,13 +69,13 @@ public abstract class SentinelClientBuilder<C>
    * @param sentinelClientConfig the client configuration for sentinel connections
    * @return this builder
    */
-  public SentinelClientBuilder<C>  sentinelClientConfig(JedisClientConfig sentinelClientConfig) {
+  public SentinelClientBuilder<C> sentinelClientConfig(JedisClientConfig sentinelClientConfig) {
     this.sentinelClientConfig = sentinelClientConfig;
     return this;
   }
 
   @Override
-  protected SentinelClientBuilder<C>  self() {
+  protected SentinelClientBuilder<C> self() {
     return this;
   }
 

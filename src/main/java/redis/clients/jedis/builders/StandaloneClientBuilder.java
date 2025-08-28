@@ -71,8 +71,7 @@ public abstract class StandaloneClientBuilder<C>
     validateCommonConfiguration();
 
     if (hostAndPort == null) {
-      throw new IllegalArgumentException(
-          "Either URI or host/port must be specified");
+      throw new IllegalArgumentException("Either URI or host/port must be specified");
     }
   }
 

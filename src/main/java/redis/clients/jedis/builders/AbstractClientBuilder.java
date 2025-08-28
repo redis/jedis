@@ -57,7 +57,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   protected abstract ConnectionProvider createDefaultConnectionProvider();
 
-
   /**
    * Creates a default command executor based on the current configuration.
    * @return CommandExecutor

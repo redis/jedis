@@ -3,6 +3,8 @@ package redis.clients.jedis.builders;
 import java.time.Duration;
 import java.util.Set;
 import redis.clients.jedis.*;
+import redis.clients.jedis.executors.ClusterCommandExecutor;
+import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 
@@ -102,6 +104,12 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
         : DefaultJedisClientConfig.builder().build();
     return new ClusterConnectionProvider(this.nodes, config, this.cache, this.poolConfig,
         this.topologyRefreshPeriod);
+  }
+
+  @Override
+  protected CommandExecutor createDefaultCommandExecutor() {
+    return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
+        this.maxAttempts, this.maxTotalRetriesDuration);
   }
 
   @Override

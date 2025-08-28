@@ -57,6 +57,15 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   protected abstract ConnectionProvider createDefaultConnectionProvider();
 
+
+  /**
+   * Creates a default command executor based on the current configuration.
+   * @return CommandExecutor
+   */
+  protected CommandExecutor createDefaultCommandExecutor() {
+    return new DefaultCommandExecutor(this.connectionProvider);
+  }
+
   /**
    * Creates the specific client instance with the provided components.
    * <p>
@@ -99,28 +108,28 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * @return the configured Redis client instance
    */
   public C build() {
-    // Step 1: Validate configuration
+    // Validate configuration
     validateSpecificConfiguration();
 
-    // Step 2: Create cache from config if provided
+    // Create cache from config if provided
     if (this.cacheConfig != null) {
       this.cache = CacheFactory.getCache(this.cacheConfig);
     }
 
-    // Step 4: Create default connection provider if not set
+    // Create default connection provider if not set
     if (this.connectionProvider == null) {
       this.connectionProvider = createDefaultConnectionProvider();
     }
 
-    // Step 5: Create default command executor if not set
+    // Create default command executor if not set
     if (this.commandExecutor == null) {
-      this.commandExecutor = new DefaultCommandExecutor(this.connectionProvider);
+      this.commandExecutor = createDefaultCommandExecutor();
     }
 
-    // Step 6: Apply common configuration
-    this.applyCommonConfiguration(commandObjects);
+    // Apply common configuration
+    this.applyCommandObjectsConfiguration(commandObjects);
 
-    // Step 7: Create and return the specific client instance
+    // Create and return the specific client instance
     return createClient(this.commandExecutor, this.connectionProvider, this.commandObjects,
       this.redisProtocol, this.cache);
   }
@@ -275,7 +284,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * settings like key preprocessor, JSON mapper, and search dialect.
    * @param commandObjects the CommandObjects instance to configure
    */
-  public void applyCommonConfiguration(CommandObjects commandObjects) {
+  public void applyCommandObjectsConfiguration(CommandObjects commandObjects) {
     if (keyPreProcessor != null) {
       commandObjects.setKeyArgumentPreProcessor(keyPreProcessor);
     }

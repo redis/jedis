@@ -18,7 +18,6 @@ public abstract class StandaloneClientBuilder<C>
 
   // Standalone-specific configuration fields
   private HostAndPort hostAndPort = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
-  private URI uri = null;
   private JedisClientConfig clientConfig = null;
 
   /**
@@ -29,7 +28,6 @@ public abstract class StandaloneClientBuilder<C>
    */
   public StandaloneClientBuilder<C> hostAndPort(String host, int port) {
     this.hostAndPort = new HostAndPort(host, port);
-    this.uri = null; // Clear URI if host/port is set
     return this;
   }
 
@@ -40,7 +38,6 @@ public abstract class StandaloneClientBuilder<C>
    */
   public StandaloneClientBuilder<C> hostAndPort(HostAndPort hostAndPort) {
     this.hostAndPort = hostAndPort;
-    this.uri = null; // Clear URI if host/port is set
     return this;
   }
 
@@ -73,14 +70,9 @@ public abstract class StandaloneClientBuilder<C>
   protected void validateSpecificConfiguration() {
     validateCommonConfiguration();
 
-    if (uri == null && hostAndPort == null) {
+    if (hostAndPort == null) {
       throw new IllegalArgumentException(
-          "Either URI or host/port must be specified for standalone mode");
-    }
-
-    if (uri != null && hostAndPort != null) {
-      throw new IllegalArgumentException(
-          "Cannot specify both URI and host/port for standalone mode");
+          "Either URI or host/port must be specified");
     }
   }
 

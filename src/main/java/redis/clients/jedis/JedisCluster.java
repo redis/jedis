@@ -8,11 +8,14 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.builders.ClusterClientBuilder;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
+import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
@@ -332,6 +335,27 @@ public class JedisCluster extends UnifiedJedis {
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache clientSideCache) {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
+  }
+
+  private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  }
+
+  static public class Builder extends ClusterClientBuilder<JedisCluster> {
+
+    @Override
+    protected JedisCluster createClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+            CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    }
+  }
+
+  /**
+   * Create a new builder for configuring JedisCluster instances.
+   * @return a new ClusterClientBuilder instance
+   */
+  public static Builder builder() {
+    return new Builder();
   }
 
   /**

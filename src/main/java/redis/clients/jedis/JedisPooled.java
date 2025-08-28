@@ -8,9 +8,12 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.builders.StandaloneClientBuilder;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
+import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
@@ -423,6 +426,27 @@ public class JedisPooled extends UnifiedJedis {
 
   public JedisPooled(PooledConnectionProvider provider) {
     super(provider);
+  }
+
+  private JedisPooled(CommandExecutor commandExecutor, ConnectionProvider connectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  }
+
+  static public class Builder extends StandaloneClientBuilder<JedisPooled> {
+
+    @Override
+    protected JedisPooled createClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+            CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+      return new JedisPooled(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    }
+  }
+
+  /**
+   * Create a new builder for configuring JedisPooled instances.
+   * @return a new StandaloneClientBuilder instance
+   */
+  public static Builder builder() {
+    return new Builder();
   }
 
   public final Pool<Connection> getPool() {

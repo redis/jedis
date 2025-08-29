@@ -24,6 +24,9 @@ public class FaultInjectionClient {
 
   private static final String BASE_URL;
 
+  static final int CONNECTION_REQUEST_TIMEOUT = 3000;
+  static final int RESPONSE_TIMEOUT = 3000;
+
   static {
     BASE_URL = System.getenv().getOrDefault("FAULT_INJECTION_API_URL", "http://127.0.0.1:20324");
   }
@@ -91,8 +94,8 @@ public class FaultInjectionClient {
 
   private static CloseableHttpClient getHttpClient() {
     RequestConfig requestConfig = RequestConfig.custom()
-        .setConnectionRequestTimeout(3000, TimeUnit.MILLISECONDS)
-        .setResponseTimeout(3000, TimeUnit.MILLISECONDS).build();
+        .setConnectionRequestTimeout(CONNECTION_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
+        .setResponseTimeout(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS).build();
 
     return HttpClientBuilder.create()
         .setDefaultRequestConfig(requestConfig).build();

@@ -146,10 +146,11 @@ public class AutomaticFailoverTest {
   public void commandFailover() {
     int slidingWindowMinCalls = 6;
     int slidingWindowSize = 6;
+    int retryMaxAttempts = 3;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .retryMaxAttempts(3) // Default
+            .retryMaxAttempts(retryMaxAttempts) // Default
                                  // is
                                  // 3
             .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)

@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 public class MultiThreadedFakeApp extends FakeApp {
 
+  static final int QUEUE_CAPACITY = 100000;
+
   private final ExecutorService executorService;
   private final RateLimiter rateLimiter;
 
@@ -28,7 +30,7 @@ public class MultiThreadedFakeApp extends FakeApp {
         numThreads,
         0L,
         TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(100000),
+        new LinkedBlockingQueue<Runnable>(QUEUE_CAPACITY),
         new ThreadPoolExecutor.CallerRunsPolicy()
     );
     if (config != null) {

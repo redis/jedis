@@ -49,7 +49,7 @@ public class ActiveActiveLocalFailoverTest {
   private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
   private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
-  public static final int ENDPOINT_PAUSE_TIME = 10000;
+  public static final int ENDPOINT_PAUSE_TIME_MS = 10000;
   private static Proxy redisProxy1;
   private static Proxy redisProxy2;
 
@@ -270,7 +270,7 @@ public class ActiveActiveLocalFailoverTest {
     log.info("Triggering issue on endpoint1");
     try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(),
         endpoint1.getClientConfigBuilder().build())) {
-      jedis.clientPause(ENDPOINT_PAUSE_TIME);
+      jedis.clientPause(ENDPOINT_PAUSE_TIME_MS);
     }
 
     fakeApp.setAction(new TriggerActionResponse(null) {
@@ -324,7 +324,7 @@ public class ActiveActiveLocalFailoverTest {
   }
 
   private static void ensureEndpointAvailability(HostAndPort endpoint, JedisClientConfig config) {
-    await().atMost(Duration.ofSeconds(ENDPOINT_PAUSE_TIME)).until(() -> {
+    await().atMost(Duration.ofSeconds(ENDPOINT_PAUSE_TIME_MS)).until(() -> {
       try (Jedis jedis = new Jedis(endpoint, config)) {
         return "PONG".equals(jedis.ping());
       } catch (Exception e) {

@@ -42,7 +42,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-// TODO: Dynamic port for proxy
 @Tag("failover")
 public class FailoverIntegrationTest {
 

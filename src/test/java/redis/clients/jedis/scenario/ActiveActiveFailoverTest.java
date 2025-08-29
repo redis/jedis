@@ -35,7 +35,7 @@ import static redis.clients.jedis.Protocol.DEFAULT_TIMEOUT;
 @Tags({ @Tag("failover"), @Tag("scenario") })
 public class ActiveActiveFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
-  private static final int NUM_OF_THREADS = 18; //18;
+  private static final int NUM_OF_THREADS = 18;
   private static final int SOCKET_TIMEOUT_MS = DEFAULT_TIMEOUT;
   private static final int CONNECTION_TIMEOUT_MS = DEFAULT_TIMEOUT;
   private static final long NETWORK_FAILURE_INTERVAL = 15L;

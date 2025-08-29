@@ -33,6 +33,39 @@ import redis.clients.jedis.util.RedisOutputStream;
 
 public class Connection implements Closeable {
 
+  public static class Builder {
+    private JedisSocketFactory socketFactory;
+    private JedisClientConfig clientConfig;
+
+    public Builder socketFactory(JedisSocketFactory socketFactory) {
+      this.socketFactory = socketFactory;
+      return this;
+    }
+
+    public Builder clientConfig(JedisClientConfig clientConfig) {
+      this.clientConfig = clientConfig;
+      return this;
+    }
+
+    public JedisSocketFactory getSocketFactory() {
+      return socketFactory;
+    }
+
+    public JedisClientConfig getClientConfig() {
+      return clientConfig;
+    }
+
+    public Connection build() {
+      Connection conn = new Connection(this);
+      conn.initializeFromClientConfig();
+      return conn;
+    }
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
   private ConnectionPool memberOf;
   protected RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
@@ -48,6 +81,7 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
+  private JedisClientConfig clientConfig;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -67,14 +101,17 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
-    this.authXManager = null;
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
-    this.soTimeout = clientConfig.getSocketTimeoutMillis();
-    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
+    this.clientConfig = clientConfig;
     initializeFromClientConfig(clientConfig);
+  }
+
+  protected Connection(Builder builder) {
+    this.socketFactory = builder.getSocketFactory();
+    this.clientConfig = builder.getClientConfig();
   }
 
   @Override
@@ -288,6 +325,11 @@ public class Connection implements Closeable {
     }
   }
 
+  public void forceDisconnect() throws IOException {
+    setBroken();
+    IOUtils.closeQuietly(socket);
+  }
+
   public boolean isConnected() {
     return socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected()
         && !socket.isInputShutdown() && !socket.isOutputShutdown();
@@ -450,8 +492,15 @@ public class Connection implements Closeable {
     return true;
   }
 
+  public void initializeFromClientConfig() {
+    this.initializeFromClientConfig(clientConfig);
+  }
+
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
+      this.soTimeout = config.getSocketTimeoutMillis();
+      this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
+
       connect();
 
       protocol = config.getRedisProtocol();

@@ -4,6 +4,8 @@ PATH := ./redis-git/src:${PATH}
 SUPPORTED_TEST_ENV_VERSIONS := 8.2 8.0 7.4 7.2 6.2
 DEFAULT_TEST_ENV_VERSION := 8.2
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
+CLIENT_LIBS_TEST_IMAGE := redislabs/client-libs-test:8.2
+TOXIPROXY_IMAGE := ghcr.io/shopify/toxiproxy:2.8.0
 
 define REDIS1_CONF
 daemonize yes
@@ -441,6 +443,7 @@ export REDIS_UNAVAILABLE_CONF
 
 
 start: cleanup compile-module
+	export TEST_ENV_PROVIDER=local
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -473,59 +476,53 @@ start: cleanup compile-module
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
-	docker run -p 6479:6379 --name jedis-stack -e PORT=6379 -d redislabs/client-libs-test:8.2
+	docker run -p 6479:6379 --name jedis-stack -e PORT=6379 -d ${CLIENT_LIBS_TEST_IMAGE}
+	docker network create jedis-tests-net
+	docker run -p 8474:8474 --network jedis-tests-net -p 29379-29380:29379-29380 --name jedis-tests-toxiproxy -d ${TOXIPROXY_IMAGE}
+	docker run -p 9379:9379 --network jedis-tests-net -e PORT=9379 --name redis-failover-1 -d ${CLIENT_LIBS_TEST_IMAGE}
+	docker run -p 9380:9380 --network jedis-tests-net -e PORT=9380 --name redis-failover-2 -d ${CLIENT_LIBS_TEST_IMAGE}
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
 	- rm -vf /tmp/redis_stable_cluster_node*.conf 2>/dev/null
 	- rm -vf /tmp/redis_cluster_node*.log 2>/dev/null
 	- rm -vf /tmp/redis_stable_cluster_node*.log 2>/dev/null
+	- rm -vf /tmp/redis*.log 2>/dev/null
+	- rm -vf /tmp/sentinel*.conf 2>/dev/null
 	- rm dump.rdb appendonly.aof - 2>/dev/null
 
-
 stop:
-	kill `cat /tmp/redis1.pid`
-	kill `cat /tmp/redis2.pid`
-	kill `cat /tmp/redis3.pid`
-	kill `cat /tmp/redis4.pid`
-	kill `cat /tmp/redis5.pid`
-	kill `cat /tmp/redis6.pid`
-	kill `cat /tmp/redis7.pid`
-	kill `cat /tmp/redis8.pid`
-	kill `cat /tmp/redis9.pid`
-	kill `cat /tmp/redis10.pid`
-	kill `cat /tmp/redis11.pid`
-	kill `cat /tmp/sentinel1.pid`
-	kill `cat /tmp/sentinel2.pid`
-	kill `cat /tmp/sentinel3.pid`
-	kill `cat /tmp/sentinel4.pid`
-	kill `cat /tmp/sentinel5.pid`
-	kill `cat /tmp/redis_cluster_node1.pid` || true
-	kill `cat /tmp/redis_cluster_node2.pid` || true
-	kill `cat /tmp/redis_cluster_node3.pid` || true
-	kill `cat /tmp/redis_cluster_node4.pid` || true
-	kill `cat /tmp/redis_cluster_node5.pid` || true
-	kill `cat /tmp/redis_stable_cluster_node1.pid`
-	kill `cat /tmp/redis_stable_cluster_node2.pid`
-	kill `cat /tmp/redis_stable_cluster_node3.pid`
-	kill `cat /tmp/redis_uds.pid` || true
+	@for pidfile in \
+		/tmp/redis{1..11}.pid \
+		/tmp/sentinel{1..5}.pid \
+		/tmp/redis_cluster_node{1..5}.pid \
+		/tmp/redis_stable_cluster_node{1..3}.pid \
+		/tmp/redis_uds.pid; do \
+		if [ -f $$pidfile ]; then \
+			pid=$$(cat $$pidfile); \
+			if kill -0 $$pid 2>/dev/null; then \
+				echo "Stopping process $$pid from $$pidfile"; \
+				kill $$pid; \
+				sleep 1; \
+				if kill -0 $$pid 2>/dev/null; then \
+					echo "PID $$pid did not exit, forcing kill"; \
+					kill -9 $$pid; \
+				fi; \
+			fi; \
+			rm -f $$pidfile; \
+		fi; \
+	done
 	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
-	rm -f /tmp/sentinel1.conf
-	rm -f /tmp/sentinel2.conf
-	rm -f /tmp/sentinel3.conf
-	rm -f /tmp/sentinel4.conf
-	rm -f /tmp/sentinel5.conf
-	rm -f /tmp/redis_cluster_node1.conf
-	rm -f /tmp/redis_cluster_node2.conf
-	rm -f /tmp/redis_cluster_node3.conf
-	rm -f /tmp/redis_cluster_node4.conf
-	rm -f /tmp/redis_cluster_node5.conf
-	rm -f /tmp/redis_stable_cluster_node1.conf
-	rm -f /tmp/redis_stable_cluster_node2.conf
-	rm -f /tmp/redis_stable_cluster_node3.conf
-	docker rm -f jedis-stack
+	docker rm -f jedis-stack || true
+	docker rm -f jedis-tests-toxiproxy || true
+	docker rm -f redis-failover-1 || true
+	docker rm -f redis-failover-2 || true
+	docker network rm jedis-tests-net 2>/dev/null || true
 
-test: | start mvn-test stop
+test: | start mvn-test-local stop
+
+mvn-test-local:
+	@TEST_ENV_PROVIDER=local mvn -Dtest=${TEST} clean compile test
 
 mvn-test:
 	mvn -Dtest=${TEST} clean compile test

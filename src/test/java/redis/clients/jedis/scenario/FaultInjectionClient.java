@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.annotations.Expose;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.fluent.Request;
 import com.google.gson.Gson;
@@ -23,6 +24,9 @@ public class FaultInjectionClient {
 
   private static final String BASE_URL;
 
+  static final int CONNECTION_REQUEST_TIMEOUT = 3000;
+  static final int RESPONSE_TIMEOUT = 3000;
+
   static {
     BASE_URL = System.getenv().getOrDefault("FAULT_INJECTION_API_URL", "http://127.0.0.1:20324");
   }
@@ -30,6 +34,7 @@ public class FaultInjectionClient {
   private static final Logger log = LoggerFactory.getLogger(FaultInjectionClient.class);
 
   public static class TriggerActionResponse {
+    @Expose
     private final String actionId;
 
     private Instant lastRequestTime = null;
@@ -89,8 +94,8 @@ public class FaultInjectionClient {
 
   private static CloseableHttpClient getHttpClient() {
     RequestConfig requestConfig = RequestConfig.custom()
-        .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
-        .setResponseTimeout(5000, TimeUnit.MILLISECONDS).build();
+        .setConnectionRequestTimeout(CONNECTION_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
+        .setResponseTimeout(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS).build();
 
     return HttpClientBuilder.create()
         .setDefaultRequestConfig(requestConfig).build();
@@ -98,8 +103,10 @@ public class FaultInjectionClient {
 
   public TriggerActionResponse triggerAction(String actionType, HashMap<String, Object> parameters)
       throws IOException {
-    Gson gson = new GsonBuilder().setFieldNamingPolicy(
-        FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+    Gson gson = new GsonBuilder()
+        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+        .excludeFieldsWithoutExposeAnnotation()
+        .create();
 
     HashMap<String, Object> payload = new HashMap<>();
     payload.put("type", actionType);

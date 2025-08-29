@@ -12,6 +12,7 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -24,6 +25,7 @@ import redis.clients.jedis.providers.SentineledConnectionProvider;
 /**
  * Reflection-based coverage test for JedisSentineled constructors against builder API.
  */
+@EnabledIfSystemProperty(named = "with-param-names", matches = "true")
 public class JedisSentineledConstructorReflectionTest {
 
   private static final Logger log = LoggerFactory

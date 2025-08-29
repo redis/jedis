@@ -13,6 +13,7 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -28,6 +29,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * verifies each constructor parameter can be provided via: - ClusterClientBuilder methods, or -
  * DefaultJedisClientConfig.Builder methods, or - Custom ConnectionProvider (manual coverage)
  */
+@EnabledIfSystemProperty(named = "with-param-names", matches = "true")
 public class JedisClusterConstructorReflectionTest {
 
   private static final Logger log = LoggerFactory

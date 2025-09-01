@@ -3,6 +3,7 @@ package redis.clients.jedis.providers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -26,6 +27,15 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
+  class PoolInfo {
+    public String host;
+    public ConnectionPool pool;
+
+    public PoolInfo(String host, ConnectionPool pool) {
+      this.host = host;
+      this.pool = pool;
+    }
+  }
 
   private static final Logger LOG = LoggerFactory.getLogger(SentineledConnectionProvider.class);
 
@@ -50,6 +60,10 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   private final long subscribeRetryWaitTimeMillis;
 
   private final Lock initPoolLock = new ReentrantLock(true);
+
+  private final List<PoolInfo> slavePools = new ArrayList<>();
+
+  private int poolIndex;
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
@@ -102,6 +116,35 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     initMaster(master);
   }
 
+  private Connection getSlaveResource() {
+    int startIdx;
+    synchronized (slavePools) {
+      poolIndex++;
+      if (poolIndex >= slavePools.size()) {
+        poolIndex = 0;
+      }
+      startIdx = poolIndex;
+    }
+    return _getSlaveResource(startIdx, 0);
+  }
+
+  private Connection _getSlaveResource(int idx, int cnt) {
+    PoolInfo poolInfo;
+    synchronized (slavePools) {
+      if (cnt >= slavePools.size()) {
+        return null;
+      }
+      poolInfo = slavePools.get(idx % slavePools.size());
+    }
+    try {
+      Connection jedis = poolInfo.pool.getResource();
+      return jedis;
+    } catch (Exception e) {
+      LOG.error("get connection fail:", e);
+      return _getSlaveResource(idx + 1, cnt + 1);
+    }
+  }
+
   @Override
   public Connection getConnection() {
     return pool.getResource();
@@ -109,6 +152,16 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Override
   public Connection getConnection(CommandArguments args) {
+    boolean readCommand = masterClientConfig.isReadCommand(args);
+    if (readCommand) {
+      Connection slaveConn = getSlaveResource();
+      if (slaveConn != null) {
+        return slaveConn;
+      }
+      if (!masterClientConfig.isFallbackToMaster()) {
+        throw new JedisException("can not get Connection, all slave is invalid");
+      }
+    }
     return pool.getResource();
   }
 
@@ -117,6 +170,10 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     sentinelListeners.forEach(SentinelListener::shutdown);
 
     pool.close();
+
+    for (PoolInfo slavePool : slavePools) {
+      slavePool.pool.close();
+    }
   }
 
   public HostAndPort getCurrentMaster() {
@@ -164,6 +221,79 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       } else {
         return new ConnectionPool(master, masterClientConfig, clientSideCache, masterPoolConfig);
       }
+    }
+  }
+
+  private void initSlaves(List<HostAndPort> slaves) {
+    List<PoolInfo> removedSlavePools = new ArrayList<>();
+    try {
+      synchronized (slavePools) {
+        Loop:
+        for (int i = slavePools.size()-1; i >= 0; i--) {
+          PoolInfo poolInfo = slavePools.get(i);
+          for (HostAndPort slave : slaves) {
+            String host = slave.toString();
+            if (poolInfo.host.equals(host)) {
+              continue Loop;
+            }
+          }
+          removedSlavePools.add(slavePools.remove(i));
+        }
+
+        for (HostAndPort slave : slaves) {
+          addSlave(slave);
+        }
+      }
+    } finally {
+      if (!removedSlavePools.isEmpty() && clientSideCache != null) {
+        clientSideCache.flush();
+      }
+
+      for (PoolInfo removedSlavePool : removedSlavePools) {
+        removedSlavePool.pool.destroy();
+      }
+    }
+  }
+
+  private static boolean isHealthy(String flags) {
+    for (String flag : flags.split(",")) {
+      switch (flag.trim()) {
+        case "s_down":
+        case "o_down":
+        case "disconnected":
+          return false;
+      }
+    }
+    return true;
+  }
+
+  private void addSlave(HostAndPort slave) {
+    String newSlaveHost = slave.toString();
+    synchronized (this.slavePools) {
+      for (int i = 0; i < this.slavePools.size(); i++) {
+        PoolInfo poolInfo = this.slavePools.get(i);
+        if (poolInfo.host.equals(newSlaveHost)) {
+          return;
+        }
+      }
+      slavePools.add(new PoolInfo(newSlaveHost, createNodePool(slave)));
+    }
+  }
+
+  private void removeSlave(HostAndPort slave) {
+    String newSlaveHost = slave.toString();
+    PoolInfo removed = null;
+    synchronized (this.slavePools) {
+      for (int i = 0; i < this.slavePools.size(); i++) {
+        PoolInfo poolInfo = this.slavePools.get(i);
+        if (poolInfo.host.equals(newSlaveHost)) {
+          removed = slavePools.remove(i);
+          break;
+        }
+      }
+    }
+    if (removed != null) {
+      removed.pool.destroy();
     }
   }
 
@@ -262,6 +392,24 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
           sentinelJedis = new Jedis(node, sentinelClientConfig);
 
+          List<Map<String, String>> slaveInfos = sentinelJedis.sentinelSlaves(masterName);
+
+          List<HostAndPort> slaves = new ArrayList<>();
+
+          for (int i = 0; i < slaveInfos.size(); i++) {
+            Map<String, String> slaveInfo = slaveInfos.get(i);
+            String flags = slaveInfo.get("flags");
+            if (flags == null || !isHealthy(flags)) {
+              continue;
+            }
+            String ip = slaveInfo.get("ip");
+            int port = Integer.parseInt(slaveInfo.get("port"));
+            HostAndPort slave = new HostAndPort(ip, port);
+            slaves.add(slave);
+          }
+
+          initSlaves(slaves);
+
           // code for active refresh
           List<String> masterAddr = sentinelJedis.sentinelGetMasterAddrByName(masterName);
           if (masterAddr == null || masterAddr.size() != 2) {
@@ -275,24 +423,58 @@ public class SentineledConnectionProvider implements ConnectionProvider {
             public void onMessage(String channel, String message) {
               LOG.debug("Sentinel {} published: {}.", node, message);
 
-              String[] switchMasterMsg = message.split(" ");
+              String[] switchMsg = message.split(" ");
+              String slaveIp;
+              int slavePort;
+              switch (channel) {
+                case "+switch-master":
+                  if (switchMsg.length > 3) {
+                    if (masterName.equals(switchMsg[0])) {
+                      initMaster(toHostAndPort(switchMsg[3], switchMsg[4]));
+                    } else {
+                      LOG.debug(
+                              "Ignoring message on +switch-master for master {}. Our master is {}.",
+                              switchMsg[0], masterName);
+                    }
+                  } else {
+                    LOG.error("Invalid message received on sentinel {} on channel +switch-master: {}.",
+                            node, message);
+                  }
+                  break;
+                case "+sdown":
+                  if (switchMsg[0].equals("master")) {
+                    return;
+                  }
+                  if (!masterName.equals(switchMsg[5])) {
+                    return;
+                  }
+                  slaveIp = switchMsg[2];
+                  slavePort = Integer.parseInt(switchMsg[3]);
+                  removeSlave(new HostAndPort(slaveIp, slavePort));
+                  break;
+                case "-sdown":
+                  if (!masterName.equals(switchMsg[5])) {
+                    return;
+                  }
+                  slaveIp = switchMsg[2];
+                  slavePort = Integer.parseInt(switchMsg[3]);
+                  addSlave(new HostAndPort(slaveIp, slavePort));
+                  break;
+                case "+slave":
+                  if (!masterName.equals(switchMsg[5])) {
+                    return;
+                  }
+                  slaveIp = switchMsg[2];
+                  slavePort = Integer.parseInt(switchMsg[3]);
+                  addSlave(new HostAndPort(slaveIp, slavePort));
 
-              if (switchMasterMsg.length > 3) {
-
-                if (masterName.equals(switchMasterMsg[0])) {
-                  initMaster(toHostAndPort(switchMasterMsg[3], switchMasterMsg[4]));
-                } else {
-                  LOG.debug(
-                      "Ignoring message on +switch-master for master {}. Our master is {}.",
-                      switchMasterMsg[0], masterName);
-                }
-
-              } else {
-                LOG.error("Invalid message received on sentinel {} on channel +switch-master: {}.",
-                    node, message);
+                  String masterIp = switchMsg[6];
+                  int masterPort = Integer.parseInt(switchMsg[7]);
+                  removeSlave(new HostAndPort(masterIp, masterPort));
+                  break;
               }
             }
-          }, "+switch-master");
+          }, "+switch-master", "+sdown", "-sdown", "+slave");
 
         } catch (JedisException e) {
 

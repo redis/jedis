@@ -151,9 +151,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j.version}</version>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -201,6 +201,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>eu.rekawek.toxiproxy</groupId>
+			<artifactId>toxiproxy-java</artifactId>
+			<version>2.1.7</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- circuit breaker / failover -->
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
@@ -354,6 +360,21 @@
 						<include>**/VSimParams.java</include>
 						<include>**/VSimScoreAttribs.java</include>
 						<include>**/*FunctionCommandsTest*</include>
+						<include>**/Endpoint.java</include>
+						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
+						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
+						<include>**/mcf/EchoStrategyIntegrationTest.java</include>
+						<include>**/mcf/LagAwareStrategyUnitTest.java</include>
+						<include>**/mcf/RedisRestAPI*.java</include>
+						<include>**/mcf/ActiveActiveLocalFailoverTest*</include>
+						<include>**/mcf/FailbackMechanism*</include>
+						<include>**/mcf/PeriodicFailbackTest*</include>
+						<include>**/mcf/AutomaticFailoverTest*</include>
+						<include>**/mcf/MultiCluster*</include>
+						<include>**/mcf/StatusTracker*</include>
+						<include>**/Health*.java</include>
+						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
+						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 					</includes>
 				</configuration>
 				<executions>

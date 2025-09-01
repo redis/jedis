@@ -1,0 +1,31 @@
+<configuration>
+  <!-- Console appender with timestamps -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+  
+  <!-- File appender with timestamps -->
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>target/jedis-test.log</file>
+    <append>true</append>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Root logger configuration -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE" />
+    <appender-ref ref="FILE" />
+  </root>
+  
+  <!-- Set Redis client logging to DEBUG level -->
+  <logger name="redis.clients.jedis" level="DEBUG" />
+  <logger name="redis.clients.jedis.mcf.HealthCheck" level="ERROR" />
+  
+  <!-- Set other libraries to appropriate levels -->
+  <logger name="org.apache.http" level="INFO" />
+  <logger name="io.netty" level="INFO" />
+</configuration>

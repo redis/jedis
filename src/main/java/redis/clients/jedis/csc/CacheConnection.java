@@ -9,10 +9,54 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
 
 public class CacheConnection extends Connection {
+
+  public static class Builder extends Connection.Builder {
+    private Cache cache;
+
+    private Builder(Cache cache) {
+      if (cache == null) {
+        throw new IllegalArgumentException("Cache cannot be null!");
+      }
+      this.cache = cache;
+    }
+
+    public Cache getCache() {
+      return cache;
+    }
+
+    @Override
+    public Builder socketFactory(JedisSocketFactory socketFactory) {
+      super.socketFactory(socketFactory);
+      return this;
+    }
+
+    @Override
+    public Builder clientConfig(JedisClientConfig clientConfig) {
+      super.clientConfig(clientConfig);
+      return this;
+    }
+
+    @Override
+    public Connection build() {
+      CacheConnection conn = new CacheConnection(this);
+      conn.initializeFromClientConfig();
+      return conn;
+    }
+  }
+
+  public static Builder builder(Cache cache) {
+    return new Builder(cache);
+  }
+
+  @VisibleForTesting
+  public static Builder builder() {
+    throw new UnsupportedOperationException("Cache is required to build CacheConnection.");
+  }
 
   private final Cache cache;
   private ReentrantLock lock;
@@ -22,24 +66,23 @@ public class CacheConnection extends Connection {
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
 
-    if (protocol != RedisProtocol.RESP3) {
-      throw new JedisException("Client side caching is only supported with RESP3.");
-    }
-    if (!cache.compatibilityMode()) {
-      RedisVersion current = new RedisVersion(version);
-      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
-      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
-        throw new JedisException(String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
-      }
-    }
     this.cache = Objects.requireNonNull(cache);
     initializeClientSideCache();
+  }
+
+  private CacheConnection(Builder builder) {
+    super(builder);
+    this.cache = builder.getCache();
   }
 
   @Override
   protected void initializeFromClientConfig(JedisClientConfig config) {
     lock = new ReentrantLock();
     super.initializeFromClientConfig(config);
+    // this is required for the case ctor(builder).
+    // will also be called for the case ctor(socketFactory, clientConfig, cache) but will return
+    if (cache == null) return;
+    initializeClientSideCache();
   }
 
   @Override
@@ -92,7 +135,7 @@ public class CacheConnection extends Connection {
     T value = super.executeCommand(commandObject);
     cacheEntry = new CacheEntry<>(cacheKey, value, this);
     cache.set(cacheKey, cacheEntry);
-    // this line actually provides a deep copy of cached object instance 
+    // this line actually provides a deep copy of cached object instance
     value = cacheEntry.getValue();
     return value;
   }
@@ -102,6 +145,19 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
+    if (protocol != RedisProtocol.RESP3) {
+      throw new JedisException("Client side caching is only supported with RESP3.");
+    }
+    Objects.requireNonNull(cache);
+    if (!cache.compatibilityMode()) {
+      RedisVersion current = new RedisVersion(version);
+      RedisVersion required = new RedisVersion(MIN_REDIS_VERSION);
+      if (!REDIS.equals(server) || current.compareTo(required) < 0) {
+        throw new JedisException(
+          String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
+      }
+    }
+
     sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
     String reply = getStatusCodeReply();
     if (!"OK".equals(reply)) {

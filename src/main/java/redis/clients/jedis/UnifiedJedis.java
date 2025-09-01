@@ -344,6 +344,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return checkAndBroadcastCommand(commandObjects.ping());
   }
 
+  public String echo(String string) {
+    return executeCommand(commandObjects.echo(string));
+  }
+
   public String flushDB() {
     return checkAndBroadcastCommand(commandObjects.flushDB());
   }

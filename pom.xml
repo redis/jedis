@@ -57,7 +57,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.19.2</jackson.version>
+		<jackson.version>2.20.0</jackson.version>
 		<maven.surefire.version>3.5.3</maven.surefire.version>
 		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->

@@ -176,7 +176,7 @@ public class TrackingConnectionPool extends ConnectionPool {
   public void forceDisconnect() {
     this.close();
     ((FailFastConnectionFactory) this.getFactory()).failFast = true;
-    while (numWaiters.get() > 0 || getNumWaiters() > 0 || getNumActive() > 0 || getNumIdle() > 0) {
+    while (numWaiters.get() > 0 || getNumActive() > 0 || getNumIdle() > 0) {
       this.clear();
       ((FailFastConnectionFactory) this.getFactory()).forceDisconnect();
       for (Connection connection : poolTrackedObjects) {

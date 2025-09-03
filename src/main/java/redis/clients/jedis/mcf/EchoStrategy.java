@@ -1,10 +1,14 @@
 package redis.clients.jedis.mcf;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
@@ -20,7 +24,9 @@ public class EchoStrategy implements HealthCheckStrategy {
 
   public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig,
       HealthCheckStrategy.Config config) {
-    this.jedis = new UnifiedJedis(hostAndPort, jedisClientConfig);
+    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    poolConfig.setMaxTotal(2);
+    this.jedis = new JedisPooled(hostAndPort, jedisClientConfig, poolConfig);
     this.config = config;
   }
 

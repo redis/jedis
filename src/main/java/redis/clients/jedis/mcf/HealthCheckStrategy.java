@@ -1,7 +1,6 @@
 package redis.clients.jedis.mcf;
 
 import java.io.Closeable;
-
 import redis.clients.jedis.Endpoint;
 
 public interface HealthCheckStrategy extends Closeable {
@@ -32,23 +31,30 @@ public interface HealthCheckStrategy extends Closeable {
   }
 
   /**
-   * Get the minimum number of consecutive successful health checks required to mark the endpoint as
-   * healthy.
-   * @return the minimum number of consecutive successful health checks
+   * Get the number of retries for failed health checks.
+   * @return the number of retries
    */
-  default int minConsecutiveSuccessCount() {
+  default int getNumberOfRetries() {
     return 1;
+  }
+
+  /**
+   * Get the delay (in milliseconds) between retries for failed health checks.
+   * @return the delay in milliseconds
+   */
+  default int getDelayInBetweenRetries() {
+    return 100;
   }
 
   public static class Config {
     protected final int interval;
     protected final int timeout;
-    protected final int minConsecutiveSuccessCount;
+    protected final int numberOfRetries;
 
-    public Config(int interval, int timeout, int minConsecutiveSuccessCount) {
+    public Config(int interval, int timeout, int numberOfRetries) {
       this.interval = interval;
       this.timeout = timeout;
-      this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+      this.numberOfRetries = numberOfRetries;
     }
 
     public int getInterval() {
@@ -59,8 +65,8 @@ public interface HealthCheckStrategy extends Closeable {
       return timeout;
     }
 
-    public int getMinConsecutiveSuccessCount() {
-      return minConsecutiveSuccessCount;
+    public int getNumberOfRetries() {
+      return numberOfRetries;
     }
 
     /**
@@ -87,7 +93,7 @@ public interface HealthCheckStrategy extends Closeable {
     public static class Builder<T extends Builder<T, C>, C extends Config> {
       protected int interval = 1000;
       protected int timeout = 1000;
-      protected int minConsecutiveSuccessCount = 3;
+      protected int numberOfRetries = 3;
 
       /**
        * Set the interval between health checks in milliseconds.
@@ -112,13 +118,13 @@ public interface HealthCheckStrategy extends Closeable {
       }
 
       /**
-       * Set the minimum number of consecutive successful health checks required.
-       * @param minConsecutiveSuccessCount the minimum count (default: 3)
+       * Set the number of retries for failed health checks.
+       * @param numberOfRetries the number of retries (default: 3)
        * @return this builder
        */
       @SuppressWarnings("unchecked")
-      public T minConsecutiveSuccessCount(int minConsecutiveSuccessCount) {
-        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+      public T numberOfRetries(int numberOfRetries) {
+        this.numberOfRetries = numberOfRetries;
         return (T) this;
       }
 
@@ -127,7 +133,7 @@ public interface HealthCheckStrategy extends Closeable {
        * @return a new Config instance
        */
       public Config build() {
-        return new Config(interval, timeout, minConsecutiveSuccessCount);
+        return new Config(interval, timeout, numberOfRetries);
       }
     }
   }

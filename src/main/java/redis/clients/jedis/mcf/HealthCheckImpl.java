@@ -102,36 +102,123 @@ public class HealthCheckImpl implements HealthCheck {
     }
   }
 
+  private HealthStatus doHealtCheck() {
+    HealthStatus newStatus = strategy.doHealthCheck(endpoint);
+    log.trace("Health check completed for {} with status {}", endpoint, newStatus);
+    return newStatus;
+  }
+
   private void healthCheck() {
     long me = System.currentTimeMillis();
-    Future<?> future = executor.submit(() -> {
-      HealthStatus newStatus = strategy.doHealthCheck(endpoint);
-      safeUpdate(me, newStatus);
-      log.trace("Health check completed for {} with status {}", endpoint, newStatus);
-    });
+    Future<HealthStatus> future = executor.submit(this::doHealtCheck);
+    HealthStatus update = null;
 
     try {
-      future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
+      update = future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
     } catch (TimeoutException | ExecutionException e) {
-      // Cancel immediately on timeout or exec exception
       future.cancel(true);
-      safeUpdate(me, HealthStatus.UNHEALTHY);
-      log.warn("Health check timed out or failed for {}", endpoint, e);
+      if (log.isWarnEnabled()) {
+        log.warn(String.format("Health check timed out or failed for %s.", endpoint), e);
+      }
+      update = performHealthCheckWithRetries();
     } catch (InterruptedException e) {
       // Health check thread was interrupted
       future.cancel(true);
-      safeUpdate(me, HealthStatus.UNHEALTHY);
       Thread.currentThread().interrupt(); // Restore interrupted status
-      log.warn("Health check interrupted for {}", endpoint, e);
+      if (log.isWarnEnabled()) {
+        log.warn(String.format("Health check interrupted for %s.", endpoint), e);
+      }
+      // thread interrupted, stop health check process
+      return;
     }
+    safeUpdate(me, update);
   }
 
-  // -> 0 -> Unhealthy
-  // -> 1 ->
-  // -> 2 -> Healthy
-  // -> 1 -> Unhealthy
+  /**
+   * Perform health check with retries. All retries are attempted in a single new executor thread,
+   * no additional threads are created on each attempt due to resource optimization considerations.
+   * Maximum wait time is (timeout + delayBetweenRetries) * numberOfRetries. Main check interval
+   * might be impacted if retries take longer than the {@link HealthCheckStrategy#getInterval()}
+   * (though {@link HealthCheckImpl#executor} pool can extend, {@link HealthCheckImpl#scheduler} is
+   * single threaded).
+   * @return the result of retries
+   */
+  private HealthStatus performHealthCheckWithRetries() {
+    int attempts = Math.max(0, strategy.getNumberOfRetries());
+    if (attempts == 0) {
+      return HealthStatus.UNHEALTHY;
+    }
 
-  // just to avoid to replace status with an outdated result from another healthCheck
+    Future<HealthStatus> retries = executor.submit(() -> {
+      for (int i = 0; i < attempts; i++) {
+        try {
+          Thread.sleep(strategy.getDelayInBetweenRetries());
+          return doHealtCheck();
+        } catch (InterruptedException e) {
+          // Health check thread was interrupted
+          Thread.currentThread().interrupt(); // Restore interrupted status
+          if (log.isWarnEnabled()) {
+            log.warn(
+              String.format("Health check retry interrupted for %s. Attempt:%d", endpoint, i + 1),
+              e);
+          }
+          break;
+        } catch (Exception e) {
+          if (log.isWarnEnabled()) {
+            log.warn(String.format("Health check retry failed for %s. Attempt:%d", endpoint, i + 1),
+              e);
+          }
+          // continue to next attempt
+        }
+      }
+      return HealthStatus.UNHEALTHY;
+    });
+
+    try {
+      long timeout = (strategy.getTimeout() + strategy.getDelayInBetweenRetries()) * attempts;
+      return retries.get(timeout, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException | ExecutionException e) {
+      retries.cancel(true);
+      if (log.isWarnEnabled()) {
+        log.warn(String.format("Health check retries timed out or failed for %s", endpoint), e);
+      }
+    } catch (InterruptedException e) {
+      retries.cancel(true);
+      Thread.currentThread().interrupt(); // Restore interrupted status
+      if (log.isWarnEnabled()) {
+        log.warn(String.format("Health check retries interrupted for %s", endpoint), e);
+      }
+    }
+    return HealthStatus.UNHEALTHY;
+  }
+
+  /**
+   * just to avoid to replace status with an outdated result from another healthCheck
+   * 
+   * <pre>
+   * Health Check Race Condition Prevention
+   * 
+   * Problem: Async health checks can complete out of order, causing stale results
+   * to overwrite newer ones.
+   * 
+   * Timeline Example:
+   * ─────────────────────────────────────────────────────────────────
+   * T0: Start Check #1 ────────────────────┐
+   * T1: Start Check #2 ──────────┐         │
+   * T2:                          │         │
+   * T3: Check #2 completes ──────┘         │  → status = "Healthy"
+   * T4: Check #1 completes ────────────────┘  → status = "Unhealthy" (STALE!)
+   * 
+   * 
+   * Result: Final status shows "Unhealthy" even though the most recent 
+   * check (#2) returned "Healthy"
+   * 
+   * Solution: Track execution order/timestamp to ignore outdated results
+   * </pre>
+   * 
+   * @param owner the timestamp of the health check that is updating the status
+   * @param status the new status to set
+   */
   @VisibleForTesting
   void safeUpdate(long owner, HealthStatus status) {
     HealthCheckResult newResult = new HealthCheckResult(owner, status);
@@ -162,7 +249,8 @@ public class HealthCheckImpl implements HealthCheck {
 
   @Override
   public long getMaxWaitFor() {
-    return (strategy.getTimeout() + strategy.getInterval()) * strategy.minConsecutiveSuccessCount();
+    return (strategy.getTimeout() + strategy.getDelayInBetweenRetries())
+        * (1 + strategy.getNumberOfRetries());
   }
 
 }

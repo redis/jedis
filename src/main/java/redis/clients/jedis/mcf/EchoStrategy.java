@@ -35,19 +35,14 @@ public class EchoStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public int minConsecutiveSuccessCount() {
-    return config.getMinConsecutiveSuccessCount();
+  public int getNumberOfRetries() {
+    return config.getNumberOfRetries();
   }
 
   @Override
   public HealthStatus doHealthCheck(Endpoint endpoint) {
-    try {
-      return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY
-          : HealthStatus.UNHEALTHY;
-    } catch (Exception e) {
-      log.error("Error while performing health check", e);
-      return HealthStatus.UNHEALTHY;
-    }
+    return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY
+        : HealthStatus.UNHEALTHY;
   }
 
   @Override

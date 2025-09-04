@@ -455,6 +455,8 @@ public class HealthCheckTest {
     // Create a mock strategy that alternates between healthy and throwing an exception
     HealthCheckStrategy alternatingStrategy = new HealthCheckStrategy() {
       volatile boolean isHealthy = true;
+      int exceptionLimit = 3;
+      int exceptionOccured = 0;
 
       @Override
       public int getInterval() {
@@ -470,7 +472,11 @@ public class HealthCheckTest {
       public HealthStatus doHealthCheck(Endpoint endpoint) {
         if (isHealthy) {
           isHealthy = false;
-          throw new RuntimeException("Simulated exception");
+          if (exceptionOccured++ < exceptionLimit) {
+            throw new RuntimeException("Simulated exception");
+          } else {
+            return HealthStatus.UNHEALTHY;
+          }
         } else {
           isHealthy = true;
           return HealthStatus.HEALTHY;

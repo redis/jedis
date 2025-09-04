@@ -102,7 +102,7 @@ public class HealthCheckImpl implements HealthCheck {
     }
   }
 
-  private HealthStatus doHealtCheck() {
+  private HealthStatus doHealthCheck() {
     HealthStatus newStatus = strategy.doHealthCheck(endpoint);
     log.trace("Health check completed for {} with status {}", endpoint, newStatus);
     return newStatus;
@@ -110,7 +110,7 @@ public class HealthCheckImpl implements HealthCheck {
 
   private void healthCheck() {
     long me = System.currentTimeMillis();
-    Future<HealthStatus> future = executor.submit(this::doHealtCheck);
+    Future<HealthStatus> future = executor.submit(this::doHealthCheck);
     HealthStatus update = null;
 
     try {
@@ -153,7 +153,7 @@ public class HealthCheckImpl implements HealthCheck {
       for (int i = 0; i < attempts; i++) {
         try {
           Thread.sleep(strategy.getDelayInBetweenRetries());
-          return doHealtCheck();
+          return doHealthCheck();
         } catch (InterruptedException e) {
           // Health check thread was interrupted
           Thread.currentThread().interrupt(); // Restore interrupted status

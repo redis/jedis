@@ -456,7 +456,7 @@ public class HealthCheckTest {
     HealthCheckStrategy alternatingStrategy = new HealthCheckStrategy() {
       volatile boolean isHealthy = true;
       int exceptionLimit = 3;
-      int exceptionOccured = 0;
+      int exceptionOccurred = 0;
 
       @Override
       public int getInterval() {
@@ -472,7 +472,7 @@ public class HealthCheckTest {
       public HealthStatus doHealthCheck(Endpoint endpoint) {
         if (isHealthy) {
           isHealthy = false;
-          if (exceptionOccured++ < exceptionLimit) {
+          if (exceptionOccurred++ < exceptionLimit) {
             throw new RuntimeException("Simulated exception");
           } else {
             return HealthStatus.UNHEALTHY;

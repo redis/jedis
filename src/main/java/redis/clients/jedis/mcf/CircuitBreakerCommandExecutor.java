@@ -38,7 +38,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     supplier.withCircuitBreaker(cluster.getCircuitBreaker());
     supplier.withRetry(cluster.getRetry());
     supplier.withFallback(provider.getFallbackExceptionList(),
-      e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker()));
+      e -> this.handleClusterFailover(commandObject, cluster));
 
     return supplier.decorate().get();
   }
@@ -74,9 +74,9 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
    * failure scenarios
    */
   private <T> T handleClusterFailover(CommandObject<T> commandObject,
-      CircuitBreaker circuitBreaker) {
+      Cluster cluster) {
 
-    clusterFailover(circuitBreaker);
+    clusterFailover(cluster);
 
     // Recursive call to the initiating method so the operation can be retried on the next cluster
     // connection

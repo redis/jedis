@@ -31,22 +31,8 @@ public class HealthCheckTest {
   @Mock
   private HealthCheckStrategy mockStrategy;
 
-  private final HealthCheckStrategy alwaysHealthyStrategy = new HealthCheckStrategy() {
-    @Override
-    public int getInterval() {
-      return 100;
-    }
-
-    @Override
-    public int getTimeout() {
-      return 50;
-    }
-
-    @Override
-    public HealthStatus doHealthCheck(Endpoint endpoint) {
-      return HealthStatus.HEALTHY;
-    }
-  };
+  private final HealthCheckStrategy alwaysHealthyStrategy = new TestHealthCheckStrategy(100, 50, 0,
+      10, () -> HealthStatus.HEALTHY);
 
   @Mock
   private Consumer<HealthStatusChangeEvent> mockCallback;
@@ -455,7 +441,7 @@ public class HealthCheckTest {
     // Create a mock strategy that alternates between healthy and throwing an exception
     HealthCheckStrategy alternatingStrategy = new HealthCheckStrategy() {
       volatile boolean isHealthy = true;
-      int exceptionLimit = 3;
+      int exceptionLimit = 2;
       int exceptionOccurred = 0;
 
       @Override
@@ -484,7 +470,9 @@ public class HealthCheckTest {
       }
     };
 
-    CountDownLatch statusChangeLatch = new CountDownLatch(2); // Wait for 2 status changes
+    // Wait for 2 status changes,
+    // it will start with unhealthy(due to simulated exception) and then switch to healthy
+    CountDownLatch statusChangeLatch = new CountDownLatch(2);
     HealthStatusListener listener = event -> statusChangeLatch.countDown();
 
     HealthStatusManager manager = new HealthStatusManager();
@@ -501,25 +489,12 @@ public class HealthCheckTest {
   void testHealthCheckIntegration() throws InterruptedException {
     // Create a mock strategy that alternates between healthy and unhealthy
     AtomicReference<HealthStatus> statusToReturn = new AtomicReference<>(HealthStatus.HEALTHY);
-    HealthCheckStrategy alternatingStrategy = new HealthCheckStrategy() {
-      @Override
-      public int getInterval() {
-        return 100;
-      }
-
-      @Override
-      public int getTimeout() {
-        return 50;
-      }
-
-      @Override
-      public HealthStatus doHealthCheck(Endpoint endpoint) {
-        HealthStatus current = statusToReturn.get();
-        statusToReturn
-            .set(current == HealthStatus.HEALTHY ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY);
-        return current;
-      }
-    };
+    HealthCheckStrategy alternatingStrategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
+      HealthStatus current = statusToReturn.get();
+      statusToReturn
+          .set(current == HealthStatus.HEALTHY ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY);
+      return current;
+    });
 
     CountDownLatch statusChangeLatch = new CountDownLatch(2); // Wait for 2 status changes
     HealthStatusListener listener = event -> statusChangeLatch.countDown();
@@ -556,5 +531,175 @@ public class HealthCheckTest {
     assertNotNull(strategyWithoutConfig);
     assertEquals(1000, strategyWithoutConfig.getInterval()); // Default values
     assertEquals(1000, strategyWithoutConfig.getTimeout());
+  }
+
+  // ========== Retry Logic Unit Tests ==========
+
+  @Test
+  void testRetryLogic_SuccessOnFirstAttempt() throws InterruptedException {
+    AtomicInteger callCount = new AtomicInteger(0);
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
+      callCount.incrementAndGet();
+      return HealthStatus.HEALTHY; // Always succeeds
+    });
+
+    CountDownLatch latch = new CountDownLatch(1);
+    Consumer<HealthStatusChangeEvent> callback = event -> latch.countDown();
+
+    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
+    healthCheck.start();
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());
+
+    // Should only call doHealthCheck once (no retries needed)
+    assertEquals(1, callCount.get());
+
+    healthCheck.stop();
+  }
+
+  @Test
+  void testRetryLogic_FailThenSucceedOnRetry() throws InterruptedException {
+    AtomicInteger callCount = new AtomicInteger(0);
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
+      int attempt = callCount.incrementAndGet();
+      if (attempt == 1) {
+        throw new RuntimeException("First attempt fails");
+      }
+      return HealthStatus.HEALTHY; // Second attempt succeeds
+    });
+
+    CountDownLatch latch = new CountDownLatch(1);
+    Consumer<HealthStatusChangeEvent> callback = event -> {
+      if (event.getNewStatus() == HealthStatus.HEALTHY) {
+        latch.countDown();
+      }
+    };
+
+    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
+    healthCheck.start();
+
+    assertTrue(latch.await(3, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());
+
+    // Should call doHealthCheck twice (first fails, second succeeds)
+    assertEquals(2, callCount.get());
+
+    healthCheck.stop();
+  }
+
+  @Test
+  void testRetryLogic_ExhaustAllRetriesAndFail() throws InterruptedException {
+    AtomicInteger callCount = new AtomicInteger(0);
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
+      callCount.incrementAndGet();
+      throw new RuntimeException("Always fails");
+    });
+
+    CountDownLatch latch = new CountDownLatch(1);
+    Consumer<HealthStatusChangeEvent> callback = event -> {
+      if (event.getNewStatus() == HealthStatus.UNHEALTHY) {
+        latch.countDown();
+      }
+    };
+
+    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
+    healthCheck.start();
+
+    assertTrue(latch.await(3, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
+
+    // Should call doHealthCheck 3 times (1 initial + 2 retries)
+    assertEquals(3, callCount.get());
+
+    healthCheck.stop();
+  }
+
+  @Test
+  void testRetryLogic_ZeroRetries() throws InterruptedException {
+    AtomicInteger callCount = new AtomicInteger(0);
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 0, 10, () -> {
+      callCount.incrementAndGet();
+      throw new RuntimeException("Fails");
+    });
+
+    CountDownLatch latch = new CountDownLatch(1);
+    Consumer<HealthStatusChangeEvent> callback = event -> {
+      if (event.getNewStatus() == HealthStatus.UNHEALTHY) {
+        latch.countDown();
+      }
+    };
+
+    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
+    healthCheck.start();
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
+
+    // Should call doHealthCheck only once (no retries configured)
+    assertEquals(1, callCount.get());
+
+    healthCheck.stop();
+  }
+
+  @Test
+  void testRetryLogic_NegativeRetriesHandledAsZero() throws InterruptedException {
+    AtomicInteger callCount = new AtomicInteger(0);
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, -1, 10, () -> {
+      callCount.incrementAndGet();
+      throw new RuntimeException("Fails");
+    });
+
+    CountDownLatch latch = new CountDownLatch(1);
+    Consumer<HealthStatusChangeEvent> callback = event -> {
+      if (event.getNewStatus() == HealthStatus.UNHEALTHY) {
+        latch.countDown();
+      }
+    };
+
+    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
+    healthCheck.start();
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
+
+    // Should call doHealthCheck only once (negative retries treated as 0)
+    assertEquals(1, callCount.get());
+
+    healthCheck.stop();
+  }
+
+  @Test
+  void testRetryLogic_InterruptionStopsRetries() throws InterruptedException {
+    AtomicInteger callCount = new AtomicInteger(0);
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 5, 100, () -> {
+      int count = callCount.incrementAndGet();
+      if (count == 1) {
+        throw new RuntimeException("First attempt fails");
+      } else {
+        // Simulate interruption on retry attempts
+        Thread.currentThread().interrupt();
+        throw new InterruptedException("Interrupted during retry");
+      }
+    });
+
+    CountDownLatch latch = new CountDownLatch(1);
+    Consumer<HealthStatusChangeEvent> callback = event -> {
+      if (event.getNewStatus() == HealthStatus.UNHEALTHY) {
+        latch.countDown();
+      }
+    };
+
+    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
+    healthCheck.start();
+
+    assertTrue(latch.await(3, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
+
+    // Should stop retrying after interruption (likely 1 or 2 calls, not all 6)
+    assertTrue(callCount.get() <= 2,
+      "Should stop after interruption, but made " + callCount.get() + " calls");
+
+    healthCheck.stop();
   }
 }

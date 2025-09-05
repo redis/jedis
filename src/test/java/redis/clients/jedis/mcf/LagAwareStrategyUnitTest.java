@@ -95,7 +95,8 @@ public class LagAwareStrategyUnitTest {
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
       (mock, context) -> {
         // First call throws exception, second call returns bdbInfo
-        when(mock.getBdbs()).thenThrow(new RuntimeException("boom")).thenReturn(Arrays.asList(bdbInfo));
+        when(mock.getBdbs()).thenThrow(new RuntimeException("boom"))
+            .thenReturn(Arrays.asList(bdbInfo));
         when(mock.checkBdbAvailability("42", true, 100L)).thenReturn(true);
         reference[0] = mock;
       })) {

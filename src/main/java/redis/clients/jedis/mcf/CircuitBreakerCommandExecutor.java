@@ -73,8 +73,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  private <T> T handleClusterFailover(CommandObject<T> commandObject,
-      Cluster cluster) {
+  private <T> T handleClusterFailover(CommandObject<T> commandObject, Cluster cluster) {
 
     clusterFailover(cluster);
 

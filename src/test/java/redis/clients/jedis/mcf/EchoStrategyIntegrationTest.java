@@ -13,6 +13,7 @@ import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.exceptions.JedisException;
 
 import java.io.IOException;
 
@@ -68,8 +69,7 @@ public class EchoStrategyIntegrationTest {
       redisProxy.disable();
 
       // Health check should now fail - this will expose the bug
-      HealthStatus statusAfterDisable = strategy.doHealthCheck(proxyHostAndPort);
-      assertEquals(HealthStatus.UNHEALTHY, statusAfterDisable);
+      assertThrows(JedisException.class, () -> strategy.doHealthCheck(proxyHostAndPort));
 
       // Re-enable proxy
       redisProxy.enable();
@@ -95,9 +95,7 @@ public class EchoStrategyIntegrationTest {
       redisProxy.toxics().latency("slow-connection", ToxicDirection.DOWNSTREAM, 1000);
 
       // Health check should timeout and return unhealthy
-      HealthStatus slowStatus = strategy.doHealthCheck(proxyHostAndPort);
-      assertEquals(HealthStatus.UNHEALTHY, slowStatus,
-        "Health check should fail with high latency");
+      assertThrows(JedisException.class, () -> strategy.doHealthCheck(proxyHostAndPort));
 
       // Remove toxic
       redisProxy.toxics().get("slow-connection").remove();
@@ -122,8 +120,7 @@ public class EchoStrategyIntegrationTest {
       redisProxy.toxics().limitData("connection-drop", ToxicDirection.UPSTREAM, 10);
 
       // This should fail due to connection issues
-      HealthStatus droppedStatus = strategy.doHealthCheck(proxyHostAndPort);
-      assertEquals(HealthStatus.UNHEALTHY, droppedStatus);
+      assertThrows(JedisException.class, () -> strategy.doHealthCheck(proxyHostAndPort));
 
       // Remove toxic
       redisProxy.toxics().get("connection-drop").remove();

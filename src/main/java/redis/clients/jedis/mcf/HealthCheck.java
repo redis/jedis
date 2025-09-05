@@ -18,8 +18,7 @@ public interface HealthCheck {
    * stable state.
    * <p>
    * Transition to stable state means either HEALTHY or UNHEALTHY. UNKNOWN is not considered stable.
-   * This is calculated based on the health check strategy's interval, timeout, and minimum
-   * consecutive success count.
+   * This is calculated based on the health check strategy's timeout, retry delay and retry count.
    * </p>
    * @return the maximum wait duration in milliseconds
    */

@@ -23,7 +23,7 @@ public final class Protocol {
 
   public static final String DEFAULT_HOST = "127.0.0.1";
   public static final int DEFAULT_PORT = 6379;
-  public static final int DEFAULT_SENTINEL_PORT = 26378;
+  public static final int DEFAULT_SENTINEL_PORT = 26379;
   public static final int DEFAULT_TIMEOUT = 2000;
   public static final int DEFAULT_DATABASE = 0;
   public static final int CLUSTER_HASHSLOTS = 16384;

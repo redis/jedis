@@ -199,6 +199,7 @@ public class SentineledConnectionProviderTest {
             .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
             sentinels, DefaultJedisClientConfig.builder().build(), ReadFrom.REPLICA)) {
 
+      Thread.sleep(1000);
       Whitebox.setInternalState(jedis.provider, "slavePools", new ArrayList<>());
       jedis.set("foo", "bar");
       Thread.sleep(1000);
@@ -216,6 +217,25 @@ public class SentineledConnectionProviderTest {
             .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
             sentinels, DefaultJedisClientConfig.builder().build(), ReadFrom.REPLICA_PREFERRED)) {
 
+      Thread.sleep(1000);
+      Whitebox.setInternalState(jedis.provider, "slavePools", new ArrayList<>());
+      jedis.set("foo", "bar");
+      Thread.sleep(1000);
+      assertDoesNotThrow(() -> jedis.get("foo"));
+    }
+  }
+
+  @Test
+  public void testAllWriteCommandsWhenNOSlave() throws InterruptedException {
+    DefaultRedisCredentialsProvider credentialsProvider
+            = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, password));
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, DefaultJedisClientConfig.builder()
+            .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
+            .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
+            sentinels, DefaultJedisClientConfig.builder().build(), ReadFrom.REPLICA_PREFERRED, command -> false)) {
+
+      Thread.sleep(1000);
       Whitebox.setInternalState(jedis.provider, "slavePools", new ArrayList<>());
       jedis.set("foo", "bar");
       Thread.sleep(1000);

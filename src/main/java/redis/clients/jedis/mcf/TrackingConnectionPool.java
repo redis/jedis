@@ -53,8 +53,12 @@ public class TrackingConnectionPool extends ConnectionPool {
         } finally {
           factoryTrackedObjects.remove(object.getObject());
         }
+        // this can make a marginal improvement on fast failover duration!
+        if (failFast) {
+          object.getObject().close();
+          throw new JedisConnectionException("Failed to create connection!");
+        }
         return object;
-
       } catch (JedisConnectionException e) {
         throw e;
       } catch (Exception e) {
@@ -176,11 +180,20 @@ public class TrackingConnectionPool extends ConnectionPool {
   public void forceDisconnect() {
     this.close();
     ((FailFastConnectionFactory) this.getFactory()).failFast = true;
-    while (numWaiters.get() > 0 || getNumActive() > 0 || getNumIdle() > 0) {
+    int numOfConnected = poolTrackedObjects.size();
+    // we need to wait for all waiters to leave before we are done with disconnecting the
+    // connections, since a user app thread might be either;
+    // - in the middle of a factory call(create|init) and not yet show up in poolTrackedObjects
+    // - blocked on an exhausted pool, waiting for resources to return back pool
+    while (numWaiters.get() > 0 || numOfConnected > 0) {
       this.clear();
       ((FailFastConnectionFactory) this.getFactory()).forceDisconnect();
+      numOfConnected = 0;
       for (Connection connection : poolTrackedObjects) {
         try {
+          if (connection.isConnected()) {
+            numOfConnected++;
+          }
           connection.forceDisconnect();
         } catch (Exception e) {
           log.warn("Error while force disconnecting connection: " + connection.toIdentityString(),
@@ -188,6 +201,7 @@ public class TrackingConnectionPool extends ConnectionPool {
         }
       }
       try {
+        // this is just to yield the thread for a fair share of CPU
         Thread.sleep(1);
       } catch (InterruptedException e) {
       }

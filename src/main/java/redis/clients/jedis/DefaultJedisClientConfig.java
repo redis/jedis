@@ -33,8 +33,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
-  private final boolean fallbackToMaster;
-
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -52,7 +50,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
-    this.fallbackToMaster = builder.fallbackToMaster;
   }
 
   @Override
@@ -146,11 +143,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
-  @Override
-  public boolean isFallbackToMaster() {
-    return fallbackToMaster;
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -182,8 +174,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean readOnlyForRedisClusterReplicas = false;
 
     private AuthXManager authXManager = null;
-
-    private boolean fallbackToMaster = true;
 
     private Builder() {
     }
@@ -307,11 +297,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder fallbackToMaster(boolean fallbackToMaster) {
-      this.fallbackToMaster = fallbackToMaster;
-      return this;
-    }
-
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -329,7 +314,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
-      this.fallbackToMaster = instance.isFallbackToMaster();
       return this;
     }
   }
@@ -391,8 +375,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
-
-    builder.fallbackToMaster(copy.isFallbackToMaster());
 
     return builder.build();
   }

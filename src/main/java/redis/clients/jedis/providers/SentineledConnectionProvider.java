@@ -20,11 +20,13 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.ReadFrom;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.ReadOnlyCommands;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
   class PoolInfo {
@@ -59,9 +61,15 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final long subscribeRetryWaitTimeMillis;
 
+  private final ReadFrom readFrom;
+
+  private ReadOnlyCommands.ReadOnlyPredicate READ_ONLY_COMMANDS;
+
   private final Lock initPoolLock = new ReentrantLock(true);
 
   private final List<PoolInfo> slavePools = new ArrayList<>();
+
+  private final Lock slavePoolsLock = new ReentrantLock(true);
 
   private int poolIndex;
 
@@ -83,26 +91,41 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
   }
 
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+                                      final GenericObjectPoolConfig<Connection> poolConfig,
+                                      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom) {
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig,
+            DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, ReadOnlyCommands.asPredicate());
+  }
+
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+                                      final GenericObjectPoolConfig<Connection> poolConfig,
+                                      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom,
+                                      ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig,
+            DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, readOnlyPredicate);
+  }
+
   @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
-        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
+        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, ReadFrom.UPSTREAM, ReadOnlyCommands.asPredicate());
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
       final long subscribeRetryWaitTimeMillis) {
-    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis);
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis, ReadFrom.UPSTREAM, ReadOnlyCommands.asPredicate());
   }
 
   @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
-      final long subscribeRetryWaitTimeMillis) {
+      final long subscribeRetryWaitTimeMillis, ReadFrom readFrom, ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
 
     this.masterName = masterName;
     this.masterClientConfig = masterClientConfig;
@@ -111,6 +134,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
     this.sentinelClientConfig = sentinelClientConfig;
     this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
+    this.readFrom = readFrom;
+    this.READ_ONLY_COMMANDS = readOnlyPredicate;
 
     HostAndPort master = initSentinels(sentinels);
     initMaster(master);
@@ -118,24 +143,31 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private Connection getSlaveResource() {
     int startIdx;
-    synchronized (slavePools) {
+    slavePoolsLock.lock();
+    try {
       poolIndex++;
       if (poolIndex >= slavePools.size()) {
         poolIndex = 0;
       }
       startIdx = poolIndex;
+    } finally {
+      slavePoolsLock.unlock();
     }
     return _getSlaveResource(startIdx, 0);
   }
 
   private Connection _getSlaveResource(int idx, int cnt) {
     PoolInfo poolInfo;
-    synchronized (slavePools) {
+    slavePoolsLock.lock();
+    try {
       if (cnt >= slavePools.size()) {
         return null;
       }
       poolInfo = slavePools.get(idx % slavePools.size());
+    } finally {
+      slavePoolsLock.unlock();
     }
+
     try {
       Connection jedis = poolInfo.pool.getResource();
       return jedis;
@@ -152,17 +184,43 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Override
   public Connection getConnection(CommandArguments args) {
-    boolean readCommand = masterClientConfig.isReadCommand(args);
-    if (readCommand) {
-      Connection slaveConn = getSlaveResource();
-      if (slaveConn != null) {
-        return slaveConn;
-      }
-      if (!masterClientConfig.isFallbackToMaster()) {
-        throw new JedisException("can not get Connection, all slave is invalid");
-      }
+    boolean isReadCommand = READ_ONLY_COMMANDS.isReadOnly(args);
+    if (!isReadCommand) {
+      return pool.getResource();
     }
-    return pool.getResource();
+
+    Connection conn;
+    switch (readFrom) {
+      case REPLICA:
+        conn = getSlaveResource();
+        if (conn == null) {
+          throw new JedisException("all replica is invalid");
+        }
+        return conn;
+      case UPSTREAM_PREFERRED:
+        try {
+          conn = pool.getResource();
+          if (conn != null) {
+            return conn;
+          }
+        } catch (Exception e) {
+          LOG.error("get master connection error", e);
+        }
+
+        conn = getSlaveResource();
+        if (conn == null) {
+          throw new JedisException("all redis instance is invalid");
+        }
+        return conn;
+      case REPLICA_PREFERRED:
+        conn = getSlaveResource();
+        if (conn != null) {
+          return conn;
+        }
+        return pool.getResource();
+      default:
+        return pool.getResource();
+    }
   }
 
   @Override
@@ -226,25 +284,28 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private void initSlaves(List<HostAndPort> slaves) {
     List<PoolInfo> removedSlavePools = new ArrayList<>();
+    slavePoolsLock.lock();
     try {
-      synchronized (slavePools) {
-        Loop:
-        for (int i = slavePools.size()-1; i >= 0; i--) {
-          PoolInfo poolInfo = slavePools.get(i);
-          for (HostAndPort slave : slaves) {
-            String host = slave.toString();
-            if (poolInfo.host.equals(host)) {
-              continue Loop;
-            }
+      for (int i = slavePools.size()-1; i >= 0; i--) {
+        PoolInfo poolInfo = slavePools.get(i);
+        boolean found = false;
+        for (HostAndPort slave : slaves) {
+          String host = slave.toString();
+          if (poolInfo.host.equals(host)) {
+            found = true;
+            break;
           }
+        }
+        if (!found) {
           removedSlavePools.add(slavePools.remove(i));
         }
+      }
 
-        for (HostAndPort slave : slaves) {
-          addSlave(slave);
-        }
+      for (HostAndPort slave : slaves) {
+        addSlave(slave);
       }
     } finally {
+      slavePoolsLock.unlock();
       if (!removedSlavePools.isEmpty() && clientSideCache != null) {
         clientSideCache.flush();
       }
@@ -269,7 +330,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private void addSlave(HostAndPort slave) {
     String newSlaveHost = slave.toString();
-    synchronized (this.slavePools) {
+    slavePoolsLock.lock();
+    try {
       for (int i = 0; i < this.slavePools.size(); i++) {
         PoolInfo poolInfo = this.slavePools.get(i);
         if (poolInfo.host.equals(newSlaveHost)) {
@@ -277,13 +339,16 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         }
       }
       slavePools.add(new PoolInfo(newSlaveHost, createNodePool(slave)));
+    } finally {
+      slavePoolsLock.unlock();
     }
   }
 
   private void removeSlave(HostAndPort slave) {
     String newSlaveHost = slave.toString();
     PoolInfo removed = null;
-    synchronized (this.slavePools) {
+    slavePoolsLock.lock();
+    try {
       for (int i = 0; i < this.slavePools.size(); i++) {
         PoolInfo poolInfo = this.slavePools.get(i);
         if (poolInfo.host.equals(newSlaveHost)) {
@@ -291,6 +356,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
           break;
         }
       }
+    } finally {
+      slavePoolsLock.unlock();
     }
     if (removed != null) {
       removed.pool.destroy();
@@ -421,7 +488,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
           sentinelJedis.subscribe(new JedisPubSub() {
             @Override
             public void onMessage(String channel, String message) {
-              LOG.debug("Sentinel {} published: {}.", node, message);
+              LOG.debug("Sentinel {} with channel {} published: {}.", node, channel, message);
 
               String[] switchMsg = message.split(" ");
               String slaveIp;
@@ -453,6 +520,9 @@ public class SentineledConnectionProvider implements ConnectionProvider {
                   removeSlave(new HostAndPort(slaveIp, slavePort));
                   break;
                 case "-sdown":
+                  if (switchMsg.length < 5) {
+                    return;
+                  }
                   if (!masterName.equals(switchMsg[5])) {
                     return;
                   }

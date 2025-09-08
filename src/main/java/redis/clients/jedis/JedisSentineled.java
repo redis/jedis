@@ -7,6 +7,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.ReadOnlyCommands;
 
 public class JedisSentineled extends UnifiedJedis {
 
@@ -35,6 +36,21 @@ public class JedisSentineled extends UnifiedJedis {
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig),
         masterClientConfig.getRedisProtocol());
+  }
+
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
+                         final GenericObjectPoolConfig<Connection> poolConfig,
+                         Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom) {
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, readFrom),
+            masterClientConfig.getRedisProtocol());
+  }
+
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
+                         final GenericObjectPoolConfig<Connection> poolConfig,
+                         Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom,
+                         ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, readFrom, readOnlyPredicate),
+            masterClientConfig.getRedisProtocol());
   }
 
   @Experimental

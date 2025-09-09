@@ -520,7 +520,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
                   removeSlave(new HostAndPort(slaveIp, slavePort));
                   break;
                 case "-sdown":
-                  if (switchMsg.length < 5) {
+                  if (switchMsg.length < 6) {
                     return;
                   }
                   if (!masterName.equals(switchMsg[5])) {

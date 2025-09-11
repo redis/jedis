@@ -22,7 +22,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class TrackingConnectionPool extends ConnectionPool {
 
   private static class FailFastConnectionFactory extends ConnectionFactory {
-    private boolean failFast = false;
+    private volatile boolean failFast = false;
     private final Set<Connection> factoryTrackedObjects = ConcurrentHashMap.newKeySet();
 
     public FailFastConnectionFactory(ConnectionFactory.Builder factoryBuilder,

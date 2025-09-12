@@ -56,15 +56,3 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
-      - name: Upload test results to Codecov
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') || github.event_name == 'workflow_dispatch'}}
-        uses: codecov/test-results-action@v1
-        with:
-          fail_ci_if_error: false
-          files: ./target/surefire-reports/TEST*
-          token: ${{ secrets.CODECOV_TOKEN }}

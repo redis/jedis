@@ -80,9 +80,9 @@ jobs:
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
           if [ -z "$TESTS" ]; then
-            mvn clean compile test
+            mvn clean compile verify
           else
-            mvn -Dtest=$TESTS clean compile test
+            mvn -Dtest=$TESTS clean compile verify
           fi
         env:
           JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
@@ -125,15 +125,22 @@ jobs:
           docker compose $COMPOSE_ENV_FILES -f src/test/resources/env/docker-compose.yml down
         continue-on-error: true
       # Upload code coverage
-      - name: Upload coverage to Codecov
+      - name: Upload merged coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          # Upload the merged JaCoCo XML report generated at verify phase
+          files: ./target/site/jacoco/jacoco.xml
+          flags: docker-${{ matrix.redis_version }}
+          name: merged-coverage
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
-      - name: Upload test results to Codecov
+      - name: Upload test results to Codecov (unit + IT)
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') || github.event_name == 'workflow_dispatch'}}
         uses: codecov/test-results-action@v1
         with:
           fail_ci_if_error: false
-          files: ./target/surefire-reports/TEST*
+          files: |
+            ./target/surefire-reports/*.xml
+            ./target/failsafe-reports/*.xml
+          flags: test-results-docker-${{ matrix.redis_version }}
           token: ${{ secrets.CODECOV_TOKEN }}

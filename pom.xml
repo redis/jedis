@@ -252,17 +252,65 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.13</version>
 				<executions>
+					<!-- Collect coverage for unit tests -->
 					<execution>
+						<id>prepare-agent-ut</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
+						<configuration>
+							<propertyName>argLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-ut.exec</destFile>
+						</configuration>
 					</execution>
+					<!-- Collect coverage for integration tests tagged with @Tag("integration") -->
+					<execution>
+						<id>prepare-agent-it-tagged</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<propertyName>failsafeTaggedArgLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-it-tagged.exec</destFile>
+						</configuration>
+					</execution>
+					<!-- Collect coverage for integration tests with filename suffix IntegrationTest(s) -->
+					<execution>
+						<id>prepare-agent-it-suffix</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<propertyName>failsafeSuffixArgLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-it-suffix.exec</destFile>
+						</configuration>
+					</execution>
+					<!-- Merge all coverage data after all integration tests -->
+					<execution>
+						<id>merge-coverage</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+							<files>
+								<file>${project.build.directory}/jacoco-ut.exec</file>
+								<file>${project.build.directory}/jacoco-it-tagged.exec</file>
+								<file>${project.build.directory}/jacoco-it-suffix.exec</file>
+							</files>
+						</configuration>
+					</execution>
+					<!-- Generate the final report on the merged data -->
 					<execution>
 						<id>report</id>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -284,10 +332,9 @@
 					</systemPropertyVariables>
 					<excludedGroups>integration,scenario</excludedGroups>
 					<excludes>
-						<exclude>**/examples/*Example.java</exclude>
+						<exclude>**/examples/*.java</exclude>
+						<exclude>**/scenario/*Test.java</exclude>
 						<!-- Exclude integration tests from unit-test phase -->
-						<exclude>**/*IT.java</exclude>
-						<exclude>**/*ITCase.java</exclude>
 						<exclude>**/*IntegrationTest.java</exclude>
 						<exclude>**/*IntegrationTests.java</exclude>
 					</excludes>
@@ -298,25 +345,57 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
-					<argLine>@{argLine} ${JVM_OPTS}</argLine>
+					<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
-					<groups>
-						<group>integration</group>
-						<group>scenario</group>
-					</groups>
+					<!-- Default includes used when invoking failsafe goals directly (e.g., mvn failsafe:integration-test) -->
 					<includes>
-						<include>**/*IT.java</include>
-						<include>**/*ITCase.java</include>
 						<include>**/*IntegrationTest.java</include>
 						<include>**/*IntegrationTests.java</include>
 					</includes>
+					<excludes>
+						<exclude>**/examples/*.java</exclude>
+						<exclude>**/scenario/*Test.java</exclude>
+						<!-- Exclude unit tests -->
+						<exclude>**/mocked/*.java</exclude>
+					</excludes>
 				</configuration>
 				<executions>
+					<!-- Run all tests tagged with @Tag("integration") regardless of file name -->
 					<execution>
+						<id>it-tagged</id>
 						<goals>
 							<goal>integration-test</goal>
+						</goals>
+						<configuration>
+							<argLine>@{failsafeTaggedArgLine} ${JVM_OPTS}</argLine>
+							<groups>integration</groups>
+							<includes>
+								<include>**/*Test.java</include>
+								<include>**/*Tests.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<!-- Also run tests whose filenames end with IntegrationTest or IntegrationTests, even if not tagged -->
+					<execution>
+						<id>it-suffix</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+						<configuration>
+							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
+							<excludedGroups>integration</excludedGroups>
+							<includes>
+								<include>**/*IntegrationTest.java</include>
+								<include>**/*IntegrationTests.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<!-- Verify phase should run once after both IT executions -->
+					<execution>
+						<id>it-verify</id>
+						<goals>
 							<goal>verify</goal>
 						</goals>
 					</execution>

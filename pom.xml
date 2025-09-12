@@ -293,12 +293,17 @@
 							<goal>merge</goal>
 						</goals>
 						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>jacoco-ut.exec</include>
+										<include>jacoco-it-tagged.exec</include>
+										<include>jacoco-it-suffix.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
 							<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
-							<files>
-								<file>${project.build.directory}/jacoco-ut.exec</file>
-								<file>${project.build.directory}/jacoco-it-tagged.exec</file>
-								<file>${project.build.directory}/jacoco-it-suffix.exec</file>
-							</files>
 						</configuration>
 					</execution>
 					<!-- Generate the final report on the merged data -->

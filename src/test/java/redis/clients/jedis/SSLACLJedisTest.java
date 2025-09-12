@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.util.RedisVersionCondition;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 @SinceRedisVersion(value = "6.0.0", message = "Not running ACL test on this version of Redis")
+@Tag("integration")
 public class SSLACLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");

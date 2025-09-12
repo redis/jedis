@@ -19,6 +19,7 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -30,6 +31,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class JedisTest extends JedisCommandsTestBase {
 
   public JedisTest(RedisProtocol protocol) {

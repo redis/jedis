@@ -19,6 +19,7 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.ScanParams;
@@ -33,6 +34,7 @@ import redis.clients.jedis.util.KeyValue;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=sorted-set">Sorted set</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsSortedSetCommandsTest(RedisProtocol protocol) {

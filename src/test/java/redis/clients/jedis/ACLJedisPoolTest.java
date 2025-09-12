@@ -17,6 +17,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
@@ -29,6 +30,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 @SinceRedisVersion("6.0.0")
+@Tag("integration")
 public class ACLJedisPoolTest {
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 

@@ -13,10 +13,12 @@ import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
 
+@Tag("integration")
 public class SentinelCommandsTest {
 
   protected static final String MASTER_NAME = "mymaster";

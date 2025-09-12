@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY;
 import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStreamEntries;
 
+@Tag("integration")
 public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   protected static final byte[] STREAM_KEY_1 = "{binary-stream}-1".getBytes();

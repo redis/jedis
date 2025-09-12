@@ -11,6 +11,7 @@ import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
@@ -20,6 +21,7 @@ import redis.clients.jedis.util.KeyValue;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=list">List</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsListCommandsTest(RedisProtocol protocol) {

@@ -12,12 +12,14 @@ import java.util.List;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 
+@Tag("integration")
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   public StringValuesCommandsTestBase(RedisProtocol protocol) {

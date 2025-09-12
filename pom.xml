@@ -282,11 +282,45 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
+					<excludedGroups>integration,scenario</excludedGroups>
 					<excludes>
 						<exclude>**/examples/*Example.java</exclude>
+						<!-- Exclude integration tests from unit-test phase -->
+						<exclude>**/*IT.java</exclude>
+						<exclude>**/*ITCase.java</exclude>
+						<exclude>**/*IntegrationTest.java</exclude>
+						<exclude>**/*IntegrationTests.java</exclude>
 					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<argLine>@{argLine} ${JVM_OPTS}</argLine>
+					<systemPropertyVariables>
+						<redis-hosts>${redis-hosts}</redis-hosts>
+					</systemPropertyVariables>
+					<groups>
+						<group>integration</group>
+						<group>scenario</group>
+					</groups>
+					<includes>
+						<include>**/*IT.java</include>
+						<include>**/*ITCase.java</include>
+						<include>**/*IntegrationTest.java</include>
+						<include>**/*IntegrationTests.java</include>
+					</includes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
@@ -359,7 +393,7 @@
 						<include>**/VAddParams.java</include>
 						<include>**/VSimParams.java</include>
 						<include>**/VSimScoreAttribs.java</include>
-						<include>**/*FunctionCommandsTest*</include>
+						<include>**/*FunctionCommandsTest*.java</include>
 						<include>**/Endpoint.java</include>
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
@@ -367,11 +401,11 @@
 						<include>**/mcf/LagAwareStrategyUnitTest.java</include>
 						<include>**/mcf/RedisRestAPI*.java</include>
 						<include>**/mcf/ActiveActiveLocalFailoverTest*</include>
-						<include>**/mcf/FailbackMechanism*</include>
-						<include>**/mcf/PeriodicFailbackTest*</include>
-						<include>**/mcf/AutomaticFailoverTest*</include>
-						<include>**/mcf/MultiCluster*</include>
-						<include>**/mcf/StatusTracker*</include>
+						<include>**/mcf/FailbackMechanism*.java</include>
+						<include>**/mcf/PeriodicFailbackTest*.java</include>
+						<include>**/mcf/AutomaticFailoverTest*.java</include>
+						<include>**/mcf/MultiCluster*.java</include>
+						<include>**/mcf/StatusTracker*.java</include>
 						<include>**/Health*.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>

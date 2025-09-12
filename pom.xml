@@ -403,6 +403,9 @@
 						<goals>
 							<goal>verify</goal>
 						</goals>
+						<configuration>
+							<summaryFile>${project.build.directory}/failsafe-summary.xml</summaryFile>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

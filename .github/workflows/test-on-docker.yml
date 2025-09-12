@@ -104,8 +104,8 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         with:
           files: |
-            target/surefire-reports/**/TEST*.xml
-            target/failsafe-reports/**/TEST*.xml
+            target/surefire-reports/**/*.xml
+            target/failsafe-reports/**/*.xml
       # Collect logs on failure
       - name: Collect logs on failure
         if: failure()  # This runs only if the previous steps failed

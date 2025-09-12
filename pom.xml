@@ -385,7 +385,7 @@
 						</goals>
 						<configuration>
 							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
-							<excludedGroups>integration</excludedGroups>
+							
 							<includes>
 								<include>**/*IntegrationTest.java</include>
 								<include>**/*IntegrationTests.java</include>

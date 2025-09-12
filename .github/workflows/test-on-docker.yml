@@ -105,6 +105,7 @@ jobs:
         with:
           files: |
             target/surefire-reports/**/*.xml
+            target/failsafe-reports/**/*.xml
       # Collect logs on failure
       - name: Collect logs on failure
         if: failure()  # This runs only if the previous steps failed

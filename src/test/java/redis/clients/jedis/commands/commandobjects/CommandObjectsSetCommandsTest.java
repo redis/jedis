@@ -15,6 +15,7 @@ import java.util.Set;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -22,6 +23,7 @@ import redis.clients.jedis.resps.ScanResult;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=set">Set</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsSetCommandsTest(RedisProtocol protocol) {

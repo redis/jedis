@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,7 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 
+@Tag("integration")
 public class TokenBasedAuthenticationClusterIntegrationTests {
     private static final Logger log = LoggerFactory
             .getLogger(TokenBasedAuthenticationClusterIntegrationTests.class);

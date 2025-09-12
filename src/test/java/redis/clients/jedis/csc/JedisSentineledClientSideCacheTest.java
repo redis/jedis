@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
@@ -16,6 +17,7 @@ import redis.clients.jedis.util.RedisVersionUtil;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@Tag("integration")
 public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
   private static final String MASTER_NAME = "mymaster";

@@ -14,6 +14,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -25,6 +26,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
  * This tests are only executed when the server/cluster is Redis 6 or more.
  */
 @SinceRedisVersion("6.0.0")
+@Tag("integration")
 public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";

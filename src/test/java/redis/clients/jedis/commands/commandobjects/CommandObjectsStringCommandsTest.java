@@ -12,6 +12,7 @@ import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
@@ -21,6 +22,7 @@ import redis.clients.jedis.resps.LCSMatchResult;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=string">String</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsStringCommandsTest(RedisProtocol protocol) {

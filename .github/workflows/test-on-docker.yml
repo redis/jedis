@@ -82,7 +82,7 @@ jobs:
           if [ -z "$TESTS" ]; then
             mvn clean compile verify
           else
-            mvn -Dtest=$TESTS clean compile verify
+            mvn -Dtest=$TESTS clean verify
           fi
         env:
           JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"

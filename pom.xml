@@ -354,6 +354,7 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
+					<summaryFile>${project.build.directory}/failsafe-summary.xml</summaryFile>
 					<!-- Default includes used when invoking failsafe goals directly (e.g., mvn failsafe:integration-test) -->
 					<includes>
 						<include>**/*IntegrationTest.java</include>
@@ -403,9 +404,6 @@
 						<goals>
 							<goal>verify</goal>
 						</goals>
-						<configuration>
-							<summaryFile>${project.build.directory}/failsafe-summary.xml</summaryFile>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

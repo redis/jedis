@@ -78,14 +78,14 @@ public class VectorSetExample {
       System.out.println(res13); // >>> [1, 0]
       // STEP_END
       // REMOVE_START
-      assertTrue(Math.abs(1 - res9.get(0)) < 0.01);
-      assertTrue(Math.abs(1 - res9.get(1)) < 0.01);
-      assertTrue(Math.abs(-1 - res10.get(0)) < 0.01);
-      assertTrue(Math.abs(-1 - res10.get(1)) < 0.01);
-      assertTrue(Math.abs(-1 - res11.get(0)) < 0.01);
-      assertTrue(Math.abs(1 - res11.get(1)) < 0.01);
-      assertTrue(Math.abs(1 - res12.get(0)) < 0.01);
-      assertTrue(Math.abs(-1 - res12.get(1)) < 0.01);
+      assertEquals(1, res9.get(0), 0.01);
+      assertEquals(1, res9.get(1), 0.01);
+      assertEquals(-1, res10.get(0), 0.01);
+      assertEquals(-1, res10.get(1), 0.01);
+      assertEquals(-1, res11.get(0), 0.01);
+      assertEquals(1, res11.get(1), 0.01);
+      assertEquals(1, res12.get(0), 0.01);
+      assertEquals(-1, res12.get(1), 0.01);
       assertEquals(Arrays.asList(1.0, 0.0), res13);
       // REMOVE_END
 

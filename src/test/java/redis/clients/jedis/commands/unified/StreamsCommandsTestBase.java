@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import redis.clients.jedis.RedisProtocol;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+@Tag("integration")
 public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   protected static final String STREAM_KEY_1 = "{stream}-1";

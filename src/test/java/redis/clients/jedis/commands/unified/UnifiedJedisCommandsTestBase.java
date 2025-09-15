@@ -3,10 +3,12 @@ package redis.clients.jedis.commands.unified;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 
+@Tag("integration")
 public abstract class UnifiedJedisCommandsTestBase {
 
   /**

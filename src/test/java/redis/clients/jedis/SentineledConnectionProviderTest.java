@@ -7,6 +7,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * @see JedisSentinelPoolTest
  */
+@Tag("integration")
 public class SentineledConnectionProviderTest {
 
   private static final String MASTER_NAME = "mymaster";

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import java.util.Collection;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.*;
@@ -28,6 +29,7 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * In principle all subclasses of this class should be parameterized tests,
  * to run with several versions of RESP. {@link CommandsTestsParameters#respVersions}
  */
+@Tag("integration")
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public abstract class CommandObjectsTestBase {

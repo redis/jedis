@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@Tags({ @Tag("failover"), @Tag("scenario") })
+@Tags({ @Tag("failover"), @Tag("integration") })
 public class ActiveActiveLocalFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
 

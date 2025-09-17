@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -28,6 +29,7 @@ import redis.clients.jedis.util.SafeEncoder;
 @SinceRedisVersion(value = "7.9.0")
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class ConsolidatedAccessControlListCommandsTest extends RedisModuleCommandsTestBase {
 
   public static final String USER_NAME = "moduser";

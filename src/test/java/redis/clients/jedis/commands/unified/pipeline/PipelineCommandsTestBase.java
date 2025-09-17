@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified.pipeline;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
@@ -9,6 +10,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
 
+@Tag("integration")
 public abstract class PipelineCommandsTestBase {
 
   protected JedisPooled jedis;

@@ -9,6 +9,7 @@ import java.util.Map;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
+@Tag("integration")
 public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test

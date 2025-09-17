@@ -2,6 +2,7 @@ package redis.clients.jedis.modules;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -16,6 +17,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@Tag("integration")
 public abstract class RedisModuleCommandsTestBase {
 
   @RegisterExtension

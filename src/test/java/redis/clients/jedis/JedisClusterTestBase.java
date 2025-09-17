@@ -4,12 +4,14 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
+@Tag("integration")
 public abstract class JedisClusterTestBase {
 
   protected static Jedis node1;

@@ -344,6 +344,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return checkAndBroadcastCommand(commandObjects.ping());
   }
 
+  public String echo(String string) {
+    return executeCommand(commandObjects.echo(string));
+  }
+
   public String flushDB() {
     return checkAndBroadcastCommand(commandObjects.flushDB());
   }
@@ -5224,6 +5228,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
   public List<String> vsimByElement(String key, String element) {
     return executeCommand(commandObjects.vsimByElement(key, element));
   }
@@ -5236,6 +5245,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params) {
     return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override
@@ -5345,6 +5359,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
   public List<byte[]> vsimByElement(byte[] key, byte[] element) {
     return executeCommand(commandObjects.vsimByElement(key, element));
   }
@@ -5357,6 +5376,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
     return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override

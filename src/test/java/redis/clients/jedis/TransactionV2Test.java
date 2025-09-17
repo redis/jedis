@@ -21,10 +21,12 @@ import java.util.Set;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Tag("integration")
 public class TransactionV2Test {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

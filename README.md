@@ -1,10 +1,9 @@
 # Jedis
 
 [![Release](https://img.shields.io/github/release/redis/jedis.svg?sort=semver)](https://github.com/redis/jedis/releases/latest)
-[![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](https://search.maven.org/artifact/redis.clients/jedis)
+[![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](https://central.sonatype.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
-[![Integration](https://github.com/redis/jedis/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/redis/jedis/actions/workflows/integration.yml)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
 [![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/redis)
 
@@ -29,13 +28,10 @@ Are you looking for a high-level library to handle object mapping? See [redis-om
 ## Supported Redis versions
 
 The most recent version of this library supports redis version 
-[5.0](https://github.com/redis/redis/blob/5.0/00-RELEASENOTES), 
-[6.0](https://github.com/redis/redis/blob/6.0/00-RELEASENOTES), 
-[6.2](https://github.com/redis/redis/blob/6.2/00-RELEASENOTES), 
-[7.0](https://github.com/redis/redis/blob/7.0/00-RELEASENOTES), 
 [7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES),
-[7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES) and
-[8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES).
+[7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES),
+[8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES) and
+[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES).
 
 The table below highlights version compatibility of the most-recent library versions with Redis and JDK versions. Compatibility means communication features, and Redis command capabilities.
 
@@ -47,6 +43,7 @@ The table below highlights version compatibility of the most-recent library vers
 | >= 5.0        | Version 6.0 to current                | 8, 11, 17, 21     |
 | >= 5.2        | Version 7.2 to current                | 8, 11, 17, 21     |
 | >= 6.0        | Version 7.2 to current                | 8, 11, 17, 21     |
+| >= 7.0        | Version 7.2 to current                | 8, 11, 17, 21     |
 
 ## Getting started
 
@@ -56,16 +53,16 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>6.0.0</version>
+    <version>6.2.0</version>
 </dependency>
 ```
 
 To use the cutting-edge Jedis, check [here](/docs/jedis-maven.md).
 
-Next, you'll need to connect to Redis. Consider installing a redis-stack docker:
+Next, you'll need to connect to Redis. Consider installing a redis server with docker:
 
 ```bash
-docker run -p 6379:6379 -it redis/redis-stack:latest
+docker run -p 6379:6379 -it redis:latest
 ```
 
 For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
@@ -148,7 +145,7 @@ For more details and examples, please refer to the [Advanced Usage](docs/advance
 
 ## Documentation
 
-The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.
+The [Jedis documentation site](https://redis.github.io/jedis/) contains several useful articles for using Jedis.
 
 You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
 

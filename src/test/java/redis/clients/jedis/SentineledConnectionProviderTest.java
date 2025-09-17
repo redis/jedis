@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * @see JedisSentinelPoolTest
  */
+@Tag("integration")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SentineledConnectionProvider.class})
 public class SentineledConnectionProviderTest {

@@ -19,6 +19,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Jedis Maven: jedis-maven.md
   - Migrating to newer versions:
       - Jedis 5: breaking-5.md
       - Jedis 4:
@@ -35,4 +36,5 @@ nav:
   - Tutorials and Examples:  tutorials_examples.md
   - Jedis Guide: https://redis.io/docs/latest/develop/connect/clients/java/jedis/
   - Redis Command Reference: https://redis.io/docs/latest/commands/
+  - Advanced Usage: advanced-usage.md
 

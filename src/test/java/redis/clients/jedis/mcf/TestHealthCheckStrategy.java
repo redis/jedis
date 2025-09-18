@@ -14,8 +14,8 @@ public class TestHealthCheckStrategy implements HealthCheckStrategy {
   private Function<Endpoint, HealthStatus> healthCheck;
   private ProbePolicy policy;
 
-  public TestHealthCheckStrategy(int interval, int timeout, int probes,
-      ProbePolicy policy, int delay, Function<Endpoint, HealthStatus> healthCheck) {
+  public TestHealthCheckStrategy(int interval, int timeout, int probes, ProbePolicy policy,
+      int delay, Function<Endpoint, HealthStatus> healthCheck) {
     this.interval = interval;
     this.timeout = timeout;
     this.probes = probes;

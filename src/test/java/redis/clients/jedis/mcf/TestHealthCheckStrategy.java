@@ -1,6 +1,6 @@
 package redis.clients.jedis.mcf;
 
-import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.exceptions.JedisException;
@@ -9,17 +9,29 @@ public class TestHealthCheckStrategy implements HealthCheckStrategy {
 
   private int interval;
   private int timeout;
-  private int retries;
+  private int probes;
   private int delay;
-  private Callable<HealthStatus> healthCheck;
+  private Function<Endpoint, HealthStatus> healthCheck;
+  private ProbePolicy policy;
 
-  public TestHealthCheckStrategy(int interval, int timeout, int retries, int delay,
-      Callable<HealthStatus> healthCheck) {
+  public TestHealthCheckStrategy(int interval, int timeout, int probes,
+      ProbePolicy policy, int delay, Function<Endpoint, HealthStatus> healthCheck) {
     this.interval = interval;
     this.timeout = timeout;
-    this.retries = retries;
+    this.probes = probes;
     this.delay = delay;
     this.healthCheck = healthCheck;
+    this.policy = policy;
+  }
+
+  public TestHealthCheckStrategy(HealthCheckStrategy.Config config,
+      Function<Endpoint, HealthStatus> healthCheck) {
+    this(config.getInterval(), config.getTimeout(), config.getNumProbes(), config.getPolicy(),
+        config.getDelayInBetweenProbes(), healthCheck);
+  }
+
+  public TestHealthCheckStrategy(Function<Endpoint, HealthStatus> healthCheck) {
+    this(HealthCheckStrategy.Config.create(), healthCheck);
   }
 
   @Override
@@ -33,23 +45,29 @@ public class TestHealthCheckStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public int getNumberOfRetries() {
-    return retries;
+  public int getNumProbes() {
+    return probes;
   }
 
   @Override
-  public int getDelayInBetweenRetries() {
+  public ProbePolicy getPolicy() {
+    return policy;
+  }
+
+  @Override
+  public int getDelayInBetweenProbes() {
     return delay;
   }
 
   @Override
   public HealthStatus doHealthCheck(Endpoint endpoint) {
     try {
-      return healthCheck.call();
+      return healthCheck.apply(endpoint);
     } catch (JedisException e) {
       throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
+
 };

@@ -2,10 +2,8 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +13,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
@@ -23,7 +20,7 @@ import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
-import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -65,30 +62,16 @@ public class HealthCheckIntegrationTest {
     // Create a StrategySupplier that uses the JedisClientConfig when available
     MultiClusterClientConfig.StrategySupplier strategySupplier = (hostAndPort,
         jedisClientConfig) -> {
-      return new HealthCheckStrategy() {
-
-        @Override
-        public int getInterval() {
-          return 500;
-        }
-
-        @Override
-        public int getTimeout() {
-          return 500;
-        }
-
-        @Override
-        public HealthStatus doHealthCheck(Endpoint endpoint) {
-          // Create connection per health check to avoid resource leak
-          try (UnifiedJedis pinger = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
-            String result = pinger.ping();
-            return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
-          } catch (Exception e) {
-            return HealthStatus.UNHEALTHY;
-          }
-        }
-
-      };
+      return new TestHealthCheckStrategy(HealthCheckStrategy.Config.builder().interval(500)
+          .timeout(500).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build(), (endpoint) -> {
+            // Create connection per health check to avoid resource leak
+            try (UnifiedJedis pinger = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+              String result = pinger.ping();
+              return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+            } catch (Exception e) {
+              return HealthStatus.UNHEALTHY;
+            }
+          });
     };
 
     MultiClusterPooledConnectionProvider customProvider = getMCCF(strategySupplier);
@@ -128,7 +111,7 @@ public class HealthCheckIntegrationTest {
 
     StrategySupplier retryTestSupplier = (hostAndPort, jedisClientConfig) -> {
       // Fast interval, short timeout, 3 retries, short delay
-      return new TestHealthCheckStrategy(100, 50, 3, 20, () -> {
+      return new TestHealthCheckStrategy(100, 50, 3, BuiltIn.ANY_SUCCESS, 20, (endpoint) -> {
         int attempt = attemptCount.incrementAndGet();
         if (attempt <= 2) {
           // First 2 attempts fail
@@ -182,7 +165,7 @@ public class HealthCheckIntegrationTest {
 
     StrategySupplier alwaysFailSupplier = (hostAndPort, jedisClientConfig) -> {
       // Fast interval, short timeout, 2 retries, short delay
-      return new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
+      return new TestHealthCheckStrategy(100, 50, 2, BuiltIn.ANY_SUCCESS, 10, (endpoint) -> {
         attemptCount.incrementAndGet();
         throw new RuntimeException("Always fails");
       });
@@ -226,7 +209,7 @@ public class HealthCheckIntegrationTest {
 
     StrategySupplier noRetrySupplier = (hostAndPort, jedisClientConfig) -> {
       // Fast interval, short timeout, 0 retries, short delay
-      return new TestHealthCheckStrategy(100, 50, 0, 10, () -> {
+      return new TestHealthCheckStrategy(100, 50, 0, BuiltIn.ANY_SUCCESS, 10, (endpoint) -> {
         attemptCount.incrementAndGet();
         throw new RuntimeException("Fails immediately");
       });

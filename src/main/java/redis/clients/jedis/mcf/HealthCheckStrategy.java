@@ -31,30 +31,45 @@ public interface HealthCheckStrategy extends Closeable {
   }
 
   /**
-   * Get the number of retries for failed health checks.
-   * @return the number of retries
+   * Get the number of probes for health checks to repeat.
+   * @return the number of probes
    */
-  default int getNumberOfRetries() {
-    return 1;
-  }
+  int getNumProbes();
+
+  /**
+   * Get the policy for health checks.
+   * @return the policy
+   */
+  ProbePolicy getPolicy();
 
   /**
    * Get the delay (in milliseconds) between retries for failed health checks.
    * @return the delay in milliseconds
    */
-  default int getDelayInBetweenRetries() {
-    return 100;
-  }
+  int getDelayInBetweenProbes();
 
   public static class Config {
     protected final int interval;
     protected final int timeout;
-    protected final int numberOfRetries;
+    protected final int numProbes;
+    protected final int delayInBetweenProbes;
+    protected final ProbePolicy policy;
 
-    public Config(int interval, int timeout, int numberOfRetries) {
+    public Config(int interval, int timeout, int numProbes, int delayInBetweenProbes,
+        ProbePolicy policy) {
       this.interval = interval;
       this.timeout = timeout;
-      this.numberOfRetries = numberOfRetries;
+      this.numProbes = numProbes;
+      this.delayInBetweenProbes = delayInBetweenProbes;
+      this.policy = policy;
+    }
+
+    Config(Builder<?, ?> builder) {
+      this.interval = builder.interval;
+      this.timeout = builder.timeout;
+      this.numProbes = builder.numProbes;
+      this.delayInBetweenProbes = builder.delayInBetweenProbes;
+      this.policy = builder.policy;
     }
 
     public int getInterval() {
@@ -65,8 +80,16 @@ public interface HealthCheckStrategy extends Closeable {
       return timeout;
     }
 
-    public int getNumberOfRetries() {
-      return numberOfRetries;
+    public int getNumProbes() {
+      return numProbes;
+    }
+
+    public int getDelayInBetweenProbes() {
+      return delayInBetweenProbes;
+    }
+
+    public ProbePolicy getPolicy() {
+      return policy;
     }
 
     /**
@@ -93,7 +116,9 @@ public interface HealthCheckStrategy extends Closeable {
     public static class Builder<T extends Builder<T, C>, C extends Config> {
       protected int interval = 1000;
       protected int timeout = 1000;
-      protected int numberOfRetries = 3;
+      protected int numProbes = 3;
+      protected ProbePolicy policy = ProbePolicy.BuiltIn.ALL_SUCCESS;
+      protected int delayInBetweenProbes = 100;
 
       /**
        * Set the interval between health checks in milliseconds.
@@ -118,13 +143,35 @@ public interface HealthCheckStrategy extends Closeable {
       }
 
       /**
-       * Set the number of retries for failed health checks.
-       * @param numberOfRetries the number of retries (default: 3)
+       * Set the number of probes for health check.
+       * @param numProbes the number of repeats (default: 3)
        * @return this builder
        */
       @SuppressWarnings("unchecked")
-      public T numberOfRetries(int numberOfRetries) {
-        this.numberOfRetries = numberOfRetries;
+      public T numProbes(int numProbes) {
+        this.numProbes = numProbes;
+        return (T) this;
+      }
+
+      /**
+       * Set the policy for health checks.
+       * @param policy the policy (default: ProbePolicy.BuiltIn.ALL_SUCCESS)
+       * @return this builder
+       */
+      @SuppressWarnings("unchecked")
+      public T policy(ProbePolicy policy) {
+        this.policy = policy;
+        return (T) this;
+      }
+
+      /**
+       * Set the delay between retries for failed health checks in milliseconds.
+       * @param delayInBetweenProbes the delay in milliseconds (default: 100)
+       * @return this builder
+       */
+      @SuppressWarnings("unchecked")
+      public T delayInBetweenProbes(int delayInBetweenProbes) {
+        this.delayInBetweenProbes = delayInBetweenProbes;
         return (T) this;
       }
 
@@ -132,8 +179,9 @@ public interface HealthCheckStrategy extends Closeable {
        * Build the Config instance.
        * @return a new Config instance
        */
-      public Config build() {
-        return new Config(interval, timeout, numberOfRetries);
+      @SuppressWarnings("unchecked")
+      public C build() {
+        return (C) new Config(this);
       }
     }
   }

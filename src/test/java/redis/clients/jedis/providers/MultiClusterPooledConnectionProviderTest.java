@@ -210,28 +210,13 @@ public class MultiClusterPooledConnectionProviderTest {
     AtomicInteger healthCheckCount = new AtomicInteger(0);
 
     // Custom strategy that counts health checks
-    HealthCheckStrategy countingStrategy = new HealthCheckStrategy() {
-      @Override
-      public int getInterval() {
-        return 5;
-      } // Fast interval for testing
-
-      @Override
-      public int getTimeout() {
-        return 50;
-      }
-
-      @Override
-      public HealthStatus doHealthCheck(Endpoint endpoint) {
-        healthCheckCount.incrementAndGet();
-        return HealthStatus.HEALTHY;
-      }
-
-      @Override
-      public void close() {
-        // No-op for test
-      }
-    };
+    HealthCheckStrategy countingStrategy = new redis.clients.jedis.mcf.TestHealthCheckStrategy(
+        redis.clients.jedis.mcf.HealthCheckStrategy.Config.builder().interval(5).timeout(50)
+            .build(),
+        e -> {
+          healthCheckCount.incrementAndGet();
+          return HealthStatus.HEALTHY;
+        });
 
     // Create new provider with health check strategy (don't use the setUp() provider)
     ClusterConfig config = ClusterConfig

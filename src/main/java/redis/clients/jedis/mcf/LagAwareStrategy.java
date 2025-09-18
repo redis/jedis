@@ -36,8 +36,18 @@ public class LagAwareStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public int getNumberOfRetries() {
-    return config.getNumberOfRetries();
+  public int getNumProbes() {
+    return config.getNumProbes();
+  }
+
+  @Override
+  public ProbePolicy getPolicy() {
+    return config.getPolicy();
+  }
+
+  @Override
+  public int getDelayInBetweenProbes() {
+    return config.getDelayInBetweenProbes();
   }
 
   @Override
@@ -97,13 +107,13 @@ public class LagAwareStrategy implements HealthCheckStrategy {
     private final boolean extendedCheckEnabled;
 
     public Config(Endpoint restEndpoint, Supplier<RedisCredentials> credentialsSupplier) {
-      this(builder(restEndpoint, credentialsSupplier).interval(1000).timeout(1000)
-          .numberOfRetries(3).availabilityLagTolerance(AVAILABILITY_LAG_TOLERANCE_DEFAULT)
+      this(builder(restEndpoint, credentialsSupplier).interval(1000).timeout(1000).numProbes(3)
+          .availabilityLagTolerance(AVAILABILITY_LAG_TOLERANCE_DEFAULT)
           .extendedCheckEnabled(EXTENDED_CHECK_DEFAULT));
     }
 
     private Config(ConfigBuilder builder) {
-      super(builder.interval, builder.timeout, builder.numberOfRetries);
+      super(builder);
 
       this.restEndpoint = builder.endpoint;
       this.credentialsSupplier = builder.credentialsSupplier;
@@ -235,6 +245,5 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         return new Config(this);
       }
     }
-
   }
 }

@@ -86,7 +86,7 @@ public class EchoStrategyIntegrationTest {
         .connectionTimeoutMillis(100).build();
 
     try (EchoStrategy strategy = new EchoStrategy(proxyHostAndPort, config,
-        new HealthCheckStrategy.Config(1000, 500, 1))) {
+        HealthCheckStrategy.Config.builder().interval(1000).timeout(500).numProbes(1).build())) {
 
       // Initial health check should work
       assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(proxyHostAndPort));

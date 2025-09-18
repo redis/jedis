@@ -6,9 +6,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -17,8 +19,64 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.annots.VisibleForTesting;
+import redis.clients.jedis.mcf.ProbePolicy.ProbeContext;
+import redis.clients.jedis.util.JedisAsserts;
 
 public class HealthCheckImpl implements HealthCheck {
+
+  static class HealthProbeContext implements ProbeContext {
+    private final ProbePolicy policy;
+    private int remainingProbes;
+    private int successes;
+    private int fails;
+    private boolean isCompleted;
+    private HealthStatus result;
+
+    HealthProbeContext(ProbePolicy policy, int maxProbes) {
+      this.policy = policy;
+      this.remainingProbes = maxProbes;
+    }
+
+    void record(boolean success) {
+      if (success) {
+        this.successes++;
+      } else {
+        this.fails++;
+      }
+      remainingProbes--;
+      ProbePolicy.Decision decision = policy.evaluate(this);
+      if (decision == ProbePolicy.Decision.SUCCESS) {
+        setCompleted(HealthStatus.HEALTHY);
+      } else if (decision == ProbePolicy.Decision.FAIL) {
+        setCompleted(HealthStatus.UNHEALTHY);
+      }
+    }
+
+    public int getRemainingProbes() {
+      return remainingProbes;
+    }
+
+    public int getSuccesses() {
+      return successes;
+    }
+
+    public int getFails() {
+      return fails;
+    }
+
+    void setCompleted(HealthStatus status) {
+      this.result = status;
+      this.isCompleted = true;
+    }
+
+    boolean isCompleted() {
+      return isCompleted;
+    }
+
+    HealthStatus getResult() {
+      return result;
+    }
+  }
 
   private static class HealthCheckResult {
     private final long timestamp;
@@ -40,27 +98,37 @@ public class HealthCheckImpl implements HealthCheck {
 
   private static final Logger log = LoggerFactory.getLogger(HealthCheckImpl.class);
 
+  private static AtomicInteger delayerCounter = new AtomicInteger(1);
+  private static ScheduledThreadPoolExecutor delayer = new ScheduledThreadPoolExecutor(1, r -> {
+    Thread t = new Thread(r, "jedis-healthcheck-delay-" + delayerCounter.getAndIncrement());
+    t.setDaemon(true);
+    return t;
+  });
+
+  private static AtomicInteger workerCounter = new AtomicInteger(1);
+  private static ExecutorService executor = Executors.newCachedThreadPool(r -> {
+    Thread t = new Thread(r, "jedis-healthcheck-worker-" + workerCounter.getAndIncrement());
+    t.setDaemon(true);
+    return t;
+  });
+
   private Endpoint endpoint;
   private HealthCheckStrategy strategy;
   private AtomicReference<HealthCheckResult> resultRef = new AtomicReference<HealthCheckResult>();
   private Consumer<HealthStatusChangeEvent> statusChangeCallback;
 
   private final ScheduledExecutorService scheduler;
-  private final ExecutorService executor;
 
   HealthCheckImpl(Endpoint endpoint, HealthCheckStrategy strategy,
       Consumer<HealthStatusChangeEvent> statusChangeCallback) {
 
+    JedisAsserts.isTrue(strategy.getNumProbes() > 0,
+      "Number of HealthCheckStrategy probes must be greater than 0");
     this.endpoint = endpoint;
     this.strategy = strategy;
     this.statusChangeCallback = statusChangeCallback;
     resultRef.set(new HealthCheckResult(0L, HealthStatus.UNKNOWN));
 
-    executor = Executors.newCachedThreadPool(r -> {
-      Thread t = new Thread(r, "jedis-healthcheck-worker-" + this.endpoint);
-      t.setDaemon(true);
-      return t;
-    });
     scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
       Thread t = new Thread(r, "jedis-healthcheck-" + this.endpoint);
       t.setDaemon(true);
@@ -77,27 +145,25 @@ public class HealthCheckImpl implements HealthCheck {
   }
 
   public void start() {
+    delayer.setCorePoolSize(delayerCounter.incrementAndGet());
     scheduler.scheduleAtFixedRate(this::healthCheck, 0, strategy.getInterval(),
       TimeUnit.MILLISECONDS);
   }
 
   public void stop() {
+    delayer.setCorePoolSize(delayerCounter.decrementAndGet());
     strategy.close();
     this.statusChangeCallback = null;
     scheduler.shutdown();
-    executor.shutdown();
+
     try {
       // Wait for graceful shutdown then force if required
       if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
         scheduler.shutdownNow();
       }
-      if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-        executor.shutdownNow();
-      }
     } catch (InterruptedException e) {
       // Force shutdown immediately
       scheduler.shutdownNow();
-      executor.shutdownNow();
       Thread.currentThread().interrupt();
     }
   }
@@ -110,97 +176,58 @@ public class HealthCheckImpl implements HealthCheck {
 
   private void healthCheck() {
     long me = System.currentTimeMillis();
-    Future<HealthStatus> future = executor.submit(this::doHealthCheck);
     HealthStatus update = null;
+    HealthProbeContext probeContext = new HealthProbeContext(strategy.getPolicy(),
+        strategy.getNumProbes());
 
-    try {
-      update = future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
-    } catch (TimeoutException | ExecutionException e) {
-      future.cancel(true);
-      if (log.isWarnEnabled()) {
-        log.warn(String.format("Health check timed out or failed for %s.", endpoint), e);
+    while (!probeContext.isCompleted()) {
+      Future<HealthStatus> future = executor.submit(this::doHealthCheck);
+      try {
+        update = future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
+        probeContext.record(update == HealthStatus.HEALTHY);
+      } catch (TimeoutException | ExecutionException e) {
+        future.cancel(true);
+        if (log.isWarnEnabled()) {
+          log.warn(String.format("Health check timed out or failed for %s.", endpoint), e);
+        }
+        probeContext.record(false);
+      } catch (InterruptedException e) {// Health check thread was interrupted
+        future.cancel(true);
+        Thread.currentThread().interrupt(); // Restore interrupted status
+        if (log.isWarnEnabled()) {
+          log.warn(String.format("Health check interrupted for %s.", endpoint), e);
+        }
+        // thread interrupted, stop health check process
+        return;
       }
-      update = performHealthCheckWithRetries();
-    } catch (InterruptedException e) {
-      // Health check thread was interrupted
-      future.cancel(true);
-      Thread.currentThread().interrupt(); // Restore interrupted status
-      if (log.isWarnEnabled()) {
-        log.warn(String.format("Health check interrupted for %s.", endpoint), e);
+      if (!probeContext.isCompleted()) {
+        delay(strategy.getDelayInBetweenProbes());
       }
-      // thread interrupted, stop health check process
-      return;
     }
-    safeUpdate(me, update);
+
+    safeUpdate(me, probeContext.getResult());
   }
 
-  /**
-   * Perform health check with retries. All retries are attempted in a single new executor thread,
-   * no additional threads are created on each attempt due to resource optimization considerations.
-   * Maximum wait time is (timeout + delayBetweenRetries) * numberOfRetries. Main check interval
-   * might be impacted if retries take longer than the {@link HealthCheckStrategy#getInterval()}
-   * (though {@link HealthCheckImpl#executor} pool can extend, {@link HealthCheckImpl#scheduler} is
-   * single threaded).
-   * @return the result of retries
-   */
-  private HealthStatus performHealthCheckWithRetries() {
-    int attempts = Math.max(0, strategy.getNumberOfRetries());
-    if (attempts == 0) {
-      return HealthStatus.UNHEALTHY;
-    }
-
-    Future<HealthStatus> retries = executor.submit(() -> {
-      for (int i = 0; i < attempts; i++) {
-        try {
-          Thread.sleep(strategy.getDelayInBetweenRetries());
-          return doHealthCheck();
-        } catch (InterruptedException e) {
-          // Health check thread was interrupted
-          Thread.currentThread().interrupt(); // Restore interrupted status
-          if (log.isWarnEnabled()) {
-            log.warn(
-              String.format("Health check retry interrupted for %s. Attempt:%d", endpoint, i + 1),
-              e);
-          }
-          break;
-        } catch (Exception e) {
-          if (log.isWarnEnabled()) {
-            log.warn(String.format("Health check retry failed for %s. Attempt:%d", endpoint, i + 1),
-              e);
-          }
-          // continue to next attempt
-        }
-      }
-      return HealthStatus.UNHEALTHY;
-    });
-
+  private void delay(int delayInBetweenProbes) {
     try {
-      long timeout = (strategy.getTimeout() + strategy.getDelayInBetweenRetries()) * attempts;
-      return retries.get(timeout, TimeUnit.MILLISECONDS);
-    } catch (TimeoutException | ExecutionException e) {
-      retries.cancel(true);
-      if (log.isWarnEnabled()) {
-        log.warn(String.format("Health check retries timed out or failed for %s", endpoint), e);
-      }
-    } catch (InterruptedException e) {
-      retries.cancel(true);
-      Thread.currentThread().interrupt(); // Restore interrupted status
-      if (log.isWarnEnabled()) {
-        log.warn(String.format("Health check retries interrupted for %s", endpoint), e);
-      }
+      delayer.schedule(() -> {
+        /* No Op */
+      }, (long) delayInBetweenProbes, TimeUnit.MILLISECONDS).get();
+    } catch (InterruptedException | ExecutionException e) {
+      Thread.currentThread().interrupt();
+      return;
     }
-    return HealthStatus.UNHEALTHY;
   }
 
   /**
    * just to avoid to replace status with an outdated result from another healthCheck
-   * 
+   *
    * <pre>
    * Health Check Race Condition Prevention
-   * 
+   *
    * Problem: Async health checks can complete out of order, causing stale results
    * to overwrite newer ones.
-   * 
+   *
    * Timeline Example:
    * ─────────────────────────────────────────────────────────────────
    * T0: Start Check #1 ────────────────────┐
@@ -208,14 +235,14 @@ public class HealthCheckImpl implements HealthCheck {
    * T2:                          │         │
    * T3: Check #2 completes ──────┘         │  → status = "Healthy"
    * T4: Check #1 completes ────────────────┘  → status = "Unhealthy" (STALE!)
-   * 
-   * 
-   * Result: Final status shows "Unhealthy" even though the most recent 
+   *
+   *
+   * Result: Final status shows "Unhealthy" even though the most recent
    * check (#2) returned "Healthy"
-   * 
+   *
    * Solution: Track execution order/timestamp to ignore outdated results
    * </pre>
-   * 
+   *
    * @param owner the timestamp of the health check that is updating the status
    * @param status the new status to set
    */
@@ -249,8 +276,7 @@ public class HealthCheckImpl implements HealthCheck {
 
   @Override
   public long getMaxWaitFor() {
-    return (strategy.getTimeout() + strategy.getDelayInBetweenRetries())
-        * (1 + strategy.getNumberOfRetries());
+    return (strategy.getTimeout() + strategy.getDelayInBetweenProbes()) * strategy.getNumProbes();
   }
 
 }

@@ -11,10 +11,13 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -32,7 +35,7 @@ public class HealthCheckTest {
   private HealthCheckStrategy mockStrategy;
 
   private final HealthCheckStrategy alwaysHealthyStrategy = new TestHealthCheckStrategy(100, 50, 0,
-      10, () -> HealthStatus.HEALTHY);
+      BuiltIn.ANY_SUCCESS, 10, e -> HealthStatus.HEALTHY);
 
   @Mock
   private Consumer<HealthStatusChangeEvent> mockCallback;
@@ -312,11 +315,15 @@ public class HealthCheckTest {
 
   @Test
   void testEchoStrategyCustomIntervalTimeout() {
-    EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig,
-        new HealthCheckStrategy.Config(2000, 1500, 1000));
-
-    assertEquals(2000, strategy.getInterval());
-    assertEquals(1500, strategy.getTimeout());
+    try (EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig,
+        HealthCheckStrategy.Config.builder().interval(2000).timeout(1500).delayInBetweenProbes(50)
+            .numProbes(11).policy(BuiltIn.ANY_SUCCESS).build())) {
+      assertEquals(2000, strategy.getInterval());
+      assertEquals(1500, strategy.getTimeout());
+      assertEquals(11, strategy.getNumProbes());
+      assertEquals(BuiltIn.ANY_SUCCESS, strategy.getPolicy());
+      assertEquals(50, strategy.getDelayInBetweenProbes());
+    }
   }
 
   @Test
@@ -438,37 +445,24 @@ public class HealthCheckTest {
   @Test
   @Timeout(5)
   void testHealthCheckRecoversAfterException() throws InterruptedException {
-    // Create a mock strategy that alternates between healthy and throwing an exception
-    HealthCheckStrategy alternatingStrategy = new HealthCheckStrategy() {
-      volatile boolean isHealthy = true;
-      int exceptionLimit = 2;
-      int exceptionOccurred = 0;
-
-      @Override
-      public int getInterval() {
-        return 1;
-      }
-
-      @Override
-      public int getTimeout() {
-        return 5;
-      }
-
-      @Override
-      public HealthStatus doHealthCheck(Endpoint endpoint) {
-        if (isHealthy) {
-          isHealthy = false;
-          if (exceptionOccurred++ < exceptionLimit) {
-            throw new RuntimeException("Simulated exception");
+    // Create a strategy that alternates between exception/UNHEALTHY and HEALTHY
+    AtomicBoolean isHealthy = new AtomicBoolean(true);
+    AtomicInteger exceptionOccurred = new AtomicInteger(0);
+    int exceptionLimit = 2;
+    HealthCheckStrategy alternatingStrategy = new TestHealthCheckStrategy(
+        HealthCheckStrategy.Config.builder().interval(1).timeout(5).numProbes(1).build(), e -> {
+          if (isHealthy.get()) {
+            isHealthy.set(false);
+            if (exceptionOccurred.getAndIncrement() < exceptionLimit) {
+              throw new RuntimeException("Simulated exception");
+            } else {
+              return HealthStatus.UNHEALTHY;
+            }
           } else {
-            return HealthStatus.UNHEALTHY;
+            isHealthy.set(true);
+            return HealthStatus.HEALTHY;
           }
-        } else {
-          isHealthy = true;
-          return HealthStatus.HEALTHY;
-        }
-      }
-    };
+        });
 
     // Wait for 2 status changes,
     // it will start with unhealthy(due to simulated exception) and then switch to healthy
@@ -489,12 +483,13 @@ public class HealthCheckTest {
   void testHealthCheckIntegration() throws InterruptedException {
     // Create a mock strategy that alternates between healthy and unhealthy
     AtomicReference<HealthStatus> statusToReturn = new AtomicReference<>(HealthStatus.HEALTHY);
-    HealthCheckStrategy alternatingStrategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
-      HealthStatus current = statusToReturn.get();
-      statusToReturn
-          .set(current == HealthStatus.HEALTHY ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY);
-      return current;
-    });
+    HealthCheckStrategy alternatingStrategy = new TestHealthCheckStrategy(100, 50, 2,
+        BuiltIn.ANY_SUCCESS, 10, e -> {
+          HealthStatus current = statusToReturn.get();
+          statusToReturn
+              .set(current == HealthStatus.HEALTHY ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY);
+          return current;
+        });
 
     CountDownLatch statusChangeLatch = new CountDownLatch(2); // Wait for 2 status changes
     HealthStatusListener listener = event -> statusChangeLatch.countDown();
@@ -514,7 +509,7 @@ public class HealthCheckTest {
     MultiClusterClientConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
       if (jedisClientConfig != null) {
         return new EchoStrategy(hostAndPort, jedisClientConfig,
-            new HealthCheckStrategy.Config(500, 250, 1));
+            HealthCheckStrategy.Config.builder().interval(500).timeout(250).numProbes(1).build());
       } else {
         return new EchoStrategy(hostAndPort, DefaultJedisClientConfig.builder().build());
       }
@@ -538,10 +533,11 @@ public class HealthCheckTest {
   @Test
   void testRetryLogic_SuccessOnFirstAttempt() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
-      callCount.incrementAndGet();
-      return HealthStatus.HEALTHY; // Always succeeds
-    });
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, BuiltIn.ANY_SUCCESS,
+        10, e -> {
+          callCount.incrementAndGet();
+          return HealthStatus.HEALTHY; // Always succeeds
+        });
 
     CountDownLatch latch = new CountDownLatch(1);
     Consumer<HealthStatusChangeEvent> callback = event -> latch.countDown();
@@ -561,13 +557,14 @@ public class HealthCheckTest {
   @Test
   void testRetryLogic_FailThenSucceedOnRetry() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
-      int attempt = callCount.incrementAndGet();
-      if (attempt == 1) {
-        throw new RuntimeException("First attempt fails");
-      }
-      return HealthStatus.HEALTHY; // Second attempt succeeds
-    });
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, BuiltIn.ANY_SUCCESS,
+        10, e -> {
+          int attempt = callCount.incrementAndGet();
+          if (attempt == 1) {
+            throw new RuntimeException("First attempt fails");
+          }
+          return HealthStatus.HEALTHY; // Second attempt succeeds
+        });
 
     CountDownLatch latch = new CountDownLatch(1);
     Consumer<HealthStatusChangeEvent> callback = event -> {
@@ -591,10 +588,11 @@ public class HealthCheckTest {
   @Test
   void testRetryLogic_ExhaustAllRetriesAndFail() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, 10, () -> {
-      callCount.incrementAndGet();
-      throw new RuntimeException("Always fails");
-    });
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, BuiltIn.ANY_SUCCESS,
+        10, e -> {
+          callCount.incrementAndGet();
+          throw new RuntimeException("Always fails");
+        });
 
     CountDownLatch latch = new CountDownLatch(1);
     Consumer<HealthStatusChangeEvent> callback = event -> {
@@ -618,10 +616,11 @@ public class HealthCheckTest {
   @Test
   void testRetryLogic_ZeroRetries() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 0, 10, () -> {
-      callCount.incrementAndGet();
-      throw new RuntimeException("Fails");
-    });
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 0, BuiltIn.ANY_SUCCESS,
+        10, e -> {
+          callCount.incrementAndGet();
+          throw new RuntimeException("Fails");
+        });
 
     CountDownLatch latch = new CountDownLatch(1);
     Consumer<HealthStatusChangeEvent> callback = event -> {
@@ -645,10 +644,11 @@ public class HealthCheckTest {
   @Test
   void testRetryLogic_NegativeRetriesHandledAsZero() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, -1, 10, () -> {
-      callCount.incrementAndGet();
-      throw new RuntimeException("Fails");
-    });
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, -1, BuiltIn.ANY_SUCCESS,
+        10, e -> {
+          callCount.incrementAndGet();
+          throw new RuntimeException("Fails");
+        });
 
     CountDownLatch latch = new CountDownLatch(1);
     Consumer<HealthStatusChangeEvent> callback = event -> {
@@ -672,16 +672,17 @@ public class HealthCheckTest {
   @Test
   void testRetryLogic_InterruptionStopsRetries() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 5, 100, () -> {
-      int count = callCount.incrementAndGet();
-      if (count == 1) {
-        throw new RuntimeException("First attempt fails");
-      } else {
-        // Simulate interruption on retry attempts
-        Thread.currentThread().interrupt();
-        throw new InterruptedException("Interrupted during retry");
-      }
-    });
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 5, BuiltIn.ANY_SUCCESS,
+        100, e -> {
+          int count = callCount.incrementAndGet();
+          if (count == 1) {
+            throw new RuntimeException("First attempt fails");
+          } else {
+            // Simulate interruption on retry attempts
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted during retry");
+          }
+        });
 
     CountDownLatch latch = new CountDownLatch(1);
     Consumer<HealthStatusChangeEvent> callback = event -> {

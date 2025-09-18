@@ -54,7 +54,7 @@ public class LagAwareStrategyUnitTest {
         reference[0] = mock;
       })) {
       Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
-          .numberOfRetries(2).build();
+          .numProbes(2).build();
       try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
         assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
         RedisRestAPI api = reference[0];
@@ -76,7 +76,7 @@ public class LagAwareStrategyUnitTest {
       })) {
 
       Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
-          .numberOfRetries(1).build();
+          .numProbes(1).build();
       try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
         assertThrows(JedisException.class, () -> strategy.doHealthCheck(endpoint));
         RedisRestAPI api = reference[0];
@@ -102,7 +102,7 @@ public class LagAwareStrategyUnitTest {
       })) {
 
       Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
-          .numberOfRetries(1).build();
+          .numProbes(1).build();
       try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
         RedisRestAPI api = reference[0];
 
@@ -133,8 +133,8 @@ public class LagAwareStrategyUnitTest {
         reference[0] = mock;
       })) {
       Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
-          .numberOfRetries(2).extendedCheckEnabled(true)
-          .availabilityLagTolerance(Duration.ofMillis(100)).build();
+          .numProbes(2).extendedCheckEnabled(true).availabilityLagTolerance(Duration.ofMillis(100))
+          .build();
       try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
         assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
         RedisRestAPI api = reference[0];
@@ -158,7 +158,7 @@ public class LagAwareStrategyUnitTest {
         reference[0] = mock;
       })) {
       Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
-          .numberOfRetries(2).build();
+          .numProbes(2).build();
       try (LagAwareStrategy strategy = new LagAwareStrategy(lagCheckConfig)) {
         assertThrows(JedisException.class, () -> strategy.doHealthCheck(endpoint));
         RedisRestAPI api = reference[0];
@@ -175,7 +175,7 @@ public class LagAwareStrategyUnitTest {
 
     assertEquals(1000, config.interval);
     assertEquals(1000, config.timeout);
-    assertEquals(3, config.numberOfRetries);
+    assertEquals(3, config.numProbes);
     assertEquals(Duration.ofMillis(100), config.getAvailabilityLagTolerance());
     assertEquals(endpoint, config.getRestEndpoint());
     assertEquals(creds, config.getCredentialsSupplier());
@@ -183,12 +183,12 @@ public class LagAwareStrategyUnitTest {
 
   @Test
   void config_builder_creates_config_with_custom_values() {
-    Config config = Config.builder(endpoint, creds).interval(500).timeout(250).numberOfRetries(2)
+    Config config = Config.builder(endpoint, creds).interval(500).timeout(250).numProbes(2)
         .availabilityLagTolerance(Duration.ofMillis(50)).build();
 
     assertEquals(500, config.interval);
     assertEquals(250, config.timeout);
-    assertEquals(2, config.numberOfRetries);
+    assertEquals(2, config.numProbes);
     assertEquals(Duration.ofMillis(50), config.getAvailabilityLagTolerance());
     assertEquals(endpoint, config.getRestEndpoint());
     assertEquals(creds, config.getCredentialsSupplier());
@@ -197,13 +197,13 @@ public class LagAwareStrategyUnitTest {
   @Test
   void config_builder_allows_fluent_chaining() {
     // Test that all builder methods return the builder instance for chaining
-    Config config = Config.builder(endpoint, creds).interval(800).timeout(400).numberOfRetries(5)
+    Config config = Config.builder(endpoint, creds).interval(800).timeout(400).numProbes(5)
         .availabilityLagTolerance(Duration.ofMillis(200)).build();
 
     assertNotNull(config);
     assertEquals(800, config.interval);
     assertEquals(400, config.timeout);
-    assertEquals(5, config.numberOfRetries);
+    assertEquals(5, config.numProbes);
     assertEquals(Duration.ofMillis(200), config.getAvailabilityLagTolerance());
   }
 
@@ -277,11 +277,11 @@ public class LagAwareStrategyUnitTest {
   @Test
   void base_config_builder_factory_method_works() {
     HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder().interval(2000)
-        .timeout(1500).numberOfRetries(5).build();
+        .timeout(1500).numProbes(5).build();
 
     assertEquals(2000, config.getInterval());
     assertEquals(1500, config.getTimeout());
-    assertEquals(5, config.getNumberOfRetries());
+    assertEquals(5, config.getNumProbes());
   }
 
   @Test
@@ -290,6 +290,6 @@ public class LagAwareStrategyUnitTest {
 
     assertEquals(1000, config.getInterval());
     assertEquals(1000, config.getTimeout());
-    assertEquals(3, config.getNumberOfRetries());
+    assertEquals(3, config.getNumProbes());
   }
 }

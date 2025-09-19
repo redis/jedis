@@ -62,6 +62,15 @@ public class FailoverIntegrationTest {
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
+  }
+
+  @AfterAll
+  public static void cleanupAdminClients() throws IOException {
+    executor.shutdown();
+  }
+
+  @BeforeEach
+  public void setup() throws IOException {
     if (tp.getProxyOrNull("redis-1") != null) {
       tp.getProxy("redis-1").delete();
     }
@@ -71,21 +80,7 @@ public class FailoverIntegrationTest {
 
     redisProxy1 = tp.createProxy("redis-1", "0.0.0.0:29379", "redis-failover-1:9379");
     redisProxy2 = tp.createProxy("redis-2", "0.0.0.0:29380", "redis-failover-2:9380");
-  }
 
-  @AfterAll
-  public static void cleanupAdminClients() throws IOException {
-    if (redisProxy1 != null) redisProxy1.delete();
-    if (redisProxy2 != null) redisProxy2.delete();
-
-    jedis1.close();
-    jedis2.close();
-
-    executor.shutdown();
-  }
-
-  @BeforeEach
-  public void setup() throws IOException {
     tp.getProxies().forEach(proxy -> {
       try {
         proxy.enable();
@@ -115,6 +110,9 @@ public class FailoverIntegrationTest {
 
   @AfterEach
   public void cleanup() throws IOException {
+    if (redisProxy1 != null) redisProxy1.delete();
+    if (redisProxy2 != null) redisProxy2.delete();
+
     failoverClient.close();
     jedis1.close();
     jedis2.close();

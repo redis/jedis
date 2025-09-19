@@ -14,12 +14,14 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +36,7 @@ public class HealthCheckTest {
   @Mock
   private HealthCheckStrategy mockStrategy;
 
-  private final HealthCheckStrategy alwaysHealthyStrategy = new TestHealthCheckStrategy(100, 50, 0,
+  private final HealthCheckStrategy alwaysHealthyStrategy = new TestHealthCheckStrategy(100, 50, 1,
       BuiltIn.ANY_SUCCESS, 10, e -> HealthStatus.HEALTHY);
 
   @Mock
@@ -48,6 +50,11 @@ public class HealthCheckTest {
     MockitoAnnotations.openMocks(this);
     testEndpoint = new HostAndPort("localhost", 6379);
     testConfig = DefaultJedisClientConfig.builder().build();
+
+    // Default stubs for mockStrategy used across tests
+    when(mockStrategy.getNumProbes()).thenReturn(1);
+    when(mockStrategy.getDelayInBetweenProbes()).thenReturn(100);
+    when(mockStrategy.getPolicy()).thenReturn(BuiltIn.ANY_SUCCESS);
   }
 
   // ========== HealthCheckCollection Tests ==========
@@ -295,6 +302,7 @@ public class HealthCheckTest {
   @Test
   void testHealthStatusManagerClose() {
     HealthCheckStrategy closeableStrategy = mock(HealthCheckStrategy.class);
+    when(closeableStrategy.getNumProbes()).thenReturn(1);
     when(closeableStrategy.getInterval()).thenReturn(1000);
     when(closeableStrategy.getTimeout()).thenReturn(500);
     when(closeableStrategy.doHealthCheck(any(Endpoint.class))).thenReturn(HealthStatus.HEALTHY);
@@ -483,8 +491,8 @@ public class HealthCheckTest {
   void testHealthCheckIntegration() throws InterruptedException {
     // Create a mock strategy that alternates between healthy and unhealthy
     AtomicReference<HealthStatus> statusToReturn = new AtomicReference<>(HealthStatus.HEALTHY);
-    HealthCheckStrategy alternatingStrategy = new TestHealthCheckStrategy(100, 50, 2,
-        BuiltIn.ANY_SUCCESS, 10, e -> {
+    HealthCheckStrategy alternatingStrategy = new TestHealthCheckStrategy(100, 50, 1,
+        BuiltIn.ALL_SUCCESS, 10, e -> {
           HealthStatus current = statusToReturn.get();
           statusToReturn
               .set(current == HealthStatus.HEALTHY ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY);
@@ -586,9 +594,9 @@ public class HealthCheckTest {
   }
 
   @Test
-  void testRetryLogic_ExhaustAllRetriesAndFail() throws InterruptedException {
+  void testRetryLogic_ExhaustAllProbesAndFail() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 2, BuiltIn.ANY_SUCCESS,
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 3, BuiltIn.ANY_SUCCESS,
         10, e -> {
           callCount.incrementAndGet();
           throw new RuntimeException("Always fails");
@@ -607,14 +615,14 @@ public class HealthCheckTest {
     assertTrue(latch.await(3, TimeUnit.SECONDS));
     assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
 
-    // Should call doHealthCheck 3 times (1 initial + 2 retries)
+    // Should call doHealthCheck 3 times (all probes fail)
     assertEquals(3, callCount.get());
 
     healthCheck.stop();
   }
 
   @Test
-  void testRetryLogic_ZeroRetries() throws InterruptedException {
+  void testRetryLogic_ZeroProbes() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
     TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 0, BuiltIn.ANY_SUCCESS,
         10, e -> {
@@ -629,20 +637,12 @@ public class HealthCheckTest {
       }
     };
 
-    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
-    healthCheck.start();
-
-    assertTrue(latch.await(2, TimeUnit.SECONDS));
-    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
-
-    // Should call doHealthCheck only once (no retries configured)
-    assertEquals(1, callCount.get());
-
-    healthCheck.stop();
+    assertThrows(IllegalArgumentException.class,
+      () -> new HealthCheckImpl(testEndpoint, strategy, callback));
   }
 
   @Test
-  void testRetryLogic_NegativeRetriesHandledAsZero() throws InterruptedException {
+  void testRetryLogic_NegativeProbes() throws InterruptedException {
     AtomicInteger callCount = new AtomicInteger(0);
     TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, -1, BuiltIn.ANY_SUCCESS,
         10, e -> {
@@ -657,50 +657,77 @@ public class HealthCheckTest {
       }
     };
 
-    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
-    healthCheck.start();
-
-    assertTrue(latch.await(2, TimeUnit.SECONDS));
-    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
-
-    // Should call doHealthCheck only once (negative retries treated as 0)
-    assertEquals(1, callCount.get());
-
-    healthCheck.stop();
+    assertThrows(IllegalArgumentException.class,
+      () -> new HealthCheckImpl(testEndpoint, strategy, callback));
   }
 
+  /**
+   * <p>
+   * - Verifies that the health check probes stop after the first probe when the scheduler thread is
+   * interrupted.
+   * <p>
+   * - The scheduler thread is the one that calls healthCheck(), which in turn calls
+   * doHealthCheck().
+   * <p>
+   * - This test interrupts the scheduler thread while it is waiting on the future from the first
+   * probe. 
+   * <p>
+   * - The health check operation itself is not interrupted. This test does not validate
+   * interruption of the health check operation itself, as that is not the responsibility of the
+   * HealthCheckImpl.
+   */
   @Test
-  void testRetryLogic_InterruptionStopsRetries() throws InterruptedException {
+  void testRetryLogic_InterruptionStopsProbes() throws Exception {
     AtomicInteger callCount = new AtomicInteger(0);
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(100, 50, 5, BuiltIn.ANY_SUCCESS,
-        100, e -> {
-          int count = callCount.incrementAndGet();
-          if (count == 1) {
-            throw new RuntimeException("First attempt fails");
-          } else {
-            // Simulate interruption on retry attempts
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted during retry");
-          }
-        });
+    CountDownLatch schedulerTaskStarted = new CountDownLatch(1);
+    CountDownLatch statusChanged = new CountDownLatch(1);
 
-    CountDownLatch latch = new CountDownLatch(1);
-    Consumer<HealthStatusChangeEvent> callback = event -> {
-      if (event.getNewStatus() == HealthStatus.UNHEALTHY) {
-        latch.countDown();
+    Thread[] schedulerThread = new Thread[1];
+
+    final int OPERATION_TIMEOUT = 1000;
+    final int LESS_THAN_OPERATION_TIMEOUT = 800;
+    final int NUM_PROBES = 3;
+    // Long interval so no second run, generous timeout so we can interrupt while waiting
+    Function<Endpoint, HealthStatus> healthCheckOperation = e -> {
+      callCount.incrementAndGet();
+      try {
+        Thread.sleep(LESS_THAN_OPERATION_TIMEOUT); // keep worker busy so scheduler waits on
+                                                   // future.get
+      } catch (InterruptedException ie) {
+      }
+      return HealthStatus.UNHEALTHY;
+    };
+
+    // Override getPolicy() to capture the scheduler thread
+    HealthCheckStrategy strategy = new TestHealthCheckStrategy(5000, OPERATION_TIMEOUT, NUM_PROBES,
+        BuiltIn.ANY_SUCCESS, 10, healthCheckOperation) {
+      public ProbePolicy getPolicy() {
+        schedulerThread[0] = Thread.currentThread();
+        schedulerTaskStarted.countDown();
+        return super.getPolicy();
       }
     };
 
-    HealthCheck healthCheck = new HealthCheckImpl(testEndpoint, strategy, callback);
-    healthCheck.start();
+    Consumer<HealthStatusChangeEvent> callback = evt -> statusChanged.countDown();
 
-    assertTrue(latch.await(3, TimeUnit.SECONDS));
-    assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
+    HealthCheckImpl hc = new HealthCheckImpl(testEndpoint, strategy, callback);
+    hc.start();
 
-    // Should stop retrying after interruption (likely 1 or 2 calls, not all 6)
-    assertTrue(callCount.get() <= 2,
-      "Should stop after interruption, but made " + callCount.get() + " calls");
+    // Ensure first probe is in flight (scheduler is blocked on future.get)
+    assertTrue(schedulerTaskStarted.await(1, TimeUnit.SECONDS), "Task should have started");
 
-    healthCheck.stop();
+    // Interrupt the scheduler thread that runs HealthCheckImpl.healthCheck()
+    schedulerThread[0].interrupt();
+
+    // No status change should be published because healthCheck() returns early without safeUpdate
+    assertFalse(statusChanged.await(hc.getMaxWaitFor(), TimeUnit.MILLISECONDS),
+      "No status change expected");
+    assertEquals(HealthStatus.UNKNOWN, hc.getStatus());
+
+    // Only the first probe should have been attempted
+    assertEquals(1, callCount.get());
+
+    hc.stop();
   }
+
 }

@@ -3,7 +3,6 @@ package redis.clients.jedis.mcf;
 import java.util.function.Function;
 
 import redis.clients.jedis.Endpoint;
-import redis.clients.jedis.exceptions.JedisException;
 
 public class TestHealthCheckStrategy implements HealthCheckStrategy {
 
@@ -61,13 +60,7 @@ public class TestHealthCheckStrategy implements HealthCheckStrategy {
 
   @Override
   public HealthStatus doHealthCheck(Endpoint endpoint) {
-    try {
-      return healthCheck.apply(endpoint);
-    } catch (JedisException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return healthCheck.apply(endpoint);
   }
 
 };

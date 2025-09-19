@@ -15,6 +15,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 import java.util.Arrays;
@@ -212,7 +213,7 @@ public class MultiClusterPooledConnectionProviderTest {
     // Custom strategy that counts health checks
     HealthCheckStrategy countingStrategy = new redis.clients.jedis.mcf.TestHealthCheckStrategy(
         redis.clients.jedis.mcf.HealthCheckStrategy.Config.builder().interval(5).timeout(50)
-            .build(),
+            .policy(BuiltIn.ANY_SUCCESS).build(),
         e -> {
           healthCheckCount.incrementAndGet();
           return HealthStatus.HEALTHY;

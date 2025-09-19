@@ -103,14 +103,14 @@ public class HealthCheckIntegrationTest {
     return new MultiClusterPooledConnectionProvider(mccf);
   }
 
-  // ========== Retry Logic Integration Tests ==========
+  // ========== Probe Logic Integration Tests ==========
   @Test
-  public void testRetryLogic_RealHealthCheckWithRetries() throws InterruptedException {
+  public void testProbingLogic_RealHealthCheckWithProbes() throws InterruptedException {
     // Create a strategy that fails first few times then succeeds
     AtomicInteger attemptCount = new AtomicInteger(0);
 
-    StrategySupplier retryTestSupplier = (hostAndPort, jedisClientConfig) -> {
-      // Fast interval, short timeout, 3 retries, short delay
+    StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
+      // Fast interval, short timeout, 3 probes, short delay
       return new TestHealthCheckStrategy(100, 50, 3, BuiltIn.ANY_SUCCESS, 20, (endpoint) -> {
         int attempt = attemptCount.incrementAndGet();
         if (attempt <= 2) {
@@ -137,20 +137,20 @@ public class HealthCheckIntegrationTest {
       }
     });
 
-    // Add health check with retry strategy
+    // Add health check with strategy
     HealthCheck healthCheck = manager.add(endpoint1.getHostAndPort(),
-      retryTestSupplier.get(endpoint1.getHostAndPort(), clientConfig));
+      strategySupplier.get(endpoint1.getHostAndPort(), clientConfig));
 
     try {
-      // Wait for health check to eventually succeed after retries
+      // Wait for health check to eventually succeed after probes
       assertTrue(healthyLatch.await(5, TimeUnit.SECONDS),
-        "Health check should succeed after retries");
+        "Health check should succeed after probes");
 
       assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());
 
       // Verify that multiple attempts were made (should be 3: 2 failures + 1 success)
       assertTrue(attemptCount.get() >= 3,
-        "Should have made at least 3 attempts (2 failures + 1 success), but made: "
+        "Should have made at least 3 probes, but made: "
             + attemptCount.get());
 
     } finally {
@@ -159,13 +159,13 @@ public class HealthCheckIntegrationTest {
   }
 
   @Test
-  public void testRetryLogic_ExhaustRetriesAndStayUnhealthy() throws InterruptedException {
+  public void testProbingLogic_ExhaustProbesAndStayUnhealthy() throws InterruptedException {
     // Create a strategy that always fails
     AtomicInteger attemptCount = new AtomicInteger(0);
 
     StrategySupplier alwaysFailSupplier = (hostAndPort, jedisClientConfig) -> {
-      // Fast interval, short timeout, 2 retries, short delay
-      return new TestHealthCheckStrategy(100, 50, 2, BuiltIn.ANY_SUCCESS, 10, (endpoint) -> {
+      // Fast interval, short timeout, 3 probes, short delay
+      return new TestHealthCheckStrategy(100, 50, 3, BuiltIn.ANY_SUCCESS, 10, (endpoint) -> {
         attemptCount.incrementAndGet();
         throw new RuntimeException("Always fails");
       });
@@ -186,59 +186,16 @@ public class HealthCheckIntegrationTest {
       alwaysFailSupplier.get(endpoint1.getHostAndPort(), clientConfig));
 
     try {
-      // Wait for health check to fail after exhausting retries
+      // Wait for health check to fail after exhausting probes
       assertTrue(unhealthyLatch.await(3, TimeUnit.SECONDS),
-        "Health check should become UNHEALTHY after exhausting retries");
+        "Health check should become UNHEALTHY after exhausting probes");
 
       assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
 
-      // Verify that all attempts were made (should be 3: 1 initial + 2 retries)
+      // Verify that all attempts were made (should 3 probes)
       assertTrue(attemptCount.get() >= 3,
-        "Should have made at least 3 attempts (1 initial + 2 retries), but made: "
+        "Should have made at least 3 attempts , but made: "
             + attemptCount.get());
-
-    } finally {
-      manager.remove(endpoint1.getHostAndPort());
-    }
-  }
-
-  @Test
-  public void testRetryLogic_NoRetriesConfigured() throws InterruptedException {
-    // Create a strategy with no retries that fails
-    AtomicInteger attemptCount = new AtomicInteger(0);
-
-    StrategySupplier noRetrySupplier = (hostAndPort, jedisClientConfig) -> {
-      // Fast interval, short timeout, 0 retries, short delay
-      return new TestHealthCheckStrategy(100, 50, 0, BuiltIn.ANY_SUCCESS, 10, (endpoint) -> {
-        attemptCount.incrementAndGet();
-        throw new RuntimeException("Fails immediately");
-      });
-    };
-
-    CountDownLatch unhealthyLatch = new CountDownLatch(1);
-    HealthStatusManager manager = new HealthStatusManager();
-
-    // Register listener to detect when health becomes UNHEALTHY
-    manager.registerListener(endpoint1.getHostAndPort(), event -> {
-      if (event.getNewStatus() == HealthStatus.UNHEALTHY) {
-        unhealthyLatch.countDown();
-      }
-    });
-
-    // Add health check with no-retry strategy
-    HealthCheck healthCheck = manager.add(endpoint1.getHostAndPort(),
-      noRetrySupplier.get(endpoint1.getHostAndPort(), clientConfig));
-
-    try {
-      // Wait for health check to fail immediately (no retries)
-      assertTrue(unhealthyLatch.await(2, TimeUnit.SECONDS),
-        "Health check should become UNHEALTHY immediately with no retries");
-
-      assertEquals(HealthStatus.UNHEALTHY, healthCheck.getStatus());
-
-      // Verify that only one attempt was made (no retries)
-      assertEquals(1, attemptCount.get(),
-        "Should have made exactly 1 attempt with no retries configured");
 
     } finally {
       manager.remove(endpoint1.getHostAndPort());

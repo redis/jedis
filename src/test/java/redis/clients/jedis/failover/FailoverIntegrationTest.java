@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType.COUNT_BASED;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -166,6 +167,9 @@ public class FailoverIntegrationTest {
   @Test
   public void testManualFailoverNewCommandsAreSentToActiveCluster() throws InterruptedException {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
+
+    await().atMost(1, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+        .until(() -> provider.getCluster(endpoint2.getHostAndPort()).isHealthy());
 
     provider.setActiveCluster(endpoint2.getHostAndPort());
 

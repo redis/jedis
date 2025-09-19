@@ -36,6 +36,12 @@ public class CacheEntry<T> {
   private static byte[] toBytes(Object object) {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+
+      if (!(object instanceof java.io.Serializable)) {
+        // Fallback: store as string
+        object = object.toString();
+      }
+      
       oos.writeObject(object);
       oos.flush();
       oos.close();

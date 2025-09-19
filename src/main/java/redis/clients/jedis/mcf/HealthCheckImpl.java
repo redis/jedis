@@ -240,6 +240,15 @@ public class HealthCheckImpl implements HealthCheck {
    * Result: Final status shows "Unhealthy" even though the most recent
    * check (#2) returned "Healthy"
    *
+   * How Parallel Health Checks Can Occur:
+   * 1. Timeout scenario: A scheduled health check times out and future.cancel(true)
+   *    is called, but the actual health check operation continues running in the
+   *    background thread and may complete any time later
+   * 2. Scheduler overlap: If a health check takes longer than the configured
+   *    interval, the next scheduled check can start before the previous one finishes
+   * 3. Interruption handling: When a health check thread is interrupted, it may
+   *    still complete its operation before recognizing the interruption
+   *
    * Solution: Track execution order/timestamp to ignore outdated results
    * </pre>
    *

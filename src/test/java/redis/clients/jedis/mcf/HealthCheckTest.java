@@ -670,7 +670,7 @@ public class HealthCheckTest {
    * doHealthCheck().
    * <p>
    * - This test interrupts the scheduler thread while it is waiting on the future from the first
-   * probe. 
+   * probe.
    * <p>
    * - The health check operation itself is not interrupted. This test does not validate
    * interruption of the health check operation itself, as that is not the responsibility of the

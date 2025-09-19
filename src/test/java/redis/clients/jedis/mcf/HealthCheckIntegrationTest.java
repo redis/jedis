@@ -150,8 +150,7 @@ public class HealthCheckIntegrationTest {
 
       // Verify that multiple attempts were made (should be 3: 2 failures + 1 success)
       assertTrue(attemptCount.get() >= 3,
-        "Should have made at least 3 probes, but made: "
-            + attemptCount.get());
+        "Should have made at least 3 probes, but made: " + attemptCount.get());
 
     } finally {
       manager.remove(endpoint1.getHostAndPort());
@@ -194,8 +193,7 @@ public class HealthCheckIntegrationTest {
 
       // Verify that all attempts were made (should 3 probes)
       assertTrue(attemptCount.get() >= 3,
-        "Should have made at least 3 attempts , but made: "
-            + attemptCount.get());
+        "Should have made at least 3 attempts , but made: " + attemptCount.get());
 
     } finally {
       manager.remove(endpoint1.getHostAndPort());

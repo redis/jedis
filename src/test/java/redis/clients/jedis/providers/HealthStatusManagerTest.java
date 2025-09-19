@@ -7,19 +7,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.HealthStatusListener;
 import redis.clients.jedis.mcf.HealthStatusManager;
+import redis.clients.jedis.mcf.TestHealthCheckStrategy;
 
 public class HealthStatusManagerTest {
 
   private final HostAndPort endpoint = new HostAndPort("localhost", 6379);
-  private final JedisClientConfig config = DefaultJedisClientConfig.builder().build();
 
   @Test
   void manager_event_emission_order_basic() throws InterruptedException {
@@ -30,22 +27,9 @@ public class HealthStatusManagerTest {
 
     manager.registerListener(endpoint, listener);
 
-    HealthCheckStrategy immediateHealthy = new HealthCheckStrategy() {
-      @Override
-      public int getInterval() {
-        return 50;
-      }
-
-      @Override
-      public int getTimeout() {
-        return 25;
-      }
-
-      @Override
-      public HealthStatus doHealthCheck(Endpoint endpoint) {
-        return HealthStatus.HEALTHY;
-      }
-    };
+    HealthCheckStrategy immediateHealthy = new TestHealthCheckStrategy(
+        HealthCheckStrategy.Config.builder().interval(50).timeout(25).build(),
+        e -> HealthStatus.HEALTHY);
 
     manager.add(endpoint, immediateHealthy);
 
@@ -59,22 +43,9 @@ public class HealthStatusManagerTest {
     HealthStatusManager manager = new HealthStatusManager();
     assertFalse(manager.hasHealthCheck(endpoint));
 
-    HealthCheckStrategy strategy = new HealthCheckStrategy() {
-      @Override
-      public int getInterval() {
-        return 50;
-      }
-
-      @Override
-      public int getTimeout() {
-        return 25;
-      }
-
-      @Override
-      public HealthStatus doHealthCheck(Endpoint endpoint) {
-        return HealthStatus.HEALTHY;
-      }
-    };
+    HealthCheckStrategy strategy = new TestHealthCheckStrategy(
+        HealthCheckStrategy.Config.builder().interval(50).timeout(25).build(),
+        e -> HealthStatus.HEALTHY);
 
     manager.add(endpoint, strategy);
     assertTrue(manager.hasHealthCheck(endpoint));

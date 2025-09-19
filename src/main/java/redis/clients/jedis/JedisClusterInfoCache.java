@@ -175,7 +175,6 @@ public class JedisClusterInfoCache {
           }
 
           HostAndPort targetNode = generateHostAndPort(hostInfos);
-          setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);

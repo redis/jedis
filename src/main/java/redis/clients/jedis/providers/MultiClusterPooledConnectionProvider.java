@@ -80,7 +80,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
    */
   private volatile Cluster activeCluster;
 
-  private final Lock activeClusterIndexLock = new ReentrantLock(true);
+  private final Lock activeClusterChangeLock = new ReentrantLock(true);
 
   /**
    * Functional interface for listening to cluster switch events. The event args contain the reason
@@ -183,7 +183,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     // Mark initialization as complete - handleHealthStatusChange can now process events
     initializationComplete = true;
     if (!activeCluster.isHealthy()) {
-      activeCluster = waitForInitialHealthyCluster(statusTracker);
+      // Race condition: Direct assignment to 'activeCluster' is not thread safe because
+      // 'onHealthStatusChange' may execute concurrently once 'initializationComplete'
+      // is set to true.
+      // Simple rule is to never assign value of 'activeCluster' outside of 
+      // 'activeClusterChangeLock' once the 'initializationComplete' is done. 
+      waitForInitialHealthyCluster(statusTracker);
+      iterateActiveCluster(SwitchReason.HEALTH_CHECK);
     }
     this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
 
@@ -211,11 +217,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
           "Endpoint " + endpoint + " already exists in the provider");
     }
 
-    activeClusterIndexLock.lock();
+    activeClusterChangeLock.lock();
     try {
       addClusterInternal(multiClusterClientConfig, clusterConfig);
     } finally {
-      activeClusterIndexLock.unlock();
+      activeClusterChangeLock.unlock();
     }
   }
 
@@ -240,7 +246,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
     log.debug("Removing endpoint {}", endpoint);
 
-    activeClusterIndexLock.lock();
+    activeClusterChangeLock.lock();
     try {
       Cluster clusterToRemove = multiClusterMap.get(endpoint);
       boolean isActiveCluster = (activeCluster == clusterToRemove);
@@ -273,7 +279,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         clusterToRemove.close();
       }
     } finally {
-      activeClusterIndexLock.unlock();
+      activeClusterChangeLock.unlock();
     }
   }
 
@@ -542,7 +548,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     // Cluster cluster = clusterEntry.getValue();
     // Field-level synchronization is used to avoid the edge case in which
     // incrementActiveMultiClusterIndex() is called at the same time
-    activeClusterIndexLock.lock();
+    activeClusterChangeLock.lock();
     Cluster oldCluster;
     try {
 
@@ -563,7 +569,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       oldCluster = activeCluster;
       activeCluster = cluster;
     } finally {
-      activeClusterIndexLock.unlock();
+      activeClusterChangeLock.unlock();
     }
     boolean switched = oldCluster != cluster;
     if (switched && this.multiClusterClientConfig.isFastFailover()) {

@@ -185,9 +185,7 @@ public class HealthCheckImpl implements HealthCheck {
       } catch (InterruptedException e) {// Health check thread was interrupted
         future.cancel(true);
         Thread.currentThread().interrupt(); // Restore interrupted status
-        if (log.isWarnEnabled()) {
-          log.warn(String.format("Health check interrupted for %s.", endpoint), e);
-        }
+        log.warn(String.format("Health check interrupted for %s.", endpoint), e);
         // thread interrupted, stop health check process
         return;
       }
@@ -196,9 +194,7 @@ public class HealthCheckImpl implements HealthCheck {
           Thread.sleep(strategy.getDelayInBetweenProbes());
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt(); // Restore interrupted status
-          if (log.isWarnEnabled()) {
-            log.warn(String.format("Health check interrupted while sleeping for %s.", endpoint), e);
-          }
+          log.warn(String.format("Health check interrupted while sleeping for %s.", endpoint), e);
           // thread interrupted, stop health check process
           return;
         }

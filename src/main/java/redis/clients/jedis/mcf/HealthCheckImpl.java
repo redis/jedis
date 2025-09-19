@@ -98,15 +98,8 @@ public class HealthCheckImpl implements HealthCheck {
 
   private static final Logger log = LoggerFactory.getLogger(HealthCheckImpl.class);
 
-  private static AtomicInteger delayerCounter = new AtomicInteger(1);
-  private static ScheduledThreadPoolExecutor delayer = new ScheduledThreadPoolExecutor(1, r -> {
-    Thread t = new Thread(r, "jedis-healthcheck-delay-" + delayerCounter.getAndIncrement());
-    t.setDaemon(true);
-    return t;
-  });
-
   private static AtomicInteger workerCounter = new AtomicInteger(1);
-  private static ExecutorService executor = Executors.newCachedThreadPool(r -> {
+  private static ExecutorService workers = Executors.newCachedThreadPool(r -> {
     Thread t = new Thread(r, "jedis-healthcheck-worker-" + workerCounter.getAndIncrement());
     t.setDaemon(true);
     return t;
@@ -145,13 +138,11 @@ public class HealthCheckImpl implements HealthCheck {
   }
 
   public void start() {
-    delayer.setCorePoolSize(delayerCounter.incrementAndGet());
     scheduler.scheduleAtFixedRate(this::healthCheck, 0, strategy.getInterval(),
       TimeUnit.MILLISECONDS);
   }
 
   public void stop() {
-    delayer.setCorePoolSize(delayerCounter.decrementAndGet());
     strategy.close();
     this.statusChangeCallback = null;
     scheduler.shutdown();
@@ -181,7 +172,7 @@ public class HealthCheckImpl implements HealthCheck {
         strategy.getNumProbes());
 
     while (!probeContext.isCompleted()) {
-      Future<HealthStatus> future = executor.submit(this::doHealthCheck);
+      Future<HealthStatus> future = workers.submit(this::doHealthCheck);
       try {
         update = future.get(strategy.getTimeout(), TimeUnit.MILLISECONDS);
         probeContext.record(update == HealthStatus.HEALTHY);
@@ -201,22 +192,20 @@ public class HealthCheckImpl implements HealthCheck {
         return;
       }
       if (!probeContext.isCompleted()) {
-        delay(strategy.getDelayInBetweenProbes());
+        try {
+          Thread.sleep(strategy.getDelayInBetweenProbes());
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt(); // Restore interrupted status
+          if (log.isWarnEnabled()) {
+            log.warn(String.format("Health check interrupted while sleeping for %s.", endpoint), e);
+          }
+          // thread interrupted, stop health check process
+          return;
+        }
       }
     }
 
     safeUpdate(me, probeContext.getResult());
-  }
-
-  private void delay(int delayInBetweenProbes) {
-    try {
-      delayer.schedule(() -> {
-        /* No Op */
-      }, (long) delayInBetweenProbes, TimeUnit.MILLISECONDS).get();
-    } catch (InterruptedException | ExecutionException e) {
-      Thread.currentThread().interrupt();
-      return;
-    }
   }
 
   /**

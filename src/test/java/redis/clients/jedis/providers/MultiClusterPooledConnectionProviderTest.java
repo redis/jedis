@@ -15,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.SwitchReason;
-import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
+import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 import java.util.Arrays;

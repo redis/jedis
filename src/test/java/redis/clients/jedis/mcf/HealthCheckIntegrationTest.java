@@ -20,7 +20,7 @@ import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
-import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
+import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -199,4 +199,65 @@ public class HealthCheckIntegrationTest {
       manager.remove(endpoint1.getHostAndPort());
     }
   }
+
+  @Test
+  public void testProbingLogic_AllSuccess_EarlyFail_Integration() throws InterruptedException {
+    AtomicInteger attemptCount = new AtomicInteger(0);
+
+    StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> new TestHealthCheckStrategy(100,
+        100, 3, BuiltIn.ALL_SUCCESS, 10, e -> {
+          int c = attemptCount.incrementAndGet();
+          return c == 1 ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY;
+        });
+
+    CountDownLatch unhealthyLatch = new CountDownLatch(1);
+    HealthStatusManager manager = new HealthStatusManager();
+
+    manager.registerListener(endpoint1.getHostAndPort(), event -> {
+      if (event.getNewStatus() == HealthStatus.UNHEALTHY) unhealthyLatch.countDown();
+    });
+
+    HealthCheck hc = manager.add(endpoint1.getHostAndPort(),
+      supplier.get(endpoint1.getHostAndPort(), clientConfig));
+
+    try {
+      assertTrue(unhealthyLatch.await(2, TimeUnit.SECONDS),
+        "Should become UNHEALTHY after first failure with ALL_SUCCESS");
+      assertEquals(HealthStatus.UNHEALTHY, hc.getStatus());
+      assertEquals(1, attemptCount.get());
+    } finally {
+      manager.remove(endpoint1.getHostAndPort());
+    }
+  }
+
+  @Test
+  public void testProbingLogic_Majority_EarlySuccess_Integration() throws InterruptedException {
+    AtomicInteger attemptCount = new AtomicInteger(0);
+
+    StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> new TestHealthCheckStrategy(100,
+        100, 5, BuiltIn.MAJORITY_SUCCESS, 10, e -> {
+          int c = attemptCount.incrementAndGet();
+          return c <= 3 ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+        });
+
+    CountDownLatch healthyLatch = new CountDownLatch(1);
+    HealthStatusManager manager = new HealthStatusManager();
+
+    manager.registerListener(endpoint1.getHostAndPort(), event -> {
+      if (event.getNewStatus() == HealthStatus.HEALTHY) healthyLatch.countDown();
+    });
+
+    HealthCheck hc = manager.add(endpoint1.getHostAndPort(),
+      supplier.get(endpoint1.getHostAndPort(), clientConfig));
+
+    try {
+      assertTrue(healthyLatch.await(2, TimeUnit.SECONDS),
+        "Should become HEALTHY after reaching majority successes");
+      assertEquals(HealthStatus.HEALTHY, hc.getStatus());
+      assertEquals(3, attemptCount.get());
+    } finally {
+      manager.remove(endpoint1.getHostAndPort());
+    }
+  }
+
 }

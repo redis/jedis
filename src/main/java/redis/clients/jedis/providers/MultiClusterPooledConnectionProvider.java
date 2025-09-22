@@ -186,8 +186,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       // Race condition: Direct assignment to 'activeCluster' is not thread safe because
       // 'onHealthStatusChange' may execute concurrently once 'initializationComplete'
       // is set to true.
-      // Simple rule is to never assign value of 'activeCluster' outside of 
-      // 'activeClusterChangeLock' once the 'initializationComplete' is done. 
+      // Simple rule is to never assign value of 'activeCluster' outside of
+      // 'activeClusterChangeLock' once the 'initializationComplete' is done.
       waitForInitialHealthyCluster(statusTracker);
       iterateActiveCluster(SwitchReason.HEALTH_CHECK);
     }

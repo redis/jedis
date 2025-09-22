@@ -1,6 +1,6 @@
 package redis.clients.jedis.mcf;
 
-public interface ProbePolicy {
+public interface ProbingPolicy {
 
   public enum Decision {
     CONTINUE, SUCCESS, FAIL
@@ -19,16 +19,16 @@ public interface ProbePolicy {
   }
 
   public static class BuiltIn {
-    public static final ProbePolicy ALL_SUCCESS = new AllSuccessPolicy();
-    public static final ProbePolicy ANY_SUCCESS = new AnySuccessPolicy();
-    public static final ProbePolicy MAJORITY_SUCCESS = new MajoritySuccessPolicy();
+    public static final ProbingPolicy ALL_SUCCESS = new AllSuccessPolicy();
+    public static final ProbingPolicy ANY_SUCCESS = new AnySuccessPolicy();
+    public static final ProbingPolicy MAJORITY_SUCCESS = new MajoritySuccessPolicy();
 
     /*
      * All probes need to be healthy. If a database doesn’t pass the health check for numProbes
      * times, then the check wasn’t successful. This means you can stop probing after you got the
      * first failed health check (e.g., timeout or unhealthy status)
      */
-    private static class AllSuccessPolicy implements ProbePolicy {
+    private static class AllSuccessPolicy implements ProbingPolicy {
       @Override
       public Decision evaluate(ProbeContext ctx) {
         // Any failure means overall failure
@@ -49,7 +49,7 @@ public interface ProbePolicy {
      * A database is healthy if at least one probe returned a healthy status. You can stop probing
      * as soon as you got the first healthy status.
      */
-    private static class AnySuccessPolicy implements ProbePolicy {
+    private static class AnySuccessPolicy implements ProbingPolicy {
       @Override
       public Decision evaluate(ProbeContext ctx) {
         // Any success means overall success
@@ -71,7 +71,7 @@ public interface ProbePolicy {
      * probing as soon as the majority can’t be guaranteed any more (e.g., you have 4 probes and 2
      * of them failed), or as soon as the majority is reached (e.g., 3 out of 4 were healthy)
      */
-    private static class MajoritySuccessPolicy implements ProbePolicy {
+    private static class MajoritySuccessPolicy implements ProbingPolicy {
       @Override
       public Decision evaluate(ProbeContext ctx) {
         int total = ctx.getRemainingProbes() + ctx.getSuccesses() + ctx.getFails();

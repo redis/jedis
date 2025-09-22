@@ -40,7 +40,7 @@ public interface HealthCheckStrategy extends Closeable {
    * Get the policy for health checks.
    * @return the policy
    */
-  ProbePolicy getPolicy();
+  ProbingPolicy getPolicy();
 
   /**
    * Get the delay (in milliseconds) between retries for failed health checks.
@@ -53,10 +53,10 @@ public interface HealthCheckStrategy extends Closeable {
     protected final int timeout;
     protected final int numProbes;
     protected final int delayInBetweenProbes;
-    protected final ProbePolicy policy;
+    protected final ProbingPolicy policy;
 
     public Config(int interval, int timeout, int numProbes, int delayInBetweenProbes,
-        ProbePolicy policy) {
+        ProbingPolicy policy) {
       this.interval = interval;
       this.timeout = timeout;
       this.numProbes = numProbes;
@@ -88,7 +88,7 @@ public interface HealthCheckStrategy extends Closeable {
       return delayInBetweenProbes;
     }
 
-    public ProbePolicy getPolicy() {
+    public ProbingPolicy getPolicy() {
       return policy;
     }
 
@@ -117,7 +117,7 @@ public interface HealthCheckStrategy extends Closeable {
       protected int interval = 1000;
       protected int timeout = 1000;
       protected int numProbes = 3;
-      protected ProbePolicy policy = ProbePolicy.BuiltIn.ALL_SUCCESS;
+      protected ProbingPolicy policy = ProbingPolicy.BuiltIn.ALL_SUCCESS;
       protected int delayInBetweenProbes = 100;
 
       /**
@@ -155,11 +155,11 @@ public interface HealthCheckStrategy extends Closeable {
 
       /**
        * Set the policy for health checks.
-       * @param policy the policy (default: ProbePolicy.BuiltIn.ALL_SUCCESS)
+       * @param policy the policy (default: ProbingPolicy.BuiltIn.ALL_SUCCESS)
        * @return this builder
        */
       @SuppressWarnings("unchecked")
-      public T policy(ProbePolicy policy) {
+      public T policy(ProbingPolicy policy) {
         this.policy = policy;
         return (T) this;
       }

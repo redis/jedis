@@ -11,10 +11,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.mcf.ProbePolicy.BuiltIn;
+import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -701,7 +700,7 @@ public class HealthCheckTest {
     // Override getPolicy() to capture the scheduler thread
     HealthCheckStrategy strategy = new TestHealthCheckStrategy(5000, OPERATION_TIMEOUT, NUM_PROBES,
         BuiltIn.ANY_SUCCESS, 10, healthCheckOperation) {
-      public ProbePolicy getPolicy() {
+      public ProbingPolicy getPolicy() {
         schedulerThread[0] = Thread.currentThread();
         schedulerTaskStarted.countDown();
         return super.getPolicy();
@@ -728,6 +727,79 @@ public class HealthCheckTest {
     int calls = callCount.get();
     assertTrue(calls <= 1, "Only one probe should have been attempted: " + calls);
 
+    hc.stop();
+  }
+
+  // ========== ProbingPolicy Unit Tests ==========
+  @Test
+  void testPolicy_AllSuccess_StopsOnFirstFailure() throws Exception {
+    AtomicInteger callCount = new AtomicInteger(0);
+    CountDownLatch unhealthyLatch = new CountDownLatch(1);
+
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(
+        HealthCheckStrategy.Config.builder().interval(5).timeout(200).numProbes(3)
+            .policy(BuiltIn.ALL_SUCCESS).delayInBetweenProbes(5).build(),
+        e -> {
+          int c = callCount.incrementAndGet();
+          return c == 1 ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY;
+        });
+
+    HealthCheckImpl hc = new HealthCheckImpl(testEndpoint, strategy, evt -> {
+      if (evt.getNewStatus() == HealthStatus.UNHEALTHY) unhealthyLatch.countDown();
+    });
+
+    hc.start();
+    assertTrue(unhealthyLatch.await(1, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.UNHEALTHY, hc.getStatus());
+    assertEquals(1, callCount.get(), "ALL_SUCCESS should stop after first failure");
+    hc.stop();
+  }
+
+  @Test
+  void testPolicy_Majority_EarlySuccessStopsAtThree() throws Exception {
+    AtomicInteger callCount = new AtomicInteger(0);
+    CountDownLatch healthyLatch = new CountDownLatch(1);
+
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(
+        HealthCheckStrategy.Config.builder().interval(5).timeout(200).numProbes(5)
+            .policy(BuiltIn.MAJORITY_SUCCESS).delayInBetweenProbes(5).build(),
+        e -> {
+          int c = callCount.incrementAndGet();
+          return c <= 3 ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+        });
+
+    HealthCheckImpl hc = new HealthCheckImpl(testEndpoint, strategy, evt -> {
+      if (evt.getNewStatus() == HealthStatus.HEALTHY) healthyLatch.countDown();
+    });
+
+    hc.start();
+    assertTrue(healthyLatch.await(1, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.HEALTHY, hc.getStatus());
+    assertEquals(3, callCount.get(), "MAJORITY early success should stop after 3 successes");
+    hc.stop();
+  }
+
+  @Test
+  void testPolicy_Majority_EarlyFailStopsAtTwo() throws Exception {
+    AtomicInteger callCount = new AtomicInteger(0);
+    CountDownLatch unhealthyLatch = new CountDownLatch(1);
+
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(
+        HealthCheckStrategy.Config.builder().interval(5).timeout(200).numProbes(4)
+            .policy(BuiltIn.MAJORITY_SUCCESS).delayInBetweenProbes(5).build(),
+        e -> {
+          int c = callCount.incrementAndGet();
+          return c <= 2 ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY;
+        });
+
+    HealthCheckImpl hc = new HealthCheckImpl(testEndpoint, strategy, evt -> {
+      if (evt.getNewStatus() == HealthStatus.UNHEALTHY) unhealthyLatch.countDown();
+    });
+
+    hc.start();
+    assertTrue(unhealthyLatch.await(1, TimeUnit.SECONDS));
+    assertEquals(HealthStatus.UNHEALTHY, hc.getStatus());
+    assertEquals(2, callCount.get(), "MAJORITY early fail should stop when majority impossible");
     hc.stop();
   }
 

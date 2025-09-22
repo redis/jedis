@@ -43,7 +43,7 @@ public class EchoStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public ProbePolicy getPolicy() {
+  public ProbingPolicy getPolicy() {
     return config.getPolicy();
   }
 

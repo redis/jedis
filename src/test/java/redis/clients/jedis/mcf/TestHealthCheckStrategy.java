@@ -11,9 +11,9 @@ public class TestHealthCheckStrategy implements HealthCheckStrategy {
   private int probes;
   private int delay;
   private Function<Endpoint, HealthStatus> healthCheck;
-  private ProbePolicy policy;
+  private ProbingPolicy policy;
 
-  public TestHealthCheckStrategy(int interval, int timeout, int probes, ProbePolicy policy,
+  public TestHealthCheckStrategy(int interval, int timeout, int probes, ProbingPolicy policy,
       int delay, Function<Endpoint, HealthStatus> healthCheck) {
     this.interval = interval;
     this.timeout = timeout;
@@ -49,7 +49,7 @@ public class TestHealthCheckStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public ProbePolicy getPolicy() {
+  public ProbingPolicy getPolicy() {
     return policy;
   }
 

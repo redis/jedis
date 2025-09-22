@@ -18,20 +18,20 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.annots.VisibleForTesting;
-import redis.clients.jedis.mcf.ProbePolicy.ProbeContext;
+import redis.clients.jedis.mcf.ProbingPolicy.ProbeContext;
 import redis.clients.jedis.util.JedisAsserts;
 
 public class HealthCheckImpl implements HealthCheck {
 
   static class HealthProbeContext implements ProbeContext {
-    private final ProbePolicy policy;
+    private final ProbingPolicy policy;
     private int remainingProbes;
     private int successes;
     private int fails;
     private boolean isCompleted;
     private HealthStatus result;
 
-    HealthProbeContext(ProbePolicy policy, int maxProbes) {
+    HealthProbeContext(ProbingPolicy policy, int maxProbes) {
       this.policy = policy;
       this.remainingProbes = maxProbes;
     }
@@ -43,10 +43,10 @@ public class HealthCheckImpl implements HealthCheck {
         this.fails++;
       }
       remainingProbes--;
-      ProbePolicy.Decision decision = policy.evaluate(this);
-      if (decision == ProbePolicy.Decision.SUCCESS) {
+      ProbingPolicy.Decision decision = policy.evaluate(this);
+      if (decision == ProbingPolicy.Decision.SUCCESS) {
         setCompleted(HealthStatus.HEALTHY);
-      } else if (decision == ProbePolicy.Decision.FAIL) {
+      } else if (decision == ProbingPolicy.Decision.FAIL) {
         setCompleted(HealthStatus.UNHEALTHY);
       }
     }

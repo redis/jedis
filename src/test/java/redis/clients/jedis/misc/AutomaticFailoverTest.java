@@ -18,8 +18,8 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.mcf.SwitchReason;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;

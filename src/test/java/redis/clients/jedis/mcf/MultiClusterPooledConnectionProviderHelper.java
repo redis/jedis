@@ -1,8 +1,6 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import redis.clients.jedis.Endpoint;
-import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 
 public class MultiClusterPooledConnectionProviderHelper {
 

@@ -16,6 +16,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.JedisFailoverException;
 import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
@@ -215,28 +216,13 @@ public class MultiClusterPooledConnectionProviderTest {
     AtomicInteger healthCheckCount = new AtomicInteger(0);
 
     // Custom strategy that counts health checks
-    HealthCheckStrategy countingStrategy = new HealthCheckStrategy() {
-      @Override
-      public int getInterval() {
-        return 5;
-      } // Fast interval for testing
-
-      @Override
-      public int getTimeout() {
-        return 50;
-      }
-
-      @Override
-      public HealthStatus doHealthCheck(Endpoint endpoint) {
-        healthCheckCount.incrementAndGet();
-        return HealthStatus.HEALTHY;
-      }
-
-      @Override
-      public void close() {
-        // No-op for test
-      }
-    };
+    HealthCheckStrategy countingStrategy = new redis.clients.jedis.mcf.TestHealthCheckStrategy(
+        redis.clients.jedis.mcf.HealthCheckStrategy.Config.builder().interval(5).timeout(50)
+            .policy(BuiltIn.ANY_SUCCESS).build(),
+        e -> {
+          healthCheckCount.incrementAndGet();
+          return HealthStatus.HEALTHY;
+        });
 
     // Create new provider with health check strategy (don't use the setUp() provider)
     ClusterConfig config = ClusterConfig

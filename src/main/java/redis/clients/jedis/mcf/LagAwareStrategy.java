@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.RedisCredentials;
-
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.Endpoint;
 
 public class LagAwareStrategy implements HealthCheckStrategy {
@@ -36,8 +36,18 @@ public class LagAwareStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public int minConsecutiveSuccessCount() {
-    return config.minConsecutiveSuccessCount;
+  public int getNumProbes() {
+    return config.getNumProbes();
+  }
+
+  @Override
+  public ProbingPolicy getPolicy() {
+    return config.getPolicy();
+  }
+
+  @Override
+  public int getDelayInBetweenProbes() {
+    return config.getDelayInBetweenProbes();
   }
 
   @Override
@@ -51,8 +61,9 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         RedisRestAPI.BdbInfo matchingBdb = RedisRestAPI.BdbInfo.findMatchingBdb(bdbs, dbHost);
 
         if (matchingBdb == null) {
-          log.warn("No BDB found matching host '{}' for health check", dbHost);
-          return HealthStatus.UNHEALTHY;
+          String msg = String.format("No BDB found matching host '%s' for health check", dbHost);
+          log.warn(msg);
+          throw new JedisException(msg);
         } else {
           bdb = matchingBdb.getUid();
           log.debug("Found matching BDB '{}' for host '{}'", bdb, dbHost);
@@ -74,6 +85,7 @@ public class LagAwareStrategy implements HealthCheckStrategy {
     } catch (Exception e) {
       log.error("Error while checking database availability", e);
       bdbId = null;
+      throw new JedisException("Error while checking availability", e);
     }
     return HealthStatus.UNHEALTHY;
   }
@@ -95,14 +107,13 @@ public class LagAwareStrategy implements HealthCheckStrategy {
     private final boolean extendedCheckEnabled;
 
     public Config(Endpoint restEndpoint, Supplier<RedisCredentials> credentialsSupplier) {
-      this(builder(restEndpoint, credentialsSupplier).interval(1000).timeout(1000)
-          .minConsecutiveSuccessCount(3)
+      this(builder(restEndpoint, credentialsSupplier).interval(1000).timeout(1000).numProbes(3)
           .availabilityLagTolerance(AVAILABILITY_LAG_TOLERANCE_DEFAULT)
           .extendedCheckEnabled(EXTENDED_CHECK_DEFAULT));
     }
 
     private Config(ConfigBuilder builder) {
-      super(builder.interval, builder.timeout, builder.minConsecutiveSuccessCount);
+      super(builder);
 
       this.restEndpoint = builder.endpoint;
       this.credentialsSupplier = builder.credentialsSupplier;
@@ -234,6 +245,5 @@ public class LagAwareStrategy implements HealthCheckStrategy {
         return new Config(this);
       }
     }
-
   }
 }

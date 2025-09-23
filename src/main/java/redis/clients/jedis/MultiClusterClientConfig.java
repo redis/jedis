@@ -1519,7 +1519,7 @@ public final class MultiClusterClientConfig {
      * <ul>
      * <li>Health checks must be enabled on cluster configurations</li>
      * <li>Grace period must elapse after cluster becomes unhealthy</li>
-     * <li>Higher-priority cluster must pass consecutive health checks</li>
+     * <li>Higher-priority cluster must pass health checks</li>
      * </ul>
      * @param supported true to enable automatic failback, false for manual failback only
      * @return this builder instance for method chaining

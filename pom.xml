@@ -373,6 +373,7 @@
 						<include>**/mcf/MultiCluster*</include>
 						<include>**/mcf/StatusTracker*</include>
 						<include>**/Health*.java</include>
+						<include>**/*IT.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 					</includes>

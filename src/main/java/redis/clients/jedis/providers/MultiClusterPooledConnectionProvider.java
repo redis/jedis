@@ -506,6 +506,24 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     return false;
   }
 
+  /**
+   * Asserts that the active cluster is operable. If not, throws an exception.
+   * <p>
+   * This method is called by the circuit breaker command executor before executing a command.
+   *
+   * @throws JedisPermanentlyNotAvailableException if the there is no operable cluster and the max
+   * number of failover attempts has been exceeded.
+   * @throws JedisTemporarilyNotAvailableException if the there is no operable cluster and the max
+   * number of failover attempts has not been exceeded.
+   */
+  @VisibleForTesting
+  public void assertOperability() {
+    Cluster current = activeCluster;
+    if (!current.isHealthy() && !this.canIterateFrom(current)) {
+      handleNoHealthyCluster();
+    }
+  }
+
   private static Comparator<Map.Entry<Endpoint, Cluster>> maxByWeight = Map.Entry
       .<Endpoint, Cluster> comparingByValue(Comparator.comparing(Cluster::getWeight));
 

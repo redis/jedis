@@ -1599,6 +1599,42 @@ public final class MultiClusterClientConfig {
     }
 
     /**
+     * Sets the maximum number of failover attempts.
+     * <p>
+     * This setting controls how many times the system will attempt to failover to a different
+     * cluster before giving up. For example, if set to 3, the system will make 1 initial attempt
+     * plus 2 failover attempts for a total of 3 attempts.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
+     * </p>
+     * @param maxNumFailoverAttempts maximum number of failover attempts
+     * @return this builder instance for method chaining
+     */
+    public Builder maxNumFailoverAttempts(int maxNumFailoverAttempts) {
+      this.maxNumFailoverAttempts = maxNumFailoverAttempts;
+      return this;
+    }
+
+    /**
+     * Sets the delay in milliseconds between failover attempts.
+     * <p>
+     * This setting controls how long the system will wait before attempting to failover to a
+     * different cluster. For example, if set to 1000, the system will wait 1 second before
+     * attempting to failover to a different cluster.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
+     * </p>
+     * @param delayInBetweenFailoverAttempts delay in milliseconds between failover attempts
+     * @return this builder instance for method chaining
+     */
+    public Builder delayInBetweenFailoverAttempts(int delayInBetweenFailoverAttempts) {
+      this.delayInBetweenFailoverAttempts = delayInBetweenFailoverAttempts;
+      return this;
+    }
+
+    /**
      * Builds and returns a new MultiClusterClientConfig instance with all configured settings.
      * <p>
      * This method creates the final configuration object by copying all builder settings to the

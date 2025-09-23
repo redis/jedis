@@ -14,7 +14,10 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 import redis.clients.jedis.mcf.HealthStatus;
+import redis.clients.jedis.mcf.JedisFailoverException;
 import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
+import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 import java.util.Arrays;
@@ -22,6 +25,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -264,6 +268,36 @@ public class MultiClusterPooledConnectionProviderTest {
     } finally {
       // Ensure cleanup even if test fails
       testProvider.close();
+    }
+  }
+
+  @Test
+  public void userCommand_firstTemporary_thenPermanent_inOrder() {
+    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
+    clusterConfigs[0] = ClusterConfig.builder(endpointStandalone0.getHostAndPort(),
+      endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
+    clusterConfigs[1] = ClusterConfig.builder(endpointStandalone1.getHostAndPort(),
+      endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
+
+    MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
+        new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(100)
+            .maxNumFailoverAttempts(2).retryMaxAttempts(1).build());
+
+    try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
+      jedis.get("foo");
+
+      // Disable both clusters so any attempt to switch results in 'no healthy cluster' path
+      testProvider.getCluster(endpointStandalone0.getHostAndPort()).setDisabled(true);
+      testProvider.getCluster(endpointStandalone1.getHostAndPort()).setDisabled(true);
+
+      // Simulate user running a command that fails and triggers failover iteration
+      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
+
+      // Next immediate attempt should exceed max attempts and become permanent (expected to fail
+      // until feature exists)
+      await().atMost(Durations.ONE_SECOND).pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
+          .until(() -> (assertThrows(JedisFailoverException.class,
+            () -> jedis.get("foo")) instanceof JedisPermanentlyNotAvailableException));
     }
   }
 }

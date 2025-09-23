@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -510,11 +509,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
    * Asserts that the active cluster is operable. If not, throws an exception.
    * <p>
    * This method is called by the circuit breaker command executor before executing a command.
-   *
    * @throws JedisPermanentlyNotAvailableException if the there is no operable cluster and the max
-   * number of failover attempts has been exceeded.
+   *           number of failover attempts has been exceeded.
    * @throws JedisTemporarilyNotAvailableException if the there is no operable cluster and the max
-   * number of failover attempts has not been exceeded.
+   *           number of failover attempts has not been exceeded.
    */
   @VisibleForTesting
   public void assertOperability() {

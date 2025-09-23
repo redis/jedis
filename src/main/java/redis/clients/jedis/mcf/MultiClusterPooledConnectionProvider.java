@@ -442,7 +442,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
-  public Endpoint iterateActiveCluster(SwitchReason reason) {
+  Endpoint iterateActiveCluster(SwitchReason reason) {
     Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate();
     if (clusterToIterate == null) {
       throw new JedisConnectionException(

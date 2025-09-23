@@ -74,7 +74,7 @@ public class MultiClusterPooledConnectionProviderTest {
     waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
       provider.getCluster(endpointStandalone1.getHostAndPort()));
 
-    Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+    Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster());
     assertEquals(endpointStandalone1.getHostAndPort(), e2);
   }
 
@@ -86,25 +86,26 @@ public class MultiClusterPooledConnectionProviderTest {
     provider.setActiveCluster(endpointStandalone0.getHostAndPort());
     provider.getCluster().setDisabled(true);
 
-    Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+    Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster());
     provider.getCluster().setDisabled(true);
 
     assertEquals(endpointStandalone1.getHostAndPort(), e2);
     // Should throw an exception
     assertThrows(JedisConnectionException.class,
-      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK));
+      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
   }
 
   @Test
   public void testCanIterateOnceMore() {
-    waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
+    Endpoint endpoint0 = endpointStandalone0.getHostAndPort();
+    waitForClustersToGetHealthy(provider.getCluster(endpoint0),
       provider.getCluster(endpointStandalone1.getHostAndPort()));
 
-    provider.setActiveCluster(endpointStandalone0.getHostAndPort());
+    provider.setActiveCluster(endpoint0);
     provider.getCluster().setDisabled(true);
-    provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+    provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster(endpoint0));
 
-    assertFalse(provider.canIterateOnceMore());
+    assertFalse(provider.canIterateFrom(provider.getCluster()));
   }
 
   private void waitForClustersToGetHealthy(Cluster... clusters) {

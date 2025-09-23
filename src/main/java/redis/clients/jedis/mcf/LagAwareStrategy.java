@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.RedisCredentials;
-  import redis.clients.jedis.SslOptions;
+import redis.clients.jedis.SslOptions;
 
 import redis.clients.jedis.Endpoint;
 
@@ -155,7 +155,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
      * {@link #lagAwareWithTolerance(Endpoint, Supplier, Duration)}
      * </p>
      */
-    public static Config create(Endpoint restEndpoint, Supplier<RedisCredentials> credentialsSupplier) {
+    public static Config create(Endpoint restEndpoint,
+        Supplier<RedisCredentials> credentialsSupplier) {
       return new ConfigBuilder(restEndpoint, credentialsSupplier).build();
     }
 
@@ -169,7 +170,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
      */
     public static Config databaseAvailability(Endpoint restEndpoint,
         Supplier<RedisCredentials> credentialsSupplier) {
-      return new ConfigBuilder(restEndpoint, credentialsSupplier).extendedCheckEnabled(false).build();
+      return new ConfigBuilder(restEndpoint, credentialsSupplier).extendedCheckEnabled(false)
+          .build();
     }
 
     /**
@@ -181,7 +183,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
      */
     public static Config lagAware(Endpoint restEndpoint,
         Supplier<RedisCredentials> credentialsSupplier) {
-      return new ConfigBuilder(restEndpoint, credentialsSupplier).extendedCheckEnabled(true).build();
+      return new ConfigBuilder(restEndpoint, credentialsSupplier).extendedCheckEnabled(true)
+          .build();
     }
 
     /**
@@ -216,10 +219,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
       }
 
       /**
-       * Set SSL options for HTTPS connections to Redis Enterprise REST API.
-       * This allows configuration of custom truststore, keystore, and SSL parameters
-       * for secure connections to Redis Enterprise clusters.
-       *
+       * Set SSL options for HTTPS connections to Redis Enterprise REST API. This allows
+       * configuration of custom truststore, keystore, and SSL parameters for secure connections.
        * @param sslOptions the SSL configuration options
        * @return this builder
        */

@@ -25,16 +25,20 @@ import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.SslOptions;
 import redis.clients.jedis.SslVerifyMode;
+import redis.clients.jedis.annots.Internal;
 
 /**
  * Helper class to check the availability of a Redis database
  */
+@Internal
 class RedisRestAPI {
 
   private static final Logger log = LoggerFactory.getLogger(RedisRestAPI.class);
   private static final String BDBS_URL = "https://%s:%s/v1/bdbs?fields=uid,endpoints";
   private static final String AVAILABILITY_URL = "https://%s:%s/v1/bdbs/%s/availability";
   private static final String LAGAWARE_AVAILABILITY_URL = "https://%s:%s/v1/bdbs/%s/availability?extend_check=lag";
+
+  private static final int DEFAULT_TIMEOUT_MS = 1000;
 
   private final Endpoint endpoint;
   private final Supplier<RedisCredentials> credentialsSupplier;
@@ -43,7 +47,7 @@ class RedisRestAPI {
   private String bdbsUri;
 
   public RedisRestAPI(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier) {
-    this(endpoint, credentialsSupplier, 1000);
+    this(endpoint, credentialsSupplier, DEFAULT_TIMEOUT_MS);
   }
 
   public RedisRestAPI(Endpoint endpoint, Supplier<RedisCredentials> credentialsSupplier,
@@ -130,7 +134,8 @@ class RedisRestAPI {
         SSLContext sslContext = sslOptions.createSslContext();
         httpsConnection.setSSLSocketFactory(sslContext.getSocketFactory());
 
-        if (sslOptions.getSslVerifyMode() == SslVerifyMode.CA || sslOptions.getSslVerifyMode() == SslVerifyMode.INSECURE) {
+        if (sslOptions.getSslVerifyMode() == SslVerifyMode.CA
+            || sslOptions.getSslVerifyMode() == SslVerifyMode.INSECURE) {
           httpsConnection.setHostnameVerifier((h, s) -> true); // skip hostname check
         }
       } catch (GeneralSecurityException e) {

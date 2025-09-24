@@ -22,8 +22,8 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * This configuration enables seamless failover between multiple Redis clusters, databases, or
  * endpoints by providing comprehensive settings for retry logic, circuit breaker behavior, health
  * checks, and failback mechanisms. It is designed to work with
- * {@link redis.clients.jedis.providers.MultiClusterPooledConnectionProvider} to provide high
- * availability and disaster recovery capabilities.
+ * {@link redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider} to provide high availability
+ * and disaster recovery capabilities.
  * </p>
  * <p>
  * <strong>Key Features:</strong>
@@ -70,7 +70,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * The configuration leverages <a href="https://resilience4j.readme.io/docs">Resilience4j</a> for
  * circuit breaker and retry implementations, providing battle-tested fault tolerance patterns.
  * </p>
- * @see redis.clients.jedis.providers.MultiClusterPooledConnectionProvider
+ * @see redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider
  * @see redis.clients.jedis.mcf.HealthCheckStrategy
  * @see redis.clients.jedis.mcf.EchoStrategy
  * @see redis.clients.jedis.mcf.LagAwareStrategy

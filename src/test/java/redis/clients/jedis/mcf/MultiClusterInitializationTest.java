@@ -16,7 +16,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 
 /**
  * Tests for MultiClusterPooledConnectionProvider initialization edge cases

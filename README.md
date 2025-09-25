@@ -141,7 +141,7 @@ Jedis supports Token-Based authentication (TBA) starting with 5.3.0 GA release. 
 
 Notably, the extension library includes built-in support for **Microsoft EntraID**, offering a seamless integration as part of the generic solution.
 
-For more details and examples, please refer to the [Advanced Usage](https://redis.github.io/jedis/advanced-usage) documentation.
+For more details and examples, please refer to the [Advanced Usage](https://redis.github.io/jedis/advanced-usage/) documentation.
 
 ## Documentation
 

@@ -9,8 +9,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 
 /**
  * @author Allen Terleto (aterleto)

@@ -19,8 +19,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProviderHelper;
 
 @ExtendWith(MockitoExtension.class)
 class FailbackMechanismIntegrationTest {

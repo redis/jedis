@@ -1,4 +1,4 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
@@ -36,19 +36,11 @@ import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.HealthStatusChangeEvent;
-import redis.clients.jedis.mcf.HealthStatusManager;
 import redis.clients.jedis.mcf.JedisFailoverException.*;
-import redis.clients.jedis.mcf.StatusTracker;
-import redis.clients.jedis.mcf.SwitchReason;
-import redis.clients.jedis.mcf.TrackingConnectionPool;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.HealthCheck;
-import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -461,7 +453,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
-  public Endpoint iterateActiveCluster(SwitchReason reason, Cluster iterateFrom) {
+  Endpoint iterateActiveCluster(SwitchReason reason, Cluster iterateFrom) {
     Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate(
       iterateFrom);
     if (clusterToIterate == null) {

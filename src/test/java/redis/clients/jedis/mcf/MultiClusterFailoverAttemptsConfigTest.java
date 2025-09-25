@@ -1,4 +1,4 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import org.awaitility.Durations;
 
@@ -6,16 +6,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
-import redis.clients.jedis.mcf.JedisFailoverException;
-import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
-
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,7 +69,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+      () -> MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getCluster()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 
@@ -81,7 +78,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+        () -> MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
+          SwitchReason.HEALTH_CHECK, provider.getCluster()));
       assertEquals(1, getProviderAttemptCount());
     }
   }
@@ -99,7 +97,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+      () -> MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getCluster()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 

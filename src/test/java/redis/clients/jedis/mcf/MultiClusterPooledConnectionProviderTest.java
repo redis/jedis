@@ -1,4 +1,4 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 
@@ -12,14 +12,10 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.HealthCheckStrategy;
-import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.JedisFailoverException;
-import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
 import java.util.Arrays;
 import java.util.Collections;

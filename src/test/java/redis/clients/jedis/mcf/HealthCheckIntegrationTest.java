@@ -21,7 +21,6 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
 public class HealthCheckIntegrationTest {

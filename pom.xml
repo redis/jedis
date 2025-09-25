@@ -397,7 +397,7 @@
 						</goals>
 						<configuration>
 							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
-							
+
 							<includes>
 								<include>**/*IntegrationTest.java</include>
 								<include>**/*IntegrationTests.java</include>
@@ -500,6 +500,7 @@
 						<include>**/Health*.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
+						<include>src/main/java/redis/clients/jedis/util/ReadOnlyCommands.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/release/redis/jedis.svg?sort=semver)](https://github.com/redis/jedis/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](https://central.sonatype.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/redis/jedis/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
 [![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/redis)
 
@@ -57,7 +57,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 </dependency>
 ```
 
-To use the cutting-edge Jedis, check [here](/docs/jedis-maven.md).
+To use the cutting-edge Jedis, check [here](https://redis.github.io/jedis/jedis-maven/).
 
 Next, you'll need to connect to Redis. Consider installing a redis server with docker:
 
@@ -124,7 +124,7 @@ jedis.sadd("planets", "Mars");
 Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
 [RedisJSON](https://redis.io/json/) and [RediSearch](https://redis.io/search/).
 
-See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
+See the [RedisJSON Jedis](https://redis.github.io/jedis/redisjson/) or [RediSearch Jedis](https://redis.github.io/jedis/redisearch/) for details.
 
 ## Failover
 
@@ -133,7 +133,7 @@ Jedis supports retry and failover for your Redis deployments. This is useful whe
 1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://redis.io/docs/latest/operate/rs/databases/active-active/) clusters.
 2. You want your application to connect to one deployment at a time and to fail over to the next available deployment if the first deployment becomes unavailable.
 
-For the complete failover configuration options and examples, see the [Jedis failover docs](docs/failover.md).
+For the complete failover configuration options and examples, see the [Jedis failover docs](https://redis.github.io/jedis/failover/).
 
 ## Token-Based Authentication
 
@@ -141,7 +141,7 @@ Jedis supports Token-Based authentication (TBA) starting with 5.3.0 GA release. 
 
 Notably, the extension library includes built-in support for **Microsoft EntraID**, offering a seamless integration as part of the generic solution.
 
-For more details and examples, please refer to the [Advanced Usage](docs/advanced-usage.md) documentation.
+For more details and examples, please refer to the [Advanced Usage](https://redis.github.io/jedis/advanced-usage) documentation.
 
 ## Documentation
 
@@ -150,7 +150,7 @@ The [Jedis documentation site](https://redis.github.io/jedis/) contains several 
 You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
 
 Some specific use-case examples can be found in [`redis.clients.jedis.examples`
-package](src/test/java/redis/clients/jedis/examples/) of the test source codes.
+package](https://github.com/redis/jedis/tree/master/src/test/java/redis/clients/jedis/examples/) of the test source codes.
 
 ## Troubleshooting
 
@@ -175,4 +175,4 @@ Jedis is licensed under the [MIT license](https://github.com/redis/jedis/blob/ma
 
 ## Sponsorship
 
-[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.io/)
+[![Redis Logo](https://raw.githubusercontent.com/redis/jedis/master/redis-logo-full-color-rgb.png)](https://redis.io/)

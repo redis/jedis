@@ -20,8 +20,7 @@ public class ReadOnlyCommands {
 
   private static final ReadOnlyPredicate PREDICATE = command -> isReadOnlyCommand(command);
 
-  private static final Set<ProtocolCommand> READ_ONLY_COMMANDS = new HashSet<ProtocolCommand>(Arrays
-          .asList(
+  private static final Set<ProtocolCommand> READ_ONLY_COMMANDS = new HashSet<ProtocolCommand>(Arrays.asList(
                   // string
                   Command.PING, Command.AUTH, Command.HELLO, Command.GET, Command.EXISTS, Command.TYPE,
                   Command.KEYS, Command.RANDOMKEY, Command.DUMP, Command.DBSIZE, Command.SELECT, Command.ECHO,

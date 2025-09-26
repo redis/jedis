@@ -77,7 +77,7 @@ public class MultiClusterPooledConnectionProviderTest {
     waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
       provider.getCluster(endpointStandalone1.getHostAndPort()));
 
-    Endpoint e2 = provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster());
+    Endpoint e2 = provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster());
     assertEquals(endpointStandalone1.getHostAndPort(), e2);
   }
 
@@ -89,7 +89,7 @@ public class MultiClusterPooledConnectionProviderTest {
 
     provider.setActiveCluster(endpoint0);
     provider.getCluster().setDisabled(true);
-    provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster(endpoint0));
+    provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster(endpoint0));
 
     assertFalse(provider.canIterateFrom(provider.getCluster()));
   }

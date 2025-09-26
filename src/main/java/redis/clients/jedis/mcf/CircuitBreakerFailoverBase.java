@@ -63,7 +63,7 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
         // Iterating the active cluster will allow subsequent calls to the executeCommand() to use
         // the next
         // cluster's connection pool - according to the configuration's prioritization/order/weight
-        provider.iterateActiveCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
+        provider.switchToHealthyCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
       }
       // this check relies on the fact that many failover attempts can hit with the same CB,
       // only the first one will trigger a failover, and make the CB FORCED_OPEN.
@@ -72,7 +72,7 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
       // active CB. If its the same one and there are no more clusters to failover to, then throw an
       // exception
       else if (cluster == provider.getCluster()) {
-        provider.iterateActiveCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
+        provider.switchToHealthyCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
       }
       // Ignore exceptions since we are already in a failure state
     } finally {

@@ -187,7 +187,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       // Simple rule is to never assign value of 'activeCluster' outside of
       // 'activeClusterChangeLock' once the 'initializationComplete' is done.
       waitForInitialHealthyCluster(statusTracker);
-      iterateActiveCluster(SwitchReason.HEALTH_CHECK, temp);
+      switchToHealthyCluster(SwitchReason.HEALTH_CHECK, temp);
     }
     this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
 
@@ -353,7 +353,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     if (initializationComplete) {
       if (!newStatus.isHealthy() && clusterWithHealthChange == activeCluster) {
         clusterWithHealthChange.setGracePeriod();
-        iterateActiveCluster(SwitchReason.HEALTH_CHECK, clusterWithHealthChange);
+        switchToHealthyCluster(SwitchReason.HEALTH_CHECK, clusterWithHealthChange);
       }
     }
   }
@@ -453,7 +453,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
-  Endpoint iterateActiveCluster(SwitchReason reason, Cluster iterateFrom) {
+  Endpoint switchToHealthyCluster(SwitchReason reason, Cluster iterateFrom) {
     Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate(
       iterateFrom);
     if (clusterToIterate == null) {

@@ -69,7 +69,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
+      () -> MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
         SwitchReason.HEALTH_CHECK, provider.getCluster()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
@@ -78,7 +78,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
+        () -> MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
           SwitchReason.HEALTH_CHECK, provider.getCluster()));
       assertEquals(1, getProviderAttemptCount());
     }
@@ -97,7 +97,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
+      () -> MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
         SwitchReason.HEALTH_CHECK, provider.getCluster()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
@@ -106,14 +106,14 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+        () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
       assertEquals(1, getProviderAttemptCount());
     }
 
     await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(10))
         .until(() -> {
           Exception e = assertThrows(JedisFailoverException.class,
-            () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+            () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
           return e instanceof JedisPermanentlyNotAvailableException;
         });
   }
@@ -129,15 +129,15 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
     // Expect exactly 'maxAttempts' temporary exceptions, then a permanent one
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
+      () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
                                                                                               // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
+      () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
                                                                                               // 2
 
     // Next should exceed max and become permanent
     assertThrows(JedisPermanentlyNotAvailableException.class,
-      () -> provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
+      () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
                                                                                               // 3
                                                                                               // ->
                                                                                               // permanent

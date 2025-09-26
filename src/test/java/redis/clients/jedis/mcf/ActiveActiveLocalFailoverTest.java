@@ -110,9 +110,7 @@ public class ActiveActiveLocalFailoverTest {
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfig);
 
-    builder.circuitBreakerSlidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED);
     builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
-    builder.circuitBreakerSlidingWindowMinCalls(1);
     builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit
                                                        // breaker
 

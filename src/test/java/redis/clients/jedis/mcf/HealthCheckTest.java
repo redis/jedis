@@ -785,7 +785,7 @@ public class HealthCheckTest {
     CountDownLatch unhealthyLatch = new CountDownLatch(1);
 
     TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(
-        HealthCheckStrategy.Config.builder().interval(5).timeout(200).numProbes(4)
+        HealthCheckStrategy.Config.builder().interval(5000).timeout(200).numProbes(4)
             .policy(BuiltIn.MAJORITY_SUCCESS).delayInBetweenProbes(5).build(),
         e -> {
           int c = callCount.incrementAndGet();

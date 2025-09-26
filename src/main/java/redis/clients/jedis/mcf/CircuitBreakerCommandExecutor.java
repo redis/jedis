@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.Metrics;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
@@ -55,9 +56,27 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
         throw new ConnectionFailoverException(
             "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
       }
-
+      if (isTresholdsExceeded(cluster)) {
+        throw new JedisFailoverThresholdsExceededException(
+            "Failover threshold exceeded for cluster: " + cluster.getCircuitBreaker().getName());
+      }
       throw e;
     }
+  }
+
+  private boolean isTresholdsExceeded(Cluster cluster) {
+    Metrics metrics = cluster.getCircuitBreaker().getMetrics();
+    int fails = metrics.getNumberOfFailedCalls();
+    int succ = metrics.getNumberOfSuccessfulCalls();
+    if (fails >= cluster.getThresholdMinNumOfFailures()) {
+      float ratePercentThreshold = cluster.getCircuitBreaker().getCircuitBreakerConfig()
+          .getFailureRateThreshold(); // 0..100
+      int total = fails + succ;
+      if (total == 0) return false;
+      float failureRatePercent = (fails * 100.0f) / total;
+      return failureRatePercent >= ratePercentThreshold;
+    }
+    return false;
   }
 
   private boolean isCircuitBreakerTrackedException(Exception e, CircuitBreaker cb) {

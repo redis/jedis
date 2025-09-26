@@ -44,6 +44,7 @@ import redis.clients.jedis.mcf.TrackingConnectionPool;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.mcf.CircuitBreakerThresholdsAdapter;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.HealthCheck;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
@@ -60,7 +61,6 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *         Support for manual failback is provided by way of {@link #setActiveCluster(Endpoint)}
  *         <p>
  */
-// TODO: move?
 @Experimental
 public class MultiClusterPooledConnectionProvider implements ConnectionProvider {
 
@@ -136,18 +136,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     ////////////// Configure Circuit Breaker ////////////////////
 
     CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
-    circuitBreakerConfigBuilder
-        .failureRateThreshold(multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
-    circuitBreakerConfigBuilder
-        .slowCallRateThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallRateThreshold());
-    circuitBreakerConfigBuilder.slowCallDurationThreshold(
-      multiClusterClientConfig.getCircuitBreakerSlowCallDurationThreshold());
-    circuitBreakerConfigBuilder
-        .minimumNumberOfCalls(multiClusterClientConfig.getCircuitBreakerSlidingWindowMinCalls());
-    circuitBreakerConfigBuilder
-        .slidingWindowType(multiClusterClientConfig.getCircuitBreakerSlidingWindowType());
-    circuitBreakerConfigBuilder
-        .slidingWindowSize(multiClusterClientConfig.getCircuitBreakerSlidingWindowSize());
+
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiClusterClientConfig);
+    circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
+    circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
+    circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
+    circuitBreakerConfigBuilder.slidingWindowType(adapter.getSlidingWindowType());
+    
     circuitBreakerConfigBuilder.recordExceptions(multiClusterClientConfig
         .getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
     circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State
@@ -750,6 +745,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public boolean retryOnFailover() {
       return multiClusterClientConfig.isRetryOnFailover();
+    }
+
+    public int getThresholdMinNumOfFailures() {
+      return multiClusterClientConfig.getThresholdMinNumOfFailures();
     }
 
     public boolean isDisabled() {

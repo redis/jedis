@@ -130,7 +130,6 @@ public class MultiClusterPooledConnectionProviderTest {
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
     builder.circuitBreakerSlidingWindowSize(1);
-    builder.circuitBreakerSlidingWindowMinCalls(1);
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 

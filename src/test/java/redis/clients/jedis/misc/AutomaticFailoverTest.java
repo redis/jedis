@@ -111,7 +111,6 @@ public class AutomaticFailoverTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
             .retryWaitDuration(1).retryMaxAttempts(1)
-            .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
             .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
@@ -153,7 +152,6 @@ public class AutomaticFailoverTest {
             .retryMaxAttempts(retryMaxAttempts) // Default
                                  // is
                                  // 3
-            .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
             .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
@@ -192,7 +190,6 @@ public class AutomaticFailoverTest {
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
             .circuitBreakerSlidingWindowSize(slidingWindowSize)
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
 
@@ -227,7 +224,6 @@ public class AutomaticFailoverTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
           workingEndpoint.getHostAndPort()))
-              .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
               .circuitBreakerSlidingWindowSize(slidingWindowSize)
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 

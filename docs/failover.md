@@ -70,7 +70,6 @@ Then build a `MultiClusterPooledConnectionProvider`.
 ```java
 MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clientConfigs);
 builder.circuitBreakerSlidingWindowSize(2); // Sliding window size in number of calls
-builder.circuitBreakerSlidingWindowMinCalls(1);
 builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
 
 builder.failbackSupported(true); // Enable failback

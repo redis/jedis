@@ -1366,16 +1366,13 @@ public final class MultiClusterClientConfig {
       // Copy circuit breaker configuration
       config.thresholdMinNumOfFailures = this.thresholdMinNumOfFailures;
       config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
-
       config.circuitBreakerSlidingWindowSize = this.circuitBreakerSlidingWindowSize;
-
       config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
       config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
 
       // Copy fallback and failover configuration
       config.fallbackExceptionList = this.fallbackExceptionList;
       config.retryOnFailover = this.retryOnFailover;
-
       config.isFailbackSupported = this.isFailbackSupported;
       config.failbackCheckInterval = this.failbackCheckInterval;
       config.gracePeriod = this.gracePeriod;

@@ -1,6 +1,5 @@
 package redis.clients.jedis.mcf;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
@@ -40,9 +39,17 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
   private Connection handleGetConnection(Cluster cluster) {
-    Connection connection = cluster.getConnection();
-    connection.ping();
-    return connection;
+    try {
+      Connection connection = cluster.getConnection();
+      connection.ping();
+      return connection;
+    } catch (Exception e) {
+      if (isTresholdsExceeded(cluster)) {
+        throw new JedisFailoverThresholdsExceededException(
+            "Failover threshold exceeded for cluster: " + cluster.getCircuitBreaker().getName());
+      }
+      throw e;
+    }
   }
 
   /**

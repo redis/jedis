@@ -34,7 +34,6 @@ public class CircuitBreakerThresholdsAdapter {
         minimumNumberOfCalls = calculateMinTotalCalls(
             multiClusterClientConfig.getThresholdMinNumOfFailures(),
             multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
-        // circuitBreakerConfigBuilder.minimumNumberOfCalls(minimumNumberOfCalls);
 
         slidingWindowSize = multiClusterClientConfig.getCircuitBreakerSlidingWindowSize();
     }
@@ -48,6 +47,7 @@ public class CircuitBreakerThresholdsAdapter {
         // setting minimumNumberOfCalls to a value that practically guarantees it won't be reached
         // (Though it might get to MAX_VALUE, CB is going to receive exceptions and be %100 failure
         // rate from this adapter).
+        //
         // This keeps the CB CLOSED and lets our executor’s dual-threshold condition decide
         // failover.
         if (rate == 0) {

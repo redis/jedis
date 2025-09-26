@@ -39,7 +39,7 @@ public class CircuitBreakerThresholdsAdapter {
     }
 
     private static int calculateMinTotalCalls(int failures, float rate) {
-        int minCalls = (int) (failures * rate * 100);
+        int minCalls = (int) (failures * rate);
         if (failures == 0) {
             minCalls = 1;
         }

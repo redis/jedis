@@ -13,8 +13,8 @@ public class MultiClusterPooledConnectionProviderHelper {
     provider.periodicFailbackCheck();
   }
 
-  public static Endpoint iterateActiveCluster(MultiClusterPooledConnectionProvider provider,
-      SwitchReason reason) {
-    return provider.iterateActiveCluster(reason);
+  public static Endpoint switchToHealthyCluster(MultiClusterPooledConnectionProvider provider,
+      SwitchReason reason, MultiClusterPooledConnectionProvider.Cluster iterateFrom) {
+    return provider.switchToHealthyCluster(reason, iterateFrom);
   }
 }

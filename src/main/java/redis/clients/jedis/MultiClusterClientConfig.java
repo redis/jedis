@@ -161,6 +161,12 @@ public final class MultiClusterClientConfig {
   /** Default grace period in milliseconds to keep clusters disabled after they become unhealthy. */
   private static final long GRACE_PERIOD_DEFAULT = 10000;
 
+  /** Default maximum number of failover attempts. */
+  private static final int MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT = 10;
+
+  /** Default delay in milliseconds between failover attempts. */
+  private static final int DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT = 12000;
+
   /** Array of cluster configurations defining the available Redis endpoints and their settings. */
   private final ClusterConfig[] clusterConfigs;
 
@@ -486,6 +492,34 @@ public final class MultiClusterClientConfig {
   private boolean fastFailover;
 
   /**
+   * Maximum number of failover attempts.
+   * <p>
+   * This setting controls how many times the system will attempt to failover to a different cluster
+   * before giving up. For example, if set to 3, the system will make 1 initial attempt plus 2
+   * failover attempts for a total of 3 attempts.
+   * </p>
+   * <p>
+   * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
+   * </p>
+   * @see #getMaxNumFailoverAttempts()
+   */
+  private int maxNumFailoverAttempts;
+
+  /**
+   * Delay in milliseconds between failover attempts.
+   * <p>
+   * This setting controls how long the system will wait before attempting to failover to a
+   * different cluster. For example, if set to 1000, the system will wait 1 second before attempting
+   * to failover to a different cluster.
+   * </p>
+   * <p>
+   * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
+   * </p>
+   * @see #getDelayInBetweenFailoverAttempts()
+   */
+  private int delayInBetweenFailoverAttempts;
+
+  /**
    * Constructs a new MultiClusterClientConfig with the specified cluster configurations.
    * <p>
    * This constructor validates that at least one cluster configuration is provided and that all
@@ -677,6 +711,25 @@ public final class MultiClusterClientConfig {
    */
   public long getGracePeriod() {
     return gracePeriod;
+  }
+
+  /**
+   * Returns the maximum number of failover attempts.
+   * @return maximum number of failover attempts
+   * @see #maxNumFailoverAttempts
+   */
+  public int getMaxNumFailoverAttempts() {
+    return maxNumFailoverAttempts;
+
+  }
+
+  /**
+   * Returns the delay in milliseconds between failover attempts.
+   * @return delay in milliseconds between failover attempts
+   * @see #delayInBetweenFailoverAttempts
+   */
+  public int getDelayInBetweenFailoverAttempts() {
+    return delayInBetweenFailoverAttempts;
   }
 
   /**
@@ -1089,6 +1142,12 @@ public final class MultiClusterClientConfig {
 
     /** Whether to forcefully terminate connections during failover. */
     private boolean fastFailover = false;
+
+    /** Maximum number of failover attempts. */
+    private int maxNumFailoverAttempts = MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT;
+
+    /** Delay in milliseconds between failover attempts. */
+    private int delayInBetweenFailoverAttempts = DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT;
 
     /**
      * Constructs a new Builder with the specified cluster configurations.
@@ -1540,6 +1599,42 @@ public final class MultiClusterClientConfig {
     }
 
     /**
+     * Sets the maximum number of failover attempts.
+     * <p>
+     * This setting controls how many times the system will attempt to failover to a different
+     * cluster before giving up. For example, if set to 3, the system will make 1 initial attempt
+     * plus 2 failover attempts for a total of 3 attempts.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
+     * </p>
+     * @param maxNumFailoverAttempts maximum number of failover attempts
+     * @return this builder instance for method chaining
+     */
+    public Builder maxNumFailoverAttempts(int maxNumFailoverAttempts) {
+      this.maxNumFailoverAttempts = maxNumFailoverAttempts;
+      return this;
+    }
+
+    /**
+     * Sets the delay in milliseconds between failover attempts.
+     * <p>
+     * This setting controls how long the system will wait before attempting to failover to a
+     * different cluster. For example, if set to 1000, the system will wait 1 second before
+     * attempting to failover to a different cluster.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
+     * </p>
+     * @param delayInBetweenFailoverAttempts delay in milliseconds between failover attempts
+     * @return this builder instance for method chaining
+     */
+    public Builder delayInBetweenFailoverAttempts(int delayInBetweenFailoverAttempts) {
+      this.delayInBetweenFailoverAttempts = delayInBetweenFailoverAttempts;
+      return this;
+    }
+
+    /**
      * Builds and returns a new MultiClusterClientConfig instance with all configured settings.
      * <p>
      * This method creates the final configuration object by copying all builder settings to the
@@ -1576,6 +1671,8 @@ public final class MultiClusterClientConfig {
       config.failbackCheckInterval = this.failbackCheckInterval;
       config.gracePeriod = this.gracePeriod;
       config.fastFailover = this.fastFailover;
+      config.maxNumFailoverAttempts = this.maxNumFailoverAttempts;
+      config.delayInBetweenFailoverAttempts = this.delayInBetweenFailoverAttempts;
 
       return config;
     }

@@ -76,8 +76,8 @@ public class AutomaticFailoverTest {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
-        SwitchReason.HEALTH_CHECK);
+      MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getCluster());
       pipe.sync();
     }
 
@@ -96,8 +96,8 @@ public class AutomaticFailoverTest {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      MultiClusterPooledConnectionProviderHelper.iterateActiveCluster(provider,
-        SwitchReason.HEALTH_CHECK);
+      MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getCluster());
       assertEquals(Arrays.asList("OK", 1L), tx.exec());
     }
 

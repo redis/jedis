@@ -7,6 +7,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 
@@ -46,7 +47,14 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
   private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
-    try (Connection connection = cluster.getConnection()) {
+    Connection connection;
+    try {
+      connection = cluster.getConnection();
+    } catch (JedisConnectionException e) {
+      provider.assertOperability();
+      throw e;
+    }
+    try {
       return connection.executeCommand(commandObject);
     } catch (Exception e) {
       if (cluster.retryOnFailover() && !isActiveCluster(cluster)
@@ -56,6 +64,8 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
       }
 
       throw e;
+    } finally {
+      connection.close();
     }
   }
 

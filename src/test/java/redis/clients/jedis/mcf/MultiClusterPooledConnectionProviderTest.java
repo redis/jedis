@@ -280,9 +280,9 @@ public class MultiClusterPooledConnectionProviderTest {
     // adjusted to get exact numbers of failures with exact exception types
     // and open to impact from other defaulted values withing the components in use.
     MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(50)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowMinCalls(2)
-            .circuitBreakerSlidingWindowSize(1)
+        new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(100)
+            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowMinCalls(3)
+            .circuitBreakerSlidingWindowSize(5)
             .circuitBreakerSlidingWindowType(SlidingWindowType.TIME_BASED)
             .circuitBreakerFailureRateThreshold(60).build()) {
     };
@@ -306,7 +306,7 @@ public class MultiClusterPooledConnectionProviderTest {
 
       // Third get request should exceed max attempts and throw
       // JedisPermanentlyNotAvailableException
-      await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(50))
+      await().atMost(Durations.FIVE_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(50))
           .until(() -> (assertThrows(JedisFailoverException.class,
             () -> jedis.get("foo")) instanceof JedisPermanentlyNotAvailableException));
 

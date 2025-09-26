@@ -26,7 +26,7 @@ public class CircuitBreakerThresholdsAdapter {
     }
 
     public CircuitBreakerThresholdsAdapter(MultiClusterClientConfig multiClusterClientConfig) {
-        // IMPORTATNT: this is due to we can not set failureRateThreshold to 0.0f in Resilience4j
+        // IMPORTANT: this is due to we can not set failureRateThreshold to 0.0f in Resilience4j
         failureRateThreshold = multiClusterClientConfig.getCircuitBreakerFailureRateThreshold();
         failureRateThreshold = failureRateThreshold == 0.0f ? 100.0f : failureRateThreshold;
 

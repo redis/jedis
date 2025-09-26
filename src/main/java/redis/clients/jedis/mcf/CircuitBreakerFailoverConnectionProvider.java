@@ -44,7 +44,7 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
       connection.ping();
       return connection;
     } catch (Exception e) {
-      if (isTresholdsExceeded(cluster)) {
+      if (isThresholdsExceeded(cluster)) {
         throw new JedisFailoverThresholdsExceededException(
             "Failover threshold exceeded for cluster: " + cluster.getCircuitBreaker().getName());
       }

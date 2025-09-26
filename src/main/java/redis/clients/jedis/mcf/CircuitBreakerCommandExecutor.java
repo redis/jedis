@@ -55,7 +55,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
         throw new ConnectionFailoverException(
             "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
       }
-      if (isTresholdsExceeded(cluster)) {
+      if (isThresholdsExceeded(cluster)) {
         throw new JedisFailoverThresholdsExceededException(
             "Failover threshold exceeded for cluster: " + cluster.getCircuitBreaker().getName());
       }

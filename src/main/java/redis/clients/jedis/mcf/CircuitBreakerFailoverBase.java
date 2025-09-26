@@ -86,7 +86,7 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
     }
   }
 
-  protected boolean isTresholdsExceeded(Cluster cluster) {
+  protected boolean isThresholdsExceeded(Cluster cluster) {
     Metrics metrics = cluster.getCircuitBreaker().getMetrics();
     int fails = metrics.getNumberOfFailedCalls();
     int succ = metrics.getNumberOfSuccessfulCalls();

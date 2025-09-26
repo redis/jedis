@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import redis.clients.jedis.*;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
 
 /**

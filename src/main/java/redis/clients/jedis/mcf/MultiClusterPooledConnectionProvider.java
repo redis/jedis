@@ -1,4 +1,4 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
@@ -35,18 +35,10 @@ import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.HealthStatusChangeEvent;
-import redis.clients.jedis.mcf.HealthStatusManager;
-import redis.clients.jedis.mcf.StatusTracker;
-import redis.clients.jedis.mcf.SwitchReason;
-import redis.clients.jedis.mcf.TrackingConnectionPool;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 import redis.clients.jedis.util.Pool;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.HealthCheck;
-import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -186,8 +178,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       // Race condition: Direct assignment to 'activeCluster' is not thread safe because
       // 'onHealthStatusChange' may execute concurrently once 'initializationComplete'
       // is set to true.
-      // Simple rule is to never assign value of 'activeCluster' outside of 
-      // 'activeClusterChangeLock' once the 'initializationComplete' is done. 
+      // Simple rule is to never assign value of 'activeCluster' outside of
+      // 'activeClusterChangeLock' once the 'initializationComplete' is done.
       waitForInitialHealthyCluster(statusTracker);
       iterateActiveCluster(SwitchReason.HEALTH_CHECK);
     }
@@ -450,7 +442,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
-  public Endpoint iterateActiveCluster(SwitchReason reason) {
+  Endpoint iterateActiveCluster(SwitchReason reason) {
     Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate();
     if (clusterToIterate == null) {
       throw new JedisConnectionException(

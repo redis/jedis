@@ -19,8 +19,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
 import java.io.IOException;
@@ -37,6 +36,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType.COUNT_BASED;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -137,6 +137,9 @@ public class FailoverIntegrationTest {
   public void testAutomaticFailoverWhenServerBecomesUnavailable() throws Exception {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
 
+    await().atMost(1, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+        .until(() -> provider.getCluster(endpoint2.getHostAndPort()).isHealthy());
+
     // Disable redisProxy1
     redisProxy1.disable();
 
@@ -169,6 +172,9 @@ public class FailoverIntegrationTest {
   public void testManualFailoverNewCommandsAreSentToActiveCluster() throws InterruptedException {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
 
+    await().atMost(1, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+        .until(() -> provider.getCluster(endpoint2.getHostAndPort()).isHealthy());
+
     provider.setActiveCluster(endpoint2.getHostAndPort());
 
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
@@ -186,6 +192,9 @@ public class FailoverIntegrationTest {
   @Timeout(5)
   public void testManualFailoverInflightCommandsCompleteGracefully()
       throws ExecutionException, InterruptedException {
+
+    await().atMost(1, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+        .until(() -> provider.getCluster(endpoint2.getHostAndPort()).isHealthy());
 
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
 
@@ -214,6 +223,9 @@ public class FailoverIntegrationTest {
   @Test
   public void testManualFailoverInflightCommandsWithErrorsPropagateError() throws Exception {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
+
+    await().atMost(1, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+        .until(() -> provider.getCluster(endpoint2.getHostAndPort()).isHealthy());
 
     Future<List<String>> blpop = executor.submit(() -> failoverClient.blpop(10000, "test-list-1"));
 

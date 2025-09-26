@@ -26,6 +26,7 @@ public class JedisFailoverException extends JedisConnectionException {
   /**
    * Exception thrown when a failover attempt fails due to lack of available/healthy clusters, and
    * the max number of failover attempts has been exceeded. And there is still no healthy cluster.
+   * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiClusterClientConfig#maxNumFailoverAttempts} and
    * {@link redis.clients.jedis.MultiClusterClientConfig#delayInBetweenFailoverAttempts} for more
@@ -46,6 +47,7 @@ public class JedisFailoverException extends JedisConnectionException {
    * the max number of failover attempts has not been exceeded yet. Though there is no healthy
    * cluster including the selected/current one, given configuration suggests that it should be a
    * temporary condition and it is possible that there will be a healthy cluster available.
+   * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiClusterClientConfig#maxNumFailoverAttempts} and
    * {@link redis.clients.jedis.MultiClusterClientConfig#delayInBetweenFailoverAttempts} for more

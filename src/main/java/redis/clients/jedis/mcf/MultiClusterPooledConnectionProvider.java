@@ -1,4 +1,4 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,19 +36,10 @@ import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.HealthStatusChangeEvent;
-import redis.clients.jedis.mcf.HealthStatusManager;
-import redis.clients.jedis.mcf.StatusTracker;
-import redis.clients.jedis.mcf.SwitchReason;
-import redis.clients.jedis.mcf.TrackingConnectionPool;
+import redis.clients.jedis.mcf.JedisFailoverException.*;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
-
 import redis.clients.jedis.util.Pool;
-import redis.clients.jedis.mcf.CircuitBreakerThresholdsAdapter;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.HealthCheck;
-import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -108,6 +100,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
   private RetryConfig retryConfig;
   private CircuitBreakerConfig circuitBreakerConfig;
   private MultiClusterClientConfig multiClusterClientConfig;
+
+  private AtomicLong failoverFreezeUntil = new AtomicLong(0);
+  private AtomicInteger failoverAttemptCount = new AtomicInteger(0);
 
   public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
@@ -177,14 +172,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     // Mark initialization as complete - handleHealthStatusChange can now process events
     initializationComplete = true;
-    if (!activeCluster.isHealthy()) {
+    Cluster temp = activeCluster;
+    if (!temp.isHealthy()) {
       // Race condition: Direct assignment to 'activeCluster' is not thread safe because
       // 'onHealthStatusChange' may execute concurrently once 'initializationComplete'
       // is set to true.
       // Simple rule is to never assign value of 'activeCluster' outside of
       // 'activeClusterChangeLock' once the 'initializationComplete' is done.
       waitForInitialHealthyCluster(statusTracker);
-      iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+      switchToHealthyCluster(SwitchReason.HEALTH_CHECK, temp);
     }
     this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
 
@@ -241,6 +237,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
     log.debug("Removing endpoint {}", endpoint);
 
+    Map.Entry<Endpoint, Cluster> notificationData = null;
     activeClusterChangeLock.lock();
     try {
       Cluster clusterToRemove = multiClusterMap.get(endpoint);
@@ -248,12 +245,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
       if (isActiveCluster) {
         log.info("Active cluster is being removed. Finding a new active cluster...");
-        Map.Entry<Endpoint, Cluster> candidate = findWeightedHealthyClusterToIterate();
+        Map.Entry<Endpoint, Cluster> candidate = findWeightedHealthyClusterToIterate(
+          clusterToRemove);
         if (candidate != null) {
           Cluster selectedCluster = candidate.getValue();
           if (setActiveCluster(selectedCluster, true)) {
             log.info("New active cluster set to {}", candidate.getKey());
-            onClusterSwitch(SwitchReason.FORCED, candidate.getKey(), selectedCluster);
+            notificationData = candidate;
           }
         } else {
           throw new JedisException(
@@ -275,6 +273,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       }
     } finally {
       activeClusterChangeLock.unlock();
+    }
+    if (notificationData != null) {
+      onClusterSwitch(SwitchReason.FORCED, notificationData.getKey(), notificationData.getValue());
     }
   }
 
@@ -345,7 +346,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     if (initializationComplete) {
       if (!newStatus.isHealthy() && clusterWithHealthChange == activeCluster) {
         clusterWithHealthChange.setGracePeriod();
-        iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+        switchToHealthyCluster(SwitchReason.HEALTH_CHECK, clusterWithHealthChange);
       }
     }
   }
@@ -445,19 +446,65 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
-  public Endpoint iterateActiveCluster(SwitchReason reason) {
-    Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate();
+  Endpoint switchToHealthyCluster(SwitchReason reason, Cluster iterateFrom) {
+    Map.Entry<Endpoint, Cluster> clusterToIterate = findWeightedHealthyClusterToIterate(
+      iterateFrom);
     if (clusterToIterate == null) {
-      throw new JedisConnectionException(
-          "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "
-              + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
-              + "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
+      // throws exception anyway since not able to iterate
+      handleNoHealthyCluster();
     }
+
     Cluster cluster = clusterToIterate.getValue();
     boolean changed = setActiveCluster(cluster, false);
     if (!changed) return null;
+    failoverAttemptCount.set(0);
     onClusterSwitch(reason, clusterToIterate.getKey(), cluster);
     return clusterToIterate.getKey();
+  }
+
+  private void handleNoHealthyCluster() {
+    int max = multiClusterClientConfig.getMaxNumFailoverAttempts();
+    log.error("No healthy cluster available to switch to");
+    if (failoverAttemptCount.get() > max) {
+      throw new JedisPermanentlyNotAvailableException();
+    }
+
+    int currentAttemptCount = markAsFreeze() ? failoverAttemptCount.incrementAndGet()
+        : failoverAttemptCount.get();
+
+    if (currentAttemptCount > max) {
+      throw new JedisPermanentlyNotAvailableException();
+    }
+    throw new JedisTemporarilyNotAvailableException();
+  }
+
+  private boolean markAsFreeze() {
+    long until = failoverFreezeUntil.get();
+    long now = System.currentTimeMillis();
+    if (until <= now) {
+      long nextUntil = now + multiClusterClientConfig.getDelayInBetweenFailoverAttempts();
+      if (failoverFreezeUntil.compareAndSet(until, nextUntil)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Asserts that the active cluster is operable. If not, throws an exception.
+   * <p>
+   * This method is called by the circuit breaker command executor before executing a command.
+   * @throws JedisPermanentlyNotAvailableException if the there is no operable cluster and the max
+   *           number of failover attempts has been exceeded.
+   * @throws JedisTemporarilyNotAvailableException if the there is no operable cluster and the max
+   *           number of failover attempts has not been exceeded.
+   */
+  @VisibleForTesting
+  public void assertOperability() {
+    Cluster current = activeCluster;
+    if (!current.isHealthy() && !this.canIterateFrom(current)) {
+      handleNoHealthyCluster();
+    }
   }
 
   private static Comparator<Map.Entry<Endpoint, Cluster>> maxByWeight = Map.Entry
@@ -466,9 +513,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
   private static Predicate<Map.Entry<Endpoint, Cluster>> filterByHealth = c -> c.getValue()
       .isHealthy();
 
-  private Map.Entry<Endpoint, Cluster> findWeightedHealthyClusterToIterate() {
+  private Map.Entry<Endpoint, Cluster> findWeightedHealthyClusterToIterate(Cluster iterateFrom) {
     return multiClusterMap.entrySet().stream().filter(filterByHealth)
-        .filter(entry -> entry.getValue() != activeCluster).max(maxByWeight).orElse(null);
+        .filter(entry -> entry.getValue() != iterateFrom).max(maxByWeight).orElse(null);
   }
 
   /**
@@ -548,8 +595,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     try {
 
       // Allows an attempt to reset the current cluster from a FORCED_OPEN to CLOSED state in the
-      // event that no
-      // failover is possible
+      // event that no failover is possible
       if (activeCluster == cluster && !cluster.isCBForcedOpen()) return false;
 
       if (validateConnection) validateTargetConnection(cluster);
@@ -640,8 +686,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
    * pre-configured list provided at startup via the MultiClusterClientConfig, is unavailable and
    * therefore no further failover is possible. Users can manually failback to an available cluster
    */
-  public boolean canIterateOnceMore() {
-    Map.Entry<Endpoint, Cluster> e = findWeightedHealthyClusterToIterate();
+  public boolean canIterateFrom(Cluster iterateFrom) {
+    Map.Entry<Endpoint, Cluster> e = findWeightedHealthyClusterToIterate(iterateFrom);
     return e != null;
   }
 

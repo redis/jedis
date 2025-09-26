@@ -2,7 +2,7 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static redis.clients.jedis.providers.MultiClusterPooledConnectionProviderHelper.onHealthStatusChange;
+import static redis.clients.jedis.mcf.MultiClusterPooledConnectionProviderHelper.onHealthStatusChange;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProviderHelper;
 
 @ExtendWith(MockitoExtension.class)
 class PeriodicFailbackTest {
@@ -64,7 +62,7 @@ class PeriodicFailbackTest {
         provider.getCluster(endpoint2).setDisabled(true);
 
         // Force failover to cluster1 since cluster2 is disabled
-        provider.iterateActiveCluster(SwitchReason.FORCED);
+        provider.switchToHealthyCluster(SwitchReason.FORCED, provider.getCluster(endpoint2));
 
         // Manually trigger periodic check
         MultiClusterPooledConnectionProviderHelper.periodicFailbackCheck(provider);

@@ -5,8 +5,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 
 /**
  * ConnectionProvider with built-in retry, circuit-breaker, and failover to another cluster/database

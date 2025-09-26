@@ -22,8 +22,8 @@ public class LagAwareStrategy implements HealthCheckStrategy {
 
   public LagAwareStrategy(Config config) {
     this.config = config;
-    this.redisRestAPI = new RedisRestAPI(config.restEndpoint, config.credentialsSupplier,
-        config.timeout, config.sslOptions);
+    this.redisRestAPI = new RedisRestAPI(config.getRestEndpoint(), config.getCredentialsSupplier(),
+        config.getTimeout(), config.getSslOptions());
   }
 
   @Override

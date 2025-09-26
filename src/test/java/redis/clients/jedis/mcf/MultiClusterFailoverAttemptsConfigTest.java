@@ -112,8 +112,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
     await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(10))
         .until(() -> {
-          Exception e = assertThrows(JedisFailoverException.class,
-            () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+          Exception e = assertThrows(JedisFailoverException.class, () -> provider
+              .switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
           return e instanceof JedisPermanentlyNotAvailableException;
         });
   }
@@ -130,17 +130,17 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // Expect exactly 'maxAttempts' temporary exceptions, then a permanent one
     assertThrows(JedisTemporarilyNotAvailableException.class,
       () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
-                                                                                              // 1
+    // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
       () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
-                                                                                              // 2
+    // 2
 
     // Next should exceed max and become permanent
     assertThrows(JedisPermanentlyNotAvailableException.class,
       () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
-                                                                                              // 3
-                                                                                              // ->
-                                                                                              // permanent
+    // 3
+    // ->
+    // permanent
   }
 
   // ======== Test helper methods (reflection) ========

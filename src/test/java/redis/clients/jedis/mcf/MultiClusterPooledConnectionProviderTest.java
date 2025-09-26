@@ -284,9 +284,7 @@ public class MultiClusterPooledConnectionProviderTest {
     // and open to impact from other defaulted values withing the components in use.
     MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
         new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(100)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowMinCalls(3)
-            .circuitBreakerSlidingWindowSize(5)
-            .circuitBreakerSlidingWindowType(SlidingWindowType.TIME_BASED)
+            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
             .circuitBreakerFailureRateThreshold(60).build()) {
     };
 

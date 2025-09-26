@@ -19,11 +19,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
@@ -66,7 +65,7 @@ public class CircuitBreakerThresholdsTest {
     when(provider.getCluster()).thenReturn(cluster);
     when(provider.getFallbackExceptionList()).thenReturn(Arrays
         .asList(CallNotPermittedException.class, JedisFailoverThresholdsExceededException.class));
-    when(provider.canIterateOnceMore()).thenReturn(false); // make failover throw on 2nd attempt
+    when(provider.canIterateFrom(cluster)).thenReturn(false); // make failover throw on 2nd attempt
 
     // Provide threshold via cluster
     when(cluster.getThresholdMinNumOfFailures()).thenReturn(3);
@@ -100,7 +99,7 @@ public class CircuitBreakerThresholdsTest {
 
     // Verify CB recorded failures but no failover attempted
     assertEquals(2, circuitBreaker.getMetrics().getNumberOfFailedCalls());
-    verify(provider, never()).iterateActiveCluster(any());
+    verify(provider, never()).switchToHealthyCluster(any(), any());
     assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
   }
 
@@ -127,7 +126,7 @@ public class CircuitBreakerThresholdsTest {
     Exception ex = assertThrows(Exception.class, () -> executor.executeCommand(dummyCommand));
 
     // After threshold exceeded, the fallback attempts failover once and then throws
-    verify(provider, times(1)).iterateActiveCluster(eq(SwitchReason.CIRCUIT_BREAKER));
+    verify(provider, times(1)).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER), any());
     assertEquals(CircuitBreaker.State.FORCED_OPEN, circuitBreaker.getState());
     // The final surfaced exception should be JedisConnectionException from failover path
     assertTrue(
@@ -171,7 +170,7 @@ public class CircuitBreakerThresholdsTest {
     for (int i = 0; i < 3; i++) {
       assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
     }
-    verify(provider, never()).iterateActiveCluster(any());
+    verify(provider, never()).switchToHealthyCluster(any(), any());
     assertEquals(CircuitBreaker.State.CLOSED, highRateCB.getState());
   }
 
@@ -250,8 +249,8 @@ public class CircuitBreakerThresholdsTest {
     // Provide fallback list from the real provider
     doReturn(realProvider.getFallbackExceptionList()).when(spyProvider).getFallbackExceptionList();
     // Prevent actual iteration logic, but allow verify()
-    doReturn(false).when(spyProvider).canIterateOnceMore();
-    doReturn(null).when(spyProvider).iterateActiveCluster(any());
+    doReturn(false).when(spyProvider).canIterateFrom(mockCluster);
+    doReturn(null).when(spyProvider).switchToHealthyCluster(any(), any());
     // Always return our mock cluster to avoid opening sockets
     doReturn(mockCluster).when(spyProvider).getCluster();
 
@@ -282,18 +281,18 @@ public class CircuitBreakerThresholdsTest {
       assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
     }
 
-    verify(spyProvider, never()).iterateActiveCluster(any());
+    verify(spyProvider, never()).switchToHealthyCluster(any(), any());
 
     // Now, one more failing call — this is where thresholds are checked
     Exception ex = assertThrows(Exception.class, () -> executor.executeCommand(dummyCommand));
 
     if (expectFailoverOnNext) {
-      verify(spyProvider, times(1)).iterateActiveCluster(eq(SwitchReason.CIRCUIT_BREAKER));
+      verify(spyProvider, times(1)).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER), any());
       assertEquals(CircuitBreaker.State.FORCED_OPEN, realCb.getState());
       assertTrue(ex instanceof JedisConnectionException
           || ex.getCause() instanceof JedisConnectionException);
     } else {
-      verify(spyProvider, never()).iterateActiveCluster(any());
+      verify(spyProvider, never()).switchToHealthyCluster(any(), any());
       assertEquals(CircuitBreaker.State.CLOSED, realCb.getState());
       assertTrue(ex instanceof JedisConnectionException);
     }

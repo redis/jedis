@@ -276,7 +276,7 @@ public class MultiClusterPooledConnectionProviderTest {
     clusterConfigs[1] = ClusterConfig.builder(endpointStandalone1.getHostAndPort(),
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
-    // ATTENTION: these configuration settings are not random and 
+    // ATTENTION: these configuration settings are not random and
     // adjusted to get exact numbers of failures with exact exception types
     // and open to impact from other defaulted values withing the components in use.
     MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(

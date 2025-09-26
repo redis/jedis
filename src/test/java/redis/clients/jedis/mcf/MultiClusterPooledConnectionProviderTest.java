@@ -271,10 +271,14 @@ public class MultiClusterPooledConnectionProviderTest {
   @Test
   public void userCommand_connectionExceptions_thenMultipleTemporary_thenPermanent_inOrder() {
     ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = ClusterConfig.builder(endpointStandalone0.getHostAndPort(),
-      endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
-    clusterConfigs[1] = ClusterConfig.builder(endpointStandalone1.getHostAndPort(),
-      endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
+    clusterConfigs[0] = ClusterConfig
+        .builder(endpointStandalone0.getHostAndPort(),
+          endpointStandalone0.getClientConfigBuilder().build())
+        .weight(0.5f).healthCheckEnabled(false).build();
+    clusterConfigs[1] = ClusterConfig
+        .builder(endpointStandalone1.getHostAndPort(),
+          endpointStandalone1.getClientConfigBuilder().build())
+        .weight(0.3f).healthCheckEnabled(false).build();
 
     // ATTENTION: these configuration settings are not random and
     // adjusted to get exact numbers of failures with exact exception types

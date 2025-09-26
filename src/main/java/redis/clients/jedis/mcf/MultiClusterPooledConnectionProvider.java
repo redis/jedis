@@ -132,12 +132,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
 
-    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiClusterClientConfig);
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(
+        multiClusterClientConfig);
     circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
     circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
     circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
     circuitBreakerConfigBuilder.slidingWindowType(adapter.getSlidingWindowType());
-    
+
     circuitBreakerConfigBuilder.recordExceptions(multiClusterClientConfig
         .getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
     circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State

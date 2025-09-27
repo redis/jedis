@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.StreamEntryBinary;
+import redis.clients.jedis.resps.StreamEntryDeletionResult;
 
 public interface StreamBinaryCommands {
 
@@ -27,6 +29,16 @@ public interface StreamBinaryCommands {
 
   long xack(byte[] key, byte[] group, byte[]... ids);
 
+  /**
+   * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   */
+  List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, byte[]... ids);
+
+  /**
+   * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   */
+  List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids);
+
   String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 
   String xgroupSetID(byte[] key, byte[] groupName, byte[] id);
@@ -38,6 +50,16 @@ public interface StreamBinaryCommands {
   long xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName);
 
   long xdel(byte[] key, byte[]... ids);
+
+  /**
+   * XDELEX key [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   */
+  List<StreamEntryDeletionResult> xdelex(byte[] key, byte[]... ids);
+
+  /**
+   * XDELEX key [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
+   */
+  List<StreamEntryDeletionResult> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids);
 
   long xtrim(byte[] key, long maxLen, boolean approximateLength);
 

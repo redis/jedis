@@ -2,12 +2,14 @@ package redis.clients.jedis.commands.jedis;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+@Tag("integration")
 public abstract class JedisCommandsTestBase {
 
   @RegisterExtension

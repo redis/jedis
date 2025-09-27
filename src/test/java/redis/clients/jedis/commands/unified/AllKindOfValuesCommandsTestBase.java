@@ -37,6 +37,7 @@ import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.StreamEntryID;
@@ -50,6 +51,7 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Tag("integration")
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

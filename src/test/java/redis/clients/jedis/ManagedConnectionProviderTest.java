@@ -3,6 +3,7 @@ package redis.clients.jedis;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.providers.ManagedConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -10,6 +11,7 @@ import redis.clients.jedis.util.IOUtils;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
+@Tag("integration")
 public class ManagedConnectionProviderTest {
 
   private Connection connection;

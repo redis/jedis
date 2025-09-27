@@ -21,6 +21,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -38,6 +39,7 @@ import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.RediSearchUtil;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
@@ -47,6 +49,7 @@ import redis.clients.jedis.util.RedisVersionUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "testindex";
@@ -1344,6 +1347,58 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
             .addAttribute("TYPE", "UINT8").addAttribute("DIM", 4)
             .addAttribute("DISTANCE_METRIC", "L2").build()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.1.240")
+  public void testSvsVamanaVectorSimilarity() {
+      Map<String, Object> attr = new HashMap<>();
+      attr.put("TYPE", "FLOAT32");
+      attr.put("DIM", 2);
+      attr.put("DISTANCE_METRIC", "L2");
+
+      assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
+          .algorithm(VectorAlgorithm.SVS_VAMANA).attributes(attr).build()));
+
+      // Create proper float vectors
+      float[] vectorA = {1.0f, 2.0f};
+      float[] vectorB = {1.1f, 2.1f};
+      float[] vectorC = {2.0f, 3.0f};
+
+      // Convert to byte arrays using RediSearchUtil
+      byte[] bytesA = RediSearchUtil.toByteArray(vectorA);
+      byte[] bytesB = RediSearchUtil.toByteArray(vectorB);
+      byte[] bytesC = RediSearchUtil.toByteArray(vectorC);
+
+      client.hset("a".getBytes(), "v".getBytes(), bytesA);
+      client.hset("b".getBytes(), "v".getBytes(), bytesB);
+      client.hset("c".getBytes(), "v".getBytes(), bytesC);
+
+      FTSearchParams searchParams = FTSearchParams.searchParams()
+          .addParam("vec", bytesA)
+          .sortBy("__v_score", SortingOrder.ASC)
+          .returnFields("__v_score")
+          .dialect(2);
+      Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
+      assertEquals("a", doc1.getId());
+      assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.1.240")
+  public void testSvsVamanaVectorWithAdvancedParameters() {
+    assertOK(client.ftCreate(index,
+        VectorField.builder().fieldName("v")
+            .algorithm(VectorAlgorithm.SVS_VAMANA)
+            .addAttribute("TYPE", "FLOAT32")
+            .addAttribute("DIM", 4)
+            .addAttribute("DISTANCE_METRIC", "L2")
+            .addAttribute("CONSTRUCTION_WINDOW_SIZE", 200)
+            .addAttribute("GRAPH_MAX_DEGREE", 64)
+            .addAttribute("SEARCH_WINDOW_SIZE", 100)
+            .addAttribute("EPSILON", 0.01)
+            .build()
+    ));
   }
 
   @Test

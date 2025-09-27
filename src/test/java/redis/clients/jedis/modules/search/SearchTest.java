@@ -17,10 +17,12 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -36,6 +38,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class SearchTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "testindex";
@@ -1156,7 +1159,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testHNSWVVectorSimilarity() {
+  public void testHNSWVectorSimilarity() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
     attr.put("DIM", 2);
@@ -1174,6 +1177,31 @@ public class SearchTest extends RedisModuleCommandsTestBase {
         .setSortBy("__v_score", true)
         .returnFields("__v_score")
         .dialect(2);
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.1.240")
+  public void testSvsVamanaVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addSvsVamanaVectorField("v", attr);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query = new Query("*=>[KNN 2 @v $vec]")
+            .addParam("vec", "aaaaaaaa")
+            .setSortBy("__v_score", true)
+            .returnFields("__v_score")
+            .dialect(2);
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));

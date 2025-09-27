@@ -1,10 +1,14 @@
 package redis.clients.jedis.commands.unified;
 
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 
+@Tag("integration")
 public abstract class UnifiedJedisCommandsTestBase {
 
   /**
@@ -28,5 +32,29 @@ public abstract class UnifiedJedisCommandsTestBase {
    */
   public UnifiedJedisCommandsTestBase(RedisProtocol protocol) {
     this.protocol = protocol;
+  }
+
+  /**
+   * Subclasses provide specific UnifiedJedis setup.
+   */
+  protected abstract UnifiedJedis createTestClient();
+
+  protected void clearData() {
+    if (jedis != null) {
+      jedis.flushAll();
+    }
+  }
+
+  @BeforeEach
+  void setUpBase() {
+    jedis = createTestClient();
+    clearData();
+  }
+
+  @AfterEach
+  void tearDownBase() {
+    if (jedis != null) {
+      jedis.close();
+    }
   }
 }

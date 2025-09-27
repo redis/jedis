@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import java.util.concurrent.Executors;
@@ -38,6 +39,7 @@ public class JedisClusterInfoCache {
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
+  private final Map<String, ConnectionPool> primaryNodesCache = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
   private final List<ConnectionPool>[] replicaSlots;
@@ -175,6 +177,7 @@ public class JedisClusterInfoCache {
           HostAndPort targetNode = generateHostAndPort(hostInfos);
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
+            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
@@ -245,8 +248,7 @@ public class JedisClusterInfoCache {
     }
     w.lock();
     try {
-      Arrays.fill(slots, null);
-      Arrays.fill(slotNodes, null);
+      resetSlots();
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
@@ -425,6 +427,26 @@ public class JedisClusterInfoCache {
     }
   }
 
+  public Map<String, ConnectionPool> getPrimaryNodes() {
+    r.lock();
+    try {
+      return new HashMap<>(primaryNodesCache);
+    } finally {
+      r.unlock();
+    }
+  }
+
+  public List<ConnectionPool> getShuffledPrimaryNodesPool() {
+    r.lock();
+    try {
+      List<ConnectionPool> pools = new ArrayList<>(primaryNodesCache.values());
+      Collections.shuffle(pools);
+      return pools;
+    } finally {
+      r.unlock();
+    }
+  }
+
   public List<ConnectionPool> getShuffledNodesPool() {
     r.lock();
     try {
@@ -442,21 +464,40 @@ public class JedisClusterInfoCache {
   public void reset() {
     w.lock();
     try {
-      for (ConnectionPool pool : nodes.values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (RuntimeException e) {
-          // pass
-        }
-      }
-      nodes.clear();
-      Arrays.fill(slots, null);
-      Arrays.fill(slotNodes, null);
+      resetNodes();
+      resetSlots();
     } finally {
       w.unlock();
     }
+  }
+
+  private void resetSlots() {
+    Arrays.fill(slots, null);
+    Arrays.fill(slotNodes, null);
+    resetReplicaSlots();
+  }
+
+  private void resetReplicaSlots() {
+    if (replicaSlots == null) {
+      return;
+    }
+
+    Arrays.stream(replicaSlots).filter(Objects::nonNull).forEach(List::clear);
+    Arrays.fill(replicaSlots, null);
+  }
+
+  private void resetNodes() {
+    for (ConnectionPool pool : nodes.values()) {
+      try {
+        if (pool != null) {
+          pool.destroy();
+        }
+      } catch (RuntimeException e) {
+        // pass
+      }
+    }
+    nodes.clear();
+    primaryNodesCache.clear();
   }
 
   public void close() {
@@ -468,13 +509,14 @@ public class JedisClusterInfoCache {
   }
 
   public static String getNodeKey(HostAndPort hnp) {
-    //return hnp.getHost() + ":" + hnp.getPort();
     return hnp.toString();
   }
 
+  @SuppressWarnings("unchecked")
   private List<Object> executeClusterSlots(Connection jedis) {
-    jedis.sendCommand(Protocol.Command.CLUSTER, "SLOTS");
-    return jedis.getObjectMultiBulkReply();
+    CommandArguments clusterSlotsCmd = new ClusterCommandArguments(Protocol.Command.CLUSTER).add(
+        "SLOTS");
+    return (List<Object>) jedis.executeCommand(clusterSlotsCmd);
   }
 
   private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {

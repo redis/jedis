@@ -33,6 +33,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.ClientKillerUtil;
@@ -40,6 +41,7 @@ import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.Pool;
 
+@Tag("integration")
 public class JedisClusterTest extends JedisClusterTestBase {
 
   private static final int DEFAULT_TIMEOUT = 2000; //sec

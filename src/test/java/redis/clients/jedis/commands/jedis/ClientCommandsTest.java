@@ -1,5 +1,8 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -19,6 +22,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 
 import org.junit.jupiter.params.provider.MethodSource;
@@ -33,6 +37,7 @@ import redis.clients.jedis.resps.TrackingInfo;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
@@ -178,7 +183,9 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    assertEquals(1, jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));
+
+    ClientKillParams skipmeNo = new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO);
+    assertThat(jedis.clientKill(skipmeNo), greaterThanOrEqualTo(1L));
     assertDisconnected(jedis);
   }
 

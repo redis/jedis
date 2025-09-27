@@ -190,7 +190,6 @@ public final class BuilderFactory {
 
   public static final Builder<Set<byte[]>> BINARY_SET = new Builder<Set<byte[]>>() {
     @Override
-    @SuppressWarnings("unchecked")
     public Set<byte[]> build(Object data) {
       if (null == data) {
         return null;
@@ -477,6 +476,65 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Double>> STRING_DOUBLE_MAP = new Builder<Map<String, Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Double> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, Double> map = new LinkedHashMap<>(list.size(), 1f);
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          map.put(STRING.build(kv.getKey()), DOUBLE.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<String, Double> map = new LinkedHashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(STRING.build(iterator.next()), DOUBLE.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, Double>";
+    }
+  };
+
+
+  public static final Builder<Map<byte[], Double>> BINARY_DOUBLE_MAP = new Builder<Map<byte[], Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], Double> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      final JedisByteMap<Double> map = new JedisByteMap<>();
+      if (list.get(0) instanceof KeyValue) {
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          map.put(BINARY.build(kv.getKey()), DOUBLE.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(BINARY.build(iterator.next()), DOUBLE.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, Double>";
+    }
+  };
   public static final Builder<KeyValue<String, String>> KEYED_ELEMENT = new Builder<KeyValue<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -1261,6 +1319,42 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<StreamEntryDeletionResult> STREAM_ENTRY_DELETION_RESULT = new Builder<StreamEntryDeletionResult>() {
+    @Override
+    public StreamEntryDeletionResult build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      return StreamEntryDeletionResult.fromLong((Long) data);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamEntryDeletionResult";
+    }
+  };
+
+  public static final Builder<List<StreamEntryDeletionResult>> STREAM_ENTRY_DELETION_RESULT_LIST = new Builder<List<StreamEntryDeletionResult>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<StreamEntryDeletionResult> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      List<Object> objectList = (List<Object>) data;
+      List<StreamEntryDeletionResult> responses = new ArrayList<>(objectList.size());
+      for (Object object : objectList) {
+        responses.add(STREAM_ENTRY_DELETION_RESULT.build(object));
+      }
+      return responses;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamEntryDeletionResult>";
+    }
+  };
+
   public static final Builder<StreamEntry> STREAM_ENTRY = new Builder<StreamEntry>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -1781,6 +1875,43 @@ public final class BuilderFactory {
   @Deprecated
   public static final Builder<StreamFullInfo> STREAM_INFO_FULL = STREAM_FULL_INFO;
 
+  public static final Builder<VectorInfo> VECTOR_INFO = new Builder<VectorInfo>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(VectorInfo.VECTOR_DIM, LONG);
+      tempMappingFunctions.put(VectorInfo.TYPE, STRING);
+      tempMappingFunctions.put(VectorInfo.SIZE, LONG);
+      tempMappingFunctions.put(VectorInfo.MAX_NODE_UID, LONG);
+      tempMappingFunctions.put(VectorInfo.VSET_UID, LONG);
+      tempMappingFunctions.put(VectorInfo.MAX_NODES, LONG);
+      tempMappingFunctions.put(VectorInfo.PROJECTION_INPUT_DIM, LONG);
+      tempMappingFunctions.put(VectorInfo.ATTRIBUTES_COUNT, LONG);
+      tempMappingFunctions.put(VectorInfo.MAX_LEVEL, LONG);
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public VectorInfo build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> vectorEntries = (List<Object>) data;
+      Iterator<Object> iterator = vectorEntries.iterator();
+
+      return new VectorInfo(createMapFromDecodingFunctions(iterator, mappingFunctions));
+    }
+
+    @Override
+    public String toString() {
+      return "VectorInfo";
+    }
+  };
+
   public static final Builder<StreamPendingSummary> STREAM_PENDING_SUMMARY = new Builder<StreamPendingSummary>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -2113,6 +2244,158 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<List<Object>>";
+    }
+  };
+
+  // Vector Set builders
+  public static final Builder<Map<String, VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_MAP = new Builder<Map<String, VSimScoreAttribs>>() {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, VSimScoreAttribs> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, VSimScoreAttribs> result = new LinkedHashMap<>(list.size(), 1f);
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          List<Object> scoreAndAttribs = (List<Object>) kv.getValue();
+          result.put(STRING.build(kv.getKey()),
+              new VSimScoreAttribs(DOUBLE.build(scoreAndAttribs.get(0)),
+                  STRING.build(scoreAndAttribs.get(1))));
+        }
+        return result;
+      } else {
+        final Map<String, VSimScoreAttribs> result = new LinkedHashMap<>(list.size() / 3, 1f);
+        for (int i = 0; i < list.size(); i += 3) {
+          result.put(STRING.build(list.get(i)),
+              new VSimScoreAttribs(DOUBLE.build(list.get(i + 1)), STRING.build(list.get(i + 2))));
+        }
+        return result;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, VSimScoreAttribs>";
+    }
+  };
+
+  public static final Builder<Map<byte[], VSimScoreAttribs>> VSIM_SCORE_ATTRIBS_BINARY_MAP = new Builder<Map<byte[], VSimScoreAttribs>>() {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], VSimScoreAttribs> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      JedisByteMap<VSimScoreAttribs> result = new JedisByteMap<>();
+      if (list.get(0) instanceof KeyValue) {
+        for (Object o : list) {
+          KeyValue<?, ?> kv = (KeyValue<?, ?>) o;
+          List<Object> scoreAndAttribs = (List<Object>) kv.getValue();
+          result.put(BINARY.build(kv.getKey()),
+              new VSimScoreAttribs(DOUBLE.build(scoreAndAttribs.get(0)),
+                  STRING.build(scoreAndAttribs.get(1))));
+        }
+      } else {
+        for (int i = 0; i < list.size(); i += 3) {
+          result.put(BINARY.build(list.get(i)),
+              new VSimScoreAttribs(DOUBLE.build(list.get(i + 1)), STRING.build(list.get(i + 2))));
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<byte[], VSimScoreAttribs>";
+    }
+  };
+
+  public static final Builder<RawVector> VEMB_RAW_RESULT = new Builder<RawVector>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public RawVector build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+
+      String quantizationType = STRING.build(list.get(0));
+      byte[] rawData = (byte[]) list.get(1);
+      Double norm = DOUBLE.build(list.get(2));
+      Double quantizationRange = list.size() > 3 ? DOUBLE.build(list.get(3)) : null;
+
+      return new RawVector(quantizationType, rawData, norm, quantizationRange);
+    }
+
+    @Override
+    public String toString() {
+      return "RawVector";
+    }
+  };
+
+  // VLINKS builders
+  public static final Builder<List<Map<String, Double>>> VLINKS_WITH_SCORES_RESULT = new Builder<List<Map<String, Double>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Double>> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+
+      List<Map<String, Double>> result = new ArrayList<>();
+      for (Object scoresRaw : list) {
+        if (scoresRaw == null) continue;
+        Map<String, Double> scores  = STRING_DOUBLE_MAP.build(scoresRaw);
+        result.add(scores);
+      }
+
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map<String, Double>>";
+    }
+  };
+
+  public static final Builder<List<List<byte[]>>> BINARY_LIST_LIST = new Builder<List<List<byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<List<byte[]>> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(BINARY_LIST::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<List<String>>";
+    }
+  };
+
+
+  public static final Builder<List<Map<byte[], Double>>> VLINKS_WITH_SCORES_RESULT_BINARY = new Builder<List<Map<byte[], Double>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map<byte[], Double>> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+
+      List<Map<byte[], Double>> result = new ArrayList<>();
+      for (Object scoresRaw : list) {
+        if (scoresRaw == null) continue;
+        Map<byte[], Double> scores  = BINARY_DOUBLE_MAP.build(scoresRaw);
+        result.add(scores);
+      }
+
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map<byte[], Double>>";
     }
   };
 

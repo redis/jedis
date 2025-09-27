@@ -41,6 +41,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.MockedConstruction;
 import org.slf4j.Logger;
@@ -71,6 +72,7 @@ import redis.clients.jedis.scenario.FaultInjectionClient;
 import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
+@Tag("integration")
 public class RedisEntraIDIntegrationTests {
   private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
 

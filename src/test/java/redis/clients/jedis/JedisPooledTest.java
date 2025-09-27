@@ -16,10 +16,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
+@Tag("integration")
 public class JedisPooledTest {
 
   private static final EndpointConfig endpointStandalone7 = HostAndPorts.getRedisEndpoint(

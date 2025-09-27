@@ -11,6 +11,7 @@ import java.util.Map;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.BinaryJedisShardedPubSub;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Jedis;
@@ -19,6 +20,7 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
 
 @SinceRedisVersion(value = "7.0.0", message = "Sharded Pub/Sub")
+@Tag("integration")
 public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisCommandsTestBase {
 
   private void publishOne(final String channel, final String message) {

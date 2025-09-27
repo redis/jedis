@@ -17,9 +17,13 @@ ClusterPipeline
 ClusterPubSub
 ConnectionPool
 CoreCommands
+config
+Customizable
+CRDB
 Dockerfile
 EVAL
 EVALSHA
+EchoStrategy
 FTCreateParams
 FTSearchParams
 Failback
@@ -34,7 +38,9 @@ GeoUnit
 GraphCommands
 Grokzen's
 HostAndPort
+HostAndPortMapper
 HostnameVerifier
+hostnames
 INCR
 IOError
 Instrumentations
@@ -50,6 +56,7 @@ JedisPool
 JedisPooled
 JedisPubSub
 JedisShardInfo
+LagAwareStrategy
 ListPosition
 Ludovico
 Magnocavallo
@@ -68,6 +75,7 @@ POJO
 POJOs
 PoolConfig
 PubSub
+pluggable
 Queable
 README
 READONLY
@@ -83,6 +91,7 @@ RedisInstrumentor
 RedisJSON
 RedisTimeSeries
 Redislabs
+reusability
 SHA
 SSLParameters
 SSLSocketFactory
@@ -199,6 +208,7 @@ keyspace
 keysvalues
 kllayn
 kwarg
+Kubernetes
 lastName
 lastsave
 learningpath

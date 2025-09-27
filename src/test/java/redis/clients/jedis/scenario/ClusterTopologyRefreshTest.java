@@ -2,6 +2,7 @@ package redis.clients.jedis.scenario;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.*;
 
+@Tag("scenario")
 public class ClusterTopologyRefreshTest {
 
   private static final Logger log = LoggerFactory.getLogger(ClusterTopologyRefreshTest.class);

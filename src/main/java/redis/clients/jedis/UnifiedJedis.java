@@ -28,6 +28,9 @@ import redis.clients.jedis.executors.*;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.params.VAddParams;
+import redis.clients.jedis.params.VSimParams;
+import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.MultiClusterPipeline;
@@ -339,6 +342,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public String ping() {
     return checkAndBroadcastCommand(commandObjects.ping());
+  }
+
+  public String echo(String string) {
+    return executeCommand(commandObjects.echo(string));
   }
 
   public String flushDB() {
@@ -3202,6 +3209,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3239,6 +3256,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long xdel(String key, StreamEntryID... ids) {
     return executeCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(String key, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -3357,6 +3384,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3384,6 +3421,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long xdel(byte[] key, byte[]... ids) {
     return executeCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, byte[]... ids) {
+    return executeCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -5132,5 +5179,262 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public void setDefaultSearchDialect(int dialect) {
     this.commandObjects.setDefaultSearchDialect(dialect);
+  }
+
+  // Vector Set commands
+  @Override
+  public boolean vadd(String key, float[] vector, String element) {
+    return executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector) {
+    return executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimWithScores(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element) {
+    return executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
+  }
+
+  @Override
+  public long vdim(String key) {
+    return executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(String key) {
+    return executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(String key, String element) {
+    return executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(String key, String element) {
+    return executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(String key, String element) {
+    return executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<List<String>> vlinks(String key, String element) {
+    return executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public List<Map<String, Double>> vlinksWithScores(String key, String element) {
+    return executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public String vrandmember(String key) {
+    return executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<String> vrandmember(String key, int count) {
+    return executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public String vgetattr(String key, String element) {
+    return executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(String key, String element, String attributes) {
+    return executeCommand(commandObjects.vsetattr(key, element, attributes));
+  }
+
+  @Override
+  public VectorInfo vinfo(String key) {
+    return executeCommand(commandObjects.vinfo(key));
+  }
+
+  // Binary vector set commands
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element) {
+    return executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector) {
+    return executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
+  }
+
+  @Override
+  public long vdim(byte[] key) {
+    return executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(byte[] key) {
+    return executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<List<byte[]>> vlinks(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public List<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public byte[] vrandmember(byte[] key) {
+    return executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<byte[]> vrandmember(byte[] key, int count) {
+    return executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public byte[] vgetattr(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(byte[] key, byte[] element, byte[] attributes) {
+    return executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 }

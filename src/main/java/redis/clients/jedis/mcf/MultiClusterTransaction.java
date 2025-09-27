@@ -24,7 +24,7 @@ import redis.clients.jedis.util.KeyValue;
 public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
-  
+
   private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
   private final CircuitBreakerFailoverConnectionProvider failoverProvider;
@@ -47,7 +47,6 @@ public class MultiClusterTransaction extends TransactionBase {
   /**
    * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
    * be {@code doMulti=false}.
-   *
    * @param provider
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
@@ -66,12 +65,12 @@ public class MultiClusterTransaction extends TransactionBase {
   /**
    * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
    * be {@code doMulti=false}.
-   *
    * @param provider
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param commandObjects command objects
    */
-  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti, CommandObjects commandObjects) {
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti,
+      CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
@@ -169,7 +168,7 @@ public class MultiClusterTransaction extends TransactionBase {
       }
 
       List<Object> formatted = new ArrayList<>(unformatted.size() - extraCommandCount.get());
-      for (Object rawReply: unformatted) {
+      for (Object rawReply : unformatted) {
         try {
           Response<?> response = commands.poll().getValue();
           response.set(rawReply);

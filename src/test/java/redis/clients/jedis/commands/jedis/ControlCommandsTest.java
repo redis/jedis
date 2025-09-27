@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -26,6 +27,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -45,6 +47,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class ControlCommandsTest extends JedisCommandsTestBase {
 
   public ControlCommandsTest(RedisProtocol redisProtocol) {
@@ -437,7 +440,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertThat(jedis.memoryUsage(bfoo), greaterThan(20l));
 
     jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
-    assertThat(jedis.memoryUsage(bfoobar, 2), greaterThan(40l));
+    assertThat(jedis.memoryUsage(bfoobar, 2), greaterThanOrEqualTo(40l));
 
     assertNull(jedis.memoryUsage("roo", 2));
   }

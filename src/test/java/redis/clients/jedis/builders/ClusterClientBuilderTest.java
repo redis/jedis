@@ -102,7 +102,7 @@ class ClusterClientBuilderTest {
     verify(exec).executeCommand(cap.capture());
     List<String> args = argsToStrings(cap.getValue());
     // SET prefix:k v
-    org.hamcrest.MatcherAssert.assertThat(args.get(0), containsString("SET"));
+    assertThat(args.get(0), containsString("SET"));
     org.junit.jupiter.api.Assertions.assertEquals("prefix:k", args.get(1));
     org.junit.jupiter.api.Assertions.assertEquals("v", args.get(2));
   }

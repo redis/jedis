@@ -70,17 +70,10 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * <p>
    * This method is called by the generic build() method to instantiate the concrete client type.
    * Each builder implementation should create their specific client type (JedisPooled,
-   * JedisCluster, etc.) using the provided parameters.
-   * @param commandExecutor the command executor
-   * @param connectionProvider the connection provider
-   * @param commandObjects the command objects
-   * @param redisProtocol the Redis protocol
-   * @param cache the client-side cache (may be null)
+   * JedisCluster, etc.) using the parameters provided to the builder.
    * @return the configured Redis client instance
    */
-  protected abstract C createClient(CommandExecutor commandExecutor,
-      ConnectionProvider connectionProvider, CommandObjects commandObjects,
-      RedisProtocol redisProtocol, Cache cache);
+  protected abstract C createClient();
 
   /**
    * Validates the builder-specific configuration.
@@ -129,8 +122,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     this.applyCommandObjectsConfiguration(commandObjects);
 
     // Create and return the specific client instance
-    return createClient(this.commandExecutor, this.connectionProvider, this.commandObjects,
-      this.redisProtocol, this.cache);
+    return createClient();
   }
 
   /**
@@ -156,7 +148,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   public T cache(Cache cache) {
     this.cache = cache;
-    this.redisProtocol = RedisProtocol.RESP3;
     return self();
   }
 
@@ -170,7 +161,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   public T cacheConfig(CacheConfig cacheConfig) {
     this.cacheConfig = cacheConfig;
-    this.redisProtocol = RedisProtocol.RESP3;
     return self();
   }
 
@@ -202,7 +192,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
 
   /**
    * Sets the Redis protocol version to use.
-   * @param redisProtocol
+   * @param redisProtocol the Redis protocol version
    * @return this builder
    */
   public T redisProtocol(RedisProtocol redisProtocol) {
@@ -305,8 +295,10 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * @throws IllegalArgumentException if any common configuration is invalid
    */
   protected void validateCommonConfiguration() {
-    if (poolConfig == null) {
-      throw new IllegalArgumentException("Pool configuration cannot be null");
+    if (cache != null || cacheConfig != null) {
+      if (redisProtocol != RedisProtocol.RESP3) {
+        throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
+      }
     }
   }
 }

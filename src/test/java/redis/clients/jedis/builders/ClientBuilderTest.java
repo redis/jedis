@@ -2,7 +2,6 @@ package redis.clients.jedis.builders;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -82,21 +81,19 @@ class ClientBuilderTest {
   }
 
   @Test
-  void cacheEnablesRESP3() {
+  void cacheRequiresRESP3() {
     Cache cache = mock(Cache.class);
 
-    JedisPooled client = JedisPooled.builder().commandExecutor(exec).connectionProvider(provider)
-        .cache(cache).build();
+    assertThrows(IllegalArgumentException.class, () -> JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).cache(cache).build(),
+      "Cache requires RESP3");
 
-    client.ping();
-    verify(exec).broadcastCommand(cap.capture());
-    assertThat(argsToStrings(cap.getValue()).get(0), containsString("PING"));
   }
 
   @Test
   void standaloneValidateHostPortRequired() {
     assertThrows(IllegalArgumentException.class, () -> new JedisPooled.Builder() {
-    }.poolConfig(null).build(), "Pool configuration cannot be null");
+    }.hostAndPort(null).build(), "HostAndPort cannot be null");
   }
 
   @Test

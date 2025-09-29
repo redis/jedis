@@ -40,13 +40,21 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     supplier.withFallback(provider.getFallbackExceptionList(),
       e -> this.handleClusterFailover(commandObject, cluster));
 
-    return supplier.decorate().get();
+    try {
+      return supplier.decorate().get();
+    } catch (Exception e) {
+      if (isCircuitBreakerTrackedException(e, cluster)) {
+        evaluateThresholds(cluster);
+      }
+      throw e;
+    }
   }
 
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
   private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
+    evaluateThresholds(cluster);
     Connection connection;
     try {
       connection = cluster.getConnection();
@@ -58,22 +66,14 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
       return connection.executeCommand(commandObject);
     } catch (Exception e) {
       if (cluster.retryOnFailover() && !isActiveCluster(cluster)
-          && isCircuitBreakerTrackedException(e, cluster.getCircuitBreaker())) {
+          && isCircuitBreakerTrackedException(e, cluster)) {
         throw new ConnectionFailoverException(
             "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
-      }
-      if (isThresholdsExceeded(cluster)) {
-        throw new JedisFailoverThresholdsExceededException(
-            "Failover threshold exceeded for cluster: " + cluster.getCircuitBreaker().getName());
       }
       throw e;
     } finally {
       connection.close();
     }
-  }
-
-  private boolean isCircuitBreakerTrackedException(Exception e, CircuitBreaker cb) {
-    return cb.getCircuitBreakerConfig().getRecordExceptionPredicate().test(e);
   }
 
   private boolean isActiveCluster(Cluster cluster) {

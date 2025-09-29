@@ -107,14 +107,14 @@ public class AutomaticFailoverTest {
 
   @Test
   public void commandFailoverUnresolvableHost() {
-    int slidingWindowMinCalls = 2;
+    int slidingWindowMinFails = 2;
     int slidingWindowSize = 2;
 
     HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
             .retryWaitDuration(1).retryMaxAttempts(1)
-            .circuitBreakerSlidingWindowSize(slidingWindowSize);
+            .circuitBreakerSlidingWindowSize(slidingWindowSize).circuitBreakerMinNumOfFailures(slidingWindowMinFails);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
@@ -127,7 +127,7 @@ public class AutomaticFailoverTest {
     log.info("Starting calls to Redis");
     assertFalse(failoverReporter.failedOver);
 
-    for (int attempt = 0; attempt < slidingWindowMinCalls; attempt++) {
+    for (int attempt = 0; attempt < slidingWindowMinFails; attempt++) {
       Throwable thrown = assertThrows(JedisConnectionException.class,
         () -> jedis.hset(key, "f1", "v1"));
       assertThat(thrown.getCause(), instanceOf(UnknownHostException.class));
@@ -146,16 +146,17 @@ public class AutomaticFailoverTest {
 
   @Test
   public void commandFailover() {
-    int slidingWindowMinCalls = 6;
+    int slidingWindowMinFails = 6;
     int slidingWindowSize = 6;
     int retryMaxAttempts = 3;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
             .retryMaxAttempts(retryMaxAttempts) // Default
-                                 // is
-                                 // 3
-            .circuitBreakerSlidingWindowSize(slidingWindowSize);
+            // is
+            // 3
+            .circuitBreakerSlidingWindowSize(slidingWindowSize)
+            .circuitBreakerFailureRateThreshold(50).circuitBreakerMinNumOfFailures(slidingWindowMinFails);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
@@ -188,7 +189,6 @@ public class AutomaticFailoverTest {
 
   @Test
   public void pipelineFailover() {
-    int slidingWindowMinCalls = 10;
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
@@ -221,13 +221,11 @@ public class AutomaticFailoverTest {
 
   @Test
   public void failoverFromAuthError() {
-    int slidingWindowMinCalls = 10;
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
-          workingEndpoint.getHostAndPort()))
-              .circuitBreakerSlidingWindowSize(slidingWindowSize)
+          workingEndpoint.getHostAndPort())).circuitBreakerSlidingWindowSize(slidingWindowSize)
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();

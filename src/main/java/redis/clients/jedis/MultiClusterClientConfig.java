@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +11,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.ConnectionFailoverException;
 import redis.clients.jedis.mcf.EchoStrategy;
-import redis.clients.jedis.mcf.JedisFailoverThresholdsExceededException;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
@@ -132,20 +130,19 @@ public final class MultiClusterClientConfig {
   /** Default failure rate threshold percentage for circuit breaker activation. */
   private static final float CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT = 10.0f;
 
-  /** Default size of the sliding window for circuit breaker calculations. */
-  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 2;
-
   /** Minimum number of failures before circuit breaker is tripped. */
-  private static final int THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT = 1000;
+  private static final int CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT = 1000;
+
+  /** Default sliding window size for circuit breaker failure tracking. */
+  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 2;
 
   /** Default list of exceptions that are recorded as circuit breaker failures. */
   private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays
       .asList(JedisConnectionException.class);
 
   /** Default list of exceptions that trigger fallback to next available cluster. */
-  private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays.asList(
-    CallNotPermittedException.class, ConnectionFailoverException.class,
-    JedisFailoverThresholdsExceededException.class);
+  private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays
+      .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
   /** Default interval in milliseconds for checking if failed clusters have recovered. */
   private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 5000;
@@ -241,7 +238,19 @@ public final class MultiClusterClientConfig {
   private List<Class> retryIgnoreExceptionList;
 
   // ============ Circuit Breaker Configuration ============
-  // Based on Resilience4j Circuit Breaker: https://resilience4j.readme.io/docs/circuitbreaker
+
+  /**
+   * Minimum number of failures before circuit breaker is tripped.
+   * <p>
+   * When the number of failures exceeds this threshold, the circuit breaker will trip and prevent
+   * further requests from being sent to the cluster until it has recovered.
+   * </p>
+   * <p>
+   * <strong>Default:</strong> {@value #CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT}
+   * </p>
+   * @see #getCircuitBreakerMinNumOfFailures()
+   */
+  private int circuitBreakerMinNumOfFailures;
 
   /**
    * Failure rate threshold percentage that triggers circuit breaker transition to OPEN state.
@@ -335,19 +344,6 @@ public final class MultiClusterClientConfig {
    * @see #retryMaxAttempts
    */
   private boolean retryOnFailover;
-
-  /**
-   * Minimum number of failures before circuit breaker is tripped.
-   * <p>
-   * When the number of failures exceeds this threshold, the circuit breaker will trip and prevent
-   * further requests from being sent to the cluster until it has recovered.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT}
-   * </p>
-   * @see #getThresholdMinNumOfFailures()
-   */
-  private int thresholdMinNumOfFailures;
 
   /**
    * Whether automatic failback to higher-priority clusters is supported.
@@ -515,6 +511,15 @@ public final class MultiClusterClientConfig {
   }
 
   /**
+   * Returns the minimum number of failures before circuit breaker is tripped.
+   * @return minimum number of failures before circuit breaker is tripped
+   * @see #circuitBreakerMinNumOfFailures
+   */
+  public int getCircuitBreakerMinNumOfFailures() {
+    return circuitBreakerMinNumOfFailures;
+  }
+
+  /**
    * Returns the list of exception classes that trigger retry attempts.
    * @return list of exception classes that are retried, never null
    * @see #retryIncludedExceptionList
@@ -566,15 +571,6 @@ public final class MultiClusterClientConfig {
    */
   public boolean isRetryOnFailover() {
     return retryOnFailover;
-  }
-
-  /**
-   * Returns the minimum number of failures before circuit breaker is tripped.
-   * @return minimum number of failures before circuit breaker is tripped
-   * @see #thresholdMinNumOfFailures
-   */
-  public int getThresholdMinNumOfFailures() {
-    return thresholdMinNumOfFailures;
   }
 
   /**
@@ -1011,7 +1007,7 @@ public final class MultiClusterClientConfig {
     private boolean retryOnFailover = false;
 
     /** Minimum number of failures before circuit breaker is tripped. */
-    private int thresholdMinNumOfFailures = THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
+    private int circuitBreakerMinNumOfFailures = CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
 
     /** Whether automatic failback to higher-priority clusters is supported. */
     private boolean isFailbackSupported = true;
@@ -1179,7 +1175,7 @@ public final class MultiClusterClientConfig {
      * @return this builder instance for method chaining
      */
     public Builder circuitBreakerFailureRateThreshold(float circuitBreakerFailureRateThreshold) {
-      checkThresholds(thresholdMinNumOfFailures, circuitBreakerFailureRateThreshold);
+      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
       this.circuitBreakerFailureRateThreshold = circuitBreakerFailureRateThreshold;
       return this;
     }
@@ -1203,19 +1199,20 @@ public final class MultiClusterClientConfig {
      * <p>
      * <strong>Default:</strong> 1000
      * </p>
-     * @param thresholdMinNumOfFailures minimum number of failures before circuit breaker is tripped
+     * @param circuitBreakerMinNumOfFailures minimum number of failures before circuit breaker is
+     *          tripped
      * @return this builder instance for method chaining
      */
-    public Builder thresholdMinNumOfFailures(int thresholdMinNumOfFailures) {
-      checkThresholds(thresholdMinNumOfFailures, circuitBreakerFailureRateThreshold);
-      this.thresholdMinNumOfFailures = thresholdMinNumOfFailures;
+    public Builder circuitBreakerMinNumOfFailures(int circuitBreakerMinNumOfFailures) {
+      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
+      this.circuitBreakerMinNumOfFailures = circuitBreakerMinNumOfFailures;
       return this;
     }
 
     private void checkThresholds(int failures, float rate) {
       if (failures == 0 && rate == 0) {
         throw new JedisValidationException(
-            "Both thresholdMinNumOfFailures and circuitBreakerFailureRateThreshold can not be 0!");
+            "Both circuitBreakerMinNumOfFailures and circuitBreakerFailureRateThreshold can not be 0 at the same time!");
       }
     }
 
@@ -1458,7 +1455,7 @@ public final class MultiClusterClientConfig {
       config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
 
       // Copy circuit breaker configuration
-      config.thresholdMinNumOfFailures = this.thresholdMinNumOfFailures;
+      config.circuitBreakerMinNumOfFailures = this.circuitBreakerMinNumOfFailures;
       config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
       config.circuitBreakerSlidingWindowSize = this.circuitBreakerSlidingWindowSize;
       config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;

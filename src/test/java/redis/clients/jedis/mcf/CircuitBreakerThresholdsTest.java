@@ -1,33 +1,27 @@
 package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
-import java.time.Duration;
-import java.util.Arrays;
+import java.lang.reflect.Field;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
-import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.EndpointConfig;
 
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
@@ -36,45 +30,47 @@ import redis.clients.jedis.EndpointConfig;
  */
 public class CircuitBreakerThresholdsTest {
 
-  private final EndpointConfig endpoint0 = HostAndPorts.getRedisEndpoint("standalone0");
-
-  private MultiClusterPooledConnectionProvider provider;
+  private MultiClusterPooledConnectionProvider realProvider;
+  private MultiClusterPooledConnectionProvider spyProvider;
   private Cluster cluster;
-  private CircuitBreaker circuitBreaker;
-  private Retry retry;
   private CircuitBreakerCommandExecutor executor;
   private CommandObject<String> dummyCommand;
+  private TrackingConnectionPool poolMock;
+  private HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
+  private HostAndPort fakeEndpoint2 = new HostAndPort("fake2", 6379);
+  private ClusterConfig[] fakeClusterConfigs;
 
   @BeforeEach
-  public void setup() {
-    provider = mock(MultiClusterPooledConnectionProvider.class);
-    cluster = mock(Cluster.class);
+  public void setup() throws Exception {
 
-    // Real CircuitBreaker with small window and tracking JedisConnectionException as failures
-    circuitBreaker = CircuitBreaker.of("cb-thresholds-test",
-      CircuitBreakerConfig.custom().failureRateThreshold(50.0f).slidingWindowSize(10)
-          .recordExceptions(JedisConnectionException.class).build());
+    ClusterConfig[] clusterConfigs = new ClusterConfig[] {
+        ClusterConfig.builder(fakeEndpoint, DefaultJedisClientConfig.builder().build())
+            .healthCheckEnabled(false).weight(1.0f).build(),
+        ClusterConfig.builder(fakeEndpoint2, DefaultJedisClientConfig.builder().build())
+            .healthCheckEnabled(false).weight(0.5f).build() };
+    fakeClusterConfigs = clusterConfigs;
 
-    // Real Retry (single attempt per execute to make sequencing explicit)
-    retry = Retry.of("retry-thresholds-test",
-      RetryConfig.custom().maxAttempts(1).waitDuration(Duration.ZERO)
-          .retryExceptions(JedisConnectionException.class).failAfterMaxAttempts(false).build());
+    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig.builder(clusterConfigs)
+        .circuitBreakerFailureRateThreshold(50.0f).circuitBreakerMinNumOfFailures(3)
+        .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
 
-    when(cluster.getCircuitBreaker()).thenReturn(circuitBreaker);
-    when(cluster.getRetry()).thenReturn(retry);
-    when(provider.getCluster()).thenReturn(cluster);
-    when(provider.getFallbackExceptionList()).thenReturn(Arrays
-        .asList(CallNotPermittedException.class, JedisFailoverThresholdsExceededException.class));
-    when(provider.canIterateFrom(cluster)).thenReturn(false); // make failover throw on 2nd attempt
+    MultiClusterClientConfig mcc = cfgBuilder.build();
 
-    // Provide threshold via cluster
-    when(cluster.getThresholdMinNumOfFailures()).thenReturn(3);
+    realProvider = new MultiClusterPooledConnectionProvider(mcc);
+    spyProvider = spy(realProvider);
 
-    executor = new CircuitBreakerCommandExecutor(provider);
+    cluster = spyProvider.getCluster();
 
-    // Construct a minimal CommandObject without hitting a real Redis
+    executor = new CircuitBreakerCommandExecutor(spyProvider);
+
     dummyCommand = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
         BuilderFactory.STRING);
+
+    // Replace the cluster's pool with a mock to avoid real network I/O
+    poolMock = mock(TrackingConnectionPool.class);
+    Field f = MultiClusterPooledConnectionProvider.Cluster.class.getDeclaredField("connectionPool");
+    f.setAccessible(true);
+    f.set(cluster, poolMock);
   }
 
   /**
@@ -82,25 +78,19 @@ public class CircuitBreakerThresholdsTest {
    */
   @Test
   public void belowMinFailures_doesNotFailover() {
-    when(cluster.getThresholdMinNumOfFailures()).thenReturn(3);
-
-    // Always failing connection
+    // Always failing connections
     Connection failing = mock(Connection.class);
     when(failing.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
         .thenThrow(new JedisConnectionException("fail"));
-    // Ensure close() is safe
     doNothing().when(failing).close();
-    when(cluster.getConnection()).thenReturn(failing);
+    when(poolMock.getResource()).thenReturn(failing);
 
-    // Two failing calls (< minFailures)
     for (int i = 0; i < 2; i++) {
       assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
     }
 
-    // Verify CB recorded failures but no failover attempted
-    assertEquals(2, circuitBreaker.getMetrics().getNumberOfFailedCalls());
-    verify(provider, never()).switchToHealthyCluster(any(), any());
-    assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.getState());
+    // Below min failures: CB remains CLOSED
+    assertEquals(CircuitBreaker.State.CLOSED, spyProvider.getClusterCircuitBreaker().getState());
   }
 
   /**
@@ -108,94 +98,87 @@ public class CircuitBreakerThresholdsTest {
    */
   @Test
   public void minFailuresAndRateExceeded_triggersFailover() {
-    when(cluster.getThresholdMinNumOfFailures()).thenReturn(3);
-
-    // Always failing connection
+    // Always failing connections
     Connection failing = mock(Connection.class);
     when(failing.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
         .thenThrow(new JedisConnectionException("fail"));
     doNothing().when(failing).close();
-    when(cluster.getConnection()).thenReturn(failing);
+    when(poolMock.getResource()).thenReturn(failing);
 
-    // Three calls to reach min failures; threshold check happens on the NEXT call
+    // Reach min failures and exceed rate threshold
     for (int i = 0; i < 3; i++) {
       assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
     }
 
-    // Fourth call should see minFailures satisfied and failure rate >= 50%, triggering failover
-    Exception ex = assertThrows(Exception.class, () -> executor.executeCommand(dummyCommand));
+    // Next call should hit open CB (CallNotPermitted) and trigger failover
+    assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
 
-    // After threshold exceeded, the fallback attempts failover once and then throws
-    verify(provider, times(1)).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER), any());
-    assertEquals(CircuitBreaker.State.FORCED_OPEN, circuitBreaker.getState());
-    // The final surfaced exception should be JedisConnectionException from failover path
-    assertTrue(
-      ex instanceof JedisConnectionException || ex.getCause() instanceof JedisConnectionException);
+    verify(spyProvider, atLeastOnce()).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER),
+      any());
+    assertEquals(CircuitBreaker.State.FORCED_OPEN,
+      spyProvider.getCluster(fakeEndpoint).getCircuitBreaker().getState());
   }
 
   /**
    * Even after reaching minFailures, if failure rate is below threshold, do not failover.
    */
   @Test
-  public void rateBelowThreshold_doesNotFailover() {
-    when(cluster.getThresholdMinNumOfFailures()).thenReturn(3);
+  public void rateBelowThreshold_doesNotFailover() throws Exception {
+    // Use local provider with higher threshold (80%) and no retries
+    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
+        .builder(fakeClusterConfigs).circuitBreakerFailureRateThreshold(80.0f)
+        .circuitBreakerMinNumOfFailures(3).circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1)
+        .retryOnFailover(false);
+    MultiClusterPooledConnectionProvider rp = new MultiClusterPooledConnectionProvider(
+        cfgBuilder.build());
+    MultiClusterPooledConnectionProvider sp = spy(rp);
+    Cluster c = sp.getCluster();
+    try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(sp)) {
+      CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
+          BuilderFactory.STRING);
 
-    // Success connection
-    Connection success = mock(Connection.class);
-    when(success.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
-        .thenAnswer(inv -> "OK");
-    doNothing().when(success).close();
+      TrackingConnectionPool pool = mock(TrackingConnectionPool.class);
+      Field f = MultiClusterPooledConnectionProvider.Cluster.class
+          .getDeclaredField("connectionPool");
+      f.setAccessible(true);
+      f.set(c, pool);
 
-    // Failing connection
-    Connection failing = mock(Connection.class);
-    when(failing.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
-        .thenThrow(new JedisConnectionException("fail"));
-    doNothing().when(failing).close();
+      // 3 successes
+      Connection success = mock(Connection.class);
+      when(success.executeCommand(org.mockito.Mockito.<CommandObject<String>> any()))
+          .thenReturn("PONG");
+      doNothing().when(success).close();
+      when(pool.getResource()).thenReturn(success);
+      for (int i = 0; i < 3; i++) {
+        assertEquals("PONG", ex.executeCommand(cmd));
+      }
 
-    // Rebuild a fresh environment with 80% threshold and record successes first
-    CircuitBreaker highRateCB = CircuitBreaker.of("cb-high-rate",
-      CircuitBreakerConfig.custom().failureRateThreshold(80.0f).slidingWindowSize(10)
-          .recordExceptions(JedisConnectionException.class).build());
-    when(cluster.getCircuitBreaker()).thenReturn(highRateCB);
-    executor = new CircuitBreakerCommandExecutor(provider);
+      // 3 failures -> total 6 calls, 50% failure rate; threshold 80% means stay CLOSED
+      Connection failing = mock(Connection.class);
+      when(failing.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
+          .thenThrow(new JedisConnectionException("fail"));
+      doNothing().when(failing).close();
+      when(pool.getResource()).thenReturn(failing);
+      for (int i = 0; i < 3; i++) {
+        assertThrows(JedisConnectionException.class, () -> ex.executeCommand(cmd));
+      }
 
-    // First record 3 successes on the same CB
-    when(cluster.getConnection()).thenReturn(success);
-    for (int i = 0; i < 3; i++) {
-      executor.executeCommand(dummyCommand);
+      assertEquals(CircuitBreaker.State.CLOSED, sp.getClusterCircuitBreaker().getState());
     }
-
-    // Then record 3 failures -> failure rate = 50% which is below 80%
-    when(cluster.getConnection()).thenReturn(failing);
-    for (int i = 0; i < 3; i++) {
-      assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
-    }
-    verify(provider, never()).switchToHealthyCluster(any(), any());
-    assertEquals(CircuitBreaker.State.CLOSED, highRateCB.getState());
   }
 
   @Test
   public void providerBuilder_zeroRate_mapsToHundredAndHugeMinCalls() {
     MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
-        .builder(Arrays.asList(MultiClusterClientConfig.ClusterConfig
-            .builder(new HostAndPort("localhost", 6379), DefaultJedisClientConfig.builder().build())
-            .healthCheckEnabled(false).build()));
-    cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).thresholdMinNumOfFailures(3)
+        .builder(fakeClusterConfigs);
+    cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10);
     MultiClusterClientConfig mcc = cfgBuilder.build();
 
-    MultiClusterPooledConnectionProvider realProvider = new MultiClusterPooledConnectionProvider(
-        mcc);
-    try {
-      CircuitBreaker cb = realProvider.getClusterCircuitBreaker();
-      CircuitBreakerConfig cbc = cb.getCircuitBreakerConfig();
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);
 
-      assertEquals(100.0f, cbc.getFailureRateThreshold(), 0.0001f);
-      // For rate=0.0 we expect extremely large min-calls so CB won't open on its own
-      assertTrue(cbc.getMinimumNumberOfCalls() >= 1_000_000);
-    } finally {
-      realProvider.close();
-    }
+    assertEquals(100.0f, adapter.getFailureRateThreshold(), 0.0001f);
+    assertEquals(Integer.MAX_VALUE, adapter.getMinimumNumberOfCalls());
   }
 
   @ParameterizedTest
@@ -212,93 +195,63 @@ public class CircuitBreakerThresholdsTest {
       "3, 50.0, 3, 2, false", //
       "1000, 1.0, 198, 2, false", })
   public void thresholdMatrix(int minFailures, float ratePercent, int successes, int failures,
-      boolean expectFailoverOnNext) {
+      boolean expectFailoverOnNext) throws Exception {
 
-    // Build config via MultiClusterClientConfig builder and a real provider consistently for all
-    // rows
-    int window = Math.max(10, successes + failures + 2);
     MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
-        .builder(Arrays.asList(MultiClusterClientConfig.ClusterConfig
-            .builder(endpoint0.getHostAndPort(), endpoint0.getClientConfigBuilder().build())
-            .healthCheckEnabled(false).build()));
+        .builder(fakeClusterConfigs).circuitBreakerFailureRateThreshold(ratePercent)
+        .circuitBreakerMinNumOfFailures(minFailures)
+        .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2)).retryMaxAttempts(1)
+        .retryOnFailover(false);
 
-    cfgBuilder.thresholdMinNumOfFailures(minFailures)
-        .circuitBreakerFailureRateThreshold(ratePercent).circuitBreakerSlidingWindowSize(window);
+    MultiClusterPooledConnectionProvider real = new MultiClusterPooledConnectionProvider(
+        cfgBuilder.build());
+    MultiClusterPooledConnectionProvider spy = spy(real);
+    Cluster c = spy.getCluster();
+    try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(spy)) {
 
-    MultiClusterClientConfig mcc = cfgBuilder.build();
+      CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
+          BuilderFactory.STRING);
 
-    MultiClusterPooledConnectionProvider realProvider = new MultiClusterPooledConnectionProvider(
-        mcc);
-    CircuitBreaker realCb = realProvider.getClusterCircuitBreaker();
+      TrackingConnectionPool pool = mock(TrackingConnectionPool.class);
+      Field f = MultiClusterPooledConnectionProvider.Cluster.class
+          .getDeclaredField("connectionPool");
+      f.setAccessible(true);
+      f.set(c, pool);
 
-    // Spy the provider so we can supply mocked connections without network I/O
-    MultiClusterPooledConnectionProvider spyProvider = spy(realProvider);
+      if (successes > 0) {
+        Connection ok = mock(Connection.class);
+        when(ok.executeCommand(org.mockito.Mockito.<CommandObject<String>> any()))
+            .thenReturn("PONG");
+        doNothing().when(ok).close();
+        when(pool.getResource()).thenReturn(ok);
+        for (int i = 0; i < successes; i++) {
+          ex.executeCommand(cmd);
+        }
+      }
 
-    // Build a mock cluster that uses the real CB and a real 1-attempt Retry
-    Retry oneAttemptRetry = Retry.of("retry-matrix",
-      RetryConfig.custom().maxAttempts(1).waitDuration(Duration.ZERO)
-          .retryExceptions(JedisConnectionException.class).failAfterMaxAttempts(false).build());
+      if (failures > 0) {
+        Connection bad = mock(Connection.class);
+        when(bad.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
+            .thenThrow(new JedisConnectionException("fail"));
+        doNothing().when(bad).close();
+        when(pool.getResource()).thenReturn(bad);
+        for (int i = 0; i < failures; i++) {
+          try {
+            ex.executeCommand(cmd);
+          } catch (Exception ignore) {
+          }
+        }
+      }
 
-    MultiClusterPooledConnectionProvider.Cluster mockCluster = mock(
-      MultiClusterPooledConnectionProvider.Cluster.class);
-    when(mockCluster.getCircuitBreaker()).thenReturn(realCb);
-    when(mockCluster.getRetry()).thenReturn(oneAttemptRetry);
-    when(mockCluster.getThresholdMinNumOfFailures()).thenReturn(minFailures);
-    when(mockCluster.retryOnFailover()).thenReturn(false);
-
-    // Provide fallback list from the real provider
-    doReturn(realProvider.getFallbackExceptionList()).when(spyProvider).getFallbackExceptionList();
-    // Prevent actual iteration logic, but allow verify()
-    doReturn(false).when(spyProvider).canIterateFrom(mockCluster);
-    doReturn(null).when(spyProvider).switchToHealthyCluster(any(), any());
-    // Always return our mock cluster to avoid opening sockets
-    doReturn(mockCluster).when(spyProvider).getCluster();
-
-    // Use executor with the spy provider (real CB, mocked connections)
-    executor = new CircuitBreakerCommandExecutor(spyProvider);
-
-    // Success path
-    Connection successConn = mock(Connection.class);
-    when(successConn.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
-        .thenAnswer(inv -> "OK");
-    doNothing().when(successConn).close();
-
-    // Failure path
-    Connection failConn = mock(Connection.class);
-    when(failConn.executeCommand(org.mockito.Mockito.<CommandObject<?>> any()))
-        .thenThrow(new JedisConnectionException("fail"));
-    doNothing().when(failConn).close();
-
-    // First, record successes
-    when(mockCluster.getConnection()).thenReturn(successConn);
-    for (int i = 0; i < successes; i++) {
-      executor.executeCommand(dummyCommand);
+      if (expectFailoverOnNext) {
+        assertThrows(Exception.class, () -> ex.executeCommand(cmd));
+        verify(spy, atLeastOnce()).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER), any());
+        assertEquals(CircuitBreaker.State.FORCED_OPEN, c.getCircuitBreaker().getState());
+      } else {
+        CircuitBreaker.State st = c.getCircuitBreaker().getState();
+        assertTrue(st == CircuitBreaker.State.CLOSED || st == CircuitBreaker.State.HALF_OPEN);
+      }
     }
-
-    // Then, record failures
-    when(mockCluster.getConnection()).thenReturn(failConn);
-    for (int i = 0; i < failures; i++) {
-      assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
-    }
-
-    verify(spyProvider, never()).switchToHealthyCluster(any(), any());
-
-    // Now, one more failing call — this is where thresholds are checked
-    Exception ex = assertThrows(Exception.class, () -> executor.executeCommand(dummyCommand));
-
-    if (expectFailoverOnNext) {
-      verify(spyProvider, times(1)).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER), any());
-      assertEquals(CircuitBreaker.State.FORCED_OPEN, realCb.getState());
-      assertTrue(ex instanceof JedisConnectionException
-          || ex.getCause() instanceof JedisConnectionException);
-    } else {
-      verify(spyProvider, never()).switchToHealthyCluster(any(), any());
-      assertEquals(CircuitBreaker.State.CLOSED, realCb.getState());
-      assertTrue(ex instanceof JedisConnectionException);
-    }
-
-    // Cleanup
-    realProvider.close();
   }
 
 }

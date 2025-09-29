@@ -115,7 +115,8 @@ public class MultiClusterPooledConnectionProviderTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
-    builder.circuitBreakerSlidingWindowSize(1);
+    builder.circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
+        .circuitBreakerFailureRateThreshold(0);
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 

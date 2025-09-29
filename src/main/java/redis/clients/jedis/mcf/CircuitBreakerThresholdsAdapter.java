@@ -32,7 +32,7 @@ public class CircuitBreakerThresholdsAdapter {
 
     // IMPORTANT: minimumNumberOfCalls is calculated based on the configured thresholds.
     minimumNumberOfCalls = calculateMinTotalCalls(
-      multiClusterClientConfig.getThresholdMinNumOfFailures(),
+      multiClusterClientConfig.getCircuitBreakerMinNumOfFailures(),
       multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
 
     slidingWindowSize = multiClusterClientConfig.getCircuitBreakerSlidingWindowSize();

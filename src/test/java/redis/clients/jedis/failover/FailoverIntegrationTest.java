@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -182,8 +183,11 @@ public class FailoverIntegrationTest {
   private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(
       JedisClientConfig clientConfig, EndpointConfig... endpoints) {
 
-    return Arrays.stream(endpoints).map(
-      e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig).build())
+    int weight = endpoints.length;
+    AtomicInteger weightCounter = new AtomicInteger(weight);
+    return Arrays.stream(endpoints)
+        .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig)
+            .weight(1 / weightCounter.getAndIncrement()).healthCheckEnabled(false).build())
         .collect(Collectors.toList());
   }
 
@@ -263,10 +267,8 @@ public class FailoverIntegrationTest {
               .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
               .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
           endpoint1, endpoint2)).retryMaxAttempts(2).retryWaitDuration(1)
-              .circuitBreakerSlidingWindowSize(3).circuitBreakerFailureRateThreshold(50) // 50%
-                                                                                         // failure
-                                                                                         // rate
-                                                                                         // threshold
+              .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
+              .circuitBreakerFailureRateThreshold(50f) // %50 failure rate
               .build();
 
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
@@ -425,8 +427,8 @@ public class FailoverIntegrationTest {
 
     MultiClusterClientConfig failoverConfig = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
-            .retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
-            .circuitBreakerFailureRateThreshold(100).build();
+            .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
+            .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f).build();
 
     return new MultiClusterPooledConnectionProvider(failoverConfig);
   }
@@ -443,8 +445,8 @@ public class FailoverIntegrationTest {
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
-            .retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
-            .circuitBreakerFailureRateThreshold(100);
+            .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
+            .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f);
 
     if (configCustomizer != null) {
       builder = configCustomizer.apply(builder);

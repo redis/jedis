@@ -31,24 +31,23 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
     supplier.withFallback(provider.getFallbackExceptionList(),
       e -> this.handleClusterFailover(cluster));
 
-    return supplier.decorate().get();
+    try {
+      return supplier.decorate().get();
+    } catch (Exception e) {
+      if (isCircuitBreakerTrackedException(e, cluster)) {
+        evaluateThresholds(cluster);
+      }
+      throw e;
+    }
   }
 
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
   private Connection handleGetConnection(Cluster cluster) {
-    try {
-      Connection connection = cluster.getConnection();
-      connection.ping();
-      return connection;
-    } catch (Exception e) {
-      if (isThresholdsExceeded(cluster)) {
-        throw new JedisFailoverThresholdsExceededException(
-            "Failover threshold exceeded for cluster: " + cluster.getCircuitBreaker().getName());
-      }
-      throw e;
-    }
+    Connection connection = cluster.getConnection();
+    connection.ping();
+    return connection;
   }
 
   /**

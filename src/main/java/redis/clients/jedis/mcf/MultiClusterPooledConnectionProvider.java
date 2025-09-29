@@ -794,8 +794,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       return multiClusterClientConfig.isRetryOnFailover();
     }
 
-    public int getThresholdMinNumOfFailures() {
-      return multiClusterClientConfig.getThresholdMinNumOfFailures();
+    public int getCircuitBreakerMinNumOfFailures() {
+      return multiClusterClientConfig.getCircuitBreakerMinNumOfFailures();
+    }
+
+    public float getCircuitBreakerFailureRateThreshold() {
+      return multiClusterClientConfig.getCircuitBreakerFailureRateThreshold();
     }
 
     public boolean isDisabled() {

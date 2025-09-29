@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,7 +24,6 @@ public class CircuitBreakerFailoverBaseTests {
   private MultiClusterPooledConnectionProvider provider;
   private Cluster cluster;
   private CircuitBreaker circuitBreaker;
-  private CircuitBreakerConfig cbConfig;
   private CircuitBreaker.Metrics metrics;
   private TestableCBBase base;
 
@@ -50,11 +48,9 @@ public class CircuitBreakerFailoverBaseTests {
     cluster = mock(Cluster.class);
 
     circuitBreaker = mock(CircuitBreaker.class);
-    cbConfig = mock(CircuitBreakerConfig.class);
     metrics = mock(CircuitBreaker.Metrics.class);
 
     when(cluster.getCircuitBreaker()).thenReturn(circuitBreaker);
-    when(circuitBreaker.getCircuitBreakerConfig()).thenReturn(cbConfig);
     when(circuitBreaker.getMetrics()).thenReturn(metrics);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
@@ -69,7 +65,7 @@ public class CircuitBreakerFailoverBaseTests {
     when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
     when(metrics.getNumberOfFailedCalls()).thenReturn(2);
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(0);
-    when(cbConfig.getFailureRateThreshold()).thenReturn(50.0f);
+    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(50.0f);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
     TestableCBBase.eval(cluster);
@@ -86,7 +82,7 @@ public class CircuitBreakerFailoverBaseTests {
     when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
     when(metrics.getNumberOfFailedCalls()).thenReturn(3);
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(0);
-    when(cbConfig.getFailureRateThreshold()).thenReturn(50.0f);
+    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(50.0f);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
     when(provider.getCluster()).thenReturn(cluster);
 
@@ -108,7 +104,7 @@ public class CircuitBreakerFailoverBaseTests {
     when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(3);
     when(metrics.getNumberOfFailedCalls()).thenReturn(3);
-    when(cbConfig.getFailureRateThreshold()).thenReturn(80.0f);
+    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(80.0f);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
     TestableCBBase.eval(cluster);
@@ -152,7 +148,7 @@ public class CircuitBreakerFailoverBaseTests {
     when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(minFailures);
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(successes);
     when(metrics.getNumberOfFailedCalls()).thenReturn(failures);
-    when(cbConfig.getFailureRateThreshold()).thenReturn(ratePercent);
+    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(ratePercent);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
     TestableCBBase.eval(cluster);

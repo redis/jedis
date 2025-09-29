@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
@@ -39,6 +40,7 @@ import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStream
  */
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
 
   protected static final byte[] STREAM_KEY_1 = "{binary-stream}-1".getBytes();

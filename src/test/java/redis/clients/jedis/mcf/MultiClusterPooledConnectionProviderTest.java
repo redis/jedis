@@ -5,10 +5,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowT
 
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -30,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @see MultiClusterPooledConnectionProvider
  */
+@Tag("integration")
 public class MultiClusterPooledConnectionProviderTest {
 
   private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");

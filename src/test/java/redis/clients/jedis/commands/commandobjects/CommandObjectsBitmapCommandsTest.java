@@ -8,6 +8,7 @@ import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
@@ -16,6 +17,7 @@ import redis.clients.jedis.params.BitPosParams;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=bitmap">Bitmap</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsBitmapCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsBitmapCommandsTest(RedisProtocol protocol) {

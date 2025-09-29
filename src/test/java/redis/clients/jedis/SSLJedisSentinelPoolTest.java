@@ -10,9 +10,11 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.TlsUtil;
 
+@Tag("integration")
 public class SSLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";

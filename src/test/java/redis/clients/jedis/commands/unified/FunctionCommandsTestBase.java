@@ -4,6 +4,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.FlushMode;
@@ -27,6 +28,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Tag("integration")
 public abstract class FunctionCommandsTestBase extends UnifiedJedisCommandsTestBase {
   final String libraryName = "mylib";
   final String TEST_LUA_SCRIPT_TMPL = "#!lua name=%s\n"

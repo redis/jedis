@@ -441,9 +441,9 @@ public class JedisPooled extends UnifiedJedis {
   static public class Builder extends StandaloneClientBuilder<JedisPooled> {
 
     @Override
-    protected JedisPooled createClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-            CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-      return new JedisPooled(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    protected JedisPooled createClient() {
+      return new JedisPooled(commandExecutor, connectionProvider, commandObjects, redisProtocol,
+          cache);
     }
   }
 

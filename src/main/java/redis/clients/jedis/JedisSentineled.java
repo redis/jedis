@@ -65,9 +65,9 @@ public class JedisSentineled extends UnifiedJedis {
   static public class Builder extends SentinelClientBuilder<JedisSentineled> {
 
     @Override
-    protected JedisSentineled createClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-            CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-      return new JedisSentineled(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    protected JedisSentineled createClient() {
+      return new JedisSentineled(commandExecutor, connectionProvider, commandObjects, redisProtocol,
+          cache);
     }
   }
 

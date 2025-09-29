@@ -350,9 +350,9 @@ public class JedisCluster extends UnifiedJedis {
   static public class Builder extends ClusterClientBuilder<JedisCluster> {
 
     @Override
-    protected JedisCluster createClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-            CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    protected JedisCluster createClient() {
+      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, redisProtocol,
+          cache);
     }
   }
 

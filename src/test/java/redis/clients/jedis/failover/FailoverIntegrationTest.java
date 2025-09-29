@@ -187,7 +187,7 @@ public class FailoverIntegrationTest {
     AtomicInteger weightCounter = new AtomicInteger(weight);
     return Arrays.stream(endpoints)
         .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig)
-            .weight(1 / weightCounter.getAndIncrement()).healthCheckEnabled(false).build())
+            .weight(1.0f / weightCounter.getAndIncrement()).healthCheckEnabled(false).build())
         .collect(Collectors.toList());
   }
 

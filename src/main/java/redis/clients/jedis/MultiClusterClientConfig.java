@@ -509,7 +509,6 @@ public final class MultiClusterClientConfig {
    * Returns the size of the sliding window used for circuit breaker calculations.
    * @return sliding window size (calls or seconds depending on window type)
    * @see #circuitBreakerSlidingWindowSize
-   * @see #getCircuitBreakerSlidingWindowType()
    */
   public int getCircuitBreakerSlidingWindowSize() {
     return circuitBreakerSlidingWindowSize;

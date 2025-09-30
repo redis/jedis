@@ -53,7 +53,7 @@ public interface HealthCheckStrategy extends Closeable {
     private static final int TIMEOUT_DEFAULT = 1000;
     private static final int NUM_PROBES_DEFAULT = 3;
     private static final int DELAY_IN_BETWEEN_PROBES_DEFAULT = 500;
-    
+
     protected final int interval;
     protected final int timeout;
     protected final int numProbes;

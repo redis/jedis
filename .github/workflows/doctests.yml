@@ -12,8 +12,8 @@ jobs:
   doctests:
     runs-on: ubuntu-latest
     services:
-      redis-stack:
-        image: redis/redis-stack-server:latest
+      redis:
+        image: redis:latest
         options: >-
           --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
@@ -33,6 +33,9 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+      - name: Maven offline
+        run: |
+          mvn -q dependency:go-offline
       - name: Run doctests
         run: |
-          mvn -Pdoctests test
+          mvn -Pdoctests clean compile test

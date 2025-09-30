@@ -29,6 +29,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -46,6 +47,7 @@ import redis.clients.jedis.util.KeyValue;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   private static final long TIME_SKEW = Duration.ofMillis(5).toMillis();

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,7 @@ import redis.clients.jedis.JedisPooled;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@Tag("integration")
 public class RedisEntraIDManagedIdentityIntegrationTests {
   private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
 

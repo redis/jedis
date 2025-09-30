@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
@@ -43,6 +44,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.JedisByteHashMap;
 
+@Tag("integration")
 public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

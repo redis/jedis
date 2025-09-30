@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("failover")
+@Tag("integration")
 public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
@@ -114,7 +115,8 @@ public class AutomaticFailoverTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
             .retryWaitDuration(1).retryMaxAttempts(1)
-            .circuitBreakerSlidingWindowSize(slidingWindowSize).circuitBreakerMinNumOfFailures(slidingWindowMinFails);
+            .circuitBreakerSlidingWindowSize(slidingWindowSize)
+            .circuitBreakerMinNumOfFailures(slidingWindowMinFails);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
@@ -155,8 +157,9 @@ public class AutomaticFailoverTest {
             .retryMaxAttempts(retryMaxAttempts) // Default
             // is
             // 3
-            .circuitBreakerSlidingWindowSize(slidingWindowSize)
-            .circuitBreakerFailureRateThreshold(50).circuitBreakerMinNumOfFailures(slidingWindowMinFails);
+            .circuitBreakerFailureRateThreshold(50)
+            .circuitBreakerMinNumOfFailures(slidingWindowMinFails)
+            .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(

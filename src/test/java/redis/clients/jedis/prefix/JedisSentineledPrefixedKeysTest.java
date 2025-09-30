@@ -9,7 +9,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSentineled;
+import org.junit.jupiter.api.Tag;
 
+@Tag("integration")
 public class JedisSentineledPrefixedKeysTest extends PrefixedKeysTest<JedisSentineled> {
 
   private static final String MASTER_NAME = "mymaster";

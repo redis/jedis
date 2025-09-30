@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.util.RedisVersionUtil;
@@ -60,6 +61,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
   public StreamsPipelineCommandsTest(RedisProtocol protocol) {

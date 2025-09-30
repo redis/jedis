@@ -17,12 +17,7 @@ import java.util.*;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
@@ -36,6 +31,7 @@ import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Tag("integration")
 public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";

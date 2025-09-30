@@ -11,8 +11,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.util.Hashing;
 
+@Tag("integration")
 public class ShardingTest {
 
   private static final EndpointConfig redis1 = HostAndPorts.getRedisEndpoint("standalone0");

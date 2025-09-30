@@ -16,6 +16,8 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.mcf.HealthStatus;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProviderHelper;
 
 /**
  * Tests for MultiClusterPooledConnectionProvider event handling behavior during initialization and

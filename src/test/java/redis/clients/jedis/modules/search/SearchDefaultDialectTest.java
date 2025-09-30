@@ -16,6 +16,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -34,6 +35,7 @@ import redis.clients.jedis.search.aggr.Row;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
   private static final String INDEX = "dialect-INDEX";

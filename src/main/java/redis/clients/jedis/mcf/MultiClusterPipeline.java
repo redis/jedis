@@ -7,7 +7,6 @@ import java.util.Queue;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
 
 /**

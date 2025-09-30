@@ -4,9 +4,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -38,9 +36,10 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  protected void clusterFailover(CircuitBreaker circuitBreaker) {
+  protected void clusterFailover(Cluster cluster) {
     lock.lock();
 
+    CircuitBreaker circuitBreaker = cluster.getCircuitBreaker();
     try {
       // Check state to handle race conditions since iterateActiveCluster() is
       // non-idempotent
@@ -52,20 +51,18 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
 
         Cluster activeCluster = provider.getCluster();
         // This should be possible only if active cluster is switched from by other reasons than
-        // circuit
-        // breaker, just before circuit breaker triggers
-        if (activeCluster.getCircuitBreaker() != circuitBreaker) {
+        // circuit breaker, just before circuit breaker triggers
+        if (activeCluster != cluster) {
           return;
         }
 
-        activeCluster.setGracePeriod();
+        cluster.setGracePeriod();
         circuitBreaker.transitionToForcedOpenState();
 
         // Iterating the active cluster will allow subsequent calls to the executeCommand() to use
         // the next
         // cluster's connection pool - according to the configuration's prioritization/order/weight
-        // int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex1();
-        provider.iterateActiveCluster(SwitchReason.CIRCUIT_BREAKER);
+        provider.switchToHealthyCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
       }
       // this check relies on the fact that many failover attempts can hit with the same CB,
       // only the first one will trigger a failover, and make the CB FORCED_OPEN.
@@ -73,13 +70,9 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
       // different than
       // active CB. If its the same one and there are no more clusters to failover to, then throw an
       // exception
-      else if (circuitBreaker == provider.getCluster().getCircuitBreaker()
-          && !provider.canIterateOnceMore()) {
-            throw new JedisConnectionException(
-                "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "
-                    + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
-                    + "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
-          }
+      else if (cluster == provider.getCluster()) {
+        provider.switchToHealthyCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
+      }
       // Ignore exceptions since we are already in a failure state
     } finally {
       lock.unlock();

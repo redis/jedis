@@ -57,8 +57,8 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.19.2</jackson.version>
-		<maven.surefire.version>3.5.3</maven.surefire.version>
+		<jackson.version>2.20.0</jackson.version>
+		<maven.surefire.version>3.5.4</maven.surefire.version>
 		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
@@ -153,7 +153,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.12</version>
+			<version>1.2.13</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -252,17 +252,70 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.13</version>
 				<executions>
+					<!-- Collect coverage for unit tests -->
 					<execution>
+						<id>prepare-agent-ut</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
+						<configuration>
+							<propertyName>argLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-ut.exec</destFile>
+						</configuration>
 					</execution>
+					<!-- Collect coverage for integration tests tagged with @Tag("integration") -->
+					<execution>
+						<id>prepare-agent-it-tagged</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<propertyName>failsafeTaggedArgLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-it-tagged.exec</destFile>
+						</configuration>
+					</execution>
+					<!-- Collect coverage for integration tests with filename suffix IntegrationTest(s) -->
+					<execution>
+						<id>prepare-agent-it-suffix</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<propertyName>failsafeSuffixArgLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-it-suffix.exec</destFile>
+						</configuration>
+					</execution>
+					<!-- Merge all coverage data after all integration tests -->
+					<execution>
+						<id>merge-coverage</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>jacoco-ut.exec</include>
+										<include>jacoco-it-tagged.exec</include>
+										<include>jacoco-it-suffix.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+							<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+						</configuration>
+					</execution>
+					<!-- Generate the final report on the merged data -->
 					<execution>
 						<id>report</id>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -282,11 +335,77 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
+					<excludedGroups>integration,scenario</excludedGroups>
 					<excludes>
-						<exclude>**/examples/*Example.java</exclude>
+						<exclude>**/examples/*.java</exclude>
+						<exclude>**/scenario/*Test.java</exclude>
+						<!-- Exclude integration tests from unit-test phase -->
+						<exclude>**/*IntegrationTest.java</exclude>
+						<exclude>**/*IntegrationTests.java</exclude>
 					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
+					<systemPropertyVariables>
+						<redis-hosts>${redis-hosts}</redis-hosts>
+					</systemPropertyVariables>
+					<summaryFile>${project.build.directory}/failsafe-summary.xml</summaryFile>
+					<!-- Default includes used when invoking failsafe goals directly (e.g., mvn failsafe:integration-test) -->
+					<includes>
+						<include>**/*IntegrationTest.java</include>
+						<include>**/*IntegrationTests.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/examples/*.java</exclude>
+						<exclude>**/scenario/*Test.java</exclude>
+						<!-- Exclude unit tests -->
+						<exclude>**/mocked/*.java</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<!-- Run all tests tagged with @Tag("integration") regardless of file name -->
+					<execution>
+						<id>it-tagged</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+						<configuration>
+							<argLine>@{failsafeTaggedArgLine} ${JVM_OPTS}</argLine>
+							<groups>integration</groups>
+							<includes>
+								<include>**/*Test.java</include>
+								<include>**/*Tests.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<!-- Also run tests whose filenames end with IntegrationTest or IntegrationTests, even if not tagged -->
+					<execution>
+						<id>it-suffix</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+						<configuration>
+							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
+
+							<includes>
+								<include>**/*IntegrationTest.java</include>
+								<include>**/*IntegrationTests.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<!-- Verify phase should run once after both IT executions -->
+					<execution>
+						<id>it-verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
@@ -359,7 +478,7 @@
 						<include>**/VAddParams.java</include>
 						<include>**/VSimParams.java</include>
 						<include>**/VSimScoreAttribs.java</include>
-						<include>**/*FunctionCommandsTest*</include>
+						<include>**/*FunctionCommandsTest*.java</include>
 						<include>**/Endpoint.java</include>
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
@@ -367,12 +486,14 @@
 						<include>**/mcf/LagAwareStrategyUnitTest.java</include>
 						<include>**/mcf/RedisRestAPI*.java</include>
 						<include>**/mcf/ActiveActiveLocalFailoverTest*</include>
-						<include>**/mcf/FailbackMechanism*</include>
-						<include>**/mcf/PeriodicFailbackTest*</include>
-						<include>**/mcf/AutomaticFailoverTest*</include>
-						<include>**/mcf/MultiCluster*</include>
-						<include>**/mcf/StatusTracker*</include>
+						<include>**/mcf/FailbackMechanism*.java</include>
+						<include>**/mcf/PeriodicFailbackTest*.java</include>
+						<include>**/mcf/AutomaticFailoverTest*.java</include>
+						<include>**/mcf/MultiCluster*.java</include>
+						<include>**/mcf/StatusTracker*.java</include>
 						<include>**/Health*.java</include>
+						<include>**/*IT.java</include>
+						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 					</includes>

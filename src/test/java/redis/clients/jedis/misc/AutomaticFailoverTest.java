@@ -18,8 +18,9 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProviderHelper;
 import redis.clients.jedis.mcf.SwitchReason;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("failover")
+@Tag("integration")
 public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
@@ -75,7 +77,8 @@ public class AutomaticFailoverTest {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+      MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getCluster());
       pipe.sync();
     }
 
@@ -94,7 +97,8 @@ public class AutomaticFailoverTest {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      provider.iterateActiveCluster(SwitchReason.HEALTH_CHECK);
+      MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getCluster());
       assertEquals(Arrays.asList("OK", 1L), tx.exec());
     }
 
@@ -151,8 +155,8 @@ public class AutomaticFailoverTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
             .retryMaxAttempts(retryMaxAttempts) // Default
-                                 // is
-                                 // 3
+            // is
+            // 3
             .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
             .circuitBreakerSlidingWindowSize(slidingWindowSize);
 

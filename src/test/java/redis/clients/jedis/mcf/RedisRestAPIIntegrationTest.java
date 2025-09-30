@@ -27,6 +27,7 @@ import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisCredentials;
+import redis.clients.jedis.scenario.RestEndpointUtil;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
 public class RedisRestAPIIntegrationTest {
@@ -60,7 +61,7 @@ public class RedisRestAPIIntegrationTest {
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
 
       } catch (Exception e) {
-        e.printStackTrace();
+        log.error("Failed to disable SSL verification", e);
       }
     }
 
@@ -84,7 +85,7 @@ public class RedisRestAPIIntegrationTest {
   public static void beforeClass() {
     try {
       endpointConfig = HostAndPorts.getRedisEndpoint("re-active-active");
-      restAPIEndpoint = getRestAPIEndpoint(endpointConfig);
+      restAPIEndpoint = RestEndpointUtil.getRestAPIEndpoint(endpointConfig);
       credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
       SSLBypass.disableSSLVerification();
     } catch (IllegalArgumentException e) {
@@ -122,26 +123,6 @@ public class RedisRestAPIIntegrationTest {
     String firstBdbUid = bdbs.get(0).getUid();
     assertTrue(api.checkBdbAvailability(firstBdbUid, false));
     assertFalse(api.checkBdbAvailability(firstBdbUid, true));
-  }
-
-  private static Endpoint getRestAPIEndpoint(EndpointConfig config) {
-    return new Endpoint() {
-      @Override
-      public String getHost() {
-        // convert this to Redis FQDN by removing the node prefix
-        // "dns":"redis-10232.c1.taki-active-active-test-c114170a.cto.redislabs.com"
-        String host = config.getHost();
-        // trim until the first dot
-        String fqdn = host.substring(host.indexOf('.') + 1);
-        return fqdn;
-      }
-
-      @Override
-      public int getPort() {
-        // default port for REST API
-        return 9443;
-      }
-    };
   }
 
 }

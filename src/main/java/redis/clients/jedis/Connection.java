@@ -267,7 +267,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); //?
+        soTimeout = socket.getSoTimeout(); // ?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -326,6 +326,10 @@ public class Connection implements Closeable {
   }
 
   public void forceDisconnect() throws IOException {
+    // setBroken() must be called first here,
+    // otherwise a concurrent close attempt would call 'returnResource' (instead of
+    // 'returnBrokenResource'),
+    // assuming it's an open/healthy connection whereas this individual socket is already closed.
     setBroken();
     IOUtils.closeQuietly(socket);
   }
@@ -476,7 +480,6 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
-   *
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal

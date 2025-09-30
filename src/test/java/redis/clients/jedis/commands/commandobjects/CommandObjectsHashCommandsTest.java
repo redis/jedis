@@ -27,6 +27,7 @@ import java.util.Set;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
@@ -37,6 +38,7 @@ import redis.clients.jedis.resps.ScanResult;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=hash">Hash</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTestBase {
 
   private final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

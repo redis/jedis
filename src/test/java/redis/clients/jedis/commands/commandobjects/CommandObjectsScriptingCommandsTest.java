@@ -22,6 +22,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
@@ -33,6 +34,7 @@ import redis.clients.jedis.util.RedisVersionUtil;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=scripting">Scripting</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsScriptingCommandsTest(RedisProtocol protocol) {

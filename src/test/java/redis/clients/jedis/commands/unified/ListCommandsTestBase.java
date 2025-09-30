@@ -14,6 +14,7 @@ import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
+@Tag("integration")
 public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());

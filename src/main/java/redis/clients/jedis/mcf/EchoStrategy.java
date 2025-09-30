@@ -1,26 +1,29 @@
 package redis.clients.jedis.mcf;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
-  private static final Logger log = LoggerFactory.getLogger(EchoStrategy.class);
 
   private final UnifiedJedis jedis;
   private final HealthCheckStrategy.Config config;
 
   public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
-    this(hostAndPort, jedisClientConfig, new HealthCheckStrategy.Config(1000, 1000, 3));
+    this(hostAndPort, jedisClientConfig, HealthCheckStrategy.Config.builder().build());
   }
 
   public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig,
       HealthCheckStrategy.Config config) {
-    this.jedis = new UnifiedJedis(hostAndPort, jedisClientConfig);
+    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    poolConfig.setMaxTotal(2);
+    this.jedis = new JedisPooled(hostAndPort, jedisClientConfig, poolConfig);
     this.config = config;
   }
 
@@ -35,19 +38,24 @@ public class EchoStrategy implements HealthCheckStrategy {
   }
 
   @Override
-  public int minConsecutiveSuccessCount() {
-    return config.getMinConsecutiveSuccessCount();
+  public int getNumProbes() {
+    return config.getNumProbes();
+  }
+
+  @Override
+  public ProbingPolicy getPolicy() {
+    return config.getPolicy();
+  }
+
+  @Override
+  public int getDelayInBetweenProbes() {
+    return config.getDelayInBetweenProbes();
   }
 
   @Override
   public HealthStatus doHealthCheck(Endpoint endpoint) {
-    try {
-      return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY
-          : HealthStatus.UNHEALTHY;
-    } catch (Exception e) {
-      log.error("Error while performing health check", e);
-      return HealthStatus.UNHEALTHY;
-    }
+    return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY
+        : HealthStatus.UNHEALTHY;
   }
 
   @Override

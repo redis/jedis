@@ -492,6 +492,8 @@
 						<include>**/mcf/MultiCluster*.java</include>
 						<include>**/mcf/StatusTracker*.java</include>
 						<include>**/Health*.java</include>
+						<include>**/*IT.java</include>
+						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 					</includes>

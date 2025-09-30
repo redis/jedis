@@ -6,8 +6,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 
 /**
  * ConnectionProvider with built-in retry, circuit-breaker, and failover to another cluster/database
@@ -31,7 +30,7 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
     supplier.withRetry(cluster.getRetry());
     supplier.withCircuitBreaker(cluster.getCircuitBreaker());
     supplier.withFallback(provider.getFallbackExceptionList(),
-      e -> this.handleClusterFailover(cluster.getCircuitBreaker()));
+      e -> this.handleClusterFailover(cluster));
 
     return supplier.decorate().get();
   }
@@ -49,9 +48,9 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  private Connection handleClusterFailover(CircuitBreaker circuitBreaker) {
+  private Connection handleClusterFailover(Cluster cluster) {
 
-    clusterFailover(circuitBreaker);
+    clusterFailover(cluster);
 
     // Recursive call to the initiating method so the operation can be retried on the next cluster
     // connection

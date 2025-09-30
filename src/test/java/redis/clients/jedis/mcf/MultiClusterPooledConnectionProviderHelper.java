@@ -1,8 +1,6 @@
-package redis.clients.jedis.providers;
+package redis.clients.jedis.mcf;
 
 import redis.clients.jedis.Endpoint;
-import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.HealthStatusChangeEvent;
 
 public class MultiClusterPooledConnectionProviderHelper {
 
@@ -13,5 +11,10 @@ public class MultiClusterPooledConnectionProviderHelper {
 
   public static void periodicFailbackCheck(MultiClusterPooledConnectionProvider provider) {
     provider.periodicFailbackCheck();
+  }
+
+  public static Endpoint switchToHealthyCluster(MultiClusterPooledConnectionProvider provider,
+      SwitchReason reason, MultiClusterPooledConnectionProvider.Cluster iterateFrom) {
+    return provider.switchToHealthyCluster(reason, iterateFrom);
   }
 }

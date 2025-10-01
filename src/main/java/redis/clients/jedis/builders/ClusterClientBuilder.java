@@ -21,7 +21,8 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
   private int maxAttempts = JedisCluster.DEFAULT_MAX_ATTEMPTS;
-  private Duration maxTotalRetriesDuration = null;
+  private Duration maxTotalRetriesDuration = Duration
+      .ofMillis(JedisCluster.DEFAULT_TIMEOUT * JedisCluster.DEFAULT_MAX_ATTEMPTS);
   private Duration topologyRefreshPeriod = null;
 
   /**

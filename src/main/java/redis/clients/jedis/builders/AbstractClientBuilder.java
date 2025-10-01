@@ -37,7 +37,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   protected Cache cache = null;
   protected CacheConfig cacheConfig = null;
   protected CommandExecutor commandExecutor = null;
-  protected CommandObjects commandObjects = new CommandObjects();
+  protected CommandObjects commandObjects = null;
   protected ConnectionProvider connectionProvider = null;
   protected RedisProtocol redisProtocol = RedisProtocol.RESP2;
   protected CommandKeyArgumentPreProcessor keyPreProcessor = null;
@@ -63,6 +63,14 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   protected CommandExecutor createDefaultCommandExecutor() {
     return new DefaultCommandExecutor(this.connectionProvider);
+  }
+
+  /**
+   * Factory method for creating CommandObjects. Subclasses may override to provide
+   * specialized CommandObjects implementations (e.g., ClusterCommandObjects).
+   */
+  protected CommandObjects createDefaultCommandObjects() {
+    return new CommandObjects();
   }
 
   /**
@@ -116,6 +124,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     // Create default command executor if not set
     if (this.commandExecutor == null) {
       this.commandExecutor = createDefaultCommandExecutor();
+    }
+
+    // Ensure CommandObjects are created (and allow subclasses to override the type)
+    if (this.commandObjects == null) {
+      this.commandObjects = createDefaultCommandObjects();
     }
 
     // Apply common configuration

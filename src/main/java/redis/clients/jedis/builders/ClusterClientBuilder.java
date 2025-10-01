@@ -111,6 +111,11 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
   }
 
   @Override
+  protected CommandObjects createDefaultCommandObjects() {
+    return new ClusterCommandObjects();
+  }
+
+  @Override
   protected void validateSpecificConfiguration() {
     validateCommonConfiguration();
 

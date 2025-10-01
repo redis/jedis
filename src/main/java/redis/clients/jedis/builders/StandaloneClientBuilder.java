@@ -18,7 +18,6 @@ public abstract class StandaloneClientBuilder<C>
 
   // Standalone-specific configuration fields
   private HostAndPort hostAndPort = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
-  private JedisClientConfig clientConfig = null;
 
   /**
    * Sets the Redis server host and port.
@@ -38,19 +37,6 @@ public abstract class StandaloneClientBuilder<C>
    */
   public StandaloneClientBuilder<C> hostAndPort(HostAndPort hostAndPort) {
     this.hostAndPort = hostAndPort;
-    return this;
-  }
-
-  /**
-   * Sets the client configuration for Redis connections.
-   * <p>
-   * The client configuration includes authentication, timeouts, SSL settings, and other
-   * connection-specific parameters.
-   * @param clientConfig the client configuration
-   * @return this builder
-   */
-  public StandaloneClientBuilder<C> clientConfig(JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
     return this;
   }
 

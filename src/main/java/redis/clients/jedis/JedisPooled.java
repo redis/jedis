@@ -442,7 +442,7 @@ public class JedisPooled extends UnifiedJedis {
 
     @Override
     protected JedisPooled createClient() {
-      return new JedisPooled(commandExecutor, connectionProvider, commandObjects, redisProtocol,
+      return new JedisPooled(commandExecutor, connectionProvider, commandObjects, clientConfig.getRedisProtocol(),
           cache);
     }
   }

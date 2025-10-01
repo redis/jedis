@@ -66,7 +66,7 @@ public class JedisSentineled extends UnifiedJedis {
 
     @Override
     protected JedisSentineled createClient() {
-      return new JedisSentineled(commandExecutor, connectionProvider, commandObjects, redisProtocol,
+      return new JedisSentineled(commandExecutor, connectionProvider, commandObjects, clientConfig.getRedisProtocol(),
           cache);
     }
   }

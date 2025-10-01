@@ -20,7 +20,6 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
 
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
-  private JedisClientConfig clientConfig = null;
   private int maxAttempts = JedisCluster.DEFAULT_MAX_ATTEMPTS;
   private Duration maxTotalRetriesDuration = null;
   private Duration topologyRefreshPeriod = null;
@@ -35,19 +34,6 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
    */
   public ClusterClientBuilder<C> nodes(Set<HostAndPort> nodes) {
     this.nodes = nodes;
-    return this;
-  }
-
-  /**
-   * Sets the client configuration for Redis connections.
-   * <p>
-   * The client configuration includes authentication, timeouts, SSL settings, and other
-   * connection-specific parameters.
-   * @param clientConfig the client configuration
-   * @return this builder
-   */
-  public ClusterClientBuilder<C> clientConfig(JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
     return this;
   }
 

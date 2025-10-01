@@ -351,7 +351,7 @@ public class JedisCluster extends UnifiedJedis {
 
     @Override
     protected JedisCluster createClient() {
-      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, redisProtocol,
+      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, clientConfig.getRedisProtocol(),
           cache);
     }
   }

@@ -39,10 +39,24 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   protected CommandExecutor commandExecutor = null;
   protected CommandObjects commandObjects = null;
   protected ConnectionProvider connectionProvider = null;
-  protected RedisProtocol redisProtocol = RedisProtocol.RESP2;
   protected CommandKeyArgumentPreProcessor keyPreProcessor = null;
   protected JsonObjectMapper jsonObjectMapper = null;
   protected int searchDialect = SearchProtocol.DEFAULT_DIALECT;
+
+  protected JedisClientConfig clientConfig = null;
+
+  /**
+   * Sets the client configuration for Redis connections.
+   * <p>
+   * The client configuration includes authentication, timeouts, SSL settings, and other
+   * connection-specific parameters.
+   * @param clientConfig the client configuration
+   * @return this builder
+   */
+  public T clientConfig(JedisClientConfig clientConfig) {
+    this.clientConfig = clientConfig;
+    return self();
+  }
 
   /**
    * Returns the concrete builder instance for method chaining. This method must be implemented by
@@ -204,16 +218,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   }
 
   /**
-   * Sets the Redis protocol version to use.
-   * @param redisProtocol the Redis protocol version
-   * @return this builder
-   */
-  public T redisProtocol(RedisProtocol redisProtocol) {
-    this.redisProtocol = redisProtocol;
-    return self();
-  }
-
-  /**
    * Sets a key preprocessor for transforming Redis keys before sending commands.
    * <p>
    * The key preprocessor allows you to modify keys before they are sent to Redis, for example to
@@ -309,7 +313,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   protected void validateCommonConfiguration() {
     if (cache != null || cacheConfig != null) {
-      if (redisProtocol != RedisProtocol.RESP3) {
+      if (clientConfig != null && clientConfig.getRedisProtocol() != RedisProtocol.RESP3) {
         throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
       }
     }

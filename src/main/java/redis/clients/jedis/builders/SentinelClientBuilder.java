@@ -19,7 +19,6 @@ public abstract class SentinelClientBuilder<C>
   // Sentinel-specific configuration fields
   private String masterName = null;
   private Set<HostAndPort> sentinels = null;
-  private JedisClientConfig clientConfig = null;
   private JedisClientConfig sentinelClientConfig = null;
 
   /**
@@ -45,19 +44,6 @@ public abstract class SentinelClientBuilder<C>
    */
   public SentinelClientBuilder<C> sentinels(Set<HostAndPort> sentinels) {
     this.sentinels = sentinels;
-    return this;
-  }
-
-  /**
-   * Sets the client configuration for Redis master connections.
-   * <p>
-   * This configuration is used for connections to the Redis master instance. It includes
-   * authentication, timeouts, SSL settings, and other connection-specific parameters.
-   * @param clientConfig the client configuration for master connections
-   * @return this builder
-   */
-  public SentinelClientBuilder<C> clientConfig(JedisClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
     return this;
   }
 

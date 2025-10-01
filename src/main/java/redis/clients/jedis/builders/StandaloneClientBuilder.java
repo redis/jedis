@@ -47,7 +47,8 @@ public abstract class StandaloneClientBuilder<C>
 
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
-    return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache, this.poolConfig);
+    return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache,
+        this.poolConfig);
   }
 
   @Override

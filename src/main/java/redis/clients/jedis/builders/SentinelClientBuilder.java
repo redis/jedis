@@ -69,8 +69,8 @@ public abstract class SentinelClientBuilder<C>
   protected ConnectionProvider createDefaultConnectionProvider() {
     JedisClientConfig sentinelConfig = this.sentinelClientConfig != null ? this.sentinelClientConfig
         : DefaultJedisClientConfig.builder().build();
-    return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache, this.poolConfig,
-        this.sentinels, sentinelConfig);
+    return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
+        this.poolConfig, this.sentinels, sentinelConfig);
   }
 
   @Override

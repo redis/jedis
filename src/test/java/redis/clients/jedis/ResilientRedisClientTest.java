@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -104,8 +105,9 @@ public class ResilientRedisClientTest {
   @Test
   void testSetActiveEndpoint() {
     Endpoint endpoint = client.getActiveEndpoint();
-    client.setActiveEndpoint(endpoint);
 
+    awaitIsHealthy(endpoint1.getHostAndPort());
+    awaitIsHealthy(endpoint2.getHostAndPort());
     // Ensure we have a healthy endpoint to switch to
     Endpoint newEndpoint = client.getEndpoints().stream()
         .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
@@ -137,9 +139,10 @@ public class ResilientRedisClientTest {
   @Test
   public void testForceActiveEndpoint() {
     Endpoint endpoint = client.getActiveEndpoint();
-    client.setActiveEndpoint(endpoint);
 
     // Ensure we have a healthy endpoint to switch to
+    awaitIsHealthy(endpoint1.getHostAndPort());
+    awaitIsHealthy(endpoint2.getHostAndPort());
     Endpoint newEndpoint = client.getEndpoints().stream()
         .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
@@ -187,6 +190,8 @@ public class ResilientRedisClientTest {
         .clusterSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
 
       assertThat(events.size(), equalTo(0));
+
+      awaitIsHealthy(endpoint2.getHostAndPort());
       testClient.setActiveEndpoint(endpoint2.getHostAndPort());
 
       assertThat(events.size(), equalTo(1));
@@ -194,4 +199,9 @@ public class ResilientRedisClientTest {
       assertThat(events.get(0).getReason(), equalTo(SwitchReason.FORCED));
     }
   }
+
+  private void awaitIsHealthy(HostAndPort hostAndPort) {
+    await().atMost(Duration.ofSeconds(1)).until(() -> client.isHealthy(hostAndPort));
+  }
+
 }

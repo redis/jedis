@@ -120,7 +120,7 @@ public class ClusterEvaluateThresholdsTest {
 
       // === Basic threshold crossing cases ===
       "0, 1.0, 0, 1, false, true", // +1 = 2 fails, rate=100% >= 1%, min=0 -> trigger
-      "0, 1.0, 0, 1, true, true",  // +0 = 1 fails, rate=100% >= 1%, min=0 -> trigger
+      "0, 1.0, 0, 1, true, true", // +0 = 1 fails, rate=100% >= 1%, min=0 -> trigger
 
       "1, 1.0, 0, 0, false, true", // +1 = 1 fails, rate=100% >= 1%, min=1 -> trigger
       "1, 1.0, 0, 0, true, false", // +0 = 0 fails, 0 < 1 min -> no trigger
@@ -133,10 +133,10 @@ public class ClusterEvaluateThresholdsTest {
       "1, 100.0, 0, 0, true, false", // +0 = 0 fails, 0 < 1 min -> no trigger
 
       "0, 100.0, 99, 1, false, false", // +1 = 2 fails, rate=1.98% < 100% -> no trigger
-      "0, 100.0, 99, 1, true, false",  // +0 = 1 fails, rate=1.0% < 100% -> no trigger
+      "0, 100.0, 99, 1, true, false", // +0 = 1 fails, rate=1.0% < 100% -> no trigger
 
       "0, 1.0, 99, 1, false, true", // +1 = 2 fails, rate=1.98% >= 1%, min=0 -> trigger
-      "0, 1.0, 99, 1, true, true",  // +0 = 1 fails, rate=1.0% >= 1%, min=0 -> trigger
+      "0, 1.0, 99, 1, true, true", // +0 = 1 fails, rate=1.0% >= 1%, min=0 -> trigger
 
       // === Zero rate threshold (always trigger if min failures met) ===
       "1, 0.0, 0, 0, false, true", // +1 = 1 fails, rate=100% >= 0%, min=1 -> trigger
@@ -146,22 +146,22 @@ public class ClusterEvaluateThresholdsTest {
 
       // === High minimum failures cases ===
       "3, 50.0, 3, 1, false, false", // +1 = 2 fails, 2 < 3 min -> no trigger
-      "3, 50.0, 3, 1, true, false",  // +0 = 1 fails, 1 < 3 min -> no trigger
+      "3, 50.0, 3, 1, true, false", // +0 = 1 fails, 1 < 3 min -> no trigger
       "1000, 1.0, 198, 2, false, false", // +1 = 3 fails, 3 < 1000 min -> no trigger
-      "1000, 1.0, 198, 2, true, false",  // +0 = 2 fails, 2 < 1000 min -> no trigger
+      "1000, 1.0, 198, 2, true, false", // +0 = 2 fails, 2 < 1000 min -> no trigger
 
       // === Corner cases ===
-      "0, 50.0, 0, 0, false, true",  // +1 = 1 fails, rate=100% >= 50%, min=0 -> trigger
-      "0, 50.0, 0, 0, true, false",  // +0 = 0 fails, no calls -> no trigger
-      "1, 50.0, 1, 1, false, true",  // +1 = 2 fails, rate=66.7% >= 50%, min=1 -> trigger
-      "1, 50.0, 1, 1, true, true",   // +0 = 1 fails, rate=50% >= 50%, min=1 -> trigger
-      "2, 33.0, 2, 1, false, true",  // +1 = 2 fails, rate=50% >= 33%, min=2 -> trigger
-      "2, 33.0, 2, 1, true, false",  // +0 = 1 fails, 1 < 2 min -> no trigger
+      "0, 50.0, 0, 0, false, true", // +1 = 1 fails, rate=100% >= 50%, min=0 -> trigger
+      "0, 50.0, 0, 0, true, false", // +0 = 0 fails, no calls -> no trigger
+      "1, 50.0, 1, 1, false, true", // +1 = 2 fails, rate=66.7% >= 50%, min=1 -> trigger
+      "1, 50.0, 1, 1, true, true", // +0 = 1 fails, rate=50% >= 50%, min=1 -> trigger
+      "2, 33.0, 2, 1, false, true", // +1 = 2 fails, rate=50% >= 33%, min=2 -> trigger
+      "2, 33.0, 2, 1, true, false", // +0 = 1 fails, 1 < 2 min -> no trigger
       "5, 20.0, 20, 4, false, true", // +1 = 5 fails, rate=20% >= 20%, min=5 -> trigger
       "5, 20.0, 20, 4, true, false", // +0 = 4 fails, 4 < 5 min -> no trigger
-      "3, 75.0, 1, 2, false, true",  // +1 = 3 fails, rate=75% >= 75%, min=3 -> trigger
-      "3, 75.0, 1, 2, true, false",  // +0 = 2 fails, 2 < 3 min -> no trigger
-      })
+      "3, 75.0, 1, 2, false, true", // +1 = 3 fails, rate=75% >= 75%, min=3 -> trigger
+      "3, 75.0, 1, 2, true, false", // +0 = 2 fails, 2 < 3 min -> no trigger
+  })
   public void thresholdMatrix(int minFailures, float ratePercent, int successes, int failures,
       boolean lastFailRecorded, boolean expectOpenState) {
 

@@ -1,8 +1,6 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker.Metrics;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -81,26 +79,6 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
     } finally {
       lock.unlock();
     }
-  }
-
-  static void evaluateThresholds(Cluster cluster) {
-    if (cluster.getCircuitBreaker().getState() == State.CLOSED && isThresholdsExceeded(cluster)) {
-      cluster.getCircuitBreaker().transitionToOpenState();
-    }
-  }
-
-  private static boolean isThresholdsExceeded(Cluster cluster) {
-    Metrics metrics = cluster.getCircuitBreaker().getMetrics();
-    int fails = metrics.getNumberOfFailedCalls();
-    int succ = metrics.getNumberOfSuccessfulCalls();
-    if (fails >= cluster.getCircuitBreakerMinNumOfFailures()) {
-      float ratePercentThreshold = cluster.getCircuitBreakerFailureRateThreshold();// 0..100
-      int total = fails + succ;
-      if (total == 0) return false;
-      float failureRatePercent = (fails * 100.0f) / total;
-      return failureRatePercent >= ratePercentThreshold;
-    }
-    return false;
   }
 
   static boolean isCircuitBreakerTrackedException(Exception e, Cluster cluster) {

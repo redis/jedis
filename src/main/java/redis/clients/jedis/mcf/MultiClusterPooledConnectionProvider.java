@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.Metrics;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -328,6 +329,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     multiClusterMap.put(config.getHostAndPort(), cluster);
+
+    // this is the place where we listen tracked errors and check if
+    // thresholds are exceeded for the cluster
+    circuitBreakerEventPublisher.onError(event -> {
+      cluster.evaluateThresholds(false);
+    });
   }
 
   /**
@@ -847,6 +854,30 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public void close() {
       connectionPool.close();
+    }
+
+    void evaluateThresholds(boolean lastFailRecorded) {
+      if (getCircuitBreaker().getState() == State.CLOSED
+          && isThresholdsExceeded(this, lastFailRecorded)) {
+        getCircuitBreaker().transitionToOpenState();
+      }
+    }
+
+    private static boolean isThresholdsExceeded(Cluster cluster, boolean lastFailRecorded) {
+      Metrics metrics = cluster.getCircuitBreaker().getMetrics();
+      // ATTENTION: this is to increment fails in regard to the current call that is failing,
+      // DO NOT remove the increment, it will change the behaviour in case of initial requests to
+      // cluster fail
+      int fails = metrics.getNumberOfFailedCalls() + (lastFailRecorded ? 0 : 1);
+      int succ = metrics.getNumberOfSuccessfulCalls();
+      if (fails >= cluster.getCircuitBreakerMinNumOfFailures()) {
+        float ratePercentThreshold = cluster.getCircuitBreakerFailureRateThreshold();// 0..100
+        int total = fails + succ;
+        if (total == 0) return false;
+        float failureRatePercent = (fails * 100.0f) / total;
+        return failureRatePercent >= ratePercentThreshold;
+      }
+      return false;
     }
 
     @Override

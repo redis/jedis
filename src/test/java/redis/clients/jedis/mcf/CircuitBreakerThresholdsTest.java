@@ -74,7 +74,7 @@ public class CircuitBreakerThresholdsTest {
   }
 
   /**
-   * Below minimum failures: even if all calls are failures, failover should NOT trigger.
+   * Below minimum failures; even if all calls are failures, failover should NOT trigger.
    */
   @Test
   public void belowMinFailures_doesNotFailover() {
@@ -89,7 +89,7 @@ public class CircuitBreakerThresholdsTest {
       assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
     }
 
-    // Below min failures: CB remains CLOSED
+    // Below min failures; CB remains CLOSED
     assertEquals(CircuitBreaker.State.CLOSED, spyProvider.getClusterCircuitBreaker().getState());
   }
 

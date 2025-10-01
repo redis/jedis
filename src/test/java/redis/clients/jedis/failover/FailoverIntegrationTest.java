@@ -150,7 +150,7 @@ public class FailoverIntegrationTest {
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
 
     assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
-      equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.FORCED_OPEN));
 
     // Check that the failoverClient is now using Endpoint 2
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
@@ -161,7 +161,7 @@ public class FailoverIntegrationTest {
     // Endpoint1 and Endpoint2 are NOT available,
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
     assertThat(provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker().getState(),
-      equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.FORCED_OPEN));
 
     // and since no other nodes are available, it should propagate the errors to the caller
     // subsequent calls
@@ -267,7 +267,7 @@ public class FailoverIntegrationTest {
               .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
               .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
           endpoint1, endpoint2)).retryMaxAttempts(2).retryWaitDuration(1)
-              .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
+              .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(2)
               .circuitBreakerFailureRateThreshold(50f) // %50 failure rate
               .build();
 
@@ -299,7 +299,7 @@ public class FailoverIntegrationTest {
 
       // Circuit breaker should be open after just one command with retries
       assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+        equalTo(CircuitBreaker.State.FORCED_OPEN));
 
       // Next command should be routed to the second endpoint
       // Command 2
@@ -377,7 +377,7 @@ public class FailoverIntegrationTest {
       // Check that the circuit breaker for Endpoint 1 is open
       assertThat(
         customProvider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+        equalTo(CircuitBreaker.State.FORCED_OPEN));
 
       // Disable redisProxy1 to enforce the current blpop command failure
       redisProxy1.disable();

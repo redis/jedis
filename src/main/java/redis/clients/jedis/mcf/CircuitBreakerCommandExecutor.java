@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
@@ -38,12 +39,14 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     supplier.withRetry(cluster.getRetry());
     supplier.withFallback(provider.getFallbackExceptionList(),
       e -> this.handleClusterFailover(commandObject, cluster));
-
     try {
       return supplier.decorate().get();
     } catch (Exception e) {
       if (isCircuitBreakerTrackedException(e, cluster)) {
-        evaluateThresholds(cluster);
+        cluster.evaluateThresholds(true);
+        if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
+          clusterFailover(cluster);
+        }
       }
       throw e;
     }
@@ -53,7 +56,6 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
   private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
-    evaluateThresholds(cluster);
     Connection connection;
     try {
       connection = cluster.getConnection();

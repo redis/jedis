@@ -35,7 +35,7 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
       return supplier.decorate().get();
     } catch (Exception e) {
       if (isCircuitBreakerTrackedException(e, cluster)) {
-        evaluateThresholds(cluster);
+        cluster.evaluateThresholds(true);
       }
       throw e;
     }

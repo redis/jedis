@@ -62,6 +62,8 @@
 		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
+		<!-- Default excluded groups for tests - can be overridden from command line -->
+		<excludedGroups>integration,scenario</excludedGroups>
 	</properties>
 
 	<dependencyManagement>
@@ -335,7 +337,7 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
-					<excludedGroups>integration,scenario</excludedGroups>
+					<excludedGroups>${excludedGroups}</excludedGroups>
 					<excludes>
 						<exclude>**/examples/*.java</exclude>
 						<exclude>**/scenario/*Test.java</exclude>

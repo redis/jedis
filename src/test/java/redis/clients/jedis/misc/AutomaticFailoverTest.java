@@ -130,15 +130,15 @@ public class AutomaticFailoverTest {
     assertFalse(failoverReporter.failedOver);
 
     for (int attempt = 0; attempt < slidingWindowMinFails; attempt++) {
+      assertFalse(failoverReporter.failedOver);
       Throwable thrown = assertThrows(JedisConnectionException.class,
         () -> jedis.hset(key, "f1", "v1"));
       assertThat(thrown.getCause(), instanceOf(UnknownHostException.class));
-      assertFalse(failoverReporter.failedOver);
     }
 
-    // should failover now
-    jedis.hset(key, "f1", "v1");
+    // already failed over now
     assertTrue(failoverReporter.failedOver);
+    jedis.hset(key, "f1", "v1");
 
     assertEquals(Collections.singletonMap("f1", "v1"), jedis.hgetAll(key));
     jedis.flushAll();

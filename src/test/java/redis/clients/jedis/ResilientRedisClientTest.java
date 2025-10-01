@@ -50,20 +50,16 @@ public class ResilientRedisClientTest {
     redisProxy2 = tp.createProxy("redis-2", "0.0.0.0:29380", "redis-failover-2:9380");
   }
 
-
   @BeforeEach
   void setUp() {
     // Create a simple resilient client with mock endpoints for testing
     MultiClusterClientConfig clientConfig = MultiClusterClientConfig.builder()
-            .endpoint(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
-            .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
-            .build();
+        .endpoint(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
+        .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
+        .build();
 
-    client = ResilientRedisClient.builder()
-            .multiClusterConfig(clientConfig)
-            .build();
+    client = ResilientRedisClient.builder().multiClusterConfig(clientConfig).build();
   }
-
 
   @AfterEach
   void tearDown() {
@@ -75,8 +71,9 @@ public class ResilientRedisClientTest {
   @Test
   void testAddRemoveEndpointWithEndpointInterface() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
-    
-    assertDoesNotThrow(() -> client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
+
+    assertDoesNotThrow(
+      () -> client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
 
     assertThat(client.getEndpoints(), hasItems(newEndpoint));
 
@@ -90,9 +87,8 @@ public class ResilientRedisClientTest {
     // todo : (@ggivo) Replace HostAndPort with Endpoint
     HostAndPort newEndpoint = new HostAndPort("unavailable", 6381);
 
-    ClusterConfig newConfig = ClusterConfig.builder(newEndpoint, DefaultJedisClientConfig.builder().build())
-        .weight(25.0f)
-        .build();
+    ClusterConfig newConfig = ClusterConfig
+        .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f).build();
 
     assertDoesNotThrow(() -> client.addEndpoint(newConfig));
 
@@ -110,7 +106,7 @@ public class ResilientRedisClientTest {
 
     // Ensure we have a healthy endpoint to switch to
     Endpoint newEndpoint = client.getEndpoints().stream()
-            .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
+        .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Switch to the new endpoint
@@ -122,13 +118,17 @@ public class ResilientRedisClientTest {
   @Test
   void testBuilderWithMultipleEndpointTypes() {
     MultiClusterClientConfig clientConfig = MultiClusterClientConfig.builder()
-            .endpoint(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
-            .endpoint(ClusterConfig.builder(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder().build()).weight(50.0f).build())
-            .build();
+        .endpoint(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
+        .endpoint(ClusterConfig
+            .builder(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder().build())
+            .weight(50.0f).build())
+        .build();
 
-    try (ResilientRedisClient testClient = ResilientRedisClient.builder().multiClusterConfig(clientConfig).build()) {
+    try (ResilientRedisClient testClient = ResilientRedisClient.builder()
+        .multiClusterConfig(clientConfig).build()) {
       assertThat(testClient.getEndpoints().size(), equalTo(2));
-      assertThat(testClient.getEndpoints(), hasItems(endpoint1.getHostAndPort(), endpoint2.getHostAndPort()));
+      assertThat(testClient.getEndpoints(),
+        hasItems(endpoint1.getHostAndPort(), endpoint2.getHostAndPort()));
     }
   }
 
@@ -139,7 +139,7 @@ public class ResilientRedisClientTest {
 
     // Ensure we have a healthy endpoint to switch to
     Endpoint newEndpoint = client.getEndpoints().stream()
-            .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
+        .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Force switch to the new endpoint for 10 seconds
@@ -154,30 +154,35 @@ public class ResilientRedisClientTest {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
     client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build());
 
-    assertThrows(JedisValidationException.class, () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
+    assertThrows(JedisValidationException.class,
+      () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
 
   @Test
   public void testForceActiveEndpointWithNonExistingEndpoint() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
-    assertThrows(JedisValidationException.class, () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
+    assertThrows(JedisValidationException.class,
+      () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
 
   @Test
   public void testWithClusterSwitchListener() {
 
-    MultiClusterClientConfig endpointsConfig = MultiClusterClientConfig.builder().endpoint(
-                    ClusterConfig.builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build()).weight(100.0f)
-                            .build()).endpoint(
-                    ClusterConfig.builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build()).weight(50.0f).build())
-            .build();
+    MultiClusterClientConfig endpointsConfig = MultiClusterClientConfig.builder()
+        .endpoint(ClusterConfig
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .weight(100.0f).build())
+        .endpoint(ClusterConfig
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .weight(50.0f).build())
+        .build();
 
     Consumer<ClusterSwitchEventArgs> eventConsumer;
     List<ClusterSwitchEventArgs> events = new ArrayList<>();
     eventConsumer = events::add;
 
-    try ( ResilientRedisClient testClient = ResilientRedisClient.builder()
-                .clusterSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
+    try (ResilientRedisClient testClient = ResilientRedisClient.builder()
+        .clusterSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
 
       assertThat(events.size(), equalTo(0));
       testClient.setActiveEndpoint(endpoint2.getHostAndPort());

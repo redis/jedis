@@ -14,34 +14,37 @@ import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
 import java.util.Set;
 
 /**
- * ResilientJedisClient provides high-availability Redis connectivity with automatic failover
- * and failback capabilities across multiple weighted endpoints.
+ * ResilientJedisClient provides high-availability Redis connectivity with automatic failover and
+ * failback capabilities across multiple weighted endpoints.
  * <p>
  * This client extends UnifiedJedis to support resilient operations with:
  * <ul>
- * <li><strong>Multi-Endpoint Support:</strong> Configure multiple Redis endpoints with individual weights</li>
- * <li><strong>Automatic Failover:</strong> Seamless switching to backup endpoints when primary becomes unavailable</li>
- * <li><strong>Circuit Breaker Pattern:</strong> Built-in circuit breaker to prevent cascading failures</li>
- * <li><strong>Weight-Based Selection:</strong> Intelligent endpoint selection based on configured weights</li>
- * <li><strong>Health Monitoring:</strong> Continuous health checks with automatic failback to recovered endpoints</li>
+ * <li><strong>Multi-Endpoint Support:</strong> Configure multiple Redis endpoints with individual
+ * weights</li>
+ * <li><strong>Automatic Failover:</strong> Seamless switching to backup endpoints when primary
+ * becomes unavailable</li>
+ * <li><strong>Circuit Breaker Pattern:</strong> Built-in circuit breaker to prevent cascading
+ * failures</li>
+ * <li><strong>Weight-Based Selection:</strong> Intelligent endpoint selection based on configured
+ * weights</li>
+ * <li><strong>Health Monitoring:</strong> Continuous health checks with automatic failback to
+ * recovered endpoints</li>
  * <li><strong>Retry Logic:</strong> Configurable retry mechanisms with exponential backoff</li>
  * </ul>
  * <p>
  * <strong>Usage Example:</strong>
  * </p>
+ * 
  * <pre>
  * // Create resilient client with multiple endpoints
- * ResilientJedisClient client = ResilientJedisClient.builder()
- *     .endpoint("primary-redis:6379", 100)    // Primary with weight 100
- *     .endpoint("backup-redis:6379", 50)      // Backup with weight 50
- *     .endpoint("dr-redis:6379", 25)          // DR with weight 25
- *     .multiClusterConfig(
- *         MultiClusterClientConfig.builder()
- *             .circuitBreakerSlidingWindowSize(10)
- *             .circuitBreakerFailureRateThreshold(50.0f)
- *             .retryMaxAttempts(3)
- *             .build()
- *     )
+ * ResilientJedisClient client = ResilientJedisClient.builder().endpoint("primary-redis:6379", 100) // Primary
+ *                                                                                                  // with
+ *                                                                                                  // weight
+ *                                                                                                  // 100
+ *     .endpoint("backup-redis:6379", 50) // Backup with weight 50
+ *     .endpoint("dr-redis:6379", 25) // DR with weight 25
+ *     .multiClusterConfig(MultiClusterClientConfig.builder().circuitBreakerSlidingWindowSize(10)
+ *         .circuitBreakerFailureRateThreshold(50.0f).retryMaxAttempts(3).build())
  *     .build();
  * 
  * // Use like any other Jedis client
@@ -52,11 +55,10 @@ import java.util.Set;
  * client.close();
  * </pre>
  * <p>
- * The client automatically handles endpoint failures and recoveries, providing transparent
- * high availability for Redis operations. All standard Jedis operations are supported
- * with the added resilience features.
+ * The client automatically handles endpoint failures and recoveries, providing transparent high
+ * availability for Redis operations. All standard Jedis operations are supported with the added
+ * resilience features.
  * </p>
- * 
  * @author Ivo Gaydazhiev
  * @since 5.2.0
  * @see MultiClusterPooledConnectionProvider
@@ -66,17 +68,16 @@ import java.util.Set;
 @Experimental
 public class ResilientRedisClient extends UnifiedJedis {
 
-
   /**
    * Creates a ResilientJedisClient with custom components.
    * <p>
-   * This constructor allows full customization of the client components and is primarily
-   * used by the builder pattern for advanced configurations. For most use cases,
-   * prefer using {@link #builder()} to create instances.
+   * This constructor allows full customization of the client components and is primarily used by
+   * the builder pattern for advanced configurations. For most use cases, prefer using
+   * {@link #builder()} to create instances.
    * </p>
-   *
    * @param commandExecutor the command executor (typically CircuitBreakerCommandExecutor)
-   * @param connectionProvider the connection provider (typically MultiClusterPooledConnectionProvider)
+   * @param connectionProvider the connection provider (typically
+   *          MultiClusterPooledConnectionProvider)
    * @param commandObjects the command objects
    * @param redisProtocol the Redis protocol version
    * @param cache the client-side cache (may be null)
@@ -89,10 +90,9 @@ public class ResilientRedisClient extends UnifiedJedis {
   /**
    * Returns the underlying MultiClusterPooledConnectionProvider.
    * <p>
-   * This provides access to multi-cluster specific operations like manual failover,
-   * health status monitoring, and cluster switch event handling.
+   * This provides access to multi-cluster specific operations like manual failover, health status
+   * monitoring, and cluster switch event handling.
    * </p>
-   *
    * @return the multi-cluster connection provider
    * @throws ClassCastException if the provider is not a MultiClusterPooledConnectionProvider
    */
@@ -103,10 +103,9 @@ public class ResilientRedisClient extends UnifiedJedis {
   /**
    * Manually switches to the specified endpoint.
    * <p>
-   * This method allows manual failover to a specific endpoint, bypassing the automatic
-   * weight-based selection. The switch will only succeed if the target endpoint is healthy.
+   * This method allows manual failover to a specific endpoint, bypassing the automatic weight-based
+   * selection. The switch will only succeed if the target endpoint is healthy.
    * </p>
-   *
    * @param endpoint the endpoint to switch to
    */
   public void setActiveEndpoint(Endpoint endpoint) {
@@ -116,11 +115,10 @@ public class ResilientRedisClient extends UnifiedJedis {
   /**
    * Dynamically adds a new cluster endpoint to the resilient client.
    * <p>
-   * This allows adding new endpoints at runtime without recreating the client.
-   * The new endpoint will be available for failover operations immediately after
-   * being added and passing health checks (if configured).
+   * This allows adding new endpoints at runtime without recreating the client. The new endpoint
+   * will be available for failover operations immediately after being added and passing health
+   * checks (if configured).
    * </p>
-   *
    * @param endpoint the Redis server endpoint
    * @param weight the weight for this endpoint (higher values = higher priority)
    * @param clientConfig the client configuration for this endpoint
@@ -128,12 +126,10 @@ public class ResilientRedisClient extends UnifiedJedis {
    */
   public void addEndpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
     // Convert Endpoint to HostAndPort for ClusterConfig
-    HostAndPort hostAndPort = (endpoint instanceof HostAndPort)
-        ? (HostAndPort) endpoint
+    HostAndPort hostAndPort = (endpoint instanceof HostAndPort) ? (HostAndPort) endpoint
         : new HostAndPort(endpoint.getHost(), endpoint.getPort());
 
-    ClusterConfig clusterConfig = ClusterConfig.builder(hostAndPort, clientConfig)
-        .weight(weight)
+    ClusterConfig clusterConfig = ClusterConfig.builder(hostAndPort, clientConfig).weight(weight)
         .build();
 
     getMultiClusterProvider().add(clusterConfig);
@@ -144,7 +140,6 @@ public class ResilientRedisClient extends UnifiedJedis {
    * <p>
    * This method provides a view of all endpoints currently configured in the resilient client.
    * </p>
-   *
    * @return the set of all configured endpoints
    */
   public Set<Endpoint> getEndpoints() {
@@ -156,7 +151,6 @@ public class ResilientRedisClient extends UnifiedJedis {
    * <p>
    * This method provides the current health status of a specific endpoint.
    * </p>
-   *
    * @param endpoint the endpoint to check
    * @return the health status of the endpoint
    */
@@ -167,11 +161,10 @@ public class ResilientRedisClient extends UnifiedJedis {
   /**
    * Adds a pre-configured cluster configuration.
    * <p>
-   * This method allows adding a fully configured ClusterConfig instance,
-   * providing maximum flexibility for advanced configurations including
-   * custom health check strategies, connection pool settings, etc.
+   * This method allows adding a fully configured ClusterConfig instance, providing maximum
+   * flexibility for advanced configurations including custom health check strategies, connection
+   * pool settings, etc.
    * </p>
-   *
    * @param clusterConfig the pre-configured cluster configuration
    */
   public void addEndpoint(ClusterConfig clusterConfig) {
@@ -181,30 +174,30 @@ public class ResilientRedisClient extends UnifiedJedis {
   /**
    * Dynamically removes a cluster endpoint from the resilient client.
    * <p>
-   * This allows removing endpoints at runtime. If the removed endpoint is currently
-   * active, the client will automatically failover to the next available healthy
-   * endpoint based on weight priority.
+   * This allows removing endpoints at runtime. If the removed endpoint is currently active, the
+   * client will automatically failover to the next available healthy endpoint based on weight
+   * priority.
    * </p>
-   *
    * @param endpoint the endpoint to remove
    * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint doesn't exist
-   * @throws redis.clients.jedis.exceptions.JedisException if removing the endpoint would leave no healthy clusters available
+   * @throws redis.clients.jedis.exceptions.JedisException if removing the endpoint would leave no
+   *           healthy clusters available
    */
   public void removeEndpoint(Endpoint endpoint) {
     getMultiClusterProvider().remove(endpoint);
   }
-  
+
   /**
    * Forces the client to switch to a specific endpoint for a duration.
    * <p>
-   * This method forces the client to use the specified endpoint and puts all other
-   * endpoints in a grace period, preventing automatic failover for the specified duration.
-   * This is useful for maintenance scenarios or testing specific endpoints.
+   * This method forces the client to use the specified endpoint and puts all other endpoints in a
+   * grace period, preventing automatic failover for the specified duration. This is useful for
+   * maintenance scenarios or testing specific endpoints.
    * </p>
-   *
    * @param endpoint the endpoint to force as active
    * @param forcedActiveDurationMs the duration in milliseconds to keep this endpoint forced
-   * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint is not healthy or doesn't exist
+   * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint is not healthy
+   *           or doesn't exist
    */
   public void forceActiveEndpoint(Endpoint endpoint, long forcedActiveDurationMs) {
     getMultiClusterProvider().forceActiveCluster(endpoint, forcedActiveDurationMs);
@@ -213,29 +206,28 @@ public class ResilientRedisClient extends UnifiedJedis {
   /**
    * Creates a new pipeline for batch operations with multi-cluster support.
    * <p>
-   * The returned pipeline supports the same resilience features as the main client,
-   * including automatic failover during batch execution.
+   * The returned pipeline supports the same resilience features as the main client, including
+   * automatic failover during batch execution.
    * </p>
-   *
    * @return a new MultiClusterPipeline instance
    */
   @Override
   public MultiClusterPipeline pipelined() {
-    return  new MultiClusterPipeline(getMultiClusterProvider(), commandObjects);
+    return new MultiClusterPipeline(getMultiClusterProvider(), commandObjects);
   }
 
   /**
    * Creates a new transaction with multi-cluster support.
    * <p>
-   * The returned transaction supports the same resilience features as the main client,
-   * including automatic failover during transaction execution.
+   * The returned transaction supports the same resilience features as the main client, including
+   * automatic failover during transaction execution.
    * </p>
-   * 
    * @return a new MultiClusterTransaction instance
    */
   @Override
   public MultiClusterTransaction multi() {
-    return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
+    return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true,
+        commandObjects);
   }
 
   /**
@@ -245,12 +237,12 @@ public class ResilientRedisClient extends UnifiedJedis {
   @Override
   public MultiClusterTransaction transaction(boolean doMulti) {
     if (provider == null) {
-      throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
+      throw new IllegalStateException(
+          "It is not allowed to create Transaction from this " + getClass());
     }
 
     return new MultiClusterTransaction(getMultiClusterProvider(), doMulti, commandObjects);
   }
-
 
   public Endpoint getActiveEndpoint() {
     return getMultiClusterProvider().getCluster().getEndpoint();
@@ -266,14 +258,13 @@ public class ResilientRedisClient extends UnifiedJedis {
 
     @Override
     protected ResilientRedisClient createClient() {
-      return new ResilientRedisClient(commandExecutor, connectionProvider,
-          commandObjects, redisProtocol, cache);
+      return new ResilientRedisClient(commandExecutor, connectionProvider, commandObjects,
+          redisProtocol, cache);
     }
   }
 
   /**
    * Create a new builder for configuring ResilientJedisClient instances.
-   * 
    * @return a new {@link ResilientRedisClient.Builder} instance
    */
   public static Builder builder() {

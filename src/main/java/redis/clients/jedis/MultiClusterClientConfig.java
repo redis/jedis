@@ -1053,8 +1053,6 @@ public final class MultiClusterClientConfig {
 
     /**
      * Constructs a new Builder with the specified cluster configurations.
-     * @param clusterConfigs array of cluster configurations defining available Redis endpoints
-     * @throws JedisValidationException if clusterConfigs is null or empty
      */
     public Builder() {
     }

@@ -12,8 +12,10 @@ import io.github.resilience4j.retry.RetryRegistry;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -49,7 +51,7 @@ import redis.clients.jedis.util.Pool;
  *         isolated connection pool. With this ConnectionProvider users can seamlessly failover to
  *         Disaster Recovery (DR), Backup, and Active-Active cluster(s) by using simple
  *         configuration which is passed through from Resilience4j -
- *         https://resilience4j.readme.io/docs
+ *         <a href="https://resilience4j.readme.io/docs">docs</a>
  *         <p>
  *         Support for manual failback is provided by way of {@link #setActiveCluster(Endpoint)}
  *         <p>
@@ -321,11 +323,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       // Register listeners BEFORE adding clusters to avoid missing events
       healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
       HealthCheck hc = healthStatusManager.add(config.getHostAndPort(), hcs);
-      cluster = new Cluster(pool, retry, hc, circuitBreaker, config.getWeight(),
-          multiClusterClientConfig);
+      cluster = new Cluster(config.getHostAndPort(), pool, retry, hc, circuitBreaker,
+          config.getWeight(), multiClusterClientConfig);
     } else {
-      cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(),
-          multiClusterClientConfig);
+      cluster = new Cluster(config.getHostAndPort(), pool, retry, circuitBreaker,
+          config.getWeight(), multiClusterClientConfig);
     }
 
     multiClusterMap.put(config.getHostAndPort(), cluster);
@@ -564,6 +566,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
+  /**
+   * Returns the set of all configured endpoints.
+   * @return
+   */
+  public Set<Endpoint> getEndpoints() {
+    return new HashSet<>(multiClusterMap.keySet());
+  }
+
   public void setActiveCluster(Endpoint endpoint) {
     if (endpoint == null) {
       throw new JedisValidationException(
@@ -581,6 +591,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
   public void forceActiveCluster(Endpoint endpoint, long forcedActiveDuration) {
     Cluster cluster = multiClusterMap.get(endpoint);
+
+    if (cluster == null) {
+      throw new JedisValidationException("Provided endpoint: " + endpoint + " is not within "
+          + "the configured endpoints. Please use one from the configuration");
+    }
+
     cluster.clearGracePeriod();
     if (!cluster.isHealthy()) {
       throw new JedisValidationException("Provided endpoint: " + endpoint
@@ -685,6 +701,30 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     return multiClusterMap.get(endpoint);
   }
 
+  /**
+   * Returns the active endpoint
+   * <p>
+   * Active endpoint is the one which is currently being used for all operations. It can change at
+   * any time due to health checks, failover, failback, etc.
+   * @return the active cluster endpoint
+   */
+  public Endpoint getActiveEndpoint() {
+    return activeCluster.getEndpoint();
+  }
+
+  /**
+   * Returns the health state of the given endpoint
+   * @param endpoint the endpoint to check
+   * @return the health status of the endpoint
+   */
+  public boolean isHealthy(Endpoint endpoint) {
+    Cluster cluster = getCluster(endpoint);
+    if (cluster == null) {
+      return false;
+    }
+    return cluster.isHealthy();
+  }
+
   public CircuitBreaker getClusterCircuitBreaker() {
     return activeCluster.getCircuitBreaker();
   }
@@ -723,15 +763,17 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private final HealthCheck healthCheck;
     private final MultiClusterClientConfig multiClusterClientConfig;
     private boolean disabled = false;
+    private final Endpoint endpoint;
 
     // Grace period tracking
     private volatile long gracePeriodEndsAt = 0;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private Cluster(TrackingConnectionPool connectionPool, Retry retry,
+    private Cluster(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
         CircuitBreaker circuitBreaker, float weight,
         MultiClusterClientConfig multiClusterClientConfig) {
 
+      this.endpoint = endpoint;
       this.connectionPool = connectionPool;
       this.retry = retry;
       this.circuitBreaker = circuitBreaker;
@@ -740,16 +782,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       this.healthCheck = null;
     }
 
-    private Cluster(TrackingConnectionPool connectionPool, Retry retry, HealthCheck hc,
-        CircuitBreaker circuitBreaker, float weight,
+    private Cluster(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
+        HealthCheck hc, CircuitBreaker circuitBreaker, float weight,
         MultiClusterClientConfig multiClusterClientConfig) {
 
+      this.endpoint = endpoint;
       this.connectionPool = connectionPool;
       this.retry = retry;
       this.circuitBreaker = circuitBreaker;
       this.weight = weight;
       this.multiClusterClientConfig = multiClusterClientConfig;
       this.healthCheck = hc;
+    }
+
+    public Endpoint getEndpoint() {
+      return endpoint;
     }
 
     public Connection getConnection() {
@@ -886,5 +933,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
           + retry + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus="
           + getHealthStatus() + ", multiClusterClientConfig=" + multiClusterClientConfig + '}';
     }
+
   }
 }

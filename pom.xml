@@ -63,7 +63,7 @@
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
-		<excludedGroups>integration,scenario</excludedGroups>
+		<excludedGroupsForUnitTests>integration,scenario</excludedGroupsForUnitTests>
 	</properties>
 
 	<dependencyManagement>
@@ -337,7 +337,7 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
-					<excludedGroups>${excludedGroups}</excludedGroups>
+					<excludedGroups>${excludedGroupsForUnitTests}</excludedGroups>
 					<excludes>
 						<exclude>**/examples/*.java</exclude>
 						<exclude>**/scenario/*Test.java</exclude>

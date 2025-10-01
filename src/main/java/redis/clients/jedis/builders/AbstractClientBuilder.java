@@ -66,8 +66,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   }
 
   /**
-   * Factory method for creating CommandObjects. Subclasses may override to provide
-   * specialized CommandObjects implementations (e.g., ClusterCommandObjects).
+   * Factory method for creating CommandObjects. Subclasses may override to provide specialized
+   * CommandObjects implementations (e.g., ClusterCommandObjects).
    */
   protected CommandObjects createDefaultCommandObjects() {
     return new CommandObjects();

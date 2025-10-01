@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
@@ -27,6 +28,7 @@ import java.util.function.Consumer;
 /**
  * Basic tests for ResilientJedisClient functionality.
  */
+@Tag("integration")
 public class ResilientRedisClientTest {
 
   private ResilientRedisClient client;

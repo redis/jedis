@@ -47,9 +47,7 @@ public abstract class StandaloneClientBuilder<C>
 
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
-    JedisClientConfig config = this.clientConfig != null ? this.clientConfig
-        : DefaultJedisClientConfig.builder().build();
-    return new PooledConnectionProvider(this.hostAndPort, config, this.cache, this.poolConfig);
+    return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache, this.poolConfig);
   }
 
   @Override

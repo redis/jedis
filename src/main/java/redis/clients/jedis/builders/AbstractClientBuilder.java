@@ -80,6 +80,14 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   }
 
   /**
+   * Creates a default client configuration based on the current configuration.
+   * @return JedisClientConfig
+   */
+  protected JedisClientConfig createDefaultClientConfig() {
+    return DefaultJedisClientConfig.builder().build();
+  }
+
+  /**
    * Factory method for creating CommandObjects. Subclasses may override to provide specialized
    * CommandObjects implementations (e.g., ClusterCommandObjects).
    */
@@ -128,6 +136,10 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     // Create cache from config if provided
     if (this.cacheConfig != null) {
       this.cache = CacheFactory.getCache(this.cacheConfig);
+    }
+
+    if (this.clientConfig == null) {
+      this.clientConfig = createDefaultClientConfig();
     }
 
     // Create default connection provider if not set

@@ -84,9 +84,7 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
 
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
-    JedisClientConfig config = this.clientConfig != null ? this.clientConfig
-        : DefaultJedisClientConfig.builder().build();
-    return new ClusterConnectionProvider(this.nodes, config, this.cache, this.poolConfig,
+    return new ClusterConnectionProvider(this.nodes, this.clientConfig, this.cache, this.poolConfig,
         this.topologyRefreshPeriod);
   }
 

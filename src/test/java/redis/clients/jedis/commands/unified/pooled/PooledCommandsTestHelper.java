@@ -7,8 +7,8 @@ public class PooledCommandsTestHelper {
   public static final EndpointConfig nodeInfo = HostAndPorts.getRedisEndpoint("standalone0");
 
   public static JedisPooled getPooled(RedisProtocol redisProtocol) {
-    return new JedisPooled(nodeInfo.getHostAndPort(), nodeInfo.getClientConfigBuilder()
-        .protocol(redisProtocol).build());
+    return JedisPooled.builder().hostAndPort(nodeInfo.getHostAndPort()).clientConfig(nodeInfo.getClientConfigBuilder()
+        .protocol(redisProtocol).build()).build();
   }
 
   public static void clearData() {

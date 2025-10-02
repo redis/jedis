@@ -280,8 +280,8 @@ public class HealthCheckTest {
     // Register listener before adding health check to capture the initial event
     manager.registerListener(testEndpoint, listener);
 
-    HealthCheckStrategy delayedStrategy = new TestHealthCheckStrategy(1000, 500, 2,
-        BuiltIn.ANY_SUCCESS, 100, e -> HealthStatus.HEALTHY);
+    HealthCheckStrategy delayedStrategy = new TestHealthCheckStrategy(2000, 1000, 3,
+        BuiltIn.ALL_SUCCESS, 100, e -> HealthStatus.HEALTHY);
 
     // Add health check - this will start async health checking
     manager.add(testEndpoint, delayedStrategy);

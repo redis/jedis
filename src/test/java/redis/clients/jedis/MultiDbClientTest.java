@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Basic tests for ResilientJedisClient functionality.
+ * Basic tests for MultiDbClient functionality.
  */
 @Tag("integration")
-public class ResilientRedisClientTest {
+public class MultiDbClientTest {
 
-  private ResilientRedisClient client;
+  private MultiDbClient client;
   private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
   private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
 
@@ -61,7 +61,7 @@ public class ResilientRedisClientTest {
         .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
         .build();
 
-    client = ResilientRedisClient.builder().multiClusterConfig(clientConfig).build();
+    client = MultiDbClient.builder().multiClusterConfig(clientConfig).build();
   }
 
   @AfterEach
@@ -128,7 +128,7 @@ public class ResilientRedisClientTest {
             .weight(50.0f).build())
         .build();
 
-    try (ResilientRedisClient testClient = ResilientRedisClient.builder()
+    try (MultiDbClient testClient = MultiDbClient.builder()
         .multiClusterConfig(clientConfig).build()) {
       assertThat(testClient.getEndpoints().size(), equalTo(2));
       assertThat(testClient.getEndpoints(),
@@ -186,7 +186,7 @@ public class ResilientRedisClientTest {
     List<ClusterSwitchEventArgs> events = new ArrayList<>();
     eventConsumer = events::add;
 
-    try (ResilientRedisClient testClient = ResilientRedisClient.builder()
+    try (MultiDbClient testClient = MultiDbClient.builder()
         .clusterSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
 
       assertThat(events.size(), equalTo(0));

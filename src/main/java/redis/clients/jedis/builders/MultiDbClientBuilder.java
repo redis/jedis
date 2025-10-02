@@ -11,9 +11,9 @@ import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 
 /**
- * Builder for creating resilient Redis clients with multi-endpoint support.
+ * Builder for creating multi-db Redis clients with multi-endpoint support.
  * <p>
- * This builder provides methods specific to resilient Redis deployments, including multiple
+ * This builder provides methods specific to multi-db Redis deployments, including multiple
  * weighted endpoints, circuit breaker configuration, health checks, and automatic failover/failback
  * capabilities.
  * </p>
@@ -34,16 +34,16 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <p>
  * <strong>Usage Examples:</strong>
  * </p>
- * 
+ *
  * <pre>
  * // Simple configuration with default settings
- * ResilientJedisClient client = ResilientJedisClient.builder()
+ * MultiDbClient client = MultiDbClient.builder()
  *     .endpoint("primary:6379", 100)
  *     .endpoint("backup:6379", 50)
  *     .build();
- * 
+ *
  * // Advanced configuration with custom settings
- * ResilientJedisClient client = ResilientJedisClient.builder()
+ * MultiDbClient client = MultiDbClient.builder()
  *     .endpoint("primary:6379", 100)
  *     .endpoint("backup:6379", 50)
  *     .endpoint("dr:6379", 25)
@@ -67,10 +67,10 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * @since 5.2.0
  */
 @Experimental
-public abstract class ResilientClientBuilder<C>
-    extends AbstractClientBuilder<ResilientClientBuilder<C>, C> {
+public abstract class MultiDbClientBuilder<C>
+    extends AbstractClientBuilder<MultiDbClientBuilder<C>, C> {
 
-  // Resilient-specific configuration fields
+  // Multi-db specific configuration fields
   private MultiClusterClientConfig multiClusterConfig = null;
   private Consumer<ClusterSwitchEventArgs> clusterSwitchListener = null;
 
@@ -83,7 +83,7 @@ public abstract class ResilientClientBuilder<C>
    * @param config the multi-cluster configuration
    * @return this builder
    */
-  public ResilientClientBuilder<C> multiClusterConfig(MultiClusterClientConfig config) {
+  public MultiDbClientBuilder<C> multiClusterConfig(MultiClusterClientConfig config) {
     this.multiClusterConfig = config;
     return this;
   }
@@ -98,14 +98,14 @@ public abstract class ResilientClientBuilder<C>
    * @param listener the cluster switch event listener
    * @return this builder
    */
-  public ResilientClientBuilder<C> clusterSwitchListener(
+  public MultiDbClientBuilder<C> clusterSwitchListener(
       Consumer<ClusterSwitchEventArgs> listener) {
     this.clusterSwitchListener = listener;
     return this;
   }
 
   @Override
-  protected ResilientClientBuilder<C> self() {
+  protected MultiDbClientBuilder<C> self() {
     return this;
   }
 
@@ -131,7 +131,7 @@ public abstract class ResilientClientBuilder<C>
 
   @Override
   protected CommandExecutor createDefaultCommandExecutor() {
-    // For resilient clients, we always use CircuitBreakerCommandExecutor
+    // For multi-db clients, we always use CircuitBreakerCommandExecutor
     return new CircuitBreakerCommandExecutor(
         (MultiClusterPooledConnectionProvider) this.connectionProvider);
   }

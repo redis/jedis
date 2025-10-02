@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.builders.ResilientClientBuilder;
+import redis.clients.jedis.builders.MultiDbClientBuilder;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
@@ -14,7 +14,7 @@ import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
 import java.util.Set;
 
 /**
- * ResilientJedisClient provides high-availability Redis connectivity with automatic failover and
+ * MultiDbClient provides high-availability Redis connectivity with automatic failover and
  * failback capabilities across multiple weighted endpoints.
  * <p>
  * This client extends UnifiedJedis to support resilient operations with:
@@ -36,16 +36,30 @@ import java.util.Set;
  * </p>
  * 
  * <pre>
- * // Create resilient client with multiple endpoints
- * ResilientJedisClient client = ResilientJedisClient.builder().endpoint("primary-redis:6379", 100) // Primary
- *                                                                                                  // with
- *                                                                                                  // weight
- *                                                                                                  // 100
- *     .endpoint("backup-redis:6379", 50) // Backup with weight 50
- *     .endpoint("dr-redis:6379", 25) // DR with weight 25
- *     .multiClusterConfig(MultiClusterClientConfig.builder().circuitBreakerSlidingWindowSize(10)
- *         .circuitBreakerFailureRateThreshold(50.0f).retryMaxAttempts(3).build())
- *     .build();
+ * // Create multi-db client with multiple endpoints
+ * HostAndPort primary = new HostAndPort("localhost", 29379);
+ * HostAndPort secondary = new HostAndPort("localhost", 29380);
+ *
+ *
+ * MultiDbClient client = MultiDbClient.builder()
+ *                 .multiClusterConfig(
+ *                         MultiClusterClientConfig.builder()
+ *                                 .endpoint(
+ *                                         ClusterConfig.builder(
+ *                                                         primary,
+ *                                                         DefaultJedisClientConfig.builder().build())
+ *                                                 .weight(100.0f)
+ *                                                 .build())
+ *                                 .endpoint(ClusterConfig.builder(
+ *                                                 secondary,
+ *                                                 DefaultJedisClientConfig.builder().build())
+ *                                         .weight(50.0f).build())
+ *                                 .circuitBreakerFailureRateThreshold(50.0f)
+ *                                 .retryMaxAttempts(3)
+ *                                 .build()
+ *                 )
+ *                 .clusterSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
+ *                 .build();
  * 
  * // Use like any other Jedis client
  * client.set("key", "value");
@@ -66,10 +80,10 @@ import java.util.Set;
  * @see MultiClusterClientConfig
  */
 @Experimental
-public class ResilientRedisClient extends UnifiedJedis {
+public class MultiDbClient extends UnifiedJedis {
 
   /**
-   * Creates a ResilientJedisClient with custom components.
+   * Creates a MultiDbClient with custom components.
    * <p>
    * This constructor allows full customization of the client components and is primarily used by
    * the builder pattern for advanced configurations. For most use cases, prefer using
@@ -82,7 +96,7 @@ public class ResilientRedisClient extends UnifiedJedis {
    * @param redisProtocol the Redis protocol version
    * @param cache the client-side cache (may be null)
    */
-  ResilientRedisClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+  MultiDbClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
       CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
   }
@@ -249,23 +263,23 @@ public class ResilientRedisClient extends UnifiedJedis {
   }
 
   /**
-   * Fluent builder for {@link ResilientRedisClient}.
+   * Fluent builder for {@link MultiDbClient}.
    * <p>
    * Obtain an instance via {@link #builder()}.
    * </p>
    */
-  public static class Builder extends ResilientClientBuilder<ResilientRedisClient> {
+  public static class Builder extends MultiDbClientBuilder<MultiDbClient> {
 
     @Override
-    protected ResilientRedisClient createClient() {
-      return new ResilientRedisClient(commandExecutor, connectionProvider, commandObjects,
+    protected MultiDbClient createClient() {
+      return new MultiDbClient(commandExecutor, connectionProvider, commandObjects,
           redisProtocol, cache);
     }
   }
 
   /**
-   * Create a new builder for configuring ResilientJedisClient instances.
-   * @return a new {@link ResilientRedisClient.Builder} instance
+   * Create a new builder for configuring MultiDbClient instances.
+   * @return a new {@link MultiDbClient.Builder} instance
    */
   public static Builder builder() {
     return new Builder();

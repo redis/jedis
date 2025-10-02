@@ -130,16 +130,16 @@ public final class MultiClusterClientConfig {
       .asList(JedisConnectionException.class);
 
   /** Default failure rate threshold percentage for circuit breaker activation. */
-  private static final float CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT = 50.0f;
+  private static final float CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT = 10.0f;
 
   /** Default minimum number of calls required before circuit breaker can calculate failure rate. */
-  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT = 100;
+  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT = 1000;
 
   /** Default sliding window type for circuit breaker failure tracking. */
   private static final SlidingWindowType CIRCUIT_BREAKER_SLIDING_WINDOW_TYPE_DEFAULT = SlidingWindowType.COUNT_BASED;
 
   /** Default sliding window size for circuit breaker failure tracking. */
-  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 100;
+  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 2;
 
   /** Default slow call duration threshold in milliseconds. */
   private static final int CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT = 60000;
@@ -156,10 +156,10 @@ public final class MultiClusterClientConfig {
       .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
   /** Default interval in milliseconds for checking if failed clusters have recovered. */
-  private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 5000;
+  private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 120000;
 
   /** Default grace period in milliseconds to keep clusters disabled after they become unhealthy. */
-  private static final long GRACE_PERIOD_DEFAULT = 10000;
+  private static final long GRACE_PERIOD_DEFAULT = 60000;
 
   /** Default maximum number of failover attempts. */
   private static final int MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT = 10;

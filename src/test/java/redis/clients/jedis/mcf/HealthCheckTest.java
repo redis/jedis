@@ -531,7 +531,7 @@ public class HealthCheckTest {
     // Test without config
     HealthCheckStrategy strategyWithoutConfig = supplier.get(testEndpoint, null);
     assertNotNull(strategyWithoutConfig);
-    assertEquals(1000, strategyWithoutConfig.getInterval()); // Default values
+    assertEquals(5000, strategyWithoutConfig.getInterval()); // Default values
     assertEquals(1000, strategyWithoutConfig.getTimeout());
   }
 

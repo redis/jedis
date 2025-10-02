@@ -122,7 +122,7 @@ public class MultiDbClient extends UnifiedJedis {
    * </p>
    * @param endpoint the endpoint to switch to
    */
-  public void setActiveEndpoint(Endpoint endpoint) {
+  public void setActiveDatabaseEndpoint(Endpoint endpoint) {
     getMultiClusterProvider().setActiveCluster(endpoint);
   }
 

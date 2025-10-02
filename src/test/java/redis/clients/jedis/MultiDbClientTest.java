@@ -103,7 +103,7 @@ public class MultiDbClientTest {
   }
 
   @Test
-  void testSetActiveEndpoint() {
+  void testSetActiveDatabaseEndpoint() {
     Endpoint endpoint = client.getActiveEndpoint();
 
     awaitIsHealthy(endpoint1.getHostAndPort());
@@ -114,7 +114,7 @@ public class MultiDbClientTest {
     assertNotNull(newEndpoint);
 
     // Switch to the new endpoint
-    client.setActiveEndpoint(newEndpoint);
+    client.setActiveDatabaseEndpoint(newEndpoint);
 
     assertEquals(newEndpoint, client.getMultiClusterProvider().getCluster().getEndpoint());
   }
@@ -192,7 +192,7 @@ public class MultiDbClientTest {
       assertThat(events.size(), equalTo(0));
 
       awaitIsHealthy(endpoint2.getHostAndPort());
-      testClient.setActiveEndpoint(endpoint2.getHostAndPort());
+      testClient.setActiveDatabaseEndpoint(endpoint2.getHostAndPort());
 
       assertThat(events.size(), equalTo(1));
       assertThat(events.get(0).getEndpoint(), equalTo(endpoint2.getHostAndPort()));

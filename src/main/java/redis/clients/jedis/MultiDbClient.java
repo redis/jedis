@@ -59,7 +59,7 @@ import java.util.Set;
  *                                 .build()
  *                 )
  *                 .databaseSwitchListener(event -&gt;
- *                     System.out.println("Switched to: " + event.getEndpoint()))
+ *                    System.out.println("Switched to: " + event.getEndpoint()))
  *                 .build();
  * 
  * // Use like any other Jedis client
@@ -274,7 +274,7 @@ public class MultiDbClient extends UnifiedJedis {
     @Override
     protected MultiDbClient createClient() {
       return new MultiDbClient(commandExecutor, connectionProvider, commandObjects,
-          redisProtocol, cache);
+              clientConfig.getRedisProtocol(), cache);
     }
   }
 

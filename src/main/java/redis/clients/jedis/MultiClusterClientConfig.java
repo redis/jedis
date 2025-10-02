@@ -1179,7 +1179,7 @@ public final class MultiClusterClientConfig {
      * </ul>
      * @param circuitBreakerFailureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
      * @return this builder instance for method chaining
-     * @see #circuitBreakerMinNumOfFailures()
+     * @see #circuitBreakerMinNumOfFailures(int)
      */
     public Builder circuitBreakerFailureRateThreshold(float circuitBreakerFailureRateThreshold) {
       checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
@@ -1209,7 +1209,7 @@ public final class MultiClusterClientConfig {
      * @param circuitBreakerMinNumOfFailures minimum number of failures before circuit breaker is
      *          tripped
      * @return this builder instance for method chaining
-     * @see #circuitBreakerFailureRateThreshold()
+     * @see #circuitBreakerFailureRateThreshold(float)
      */
     public Builder circuitBreakerMinNumOfFailures(int circuitBreakerMinNumOfFailures) {
       checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);

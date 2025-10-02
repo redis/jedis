@@ -14,8 +14,8 @@ import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
 import java.util.Set;
 
 /**
- * MultiDbClient provides high-availability Redis connectivity with automatic failover and
- * failback capabilities across multiple weighted endpoints.
+ * MultiDbClient provides high-availability Redis connectivity with automatic failover and failback
+ * capabilities across multiple weighted endpoints.
  * <p>
  * This client extends UnifiedJedis to support resilient operations with:
  * <ul>
@@ -274,7 +274,7 @@ public class MultiDbClient extends UnifiedJedis {
     @Override
     protected MultiDbClient createClient() {
       return new MultiDbClient(commandExecutor, connectionProvider, commandObjects,
-              clientConfig.getRedisProtocol(), cache);
+          clientConfig.getRedisProtocol(), cache);
     }
   }
 

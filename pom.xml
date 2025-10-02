@@ -491,8 +491,7 @@
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
-						<include>**/ResilientRedis*.java</include>
-						<include>**/ResilientClientBuilder.java</include>
+						<include>**/MultiDb*.java</include>
 					</includes>
 				</configuration>
 				<executions>

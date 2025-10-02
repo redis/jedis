@@ -13,8 +13,8 @@ import redis.clients.jedis.providers.ConnectionProvider;
 /**
  * Builder for creating multi-db Redis clients with multi-endpoint support.
  * <p>
- * This builder provides methods specific to multi-db Redis deployments, including multiple
- * weighted endpoints, circuit breaker configuration, health checks, and automatic failover/failback
+ * This builder provides methods specific to multi-db Redis deployments, including multiple weighted
+ * endpoints, circuit breaker configuration, health checks, and automatic failover/failback
  * capabilities.
  * </p>
  * <p>
@@ -98,8 +98,7 @@ public abstract class MultiDbClientBuilder<C>
    * @param listener the database switch event listener
    * @return this builder
    */
-  public MultiDbClientBuilder<C> databaseSwitchListener(
-      Consumer<ClusterSwitchEventArgs> listener) {
+  public MultiDbClientBuilder<C> databaseSwitchListener(Consumer<ClusterSwitchEventArgs> listener) {
     this.databaseSwitchListener = listener;
     return this;
   }

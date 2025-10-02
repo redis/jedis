@@ -36,30 +36,26 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * </p>
  *
  * <pre>
- * // Simple configuration with default settings
  * MultiDbClient client = MultiDbClient.builder()
- *     .endpoint("primary:6379", 100)
- *     .endpoint("backup:6379", 50)
- *     .build();
- *
- * // Advanced configuration with custom settings
- * MultiDbClient client = MultiDbClient.builder()
- *     .endpoint("primary:6379", 100)
- *     .endpoint("backup:6379", 50)
- *     .endpoint("dr:6379", 25)
- *     .multiDbConfig(
- *         MultiClusterClientConfig.builder()
- *             .circuitBreakerSlidingWindowSize(20)
- *             .circuitBreakerFailureRateThreshold(60.0f)
- *             .retryMaxAttempts(5)
- *             .enableFailback(true)
- *             .failbackCheckInterval(Duration.ofSeconds(30))
- *             .build()
- *     )
- *     .onClusterSwitch(event -&gt;
- *         log.info("Switched to cluster: {} due to: {}",
- *             event.getEndpoint(), event.getReason()))
- *     .build();
+ *                 .multiDbConfig(
+ *                         MultiClusterClientConfig.builder()
+ *                                 .endpoint(
+ *                                         ClusterConfig.builder(
+ *                                                         east,
+ *                                                         DefaultJedisClientConfig.builder().credentials(credentialsEast).build())
+ *                                                 .weight(100.0f)
+ *                                                 .build())
+ *                                 .endpoint(ClusterConfig.builder(
+ *                                                 west,
+ *                                                 DefaultJedisClientConfig.builder().credentials(credentialsWest).build())
+ *                                         .weight(50.0f).build())
+ *                                 .circuitBreakerFailureRateThreshold(50.0f)
+ *                                 .retryMaxAttempts(3)
+ *                                 .build()
+ *                 )
+ *                 .databaseSwitchListener(event -&gt;
+ *                     System.out.println("Switched to: " + event.getEndpoint()))
+ *                 .build();
  * </pre>
  * 
  * @param <C> the client type that this builder creates

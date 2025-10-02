@@ -242,23 +242,25 @@ public final class MultiClusterClientConfig {
   /**
    * Minimum number of failures before circuit breaker is tripped.
    * <p>
-   * When the number of failures exceeds this threshold, the circuit breaker will trip and prevent
-   * further requests from being sent to the cluster until it has recovered.
+   * When the number of failures exceeds both this threshold and the failure rate threshold, the
+   * circuit breaker will trip and prevent further requests from being sent to the cluster until it
+   * has recovered.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT}
    * </p>
    * @see #getCircuitBreakerMinNumOfFailures()
+   * @see #circuitBreakerFailureRateThreshold
    */
   private int circuitBreakerMinNumOfFailures;
 
   /**
    * Failure rate threshold percentage that triggers circuit breaker transition to OPEN state.
    * <p>
-   * When the failure rate equals or exceeds this threshold, the circuit breaker transitions to the
-   * OPEN state and starts short-circuiting calls, immediately failing them without attempting to
-   * reach the Redis cluster. This prevents cascading failures and allows the system to fail over to
-   * the next available cluster.
+   * When the failure rate exceeds both this threshold and the minimum number of failures, the
+   * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
+   * failing them without attempting to reach the Redis cluster. This prevents cascading failures
+   * and allows the system to fail over to the next available cluster.
    * </p>
    * <p>
    * <strong>Range:</strong> 0.0 to 100.0 (percentage)
@@ -267,7 +269,7 @@ public final class MultiClusterClientConfig {
    * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT}%
    * </p>
    * @see #getCircuitBreakerFailureRateThreshold()
-   * @see #circuitBreakerSlidingWindowMinCalls
+   * @see #circuitBreakerMinNumOfFailures
    */
   private float circuitBreakerFailureRateThreshold;
 
@@ -493,9 +495,11 @@ public final class MultiClusterClientConfig {
   }
 
   /**
-   * Returns the failure rate threshold percentage for circuit breaker activation.
+   * Returns the failure rate threshold percentage for circuit breaker activation. 0.0f means
+   * failure rate is ignored, and only minimum number of failures is considered.
    * @return failure rate threshold as a percentage (0.0 to 100.0)
    * @see #circuitBreakerFailureRateThreshold
+   * @see #getCircuitBreakerMinNumOfFailures
    */
   public float getCircuitBreakerFailureRateThreshold() {
     return circuitBreakerFailureRateThreshold;
@@ -511,9 +515,11 @@ public final class MultiClusterClientConfig {
   }
 
   /**
-   * Returns the minimum number of failures before circuit breaker is tripped.
+   * Returns the minimum number of failures before circuit breaker is tripped. 0 means minimum
+   * number of failures is ignored, and only failure rate is considered.
    * @return minimum number of failures before circuit breaker is tripped
    * @see #circuitBreakerMinNumOfFailures
+   * @see #getCircuitBreakerFailureRateThreshold
    */
   public int getCircuitBreakerMinNumOfFailures() {
     return circuitBreakerMinNumOfFailures;
@@ -1159,9 +1165,9 @@ public final class MultiClusterClientConfig {
     /**
      * Sets the failure rate threshold percentage that triggers circuit breaker activation.
      * <p>
-     * When the failure rate equals or exceeds this threshold, the circuit breaker transitions to
-     * the OPEN state and starts short-circuiting calls, enabling immediate failover to the next
-     * available cluster.
+     * When both the failure rate and minimum number of failures exceeds this threshold, the circuit
+     * breaker transitions to the OPEN state and starts short-circuiting calls, enabling immediate
+     * failover to the next available cluster.
      * </p>
      * <p>
      * <strong>Typical Values:</strong>
@@ -1173,6 +1179,7 @@ public final class MultiClusterClientConfig {
      * </ul>
      * @param circuitBreakerFailureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
      * @return this builder instance for method chaining
+     * @see #circuitBreakerMinNumOfFailures()
      */
     public Builder circuitBreakerFailureRateThreshold(float circuitBreakerFailureRateThreshold) {
       checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
@@ -1193,8 +1200,8 @@ public final class MultiClusterClientConfig {
     /**
      * Sets the minimum number of failures before circuit breaker is tripped.
      * <p>
-     * When the number of failures exceeds this threshold, the circuit breaker will trip and prevent
-     * further requests from being sent to the cluster until it has recovered.
+     * When both the number of failures and failure rate exceeds this threshold, the circuit breaker
+     * will trip and prevent further requests from being sent to the cluster until it has recovered.
      * </p>
      * <p>
      * <strong>Default:</strong> 1000
@@ -1202,6 +1209,7 @@ public final class MultiClusterClientConfig {
      * @param circuitBreakerMinNumOfFailures minimum number of failures before circuit breaker is
      *          tripped
      * @return this builder instance for method chaining
+     * @see #circuitBreakerFailureRateThreshold()
      */
     public Builder circuitBreakerMinNumOfFailures(int circuitBreakerMinNumOfFailures) {
       checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);

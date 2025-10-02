@@ -42,7 +42,7 @@ import java.util.Set;
  *
  *
  * MultiDbClient client = MultiDbClient.builder()
- *                 .multiClusterConfig(
+ *                 .multiDbConfig(
  *                         MultiClusterClientConfig.builder()
  *                                 .endpoint(
  *                                         ClusterConfig.builder(

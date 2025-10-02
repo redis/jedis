@@ -47,7 +47,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  *     .endpoint("primary:6379", 100)
  *     .endpoint("backup:6379", 50)
  *     .endpoint("dr:6379", 25)
- *     .multiClusterConfig(
+ *     .multiDbConfig(
  *         MultiClusterClientConfig.builder()
  *             .circuitBreakerSlidingWindowSize(20)
  *             .circuitBreakerFailureRateThreshold(60.0f)
@@ -57,7 +57,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  *             .build()
  *     )
  *     .onClusterSwitch(event -&gt;
- *         log.info("Switched to cluster: {} due to: {}", 
+ *         log.info("Switched to cluster: {} due to: {}",
  *             event.getEndpoint(), event.getReason()))
  *     .build();
  * </pre>
@@ -71,20 +71,20 @@ public abstract class MultiDbClientBuilder<C>
     extends AbstractClientBuilder<MultiDbClientBuilder<C>, C> {
 
   // Multi-db specific configuration fields
-  private MultiClusterClientConfig multiClusterConfig = null;
+  private MultiClusterClientConfig multiDbConfig = null;
   private Consumer<ClusterSwitchEventArgs> databaseSwitchListener = null;
 
   /**
-   * Sets the multi-cluster configuration.
+   * Sets the multi-database configuration.
    * <p>
    * This configuration controls circuit breaker behavior, retry logic, health checks, failback
    * settings, and other resilience features. If not provided, default configuration will be used.
    * </p>
-   * @param config the multi-cluster configuration
+   * @param config the multi-database configuration
    * @return this builder
    */
-  public MultiDbClientBuilder<C> multiClusterConfig(MultiClusterClientConfig config) {
-    this.multiClusterConfig = config;
+  public MultiDbClientBuilder<C> multiDbConfig(MultiClusterClientConfig config) {
+    this.multiDbConfig = config;
     return this;
   }
 
@@ -112,14 +112,14 @@ public abstract class MultiDbClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
 
-    if (this.multiClusterConfig == null || this.multiClusterConfig.getClusterConfigs() == null
-        || this.multiClusterConfig.getClusterConfigs().length < 1) {
+    if (this.multiDbConfig == null || this.multiDbConfig.getClusterConfigs() == null
+        || this.multiDbConfig.getClusterConfigs().length < 1) {
       throw new IllegalArgumentException("At least one endpoint must be specified");
     }
 
     // Create the multi-cluster connection provider
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        multiClusterConfig);
+        multiDbConfig);
 
     // Set database switch listener if provided
     if (this.databaseSwitchListener != null) {

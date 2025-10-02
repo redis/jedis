@@ -61,7 +61,7 @@ public class MultiDbClientTest {
         .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
         .build();
 
-    client = MultiDbClient.builder().multiClusterConfig(clientConfig).build();
+    client = MultiDbClient.builder().multiDbConfig(clientConfig).build();
   }
 
   @AfterEach
@@ -129,7 +129,7 @@ public class MultiDbClientTest {
         .build();
 
     try (MultiDbClient testClient = MultiDbClient.builder()
-        .multiClusterConfig(clientConfig).build()) {
+        .multiDbConfig(clientConfig).build()) {
       assertThat(testClient.getEndpoints().size(), equalTo(2));
       assertThat(testClient.getEndpoints(),
         hasItems(endpoint1.getHostAndPort(), endpoint2.getHostAndPort()));
@@ -187,7 +187,7 @@ public class MultiDbClientTest {
     eventConsumer = events::add;
 
     try (MultiDbClient testClient = MultiDbClient.builder()
-        .databaseSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
+        .databaseSwitchListener(eventConsumer).multiDbConfig(endpointsConfig).build()) {
 
       assertThat(events.size(), equalTo(0));
 

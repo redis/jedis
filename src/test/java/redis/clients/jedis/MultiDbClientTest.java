@@ -116,7 +116,7 @@ public class MultiDbClientTest {
     // Switch to the new endpoint
     client.setActiveDatabaseEndpoint(newEndpoint);
 
-    assertEquals(newEndpoint, client.getMultiClusterProvider().getCluster().getEndpoint());
+    assertEquals(newEndpoint, client.getActiveEndpoint());
   }
 
   @Test
@@ -150,7 +150,7 @@ public class MultiDbClientTest {
     client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis());
 
     // Verify the active endpoint has changed
-    assertEquals(newEndpoint, client.getMultiClusterProvider().getCluster().getEndpoint());
+    assertEquals(newEndpoint, client.getActiveEndpoint());
   }
 
   @Test

@@ -111,7 +111,7 @@ public class MultiDbClient extends UnifiedJedis {
    * @return the multi-cluster connection provider
    * @throws ClassCastException if the provider is not a MultiClusterPooledConnectionProvider
    */
-  MultiClusterPooledConnectionProvider getMultiClusterProvider() {
+  private MultiClusterPooledConnectionProvider getMultiClusterProvider() {
     return (MultiClusterPooledConnectionProvider) this.provider;
   }
 

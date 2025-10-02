@@ -4,7 +4,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
 

@@ -45,7 +45,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * <p>
  * <strong>Usage Example:</strong>
  * </p>
- * 
+ *
  * <pre>
  * {
  *   &#64;code

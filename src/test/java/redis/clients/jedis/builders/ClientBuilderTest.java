@@ -2,6 +2,7 @@ package redis.clients.jedis.builders;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -48,10 +49,11 @@ class ClientBuilderTest {
 
   @Test
   void appliesKeyPreprocessorToCommandObjects() {
-    JedisPooled client = JedisPooled.builder().commandExecutor(exec).connectionProvider(provider)
-        .keyPreProcessor(k -> "prefix:" + k).build();
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).keyPreProcessor(k -> "prefix:" + k).build()) {
 
-    client.set("key", "v");
+      client.set("key", "v");
+    }
     verify(exec).executeCommand(cap.capture());
     assertThat(argsToStrings(cap.getValue()), contains("SET", "prefix:key", "v"));
   }
@@ -61,20 +63,22 @@ class ClientBuilderTest {
     JsonObjectMapper mapper = mock(JsonObjectMapper.class);
     when(mapper.toJson(any())).thenReturn("JSON:{a=1}");
 
-    JedisPooled client = JedisPooled.builder().commandExecutor(exec).connectionProvider(provider)
-        .jsonObjectMapper(mapper).build();
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).jsonObjectMapper(mapper).build()) {
 
-    client.jsonSetWithEscape("k", Path2.ROOT_PATH, Collections.singletonMap("a", 1));
+      client.jsonSetWithEscape("k", Path2.ROOT_PATH, Collections.singletonMap("a", 1));
+    }
     verify(exec).executeCommand(cap.capture());
     assertThat(argsToStrings(cap.getValue()), contains("JSON.SET", "k", "$", "JSON:{a=1}"));
   }
 
   @Test
   void appliesSearchDialect() {
-    JedisPooled client = JedisPooled.builder().commandExecutor(exec).connectionProvider(provider)
-        .searchDialect(3).build();
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).searchDialect(3).build()) {
 
-    client.ftSearch("idx", "q", new FTSearchParams());
+      client.ftSearch("idx", "q", new FTSearchParams());
+    }
     verify(exec, atLeastOnce()).executeCommand(cap.capture());
     List<String> args = argsToStrings(cap.getValue());
     assertThat(args, contains("FT.SEARCH", "idx", "q", "DIALECT", "3"));
@@ -84,21 +88,36 @@ class ClientBuilderTest {
   void cacheRequiresRESP3() {
     Cache cache = mock(Cache.class);
 
-    assertThrows(IllegalArgumentException.class, () -> JedisPooled.builder().commandExecutor(exec)
-        .connectionProvider(provider).cache(cache).build(),
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> JedisPooled
+        .builder().commandExecutor(exec).connectionProvider(provider).cache(cache).build(),
       "Cache requires RESP3");
+
+    assertThat(ex.getMessage(), containsString("Client-side caching is only supported with RESP3"));
 
   }
 
   @Test
   void standaloneValidateHostPortRequired() {
-    assertThrows(IllegalArgumentException.class, () -> new JedisPooled.Builder() {
-    }.hostAndPort(null).build(), "HostAndPort cannot be null");
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+      () -> JedisPooled.builder().hostAndPort(null).build());
+
+    assertThat(ex.getMessage(), containsString("Either URI or host/port must be specified"));
   }
 
   @Test
   void sentinelValidateMasterAndSentinels() {
-    assertThrows(IllegalArgumentException.class, () -> new JedisSentineled.Builder() {
-    }.build());
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+      () -> JedisSentineled.builder().build());
+    assertThat(ex.getMessage(), containsString("Master name is required for Sentinel mode"));
+
+    ex = assertThrows(IllegalArgumentException.class,
+      () -> JedisSentineled.builder().masterName("mymaster").build());
+    assertThat(ex.getMessage(),
+      containsString("At least one sentinel must be specified for Sentinel mode"));
+
+    ex = assertThrows(IllegalArgumentException.class, () -> JedisSentineled.builder()
+        .masterName("mymaster").sentinels(Collections.emptySet()).build());
+    assertThat(ex.getMessage(),
+      containsString("At least one sentinel must be specified for Sentinel mode"));
   }
 }

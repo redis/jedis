@@ -58,7 +58,8 @@ import java.util.Set;
  *                                 .retryMaxAttempts(3)
  *                                 .build()
  *                 )
- *                 .databaseSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
+ *                 .databaseSwitchListener(event -&gt;
+ *                     System.out.println("Switched to: " + event.getEndpoint()))
  *                 .build();
  * 
  * // Use like any other Jedis client

@@ -484,15 +484,7 @@
 						<include>**/Endpoint.java</include>
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
-						<include>**/mcf/EchoStrategyIntegrationTest.java</include>
-						<include>**/mcf/LagAwareStrategyUnitTest.java</include>
-						<include>**/mcf/RedisRestAPI*.java</include>
-						<include>**/mcf/ActiveActiveLocalFailoverTest*</include>
-						<include>**/mcf/FailbackMechanism*.java</include>
-						<include>**/mcf/PeriodicFailbackTest*.java</include>
-						<include>**/mcf/AutomaticFailoverTest*.java</include>
-						<include>**/mcf/MultiCluster*.java</include>
-						<include>**/mcf/StatusTracker*.java</include>
+						<include>src/test/java/redis/clients/jedis/mcf/*.java</include>
 						<include>**/Health*.java</include>
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>

@@ -145,10 +145,10 @@ public final class MultiClusterClientConfig {
       .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
   /** Default interval in milliseconds for checking if failed clusters have recovered. */
-  private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 5000;
+  private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 120000;
 
   /** Default grace period in milliseconds to keep clusters disabled after they become unhealthy. */
-  private static final long GRACE_PERIOD_DEFAULT = 10000;
+  private static final long GRACE_PERIOD_DEFAULT = 60000;
 
   /** Default maximum number of failover attempts. */
   private static final int MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT = 10;

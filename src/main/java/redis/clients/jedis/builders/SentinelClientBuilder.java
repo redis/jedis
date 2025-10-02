@@ -67,10 +67,8 @@ public abstract class SentinelClientBuilder<C>
 
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
-    JedisClientConfig sentinelConfig = this.sentinelClientConfig != null ? this.sentinelClientConfig
-        : DefaultJedisClientConfig.builder().build();
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, sentinelConfig);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig);
   }
 
   @Override
@@ -85,6 +83,15 @@ public abstract class SentinelClientBuilder<C>
       throw new IllegalArgumentException(
           "At least one sentinel must be specified for Sentinel mode");
     }
+  }
+
+  @Override
+  public C build() {
+    if (sentinelClientConfig == null) {
+      sentinelClientConfig = DefaultJedisClientConfig.builder().build();
+    }
+
+    return super.build();
   }
 
 }

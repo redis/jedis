@@ -50,7 +50,7 @@ public class LagAwareStrategyUnitTest {
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
       (mock, context) -> {
         when(mock.getBdbs()).thenReturn(Arrays.asList(bdbInfo));
-        when(mock.checkBdbAvailability("1", true, 100L)).thenReturn(true);
+        when(mock.checkBdbAvailability("1", true, 5000L)).thenReturn(true);
         reference[0] = mock;
       })) {
       Config lagCheckConfig = Config.builder(endpoint, creds).interval(500).timeout(250)
@@ -61,7 +61,7 @@ public class LagAwareStrategyUnitTest {
 
         assertEquals(HealthStatus.HEALTHY, strategy.doHealthCheck(endpoint));
         verify(api, times(1)).getBdbs(); // Should not call getBdbs again when cached
-        verify(api, times(2)).checkBdbAvailability("1", true, 100L);
+        verify(api, times(2)).checkBdbAvailability("1", true, 5000L);
       }
     }
   }
@@ -97,7 +97,7 @@ public class LagAwareStrategyUnitTest {
         // First call throws exception, second call returns bdbInfo
         when(mock.getBdbs()).thenThrow(new RuntimeException("boom"))
             .thenReturn(Arrays.asList(bdbInfo));
-        when(mock.checkBdbAvailability("42", true, 100L)).thenReturn(true);
+        when(mock.checkBdbAvailability("42", true, 5000L)).thenReturn(true);
         reference[0] = mock;
       })) {
 
@@ -115,7 +115,7 @@ public class LagAwareStrategyUnitTest {
         // Verify getBdbs was called twice (once failed, once succeeded)
         verify(api, times(2)).getBdbs();
         // Verify availability check was called only once (on the successful attempt)
-        verify(api, times(1)).checkBdbAvailability("42", true, 100L);
+        verify(api, times(1)).checkBdbAvailability("42", true, 5000L);
       }
     }
   }
@@ -173,10 +173,10 @@ public class LagAwareStrategyUnitTest {
   void config_builder_creates_config_with_default_values() {
     Config config = Config.builder(endpoint, creds).build();
 
-    assertEquals(1000, config.interval);
+    assertEquals(5000, config.interval);
     assertEquals(1000, config.timeout);
     assertEquals(3, config.numProbes);
-    assertEquals(Duration.ofMillis(100), config.getAvailabilityLagTolerance());
+    assertEquals(Duration.ofMillis(5000), config.getAvailabilityLagTolerance());
     assertEquals(endpoint, config.getRestEndpoint());
     assertEquals(creds, config.getCredentialsSupplier());
   }
@@ -288,7 +288,7 @@ public class LagAwareStrategyUnitTest {
   void base_config_create_factory_method_uses_defaults() {
     HealthCheckStrategy.Config config = HealthCheckStrategy.Config.create();
 
-    assertEquals(1000, config.getInterval());
+    assertEquals(5000, config.getInterval());
     assertEquals(1000, config.getTimeout());
     assertEquals(3, config.getNumProbes());
   }

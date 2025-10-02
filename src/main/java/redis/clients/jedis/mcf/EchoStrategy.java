@@ -11,18 +11,19 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
+  private static final int MAX_HEALTH_CHECK_POOL_SIZE = 2;
 
   private final UnifiedJedis jedis;
   private final HealthCheckStrategy.Config config;
 
   public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
-    this(hostAndPort, jedisClientConfig, HealthCheckStrategy.Config.builder().build());
+    this(hostAndPort, jedisClientConfig, HealthCheckStrategy.Config.create());
   }
 
   public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig,
       HealthCheckStrategy.Config config) {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-    poolConfig.setMaxTotal(2);
+    poolConfig.setMaxTotal(MAX_HEALTH_CHECK_POOL_SIZE);
     this.jedis = new JedisPooled(hostAndPort, jedisClientConfig, poolConfig);
     this.config = config;
   }

@@ -49,6 +49,11 @@ public interface HealthCheckStrategy extends Closeable {
   int getDelayInBetweenProbes();
 
   public static class Config {
+    private static final int INTERVAL_DEFAULT = 5000;
+    private static final int TIMEOUT_DEFAULT = 1000;
+    private static final int NUM_PROBES_DEFAULT = 3;
+    private static final int DELAY_IN_BETWEEN_PROBES_DEFAULT = 500;
+
     protected final int interval;
     protected final int timeout;
     protected final int numProbes;
@@ -97,14 +102,14 @@ public interface HealthCheckStrategy extends Closeable {
      * @return a new Config instance
      */
     public static Config create() {
-      return new Builder<>().build();
+      return builder().build();
     }
 
     /**
      * Create a new builder for HealthCheckStrategy.Config.
      * @return a new Builder instance
      */
-    public static Builder<?, Config> builder() {
+    public static Builder<?, ? extends Config> builder() {
       return new Builder<>();
     }
 
@@ -114,11 +119,11 @@ public interface HealthCheckStrategy extends Closeable {
      * @param <C> the config type being built
      */
     public static class Builder<T extends Builder<T, C>, C extends Config> {
-      protected int interval = 1000;
-      protected int timeout = 1000;
-      protected int numProbes = 3;
+      protected int interval = INTERVAL_DEFAULT;
+      protected int timeout = TIMEOUT_DEFAULT;
+      protected int numProbes = NUM_PROBES_DEFAULT;
       protected ProbingPolicy policy = ProbingPolicy.BuiltIn.ALL_SUCCESS;
-      protected int delayInBetweenProbes = 100;
+      protected int delayInBetweenProbes = DELAY_IN_BETWEEN_PROBES_DEFAULT;
 
       /**
        * Set the interval between health checks in milliseconds.

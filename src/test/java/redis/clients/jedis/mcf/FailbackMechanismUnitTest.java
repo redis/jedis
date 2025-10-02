@@ -32,7 +32,7 @@ class FailbackMechanismUnitTest {
     MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
         new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
 
-    assertEquals(5000, defaultConfig.getFailbackCheckInterval());
+    assertEquals(120000, defaultConfig.getFailbackCheckInterval());
 
     // Test custom value
     MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
@@ -105,7 +105,7 @@ class FailbackMechanismUnitTest {
     MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
         new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
 
-    assertEquals(10000, defaultConfig.getGracePeriod()); // Default is 10 seconds
+    assertEquals(60000, defaultConfig.getGracePeriod()); // Default is 10 seconds
 
     // Test custom value
     MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(

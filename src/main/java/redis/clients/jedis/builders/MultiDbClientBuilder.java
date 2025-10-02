@@ -72,7 +72,7 @@ public abstract class MultiDbClientBuilder<C>
 
   // Multi-db specific configuration fields
   private MultiClusterClientConfig multiClusterConfig = null;
-  private Consumer<ClusterSwitchEventArgs> clusterSwitchListener = null;
+  private Consumer<ClusterSwitchEventArgs> databaseSwitchListener = null;
 
   /**
    * Sets the multi-cluster configuration.
@@ -89,18 +89,18 @@ public abstract class MultiDbClientBuilder<C>
   }
 
   /**
-   * Sets a listener for cluster switch events.
+   * Sets a listener for database switch events.
    * <p>
    * The listener will be called whenever the client switches from one endpoint to another,
    * providing information about the switch reason and the new active endpoint. This is useful for
    * monitoring, alerting, and logging purposes.
    * </p>
-   * @param listener the cluster switch event listener
+   * @param listener the database switch event listener
    * @return this builder
    */
-  public MultiDbClientBuilder<C> clusterSwitchListener(
+  public MultiDbClientBuilder<C> databaseSwitchListener(
       Consumer<ClusterSwitchEventArgs> listener) {
-    this.clusterSwitchListener = listener;
+    this.databaseSwitchListener = listener;
     return this;
   }
 
@@ -121,9 +121,9 @@ public abstract class MultiDbClientBuilder<C>
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
         multiClusterConfig);
 
-    // Set cluster switch listener if provided
-    if (this.clusterSwitchListener != null) {
-      provider.setClusterSwitchListener(this.clusterSwitchListener);
+    // Set database switch listener if provided
+    if (this.databaseSwitchListener != null) {
+      provider.setClusterSwitchListener(this.databaseSwitchListener);
     }
 
     return provider;

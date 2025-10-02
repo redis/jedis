@@ -58,7 +58,7 @@ import java.util.Set;
  *                                 .retryMaxAttempts(3)
  *                                 .build()
  *                 )
- *                 .clusterSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
+ *                 .databaseSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
  *                 .build();
  * 
  * // Use like any other Jedis client

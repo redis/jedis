@@ -171,7 +171,7 @@ public class MultiDbClientTest {
   }
 
   @Test
-  public void testWithClusterSwitchListener() {
+  public void testWithDatabaseSwitchListener() {
 
     MultiClusterClientConfig endpointsConfig = MultiClusterClientConfig.builder()
         .endpoint(ClusterConfig
@@ -187,7 +187,7 @@ public class MultiDbClientTest {
     eventConsumer = events::add;
 
     try (MultiDbClient testClient = MultiDbClient.builder()
-        .clusterSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
+        .databaseSwitchListener(eventConsumer).multiClusterConfig(endpointsConfig).build()) {
 
       assertThat(events.size(), equalTo(0));
 

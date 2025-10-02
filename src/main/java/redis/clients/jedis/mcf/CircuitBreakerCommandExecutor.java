@@ -42,11 +42,8 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     try {
       return supplier.decorate().get();
     } catch (Exception e) {
-      if (isCircuitBreakerTrackedException(e, cluster)) {
-        cluster.evaluateThresholds(true);
-        if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
-          clusterFailover(cluster);
-        }
+      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
+        clusterFailover(cluster);
       }
       throw e;
     }

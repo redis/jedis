@@ -9,7 +9,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -24,26 +24,26 @@ import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     implements CommandExecutor {
 
-  public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider) {
+  public CircuitBreakerCommandExecutor(MultiDatabaseConnectionProvider provider) {
     super(provider);
   }
 
   @Override
   public <T> T executeCommand(CommandObject<T> commandObject) {
-    Cluster cluster = provider.getCluster(); // Pass this by reference for thread safety
+    Database database = provider.getDatabase(); // Pass this by reference for thread safety
 
     DecorateSupplier<T> supplier = Decorators
-        .ofSupplier(() -> this.handleExecuteCommand(commandObject, cluster));
+        .ofSupplier(() -> this.handleExecuteCommand(commandObject, database));
 
-    supplier.withCircuitBreaker(cluster.getCircuitBreaker());
-    supplier.withRetry(cluster.getRetry());
+    supplier.withCircuitBreaker(database.getCircuitBreaker());
+    supplier.withRetry(database.getRetry());
     supplier.withFallback(provider.getFallbackExceptionList(),
-      e -> this.handleClusterFailover(commandObject, cluster));
+      e -> this.handleClusterFailover(commandObject, database));
     try {
       return supplier.decorate().get();
     } catch (Exception e) {
-      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
-        clusterFailover(cluster);
+      if (database.getCircuitBreaker().getState() == State.OPEN && isActiveDatabase(database)) {
+        clusterFailover(database);
       }
       throw e;
     }
@@ -52,7 +52,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
-  private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
+  private <T> T handleExecuteCommand(CommandObject<T> commandObject, Database cluster) {
     Connection connection;
     try {
       connection = cluster.getConnection();
@@ -63,7 +63,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     try {
       return connection.executeCommand(commandObject);
     } catch (Exception e) {
-      if (cluster.retryOnFailover() && !isActiveCluster(cluster)
+      if (cluster.retryOnFailover() && !isActiveDatabase(cluster)
           && isCircuitBreakerTrackedException(e, cluster)) {
         throw new ConnectionFailoverException(
             "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
@@ -78,7 +78,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  private <T> T handleClusterFailover(CommandObject<T> commandObject, Cluster cluster) {
+  private <T> T handleClusterFailover(CommandObject<T> commandObject, Database cluster) {
 
     clusterFailover(cluster);
 

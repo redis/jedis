@@ -13,6 +13,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.ClientTestUtil;
 
 import java.io.IOException;
@@ -115,6 +116,9 @@ public class ActiveActiveFailoverTest {
     }
 
     FailoverReporter reporter = new FailoverReporter();
+    provider.setClusterSwitchListener(reporter);
+    provider.setActiveCluster(endpoint.getHostAndPort(0));
+    Cluster cluster1 = provider.getCluster();
 
     MultiDbClient client = MultiDbClient.builder()
             .multiDbConfig(multiConfig)
@@ -135,6 +139,7 @@ public class ActiveActiveFailoverTest {
       int maxTries = 500;
       int retryingDelay = 5;
       while (true) {
+        boolean attempToExecuteOnFailedCluster = false;
         try {
           Map<String, String> executionInfo = new HashMap<String, String>() {
             {
@@ -142,6 +147,7 @@ public class ActiveActiveFailoverTest {
               put("cluster", reporter.getCurrentClusterName());
             }
           };
+          attempToExecuteOnFailedCluster = provider.getCluster() == cluster1;
           client.xadd("execution_log", StreamEntryID.NEW_ENTRY, executionInfo);
           executedCommands.incrementAndGet();
 
@@ -153,7 +159,7 @@ public class ActiveActiveFailoverTest {
           break;
         } catch (JedisConnectionException e) {
 
-          if (reporter.failoverHappened) {
+          if (reporter.failoverHappened && attempToExecuteOnFailedCluster) {
             failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
           }

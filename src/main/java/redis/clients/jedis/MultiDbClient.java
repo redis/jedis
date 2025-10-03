@@ -153,11 +153,7 @@ public class MultiDbClient extends UnifiedJedis {
    * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint already exists
    */
   public void addEndpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
-    // Convert Endpoint to HostAndPort for ClusterConfig
-    HostAndPort hostAndPort = (endpoint instanceof HostAndPort) ? (HostAndPort) endpoint
-        : new HostAndPort(endpoint.getHost(), endpoint.getPort());
-
-    ClusterConfig clusterConfig = ClusterConfig.builder(hostAndPort, clientConfig).weight(weight)
+    ClusterConfig clusterConfig = ClusterConfig.builder(endpoint, clientConfig).weight(weight)
         .build();
 
     getMultiClusterProvider().add(clusterConfig);

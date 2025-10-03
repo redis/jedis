@@ -720,7 +720,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
   public boolean isHealthy(Endpoint endpoint) {
     Cluster cluster = getCluster(endpoint);
     if (cluster == null) {
-      return false;
+      throw new JedisValidationException("Endpoint " + endpoint + " does not exist in the provider");
     }
     return cluster.isHealthy();
   }

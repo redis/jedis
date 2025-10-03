@@ -74,11 +74,6 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     }
   }
 
-  private boolean isActiveCluster(Cluster cluster) {
-    Cluster activeCluster = provider.getCluster();
-    return activeCluster != null && activeCluster.equals(cluster);
-  }
-
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios

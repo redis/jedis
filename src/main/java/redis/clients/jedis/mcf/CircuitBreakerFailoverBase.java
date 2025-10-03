@@ -81,6 +81,11 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
     }
   }
 
+  boolean isActiveCluster(Cluster cluster) {
+    Cluster activeCluster = provider.getCluster();
+    return activeCluster != null && activeCluster.equals(cluster);
+  }
+
   static boolean isCircuitBreakerTrackedException(Exception e, Cluster cluster) {
     return cluster.getCircuitBreaker().getCircuitBreakerConfig().getRecordExceptionPredicate()
         .test(e);

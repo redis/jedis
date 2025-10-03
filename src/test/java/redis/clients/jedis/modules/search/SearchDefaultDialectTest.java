@@ -39,7 +39,6 @@ import redis.clients.jedis.search.aggr.Row;
 public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
   private static final String INDEX = "dialect-INDEX";
-  private static final int DEFAULT_DIALECT = 2;
 
   @BeforeAll
   public static void prepare() {
@@ -54,7 +53,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
   @BeforeEach
   public void setUp() {
     super.setUp();
-    client.setDefaultSearchDialect(DEFAULT_DIALECT);
+    client.setDefaultSearchDialect(SearchProtocol.DEFAULT_DIALECT);
   }
 
   private void addDocument(Document doc) {

@@ -393,7 +393,7 @@
 						</goals>
 						<configuration>
 							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
-							
+
 							<includes>
 								<include>**/*IntegrationTest.java</include>
 								<include>**/*IntegrationTests.java</include>
@@ -490,6 +490,7 @@
 						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
+						<include>**/builders/*.java</include>
 					</includes>
 				</configuration>
 				<executions>
@@ -570,5 +571,35 @@
 				</plugins>
 			</build>
 		</profile>
+			<profile>
+				<id>tests-with-params</id>
+				<activation>
+					<property>
+						<name>with-param-names</name>
+						<value>true</value>
+					</property>
+				</activation>
+				<build>
+					<plugins>
+						<plugin>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<version>3.14.0</version>
+							<configuration>
+								<source>1.8</source>
+								<target>1.8</target>
+								<parameters>true</parameters>
+							</configuration>
+						</plugin>
+						<plugin>
+							<artifactId>maven-surefire-plugin</artifactId>
+							<version>${maven.surefire.version}</version>
+							<configuration>
+								<argLine>@{argLine} ${JVM_OPTS}</argLine>
+							</configuration>
+						</plugin>
+					</plugins>
+				</build>
+			</profile>
+
 	</profiles>
 </project>

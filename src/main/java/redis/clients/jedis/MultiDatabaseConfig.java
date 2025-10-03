@@ -21,8 +21,8 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * This configuration enables seamless failover between multiple Redis clusters, databases, or
  * endpoints by providing comprehensive settings for retry logic, circuit breaker behavior, health
  * checks, and failback mechanisms. It is designed to work with
- * {@link redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider} to provide high availability
- * and disaster recovery capabilities.
+ * {@link redis.clients.jedis.mcf.MultiDatabaseConnectionProvider} to provide high availability and
+ * disaster recovery capabilities.
  * </p>
  * <p>
  * <strong>Key Features:</strong>
@@ -49,27 +49,26 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * {
  *   &#64;code
  *   // Configure individual clusters
- *   ClusterConfig primary = ClusterConfig.builder(primaryEndpoint, clientConfig).weight(1.0f)
+ *   DatabaseConfig primary = DatabaseConfig.builder(primaryEndpoint, clientConfig).weight(1.0f)
  *       .build();
  *
- *   ClusterConfig secondary = ClusterConfig.builder(secondaryEndpoint, clientConfig).weight(0.5f)
+ *   DatabaseConfig secondary = DatabaseConfig.builder(secondaryEndpoint, clientConfig).weight(0.5f)
  *       .healthCheckEnabled(true).build();
  *
  *   // Build multi-cluster configuration
- *   MultiClusterClientConfig config = MultiClusterClientConfig.builder(primary, secondary)
+ *   MultiDatabaseConfig config = MultiDatabaseConfig.builder(primary, secondary)
  *       .circuitBreakerFailureRateThreshold(10.0f).retryMaxAttempts(3).failbackSupported(true)
  *       .gracePeriod(10000).build();
  *
  *   // Use with connection provider
- *   MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
- *       config);
+ *   MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config);
  * }
  * </pre>
  * <p>
  * The configuration leverages <a href="https://resilience4j.readme.io/docs">Resilience4j</a> for
  * circuit breaker and retry implementations, providing battle-tested fault tolerance patterns.
  * </p>
- * @see redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider
+ * @see redis.clients.jedis.mcf.MultiDatabaseConnectionProvider
  * @see redis.clients.jedis.mcf.HealthCheckStrategy
  * @see redis.clients.jedis.mcf.EchoStrategy
  * @see redis.clients.jedis.mcf.LagAwareStrategy
@@ -77,7 +76,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  */
 // TODO: move
 @Experimental
-public final class MultiClusterClientConfig {
+public final class MultiDatabaseConfig {
 
   /**
    * Functional interface for creating {@link HealthCheckStrategy} instances for specific Redis
@@ -158,7 +157,7 @@ public final class MultiClusterClientConfig {
   private static final int DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT = 12000;
 
   /** Array of cluster configurations defining the available Redis endpoints and their settings. */
-  private final ClusterConfig[] clusterConfigs;
+  private final DatabaseConfig[] databaseConfigs;
 
   // ============ Retry Configuration ============
   // Based on Resilience4j Retry: https://resilience4j.readme.io/docs/retry
@@ -438,35 +437,35 @@ public final class MultiClusterClientConfig {
   private int delayInBetweenFailoverAttempts;
 
   /**
-   * Constructs a new MultiClusterClientConfig with the specified cluster configurations.
+   * Constructs a new MultiDatabaseConfig with the specified cluster configurations.
    * <p>
    * This constructor validates that at least one cluster configuration is provided and that all
    * configurations are non-null. Use the {@link Builder} class for more convenient configuration
    * with default values.
    * </p>
-   * @param clusterConfigs array of cluster configurations defining the available Redis endpoints
-   * @throws JedisValidationException if clusterConfigs is null or empty
+   * @param databaseConfigs array of cluster configurations defining the available Redis endpoints
+   * @throws JedisValidationException if databaseConfigs is null or empty
    * @throws IllegalArgumentException if any cluster configuration is null
-   * @see Builder#Builder(ClusterConfig[])
+   * @see Builder#Builder(DatabaseConfig[])
    */
-  public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
+  public MultiDatabaseConfig(DatabaseConfig[] databaseConfigs) {
 
-    if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
-        "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
+    if (databaseConfigs == null || databaseConfigs.length < 1) throw new JedisValidationException(
+        "DatabaseClientConfigs are required for MultiDatabaseConnectionProvider");
 
-    for (ClusterConfig clusterConfig : clusterConfigs) {
-      if (clusterConfig == null)
-        throw new IllegalArgumentException("ClusterClientConfigs must not contain null elements");
+    for (DatabaseConfig databaseConfig : databaseConfigs) {
+      if (databaseConfig == null)
+        throw new IllegalArgumentException("DatabaseClientConfigs must not contain null elements");
     }
-    this.clusterConfigs = clusterConfigs;
+    this.databaseConfigs = databaseConfigs;
   }
 
   /**
    * Returns the array of cluster configurations defining available Redis endpoints.
    * @return array of cluster configurations, never null or empty
    */
-  public ClusterConfig[] getClusterConfigs() {
-    return clusterConfigs;
+  public DatabaseConfig[] getDatabaseConfigs() {
+    return databaseConfigs;
   }
 
   /**
@@ -637,79 +636,79 @@ public final class MultiClusterClientConfig {
   }
 
   /**
-   * Creates a new Builder instance for configuring MultiClusterClientConfig.
+   * Creates a new Builder instance for configuring MultiDatabaseConfig.
    * <p>
    * At least one cluster configuration must be added to the builder before calling build(). Use the
    * endpoint() methods to add cluster configurations.
    * </p>
    * @return new Builder instance
-   * @throws JedisValidationException if clusterConfigs is null or empty
-   * @see Builder#Builder(ClusterConfig[])
+   * @throws JedisValidationException if databaseConfigs is null or empty
+   * @see Builder#Builder(DatabaseConfig[])
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Creates a new Builder instance for configuring MultiClusterClientConfig.
-   * @param clusterConfigs array of cluster configurations defining available Redis endpoints
+   * Creates a new Builder instance for configuring MultiDatabaseConfig.
+   * @param databaseConfigs array of cluster configurations defining available Redis endpoints
    * @return new Builder instance
-   * @throws JedisValidationException if clusterConfigs is null or empty
-   * @see Builder#Builder(ClusterConfig[])
+   * @throws JedisValidationException if databaseConfigs is null or empty
+   * @see Builder#Builder(DatabaseConfig[])
    */
-  public static Builder builder(ClusterConfig[] clusterConfigs) {
-    return new Builder(clusterConfigs);
+  public static Builder builder(DatabaseConfig[] databaseConfigs) {
+    return new Builder(databaseConfigs);
   }
 
   /**
-   * Creates a new Builder instance for configuring MultiClusterClientConfig.
-   * @param clusterConfigs list of cluster configurations defining available Redis endpoints
+   * Creates a new Builder instance for configuring MultiDatabaseConfig.
+   * @param databaseConfigs list of cluster configurations defining available Redis endpoints
    * @return new Builder instance
-   * @throws JedisValidationException if clusterConfigs is null or empty
+   * @throws JedisValidationException if databaseConfigs is null or empty
    * @see Builder#Builder(List)
    */
-  public static Builder builder(List<ClusterConfig> clusterConfigs) {
-    return new Builder(clusterConfigs);
+  public static Builder builder(List<DatabaseConfig> databaseConfigs) {
+    return new Builder(databaseConfigs);
   }
 
   /**
    * Configuration class for individual Redis cluster endpoints within a multi-cluster setup.
    * <p>
-   * Each ClusterConfig represents a single Redis endpoint that can participate in the multi-cluster
-   * failover system. It encapsulates the connection details, weight for priority-based selection,
-   * and health check configuration for that endpoint.
+   * Each DatabaseConfig represents a single Redis endpoint that can participate in the
+   * multi-cluster failover system. It encapsulates the connection details, weight for
+   * priority-based selection, and health check configuration for that endpoint.
    * </p>
    * @see Builder
    * @see StrategySupplier
    * @see redis.clients.jedis.mcf.HealthCheckStrategy
    */
-  public static class ClusterConfig {
+  public static class DatabaseConfig {
 
-    /** The Redis endpoint (host and port) for this cluster. */
+    /** The Redis endpoint (host and port) for this database. */
     private final Endpoint endpoint;
 
     /** Jedis client configuration containing connection settings and authentication. */
     private final JedisClientConfig jedisClientConfig;
 
-    /** Optional connection pool configuration for managing connections to this cluster. */
+    /** Optional connection pool configuration for managing connections to this database. */
     private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
     /**
-     * Weight value for cluster selection priority. Higher weights indicate higher priority. Default
-     * value is 1.0f.
+     * Weight value for database selection priority. Higher weights indicate higher priority.
+     * Default value is 1.0f.
      */
     private float weight = 1.0f;
 
     /**
-     * Strategy supplier for creating health check instances for this cluster. Default is
+     * Strategy supplier for creating health check instances for this database. Default is
      * EchoStrategy.DEFAULT.
      */
     private StrategySupplier healthCheckStrategySupplier;
 
     /**
-     * Constructs a ClusterConfig with basic endpoint and client configuration.
+     * Constructs a DatabaseConfig with basic endpoint and client configuration.
      * <p>
-     * This constructor creates a cluster configuration with default settings: weight of 1.0f and
+     * This constructor creates a database configuration with default settings: weight of 1.0f and
      * EchoStrategy for health checks. Use the {@link Builder} for more advanced configuration
      * options.
      * </p>
@@ -717,13 +716,13 @@ public final class MultiClusterClientConfig {
      * @param clientConfig the Jedis client configuration
      * @throws IllegalArgumentException if endpoint or clientConfig is null
      */
-    public ClusterConfig(Endpoint endpoint, JedisClientConfig clientConfig) {
+    public DatabaseConfig(Endpoint endpoint, JedisClientConfig clientConfig) {
       this.endpoint = endpoint;
       this.jedisClientConfig = clientConfig;
     }
 
     /**
-     * Constructs a ClusterConfig with endpoint, client, and connection pool configuration.
+     * Constructs a DatabaseConfig with endpoint, client, and connection pool configuration.
      * <p>
      * This constructor allows specification of connection pool settings in addition to basic
      * endpoint configuration. Default weight of 1.0f and EchoStrategy for health checks are used.
@@ -733,7 +732,7 @@ public final class MultiClusterClientConfig {
      * @param connectionPoolConfig the connection pool configuration
      * @throws IllegalArgumentException if endpoint or clientConfig is null
      */
-    public ClusterConfig(Endpoint endpoint, JedisClientConfig clientConfig,
+    public DatabaseConfig(Endpoint endpoint, JedisClientConfig clientConfig,
         GenericObjectPoolConfig<Connection> connectionPoolConfig) {
       this.endpoint = endpoint;
       this.jedisClientConfig = clientConfig;
@@ -744,7 +743,7 @@ public final class MultiClusterClientConfig {
      * Private constructor used by the Builder to create configured instances.
      * @param builder the builder containing configuration values
      */
-    private ClusterConfig(Builder builder) {
+    private DatabaseConfig(Builder builder) {
       this.endpoint = builder.endpoint;
       this.jedisClientConfig = builder.jedisClientConfig;
       this.connectionPoolConfig = builder.connectionPoolConfig;
@@ -753,7 +752,7 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Returns the Redis endpoint (host and port) for this cluster.
+     * Returns the Redis endpoint (host and port) for this database.
      * @return the host and port information
      */
     public Endpoint getEndpoint() {
@@ -761,7 +760,7 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Creates a new Builder instance for configuring a ClusterConfig.
+     * Creates a new Builder instance for configuring a DatabaseConfig.
      * @param endpoint the Redis endpoint (host and port)
      * @param clientConfig the Jedis client configuration
      * @return new Builder instance
@@ -773,7 +772,7 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Returns the Jedis client configuration for this cluster.
+     * Returns the Jedis client configuration for this database.
      * @return the client configuration containing connection settings and authentication
      */
     public JedisClientConfig getJedisClientConfig() {
@@ -781,7 +780,7 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Returns the connection pool configuration for this cluster.
+     * Returns the connection pool configuration for this database.
      * @return the connection pool configuration, may be null if not specified
      */
     public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
@@ -789,9 +788,9 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Returns the weight value used for cluster selection priority.
+     * Returns the weight value used for database selection priority.
      * <p>
-     * Higher weight values indicate higher priority. During failover, clusters are selected in
+     * Higher weight values indicate higher priority. During failover, databases are selected in
      * descending order of weight (highest weight first).
      * </p>
      * @return the weight value, default is 1.0f
@@ -801,9 +800,9 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Returns the health check strategy supplier for this cluster.
+     * Returns the health check strategy supplier for this database.
      * <p>
-     * The strategy supplier is used to create health check instances that monitor this cluster's
+     * The strategy supplier is used to create health check instances that monitor this database's
      * availability. Returns null if health checks are disabled.
      * </p>
      * @return the health check strategy supplier, or null if health checks are disabled
@@ -815,9 +814,9 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Builder class for creating ClusterConfig instances with fluent configuration API.
+     * Builder class for creating DatabaseConfig instances with fluent configuration API.
      * <p>
-     * The Builder provides a convenient way to configure cluster settings including connection
+     * The Builder provides a convenient way to configure database settings including connection
      * pooling, weight-based priority, and health check strategies. All configuration methods return
      * the builder instance for method chaining.
      * </p>
@@ -831,7 +830,7 @@ public final class MultiClusterClientConfig {
      * </ul>
      */
     public static class Builder {
-      /** The Redis endpoint for this cluster configuration. */
+      /** The Redis endpoint for this database configuration. */
       private Endpoint endpoint;
 
       /** The Jedis client configuration. */
@@ -840,7 +839,7 @@ public final class MultiClusterClientConfig {
       /** Optional connection pool configuration. */
       private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
-      /** Weight for cluster selection priority. Default: 1.0f */
+      /** Weight for database selection priority. Default: 1.0f */
       private float weight = 1.0f;
 
       /** Health check strategy supplier. Default: EchoStrategy.DEFAULT */
@@ -858,7 +857,7 @@ public final class MultiClusterClientConfig {
       }
 
       /**
-       * Sets the connection pool configuration for this cluster.
+       * Sets the connection pool configuration for this database.
        * <p>
        * Connection pooling helps manage connections efficiently and provides better performance
        * under load. If not specified, default pooling behavior will be used.
@@ -873,19 +872,19 @@ public final class MultiClusterClientConfig {
       }
 
       /**
-       * Sets the weight value for cluster selection priority.
+       * Sets the weight value for database selection priority.
        * <p>
-       * Weight determines the priority order for cluster selection during failover. Clusters with
+       * Weight determines the priority order for database selection during failover. Databases with
        * higher weights are preferred over those with lower weights. The system will attempt to use
-       * the highest-weight healthy cluster available.
+       * the highest-weight healthy database available.
        * </p>
        * <p>
        * <strong>Examples:</strong>
        * </p>
        * <ul>
        * <li><strong>1.0f:</strong> Standard priority (default)</li>
-       * <li><strong>0.8f:</strong> Lower priority (secondary cluster)</li>
-       * <li><strong>0.1f:</strong> Lowest priority (backup cluster)</li>
+       * <li><strong>0.8f:</strong> Lower priority (secondary database)</li>
+       * <li><strong>0.1f:</strong> Lowest priority (backup database)</li>
        * </ul>
        * @param weight the weight value for priority-based selection
        * @return this builder instance for method chaining
@@ -896,10 +895,10 @@ public final class MultiClusterClientConfig {
       }
 
       /**
-       * Sets a custom health check strategy supplier for this cluster.
+       * Sets a custom health check strategy supplier for this database.
        * <p>
-       * The strategy supplier creates health check instances that monitor this cluster's
-       * availability. Different clusters can use different health check strategies based on their
+       * The strategy supplier creates health check instances that monitor this database's
+       * availability. Different databases can use different health check strategies based on their
        * specific requirements.
        * </p>
        * @param healthCheckStrategySupplier the health check strategy supplier
@@ -917,14 +916,14 @@ public final class MultiClusterClientConfig {
       }
 
       /**
-       * Sets a specific health check strategy instance for this cluster.
+       * Sets a specific health check strategy instance for this database.
        * <p>
        * This is a convenience method that wraps the provided strategy in a supplier that always
        * returns the same instance. Use this when you have a pre-configured strategy instance.
        * </p>
        * <p>
        * <strong>Note:</strong> The same strategy instance will be reused, so ensure it's
-       * thread-safe if multiple clusters might use it.
+       * thread-safe if multiple databases might use it.
        * </p>
        * @param healthCheckStrategy the health check strategy instance
        * @return this builder instance for method chaining
@@ -940,15 +939,15 @@ public final class MultiClusterClientConfig {
       }
 
       /**
-       * Enables or disables health checks for this cluster.
+       * Enables or disables health checks for this database.
        * <p>
-       * When health checks are disabled (false), the cluster will not be proactively monitored for
+       * When health checks are disabled (false), the database will not be proactively monitored for
        * availability. This means:
        * </p>
        * <ul>
        * <li>No background health check threads will be created</li>
-       * <li>Failback to this cluster must be triggered manually</li>
-       * <li>The cluster is assumed to be healthy unless circuit breaker opens</li>
+       * <li>Failback to this database must be triggered manually</li>
+       * <li>The database is assumed to be healthy unless circuit breaker opens</li>
        * </ul>
        * <p>
        * When health checks are enabled (true) and no strategy supplier was previously set, the
@@ -967,17 +966,17 @@ public final class MultiClusterClientConfig {
       }
 
       /**
-       * Builds and returns a new ClusterConfig instance with the configured settings.
-       * @return a new ClusterConfig instance
+       * Builds and returns a new DatabaseConfig instance with the configured settings.
+       * @return a new DatabaseConfig instance
        */
-      public ClusterConfig build() {
-        return new ClusterConfig(this);
+      public DatabaseConfig build() {
+        return new DatabaseConfig(this);
       }
     }
   }
 
   /**
-   * Builder class for creating MultiClusterClientConfig instances with comprehensive configuration
+   * Builder class for creating MultiDatabaseConfig instances with comprehensive configuration
    * options.
    * <p>
    * The Builder provides a fluent API for configuring all aspects of multi-cluster failover
@@ -985,13 +984,13 @@ public final class MultiClusterClientConfig {
    * sensible defaults based on production best practices while allowing fine-tuning for specific
    * requirements.
    * </p>
-   * @see MultiClusterClientConfig
-   * @see ClusterConfig
+   * @see MultiDatabaseConfig
+   * @see DatabaseConfig
    */
   public static class Builder {
 
-    /** Array of cluster configurations defining available Redis endpoints. */
-    private final List<ClusterConfig> clusterConfigs = new ArrayList<>();
+    /** Array of database configurations defining available Redis endpoints. */
+    private final List<DatabaseConfig> databaseConfigs = new ArrayList<>();
 
     // ============ Retry Configuration Fields ============
     /** Maximum number of retry attempts including the initial call. */
@@ -1058,35 +1057,35 @@ public final class MultiClusterClientConfig {
 
     /**
      * Constructs a new Builder with the specified cluster configurations.
-     * @param clusterConfigs array of cluster configurations defining available Redis endpoints
-     * @throws JedisValidationException if clusterConfigs is null or empty
+     * @param databaseConfigs array of cluster configurations defining available Redis endpoints
+     * @throws JedisValidationException if databaseConfigs is null or empty
      */
-    public Builder(ClusterConfig[] clusterConfigs) {
+    public Builder(DatabaseConfig[] databaseConfigs) {
 
-      this(Arrays.asList(clusterConfigs));
+      this(Arrays.asList(databaseConfigs));
     }
 
     /**
-     * Constructs a new Builder with the specified cluster configurations.
-     * @param clusterConfigs list of cluster configurations defining available Redis endpoints
-     * @throws JedisValidationException if clusterConfigs is null or empty
+     * Constructs a new Builder with the specified database configurations.
+     * @param databaseConfigs list of database configurations defining available Redis endpoints
+     * @throws JedisValidationException if databaseConfigs is null or empty
      */
-    public Builder(List<ClusterConfig> clusterConfigs) {
-      this.clusterConfigs.addAll(clusterConfigs);
+    public Builder(List<DatabaseConfig> databaseConfigs) {
+      this.databaseConfigs.addAll(databaseConfigs);
     }
 
     /**
      * Adds a pre-configured endpoint configuration.
      * <p>
-     * This method allows adding a fully configured ClusterConfig instance, providing maximum
+     * This method allows adding a fully configured DatabaseConfig instance, providing maximum
      * flexibility for advanced configurations including custom health check strategies, connection
      * pool settings, etc.
      * </p>
-     * @param clusterConfig the pre-configured cluster configuration
+     * @param databaseConfig the pre-configured database configuration
      * @return this builder
      */
-    public Builder endpoint(ClusterConfig clusterConfig) {
-      this.clusterConfigs.add(clusterConfig);
+    public Builder endpoint(DatabaseConfig databaseConfig) {
+      this.databaseConfigs.add(databaseConfig);
       return this;
     }
 
@@ -1104,10 +1103,10 @@ public final class MultiClusterClientConfig {
      */
     public Builder endpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
 
-      ClusterConfig clusterConfig = ClusterConfig.builder(endpoint, clientConfig).weight(weight)
+      DatabaseConfig databaseConfig = DatabaseConfig.builder(endpoint, clientConfig).weight(weight)
           .build();
 
-      this.clusterConfigs.add(clusterConfig);
+      this.databaseConfigs.add(databaseConfig);
       return this;
     }
 
@@ -1500,18 +1499,18 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Builds and returns a new MultiClusterClientConfig instance with all configured settings.
+     * Builds and returns a new MultiDatabaseConfig instance with all configured settings.
      * <p>
      * This method creates the final configuration object by copying all builder settings to the
      * configuration instance. The builder can be reused after calling build() to create additional
      * configurations with different settings.
      * </p>
-     * @return a new MultiClusterClientConfig instance with the configured settings
+     * @return a new MultiDatabaseConfig instance with the configured settings
      */
-    public MultiClusterClientConfig build() {
+    public MultiDatabaseConfig build() {
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig(
-          this.clusterConfigs.toArray(new ClusterConfig[0]));
+      MultiDatabaseConfig config = new MultiDatabaseConfig(
+          this.databaseConfigs.toArray(new DatabaseConfig[0]));
 
       // Copy retry configuration
       config.retryMaxAttempts = this.retryMaxAttempts;

@@ -1,7 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import redis.clients.jedis.Endpoint;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 
 public class ClusterSwitchEventArgs {
 
@@ -9,10 +9,10 @@ public class ClusterSwitchEventArgs {
   private final String ClusterName;
   private final Endpoint Endpoint;
 
-  public ClusterSwitchEventArgs(SwitchReason reason, Endpoint endpoint, Cluster cluster) {
+  public ClusterSwitchEventArgs(SwitchReason reason, Endpoint endpoint, Database database) {
     this.reason = reason;
     // TODO: @ggivo do we need cluster name?
-    this.ClusterName = cluster.getCircuitBreaker().getName();
+    this.ClusterName = database.getCircuitBreaker().getName();
     this.Endpoint = endpoint;
   }
 

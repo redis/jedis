@@ -488,7 +488,7 @@
 						<include>**/Health*.java</include>
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>
-						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
+						<include>src/main/java/redis/clients/jedis/MultiDatabaseConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
 						<include>**/MultiDb*.java</include>

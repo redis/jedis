@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.SwitchReason;
@@ -56,7 +56,7 @@ public class MultiDbClientTest {
   @BeforeEach
   void setUp() {
     // Create a simple resilient client with mock endpoints for testing
-    MultiClusterClientConfig clientConfig = MultiClusterClientConfig.builder()
+    MultiDatabaseConfig clientConfig = MultiDatabaseConfig.builder()
         .endpoint(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
         .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
         .build();
@@ -86,11 +86,11 @@ public class MultiDbClientTest {
   }
 
   @Test
-  void testAddRemoveEndpointWithClusterConfig() {
+  void testAddRemoveEndpointWithDatabaseConfig() {
     // todo : (@ggivo) Replace HostAndPort with Endpoint
     HostAndPort newEndpoint = new HostAndPort("unavailable", 6381);
 
-    ClusterConfig newConfig = ClusterConfig
+    DatabaseConfig newConfig = DatabaseConfig
         .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f).build();
 
     assertDoesNotThrow(() -> client.addEndpoint(newConfig));
@@ -121,9 +121,9 @@ public class MultiDbClientTest {
 
   @Test
   void testBuilderWithMultipleEndpointTypes() {
-    MultiClusterClientConfig clientConfig = MultiClusterClientConfig.builder()
+    MultiDatabaseConfig clientConfig = MultiDatabaseConfig.builder()
         .endpoint(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
-        .endpoint(ClusterConfig
+        .endpoint(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder().build())
             .weight(50.0f).build())
         .build();
@@ -172,11 +172,11 @@ public class MultiDbClientTest {
   @Test
   public void testWithDatabaseSwitchListener() {
 
-    MultiClusterClientConfig endpointsConfig = MultiClusterClientConfig.builder()
-        .endpoint(ClusterConfig
+    MultiDatabaseConfig endpointsConfig = MultiDatabaseConfig.builder()
+        .endpoint(DatabaseConfig
             .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
             .weight(100.0f).build())
-        .endpoint(ClusterConfig
+        .endpoint(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
             .weight(50.0f).build())
         .build();

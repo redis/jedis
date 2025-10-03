@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDatabaseConfig;
 
 @ExtendWith(MockitoExtension.class)
 class FailbackMechanismUnitTest {
@@ -26,17 +26,17 @@ class FailbackMechanismUnitTest {
   @Test
   void testFailbackCheckIntervalConfiguration() {
     // Test default value
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-    MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
+    MultiDatabaseConfig defaultConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).build();
 
     assertEquals(120000, defaultConfig.getFailbackCheckInterval());
 
     // Test custom value
-    MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackCheckInterval(3000)
+    MultiDatabaseConfig customConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(3000)
             .build();
 
     assertEquals(3000, customConfig.getFailbackCheckInterval());
@@ -44,18 +44,18 @@ class FailbackMechanismUnitTest {
 
   @Test
   void testFailbackSupportedConfiguration() {
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test default (should be true)
-    MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
+    MultiDatabaseConfig defaultConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).build();
 
     assertTrue(defaultConfig.isFailbackSupported());
 
     // Test disabled
-    MultiClusterClientConfig disabledConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackSupported(false)
+    MultiDatabaseConfig disabledConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(false)
             .build();
 
     assertFalse(disabledConfig.isFailbackSupported());
@@ -63,19 +63,19 @@ class FailbackMechanismUnitTest {
 
   @Test
   void testFailbackCheckIntervalValidation() {
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test zero interval (should be allowed)
-    MultiClusterClientConfig zeroConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackCheckInterval(0)
+    MultiDatabaseConfig zeroConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(0)
             .build();
 
     assertEquals(0, zeroConfig.getFailbackCheckInterval());
 
     // Test negative interval (should be allowed - implementation decision)
-    MultiClusterClientConfig negativeConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackCheckInterval(-1000)
+    MultiDatabaseConfig negativeConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(-1000)
             .build();
 
     assertEquals(-1000, negativeConfig.getFailbackCheckInterval());
@@ -83,12 +83,12 @@ class FailbackMechanismUnitTest {
 
   @Test
   void testBuilderChaining() {
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test that builder methods can be chained
-    MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackSupported(true)
+    MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(true)
             .failbackCheckInterval(2000).retryOnFailover(true).build();
 
     assertTrue(config.isFailbackSupported());
@@ -99,47 +99,47 @@ class FailbackMechanismUnitTest {
   @Test
   void testGracePeriodConfiguration() {
     // Test default value
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
-    MultiClusterClientConfig defaultConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
+    MultiDatabaseConfig defaultConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).build();
 
     assertEquals(60000, defaultConfig.getGracePeriod());
 
     // Test custom value
-    MultiClusterClientConfig customConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).gracePeriod(5000).build();
+    MultiDatabaseConfig customConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).gracePeriod(5000).build();
 
     assertEquals(5000, customConfig.getGracePeriod());
   }
 
   @Test
   void testGracePeriodValidation() {
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test zero grace period (should be allowed)
-    MultiClusterClientConfig zeroConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).gracePeriod(0).build();
+    MultiDatabaseConfig zeroConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).gracePeriod(0).build();
 
     assertEquals(0, zeroConfig.getGracePeriod());
 
     // Test negative grace period (should be allowed - implementation decision)
-    MultiClusterClientConfig negativeConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).gracePeriod(-1000).build();
+    MultiDatabaseConfig negativeConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).gracePeriod(-1000).build();
 
     assertEquals(-1000, negativeConfig.getGracePeriod());
   }
 
   @Test
   void testGracePeriodBuilderChaining() {
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test that builder methods can be chained
-    MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).failbackSupported(true)
+    MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(true)
             .failbackCheckInterval(2000).gracePeriod(8000).retryOnFailover(true).build();
 
     assertTrue(config.isFailbackSupported());

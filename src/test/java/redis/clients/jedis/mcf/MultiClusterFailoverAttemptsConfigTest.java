@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 import redis.clients.jedis.util.ReflectionTestUtil;
@@ -22,34 +22,34 @@ import static org.awaitility.Awaitility.await;
 
 /**
  * Tests for how getMaxNumFailoverAttempts and getDelayInBetweenFailoverAttempts impact
- * MultiClusterPooledConnectionProvider behaviour when no healthy clusters are available.
+ * MultiDatabaseConnectionProvider behaviour when no healthy clusters are available.
  */
 public class MultiClusterFailoverAttemptsConfigTest {
 
   private HostAndPort endpoint0 = new HostAndPort("purposefully-incorrect", 0000);
   private HostAndPort endpoint1 = new HostAndPort("purposefully-incorrect", 0001);
 
-  private MultiClusterPooledConnectionProvider provider;
+  private MultiDatabaseConnectionProvider provider;
 
   @BeforeEach
   void setUp() throws Exception {
     JedisClientConfig clientCfg = DefaultJedisClientConfig.builder().build();
 
-    ClusterConfig[] clusterConfigs = new ClusterConfig[] {
-        ClusterConfig.builder(endpoint0, clientCfg).weight(1.0f).healthCheckEnabled(false).build(),
-        ClusterConfig.builder(endpoint1, clientCfg).weight(0.5f).healthCheckEnabled(false)
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[] {
+        DatabaseConfig.builder(endpoint0, clientCfg).weight(1.0f).healthCheckEnabled(false).build(),
+        DatabaseConfig.builder(endpoint1, clientCfg).weight(0.5f).healthCheckEnabled(false)
             .build() };
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
+    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(databaseConfigs);
 
     // Use small values by default for tests unless overridden per-test via reflection
     setBuilderFailoverConfig(builder, /* maxAttempts */ 10, /* delayMs */ 12000);
 
-    provider = new MultiClusterPooledConnectionProvider(builder.build());
+    provider = new MultiDatabaseConnectionProvider(builder.build());
 
     // Disable both clusters to force handleNoHealthyCluster path
-    provider.getCluster(endpoint0).setDisabled(true);
-    provider.getCluster(endpoint1).setDisabled(true);
+    provider.getDatabase(endpoint0).setDisabled(true);
+    provider.getDatabase(endpoint1).setDisabled(true);
   }
 
   @AfterEach
@@ -70,8 +70,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
-        SwitchReason.HEALTH_CHECK, provider.getCluster()));
+      () -> MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 
@@ -79,8 +79,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
-          SwitchReason.HEALTH_CHECK, provider.getCluster()));
+        () -> MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
+          SwitchReason.HEALTH_CHECK, provider.getDatabase()));
       assertEquals(1, getProviderAttemptCount());
     }
   }
@@ -98,8 +98,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
-        SwitchReason.HEALTH_CHECK, provider.getCluster()));
+      () -> MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 
@@ -107,14 +107,14 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+        () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
       assertEquals(1, getProviderAttemptCount());
     }
 
     await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(10))
         .until(() -> {
           Exception e = assertThrows(JedisFailoverException.class, () -> provider
-              .switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster()));
+              .switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
           return e instanceof JedisPermanentlyNotAvailableException;
         });
   }
@@ -130,15 +130,15 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
     // Expect exactly 'maxAttempts' temporary exceptions, then a permanent one
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
+      () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase())); // attempt
     // 1
     assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
+      () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase())); // attempt
     // 2
 
     // Next should exceed max and become permanent
     assertThrows(JedisPermanentlyNotAvailableException.class,
-      () -> provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster())); // attempt
+      () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase())); // attempt
     // 3
     // ->
     // permanent
@@ -146,17 +146,17 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
   // ======== Test helper methods (reflection) ========
 
-  private static void setBuilderFailoverConfig(MultiClusterClientConfig.Builder builder,
-      int maxAttempts, int delayMs) throws Exception {
+  private static void setBuilderFailoverConfig(MultiDatabaseConfig.Builder builder, int maxAttempts,
+      int delayMs) throws Exception {
     ReflectionTestUtil.setField(builder, "maxNumFailoverAttempts", maxAttempts);
 
     ReflectionTestUtil.setField(builder, "delayInBetweenFailoverAttempts", delayMs);
   }
 
   private void setProviderFailoverConfig(int maxAttempts, int delayMs) throws Exception {
-    // Access the underlying MultiClusterClientConfig inside provider and adjust fields for this
+    // Access the underlying MultiDatabaseConfig inside provider and adjust fields for this
     // test
-    Object cfg = ReflectionTestUtil.getField(provider, "multiClusterClientConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "multiDatabaseConfig");
 
     ReflectionTestUtil.setField(cfg, "maxNumFailoverAttempts", maxAttempts);
 
@@ -164,13 +164,13 @@ public class MultiClusterFailoverAttemptsConfigTest {
   }
 
   private int getProviderMaxAttempts() throws Exception {
-    Object cfg = ReflectionTestUtil.getField(provider, "multiClusterClientConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "multiDatabaseConfig");
 
     return ReflectionTestUtil.getField(cfg, "maxNumFailoverAttempts");
   }
 
   private int getProviderDelayMs() throws Exception {
-    Object cfg = ReflectionTestUtil.getField(provider, "multiClusterClientConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "multiDatabaseConfig");
 
     return ReflectionTestUtil.getField(cfg, "delayInBetweenFailoverAttempts");
   }

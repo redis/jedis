@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDatabaseConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
-import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
+import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDatabaseConfig.StrategySupplier;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -32,7 +32,7 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testDisableHealthCheck() {
     // No health check strategy supplier means health check is disabled
-    MultiClusterPooledConnectionProvider customProvider = getMCCF(null);
+    MultiDatabaseConnectionProvider customProvider = getMCCF(null);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
@@ -43,11 +43,10 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testDefaultStrategySupplier() {
     // Create a default strategy supplier that creates EchoStrategy instances
-    MultiClusterClientConfig.StrategySupplier defaultSupplier = (hostAndPort,
-        jedisClientConfig) -> {
+    MultiDatabaseConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
       return new EchoStrategy(hostAndPort, jedisClientConfig);
     };
-    MultiClusterPooledConnectionProvider customProvider = getMCCF(defaultSupplier);
+    MultiDatabaseConnectionProvider customProvider = getMCCF(defaultSupplier);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
@@ -58,8 +57,7 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testCustomStrategySupplier() {
     // Create a StrategySupplier that uses the JedisClientConfig when available
-    MultiClusterClientConfig.StrategySupplier strategySupplier = (hostAndPort,
-        jedisClientConfig) -> {
+    MultiDatabaseConfig.StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
       return new TestHealthCheckStrategy(HealthCheckStrategy.Config.builder().interval(500)
           .timeout(500).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build(), (endpoint) -> {
             // Create connection per health check to avoid resource leak
@@ -72,7 +70,7 @@ public class HealthCheckIntegrationTest {
           });
     };
 
-    MultiClusterPooledConnectionProvider customProvider = getMCCF(strategySupplier);
+    MultiDatabaseConnectionProvider customProvider = getMCCF(strategySupplier);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
@@ -80,23 +78,23 @@ public class HealthCheckIntegrationTest {
     }
   }
 
-  private MultiClusterPooledConnectionProvider getMCCF(
-      MultiClusterClientConfig.StrategySupplier strategySupplier) {
-    Function<ClusterConfig.Builder, ClusterConfig.Builder> modifier = builder -> strategySupplier == null
+  private MultiDatabaseConnectionProvider getMCCF(
+      MultiDatabaseConfig.StrategySupplier strategySupplier) {
+    Function<DatabaseConfig.Builder, DatabaseConfig.Builder> modifier = builder -> strategySupplier == null
         ? builder.healthCheckEnabled(false)
         : builder.healthCheckStrategySupplier(strategySupplier);
 
-    List<ClusterConfig> clusterConfigs = Arrays.stream(new EndpointConfig[] { endpoint1 })
+    List<DatabaseConfig> databaseConfigs = Arrays.stream(new EndpointConfig[] { endpoint1 })
         .map(e -> modifier
-            .apply(MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig))
+            .apply(MultiDatabaseConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig))
             .build())
         .collect(Collectors.toList());
 
-    MultiClusterClientConfig mccf = new MultiClusterClientConfig.Builder(clusterConfigs)
-        .retryMaxAttempts(1).retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
+    MultiDatabaseConfig mccf = new MultiDatabaseConfig.Builder(databaseConfigs).retryMaxAttempts(1)
+        .retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
         .circuitBreakerFailureRateThreshold(100).build();
 
-    return new MultiClusterPooledConnectionProvider(mccf);
+    return new MultiDatabaseConnectionProvider(mccf);
   }
 
   // ========== Probe Logic Integration Tests ==========

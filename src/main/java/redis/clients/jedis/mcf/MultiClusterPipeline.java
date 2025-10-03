@@ -21,7 +21,7 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
   @Deprecated
-  public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider) {
+  public MultiClusterPipeline(MultiDatabaseConnectionProvider pooledProvider) {
     super(new CommandObjects());
 
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
@@ -32,7 +32,7 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
     }
   }
 
-  public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider,
+  public MultiClusterPipeline(MultiDatabaseConnectionProvider pooledProvider,
       CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);

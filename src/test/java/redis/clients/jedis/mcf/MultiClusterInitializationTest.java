@@ -14,11 +14,11 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDatabaseConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 
 /**
- * Tests for MultiClusterPooledConnectionProvider initialization edge cases
+ * Tests for MultiDatabaseConnectionProvider initialization edge cases
  */
 @ExtendWith(MockitoExtension.class)
 public class MultiClusterInitializationTest {
@@ -49,30 +49,29 @@ public class MultiClusterInitializationTest {
   void testInitializationWithMixedHealthCheckConfiguration() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
       // Create clusters with mixed health check configuration
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false) // No health
                                                                                    // check
           .build();
 
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f)
           .healthCheckStrategySupplier(EchoStrategy.DEFAULT) // With
                                                              // health
                                                              // check
           .build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
+          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
         // Should initialize successfully
-        assertNotNull(provider.getCluster());
+        assertNotNull(provider.getDatabase());
 
         // Should select cluster1 (no health check, assumed healthy) or cluster2 based on weight
         // Since cluster2 has higher weight and health checks, it should be selected if healthy
-        assertTrue(provider.getCluster() == provider.getCluster(endpoint1)
-            || provider.getCluster() == provider.getCluster(endpoint2));
+        assertTrue(provider.getDatabase() == provider.getDatabase(endpoint1)
+            || provider.getDatabase() == provider.getDatabase(endpoint2));
       }
     }
   }
@@ -81,20 +80,19 @@ public class MultiClusterInitializationTest {
   void testInitializationWithAllHealthChecksDisabled() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
       // Create clusters with no health checks
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(3.0f) // Higher weight
           .healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
+          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
         // Should select cluster2 (highest weight, no health checks)
-        assertEquals(provider.getCluster(endpoint2), provider.getCluster());
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
       }
     }
   }
@@ -102,16 +100,15 @@ public class MultiClusterInitializationTest {
   @Test
   void testInitializationWithSingleCluster() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster }).build();
+      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
+          new MultiDatabaseConfig.DatabaseConfig[] { cluster }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
         // Should select the only available cluster
-        assertEquals(provider.getCluster(endpoint1), provider.getCluster());
+        assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
       }
     }
   }
@@ -119,43 +116,41 @@ public class MultiClusterInitializationTest {
   @Test
   void testErrorHandlingWithNullConfiguration() {
     assertThrows(JedisValidationException.class, () -> {
-      new MultiClusterPooledConnectionProvider(null);
+      new MultiDatabaseConnectionProvider(null);
     });
   }
 
   @Test
   void testErrorHandlingWithEmptyClusterArray() {
     assertThrows(JedisValidationException.class, () -> {
-      new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[0]).build();
+      new MultiDatabaseConfig.Builder(new MultiDatabaseConfig.DatabaseConfig[0]).build();
     });
   }
 
   @Test
-  void testErrorHandlingWithNullClusterConfig() {
+  void testErrorHandlingWithNullDatabaseConfig() {
     assertThrows(IllegalArgumentException.class, () -> {
-      new MultiClusterClientConfig.Builder(new MultiClusterClientConfig.ClusterConfig[] { null })
-          .build();
+      new MultiDatabaseConfig.Builder(new MultiDatabaseConfig.DatabaseConfig[] { null }).build();
     });
   }
 
   @Test
   void testInitializationWithZeroWeights() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(0.0f) // Zero weight
           .healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.0f) // Zero weight
           .healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
+          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
         // Should still initialize and select one of the clusters
-        assertNotNull(provider.getCluster());
+        assertNotNull(provider.getDatabase());
       }
     }
   }

@@ -279,7 +279,6 @@ public final class MultiClusterClientConfig {
    * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
    * </p>
    * @see #getCircuitBreakerSlidingWindowSize()
-   * @see #circuitBreakerSlidingWindowType
    */
   private int circuitBreakerSlidingWindowSize;
 
@@ -687,10 +686,10 @@ public final class MultiClusterClientConfig {
   public static class ClusterConfig {
 
     /** The Redis endpoint (host and port) for this cluster. */
-    private HostAndPort hostAndPort;
+    private final Endpoint endpoint;
 
     /** Jedis client configuration containing connection settings and authentication. */
-    private JedisClientConfig jedisClientConfig;
+    private final JedisClientConfig jedisClientConfig;
 
     /** Optional connection pool configuration for managing connections to this cluster. */
     private GenericObjectPoolConfig<Connection> connectionPoolConfig;
@@ -714,12 +713,12 @@ public final class MultiClusterClientConfig {
      * EchoStrategy for health checks. Use the {@link Builder} for more advanced configuration
      * options.
      * </p>
-     * @param hostAndPort the Redis endpoint (host and port)
+     * @param endpoint the Redis endpoint (host and port)
      * @param clientConfig the Jedis client configuration
-     * @throws IllegalArgumentException if hostAndPort or clientConfig is null
+     * @throws IllegalArgumentException if endpoint or clientConfig is null
      */
-    public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-      this.hostAndPort = hostAndPort;
+    public ClusterConfig(Endpoint endpoint, JedisClientConfig clientConfig) {
+      this.endpoint = endpoint;
       this.jedisClientConfig = clientConfig;
     }
 
@@ -729,14 +728,14 @@ public final class MultiClusterClientConfig {
      * This constructor allows specification of connection pool settings in addition to basic
      * endpoint configuration. Default weight of 1.0f and EchoStrategy for health checks are used.
      * </p>
-     * @param hostAndPort the Redis endpoint (host and port)
+     * @param endpoint the Redis endpoint (host and port)
      * @param clientConfig the Jedis client configuration
      * @param connectionPoolConfig the connection pool configuration
-     * @throws IllegalArgumentException if hostAndPort or clientConfig is null
+     * @throws IllegalArgumentException if endpoint or clientConfig is null
      */
-    public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+    public ClusterConfig(Endpoint endpoint, JedisClientConfig clientConfig,
         GenericObjectPoolConfig<Connection> connectionPoolConfig) {
-      this.hostAndPort = hostAndPort;
+      this.endpoint = endpoint;
       this.jedisClientConfig = clientConfig;
       this.connectionPoolConfig = connectionPoolConfig;
     }
@@ -746,7 +745,7 @@ public final class MultiClusterClientConfig {
      * @param builder the builder containing configuration values
      */
     private ClusterConfig(Builder builder) {
-      this.hostAndPort = builder.hostAndPort;
+      this.endpoint = builder.endpoint;
       this.jedisClientConfig = builder.jedisClientConfig;
       this.connectionPoolConfig = builder.connectionPoolConfig;
       this.weight = builder.weight;
@@ -757,20 +756,20 @@ public final class MultiClusterClientConfig {
      * Returns the Redis endpoint (host and port) for this cluster.
      * @return the host and port information
      */
-    public HostAndPort getHostAndPort() {
-      return hostAndPort;
+    public Endpoint getEndpoint() {
+      return endpoint;
     }
 
     /**
      * Creates a new Builder instance for configuring a ClusterConfig.
-     * @param hostAndPort the Redis endpoint (host and port)
+     * @param endpoint the Redis endpoint (host and port)
      * @param clientConfig the Jedis client configuration
      * @return new Builder instance
-     * @throws IllegalArgumentException if hostAndPort or clientConfig is null
+     * @throws IllegalArgumentException if endpoint or clientConfig is null
      */
-    // TODO : Replace HostAndPort with Endpoint
-    public static Builder builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-      return new Builder(hostAndPort, clientConfig);
+
+    public static Builder builder(Endpoint endpoint, JedisClientConfig clientConfig) {
+      return new Builder(endpoint, clientConfig);
     }
 
     /**
@@ -833,7 +832,7 @@ public final class MultiClusterClientConfig {
      */
     public static class Builder {
       /** The Redis endpoint for this cluster configuration. */
-      private HostAndPort hostAndPort;
+      private Endpoint endpoint;
 
       /** The Jedis client configuration. */
       private JedisClientConfig jedisClientConfig;
@@ -849,12 +848,12 @@ public final class MultiClusterClientConfig {
 
       /**
        * Constructs a new Builder with required endpoint and client configuration.
-       * @param hostAndPort the Redis endpoint (host and port)
+       * @param endpoint the Redis endpoint (host and port)
        * @param clientConfig the Jedis client configuration
-       * @throws IllegalArgumentException if hostAndPort or clientConfig is null
+       * @throws IllegalArgumentException if endpoint or clientConfig is null
        */
-      public Builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-        this.hostAndPort = hostAndPort;
+      public Builder(Endpoint endpoint, JedisClientConfig clientConfig) {
+        this.endpoint = endpoint;
         this.jedisClientConfig = clientConfig;
       }
 
@@ -1104,12 +1103,8 @@ public final class MultiClusterClientConfig {
      * @return this builder
      */
     public Builder endpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
-      // Convert Endpoint to HostAndPort for ClusterConfig
-      // TODO : Refactor ClusterConfig to accept Endpoint directly
-      HostAndPort hostAndPort = (endpoint instanceof HostAndPort) ? (HostAndPort) endpoint
-          : new HostAndPort(endpoint.getHost(), endpoint.getPort());
 
-      ClusterConfig clusterConfig = ClusterConfig.builder(hostAndPort, clientConfig).weight(weight)
+      ClusterConfig clusterConfig = ClusterConfig.builder(endpoint, clientConfig).weight(weight)
           .build();
 
       this.clusterConfigs.add(clusterConfig);

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDatabaseConfig;
 
 public class DefaultValuesTest {
 
@@ -19,16 +19,16 @@ public class DefaultValuesTest {
   @Test
   void testDefaultValuesInConfig() {
 
-    MultiClusterClientConfig.ClusterConfig clusterConfig = MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
         .builder(fakeEndpoint, config).build();
-    MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(
-        new MultiClusterClientConfig.ClusterConfig[] { clusterConfig }).build();
+    MultiDatabaseConfig multiConfig = new MultiDatabaseConfig.Builder(
+        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).build();
 
     // check for grace period
     assertEquals(60000, multiConfig.getGracePeriod());
 
     // check for cluster config
-    assertEquals(clusterConfig, multiConfig.getClusterConfigs()[0]);
+    assertEquals(clusterConfig, multiConfig.getDatabaseConfigs()[0]);
 
     // check healthchecks enabled
     assertNotNull(clusterConfig.getHealthCheckStrategySupplier());

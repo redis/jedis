@@ -206,7 +206,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       throw new JedisValidationException("ClusterConfig must not be null");
     }
 
-    Endpoint endpoint = clusterConfig.getHostAndPort();
+    Endpoint endpoint = clusterConfig.getEndpoint();
     if (multiClusterMap.containsKey(endpoint)) {
       throw new JedisValidationException(
           "Endpoint " + endpoint + " already exists in the provider");
@@ -289,12 +289,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
    */
   private void addClusterInternal(MultiClusterClientConfig multiClusterClientConfig,
       ClusterConfig config) {
-    if (multiClusterMap.containsKey(config.getHostAndPort())) {
+    if (multiClusterMap.containsKey(config.getEndpoint())) {
       throw new JedisValidationException(
-          "Endpoint " + config.getHostAndPort() + " already exists in the provider");
+          "Endpoint " + config.getEndpoint() + " already exists in the provider");
     }
 
-    String clusterId = "cluster:" + config.getHostAndPort();
+    String clusterId = "cluster:" + config.getEndpoint();
 
     Retry retry = RetryRegistry.of(retryConfig).retry(clusterId);
 
@@ -312,31 +312,35 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
 
     TrackingConnectionPool pool = TrackingConnectionPool.builder()
-        .hostAndPort(config.getHostAndPort()).clientConfig(config.getJedisClientConfig())
+        .hostAndPort(hostPort(config.getEndpoint())).clientConfig(config.getJedisClientConfig())
         .poolConfig(config.getConnectionPoolConfig()).build();
 
     Cluster cluster;
     StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
     if (strategySupplier != null) {
-      HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(),
+      HealthCheckStrategy hcs = strategySupplier.get(hostPort(config.getEndpoint()),
         config.getJedisClientConfig());
       // Register listeners BEFORE adding clusters to avoid missing events
-      healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
-      HealthCheck hc = healthStatusManager.add(config.getHostAndPort(), hcs);
-      cluster = new Cluster(config.getHostAndPort(), pool, retry, hc, circuitBreaker,
+      healthStatusManager.registerListener(config.getEndpoint(), this::onHealthStatusChange);
+      HealthCheck hc = healthStatusManager.add(config.getEndpoint(), hcs);
+      cluster = new Cluster(config.getEndpoint(), pool, retry, hc, circuitBreaker,
           config.getWeight(), multiClusterClientConfig);
     } else {
-      cluster = new Cluster(config.getHostAndPort(), pool, retry, circuitBreaker,
-          config.getWeight(), multiClusterClientConfig);
+      cluster = new Cluster(config.getEndpoint(), pool, retry, circuitBreaker, config.getWeight(),
+          multiClusterClientConfig);
     }
 
-    multiClusterMap.put(config.getHostAndPort(), cluster);
+    multiClusterMap.put(config.getEndpoint(), cluster);
 
     // this is the place where we listen tracked errors and check if
     // thresholds are exceeded for the cluster
     circuitBreakerEventPublisher.onError(event -> {
       cluster.evaluateThresholds(false);
     });
+  }
+
+  private HostAndPort hostPort(Endpoint endpoint) {
+    return new HostAndPort(endpoint.getHost(), endpoint.getPort());
   }
 
   /**

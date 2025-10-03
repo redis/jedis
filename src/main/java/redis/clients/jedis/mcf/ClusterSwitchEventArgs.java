@@ -11,6 +11,7 @@ public class ClusterSwitchEventArgs {
 
   public ClusterSwitchEventArgs(SwitchReason reason, Endpoint endpoint, Cluster cluster) {
     this.reason = reason;
+    // TODO: @ggivo do we need cluster name?
     this.ClusterName = cluster.getCircuitBreaker().getName();
     this.Endpoint = endpoint;
   }

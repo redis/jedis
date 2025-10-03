@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -450,8 +451,10 @@ public final class MultiClusterClientConfig {
    * @see Builder#Builder(ClusterConfig[])
    */
   public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
+
     if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
         "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
+
     for (ClusterConfig clusterConfig : clusterConfigs) {
       if (clusterConfig == null)
         throw new IllegalArgumentException("ClusterClientConfigs must not contain null elements");
@@ -636,6 +639,20 @@ public final class MultiClusterClientConfig {
 
   /**
    * Creates a new Builder instance for configuring MultiClusterClientConfig.
+   * <p>
+   * At least one cluster configuration must be added to the builder before calling build(). Use the
+   * endpoint() methods to add cluster configurations.
+   * </p>
+   * @return new Builder instance
+   * @throws JedisValidationException if clusterConfigs is null or empty
+   * @see Builder#Builder(ClusterConfig[])
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Creates a new Builder instance for configuring MultiClusterClientConfig.
    * @param clusterConfigs array of cluster configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if clusterConfigs is null or empty
@@ -751,6 +768,7 @@ public final class MultiClusterClientConfig {
      * @return new Builder instance
      * @throws IllegalArgumentException if hostAndPort or clientConfig is null
      */
+    // TODO : Replace HostAndPort with Endpoint
     public static Builder builder(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
       return new Builder(hostAndPort, clientConfig);
     }
@@ -974,7 +992,7 @@ public final class MultiClusterClientConfig {
   public static class Builder {
 
     /** Array of cluster configurations defining available Redis endpoints. */
-    private ClusterConfig[] clusterConfigs;
+    private final List<ClusterConfig> clusterConfigs = new ArrayList<>();
 
     // ============ Retry Configuration Fields ============
     /** Maximum number of retry attempts including the initial call. */
@@ -1035,15 +1053,18 @@ public final class MultiClusterClientConfig {
 
     /**
      * Constructs a new Builder with the specified cluster configurations.
+     */
+    public Builder() {
+    }
+
+    /**
+     * Constructs a new Builder with the specified cluster configurations.
      * @param clusterConfigs array of cluster configurations defining available Redis endpoints
      * @throws JedisValidationException if clusterConfigs is null or empty
      */
     public Builder(ClusterConfig[] clusterConfigs) {
 
-      if (clusterConfigs == null || clusterConfigs.length < 1) throw new JedisValidationException(
-          "ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
-
-      this.clusterConfigs = clusterConfigs;
+      this(Arrays.asList(clusterConfigs));
     }
 
     /**
@@ -1052,7 +1073,47 @@ public final class MultiClusterClientConfig {
      * @throws JedisValidationException if clusterConfigs is null or empty
      */
     public Builder(List<ClusterConfig> clusterConfigs) {
-      this(clusterConfigs.toArray(new ClusterConfig[0]));
+      this.clusterConfigs.addAll(clusterConfigs);
+    }
+
+    /**
+     * Adds a pre-configured endpoint configuration.
+     * <p>
+     * This method allows adding a fully configured ClusterConfig instance, providing maximum
+     * flexibility for advanced configurations including custom health check strategies, connection
+     * pool settings, etc.
+     * </p>
+     * @param clusterConfig the pre-configured cluster configuration
+     * @return this builder
+     */
+    public Builder endpoint(ClusterConfig clusterConfig) {
+      this.clusterConfigs.add(clusterConfig);
+      return this;
+    }
+
+    /**
+     * Adds a Redis endpoint with custom client configuration.
+     * <p>
+     * This method allows specifying endpoint-specific configuration such as authentication, SSL
+     * settings, timeouts, etc. This configuration will override the default client configuration
+     * for this specific endpoint.
+     * </p>
+     * @param endpoint the Redis server endpoint
+     * @param weight the weight for this endpoint (higher values = higher priority)
+     * @param clientConfig the client configuration for this endpoint
+     * @return this builder
+     */
+    public Builder endpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
+      // Convert Endpoint to HostAndPort for ClusterConfig
+      // TODO : Refactor ClusterConfig to accept Endpoint directly
+      HostAndPort hostAndPort = (endpoint instanceof HostAndPort) ? (HostAndPort) endpoint
+          : new HostAndPort(endpoint.getHost(), endpoint.getPort());
+
+      ClusterConfig clusterConfig = ClusterConfig.builder(hostAndPort, clientConfig).weight(weight)
+          .build();
+
+      this.clusterConfigs.add(clusterConfig);
+      return this;
     }
 
     // ============ Retry Configuration Methods ============
@@ -1453,7 +1514,9 @@ public final class MultiClusterClientConfig {
      * @return a new MultiClusterClientConfig instance with the configured settings
      */
     public MultiClusterClientConfig build() {
-      MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterConfigs);
+
+      MultiClusterClientConfig config = new MultiClusterClientConfig(
+          this.clusterConfigs.toArray(new ClusterConfig[0]));
 
       // Copy retry configuration
       config.retryMaxAttempts = this.retryMaxAttempts;

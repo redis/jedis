@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
@@ -68,9 +68,7 @@ public class CircuitBreakerThresholdsTest {
 
     // Replace the cluster's pool with a mock to avoid real network I/O
     poolMock = mock(TrackingConnectionPool.class);
-    Field f = MultiClusterPooledConnectionProvider.Cluster.class.getDeclaredField("connectionPool");
-    f.setAccessible(true);
-    f.set(cluster, poolMock);
+    ReflectionTestUtil.setField(cluster, "connectionPool", poolMock);
   }
 
   /**
@@ -138,10 +136,7 @@ public class CircuitBreakerThresholdsTest {
           BuilderFactory.STRING);
 
       TrackingConnectionPool pool = mock(TrackingConnectionPool.class);
-      Field f = MultiClusterPooledConnectionProvider.Cluster.class
-          .getDeclaredField("connectionPool");
-      f.setAccessible(true);
-      f.set(c, pool);
+      ReflectionTestUtil.setField(c, "connectionPool", pool);
 
       // 3 successes
       Connection success = mock(Connection.class);
@@ -213,10 +208,7 @@ public class CircuitBreakerThresholdsTest {
           BuilderFactory.STRING);
 
       TrackingConnectionPool pool = mock(TrackingConnectionPool.class);
-      Field f = MultiClusterPooledConnectionProvider.Cluster.class
-          .getDeclaredField("connectionPool");
-      f.setAccessible(true);
-      f.set(c, pool);
+      ReflectionTestUtil.setField(c, "connectionPool", pool);
 
       if (successes > 0) {
         Connection ok = mock(Connection.class);

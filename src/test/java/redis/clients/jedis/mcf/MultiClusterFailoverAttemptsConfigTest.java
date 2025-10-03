@@ -12,7 +12,8 @@ import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
-import java.lang.reflect.Field;
+import redis.clients.jedis.util.ReflectionTestUtil;
+
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -147,53 +148,35 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
   private static void setBuilderFailoverConfig(MultiClusterClientConfig.Builder builder,
       int maxAttempts, int delayMs) throws Exception {
-    Field fMax = builder.getClass().getDeclaredField("maxNumFailoverAttempts");
-    fMax.setAccessible(true);
-    fMax.setInt(builder, maxAttempts);
+    ReflectionTestUtil.setField(builder, "maxNumFailoverAttempts", maxAttempts);
 
-    Field fDelay = builder.getClass().getDeclaredField("delayInBetweenFailoverAttempts");
-    fDelay.setAccessible(true);
-    fDelay.setInt(builder, delayMs);
+    ReflectionTestUtil.setField(builder, "delayInBetweenFailoverAttempts", delayMs);
   }
 
   private void setProviderFailoverConfig(int maxAttempts, int delayMs) throws Exception {
     // Access the underlying MultiClusterClientConfig inside provider and adjust fields for this
     // test
-    Field cfgField = provider.getClass().getDeclaredField("multiClusterClientConfig");
-    cfgField.setAccessible(true);
-    Object cfg = cfgField.get(provider);
+    Object cfg = ReflectionTestUtil.getField(provider, "multiClusterClientConfig");
 
-    Field fMax = cfg.getClass().getDeclaredField("maxNumFailoverAttempts");
-    fMax.setAccessible(true);
-    fMax.setInt(cfg, maxAttempts);
+    ReflectionTestUtil.setField(cfg, "maxNumFailoverAttempts", maxAttempts);
 
-    Field fDelay = cfg.getClass().getDeclaredField("delayInBetweenFailoverAttempts");
-    fDelay.setAccessible(true);
-    fDelay.setInt(cfg, delayMs);
+    ReflectionTestUtil.setField(cfg, "delayInBetweenFailoverAttempts", delayMs);
   }
 
   private int getProviderMaxAttempts() throws Exception {
-    Field cfgField = provider.getClass().getDeclaredField("multiClusterClientConfig");
-    cfgField.setAccessible(true);
-    Object cfg = cfgField.get(provider);
-    Field fMax = cfg.getClass().getDeclaredField("maxNumFailoverAttempts");
-    fMax.setAccessible(true);
-    return fMax.getInt(cfg);
+    Object cfg = ReflectionTestUtil.getField(provider, "multiClusterClientConfig");
+
+    return ReflectionTestUtil.getField(cfg, "maxNumFailoverAttempts");
   }
 
   private int getProviderDelayMs() throws Exception {
-    Field cfgField = provider.getClass().getDeclaredField("multiClusterClientConfig");
-    cfgField.setAccessible(true);
-    Object cfg = cfgField.get(provider);
-    Field fDelay = cfg.getClass().getDeclaredField("delayInBetweenFailoverAttempts");
-    fDelay.setAccessible(true);
-    return fDelay.getInt(cfg);
+    Object cfg = ReflectionTestUtil.getField(provider, "multiClusterClientConfig");
+
+    return ReflectionTestUtil.getField(cfg, "delayInBetweenFailoverAttempts");
   }
 
   private int getProviderAttemptCount() throws Exception {
-    Field f = provider.getClass().getDeclaredField("failoverAttemptCount");
-    f.setAccessible(true);
-    AtomicInteger val = (AtomicInteger) f.get(provider);
+    AtomicInteger val = ReflectionTestUtil.getField(provider, "failoverAttemptCount");
     return val.get();
   }
 }

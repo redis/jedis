@@ -1,6 +1,6 @@
 package redis.clients.jedis.mcf;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
@@ -32,7 +32,14 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
     supplier.withFallback(provider.getFallbackExceptionList(),
       e -> this.handleClusterFailover(cluster));
 
-    return supplier.decorate().get();
+    try {
+      return supplier.decorate().get();
+    } catch (Exception e) {
+      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
+        clusterFailover(cluster);
+      }
+      throw e;
+    }
   }
 
   /**

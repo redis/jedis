@@ -1,8 +1,6 @@
 package redis.clients.jedis;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +56,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *
  *   // Build multi-cluster configuration
  *   MultiClusterClientConfig config = MultiClusterClientConfig.builder(primary, secondary)
- *       .circuitBreakerFailureRateThreshold(50.0f).retryMaxAttempts(3).failbackSupported(true)
+ *       .circuitBreakerFailureRateThreshold(10.0f).retryMaxAttempts(3).failbackSupported(true)
  *       .gracePeriod(10000).build();
  *
  *   // Use with connection provider
@@ -132,20 +130,11 @@ public final class MultiClusterClientConfig {
   /** Default failure rate threshold percentage for circuit breaker activation. */
   private static final float CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT = 10.0f;
 
-  /** Default minimum number of calls required before circuit breaker can calculate failure rate. */
-  private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT = 1000;
-
-  /** Default sliding window type for circuit breaker failure tracking. */
-  private static final SlidingWindowType CIRCUIT_BREAKER_SLIDING_WINDOW_TYPE_DEFAULT = SlidingWindowType.COUNT_BASED;
+  /** Minimum number of failures before circuit breaker is tripped. */
+  private static final int CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT = 1000;
 
   /** Default sliding window size for circuit breaker failure tracking. */
   private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 2;
-
-  /** Default slow call duration threshold in milliseconds. */
-  private static final int CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT = 60000;
-
-  /** Default slow call rate threshold percentage for circuit breaker activation. */
-  private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f;
 
   /** Default list of exceptions that are recorded as circuit breaker failures. */
   private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays
@@ -249,15 +238,29 @@ public final class MultiClusterClientConfig {
   private List<Class> retryIgnoreExceptionList;
 
   // ============ Circuit Breaker Configuration ============
-  // Based on Resilience4j Circuit Breaker: https://resilience4j.readme.io/docs/circuitbreaker
+
+  /**
+   * Minimum number of failures before circuit breaker is tripped.
+   * <p>
+   * When the number of failures exceeds both this threshold and the failure rate threshold, the
+   * circuit breaker will trip and prevent further requests from being sent to the cluster until it
+   * has recovered.
+   * </p>
+   * <p>
+   * <strong>Default:</strong> {@value #CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT}
+   * </p>
+   * @see #getCircuitBreakerMinNumOfFailures()
+   * @see #circuitBreakerFailureRateThreshold
+   */
+  private int circuitBreakerMinNumOfFailures;
 
   /**
    * Failure rate threshold percentage that triggers circuit breaker transition to OPEN state.
    * <p>
-   * When the failure rate equals or exceeds this threshold, the circuit breaker transitions to the
-   * OPEN state and starts short-circuiting calls, immediately failing them without attempting to
-   * reach the Redis cluster. This prevents cascading failures and allows the system to fail over to
-   * the next available cluster.
+   * When the failure rate exceeds both this threshold and the minimum number of failures, the
+   * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
+   * failing them without attempting to reach the Redis cluster. This prevents cascading failures
+   * and allows the system to fail over to the next available cluster.
    * </p>
    * <p>
    * <strong>Range:</strong> 0.0 to 100.0 (percentage)
@@ -266,103 +269,18 @@ public final class MultiClusterClientConfig {
    * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT}%
    * </p>
    * @see #getCircuitBreakerFailureRateThreshold()
-   * @see #circuitBreakerSlidingWindowMinCalls
+   * @see #circuitBreakerMinNumOfFailures
    */
   private float circuitBreakerFailureRateThreshold;
 
   /**
-   * Minimum number of calls required per sliding window period before circuit breaker can calculate
-   * failure rates.
-   * <p>
-   * The circuit breaker needs a minimum number of calls to make statistically meaningful decisions
-   * about failure rates. Until this minimum is reached, the circuit breaker remains in the CLOSED
-   * state regardless of failure rate.
-   * </p>
-   * <p>
-   * <strong>Example:</strong> If set to 10, at least 10 calls must be recorded before the failure
-   * rate can be calculated. If only 9 calls have been recorded, the circuit breaker will not
-   * transition to OPEN even if all 9 calls failed.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT}
-   * </p>
-   * @see #getCircuitBreakerSlidingWindowMinCalls()
-   * @see #circuitBreakerFailureRateThreshold
-   */
-  private int circuitBreakerSlidingWindowMinCalls;
-
-  /**
-   * Type of sliding window used to record call outcomes for circuit breaker calculations.
-   * <p>
-   * <strong>Available Types:</strong>
-   * </p>
-   * <ul>
-   * <li><strong>COUNT_BASED:</strong> Records the last N calls (where N = slidingWindowSize)</li>
-   * <li><strong>TIME_BASED:</strong> Records calls from the last N seconds (where N =
-   * slidingWindowSize)</li>
-   * </ul>
-   * <p>
-   * <strong>Default:</strong> {@link SlidingWindowType#COUNT_BASED}
-   * </p>
-   * @see #getCircuitBreakerSlidingWindowType()
-   * @see #circuitBreakerSlidingWindowSize
-   */
-  private SlidingWindowType circuitBreakerSlidingWindowType;
-
-  /**
    * Size of the sliding window used to record call outcomes when the circuit breaker is CLOSED.
-   * <p>
-   * The interpretation of this value depends on the {@link #circuitBreakerSlidingWindowType}:
-   * </p>
-   * <ul>
-   * <li><strong>COUNT_BASED:</strong> Number of calls to track</li>
-   * <li><strong>TIME_BASED:</strong> Number of seconds to track</li>
-   * </ul>
-   * <p>
    * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
    * </p>
    * @see #getCircuitBreakerSlidingWindowSize()
    * @see #circuitBreakerSlidingWindowType
    */
   private int circuitBreakerSlidingWindowSize;
-
-  /**
-   * Duration threshold above which calls are considered slow and contribute to slow call rate.
-   * <p>
-   * Calls that take longer than this threshold are classified as "slow calls" and are tracked
-   * separately from failed calls. This allows the circuit breaker to open based on performance
-   * degradation even when calls are technically successful.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT}
-   * milliseconds
-   * </p>
-   * @see #getCircuitBreakerSlowCallDurationThreshold()
-   * @see #circuitBreakerSlowCallRateThreshold
-   */
-  private Duration circuitBreakerSlowCallDurationThreshold;
-
-  /**
-   * Slow call rate threshold percentage that triggers circuit breaker transition to OPEN state.
-   * <p>
-   * When the percentage of slow calls equals or exceeds this threshold, the circuit breaker
-   * transitions to the OPEN state. A call is considered slow when its duration exceeds the
-   * {@link #circuitBreakerSlowCallDurationThreshold}.
-   * </p>
-   * <p>
-   * This mechanism allows the circuit breaker to open based on performance degradation rather than
-   * just failures, enabling proactive failover when a cluster becomes slow.
-   * </p>
-   * <p>
-   * <strong>Range:</strong> 0.0 to 100.0 (percentage)
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT}%
-   * </p>
-   * @see #getCircuitBreakerSlowCallRateThreshold()
-   * @see #circuitBreakerSlowCallDurationThreshold
-   */
-  private float circuitBreakerSlowCallRateThreshold;
 
   /**
    * List of exception classes that are recorded as circuit breaker failures and increase the
@@ -577,50 +495,34 @@ public final class MultiClusterClientConfig {
   }
 
   /**
-   * Returns the failure rate threshold percentage for circuit breaker activation.
+   * Returns the failure rate threshold percentage for circuit breaker activation. 0.0f means
+   * failure rate is ignored, and only minimum number of failures is considered.
    * @return failure rate threshold as a percentage (0.0 to 100.0)
    * @see #circuitBreakerFailureRateThreshold
+   * @see #getCircuitBreakerMinNumOfFailures
    */
   public float getCircuitBreakerFailureRateThreshold() {
     return circuitBreakerFailureRateThreshold;
   }
 
   /**
-   * Returns the minimum number of calls required before circuit breaker can calculate failure
-   * rates.
-   * @return minimum number of calls for failure rate calculation
-   * @see #circuitBreakerSlidingWindowMinCalls
-   */
-  public int getCircuitBreakerSlidingWindowMinCalls() {
-    return circuitBreakerSlidingWindowMinCalls;
-  }
-
-  /**
    * Returns the size of the sliding window used for circuit breaker calculations.
    * @return sliding window size (calls or seconds depending on window type)
    * @see #circuitBreakerSlidingWindowSize
-   * @see #getCircuitBreakerSlidingWindowType()
    */
   public int getCircuitBreakerSlidingWindowSize() {
     return circuitBreakerSlidingWindowSize;
   }
 
   /**
-   * Returns the duration threshold above which calls are considered slow.
-   * @return slow call duration threshold
-   * @see #circuitBreakerSlowCallDurationThreshold
+   * Returns the minimum number of failures before circuit breaker is tripped. 0 means minimum
+   * number of failures is ignored, and only failure rate is considered.
+   * @return minimum number of failures before circuit breaker is tripped
+   * @see #circuitBreakerMinNumOfFailures
+   * @see #getCircuitBreakerFailureRateThreshold
    */
-  public Duration getCircuitBreakerSlowCallDurationThreshold() {
-    return circuitBreakerSlowCallDurationThreshold;
-  }
-
-  /**
-   * Returns the slow call rate threshold percentage for circuit breaker activation.
-   * @return slow call rate threshold as a percentage (0.0 to 100.0)
-   * @see #circuitBreakerSlowCallRateThreshold
-   */
-  public float getCircuitBreakerSlowCallRateThreshold() {
-    return circuitBreakerSlowCallRateThreshold;
+  public int getCircuitBreakerMinNumOfFailures() {
+    return circuitBreakerMinNumOfFailures;
   }
 
   /**
@@ -657,15 +559,6 @@ public final class MultiClusterClientConfig {
    */
   public List<Class> getCircuitBreakerIgnoreExceptionList() {
     return circuitBreakerIgnoreExceptionList;
-  }
-
-  /**
-   * Returns the type of sliding window used for circuit breaker calculations.
-   * @return sliding window type (COUNT_BASED or TIME_BASED)
-   * @see #circuitBreakerSlidingWindowType
-   */
-  public SlidingWindowType getCircuitBreakerSlidingWindowType() {
-    return circuitBreakerSlidingWindowType;
   }
 
   /**
@@ -1103,20 +996,8 @@ public final class MultiClusterClientConfig {
     /** Failure rate threshold percentage for circuit breaker activation. */
     private float circuitBreakerFailureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
 
-    /** Minimum number of calls required before circuit breaker can calculate failure rates. */
-    private int circuitBreakerSlidingWindowMinCalls = CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT;
-
-    /** Type of sliding window for circuit breaker calculations. */
-    private SlidingWindowType circuitBreakerSlidingWindowType = CIRCUIT_BREAKER_SLIDING_WINDOW_TYPE_DEFAULT;
-
     /** Size of the sliding window for circuit breaker calculations. */
     private int circuitBreakerSlidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
-
-    /** Duration threshold above which calls are considered slow. */
-    private int circuitBreakerSlowCallDurationThreshold = CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT;
-
-    /** Slow call rate threshold percentage for circuit breaker activation. */
-    private float circuitBreakerSlowCallRateThreshold = CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT;
 
     /** List of exception classes that are recorded as circuit breaker failures. */
     private List<Class> circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
@@ -1130,6 +1011,9 @@ public final class MultiClusterClientConfig {
     // ============ Failover Configuration Fields ============
     /** Whether to retry failed commands during failover. */
     private boolean retryOnFailover = false;
+
+    /** Minimum number of failures before circuit breaker is tripped. */
+    private int circuitBreakerMinNumOfFailures = CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
 
     /** Whether automatic failback to higher-priority clusters is supported. */
     private boolean isFailbackSupported = true;
@@ -1281,9 +1165,9 @@ public final class MultiClusterClientConfig {
     /**
      * Sets the failure rate threshold percentage that triggers circuit breaker activation.
      * <p>
-     * When the failure rate equals or exceeds this threshold, the circuit breaker transitions to
-     * the OPEN state and starts short-circuiting calls, enabling immediate failover to the next
-     * available cluster.
+     * When both the failure rate and minimum number of failures exceeds this threshold, the circuit
+     * breaker transitions to the OPEN state and starts short-circuiting calls, enabling immediate
+     * failover to the next available cluster.
      * </p>
      * <p>
      * <strong>Typical Values:</strong>
@@ -1295,74 +1179,16 @@ public final class MultiClusterClientConfig {
      * </ul>
      * @param circuitBreakerFailureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
      * @return this builder instance for method chaining
+     * @see #circuitBreakerMinNumOfFailures(int)
      */
     public Builder circuitBreakerFailureRateThreshold(float circuitBreakerFailureRateThreshold) {
+      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
       this.circuitBreakerFailureRateThreshold = circuitBreakerFailureRateThreshold;
       return this;
     }
 
     /**
-     * Sets the minimum number of calls required before circuit breaker can calculate failure rates.
-     * <p>
-     * The circuit breaker needs sufficient data to make statistically meaningful decisions. Until
-     * this minimum is reached, the circuit breaker remains CLOSED regardless of failure rate.
-     * </p>
-     * <p>
-     * <strong>Considerations:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>Low values (5-10):</strong> Faster failure detection, higher chance of false
-     * positives</li>
-     * <li><strong>Medium values (50-100):</strong> Balanced approach (default: 100)</li>
-     * <li><strong>High values (200+):</strong> More stable decisions, slower failure detection</li>
-     * </ul>
-     * @param circuitBreakerSlidingWindowMinCalls minimum number of calls for failure rate
-     *          calculation
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerSlidingWindowMinCalls(int circuitBreakerSlidingWindowMinCalls) {
-      this.circuitBreakerSlidingWindowMinCalls = circuitBreakerSlidingWindowMinCalls;
-      return this;
-    }
-
-    /**
-     * Sets the type of sliding window used for circuit breaker calculations.
-     * <p>
-     * <strong>Available Types:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>COUNT_BASED:</strong> Tracks the last N calls (default)</li>
-     * <li><strong>TIME_BASED:</strong> Tracks calls from the last N seconds</li>
-     * </ul>
-     * <p>
-     * COUNT_BASED is generally preferred for consistent load patterns, while TIME_BASED works
-     * better for variable load scenarios.
-     * </p>
-     * @param circuitBreakerSlidingWindowType sliding window type
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerSlidingWindowType(
-        SlidingWindowType circuitBreakerSlidingWindowType) {
-      this.circuitBreakerSlidingWindowType = circuitBreakerSlidingWindowType;
-      return this;
-    }
-
-    /**
      * Sets the size of the sliding window for circuit breaker calculations.
-     * <p>
-     * The interpretation depends on the sliding window type:
-     * </p>
-     * <ul>
-     * <li><strong>COUNT_BASED:</strong> Number of calls to track</li>
-     * <li><strong>TIME_BASED:</strong> Number of seconds to track</li>
-     * </ul>
-     * <p>
-     * <strong>Typical Values:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>COUNT_BASED:</strong> 50-200 calls (default: 100)</li>
-     * <li><strong>TIME_BASED:</strong> 30-300 seconds</li>
-     * </ul>
      * @param circuitBreakerSlidingWindowSize sliding window size
      * @return this builder instance for method chaining
      */
@@ -1372,47 +1198,30 @@ public final class MultiClusterClientConfig {
     }
 
     /**
-     * Sets the duration threshold above which calls are considered slow.
+     * Sets the minimum number of failures before circuit breaker is tripped.
      * <p>
-     * Calls exceeding this threshold contribute to the slow call rate, allowing the circuit breaker
-     * to open based on performance degradation rather than just failures. This enables proactive
-     * failover when clusters become slow.
+     * When both the number of failures and failure rate exceeds this threshold, the circuit breaker
+     * will trip and prevent further requests from being sent to the cluster until it has recovered.
      * </p>
      * <p>
-     * <strong>Typical Values:</strong>
+     * <strong>Default:</strong> 1000
      * </p>
-     * <ul>
-     * <li><strong>1-5 seconds:</strong> For low-latency applications</li>
-     * <li><strong>10-30 seconds:</strong> For standard applications</li>
-     * <li><strong>60+ seconds:</strong> For batch or long-running operations (default: 60s)</li>
-     * </ul>
-     * @param circuitBreakerSlowCallDurationThreshold slow call threshold in milliseconds
+     * @param circuitBreakerMinNumOfFailures minimum number of failures before circuit breaker is
+     *          tripped
      * @return this builder instance for method chaining
+     * @see #circuitBreakerFailureRateThreshold(float)
      */
-    public Builder circuitBreakerSlowCallDurationThreshold(
-        int circuitBreakerSlowCallDurationThreshold) {
-      this.circuitBreakerSlowCallDurationThreshold = circuitBreakerSlowCallDurationThreshold;
+    public Builder circuitBreakerMinNumOfFailures(int circuitBreakerMinNumOfFailures) {
+      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
+      this.circuitBreakerMinNumOfFailures = circuitBreakerMinNumOfFailures;
       return this;
     }
 
-    /**
-     * Sets the slow call rate threshold percentage that triggers circuit breaker activation.
-     * <p>
-     * When the percentage of slow calls equals or exceeds this threshold, the circuit breaker
-     * opens. This allows failover based on performance degradation even when calls are technically
-     * successful.
-     * </p>
-     * <p>
-     * <strong>Note:</strong> Default value of 100% means only failures trigger the circuit breaker,
-     * not slow calls. Lower values enable performance-based failover.
-     * </p>
-     * @param circuitBreakerSlowCallRateThreshold slow call rate threshold as percentage (0.0 to
-     *          100.0)
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerSlowCallRateThreshold(float circuitBreakerSlowCallRateThreshold) {
-      this.circuitBreakerSlowCallRateThreshold = circuitBreakerSlowCallRateThreshold;
-      return this;
+    private void checkThresholds(int failures, float rate) {
+      if (failures == 0 && rate == 0) {
+        throw new JedisValidationException(
+            "Both circuitBreakerMinNumOfFailures and circuitBreakerFailureRateThreshold can not be 0 at the same time!");
+      }
     }
 
     /**
@@ -1654,13 +1463,9 @@ public final class MultiClusterClientConfig {
       config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
 
       // Copy circuit breaker configuration
+      config.circuitBreakerMinNumOfFailures = this.circuitBreakerMinNumOfFailures;
       config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
-      config.circuitBreakerSlidingWindowMinCalls = this.circuitBreakerSlidingWindowMinCalls;
-      config.circuitBreakerSlidingWindowType = this.circuitBreakerSlidingWindowType;
       config.circuitBreakerSlidingWindowSize = this.circuitBreakerSlidingWindowSize;
-      config.circuitBreakerSlowCallDurationThreshold = Duration
-          .ofMillis(this.circuitBreakerSlowCallDurationThreshold);
-      config.circuitBreakerSlowCallRateThreshold = this.circuitBreakerSlowCallRateThreshold;
       config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
       config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
 
@@ -1676,6 +1481,7 @@ public final class MultiClusterClientConfig {
 
       return config;
     }
+
   }
 
 }

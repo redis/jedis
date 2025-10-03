@@ -30,12 +30,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType.COUNT_BASED;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -150,7 +150,7 @@ public class FailoverIntegrationTest {
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
 
     assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
-      equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.FORCED_OPEN));
 
     // Check that the failoverClient is now using Endpoint 2
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
@@ -161,7 +161,7 @@ public class FailoverIntegrationTest {
     // Endpoint1 and Endpoint2 are NOT available,
     assertThrows(JedisConnectionException.class, () -> failoverClient.info("server"));
     assertThat(provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker().getState(),
-      equalTo(CircuitBreaker.State.OPEN));
+      equalTo(CircuitBreaker.State.FORCED_OPEN));
 
     // and since no other nodes are available, it should propagate the errors to the caller
     // subsequent calls
@@ -183,8 +183,11 @@ public class FailoverIntegrationTest {
   private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(
       JedisClientConfig clientConfig, EndpointConfig... endpoints) {
 
-    return Arrays.stream(endpoints).map(
-      e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig).build())
+    int weight = endpoints.length;
+    AtomicInteger weightCounter = new AtomicInteger(weight);
+    return Arrays.stream(endpoints)
+        .map(e -> MultiClusterClientConfig.ClusterConfig.builder(e.getHostAndPort(), clientConfig)
+            .weight(1.0f / weightCounter.getAndIncrement()).healthCheckEnabled(false).build())
         .collect(Collectors.toList());
   }
 
@@ -264,10 +267,9 @@ public class FailoverIntegrationTest {
               .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
               .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
           endpoint1, endpoint2)).retryMaxAttempts(2).retryWaitDuration(1)
-              .circuitBreakerSlidingWindowType(COUNT_BASED).circuitBreakerSlidingWindowSize(3)
-              .circuitBreakerFailureRateThreshold(50) // 50% failure
-                                                      // rate threshold
-              .circuitBreakerSlidingWindowMinCalls(3).build();
+              .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(2)
+              .circuitBreakerFailureRateThreshold(50f) // %50 failure rate
+              .build();
 
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
         failoverConfig);
@@ -297,7 +299,7 @@ public class FailoverIntegrationTest {
 
       // Circuit breaker should be open after just one command with retries
       assertThat(provider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+        equalTo(CircuitBreaker.State.FORCED_OPEN));
 
       // Next command should be routed to the second endpoint
       // Command 2
@@ -375,7 +377,7 @@ public class FailoverIntegrationTest {
       // Check that the circuit breaker for Endpoint 1 is open
       assertThat(
         customProvider.getCluster(endpoint1.getHostAndPort()).getCircuitBreaker().getState(),
-        equalTo(CircuitBreaker.State.OPEN));
+        equalTo(CircuitBreaker.State.FORCED_OPEN));
 
       // Disable redisProxy1 to enforce the current blpop command failure
       redisProxy1.disable();
@@ -425,9 +427,8 @@ public class FailoverIntegrationTest {
 
     MultiClusterClientConfig failoverConfig = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
-            .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
-            .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
-            .circuitBreakerSlidingWindowMinCalls(1).build();
+            .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
+            .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f).build();
 
     return new MultiClusterPooledConnectionProvider(failoverConfig);
   }
@@ -444,9 +445,8 @@ public class FailoverIntegrationTest {
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
-            .retryWaitDuration(1).circuitBreakerSlidingWindowType(COUNT_BASED)
-            .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
-            .circuitBreakerSlidingWindowMinCalls(1);
+            .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
+            .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f);
 
     if (configCustomizer != null) {
       builder = configCustomizer.apply(builder);

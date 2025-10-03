@@ -280,8 +280,11 @@ public class HealthCheckTest {
     // Register listener before adding health check to capture the initial event
     manager.registerListener(testEndpoint, listener);
 
+    HealthCheckStrategy delayedStrategy = new TestHealthCheckStrategy(2000, 1000, 3,
+        BuiltIn.ALL_SUCCESS, 100, e -> HealthStatus.HEALTHY);
+
     // Add health check - this will start async health checking
-    manager.add(testEndpoint, alwaysHealthyStrategy);
+    manager.add(testEndpoint, delayedStrategy);
 
     // Initially should still be UNKNOWN until first check completes
     assertEquals(HealthStatus.UNKNOWN, manager.getHealthStatus(testEndpoint));
@@ -785,7 +788,7 @@ public class HealthCheckTest {
     CountDownLatch unhealthyLatch = new CountDownLatch(1);
 
     TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(
-        HealthCheckStrategy.Config.builder().interval(5).timeout(200).numProbes(4)
+        HealthCheckStrategy.Config.builder().interval(5000).timeout(200).numProbes(4)
             .policy(BuiltIn.MAJORITY_SUCCESS).delayInBetweenProbes(5).build(),
         e -> {
           int c = callCount.incrementAndGet();

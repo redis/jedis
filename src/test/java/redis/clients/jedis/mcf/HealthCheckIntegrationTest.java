@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
@@ -94,10 +93,8 @@ public class HealthCheckIntegrationTest {
         .collect(Collectors.toList());
 
     MultiClusterClientConfig mccf = new MultiClusterClientConfig.Builder(clusterConfigs)
-        .retryMaxAttempts(1).retryWaitDuration(1)
-        .circuitBreakerSlidingWindowType(SlidingWindowType.COUNT_BASED)
-        .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100)
-        .circuitBreakerSlidingWindowMinCalls(1).build();
+        .retryMaxAttempts(1).retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
+        .circuitBreakerFailureRateThreshold(100).build();
 
     return new MultiClusterPooledConnectionProvider(mccf);
   }

@@ -11,8 +11,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
@@ -21,15 +21,15 @@ import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
  */
 public class ClusterEvaluateThresholdsTest {
 
-  private MultiClusterPooledConnectionProvider provider;
-  private Cluster cluster;
+  private MultiDatabaseConnectionProvider provider;
+  private Database cluster;
   private CircuitBreaker circuitBreaker;
   private CircuitBreaker.Metrics metrics;
 
   @BeforeEach
   public void setup() {
-    provider = mock(MultiClusterPooledConnectionProvider.class);
-    cluster = mock(Cluster.class);
+    provider = mock(MultiDatabaseConnectionProvider.class);
+    cluster = mock(Database.class);
 
     circuitBreaker = mock(CircuitBreaker.class);
     metrics = mock(CircuitBreaker.Metrics.class);
@@ -58,7 +58,7 @@ public class ClusterEvaluateThresholdsTest {
 
     cluster.evaluateThresholds(false);
     verify(circuitBreaker, never()).transitionToOpenState();
-    verify(provider, never()).switchToHealthyCluster(any(), any());
+    verify(provider, never()).switchToHealthyDatabase(any(), any());
   }
 
   /**
@@ -95,18 +95,18 @@ public class ClusterEvaluateThresholdsTest {
     cluster.evaluateThresholds(false);
 
     verify(circuitBreaker, never()).transitionToOpenState();
-    verify(provider, never()).switchToHealthyCluster(any(), any());
+    verify(provider, never()).switchToHealthyDatabase(any(), any());
   }
 
   @Test
   public void providerBuilder_zeroRate_mapsToHundredAndHugeMinCalls() {
-    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
-        .builder(java.util.Arrays.asList(MultiClusterClientConfig.ClusterConfig
+    MultiDatabaseConfig.Builder cfgBuilder = MultiDatabaseConfig
+        .builder(java.util.Arrays.asList(MultiDatabaseConfig.DatabaseConfig
             .builder(new HostAndPort("localhost", 6379), DefaultJedisClientConfig.builder().build())
             .healthCheckEnabled(false).build()));
     cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10);
-    MultiClusterClientConfig mcc = cfgBuilder.build();
+    MultiDatabaseConfig mcc = cfgBuilder.build();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);
 

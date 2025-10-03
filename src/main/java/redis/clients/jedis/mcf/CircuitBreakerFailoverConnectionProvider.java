@@ -6,23 +6,22 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 
 /**
  * ConnectionProvider with built-in retry, circuit-breaker, and failover to another cluster/database
  * endpoint. With this executor users can seamlessly failover to Disaster Recovery (DR), Backup, and
- * Active-Active cluster(s) by using simple configuration which is passed through from Resilience4j
- * - https://resilience4j.readme.io/docs
+ * Active-Active cluster(s) by using simple configuration
  */
 @Experimental
 public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFailoverBase {
 
-  public CircuitBreakerFailoverConnectionProvider(MultiClusterPooledConnectionProvider provider) {
+  public CircuitBreakerFailoverConnectionProvider(MultiDatabaseConnectionProvider provider) {
     super(provider);
   }
 
   public Connection getConnection() {
-    Cluster cluster = provider.getCluster(); // Pass this by reference for thread safety
+    Database cluster = provider.getDatabase(); // Pass this by reference for thread safety
 
     DecorateSupplier<Connection> supplier = Decorators
         .ofSupplier(() -> this.handleGetConnection(cluster));
@@ -35,7 +34,7 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
     try {
       return supplier.decorate().get();
     } catch (Exception e) {
-      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
+      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveDatabase(cluster)) {
         clusterFailover(cluster);
       }
       throw e;
@@ -45,7 +44,7 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
-  private Connection handleGetConnection(Cluster cluster) {
+  private Connection handleGetConnection(Database cluster) {
     Connection connection = cluster.getConnection();
     connection.ping();
     return connection;
@@ -55,7 +54,7 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  private Connection handleClusterFailover(Cluster cluster) {
+  private Connection handleClusterFailover(Database cluster) {
 
     clusterFailover(cluster);
 

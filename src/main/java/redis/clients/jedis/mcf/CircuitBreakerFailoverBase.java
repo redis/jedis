@@ -6,7 +6,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -23,9 +23,9 @@ import redis.clients.jedis.util.IOUtils;
 public class CircuitBreakerFailoverBase implements AutoCloseable {
   private final Lock lock = new ReentrantLock(true);
 
-  protected final MultiClusterPooledConnectionProvider provider;
+  protected final MultiDatabaseConnectionProvider provider;
 
-  public CircuitBreakerFailoverBase(MultiClusterPooledConnectionProvider provider) {
+  public CircuitBreakerFailoverBase(MultiDatabaseConnectionProvider provider) {
     this.provider = provider;
   }
 
@@ -38,10 +38,10 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  protected void clusterFailover(Cluster cluster) {
+  protected void clusterFailover(Database database) {
     lock.lock();
 
-    CircuitBreaker circuitBreaker = cluster.getCircuitBreaker();
+    CircuitBreaker circuitBreaker = database.getCircuitBreaker();
     try {
       // Check state to handle race conditions since iterateActiveCluster() is
       // non-idempotent
@@ -51,29 +51,29 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
         // event publishing.
         // To recover/transition from this forced state the user will need to manually failback
 
-        Cluster activeCluster = provider.getCluster();
-        // This should be possible only if active cluster is switched from by other reasons than
+        Database activeDatabase = provider.getDatabase();
+        // This should be possible only if active database is switched from by other reasons than
         // circuit breaker, just before circuit breaker triggers
-        if (activeCluster != cluster) {
+        if (activeDatabase != database) {
           return;
         }
 
-        cluster.setGracePeriod();
+        database.setGracePeriod();
         circuitBreaker.transitionToForcedOpenState();
 
-        // Iterating the active cluster will allow subsequent calls to the executeCommand() to use
+        // Iterating the active database will allow subsequent calls to the executeCommand() to use
         // the next
-        // cluster's connection pool - according to the configuration's prioritization/order/weight
-        provider.switchToHealthyCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
+        // database's connection pool - according to the configuration's prioritization/order/weight
+        provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);
       }
       // this check relies on the fact that many failover attempts can hit with the same CB,
       // only the first one will trigger a failover, and make the CB FORCED_OPEN.
-      // when the rest reaches here, the active cluster is already the next one, and should be
+      // when the rest reaches here, the active database is already the next one, and should be
       // different than
       // active CB. If its the same one and there are no more clusters to failover to, then throw an
       // exception
-      else if (cluster == provider.getCluster()) {
-        provider.switchToHealthyCluster(SwitchReason.CIRCUIT_BREAKER, cluster);
+      else if (database == provider.getDatabase()) {
+        provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);
       }
       // Ignore exceptions since we are already in a failure state
     } finally {
@@ -81,13 +81,13 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
     }
   }
 
-  boolean isActiveCluster(Cluster cluster) {
-    Cluster activeCluster = provider.getCluster();
-    return activeCluster != null && activeCluster.equals(cluster);
+  boolean isActiveDatabase(Database database) {
+    Database activeDatabase = provider.getDatabase();
+    return activeDatabase != null && activeDatabase.equals(database);
   }
 
-  static boolean isCircuitBreakerTrackedException(Exception e, Cluster cluster) {
-    return cluster.getCircuitBreaker().getCircuitBreakerConfig().getRecordExceptionPredicate()
+  static boolean isCircuitBreakerTrackedException(Exception e, Database database) {
+    return database.getCircuitBreaker().getCircuitBreakerConfig().getRecordExceptionPredicate()
         .test(e);
   }
 }

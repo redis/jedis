@@ -184,8 +184,7 @@ public class UnifiedJedisConstructorReflectionTest {
   private static boolean multiClusterPooledConnectionProviderShouldBeReplacedWithResilientClient(
       Constructor<?> ctor) {
     Class<?>[] types = ctor.getParameterTypes();
-    return types.length == 1
-        && types[0].getSimpleName().equals("MultiClusterPooledConnectionProvider");
+    return types.length == 1 && types[0].getSimpleName().equals("MultiDatabaseConnectionProvider");
   }
 
   private static String prettySignature(Constructor<?> ctor) {

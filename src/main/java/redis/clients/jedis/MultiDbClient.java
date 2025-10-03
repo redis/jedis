@@ -123,8 +123,21 @@ public class MultiDbClient extends UnifiedJedis {
    * </p>
    * @param endpoint the endpoint to switch to
    */
-  public void setActiveDatabaseEndpoint(Endpoint endpoint) {
+  public void setActiveDatabase(Endpoint endpoint) {
     getMultiClusterProvider().setActiveCluster(endpoint);
+  }
+
+  /**
+   * Adds a pre-configured cluster configuration.
+   * <p>
+   * This method allows adding a fully configured ClusterConfig instance, providing maximum
+   * flexibility for advanced configurations including custom health check strategies, connection
+   * pool settings, etc.
+   * </p>
+   * @param clusterConfig the pre-configured cluster configuration
+   */
+  public void addEndpoint(ClusterConfig clusterConfig) {
+    getMultiClusterProvider().add(clusterConfig);
   }
 
   /**
@@ -171,19 +184,6 @@ public class MultiDbClient extends UnifiedJedis {
    */
   public boolean isHealthy(Endpoint endpoint) {
     return getMultiClusterProvider().isHealthy(endpoint);
-  }
-
-  /**
-   * Adds a pre-configured cluster configuration.
-   * <p>
-   * This method allows adding a fully configured ClusterConfig instance, providing maximum
-   * flexibility for advanced configurations including custom health check strategies, connection
-   * pool settings, etc.
-   * </p>
-   * @param clusterConfig the pre-configured cluster configuration
-   */
-  public void addEndpoint(ClusterConfig clusterConfig) {
-    getMultiClusterProvider().add(clusterConfig);
   }
 
   /**

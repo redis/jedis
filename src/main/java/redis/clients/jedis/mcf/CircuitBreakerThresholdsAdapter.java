@@ -16,7 +16,7 @@ import redis.clients.jedis.MultiClusterClientConfig;
  */
 class CircuitBreakerThresholdsAdapter {
   /** Maximum failure rate threshold (100%) to disable Resilience4j evaluation */
-  private static final float FAILURE_RATE_TRESHOLD_MAX = 100.0f;
+  private static final float FAILURE_RATE_THRESHOLD_MAX = 100.0f;
 
   /** Always set to 100% to disable Resilience4j's rate-based evaluation */
   private float failureRateThreshold;

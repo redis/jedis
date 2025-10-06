@@ -20,12 +20,12 @@ import redis.clients.jedis.util.IOUtils;
  *         <p>
  */
 @Experimental
-public class CircuitBreakerFailoverBase implements AutoCloseable {
+public class MultiDbFailoverBase implements AutoCloseable {
   private final Lock lock = new ReentrantLock(true);
 
   protected final MultiDbConnectionProvider provider;
 
-  public CircuitBreakerFailoverBase(MultiDbConnectionProvider provider) {
+  public MultiDbFailoverBase(MultiDbConnectionProvider provider) {
     this.provider = provider;
   }
 

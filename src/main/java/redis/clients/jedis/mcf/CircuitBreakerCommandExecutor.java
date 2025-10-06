@@ -1,6 +1,6 @@
 package redis.clients.jedis.mcf;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
@@ -39,8 +39,14 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     supplier.withRetry(cluster.getRetry());
     supplier.withFallback(provider.getFallbackExceptionList(),
       e -> this.handleClusterFailover(commandObject, cluster));
-
-    return supplier.decorate().get();
+    try {
+      return supplier.decorate().get();
+    } catch (Exception e) {
+      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveCluster(cluster)) {
+        clusterFailover(cluster);
+      }
+      throw e;
+    }
   }
 
   /**
@@ -58,24 +64,14 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
       return connection.executeCommand(commandObject);
     } catch (Exception e) {
       if (cluster.retryOnFailover() && !isActiveCluster(cluster)
-          && isCircuitBreakerTrackedException(e, cluster.getCircuitBreaker())) {
+          && isCircuitBreakerTrackedException(e, cluster)) {
         throw new ConnectionFailoverException(
             "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
       }
-
       throw e;
     } finally {
       connection.close();
     }
-  }
-
-  private boolean isCircuitBreakerTrackedException(Exception e, CircuitBreaker cb) {
-    return cb.getCircuitBreakerConfig().getRecordExceptionPredicate().test(e);
-  }
-
-  private boolean isActiveCluster(Cluster cluster) {
-    Cluster activeCluster = provider.getCluster();
-    return activeCluster != null && activeCluster.equals(cluster);
   }
 
   /**

@@ -69,9 +69,8 @@ Then build a `MultiClusterPooledConnectionProvider`.
 
 ```java
 MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clientConfigs);
-builder.circuitBreakerSlidingWindowSize(10); // Sliding window size in number of calls
-builder.circuitBreakerSlidingWindowMinCalls(1);
-builder.circuitBreakerFailureRateThreshold(50.0f); // percentage of failures to trigger circuit breaker
+builder.circuitBreakerSlidingWindowSize(2); // Sliding window size in number of calls
+builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
 
 builder.failbackSupported(true); // Enable failback
 builder.failbackCheckInterval(1000); // Check every second the unhealthy cluster to see if it has recovered
@@ -140,12 +139,9 @@ Jedis uses the following circuit breaker settings:
 
 | Setting                                 | Default value              | Description                                                                                                                                                                   |
 |-----------------------------------------|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Sliding window type                     | `COUNT_BASED`              | The type of sliding window used to record the outcome of calls. Options are `COUNT_BASED` and `TIME_BASED`.                                                                   |
-| Sliding window size                     | 100                        | The size of the sliding window. Units depend on sliding window type. When `COUNT_BASED`, the size represents number of calls. When `TIME_BASED`, the size represents seconds. |
-| Sliding window min calls                | 100                        | Minimum number of calls required (per sliding window period) before the CircuitBreaker will start calculating the error rate or slow call rate.                               |
-| Failure rate threshold                  | `50.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state.                                                      |
-| Slow call duration threshold            | 60000 ms                   | Duration threshold above which calls are classified as slow and added to the sliding window.                                                                                  |
-| Slow call rate threshold                | `100.0f`                   | Percentage of calls within the sliding window that exceed the slow call duration threshold before circuit breaker transitions to the `OPEN` state.                            |
+| Sliding window size                     | 2                          | The size of the sliding window. Units depend on sliding window type. The size represents seconds. |
+| Threshold min number of failures        | 1000                       | Minimum number of failures before circuit breaker is tripped.                                                                                                                 |
+| Failure rate threshold                  | `10.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state.                                                      |
 | Circuit breaker included exception list | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                                                                               |
 | Circuit breaker ignored exception list  | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                                                                               |                                                                                                               |
 

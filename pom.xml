@@ -62,6 +62,8 @@
 		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
+		<!-- Default excluded groups for tests - can be overridden from command line -->
+		<excludedGroupsForUnitTests>integration,scenario</excludedGroupsForUnitTests>
 	</properties>
 
 	<dependencyManagement>
@@ -335,7 +337,7 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
-					<excludedGroups>integration,scenario</excludedGroups>
+					<excludedGroups>${excludedGroupsForUnitTests}</excludedGroups>
 					<excludes>
 						<exclude>**/examples/*.java</exclude>
 						<exclude>**/scenario/*Test.java</exclude>
@@ -482,21 +484,16 @@
 						<include>**/Endpoint.java</include>
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
-						<include>**/mcf/EchoStrategyIntegrationTest.java</include>
-						<include>**/mcf/LagAwareStrategyUnitTest.java</include>
-						<include>**/mcf/RedisRestAPI*.java</include>
-						<include>**/mcf/ActiveActiveLocalFailoverTest*</include>
-						<include>**/mcf/FailbackMechanism*.java</include>
-						<include>**/mcf/PeriodicFailbackTest*.java</include>
-						<include>**/mcf/AutomaticFailoverTest*.java</include>
-						<include>**/mcf/MultiCluster*.java</include>
-						<include>**/mcf/StatusTracker*.java</include>
+						<include>src/test/java/redis/clients/jedis/mcf/*.java</include>
 						<include>**/Health*.java</include>
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiClusterClientConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
+						<include>**/MultiDb*.java</include>
+						<include>**/ClientTestUtil.java</include>
+						<include>**/ReflectionTestUtil.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -13,6 +13,7 @@ import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.util.ClientTestUtil;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -57,34 +58,30 @@ public class ActiveActiveFailoverTest {
   @Test
   public void testFailover() {
 
-    MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
-
     JedisClientConfig config = endpoint.getClientConfigBuilder()
       .socketTimeoutMillis(SOCKET_TIMEOUT_MS)
       .connectionTimeoutMillis(CONNECTION_TIMEOUT_MS).build();
 
-    clusterConfig[0] = ClusterConfig.builder(endpoint.getHostAndPort(0), config)
+    ClusterConfig primary = ClusterConfig.builder(endpoint.getHostAndPort(0), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
-    clusterConfig[1] = ClusterConfig.builder(endpoint.getHostAndPort(1), config)
+
+    ClusterConfig secondary = ClusterConfig.builder(endpoint.getHostAndPort(1), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfig);
-
-    builder.circuitBreakerSlidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED);
-    builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
-    builder.circuitBreakerSlidingWindowMinCalls(1);
-    builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
-
-    builder.failbackSupported(true);
-    builder.failbackCheckInterval(1000);
-    builder.gracePeriod(2000);
-
-    builder.retryWaitDuration(10);
-    builder.retryMaxAttempts(1);
-    builder.retryWaitDurationExponentialBackoffMultiplier(1);
-    builder.fastFailover(true);
-    builder.retryOnFailover(false);
-
+    MultiClusterClientConfig multiConfig = MultiClusterClientConfig.builder()
+            .endpoint(primary)
+            .endpoint(secondary)
+            .circuitBreakerSlidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
+            .circuitBreakerFailureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+            .failbackSupported(true)
+            .failbackCheckInterval(1000)
+            .gracePeriod(2000)
+            .retryWaitDuration(10)
+            .retryMaxAttempts(1)
+            .retryWaitDurationExponentialBackoffMultiplier(1)
+            .fastFailover(true)
+            .retryOnFailover(false)
+            .build();
     class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
 
       String currentClusterName = "not set";
@@ -117,12 +114,12 @@ public class ActiveActiveFailoverTest {
       }
     }
 
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
-    provider.setClusterSwitchListener(reporter);
-    provider.setActiveCluster(endpoint.getHostAndPort(0));
 
-    UnifiedJedis client = new UnifiedJedis(provider);
+    MultiDbClient client = MultiDbClient.builder()
+            .multiDbConfig(multiConfig)
+            .databaseSwitchListener(reporter)
+            .build();
 
     AtomicLong executedCommands = new AtomicLong(0);
     AtomicLong retryingThreadsCounter = new AtomicLong(0);
@@ -211,7 +208,7 @@ public class ActiveActiveFailoverTest {
       throw new RuntimeException(e);
     }
 
-
+    MultiClusterPooledConnectionProvider provider = ClientTestUtil.getConnectionProvider(client);
     ConnectionPool pool1 = provider.getCluster(endpoint.getHostAndPort(0)).getConnectionPool();
     ConnectionPool pool2 = provider.getCluster(endpoint.getHostAndPort(1)).getConnectionPool();
 

@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker.Metrics;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker.State;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -11,8 +12,10 @@ import io.github.resilience4j.retry.RetryRegistry;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,7 +42,6 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.JedisFailoverException.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
-
 import redis.clients.jedis.util.Pool;
 
 /**
@@ -49,12 +51,11 @@ import redis.clients.jedis.util.Pool;
  *         isolated connection pool. With this ConnectionProvider users can seamlessly failover to
  *         Disaster Recovery (DR), Backup, and Active-Active cluster(s) by using simple
  *         configuration which is passed through from Resilience4j -
- *         https://resilience4j.readme.io/docs
+ *         <a href="https://resilience4j.readme.io/docs">docs</a>
  *         <p>
  *         Support for manual failback is provided by way of {@link #setActiveCluster(Endpoint)}
  *         <p>
  */
-// TODO: move?
 @Experimental
 public class MultiClusterPooledConnectionProvider implements ConnectionProvider {
 
@@ -133,18 +134,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     ////////////// Configure Circuit Breaker ////////////////////
 
     CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
-    circuitBreakerConfigBuilder
-        .failureRateThreshold(multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
-    circuitBreakerConfigBuilder
-        .slowCallRateThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallRateThreshold());
-    circuitBreakerConfigBuilder.slowCallDurationThreshold(
-      multiClusterClientConfig.getCircuitBreakerSlowCallDurationThreshold());
-    circuitBreakerConfigBuilder
-        .minimumNumberOfCalls(multiClusterClientConfig.getCircuitBreakerSlidingWindowMinCalls());
-    circuitBreakerConfigBuilder
-        .slidingWindowType(multiClusterClientConfig.getCircuitBreakerSlidingWindowType());
-    circuitBreakerConfigBuilder
-        .slidingWindowSize(multiClusterClientConfig.getCircuitBreakerSlidingWindowSize());
+
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(
+        multiClusterClientConfig);
+    circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
+    circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
+    circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
+    circuitBreakerConfigBuilder.slidingWindowType(adapter.getSlidingWindowType());
+
     circuitBreakerConfigBuilder.recordExceptions(multiClusterClientConfig
         .getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
     circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State
@@ -209,7 +206,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       throw new JedisValidationException("ClusterConfig must not be null");
     }
 
-    Endpoint endpoint = clusterConfig.getHostAndPort();
+    Endpoint endpoint = clusterConfig.getEndpoint();
     if (multiClusterMap.containsKey(endpoint)) {
       throw new JedisValidationException(
           "Endpoint " + endpoint + " already exists in the provider");
@@ -292,12 +289,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
    */
   private void addClusterInternal(MultiClusterClientConfig multiClusterClientConfig,
       ClusterConfig config) {
-    if (multiClusterMap.containsKey(config.getHostAndPort())) {
+    if (multiClusterMap.containsKey(config.getEndpoint())) {
       throw new JedisValidationException(
-          "Endpoint " + config.getHostAndPort() + " already exists in the provider");
+          "Endpoint " + config.getEndpoint() + " already exists in the provider");
     }
 
-    String clusterId = "cluster:" + config.getHostAndPort();
+    String clusterId = "cluster:" + config.getEndpoint();
 
     Retry retry = RetryRegistry.of(retryConfig).retry(clusterId);
 
@@ -315,25 +312,35 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
 
     TrackingConnectionPool pool = TrackingConnectionPool.builder()
-        .hostAndPort(config.getHostAndPort()).clientConfig(config.getJedisClientConfig())
+        .hostAndPort(hostPort(config.getEndpoint())).clientConfig(config.getJedisClientConfig())
         .poolConfig(config.getConnectionPoolConfig()).build();
 
     Cluster cluster;
     StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();
     if (strategySupplier != null) {
-      HealthCheckStrategy hcs = strategySupplier.get(config.getHostAndPort(),
+      HealthCheckStrategy hcs = strategySupplier.get(hostPort(config.getEndpoint()),
         config.getJedisClientConfig());
       // Register listeners BEFORE adding clusters to avoid missing events
-      healthStatusManager.registerListener(config.getHostAndPort(), this::onHealthStatusChange);
-      HealthCheck hc = healthStatusManager.add(config.getHostAndPort(), hcs);
-      cluster = new Cluster(pool, retry, hc, circuitBreaker, config.getWeight(),
-          multiClusterClientConfig);
+      healthStatusManager.registerListener(config.getEndpoint(), this::onHealthStatusChange);
+      HealthCheck hc = healthStatusManager.add(config.getEndpoint(), hcs);
+      cluster = new Cluster(config.getEndpoint(), pool, retry, hc, circuitBreaker,
+          config.getWeight(), multiClusterClientConfig);
     } else {
-      cluster = new Cluster(pool, retry, circuitBreaker, config.getWeight(),
+      cluster = new Cluster(config.getEndpoint(), pool, retry, circuitBreaker, config.getWeight(),
           multiClusterClientConfig);
     }
 
-    multiClusterMap.put(config.getHostAndPort(), cluster);
+    multiClusterMap.put(config.getEndpoint(), cluster);
+
+    // this is the place where we listen tracked errors and check if
+    // thresholds are exceeded for the cluster
+    circuitBreakerEventPublisher.onError(event -> {
+      cluster.evaluateThresholds(false);
+    });
+  }
+
+  private HostAndPort hostPort(Endpoint endpoint) {
+    return new HostAndPort(endpoint.getHost(), endpoint.getPort());
   }
 
   /**
@@ -563,6 +570,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
   }
 
+  /**
+   * Returns the set of all configured endpoints.
+   * @return
+   */
+  public Set<Endpoint> getEndpoints() {
+    return new HashSet<>(multiClusterMap.keySet());
+  }
+
   public void setActiveCluster(Endpoint endpoint) {
     if (endpoint == null) {
       throw new JedisValidationException(
@@ -580,6 +595,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
   public void forceActiveCluster(Endpoint endpoint, long forcedActiveDuration) {
     Cluster cluster = multiClusterMap.get(endpoint);
+
+    if (cluster == null) {
+      throw new JedisValidationException("Provided endpoint: " + endpoint + " is not within "
+          + "the configured endpoints. Please use one from the configuration");
+    }
+
     cluster.clearGracePeriod();
     if (!cluster.isHealthy()) {
       throw new JedisValidationException("Provided endpoint: " + endpoint
@@ -684,6 +705,31 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     return multiClusterMap.get(endpoint);
   }
 
+  /**
+   * Returns the active endpoint
+   * <p>
+   * Active endpoint is the one which is currently being used for all operations. It can change at
+   * any time due to health checks, failover, failback, etc.
+   * @return the active cluster endpoint
+   */
+  public Endpoint getActiveEndpoint() {
+    return activeCluster.getEndpoint();
+  }
+
+  /**
+   * Returns the health state of the given endpoint
+   * @param endpoint the endpoint to check
+   * @return the health status of the endpoint
+   */
+  public boolean isHealthy(Endpoint endpoint) {
+    Cluster cluster = getCluster(endpoint);
+    if (cluster == null) {
+      throw new JedisValidationException(
+          "Endpoint " + endpoint + " does not exist in the provider");
+    }
+    return cluster.isHealthy();
+  }
+
   public CircuitBreaker getClusterCircuitBreaker() {
     return activeCluster.getCircuitBreaker();
   }
@@ -722,15 +768,17 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private final HealthCheck healthCheck;
     private final MultiClusterClientConfig multiClusterClientConfig;
     private boolean disabled = false;
+    private final Endpoint endpoint;
 
     // Grace period tracking
     private volatile long gracePeriodEndsAt = 0;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private Cluster(TrackingConnectionPool connectionPool, Retry retry,
+    private Cluster(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
         CircuitBreaker circuitBreaker, float weight,
         MultiClusterClientConfig multiClusterClientConfig) {
 
+      this.endpoint = endpoint;
       this.connectionPool = connectionPool;
       this.retry = retry;
       this.circuitBreaker = circuitBreaker;
@@ -739,16 +787,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       this.healthCheck = null;
     }
 
-    private Cluster(TrackingConnectionPool connectionPool, Retry retry, HealthCheck hc,
-        CircuitBreaker circuitBreaker, float weight,
+    private Cluster(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
+        HealthCheck hc, CircuitBreaker circuitBreaker, float weight,
         MultiClusterClientConfig multiClusterClientConfig) {
 
+      this.endpoint = endpoint;
       this.connectionPool = connectionPool;
       this.retry = retry;
       this.circuitBreaker = circuitBreaker;
       this.weight = weight;
       this.multiClusterClientConfig = multiClusterClientConfig;
       this.healthCheck = hc;
+    }
+
+    public Endpoint getEndpoint() {
+      return endpoint;
     }
 
     public Connection getConnection() {
@@ -800,6 +853,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       return multiClusterClientConfig.isRetryOnFailover();
     }
 
+    public int getCircuitBreakerMinNumOfFailures() {
+      return multiClusterClientConfig.getCircuitBreakerMinNumOfFailures();
+    }
+
+    public float getCircuitBreakerFailureRateThreshold() {
+      return multiClusterClientConfig.getCircuitBreakerFailureRateThreshold();
+    }
+
     public boolean isDisabled() {
       return disabled;
     }
@@ -847,11 +908,36 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
       connectionPool.close();
     }
 
+    void evaluateThresholds(boolean lastFailRecorded) {
+      if (getCircuitBreaker().getState() == State.CLOSED
+          && isThresholdsExceeded(this, lastFailRecorded)) {
+        getCircuitBreaker().transitionToOpenState();
+      }
+    }
+
+    private static boolean isThresholdsExceeded(Cluster cluster, boolean lastFailRecorded) {
+      Metrics metrics = cluster.getCircuitBreaker().getMetrics();
+      // ATTENTION: this is to increment fails in regard to the current call that is failing,
+      // DO NOT remove the increment, it will change the behaviour in case of initial requests to
+      // cluster fail
+      int fails = metrics.getNumberOfFailedCalls() + (lastFailRecorded ? 0 : 1);
+      int succ = metrics.getNumberOfSuccessfulCalls();
+      if (fails >= cluster.getCircuitBreakerMinNumOfFailures()) {
+        float ratePercentThreshold = cluster.getCircuitBreakerFailureRateThreshold();// 0..100
+        int total = fails + succ;
+        if (total == 0) return false;
+        float failureRatePercent = (fails * 100.0f) / total;
+        return failureRatePercent >= ratePercentThreshold;
+      }
+      return false;
+    }
+
     @Override
     public String toString() {
       return circuitBreaker.getName() + "{" + "connectionPool=" + connectionPool + ", retry="
           + retry + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus="
           + getHealthStatus() + ", multiClusterClientConfig=" + multiClusterClientConfig + '}';
     }
+
   }
 }

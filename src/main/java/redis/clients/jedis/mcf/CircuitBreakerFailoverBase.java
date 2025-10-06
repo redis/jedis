@@ -1,8 +1,10 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
@@ -79,4 +81,13 @@ public class CircuitBreakerFailoverBase implements AutoCloseable {
     }
   }
 
+  boolean isActiveCluster(Cluster cluster) {
+    Cluster activeCluster = provider.getCluster();
+    return activeCluster != null && activeCluster.equals(cluster);
+  }
+
+  static boolean isCircuitBreakerTrackedException(Exception e, Cluster cluster) {
+    return cluster.getCircuitBreaker().getCircuitBreakerConfig().getRecordExceptionPredicate()
+        .test(e);
+  }
 }

@@ -1,8 +1,6 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.*;
@@ -113,8 +111,8 @@ public class MultiClusterPooledConnectionProviderTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
-    builder.circuitBreakerSlidingWindowSize(1);
-    builder.circuitBreakerSlidingWindowMinCalls(1);
+    builder.circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
+        .circuitBreakerFailureRateThreshold(0);
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 
@@ -283,9 +281,7 @@ public class MultiClusterPooledConnectionProviderTest {
     // and open to impact from other defaulted values withing the components in use.
     MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
         new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(100)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowMinCalls(3)
-            .circuitBreakerSlidingWindowSize(5)
-            .circuitBreakerSlidingWindowType(SlidingWindowType.TIME_BASED)
+            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
             .circuitBreakerFailureRateThreshold(60).build()) {
     };
 

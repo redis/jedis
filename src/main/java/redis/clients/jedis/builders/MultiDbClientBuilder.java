@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
@@ -60,7 +60,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * 
  * @param <C> the client type that this builder creates
  * @author Ivo Gaydazhiev
- * @since 5.2.0
+ * @since 7.0.0
  */
 @Experimental
 public abstract class MultiDbClientBuilder<C>
@@ -125,8 +125,8 @@ public abstract class MultiDbClientBuilder<C>
 
   @Override
   protected CommandExecutor createDefaultCommandExecutor() {
-    // For multi-db clients, we always use CircuitBreakerCommandExecutor
-    return new CircuitBreakerCommandExecutor((MultiDbConnectionProvider) this.connectionProvider);
+    // For multi-db clients, we always use MultiDbCommandExecutor
+    return new MultiDbCommandExecutor((MultiDbConnectionProvider) this.connectionProvider);
   }
 
   @Override

@@ -5,7 +5,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.MultiDbClientBuilder;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.providers.ConnectionProvider;
@@ -75,9 +75,9 @@ import java.util.Set;
  * resilience features.
  * </p>
  * @author Ivo Gaydazhiev
- * @since 5.2.0
+ * @since 7.0.0
  * @see MultiDbConnectionProvider
- * @see CircuitBreakerCommandExecutor
+ * @see MultiDbCommandExecutor
  * @see MultiDbConfig
  */
 @Experimental
@@ -90,7 +90,7 @@ public class MultiDbClient extends UnifiedJedis {
    * the builder pattern for advanced configurations. For most use cases, prefer using
    * {@link #builder()} to create instances.
    * </p>
-   * @param commandExecutor the command executor (typically CircuitBreakerCommandExecutor)
+   * @param commandExecutor the command executor (typically MultiDbCommandExecutor)
    * @param connectionProvider the connection provider (typically MultiDbConnectionProvider)
    * @param commandObjects the command objects
    * @param redisProtocol the Redis protocol version

@@ -21,10 +21,9 @@ import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
  *         <p>
  */
 @Experimental
-public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
-    implements CommandExecutor {
+public class MultiDbCommandExecutor extends CircuitBreakerFailoverBase implements CommandExecutor {
 
-  public CircuitBreakerCommandExecutor(MultiDbConnectionProvider provider) {
+  public MultiDbCommandExecutor(MultiDbConnectionProvider provider) {
     super(provider);
   }
 

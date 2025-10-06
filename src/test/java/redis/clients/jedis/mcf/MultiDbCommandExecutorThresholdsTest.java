@@ -33,7 +33,7 @@ public class CircuitBreakerThresholdsTest {
   private MultiDbConnectionProvider realProvider;
   private MultiDbConnectionProvider spyProvider;
   private Database cluster;
-  private CircuitBreakerCommandExecutor executor;
+  private MultiDbCommandExecutor executor;
   private CommandObject<String> dummyCommand;
   private TrackingConnectionPool poolMock;
   private HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
@@ -61,7 +61,7 @@ public class CircuitBreakerThresholdsTest {
 
     cluster = spyProvider.getDatabase();
 
-    executor = new CircuitBreakerCommandExecutor(spyProvider);
+    executor = new MultiDbCommandExecutor(spyProvider);
 
     dummyCommand = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
         BuilderFactory.STRING);
@@ -129,7 +129,7 @@ public class CircuitBreakerThresholdsTest {
     MultiDbConnectionProvider rp = new MultiDbConnectionProvider(cfgBuilder.build());
     MultiDbConnectionProvider sp = spy(rp);
     Database c = sp.getDatabase();
-    try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(sp)) {
+    try (MultiDbCommandExecutor ex = new MultiDbCommandExecutor(sp)) {
       CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
           BuilderFactory.STRING);
 
@@ -197,7 +197,7 @@ public class CircuitBreakerThresholdsTest {
     MultiDbConnectionProvider real = new MultiDbConnectionProvider(cfgBuilder.build());
     MultiDbConnectionProvider spy = spy(real);
     Database c = spy.getDatabase();
-    try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(spy)) {
+    try (MultiDbCommandExecutor ex = new MultiDbCommandExecutor(spy)) {
 
       CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
           BuilderFactory.STRING);

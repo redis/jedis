@@ -2,11 +2,13 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.awaitility.Awaitility.await;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.awaitility.Durations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -159,10 +161,12 @@ public class StatusTrackerTest {
     waitingThread.start();
 
     // Give some time for the listener to be registered
-    Thread.sleep(50);
+    await().atMost(Durations.FIVE_HUNDRED_MILLISECONDS)
+        .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).untilAsserted(() -> {
+          assertNotNull(capturedListener[0], "Listener should have been registered");
+        });
 
     // Simulate status change for different endpoint (should be ignored)
-    assertNotNull(capturedListener[0], "Listener should have been registered");
     HealthStatusChangeEvent otherEvent = new HealthStatusChangeEvent(otherEndpoint,
         HealthStatus.UNKNOWN, HealthStatus.HEALTHY);
     capturedListener[0].onStatusChange(otherEvent);

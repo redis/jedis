@@ -6,7 +6,7 @@ import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 
@@ -68,7 +68,7 @@ public abstract class MultiDbClientBuilder<C>
 
   // Multi-db specific configuration fields
   private MultiDbConfig multiDbConfig = null;
-  private Consumer<ClusterSwitchEventArgs> databaseSwitchListener = null;
+  private Consumer<DatabaseSwitchEvent> databaseSwitchListener = null;
 
   /**
    * Sets the multi-database configuration.
@@ -94,7 +94,7 @@ public abstract class MultiDbClientBuilder<C>
    * @param listener the database switch event listener
    * @return this builder
    */
-  public MultiDbClientBuilder<C> databaseSwitchListener(Consumer<ClusterSwitchEventArgs> listener) {
+  public MultiDbClientBuilder<C> databaseSwitchListener(Consumer<DatabaseSwitchEvent> listener) {
     this.databaseSwitchListener = listener;
     return this;
   }

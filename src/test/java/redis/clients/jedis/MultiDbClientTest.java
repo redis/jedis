@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.SwitchReason;
 
 import java.io.IOException;
@@ -181,8 +181,8 @@ public class MultiDbClientTest {
             .weight(50.0f).build())
         .build();
 
-    Consumer<ClusterSwitchEventArgs> eventConsumer;
-    List<ClusterSwitchEventArgs> events = new ArrayList<>();
+    Consumer<DatabaseSwitchEvent> eventConsumer;
+    List<DatabaseSwitchEvent> events = new ArrayList<>();
     eventConsumer = events::add;
 
     try (MultiDbClient testClient = MultiDbClient.builder().databaseSwitchListener(eventConsumer)

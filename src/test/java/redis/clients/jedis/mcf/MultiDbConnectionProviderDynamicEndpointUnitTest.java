@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
-public class MultiClusterDynamicEndpointUnitTest {
+public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
   private MultiDbConnectionProvider provider;
   private JedisClientConfig clientConfig;
@@ -41,7 +40,7 @@ public class MultiClusterDynamicEndpointUnitTest {
     provider = new MultiDbConnectionProvider(multiConfig);
   }
 
-  // Helper method to create cluster configurations
+  // Helper method to create database configurations
   private DatabaseConfig createDatabaseConfig(HostAndPort hostAndPort, float weight) {
     // Disable health check for unit tests to avoid real connections
     return DatabaseConfig.builder(hostAndPort, clientConfig).weight(weight)
@@ -49,18 +48,18 @@ public class MultiClusterDynamicEndpointUnitTest {
   }
 
   @Test
-  void testAddNewCluster() {
+  void testAddNewDatabase() {
     DatabaseConfig newConfig = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
 
     // Should not throw exception
     assertDoesNotThrow(() -> provider.add(newConfig));
 
-    // Verify the cluster was added by checking it can be retrieved
+    // Verify the database was added by checking it can be retrieved
     assertNotNull(provider.getDatabase(endpoint2.getHostAndPort()));
   }
 
   @Test
-  void testAddDuplicateCluster() {
+  void testAddDuplicateDatabase() {
     DatabaseConfig duplicateConfig = createDatabaseConfig(endpoint1.getHostAndPort(), 2.0f);
 
     // Should throw validation exception for duplicate endpoint
@@ -80,19 +79,18 @@ public class MultiClusterDynamicEndpointUnitTest {
 
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool(mockConnection)) {
       // Create initial provider with endpoint1
-      DatabaseConfig clusterConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
+      DatabaseConfig dbConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-      MultiDbConfig multiConfig = MultiDbConfig.builder(new DatabaseConfig[] { clusterConfig1 })
-          .build();
+      MultiDbConfig multiConfig = MultiDbConfig.builder(new DatabaseConfig[] { dbConfig1 }).build();
 
       try (MultiDbConnectionProvider providerWithMockedPool = new MultiDbConnectionProvider(
           multiConfig)) {
 
-        // Add endpoint2 as second cluster
+        // Add endpoint2 as second database
         DatabaseConfig newConfig = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
         providerWithMockedPool.add(newConfig);
 
-        // Now remove endpoint1 (original cluster)
+        // Now remove endpoint1 (original database)
         assertDoesNotThrow(() -> providerWithMockedPool.remove(endpoint1.getHostAndPort()));
 
         // Verify endpoint1 was removed
@@ -119,8 +117,8 @@ public class MultiClusterDynamicEndpointUnitTest {
   }
 
   @Test
-  void testRemoveLastRemainingCluster() {
-    // Should throw validation exception when trying to remove the last cluster
+  void testRemoveLastRemainingDatabase() {
+    // Should throw validation exception when trying to remove the last database
     assertThrows(JedisValidationException.class, () -> provider.remove(endpoint1.getHostAndPort()));
   }
 
@@ -132,7 +130,7 @@ public class MultiClusterDynamicEndpointUnitTest {
 
   @Test
   void testAddAndRemoveMultipleClusters() {
-    // Add endpoint2 as second cluster
+    // Add endpoint2 as second database
     DatabaseConfig config2 = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
 
     // Create a third endpoint for this test
@@ -142,7 +140,7 @@ public class MultiClusterDynamicEndpointUnitTest {
     provider.add(config2);
     provider.add(config3);
 
-    // Verify all clusters exist
+    // Verify all databases exist
     assertNotNull(provider.getDatabase(endpoint1.getHostAndPort()));
     assertNotNull(provider.getDatabase(endpoint2.getHostAndPort()));
     assertNotNull(provider.getDatabase(endpoint3));
@@ -150,7 +148,7 @@ public class MultiClusterDynamicEndpointUnitTest {
     // Remove endpoint2
     provider.remove(endpoint2.getHostAndPort());
 
-    // Verify correct cluster was removed
+    // Verify correct database was removed
     assertNull(provider.getDatabase(endpoint2.getHostAndPort()));
     assertNotNull(provider.getDatabase(endpoint1.getHostAndPort()));
     assertNotNull(provider.getDatabase(endpoint3));
@@ -158,14 +156,14 @@ public class MultiClusterDynamicEndpointUnitTest {
 
   @Test
   void testActiveClusterHandlingOnAdd() {
-    // The initial cluster should be active
+    // The initial database should be active
     assertNotNull(provider.getDatabase());
 
     // Add endpoint2 with higher weight
     DatabaseConfig newConfig = createDatabaseConfig(endpoint2.getHostAndPort(), 5.0f);
     provider.add(newConfig);
 
-    // Active cluster should still be valid (implementation may or may not switch)
+    // Active database should still be valid (implementation may or may not switch)
     assertNotNull(provider.getDatabase());
   }
 
@@ -176,26 +174,25 @@ public class MultiClusterDynamicEndpointUnitTest {
 
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool(mockConnection)) {
       // Create initial provider with endpoint1
-      DatabaseConfig clusterConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
+      DatabaseConfig dbConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-      MultiDbConfig multiConfig = MultiDbConfig.builder(new DatabaseConfig[] { clusterConfig1 })
-          .build();
+      MultiDbConfig multiConfig = MultiDbConfig.builder(new DatabaseConfig[] { dbConfig1 }).build();
 
       try (MultiDbConnectionProvider providerWithMockedPool = new MultiDbConnectionProvider(
           multiConfig)) {
 
-        // Add endpoint2 as second cluster
+        // Add endpoint2 as second database
         DatabaseConfig newConfig = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
         providerWithMockedPool.add(newConfig);
 
-        // Get current active cluster
+        // Get current active database
         Object initialActiveCluster = providerWithMockedPool.getDatabase();
         assertNotNull(initialActiveCluster);
 
-        // Remove endpoint1 (original cluster, might be active)
+        // Remove endpoint1 (original database, might be active)
         providerWithMockedPool.remove(endpoint1.getHostAndPort());
 
-        // Should still have an active cluster
+        // Should still have an active database
         assertNotNull(providerWithMockedPool.getDatabase());
       }
     }

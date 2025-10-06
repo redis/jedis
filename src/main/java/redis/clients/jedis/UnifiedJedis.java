@@ -32,7 +32,6 @@ import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
-import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbTransaction;

@@ -28,7 +28,7 @@ import redis.clients.jedis.util.ReflectionTestUtil;
  * must be exceeded to trigger failover. Uses a real CircuitBreaker and real Retry, but mocks the
  * provider and cluster wiring to avoid network I/O.
  */
-public class CircuitBreakerThresholdsTest {
+public class MultiDbCircuitBreakerThresholdsTest {
 
   private MultiDbConnectionProvider realProvider;
   private MultiDbConnectionProvider spyProvider;

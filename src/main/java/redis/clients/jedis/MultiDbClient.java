@@ -6,7 +6,7 @@ import redis.clients.jedis.builders.MultiDbClientBuilder;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.MultiClusterPipeline;
+import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
@@ -219,11 +219,11 @@ public class MultiDbClient extends UnifiedJedis {
    * The returned pipeline supports the same resilience features as the main client, including
    * automatic failover during batch execution.
    * </p>
-   * @return a new MultiClusterPipeline instance
+   * @return a new MultiDbPipeline instance
    */
   @Override
-  public MultiClusterPipeline pipelined() {
-    return new MultiClusterPipeline(getMultiDbConnectionProvider(), commandObjects);
+  public MultiDbPipeline pipelined() {
+    return new MultiDbPipeline(getMultiDbConnectionProvider(), commandObjects);
   }
 
   /**

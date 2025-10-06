@@ -33,7 +33,7 @@ import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.MultiClusterPipeline;
+import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.params.*;
@@ -5100,7 +5100,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiDbConnectionProvider) {
-      return new MultiClusterPipeline((MultiDbConnectionProvider) provider, commandObjects);
+      return new MultiDbPipeline((MultiDbConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true, commandObjects);
     }

@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MultiDbConfig;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
@@ -21,14 +21,14 @@ import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
  */
 public class ClusterEvaluateThresholdsTest {
 
-  private MultiDatabaseConnectionProvider provider;
+  private MultiDbConnectionProvider provider;
   private Database cluster;
   private CircuitBreaker circuitBreaker;
   private CircuitBreaker.Metrics metrics;
 
   @BeforeEach
   public void setup() {
-    provider = mock(MultiDatabaseConnectionProvider.class);
+    provider = mock(MultiDbConnectionProvider.class);
     cluster = mock(Database.class);
 
     circuitBreaker = mock(CircuitBreaker.class);

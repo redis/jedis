@@ -19,7 +19,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class FailoverIntegrationTest {
   private static UnifiedJedis jedis2;
   private static String JEDIS1_ID = "";
   private static String JEDIS2_ID = "";
-  private MultiDatabaseConnectionProvider provider;
+  private MultiDbConnectionProvider provider;
   private UnifiedJedis failoverClient;
 
   @BeforeAll
@@ -180,8 +180,8 @@ public class FailoverIntegrationTest {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
   }
 
-  private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
-      JedisClientConfig clientConfig, EndpointConfig... endpoints) {
+  private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(JedisClientConfig clientConfig,
+      EndpointConfig... endpoints) {
 
     int weight = endpoints.length;
     AtomicInteger weightCounter = new AtomicInteger(weight);
@@ -269,7 +269,7 @@ public class FailoverIntegrationTest {
           .circuitBreakerFailureRateThreshold(50f) // %50 failure rate
           .build();
 
-    MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(failoverConfig);
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(failoverConfig);
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       // Verify initial connection to first endpoint
       assertThat(getNodeId(client.info("server")), equalTo(JEDIS1_ID));
@@ -315,7 +315,7 @@ public class FailoverIntegrationTest {
   @Test
   public void testInflightCommandsAreRetriedAfterFailover() throws Exception {
 
-    MultiDatabaseConnectionProvider customProvider = createProvider(
+    MultiDbConnectionProvider customProvider = createProvider(
       builder -> builder.retryOnFailover(true));
 
     // Create a custom client with retryOnFailover enabled for this specific test
@@ -357,7 +357,7 @@ public class FailoverIntegrationTest {
   @Test
   public void testInflightCommandsAreNotRetriedAfterFailover() throws Exception {
     // Create a custom provider and client with retry disabled for this specific test
-    MultiDatabaseConnectionProvider customProvider = createProvider(
+    MultiDbConnectionProvider customProvider = createProvider(
       builder -> builder.retryOnFailover(false));
 
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
@@ -414,10 +414,10 @@ public class FailoverIntegrationTest {
   }
 
   /**
-   * Creates a MultiDatabaseConnectionProvider with standard configuration
+   * Creates a MultiDbConnectionProvider with standard configuration
    * @return A configured provider
    */
-  private MultiDatabaseConnectionProvider createProvider() {
+  private MultiDbConnectionProvider createProvider() {
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
@@ -427,14 +427,14 @@ public class FailoverIntegrationTest {
             .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
             .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f).build();
 
-    return new MultiDatabaseConnectionProvider(failoverConfig);
+    return new MultiDbConnectionProvider(failoverConfig);
   }
 
   /**
-   * Creates a MultiDatabaseConnectionProvider with standard configuration
+   * Creates a MultiDbConnectionProvider with standard configuration
    * @return A configured provider
    */
-  private MultiDatabaseConnectionProvider createProvider(
+  private MultiDbConnectionProvider createProvider(
       Function<MultiDbConfig.Builder, MultiDbConfig.Builder> configCustomizer) {
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
@@ -449,6 +449,6 @@ public class FailoverIntegrationTest {
       builder = configCustomizer.apply(builder);
     }
 
-    return new MultiDatabaseConnectionProvider(builder.build());
+    return new MultiDbConnectionProvider(builder.build());
   }
 }

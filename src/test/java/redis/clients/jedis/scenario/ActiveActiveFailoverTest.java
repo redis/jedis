@@ -12,7 +12,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.util.ClientTestUtil;
 
 import java.io.IOException;
@@ -208,7 +208,7 @@ public class ActiveActiveFailoverTest {
       throw new RuntimeException(e);
     }
 
-    MultiDatabaseConnectionProvider provider = ClientTestUtil.getConnectionProvider(client);
+    MultiDbConnectionProvider provider = ClientTestUtil.getConnectionProvider(client);
     ConnectionPool pool1 = provider.getDatabase(endpoint.getHostAndPort(0)).getConnectionPool();
     ConnectionPool pool2 = provider.getDatabase(endpoint.getHostAndPort(1)).getConnectionPool();
 

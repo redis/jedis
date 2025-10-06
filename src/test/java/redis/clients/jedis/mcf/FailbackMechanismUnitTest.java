@@ -36,8 +36,7 @@ class FailbackMechanismUnitTest {
 
     // Test custom value
     MultiDbConfig customConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(3000)
-            .build();
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(3000).build();
 
     assertEquals(3000, customConfig.getFailbackCheckInterval());
   }
@@ -55,8 +54,7 @@ class FailbackMechanismUnitTest {
 
     // Test disabled
     MultiDbConfig disabledConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(false)
-            .build();
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(false).build();
 
     assertFalse(disabledConfig.isFailbackSupported());
   }
@@ -68,15 +66,13 @@ class FailbackMechanismUnitTest {
 
     // Test zero interval (should be allowed)
     MultiDbConfig zeroConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(0)
-            .build();
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(0).build();
 
     assertEquals(0, zeroConfig.getFailbackCheckInterval());
 
     // Test negative interval (should be allowed - implementation decision)
     MultiDbConfig negativeConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(-1000)
-            .build();
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(-1000).build();
 
     assertEquals(-1000, negativeConfig.getFailbackCheckInterval());
   }

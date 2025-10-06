@@ -18,7 +18,7 @@ import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 
 /**
- * Tests for MultiDatabaseConnectionProvider initialization edge cases
+ * Tests for MultiDbConnectionProvider initialization edge cases
  */
 @ExtendWith(MockitoExtension.class)
 public class MultiClusterInitializationTest {
@@ -64,7 +64,7 @@ public class MultiClusterInitializationTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should initialize successfully
         assertNotNull(provider.getDatabase());
 
@@ -90,7 +90,7 @@ public class MultiClusterInitializationTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should select cluster2 (highest weight, no health checks)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
       }
@@ -106,7 +106,7 @@ public class MultiClusterInitializationTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should select the only available cluster
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
       }
@@ -116,7 +116,7 @@ public class MultiClusterInitializationTest {
   @Test
   void testErrorHandlingWithNullConfiguration() {
     assertThrows(JedisValidationException.class, () -> {
-      new MultiDatabaseConnectionProvider(null);
+      new MultiDbConnectionProvider(null);
     });
   }
 
@@ -148,7 +148,7 @@ public class MultiClusterInitializationTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should still initialize and select one of the clusters
         assertNotNull(provider.getDatabase());
       }

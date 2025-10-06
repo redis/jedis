@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 public class MultiClusterDynamicEndpointUnitTest {
 
-  private MultiDatabaseConnectionProvider provider;
+  private MultiDbConnectionProvider provider;
   private JedisClientConfig clientConfig;
   private final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
   private final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone1");
@@ -35,10 +35,10 @@ public class MultiClusterDynamicEndpointUnitTest {
     // Create initial provider with endpoint1
     DatabaseConfig initialConfig = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-    MultiDbConfig multiConfig = new MultiDbConfig.Builder(
-        new DatabaseConfig[] { initialConfig }).build();
+    MultiDbConfig multiConfig = new MultiDbConfig.Builder(new DatabaseConfig[] { initialConfig })
+        .build();
 
-    provider = new MultiDatabaseConnectionProvider(multiConfig);
+    provider = new MultiDbConnectionProvider(multiConfig);
   }
 
   // Helper method to create cluster configurations
@@ -82,12 +82,11 @@ public class MultiClusterDynamicEndpointUnitTest {
       // Create initial provider with endpoint1
       DatabaseConfig clusterConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-      MultiDbConfig multiConfig = MultiDbConfig
-          .builder(new DatabaseConfig[] { clusterConfig1 }).build();
+      MultiDbConfig multiConfig = MultiDbConfig.builder(new DatabaseConfig[] { clusterConfig1 })
+          .build();
 
-      try (
-          MultiDatabaseConnectionProvider providerWithMockedPool = new MultiDatabaseConnectionProvider(
-              multiConfig)) {
+      try (MultiDbConnectionProvider providerWithMockedPool = new MultiDbConnectionProvider(
+          multiConfig)) {
 
         // Add endpoint2 as second cluster
         DatabaseConfig newConfig = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
@@ -179,12 +178,11 @@ public class MultiClusterDynamicEndpointUnitTest {
       // Create initial provider with endpoint1
       DatabaseConfig clusterConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-      MultiDbConfig multiConfig = MultiDbConfig
-          .builder(new DatabaseConfig[] { clusterConfig1 }).build();
+      MultiDbConfig multiConfig = MultiDbConfig.builder(new DatabaseConfig[] { clusterConfig1 })
+          .build();
 
-      try (
-          MultiDatabaseConnectionProvider providerWithMockedPool = new MultiDatabaseConnectionProvider(
-              multiConfig)) {
+      try (MultiDbConnectionProvider providerWithMockedPool = new MultiDbConnectionProvider(
+          multiConfig)) {
 
         // Add endpoint2 as second cluster
         DatabaseConfig newConfig = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);

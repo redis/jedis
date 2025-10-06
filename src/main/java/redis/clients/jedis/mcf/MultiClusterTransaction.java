@@ -39,7 +39,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param provider
    */
   @Deprecated
-  public MultiClusterTransaction(MultiDatabaseConnectionProvider provider) {
+  public MultiClusterTransaction(MultiDbConnectionProvider provider) {
     this(provider, true);
   }
 
@@ -50,7 +50,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   @Deprecated
-  public MultiClusterTransaction(MultiDatabaseConnectionProvider provider, boolean doMulti) {
+  public MultiClusterTransaction(MultiDbConnectionProvider provider, boolean doMulti) {
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
     try (Connection connection = failoverProvider.getConnection()) {
@@ -68,7 +68,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param commandObjects command objects
    */
-  public MultiClusterTransaction(MultiDatabaseConnectionProvider provider, boolean doMulti,
+  public MultiClusterTransaction(MultiDbConnectionProvider provider, boolean doMulti,
       CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);

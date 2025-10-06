@@ -386,8 +386,7 @@ public class HealthCheckTest {
   void testDatabaseConfigWithHealthCheckStrategy() {
     HealthCheckStrategy customStrategy = mock(HealthCheckStrategy.class);
 
-    MultiDbConfig.StrategySupplier supplier = (hostAndPort,
-        jedisClientConfig) -> customStrategy;
+    MultiDbConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> customStrategy;
 
     MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(supplier).build();

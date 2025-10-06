@@ -21,7 +21,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * This configuration enables seamless failover between multiple Redis clusters, databases, or
  * endpoints by providing comprehensive settings for retry logic, circuit breaker behavior, health
  * checks, and failback mechanisms. It is designed to work with
- * {@link redis.clients.jedis.mcf.MultiDatabaseConnectionProvider} to provide high availability and
+ * {@link redis.clients.jedis.mcf.MultiDbConnectionProvider} to provide high availability and
  * disaster recovery capabilities.
  * </p>
  * <p>
@@ -61,14 +61,14 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *       .gracePeriod(10000).build();
  *
  *   // Use with connection provider
- *   MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config);
+ *   MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config);
  * }
  * </pre>
  * <p>
  * The configuration leverages <a href="https://resilience4j.readme.io/docs">Resilience4j</a> for
  * circuit breaker and retry implementations, providing battle-tested fault tolerance patterns.
  * </p>
- * @see redis.clients.jedis.mcf.MultiDatabaseConnectionProvider
+ * @see redis.clients.jedis.mcf.MultiDbConnectionProvider
  * @see redis.clients.jedis.mcf.HealthCheckStrategy
  * @see redis.clients.jedis.mcf.EchoStrategy
  * @see redis.clients.jedis.mcf.LagAwareStrategy
@@ -451,7 +451,7 @@ public final class MultiDbConfig {
   public MultiDbConfig(DatabaseConfig[] databaseConfigs) {
 
     if (databaseConfigs == null || databaseConfigs.length < 1) throw new JedisValidationException(
-        "DatabaseClientConfigs are required for MultiDatabaseConnectionProvider");
+        "DatabaseClientConfigs are required for MultiDbConnectionProvider");
 
     for (DatabaseConfig databaseConfig : databaseConfigs) {
       if (databaseConfig == null)
@@ -976,8 +976,7 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Builder class for creating MultiDbConfig instances with comprehensive configuration
-   * options.
+   * Builder class for creating MultiDbConfig instances with comprehensive configuration options.
    * <p>
    * The Builder provides a fluent API for configuring all aspects of multi-cluster failover
    * behavior, including retry logic, circuit breaker settings, and failback mechanisms. It uses
@@ -1509,8 +1508,7 @@ public final class MultiDbConfig {
      */
     public MultiDbConfig build() {
 
-      MultiDbConfig config = new MultiDbConfig(
-          this.databaseConfigs.toArray(new DatabaseConfig[0]));
+      MultiDbConfig config = new MultiDbConfig(this.databaseConfigs.toArray(new DatabaseConfig[0]));
 
       // Copy retry configuration
       config.retryMaxAttempts = this.retryMaxAttempts;

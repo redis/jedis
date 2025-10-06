@@ -29,8 +29,7 @@ public class JedisFailoverException extends JedisConnectionException {
    * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and
-   * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more
-   * details.
+   * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more details.
    */
   public static class JedisPermanentlyNotAvailableException extends JedisFailoverException {
     public JedisPermanentlyNotAvailableException(String s) {
@@ -50,8 +49,7 @@ public class JedisFailoverException extends JedisConnectionException {
    * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and
-   * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more
-   * details.
+   * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more details.
    */
   public static class JedisTemporarilyNotAvailableException extends JedisFailoverException {
 

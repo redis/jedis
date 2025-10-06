@@ -32,7 +32,7 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testDisableHealthCheck() {
     // No health check strategy supplier means health check is disabled
-    MultiDatabaseConnectionProvider customProvider = getMCCF(null);
+    MultiDbConnectionProvider customProvider = getMCCF(null);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
@@ -46,7 +46,7 @@ public class HealthCheckIntegrationTest {
     MultiDbConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
       return new EchoStrategy(hostAndPort, jedisClientConfig);
     };
-    MultiDatabaseConnectionProvider customProvider = getMCCF(defaultSupplier);
+    MultiDbConnectionProvider customProvider = getMCCF(defaultSupplier);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
@@ -70,7 +70,7 @@ public class HealthCheckIntegrationTest {
           });
     };
 
-    MultiDatabaseConnectionProvider customProvider = getMCCF(strategySupplier);
+    MultiDbConnectionProvider customProvider = getMCCF(strategySupplier);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
@@ -78,23 +78,21 @@ public class HealthCheckIntegrationTest {
     }
   }
 
-  private MultiDatabaseConnectionProvider getMCCF(
-      MultiDbConfig.StrategySupplier strategySupplier) {
+  private MultiDbConnectionProvider getMCCF(MultiDbConfig.StrategySupplier strategySupplier) {
     Function<DatabaseConfig.Builder, DatabaseConfig.Builder> modifier = builder -> strategySupplier == null
         ? builder.healthCheckEnabled(false)
         : builder.healthCheckStrategySupplier(strategySupplier);
 
     List<DatabaseConfig> databaseConfigs = Arrays.stream(new EndpointConfig[] { endpoint1 })
         .map(e -> modifier
-            .apply(MultiDbConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig))
-            .build())
+            .apply(MultiDbConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig)).build())
         .collect(Collectors.toList());
 
     MultiDbConfig mccf = new MultiDbConfig.Builder(databaseConfigs).retryMaxAttempts(1)
         .retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
         .circuitBreakerFailureRateThreshold(100).build();
 
-    return new MultiDatabaseConnectionProvider(mccf);
+    return new MultiDbConnectionProvider(mccf);
   }
 
   // ========== Probe Logic Integration Tests ==========

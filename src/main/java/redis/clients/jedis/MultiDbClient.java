@@ -9,7 +9,7 @@ import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.MultiClusterPipeline;
 import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.providers.ConnectionProvider;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 
 import java.util.Set;
 
@@ -76,7 +76,7 @@ import java.util.Set;
  * </p>
  * @author Ivo Gaydazhiev
  * @since 5.2.0
- * @see MultiDatabaseConnectionProvider
+ * @see MultiDbConnectionProvider
  * @see CircuitBreakerCommandExecutor
  * @see MultiDbConfig
  */
@@ -91,7 +91,7 @@ public class MultiDbClient extends UnifiedJedis {
    * {@link #builder()} to create instances.
    * </p>
    * @param commandExecutor the command executor (typically CircuitBreakerCommandExecutor)
-   * @param connectionProvider the connection provider (typically MultiDatabaseConnectionProvider)
+   * @param connectionProvider the connection provider (typically MultiDbConnectionProvider)
    * @param commandObjects the command objects
    * @param redisProtocol the Redis protocol version
    * @param cache the client-side cache (may be null)
@@ -102,16 +102,16 @@ public class MultiDbClient extends UnifiedJedis {
   }
 
   /**
-   * Returns the underlying MultiDatabaseConnectionProvider.
+   * Returns the underlying MultiDbConnectionProvider.
    * <p>
    * This provides access to multi-cluster specific operations like manual failover, health status
    * monitoring, and cluster switch event handling.
    * </p>
    * @return the multi-cluster connection provider
-   * @throws ClassCastException if the provider is not a MultiDatabaseConnectionProvider
+   * @throws ClassCastException if the provider is not a MultiDbConnectionProvider
    */
-  private MultiDatabaseConnectionProvider getMultiDatabaseConnectionProvider() {
-    return (MultiDatabaseConnectionProvider) this.provider;
+  private MultiDbConnectionProvider getMultiDbConnectionProvider() {
+    return (MultiDbConnectionProvider) this.provider;
   }
 
   /**
@@ -123,7 +123,7 @@ public class MultiDbClient extends UnifiedJedis {
    * @param endpoint the endpoint to switch to
    */
   public void setActiveDatabase(Endpoint endpoint) {
-    getMultiDatabaseConnectionProvider().setActiveDatabase(endpoint);
+    getMultiDbConnectionProvider().setActiveDatabase(endpoint);
   }
 
   /**
@@ -136,7 +136,7 @@ public class MultiDbClient extends UnifiedJedis {
    * @param databaseConfig the pre-configured database configuration
    */
   public void addEndpoint(DatabaseConfig databaseConfig) {
-    getMultiDatabaseConnectionProvider().add(databaseConfig);
+    getMultiDbConnectionProvider().add(databaseConfig);
   }
 
   /**
@@ -155,7 +155,7 @@ public class MultiDbClient extends UnifiedJedis {
     DatabaseConfig databaseConfig = DatabaseConfig.builder(endpoint, clientConfig).weight(weight)
         .build();
 
-    getMultiDatabaseConnectionProvider().add(databaseConfig);
+    getMultiDbConnectionProvider().add(databaseConfig);
   }
 
   /**
@@ -166,7 +166,7 @@ public class MultiDbClient extends UnifiedJedis {
    * @return the set of all configured endpoints
    */
   public Set<Endpoint> getEndpoints() {
-    return getMultiDatabaseConnectionProvider().getEndpoints();
+    return getMultiDbConnectionProvider().getEndpoints();
   }
 
   /**
@@ -178,7 +178,7 @@ public class MultiDbClient extends UnifiedJedis {
    * @return the health status of the endpoint
    */
   public boolean isHealthy(Endpoint endpoint) {
-    return getMultiDatabaseConnectionProvider().isHealthy(endpoint);
+    return getMultiDbConnectionProvider().isHealthy(endpoint);
   }
 
   /**
@@ -194,7 +194,7 @@ public class MultiDbClient extends UnifiedJedis {
    *           healthy clusters available
    */
   public void removeEndpoint(Endpoint endpoint) {
-    getMultiDatabaseConnectionProvider().remove(endpoint);
+    getMultiDbConnectionProvider().remove(endpoint);
   }
 
   /**
@@ -210,7 +210,7 @@ public class MultiDbClient extends UnifiedJedis {
    *           or doesn't exist
    */
   public void forceActiveEndpoint(Endpoint endpoint, long forcedActiveDurationMs) {
-    getMultiDatabaseConnectionProvider().forceActiveDatabase(endpoint, forcedActiveDurationMs);
+    getMultiDbConnectionProvider().forceActiveDatabase(endpoint, forcedActiveDurationMs);
   }
 
   /**
@@ -223,7 +223,7 @@ public class MultiDbClient extends UnifiedJedis {
    */
   @Override
   public MultiClusterPipeline pipelined() {
-    return new MultiClusterPipeline(getMultiDatabaseConnectionProvider(), commandObjects);
+    return new MultiClusterPipeline(getMultiDbConnectionProvider(), commandObjects);
   }
 
   /**
@@ -236,8 +236,7 @@ public class MultiDbClient extends UnifiedJedis {
    */
   @Override
   public MultiClusterTransaction multi() {
-    return new MultiClusterTransaction((MultiDatabaseConnectionProvider) provider, true,
-        commandObjects);
+    return new MultiClusterTransaction((MultiDbConnectionProvider) provider, true, commandObjects);
   }
 
   /**
@@ -251,12 +250,11 @@ public class MultiDbClient extends UnifiedJedis {
           "It is not allowed to create Transaction from this " + getClass());
     }
 
-    return new MultiClusterTransaction(getMultiDatabaseConnectionProvider(), doMulti,
-        commandObjects);
+    return new MultiClusterTransaction(getMultiDbConnectionProvider(), doMulti, commandObjects);
   }
 
   public Endpoint getActiveEndpoint() {
-    return getMultiDatabaseConnectionProvider().getDatabase().getEndpoint();
+    return getMultiDbConnectionProvider().getDatabase().getEndpoint();
   }
 
   /**

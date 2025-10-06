@@ -162,7 +162,7 @@ public class ActiveActiveLocalFailoverTest {
     ensureEndpointAvailability(endpoint2.getHostAndPort(), config);
 
     // Create the connection provider
-    MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(builder.build());
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
     provider.setDatabaseSwitchListener(reporter);
     provider.setActiveDatabase(endpoint1.getHostAndPort());

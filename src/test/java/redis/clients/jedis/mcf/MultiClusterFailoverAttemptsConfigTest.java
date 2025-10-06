@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 import redis.clients.jedis.util.ReflectionTestUtil;
@@ -40,7 +40,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
         DatabaseConfig.builder(endpoint1, clientCfg).weight(0.5f).healthCheckEnabled(false)
             .build() };
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(databaseConfigs);
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(databaseConfigs);
 
     // Use small values by default for tests unless overridden per-test via reflection
     setBuilderFailoverConfig(builder, /* maxAttempts */ 10, /* delayMs */ 12000);
@@ -146,7 +146,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
   // ======== Test helper methods (reflection) ========
 
-  private static void setBuilderFailoverConfig(MultiDatabaseConfig.Builder builder, int maxAttempts,
+  private static void setBuilderFailoverConfig(MultiDbConfig.Builder builder, int maxAttempts,
       int delayMs) throws Exception {
     ReflectionTestUtil.setField(builder, "maxNumFailoverAttempts", maxAttempts);
 
@@ -154,9 +154,9 @@ public class MultiClusterFailoverAttemptsConfigTest {
   }
 
   private void setProviderFailoverConfig(int maxAttempts, int delayMs) throws Exception {
-    // Access the underlying MultiDatabaseConfig inside provider and adjust fields for this
+    // Access the underlying MultiDbConfig inside provider and adjust fields for this
     // test
-    Object cfg = ReflectionTestUtil.getField(provider, "multiDatabaseConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "MultiDbConfig");
 
     ReflectionTestUtil.setField(cfg, "maxNumFailoverAttempts", maxAttempts);
 
@@ -164,13 +164,13 @@ public class MultiClusterFailoverAttemptsConfigTest {
   }
 
   private int getProviderMaxAttempts() throws Exception {
-    Object cfg = ReflectionTestUtil.getField(provider, "multiDatabaseConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "MultiDbConfig");
 
     return ReflectionTestUtil.getField(cfg, "maxNumFailoverAttempts");
   }
 
   private int getProviderDelayMs() throws Exception {
-    Object cfg = ReflectionTestUtil.getField(provider, "multiDatabaseConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "MultiDbConfig");
 
     return ReflectionTestUtil.getField(cfg, "delayInBetweenFailoverAttempts");
   }

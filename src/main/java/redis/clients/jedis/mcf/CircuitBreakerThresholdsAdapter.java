@@ -1,7 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 
 /**
  * Adapter that disables Resilience4j's built-in circuit breaker evaluation and help delegate
@@ -67,9 +67,9 @@ class CircuitBreakerThresholdsAdapter {
    * method controls circuit breaker state based on the original configuration's dual-threshold
    * logic.
    * </p>
-   * @param multiDatabaseConfig configuration containing sliding window size
+   * @param multiDbConfig configuration containing sliding window size
    */
-  CircuitBreakerThresholdsAdapter(MultiDatabaseConfig multiDatabaseConfig) {
+  CircuitBreakerThresholdsAdapter(MultiDbConfig multiDbConfig) {
 
     // IMPORTANT: failureRateThreshold is set to max theoretically disable Resilience4j's evaluation
     // and rely on our custom evaluateThresholds() logic.
@@ -79,6 +79,6 @@ class CircuitBreakerThresholdsAdapter {
     // and rely on our custom evaluateThresholds() logic.
     minimumNumberOfCalls = Integer.MAX_VALUE;
 
-    slidingWindowSize = multiDatabaseConfig.getCircuitBreakerSlidingWindowSize();
+    slidingWindowSize = multiDbConfig.getCircuitBreakerSlidingWindowSize();
   }
 }

@@ -2,7 +2,7 @@ package redis.clients.jedis.builders;
 
 import java.util.function.Consumer;
 
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
@@ -38,7 +38,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <pre>
  * MultiDbClient client = MultiDbClient.builder()
  *                 .multiDbConfig(
- *                         MultiDatabaseConfig.builder()
+ *                         MultiDbConfig.builder()
  *                                 .endpoint(
  *                                         DatabaseConfig.builder(
  *                                                         east,
@@ -67,7 +67,7 @@ public abstract class MultiDbClientBuilder<C>
     extends AbstractClientBuilder<MultiDbClientBuilder<C>, C> {
 
   // Multi-db specific configuration fields
-  private MultiDatabaseConfig multiDbConfig = null;
+  private MultiDbConfig multiDbConfig = null;
   private Consumer<ClusterSwitchEventArgs> databaseSwitchListener = null;
 
   /**
@@ -79,7 +79,7 @@ public abstract class MultiDbClientBuilder<C>
    * @param config the multi-database configuration
    * @return this builder
    */
-  public MultiDbClientBuilder<C> multiDbConfig(MultiDatabaseConfig config) {
+  public MultiDbClientBuilder<C> multiDbConfig(MultiDbConfig config) {
     this.multiDbConfig = config;
     return this;
   }

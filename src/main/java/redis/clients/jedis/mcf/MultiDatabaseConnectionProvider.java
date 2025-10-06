@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -41,7 +41,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.JedisFailoverException.*;
 import redis.clients.jedis.providers.ConnectionProvider;
-import redis.clients.jedis.MultiDatabaseConfig.StrategySupplier;
+import redis.clients.jedis.MultiDbConfig.StrategySupplier;
 import redis.clients.jedis.util.Pool;
 
 /**
@@ -69,7 +69,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
   /**
    * Indicates the actively used database endpoint (connection pool) amongst the pre-configured list
-   * which were provided at startup via the MultiDatabaseConfig. All traffic will be routed with
+   * which were provided at startup via the MultiDbConfig. All traffic will be routed with
    * this database
    */
   private volatile Database activeDatabase;
@@ -101,30 +101,30 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
   // Store retry and circuit breaker configs for dynamic database addition/removal
   private RetryConfig retryConfig;
   private CircuitBreakerConfig circuitBreakerConfig;
-  private MultiDatabaseConfig multiDatabaseConfig;
+  private MultiDbConfig multiDbConfig;
 
   private AtomicLong failoverFreezeUntil = new AtomicLong(0);
   private AtomicInteger failoverAttemptCount = new AtomicInteger(0);
 
-  public MultiDatabaseConnectionProvider(MultiDatabaseConfig multiDatabaseConfig) {
+  public MultiDatabaseConnectionProvider(MultiDbConfig multiDbConfig) {
 
-    if (multiDatabaseConfig == null) throw new JedisValidationException(
-        "MultiDatabaseConfig must not be NULL for MultiDatabaseConnectionProvider");
+    if (multiDbConfig == null) throw new JedisValidationException(
+        "MultiDbConfig must not be NULL for MultiDatabaseConnectionProvider");
 
-    this.multiDatabaseConfig = multiDatabaseConfig;
+    this.multiDbConfig = multiDbConfig;
 
     ////////////// Configure Retry ////////////////////
 
     RetryConfig.Builder retryConfigBuilder = RetryConfig.custom();
-    retryConfigBuilder.maxAttempts(multiDatabaseConfig.getRetryMaxAttempts());
+    retryConfigBuilder.maxAttempts(multiDbConfig.getRetryMaxAttempts());
     retryConfigBuilder.intervalFunction(
-      IntervalFunction.ofExponentialBackoff(multiDatabaseConfig.getRetryWaitDuration(),
-        multiDatabaseConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
+      IntervalFunction.ofExponentialBackoff(multiDbConfig.getRetryWaitDuration(),
+        multiDbConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
     retryConfigBuilder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
     retryConfigBuilder.retryExceptions(
-      multiDatabaseConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
+      multiDbConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
 
-    List<Class> retryIgnoreExceptionList = multiDatabaseConfig.getRetryIgnoreExceptionList();
+    List<Class> retryIgnoreExceptionList = multiDbConfig.getRetryIgnoreExceptionList();
     if (retryIgnoreExceptionList != null)
       retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
 
@@ -135,14 +135,14 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
     CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(
-        multiDatabaseConfig);
+        multiDbConfig);
     circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
     circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
     circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
     circuitBreakerConfigBuilder.slidingWindowType(adapter.getSlidingWindowType());
 
     circuitBreakerConfigBuilder.recordExceptions(
-      multiDatabaseConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
+      multiDbConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
     circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State
                                                                                      // transitions
                                                                                      // are
@@ -151,7 +151,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
                                                                                      // states
                                                                                      // are used
 
-    List<Class> circuitBreakerIgnoreExceptionList = multiDatabaseConfig
+    List<Class> circuitBreakerIgnoreExceptionList = multiDbConfig
         .getCircuitBreakerIgnoreExceptionList();
     if (circuitBreakerIgnoreExceptionList != null) circuitBreakerConfigBuilder
         .ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
@@ -160,11 +160,11 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
     ////////////// Configure Database Map ////////////////////
 
-    DatabaseConfig[] databaseConfigs = multiDatabaseConfig.getDatabaseConfigs();
+    DatabaseConfig[] databaseConfigs = multiDbConfig.getDatabaseConfigs();
 
     // Now add databases - health checks will start but events will be queued
     for (DatabaseConfig config : databaseConfigs) {
-      addClusterInternal(multiDatabaseConfig, config);
+      addClusterInternal(multiDbConfig, config);
     }
 
     // Initialize StatusTracker for waiting on health check results
@@ -185,11 +185,11 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
       waitForInitialHealthyCluster(statusTracker);
       switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, temp);
     }
-    this.fallbackExceptionList = multiDatabaseConfig.getFallbackExceptionList();
+    this.fallbackExceptionList = multiDbConfig.getFallbackExceptionList();
 
     // Start periodic failback checker
-    if (multiDatabaseConfig.isFailbackSupported()) {
-      long failbackInterval = multiDatabaseConfig.getFailbackCheckInterval();
+    if (multiDbConfig.isFailbackSupported()) {
+      long failbackInterval = multiDbConfig.getFailbackCheckInterval();
       failbackScheduler.scheduleAtFixedRate(this::periodicFailbackCheck, failbackInterval,
         failbackInterval, TimeUnit.MILLISECONDS);
     }
@@ -213,7 +213,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
     activeDatabaseChangeLock.lock();
     try {
-      addClusterInternal(multiDatabaseConfig, databaseConfig);
+      addClusterInternal(multiDbConfig, databaseConfig);
     } finally {
       activeDatabaseChangeLock.unlock();
     }
@@ -286,7 +286,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
    * Internal method to add a database configuration. This method is not thread-safe and should be
    * called within appropriate locks.
    */
-  private void addClusterInternal(MultiDatabaseConfig multiDatabaseConfig, DatabaseConfig config) {
+  private void addClusterInternal(MultiDbConfig multiDbConfig, DatabaseConfig config) {
     if (databaseMap.containsKey(config.getEndpoint())) {
       throw new JedisValidationException(
           "Endpoint " + config.getEndpoint() + " already exists in the provider");
@@ -322,10 +322,10 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
       healthStatusManager.registerListener(config.getEndpoint(), this::onHealthStatusChange);
       HealthCheck hc = healthStatusManager.add(config.getEndpoint(), hcs);
       database = new Database(config.getEndpoint(), pool, retry, hc, circuitBreaker,
-          config.getWeight(), multiDatabaseConfig);
+          config.getWeight(), multiDbConfig);
     } else {
       database = new Database(config.getEndpoint(), pool, retry, circuitBreaker, config.getWeight(),
-          multiDatabaseConfig);
+          multiDbConfig);
     }
 
     databaseMap.put(config.getEndpoint(), database);
@@ -475,7 +475,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
   }
 
   private void handleNoHealthyCluster() {
-    int max = multiDatabaseConfig.getMaxNumFailoverAttempts();
+    int max = multiDbConfig.getMaxNumFailoverAttempts();
     log.error("No healthy cluster available to switch to");
     if (failoverAttemptCount.get() > max) {
       throw new JedisPermanentlyNotAvailableException();
@@ -494,7 +494,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
     long until = failoverFreezeUntil.get();
     long now = System.currentTimeMillis();
     if (until <= now) {
-      long nextUntil = now + multiDatabaseConfig.getDelayInBetweenFailoverAttempts();
+      long nextUntil = now + multiDbConfig.getDelayInBetweenFailoverAttempts();
       if (failoverFreezeUntil.compareAndSet(until, nextUntil)) {
         return true;
       }
@@ -639,7 +639,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
       activeDatabaseChangeLock.unlock();
     }
     boolean switched = oldCluster != database;
-    if (switched && this.multiDatabaseConfig.isFastFailover()) {
+    if (switched && this.multiDbConfig.isFastFailover()) {
       log.info("Forcing disconnect of all active connections in old database: {}",
         oldCluster.circuitBreaker.getName());
       oldCluster.forceDisconnect();
@@ -734,7 +734,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
   /**
    * Indicates the final cluster/database endpoint (connection pool), according to the
-   * pre-configured list provided at startup via the MultiDatabaseConfig, is unavailable and
+   * pre-configured list provided at startup via the MultiDbConfig, is unavailable and
    * therefore no further failover is possible. Users can manually failback to an available cluster
    */
   public boolean canIterateFrom(Database iterateFrom) {
@@ -764,7 +764,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
     private final CircuitBreaker circuitBreaker;
     private final float weight;
     private final HealthCheck healthCheck;
-    private final MultiDatabaseConfig multiDbConfig;
+    private final MultiDbConfig multiDbConfig;
     private boolean disabled = false;
     private final Endpoint endpoint;
 
@@ -773,20 +773,20 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private Database(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
-        CircuitBreaker circuitBreaker, float weight, MultiDatabaseConfig multiDatabaseConfig) {
+        CircuitBreaker circuitBreaker, float weight, MultiDbConfig multiDbConfig) {
 
       this.endpoint = endpoint;
       this.connectionPool = connectionPool;
       this.retry = retry;
       this.circuitBreaker = circuitBreaker;
       this.weight = weight;
-      this.multiDbConfig = multiDatabaseConfig;
+      this.multiDbConfig = multiDbConfig;
       this.healthCheck = null;
     }
 
     private Database(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
         HealthCheck hc, CircuitBreaker circuitBreaker, float weight,
-        MultiDatabaseConfig multiDbConfig) {
+        MultiDbConfig multiDbConfig) {
 
       this.endpoint = endpoint;
       this.connectionPool = connectionPool;

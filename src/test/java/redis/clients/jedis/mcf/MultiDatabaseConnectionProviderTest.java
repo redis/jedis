@@ -5,7 +5,7 @@ import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.*;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
@@ -43,7 +43,7 @@ public class MultiDatabaseConnectionProviderTest {
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
     provider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(databaseConfigs).build());
+        new MultiDbConfig.Builder(databaseConfigs).build());
   }
 
   @AfterEach
@@ -109,7 +109,7 @@ public class MultiDatabaseConnectionProviderTest {
           DefaultJedisClientConfig.builder().build())
         .weight(0.4f).healthCheckEnabled(false).build();
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(databaseConfigs);
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(databaseConfigs);
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
     builder.circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
@@ -180,7 +180,7 @@ public class MultiDatabaseConnectionProviderTest {
     databaseConfigs[1] = new DatabaseConfig(endpointStandalone1.getHostAndPort(),
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
     try (MultiDatabaseConnectionProvider customProvider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(databaseConfigs).build())) {
+        new MultiDbConfig.Builder(databaseConfigs).build())) {
       MultiDatabaseConnectionProvider.Database activeCluster = customProvider.getDatabase();
       ConnectionPool connectionPool = activeCluster.getConnectionPool();
       assertEquals(8, connectionPool.getMaxTotal());
@@ -210,7 +210,7 @@ public class MultiDatabaseConnectionProviderTest {
         .healthCheckStrategy(countingStrategy).build();
 
     MultiDatabaseConnectionProvider testProvider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(Collections.singletonList(config)).build());
+        new MultiDbConfig.Builder(Collections.singletonList(config)).build());
 
     try {
       // Wait for some health checks to occur
@@ -245,7 +245,7 @@ public class MultiDatabaseConnectionProviderTest {
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
     MultiDatabaseConnectionProvider testProvider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
+        new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2).retryMaxAttempts(1).build());
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
@@ -282,7 +282,7 @@ public class MultiDatabaseConnectionProviderTest {
     // adjusted to get exact numbers of failures with exact exception types
     // and open to impact from other defaulted values withing the components in use.
     MultiDatabaseConnectionProvider testProvider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
+        new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
             .circuitBreakerFailureRateThreshold(60).build()) {
     };

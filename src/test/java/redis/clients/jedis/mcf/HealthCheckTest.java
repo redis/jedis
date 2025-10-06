@@ -9,7 +9,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 
@@ -338,7 +338,7 @@ public class HealthCheckTest {
 
   @Test
   void testEchoStrategyDefaultSupplier() {
-    MultiDatabaseConfig.StrategySupplier supplier = EchoStrategy.DEFAULT;
+    MultiDbConfig.StrategySupplier supplier = EchoStrategy.DEFAULT;
     HealthCheckStrategy strategy = supplier.get(testEndpoint, testConfig);
 
     assertInstanceOf(EchoStrategy.class, strategy);
@@ -348,12 +348,12 @@ public class HealthCheckTest {
 
   @Test
   void testNewFieldLocations() {
-    // Test new field locations in DatabaseConfig and MultiDatabaseConfig
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    // Test new field locations in DatabaseConfig and MultiDbConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).weight(2.5f).build();
 
-    MultiDatabaseConfig multiConfig = new MultiDatabaseConfig.Builder(
-        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).retryOnFailover(true)
+    MultiDbConfig multiConfig = new MultiDbConfig.Builder(
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).retryOnFailover(true)
             .failbackSupported(false).build();
 
     assertEquals(2.5f, clusterConfig.getWeight());
@@ -364,7 +364,7 @@ public class HealthCheckTest {
   @Test
   void testDefaultValues() {
     // Test default values in DatabaseConfig
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).build();
 
     assertEquals(1.0f, clusterConfig.getWeight()); // Default weight
@@ -374,9 +374,9 @@ public class HealthCheckTest {
                                                                                         // health
                                                                                         // check)
 
-    // Test default values in MultiDatabaseConfig
-    MultiDatabaseConfig multiConfig = new MultiDatabaseConfig.Builder(
-        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).build();
+    // Test default values in MultiDbConfig
+    MultiDbConfig multiConfig = new MultiDbConfig.Builder(
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).build();
 
     assertFalse(multiConfig.isRetryOnFailover()); // Default is false
     assertTrue(multiConfig.isFailbackSupported()); // Default is true
@@ -386,10 +386,10 @@ public class HealthCheckTest {
   void testDatabaseConfigWithHealthCheckStrategy() {
     HealthCheckStrategy customStrategy = mock(HealthCheckStrategy.class);
 
-    MultiDatabaseConfig.StrategySupplier supplier = (hostAndPort,
+    MultiDbConfig.StrategySupplier supplier = (hostAndPort,
         jedisClientConfig) -> customStrategy;
 
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(supplier).build();
 
     assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
@@ -400,11 +400,11 @@ public class HealthCheckTest {
 
   @Test
   void testDatabaseConfigWithStrategySupplier() {
-    MultiDatabaseConfig.StrategySupplier customSupplier = (hostAndPort, jedisClientConfig) -> {
+    MultiDbConfig.StrategySupplier customSupplier = (hostAndPort, jedisClientConfig) -> {
       return mock(HealthCheckStrategy.class);
     };
 
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(customSupplier).build();
 
     assertEquals(customSupplier, clusterConfig.getHealthCheckStrategySupplier());
@@ -412,21 +412,21 @@ public class HealthCheckTest {
 
   @Test
   void testDatabaseConfigWithEchoStrategy() {
-    MultiDatabaseConfig.StrategySupplier echoSupplier = (hostAndPort, jedisClientConfig) -> {
+    MultiDbConfig.StrategySupplier echoSupplier = (hostAndPort, jedisClientConfig) -> {
       return new EchoStrategy(hostAndPort, jedisClientConfig);
     };
 
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(echoSupplier).build();
 
-    MultiDatabaseConfig.StrategySupplier supplier = clusterConfig.getHealthCheckStrategySupplier();
+    MultiDbConfig.StrategySupplier supplier = clusterConfig.getHealthCheckStrategySupplier();
     assertNotNull(supplier);
     assertInstanceOf(EchoStrategy.class, supplier.get(testEndpoint, testConfig));
   }
 
   @Test
   void testDatabaseConfigWithDefaultHealthCheck() {
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).build(); // Should use default EchoStrategy
 
     assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
@@ -435,7 +435,7 @@ public class HealthCheckTest {
 
   @Test
   void testDatabaseConfigWithDisabledHealthCheck() {
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckEnabled(false).build();
 
     assertNull(clusterConfig.getHealthCheckStrategySupplier());
@@ -443,7 +443,7 @@ public class HealthCheckTest {
 
   @Test
   void testDatabaseConfigHealthCheckEnabledExplicitly() {
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckEnabled(true).build();
 
     assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
@@ -515,7 +515,7 @@ public class HealthCheckTest {
   @Test
   void testStrategySupplierPolymorphism() {
     // Test that the polymorphic design works correctly
-    MultiDatabaseConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
+    MultiDbConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
       if (jedisClientConfig != null) {
         return new EchoStrategy(hostAndPort, jedisClientConfig,
             HealthCheckStrategy.Config.builder().interval(500).timeout(250).numProbes(1).build());

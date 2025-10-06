@@ -14,7 +14,7 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProviderHelper;
@@ -52,13 +52,13 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   void postInit_unhealthy_active_sets_grace_and_fails_over() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
       // Create clusters without health checks
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
           config)) {
@@ -84,13 +84,13 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void postInit_nonActive_changes_do_not_switch_active() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
           config)) {
@@ -131,14 +131,14 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void init_selects_highest_weight_healthy_when_checks_disabled() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
           config)) {
@@ -158,11 +158,11 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void init_single_cluster_initializes_and_is_healthy() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1 }).build();
 
       // This test verifies that the provider initializes correctly and doesn't lose events
       // In practice, with health checks disabled, no events should be generated during init
@@ -183,17 +183,17 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void postInit_two_hop_failover_chain_respected() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster3 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster3 = MultiDbConfig.DatabaseConfig
           .builder(endpoint3, clientConfig).weight(0.2f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 }).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
           config)) {
@@ -227,14 +227,14 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void postInit_rapid_events_respect_grace_and_keep_active_stable() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
           config)) {

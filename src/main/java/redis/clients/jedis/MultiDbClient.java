@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.MultiDbClientBuilder;
 import redis.clients.jedis.csc.Cache;
@@ -43,7 +43,7 @@ import java.util.Set;
  *
  * MultiDbClient client = MultiDbClient.builder()
  *                 .multiDbConfig(
- *                         MultiDatabaseConfig.builder()
+ *                         MultiDbConfig.builder()
  *                                 .endpoint(
  *                                         DatabaseConfig.builder(
  *                                                         primary,
@@ -78,7 +78,7 @@ import java.util.Set;
  * @since 5.2.0
  * @see MultiDatabaseConnectionProvider
  * @see CircuitBreakerCommandExecutor
- * @see MultiDatabaseConfig
+ * @see MultiDbConfig
  */
 @Experimental
 public class MultiDbClient extends UnifiedJedis {

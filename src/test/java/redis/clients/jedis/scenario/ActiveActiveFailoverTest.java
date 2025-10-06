@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
@@ -68,7 +68,7 @@ public class ActiveActiveFailoverTest {
     DatabaseConfig secondary = DatabaseConfig.builder(endpoint.getHostAndPort(1), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiDatabaseConfig multiConfig = MultiDatabaseConfig.builder()
+    MultiDbConfig multiConfig = MultiDbConfig.builder()
             .endpoint(primary)
             .endpoint(secondary)
             .circuitBreakerSlidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS

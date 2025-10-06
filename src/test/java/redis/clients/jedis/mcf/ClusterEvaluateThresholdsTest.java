@@ -11,7 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 
 /**
@@ -100,13 +100,13 @@ public class ClusterEvaluateThresholdsTest {
 
   @Test
   public void providerBuilder_zeroRate_mapsToHundredAndHugeMinCalls() {
-    MultiDatabaseConfig.Builder cfgBuilder = MultiDatabaseConfig
-        .builder(java.util.Arrays.asList(MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig
+        .builder(java.util.Arrays.asList(MultiDbConfig.DatabaseConfig
             .builder(new HostAndPort("localhost", 6379), DefaultJedisClientConfig.builder().build())
             .healthCheckEnabled(false).build()));
     cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10);
-    MultiDatabaseConfig mcc = cfgBuilder.build();
+    MultiDbConfig mcc = cfgBuilder.build();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);
 

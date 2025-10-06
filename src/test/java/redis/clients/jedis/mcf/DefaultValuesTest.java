@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 
 public class DefaultValuesTest {
 
@@ -19,10 +19,10 @@ public class DefaultValuesTest {
   @Test
   void testDefaultValuesInConfig() {
 
-    MultiDatabaseConfig.DatabaseConfig clusterConfig = MultiDatabaseConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
         .builder(fakeEndpoint, config).build();
-    MultiDatabaseConfig multiConfig = new MultiDatabaseConfig.Builder(
-        new MultiDatabaseConfig.DatabaseConfig[] { clusterConfig }).build();
+    MultiDbConfig multiConfig = new MultiDbConfig.Builder(
+        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).build();
 
     // check for grace period
     assertEquals(60000, multiConfig.getGracePeriod());

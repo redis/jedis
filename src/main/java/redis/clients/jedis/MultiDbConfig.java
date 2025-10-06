@@ -56,7 +56,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *       .healthCheckEnabled(true).build();
  *
  *   // Build multi-cluster configuration
- *   MultiDatabaseConfig config = MultiDatabaseConfig.builder(primary, secondary)
+ *   MultiDbConfig config = MultiDbConfig.builder(primary, secondary)
  *       .circuitBreakerFailureRateThreshold(10.0f).retryMaxAttempts(3).failbackSupported(true)
  *       .gracePeriod(10000).build();
  *
@@ -76,7 +76,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  */
 // TODO: move
 @Experimental
-public final class MultiDatabaseConfig {
+public final class MultiDbConfig {
 
   /**
    * Functional interface for creating {@link HealthCheckStrategy} instances for specific Redis
@@ -437,7 +437,7 @@ public final class MultiDatabaseConfig {
   private int delayInBetweenFailoverAttempts;
 
   /**
-   * Constructs a new MultiDatabaseConfig with the specified cluster configurations.
+   * Constructs a new MultiDbConfig with the specified cluster configurations.
    * <p>
    * This constructor validates that at least one cluster configuration is provided and that all
    * configurations are non-null. Use the {@link Builder} class for more convenient configuration
@@ -448,7 +448,7 @@ public final class MultiDatabaseConfig {
    * @throws IllegalArgumentException if any cluster configuration is null
    * @see Builder#Builder(DatabaseConfig[])
    */
-  public MultiDatabaseConfig(DatabaseConfig[] databaseConfigs) {
+  public MultiDbConfig(DatabaseConfig[] databaseConfigs) {
 
     if (databaseConfigs == null || databaseConfigs.length < 1) throw new JedisValidationException(
         "DatabaseClientConfigs are required for MultiDatabaseConnectionProvider");
@@ -636,7 +636,7 @@ public final class MultiDatabaseConfig {
   }
 
   /**
-   * Creates a new Builder instance for configuring MultiDatabaseConfig.
+   * Creates a new Builder instance for configuring MultiDbConfig.
    * <p>
    * At least one cluster configuration must be added to the builder before calling build(). Use the
    * endpoint() methods to add cluster configurations.
@@ -650,7 +650,7 @@ public final class MultiDatabaseConfig {
   }
 
   /**
-   * Creates a new Builder instance for configuring MultiDatabaseConfig.
+   * Creates a new Builder instance for configuring MultiDbConfig.
    * @param databaseConfigs array of cluster configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
@@ -661,7 +661,7 @@ public final class MultiDatabaseConfig {
   }
 
   /**
-   * Creates a new Builder instance for configuring MultiDatabaseConfig.
+   * Creates a new Builder instance for configuring MultiDbConfig.
    * @param databaseConfigs list of cluster configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
@@ -976,7 +976,7 @@ public final class MultiDatabaseConfig {
   }
 
   /**
-   * Builder class for creating MultiDatabaseConfig instances with comprehensive configuration
+   * Builder class for creating MultiDbConfig instances with comprehensive configuration
    * options.
    * <p>
    * The Builder provides a fluent API for configuring all aspects of multi-cluster failover
@@ -984,7 +984,7 @@ public final class MultiDatabaseConfig {
    * sensible defaults based on production best practices while allowing fine-tuning for specific
    * requirements.
    * </p>
-   * @see MultiDatabaseConfig
+   * @see MultiDbConfig
    * @see DatabaseConfig
    */
   public static class Builder {
@@ -1499,17 +1499,17 @@ public final class MultiDatabaseConfig {
     }
 
     /**
-     * Builds and returns a new MultiDatabaseConfig instance with all configured settings.
+     * Builds and returns a new MultiDbConfig instance with all configured settings.
      * <p>
      * This method creates the final configuration object by copying all builder settings to the
      * configuration instance. The builder can be reused after calling build() to create additional
      * configurations with different settings.
      * </p>
-     * @return a new MultiDatabaseConfig instance with the configured settings
+     * @return a new MultiDbConfig instance with the configured settings
      */
-    public MultiDatabaseConfig build() {
+    public MultiDbConfig build() {
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig(
+      MultiDbConfig config = new MultiDbConfig(
           this.databaseConfigs.toArray(new DatabaseConfig[0]));
 
       // Copy retry configuration

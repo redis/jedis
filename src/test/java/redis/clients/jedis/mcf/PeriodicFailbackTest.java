@@ -14,7 +14,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 
 @ExtendWith(MockitoExtension.class)
 class PeriodicFailbackTest {
@@ -42,14 +42,14 @@ class PeriodicFailbackTest {
   @Test
   void testPeriodicFailbackCheckWithDisabledCluster() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(100).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
@@ -75,14 +75,14 @@ class PeriodicFailbackTest {
   @Test
   void testPeriodicFailbackCheckWithHealthyCluster() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(50).gracePeriod(100).build(); // Add
                                                                    // grace
                                                                    // period
@@ -122,14 +122,14 @@ class PeriodicFailbackTest {
   @Test
   void testPeriodicFailbackCheckWithFailbackDisabled() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(false) // Disabled
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(false) // Disabled
               .failbackCheckInterval(50).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
@@ -162,18 +162,18 @@ class PeriodicFailbackTest {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       HostAndPort endpoint3 = new HostAndPort("localhost", 6381);
 
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster3 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster3 = MultiDbConfig.DatabaseConfig
           .builder(endpoint3, clientConfig).weight(3.0f) // Highest weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
               .failbackSupported(true).failbackCheckInterval(50).gracePeriod(100).build(); // Add
                                                                                            // grace
                                                                                            // period

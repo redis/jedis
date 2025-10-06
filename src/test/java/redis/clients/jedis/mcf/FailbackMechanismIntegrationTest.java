@@ -17,7 +17,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 
 @ExtendWith(MockitoExtension.class)
 class FailbackMechanismIntegrationTest {
@@ -49,16 +49,16 @@ class FailbackMechanismIntegrationTest {
   void testFailbackDisabledDoesNotPerformFailback() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       // Create clusters with different weights
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f) // Higher weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(false) // Disabled
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(false) // Disabled
               .failbackCheckInterval(100) // Short interval for testing
               .build();
 
@@ -89,16 +89,16 @@ class FailbackMechanismIntegrationTest {
   void testFailbackToHigherWeightCluster() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       // Create clusters with different weights
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(2.0f) // Higher weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(1.0f) // Lower weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(100) // Short interval for testing
               .gracePeriod(100).build();
 
@@ -129,20 +129,20 @@ class FailbackMechanismIntegrationTest {
   void testNoFailbackToLowerWeightCluster() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       // Create three clusters with different weights to properly test no failback to lower weight
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f) // Lowest weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f) // Medium weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig.DatabaseConfig cluster3 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster3 = MultiDbConfig.DatabaseConfig
           .builder(endpoint3, clientConfig).weight(3.0f) // Highest weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
               .failbackSupported(true).failbackCheckInterval(100).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
@@ -172,16 +172,16 @@ class FailbackMechanismIntegrationTest {
   @Test
   void testFailbackToHigherWeightClusterImmediately() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Higher
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower
                                                                                             // weight
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(100).gracePeriod(50).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
@@ -211,16 +211,16 @@ class FailbackMechanismIntegrationTest {
   @Test
   void testUnhealthyClusterCancelsFailback() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Higher
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower
                                                                                             // weight
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(200).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
@@ -256,20 +256,20 @@ class FailbackMechanismIntegrationTest {
   @Test
   void testMultipleClusterFailbackPriority() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lowest
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Medium
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster3 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster3 = MultiDbConfig.DatabaseConfig
           .builder(endpoint3, clientConfig).weight(3.0f) // Highest weight
           .healthCheckEnabled(false).build();
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
               .failbackSupported(true).failbackCheckInterval(100).gracePeriod(100).build();
 
       try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
@@ -298,16 +298,16 @@ class FailbackMechanismIntegrationTest {
   @Test
   void testGracePeriodDisablesClusterOnUnhealthy() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Higher
                                                                                             // weight
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(100).gracePeriod(200) // 200ms grace
                                                            // period
               .build();
@@ -332,16 +332,16 @@ class FailbackMechanismIntegrationTest {
   @Test
   void testGracePeriodReEnablesClusterAfterPeriod() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDatabaseConfig.DatabaseConfig cluster1 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build(); // Lower
                                                                                             // weight
 
-      MultiDatabaseConfig.DatabaseConfig cluster2 = MultiDatabaseConfig.DatabaseConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build(); // Higher
                                                                                             // weight
 
-      MultiDatabaseConfig config = new MultiDatabaseConfig.Builder(
-          new MultiDatabaseConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(50) // Short interval for testing
               .gracePeriod(100) // Short grace period for testing
               .build();

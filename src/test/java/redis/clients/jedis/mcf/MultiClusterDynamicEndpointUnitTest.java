@@ -11,8 +11,8 @@ import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +35,7 @@ public class MultiClusterDynamicEndpointUnitTest {
     // Create initial provider with endpoint1
     DatabaseConfig initialConfig = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-    MultiDatabaseConfig multiConfig = new MultiDatabaseConfig.Builder(
+    MultiDbConfig multiConfig = new MultiDbConfig.Builder(
         new DatabaseConfig[] { initialConfig }).build();
 
     provider = new MultiDatabaseConnectionProvider(multiConfig);
@@ -82,7 +82,7 @@ public class MultiClusterDynamicEndpointUnitTest {
       // Create initial provider with endpoint1
       DatabaseConfig clusterConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-      MultiDatabaseConfig multiConfig = MultiDatabaseConfig
+      MultiDbConfig multiConfig = MultiDbConfig
           .builder(new DatabaseConfig[] { clusterConfig1 }).build();
 
       try (
@@ -179,7 +179,7 @@ public class MultiClusterDynamicEndpointUnitTest {
       // Create initial provider with endpoint1
       DatabaseConfig clusterConfig1 = createDatabaseConfig(endpoint1.getHostAndPort(), 1.0f);
 
-      MultiDatabaseConfig multiConfig = MultiDatabaseConfig
+      MultiDbConfig multiConfig = MultiDbConfig
           .builder(new DatabaseConfig[] { clusterConfig1 }).build();
 
       try (

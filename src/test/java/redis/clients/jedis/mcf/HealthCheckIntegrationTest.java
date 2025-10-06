@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
-import redis.clients.jedis.MultiDatabaseConfig.StrategySupplier;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.StrategySupplier;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -43,7 +43,7 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testDefaultStrategySupplier() {
     // Create a default strategy supplier that creates EchoStrategy instances
-    MultiDatabaseConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
+    MultiDbConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
       return new EchoStrategy(hostAndPort, jedisClientConfig);
     };
     MultiDatabaseConnectionProvider customProvider = getMCCF(defaultSupplier);
@@ -57,7 +57,7 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testCustomStrategySupplier() {
     // Create a StrategySupplier that uses the JedisClientConfig when available
-    MultiDatabaseConfig.StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
+    MultiDbConfig.StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
       return new TestHealthCheckStrategy(HealthCheckStrategy.Config.builder().interval(500)
           .timeout(500).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build(), (endpoint) -> {
             // Create connection per health check to avoid resource leak
@@ -79,18 +79,18 @@ public class HealthCheckIntegrationTest {
   }
 
   private MultiDatabaseConnectionProvider getMCCF(
-      MultiDatabaseConfig.StrategySupplier strategySupplier) {
+      MultiDbConfig.StrategySupplier strategySupplier) {
     Function<DatabaseConfig.Builder, DatabaseConfig.Builder> modifier = builder -> strategySupplier == null
         ? builder.healthCheckEnabled(false)
         : builder.healthCheckStrategySupplier(strategySupplier);
 
     List<DatabaseConfig> databaseConfigs = Arrays.stream(new EndpointConfig[] { endpoint1 })
         .map(e -> modifier
-            .apply(MultiDatabaseConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig))
+            .apply(MultiDbConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig))
             .build())
         .collect(Collectors.toList());
 
-    MultiDatabaseConfig mccf = new MultiDatabaseConfig.Builder(databaseConfigs).retryMaxAttempts(1)
+    MultiDbConfig mccf = new MultiDbConfig.Builder(databaseConfigs).retryMaxAttempts(1)
         .retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
         .circuitBreakerFailureRateThreshold(100).build();
 

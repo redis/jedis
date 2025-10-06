@@ -16,7 +16,7 @@ import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.Toxic;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.scenario.ActiveActiveFailoverTest;
 import redis.clients.jedis.scenario.MultiThreadedFakeApp;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -94,7 +94,7 @@ public class ActiveActiveLocalFailoverTest {
       "TESTING WITH PARAMETERS: fastFailover: {} numberOfThreads: {} minFailoverCompletionDuration: {} maxFailoverCompletionDuration: {] ",
       fastFailover, numberOfThreads, minFailoverCompletionDuration, maxFailoverCompletionDuration);
 
-    MultiDatabaseConfig.DatabaseConfig[] clusterConfig = new MultiDatabaseConfig.DatabaseConfig[2];
+    MultiDbConfig.DatabaseConfig[] clusterConfig = new MultiDbConfig.DatabaseConfig[2];
 
     JedisClientConfig config = endpoint1.getClientConfigBuilder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
@@ -105,7 +105,7 @@ public class ActiveActiveLocalFailoverTest {
     clusterConfig[1] = DatabaseConfig.builder(endpoint2.getHostAndPort(), config)
         .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(clusterConfig);
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(clusterConfig);
 
     builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
     builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit

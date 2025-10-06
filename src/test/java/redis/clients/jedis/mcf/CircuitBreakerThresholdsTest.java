@@ -16,8 +16,8 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.MultiDatabaseConfig;
-import redis.clients.jedis.MultiDatabaseConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
@@ -50,11 +50,11 @@ public class CircuitBreakerThresholdsTest {
             .healthCheckEnabled(false).weight(0.5f).build() };
     fakeDatabaseConfigs = databaseConfigs;
 
-    MultiDatabaseConfig.Builder cfgBuilder = MultiDatabaseConfig.builder(databaseConfigs)
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(databaseConfigs)
         .circuitBreakerFailureRateThreshold(50.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
 
-    MultiDatabaseConfig mcc = cfgBuilder.build();
+    MultiDbConfig mcc = cfgBuilder.build();
 
     realProvider = new MultiDatabaseConnectionProvider(mcc);
     spyProvider = spy(realProvider);
@@ -123,7 +123,7 @@ public class CircuitBreakerThresholdsTest {
   @Test
   public void rateBelowThreshold_doesNotFailover() throws Exception {
     // Use local provider with higher threshold (80%) and no retries
-    MultiDatabaseConfig.Builder cfgBuilder = MultiDatabaseConfig.builder(fakeDatabaseConfigs)
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
         .circuitBreakerFailureRateThreshold(80.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
     MultiDatabaseConnectionProvider rp = new MultiDatabaseConnectionProvider(cfgBuilder.build());
@@ -162,10 +162,10 @@ public class CircuitBreakerThresholdsTest {
 
   @Test
   public void providerBuilder_zeroRate_mapsToHundredAndHugeMinCalls() {
-    MultiDatabaseConfig.Builder cfgBuilder = MultiDatabaseConfig.builder(fakeDatabaseConfigs);
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs);
     cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10);
-    MultiDatabaseConfig mcc = cfgBuilder.build();
+    MultiDbConfig mcc = cfgBuilder.build();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);
 
@@ -189,7 +189,7 @@ public class CircuitBreakerThresholdsTest {
   public void thresholdMatrix(int minFailures, float ratePercent, int successes, int failures,
       boolean expectFailoverOnNext) throws Exception {
 
-    MultiDatabaseConfig.Builder cfgBuilder = MultiDatabaseConfig.builder(fakeDatabaseConfigs)
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
         .circuitBreakerFailureRateThreshold(ratePercent).circuitBreakerMinNumOfFailures(minFailures)
         .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2)).retryMaxAttempts(1)
         .retryOnFailover(false);

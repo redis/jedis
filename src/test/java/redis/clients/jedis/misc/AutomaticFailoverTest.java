@@ -47,10 +47,10 @@ public class AutomaticFailoverTest {
 
   private Jedis jedis2;
 
-  private List<MultiDatabaseConfig.DatabaseConfig> getDatabaseConfigs(
+  private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
       JedisClientConfig clientConfig, HostAndPort... hostPorts) {
     return Arrays.stream(hostPorts)
-        .map(hp -> new MultiDatabaseConfig.DatabaseConfig(hp, clientConfig))
+        .map(hp -> new MultiDbConfig.DatabaseConfig(hp, clientConfig))
         .collect(Collectors.toList());
   }
 
@@ -69,7 +69,7 @@ public class AutomaticFailoverTest {
   @Test
   public void pipelineWithSwitch() {
     MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(
+        new MultiDbConfig.Builder(
             getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
 
@@ -89,7 +89,7 @@ public class AutomaticFailoverTest {
   @Test
   public void transactionWithSwitch() {
     MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
-        new MultiDatabaseConfig.Builder(
+        new MultiDbConfig.Builder(
             getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
 
@@ -112,7 +112,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 2;
 
     HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
             .retryWaitDuration(1).retryMaxAttempts(1)
             .circuitBreakerSlidingWindowSize(slidingWindowSize)
@@ -152,7 +152,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 6;
     int retryMaxAttempts = 3;
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
             .retryMaxAttempts(retryMaxAttempts) // Default
             // is
@@ -194,7 +194,7 @@ public class AutomaticFailoverTest {
   public void pipelineFailover() {
     int slidingWindowSize = 10;
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
             .circuitBreakerSlidingWindowSize(slidingWindowSize)
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
@@ -226,7 +226,7 @@ public class AutomaticFailoverTest {
   public void failoverFromAuthError() {
     int slidingWindowSize = 10;
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
           workingEndpoint.getHostAndPort())).circuitBreakerSlidingWindowSize(slidingWindowSize)
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));

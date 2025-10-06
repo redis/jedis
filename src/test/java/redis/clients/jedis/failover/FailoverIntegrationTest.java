@@ -16,7 +16,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiDatabaseConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
@@ -180,13 +180,13 @@ public class FailoverIntegrationTest {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS2_ID));
   }
 
-  private List<MultiDatabaseConfig.DatabaseConfig> getDatabaseConfigs(
+  private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
       JedisClientConfig clientConfig, EndpointConfig... endpoints) {
 
     int weight = endpoints.length;
     AtomicInteger weightCounter = new AtomicInteger(weight);
     return Arrays.stream(endpoints)
-        .map(e -> MultiDatabaseConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig)
+        .map(e -> MultiDbConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig)
             .weight(1.0f / weightCounter.getAndIncrement()).healthCheckEnabled(false).build())
         .collect(Collectors.toList());
   }
@@ -261,7 +261,7 @@ public class FailoverIntegrationTest {
    */
   @Test
   public void testCircuitBreakerCountsEachConnectionErrorSeparately() throws IOException {
-    MultiDatabaseConfig failoverConfig = new MultiDatabaseConfig.Builder(getDatabaseConfigs(
+    MultiDbConfig failoverConfig = new MultiDbConfig.Builder(getDatabaseConfigs(
       DefaultJedisClientConfig.builder().socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
           .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
       endpoint1, endpoint2)).retryMaxAttempts(2).retryWaitDuration(1)
@@ -422,7 +422,7 @@ public class FailoverIntegrationTest {
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-    MultiDatabaseConfig failoverConfig = new MultiDatabaseConfig.Builder(
+    MultiDbConfig failoverConfig = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
             .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
             .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f).build();
@@ -435,12 +435,12 @@ public class FailoverIntegrationTest {
    * @return A configured provider
    */
   private MultiDatabaseConnectionProvider createProvider(
-      Function<MultiDatabaseConfig.Builder, MultiDatabaseConfig.Builder> configCustomizer) {
+      Function<MultiDbConfig.Builder, MultiDbConfig.Builder> configCustomizer) {
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-    MultiDatabaseConfig.Builder builder = new MultiDatabaseConfig.Builder(
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, endpoint1, endpoint2)).retryMaxAttempts(1)
             .retryWaitDuration(1).circuitBreakerSlidingWindowSize(3)
             .circuitBreakerMinNumOfFailures(1).circuitBreakerFailureRateThreshold(50f);

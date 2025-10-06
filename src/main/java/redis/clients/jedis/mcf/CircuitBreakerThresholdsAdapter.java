@@ -73,7 +73,7 @@ class CircuitBreakerThresholdsAdapter {
 
     // IMPORTANT: failureRateThreshold is set to max theoretically disable Resilience4j's evaluation
     // and rely on our custom evaluateThresholds() logic.
-    failureRateThreshold = FAILURE_RATE_TRESHOLD_MAX;
+    failureRateThreshold = FAILURE_RATE_THRESHOLD_MAX;
 
     // IMPORTANT: minimumNumberOfCalls is set to max theoretically disable Resilience4j's evaluation
     // and rely on our custom evaluateThresholds() logic.

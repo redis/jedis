@@ -154,7 +154,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
   private void setProviderFailoverConfig(int maxAttempts, int delayMs) throws Exception {
     // Access the underlying MultiDbConfig inside provider and adjust fields for this
     // test
-    Object cfg = ReflectionTestUtil.getField(provider, "MultiDbConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "multiDbConfig");
 
     ReflectionTestUtil.setField(cfg, "maxNumFailoverAttempts", maxAttempts);
 
@@ -162,13 +162,13 @@ public class MultiClusterFailoverAttemptsConfigTest {
   }
 
   private int getProviderMaxAttempts() throws Exception {
-    Object cfg = ReflectionTestUtil.getField(provider, "MultiDbConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "multiDbConfig");
 
     return ReflectionTestUtil.getField(cfg, "maxNumFailoverAttempts");
   }
 
   private int getProviderDelayMs() throws Exception {
-    Object cfg = ReflectionTestUtil.getField(provider, "MultiDbConfig");
+    Object cfg = ReflectionTestUtil.getField(provider, "multiDbConfig");
 
     return ReflectionTestUtil.getField(cfg, "delayInBetweenFailoverAttempts");
   }

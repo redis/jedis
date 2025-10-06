@@ -14,9 +14,9 @@ import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
  * Active-Active cluster(s) by using simple configuration
  */
 @Experimental
-public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFailoverBase {
+public class MultiDbConnectionSupplier extends CircuitBreakerFailoverBase {
 
-  public CircuitBreakerFailoverConnectionProvider(MultiDbConnectionProvider provider) {
+  public MultiDbConnectionSupplier(MultiDbConnectionProvider provider) {
     super(provider);
   }
 

@@ -26,7 +26,7 @@ public class MultiDbTransaction extends TransactionBase {
 
   private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
-  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
+  private final MultiDbConnectionSupplier failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
@@ -51,7 +51,7 @@ public class MultiDbTransaction extends TransactionBase {
    */
   @Deprecated
   public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti) {
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+    this.failoverProvider = new MultiDbConnectionSupplier(provider);
 
     try (Connection connection = failoverProvider.getConnection()) {
       RedisProtocol proto = connection.getRedisProtocol();
@@ -71,7 +71,7 @@ public class MultiDbTransaction extends TransactionBase {
   public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti,
       CommandObjects commandObjects) {
     super(commandObjects);
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+    this.failoverProvider = new MultiDbConnectionSupplier(provider);
 
     if (doMulti) multi();
   }

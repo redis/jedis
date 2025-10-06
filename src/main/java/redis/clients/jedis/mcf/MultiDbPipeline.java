@@ -16,14 +16,14 @@ import redis.clients.jedis.util.KeyValue;
 @Experimental
 public class MultiDbPipeline extends PipelineBase implements Closeable {
 
-  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
+  private final MultiDbConnectionSupplier failoverProvider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
   @Deprecated
   public MultiDbPipeline(MultiDbConnectionProvider pooledProvider) {
     super(new CommandObjects());
 
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
+    this.failoverProvider = new MultiDbConnectionSupplier(pooledProvider);
 
     try (Connection connection = failoverProvider.getConnection()) {
       RedisProtocol proto = connection.getRedisProtocol();
@@ -33,7 +33,7 @@ public class MultiDbPipeline extends PipelineBase implements Closeable {
 
   public MultiDbPipeline(MultiDbConnectionProvider pooledProvider, CommandObjects commandObjects) {
     super(commandObjects);
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
+    this.failoverProvider = new MultiDbConnectionSupplier(pooledProvider);
   }
 
   @Override

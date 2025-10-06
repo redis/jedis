@@ -32,7 +32,7 @@ import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbTransaction;
@@ -230,18 +230,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  /**
-   * Constructor which supports multiple cluster/database endpoints each with their own isolated connection pool.
-   * <p>
-   * With this Constructor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
-   * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
-   * <p>
-   */
-  @Experimental
-  public UnifiedJedis(MultiDbConnectionProvider provider) {
-    this(new CircuitBreakerCommandExecutor(provider), provider);
   }
 
   /**

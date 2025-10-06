@@ -22,9 +22,9 @@ import static org.awaitility.Awaitility.await;
 
 /**
  * Tests for how getMaxNumFailoverAttempts and getDelayInBetweenFailoverAttempts impact
- * MultiDbConnectionProvider behaviour when no healthy clusters are available.
+ * MultiDbConnectionProvider behaviour when no healthy databases are available.
  */
-public class MultiClusterFailoverAttemptsConfigTest {
+public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
 
   private HostAndPort endpoint0 = new HostAndPort("purposefully-incorrect", 0000);
   private HostAndPort endpoint1 = new HostAndPort("purposefully-incorrect", 0001);
@@ -47,7 +47,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
     provider = new MultiDbConnectionProvider(builder.build());
 
-    // Disable both clusters to force handleNoHealthyCluster path
+    // Disable both databases to force handleNoHealthyCluster path
     provider.getDatabase(endpoint0).setDisabled(true);
     provider.getDatabase(endpoint1).setDisabled(true);
   }

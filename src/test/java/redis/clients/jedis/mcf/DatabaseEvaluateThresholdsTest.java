@@ -17,29 +17,29 @@ import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
  * must be exceeded to trigger failover. Uses a real CircuitBreaker and real Retry, but mocks the
- * provider and cluster wiring to avoid network I/O.
+ * provider and {@link Database} wiring to avoid network I/O.
  */
-public class ClusterEvaluateThresholdsTest {
+public class DatabaseEvaluateThresholdsTest {
 
   private MultiDbConnectionProvider provider;
-  private Database cluster;
+  private Database database;
   private CircuitBreaker circuitBreaker;
   private CircuitBreaker.Metrics metrics;
 
   @BeforeEach
   public void setup() {
     provider = mock(MultiDbConnectionProvider.class);
-    cluster = mock(Database.class);
+    database = mock(Database.class);
 
     circuitBreaker = mock(CircuitBreaker.class);
     metrics = mock(CircuitBreaker.Metrics.class);
 
-    when(cluster.getCircuitBreaker()).thenReturn(circuitBreaker);
+    when(database.getCircuitBreaker()).thenReturn(circuitBreaker);
     when(circuitBreaker.getMetrics()).thenReturn(metrics);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
     // Configure the mock to call the real evaluateThresholds method
-    doCallRealMethod().when(cluster).evaluateThresholds(anyBoolean());
+    doCallRealMethod().when(database).evaluateThresholds(anyBoolean());
 
   }
 
@@ -50,13 +50,13 @@ public class ClusterEvaluateThresholdsTest {
    */
   @Test
   public void belowMinFailures_doesNotFailover() {
-    when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
+    when(database.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
     when(metrics.getNumberOfFailedCalls()).thenReturn(1); // +1 becomes 2, still < 3
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(0);
-    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(50.0f);
+    when(database.getCircuitBreakerFailureRateThreshold()).thenReturn(50.0f);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
-    cluster.evaluateThresholds(false);
+    database.evaluateThresholds(false);
     verify(circuitBreaker, never()).transitionToOpenState();
     verify(provider, never()).switchToHealthyDatabase(any(), any());
   }
@@ -68,13 +68,13 @@ public class ClusterEvaluateThresholdsTest {
    */
   @Test
   public void minFailuresAndRateExceeded_triggersOpenState() {
-    when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
+    when(database.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
     when(metrics.getNumberOfFailedCalls()).thenReturn(2); // +1 becomes 3, reaching minFailures
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(0);
-    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(50.0f);
+    when(database.getCircuitBreakerFailureRateThreshold()).thenReturn(50.0f);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
-    cluster.evaluateThresholds(false);
+    database.evaluateThresholds(false);
     verify(circuitBreaker, times(1)).transitionToOpenState();
   }
 
@@ -86,13 +86,13 @@ public class ClusterEvaluateThresholdsTest {
    */
   @Test
   public void rateBelowThreshold_doesNotFailover() {
-    when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
+    when(database.getCircuitBreakerMinNumOfFailures()).thenReturn(3);
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(3);
     when(metrics.getNumberOfFailedCalls()).thenReturn(2); // +1 becomes 3, rate = 3/(3+3) = 50%
-    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(80.0f);
+    when(database.getCircuitBreakerFailureRateThreshold()).thenReturn(80.0f);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
-    cluster.evaluateThresholds(false);
+    database.evaluateThresholds(false);
 
     verify(circuitBreaker, never()).transitionToOpenState();
     verify(provider, never()).switchToHealthyDatabase(any(), any());
@@ -165,13 +165,13 @@ public class ClusterEvaluateThresholdsTest {
   public void thresholdMatrix(int minFailures, float ratePercent, int successes, int failures,
       boolean lastFailRecorded, boolean expectOpenState) {
 
-    when(cluster.getCircuitBreakerMinNumOfFailures()).thenReturn(minFailures);
+    when(database.getCircuitBreakerMinNumOfFailures()).thenReturn(minFailures);
     when(metrics.getNumberOfSuccessfulCalls()).thenReturn(successes);
     when(metrics.getNumberOfFailedCalls()).thenReturn(failures);
-    when(cluster.getCircuitBreakerFailureRateThreshold()).thenReturn(ratePercent);
+    when(database.getCircuitBreakerFailureRateThreshold()).thenReturn(ratePercent);
     when(circuitBreaker.getState()).thenReturn(CircuitBreaker.State.CLOSED);
 
-    cluster.evaluateThresholds(lastFailRecorded);
+    database.evaluateThresholds(lastFailRecorded);
 
     if (expectOpenState) {
       verify(circuitBreaker, times(1)).transitionToOpenState();

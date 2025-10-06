@@ -15,13 +15,14 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 
 /**
  * Tests for MultiDbConnectionProvider initialization edge cases
  */
 @ExtendWith(MockitoExtension.class)
-public class MultiClusterInitializationTest {
+public class MultiDbConnectionProviderInitializationTest {
 
   private HostAndPort endpoint1;
   private HostAndPort endpoint2;
@@ -48,28 +49,26 @@ public class MultiClusterInitializationTest {
   @Test
   void testInitializationWithMixedHealthCheckConfiguration() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      // Create clusters with mixed health check configuration
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false) // No health
-                                                                                   // check
+      // Create databases with mixed health check configuration
+      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+          .healthCheckEnabled(false) // No health
+                                     // check
           .build();
 
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(2.0f)
+      DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(2.0f)
           .healthCheckStrategySupplier(EchoStrategy.DEFAULT) // With
                                                              // health
                                                              // check
           .build();
 
-      MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 }).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should initialize successfully
         assertNotNull(provider.getDatabase());
 
-        // Should select cluster1 (no health check, assumed healthy) or cluster2 based on weight
-        // Since cluster2 has higher weight and health checks, it should be selected if healthy
+        // Should select db1 (no health check, assumed healthy) or db2 based on weight
+        // Since db2 has higher weight and health checks, it should be selected if healthy
         assertTrue(provider.getDatabase() == provider.getDatabase(endpoint1)
             || provider.getDatabase() == provider.getDatabase(endpoint2));
       }
@@ -79,19 +78,18 @@ public class MultiClusterInitializationTest {
   @Test
   void testInitializationWithAllHealthChecksDisabled() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      // Create clusters with no health checks
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
-
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(3.0f) // Higher weight
+      // Create databases with no health checks
+      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
 
-      MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      DatabaseConfig db22 = DatabaseConfig.builder(endpoint2, clientConfig).weight(3.0f) // Higher
+                                                                                         // weight
+          .healthCheckEnabled(false).build();
+
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db22 }).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Should select cluster2 (highest weight, no health checks)
+        // Should select db22 (highest weight, no health checks)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
       }
     }
@@ -100,14 +98,13 @@ public class MultiClusterInitializationTest {
   @Test
   void testInitializationWithSingleCluster() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      MultiDbConfig.DatabaseConfig cluster = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      DatabaseConfig db = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+          .healthCheckEnabled(false).build();
 
-      MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db }).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Should select the only available cluster
+        // Should select the only available db
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
       }
     }
@@ -123,33 +120,32 @@ public class MultiClusterInitializationTest {
   @Test
   void testErrorHandlingWithEmptyClusterArray() {
     assertThrows(JedisValidationException.class, () -> {
-      new MultiDbConfig.Builder(new MultiDbConfig.DatabaseConfig[0]).build();
+      new MultiDbConfig.Builder(new DatabaseConfig[0]).build();
     });
   }
 
   @Test
   void testErrorHandlingWithNullDatabaseConfig() {
     assertThrows(IllegalArgumentException.class, () -> {
-      new MultiDbConfig.Builder(new MultiDbConfig.DatabaseConfig[] { null }).build();
+      new MultiDbConfig.Builder(new DatabaseConfig[] { null }).build();
     });
   }
 
   @Test
   void testInitializationWithZeroWeights() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(0.0f) // Zero weight
+      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(0.0f) // Zero
+                                                                                        // weight
           .healthCheckEnabled(false).build();
 
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(0.0f) // Zero weight
+      DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(0.0f) // Zero
+                                                                                        // weight
           .healthCheckEnabled(false).build();
 
-      MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 }).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Should still initialize and select one of the clusters
+        // Should still initialize and select one of the databases
         assertNotNull(provider.getDatabase());
       }
     }

@@ -35,7 +35,7 @@ import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
-import redis.clients.jedis.mcf.MultiClusterTransaction;
+import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
@@ -5121,7 +5121,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
     } else if (provider instanceof MultiDbConnectionProvider) {
-      return new MultiClusterTransaction((MultiDbConnectionProvider) provider, doMulti, commandObjects);
+      return new MultiDbTransaction((MultiDbConnectionProvider) provider, doMulti, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
     }

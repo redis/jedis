@@ -20,7 +20,7 @@ import redis.clients.jedis.util.KeyValue;
  * This is high memory dependent solution as all the appending commands will be hold in memory.
  */
 @Experimental
-public class MultiClusterTransaction extends TransactionBase {
+public class MultiDbTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
@@ -39,7 +39,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param provider
    */
   @Deprecated
-  public MultiClusterTransaction(MultiDbConnectionProvider provider) {
+  public MultiDbTransaction(MultiDbConnectionProvider provider) {
     this(provider, true);
   }
 
@@ -50,7 +50,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   @Deprecated
-  public MultiClusterTransaction(MultiDbConnectionProvider provider, boolean doMulti) {
+  public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti) {
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
     try (Connection connection = failoverProvider.getConnection()) {
@@ -68,7 +68,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param commandObjects command objects
    */
-  public MultiClusterTransaction(MultiDbConnectionProvider provider, boolean doMulti,
+  public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti,
       CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);

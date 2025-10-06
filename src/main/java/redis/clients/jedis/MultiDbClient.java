@@ -7,7 +7,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.MultiDbPipeline;
-import redis.clients.jedis.mcf.MultiClusterTransaction;
+import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 
@@ -232,11 +232,11 @@ public class MultiDbClient extends UnifiedJedis {
    * The returned transaction supports the same resilience features as the main client, including
    * automatic failover during transaction execution.
    * </p>
-   * @return a new MultiClusterTransaction instance
+   * @return a new MultiDbTransaction instance
    */
   @Override
-  public MultiClusterTransaction multi() {
-    return new MultiClusterTransaction((MultiDbConnectionProvider) provider, true, commandObjects);
+  public MultiDbTransaction multi() {
+    return new MultiDbTransaction((MultiDbConnectionProvider) provider, true, commandObjects);
   }
 
   /**
@@ -244,13 +244,13 @@ public class MultiDbClient extends UnifiedJedis {
    * @return transaction object
    */
   @Override
-  public MultiClusterTransaction transaction(boolean doMulti) {
+  public MultiDbTransaction transaction(boolean doMulti) {
     if (provider == null) {
       throw new IllegalStateException(
           "It is not allowed to create Transaction from this " + getClass());
     }
 
-    return new MultiClusterTransaction(getMultiDbConnectionProvider(), doMulti, commandObjects);
+    return new MultiDbTransaction(getMultiDbConnectionProvider(), doMulti, commandObjects);
   }
 
   public Endpoint getActiveEndpoint() {

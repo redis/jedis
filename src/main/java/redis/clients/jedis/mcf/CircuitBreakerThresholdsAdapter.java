@@ -9,10 +9,10 @@ import redis.clients.jedis.MultiDbConfig;
  * <p>
  * This adapter sets maximum values for failure rate (100%) and minimum calls (Integer.MAX_VALUE) to
  * effectively disable Resilience4j's automatic circuit breaker transitions, allowing
- * {@link MultiDatabaseConnectionProvider.Database#evaluateThresholds(boolean)} to control when the
+ * {@link MultiDbConnectionProvider.Database#evaluateThresholds(boolean)} to control when the
  * circuit breaker opens based on both minimum failure count AND failure rate.
  * </p>
- * @see MultiDatabaseConnectionProvider.Database#evaluateThresholds(boolean)
+ * @see MultiDbConnectionProvider.Database#evaluateThresholds(boolean)
  */
 class CircuitBreakerThresholdsAdapter {
   /** Maximum failure rate threshold (100%) to disable Resilience4j evaluation */

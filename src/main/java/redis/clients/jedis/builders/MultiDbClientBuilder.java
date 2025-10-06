@@ -7,7 +7,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 
 /**
@@ -113,7 +113,7 @@ public abstract class MultiDbClientBuilder<C>
     }
 
     // Create the multi-cluster connection provider
-    MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(multiDbConfig);
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(multiDbConfig);
 
     // Set database switch listener if provided
     if (this.databaseSwitchListener != null) {
@@ -126,8 +126,7 @@ public abstract class MultiDbClientBuilder<C>
   @Override
   protected CommandExecutor createDefaultCommandExecutor() {
     // For multi-db clients, we always use CircuitBreakerCommandExecutor
-    return new CircuitBreakerCommandExecutor(
-        (MultiDatabaseConnectionProvider) this.connectionProvider);
+    return new CircuitBreakerCommandExecutor((MultiDbConnectionProvider) this.connectionProvider);
   }
 
   @Override

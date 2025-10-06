@@ -8,7 +8,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
@@ -23,15 +23,15 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @see MultiDatabaseConnectionProvider
+ * @see MultiDbConnectionProvider
  */
 @Tag("integration")
-public class MultiDatabaseConnectionProviderTest {
+public class MultiDbConnectionProviderTest {
 
   private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
   private final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
 
-  private MultiDatabaseConnectionProvider provider;
+  private MultiDbConnectionProvider provider;
 
   @BeforeEach
   public void setUp() {
@@ -42,8 +42,7 @@ public class MultiDatabaseConnectionProviderTest {
     databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
-    provider = new MultiDatabaseConnectionProvider(
-        new MultiDbConfig.Builder(databaseConfigs).build());
+    provider = new MultiDbConnectionProvider(new MultiDbConfig.Builder(databaseConfigs).build());
   }
 
   @AfterEach
@@ -117,8 +116,7 @@ public class MultiDatabaseConnectionProviderTest {
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 
-    MultiDatabaseConnectionProvider localProvider = new MultiDatabaseConnectionProvider(
-        builder.build());
+    MultiDbConnectionProvider localProvider = new MultiDbConnectionProvider(builder.build());
     localProvider.setDatabaseSwitchListener(a -> {
       isValidTest.set(true);
     });
@@ -179,9 +177,9 @@ public class MultiDatabaseConnectionProviderTest {
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
     databaseConfigs[1] = new DatabaseConfig(endpointStandalone1.getHostAndPort(),
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
-    try (MultiDatabaseConnectionProvider customProvider = new MultiDatabaseConnectionProvider(
+    try (MultiDbConnectionProvider customProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).build())) {
-      MultiDatabaseConnectionProvider.Database activeCluster = customProvider.getDatabase();
+      MultiDbConnectionProvider.Database activeCluster = customProvider.getDatabase();
       ConnectionPool connectionPool = activeCluster.getConnectionPool();
       assertEquals(8, connectionPool.getMaxTotal());
       assertEquals(4, connectionPool.getMaxIdle());
@@ -209,7 +207,7 @@ public class MultiDatabaseConnectionProviderTest {
           endpointStandalone0.getClientConfigBuilder().build())
         .healthCheckStrategy(countingStrategy).build();
 
-    MultiDatabaseConnectionProvider testProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(Collections.singletonList(config)).build());
 
     try {
@@ -244,7 +242,7 @@ public class MultiDatabaseConnectionProviderTest {
     databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
-    MultiDatabaseConnectionProvider testProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2).retryMaxAttempts(1).build());
 
@@ -281,7 +279,7 @@ public class MultiDatabaseConnectionProviderTest {
     // ATTENTION: these configuration settings are not random and
     // adjusted to get exact numbers of failures with exact exception types
     // and open to impact from other defaulted values withing the components in use.
-    MultiDatabaseConnectionProvider testProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
             .circuitBreakerFailureRateThreshold(60).build()) {

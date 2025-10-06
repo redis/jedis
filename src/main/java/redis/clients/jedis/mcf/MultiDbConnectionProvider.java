@@ -57,7 +57,7 @@ import redis.clients.jedis.util.Pool;
  *         <p>
  */
 @Experimental
-public class MultiDatabaseConnectionProvider implements ConnectionProvider {
+public class MultiDbConnectionProvider implements ConnectionProvider {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -69,8 +69,8 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
   /**
    * Indicates the actively used database endpoint (connection pool) amongst the pre-configured list
-   * which were provided at startup via the MultiDbConfig. All traffic will be routed with
-   * this database
+   * which were provided at startup via the MultiDbConfig. All traffic will be routed with this
+   * database
    */
   private volatile Database activeDatabase;
 
@@ -106,10 +106,10 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
   private AtomicLong failoverFreezeUntil = new AtomicLong(0);
   private AtomicInteger failoverAttemptCount = new AtomicInteger(0);
 
-  public MultiDatabaseConnectionProvider(MultiDbConfig multiDbConfig) {
+  public MultiDbConnectionProvider(MultiDbConfig multiDbConfig) {
 
     if (multiDbConfig == null) throw new JedisValidationException(
-        "MultiDbConfig must not be NULL for MultiDatabaseConnectionProvider");
+        "MultiDbConfig must not be NULL for MultiDbConnectionProvider");
 
     this.multiDbConfig = multiDbConfig;
 
@@ -134,8 +134,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
     CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
 
-    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(
-        multiDbConfig);
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiDbConfig);
     circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
     circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
     circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
@@ -410,7 +409,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
     // All clusters are unhealthy
     throw new JedisConnectionException(
-        "All configured clusters are unhealthy. Cannot initialize MultiDatabaseConnectionProvider.");
+        "All configured clusters are unhealthy. Cannot initialize MultiDbConnectionProvider.");
   }
 
   /**
@@ -734,8 +733,8 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
 
   /**
    * Indicates the final cluster/database endpoint (connection pool), according to the
-   * pre-configured list provided at startup via the MultiDbConfig, is unavailable and
-   * therefore no further failover is possible. Users can manually failback to an available cluster
+   * pre-configured list provided at startup via the MultiDbConfig, is unavailable and therefore no
+   * further failover is possible. Users can manually failback to an available cluster
    */
   public boolean canIterateFrom(Database iterateFrom) {
     Map.Entry<Endpoint, Database> e = findWeightedHealthyClusterToIterate(iterateFrom);
@@ -785,8 +784,7 @@ public class MultiDatabaseConnectionProvider implements ConnectionProvider {
     }
 
     private Database(Endpoint endpoint, TrackingConnectionPool connectionPool, Retry retry,
-        HealthCheck hc, CircuitBreaker circuitBreaker, float weight,
-        MultiDbConfig multiDbConfig) {
+        HealthCheck hc, CircuitBreaker circuitBreaker, float weight, MultiDbConfig multiDbConfig) {
 
       this.endpoint = endpoint;
       this.connectionPool = connectionPool;

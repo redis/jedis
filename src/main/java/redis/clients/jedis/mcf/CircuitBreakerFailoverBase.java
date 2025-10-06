@@ -6,7 +6,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -23,9 +23,9 @@ import redis.clients.jedis.util.IOUtils;
 public class CircuitBreakerFailoverBase implements AutoCloseable {
   private final Lock lock = new ReentrantLock(true);
 
-  protected final MultiDatabaseConnectionProvider provider;
+  protected final MultiDbConnectionProvider provider;
 
-  public CircuitBreakerFailoverBase(MultiDatabaseConnectionProvider provider) {
+  public CircuitBreakerFailoverBase(MultiDbConnectionProvider provider) {
     this.provider = provider;
   }
 

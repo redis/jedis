@@ -2,7 +2,7 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static redis.clients.jedis.mcf.MultiDatabaseConnectionProviderHelper.onHealthStatusChange;
+import static redis.clients.jedis.mcf.MultiDbConnectionProviderHelper.onHealthStatusChange;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class PeriodicFailbackTest {
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(100).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster2 should be active (highest weight: 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
@@ -64,7 +64,7 @@ class PeriodicFailbackTest {
         provider.switchToHealthyDatabase(SwitchReason.FORCED, provider.getDatabase(endpoint2));
 
         // Manually trigger periodic check
-        MultiDatabaseConnectionProviderHelper.periodicFailbackCheck(provider);
+        MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
         // Should still be on cluster1 (cluster2 is in grace period)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
@@ -87,7 +87,7 @@ class PeriodicFailbackTest {
                                                                    // grace
                                                                    // period
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster2 should be active (highest weight: 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
@@ -104,14 +104,14 @@ class PeriodicFailbackTest {
         onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Trigger periodic check immediately - should still be on cluster1
-        MultiDatabaseConnectionProviderHelper.periodicFailbackCheck(provider);
+        MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
         // Wait for grace period to expire
         Thread.sleep(150);
 
         // Trigger periodic check after grace period expires
-        MultiDatabaseConnectionProviderHelper.periodicFailbackCheck(provider);
+        MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
         // Should have failed back to cluster2 (higher weight, grace period expired)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
@@ -132,7 +132,7 @@ class PeriodicFailbackTest {
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(false) // Disabled
               .failbackCheckInterval(50).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster2 should be active (highest weight: 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
@@ -149,7 +149,7 @@ class PeriodicFailbackTest {
         Thread.sleep(100);
 
         // Trigger periodic check
-        MultiDatabaseConnectionProviderHelper.periodicFailbackCheck(provider);
+        MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
         // Should still be on cluster1 (failback disabled)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
@@ -178,7 +178,7 @@ class PeriodicFailbackTest {
                                                                                            // grace
                                                                                            // period
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster3 should be active (highest weight: 3.0f vs 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());
 
@@ -202,7 +202,7 @@ class PeriodicFailbackTest {
         Thread.sleep(150);
 
         // Trigger periodic check
-        MultiDatabaseConnectionProviderHelper.periodicFailbackCheck(provider);
+        MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
         // Should have failed back to cluster3 (highest weight, grace period expired)
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());

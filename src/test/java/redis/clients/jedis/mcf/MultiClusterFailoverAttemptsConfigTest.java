@@ -22,14 +22,14 @@ import static org.awaitility.Awaitility.await;
 
 /**
  * Tests for how getMaxNumFailoverAttempts and getDelayInBetweenFailoverAttempts impact
- * MultiDatabaseConnectionProvider behaviour when no healthy clusters are available.
+ * MultiDbConnectionProvider behaviour when no healthy clusters are available.
  */
 public class MultiClusterFailoverAttemptsConfigTest {
 
   private HostAndPort endpoint0 = new HostAndPort("purposefully-incorrect", 0000);
   private HostAndPort endpoint1 = new HostAndPort("purposefully-incorrect", 0001);
 
-  private MultiDatabaseConnectionProvider provider;
+  private MultiDbConnectionProvider provider;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -45,7 +45,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // Use small values by default for tests unless overridden per-test via reflection
     setBuilderFailoverConfig(builder, /* maxAttempts */ 10, /* delayMs */ 12000);
 
-    provider = new MultiDatabaseConnectionProvider(builder.build());
+    provider = new MultiDbConnectionProvider(builder.build());
 
     // Disable both clusters to force handleNoHealthyCluster path
     provider.getDatabase(endpoint0).setDisabled(true);
@@ -69,9 +69,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
-    assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
-        SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+    assertThrows(JedisTemporarilyNotAvailableException.class, () -> MultiDbConnectionProviderHelper
+        .switchToHealthyCluster(provider, SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 
@@ -79,7 +78,7 @@ public class MultiClusterFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
+        () -> MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
           SwitchReason.HEALTH_CHECK, provider.getDatabase()));
       assertEquals(1, getProviderAttemptCount());
     }
@@ -97,9 +96,8 @@ public class MultiClusterFailoverAttemptsConfigTest {
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
-    assertThrows(JedisTemporarilyNotAvailableException.class,
-      () -> MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
-        SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+    assertThrows(JedisTemporarilyNotAvailableException.class, () -> MultiDbConnectionProviderHelper
+        .switchToHealthyCluster(provider, SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 

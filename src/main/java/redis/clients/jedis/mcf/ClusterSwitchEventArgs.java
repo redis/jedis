@@ -1,7 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import redis.clients.jedis.Endpoint;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 
 public class ClusterSwitchEventArgs {
 

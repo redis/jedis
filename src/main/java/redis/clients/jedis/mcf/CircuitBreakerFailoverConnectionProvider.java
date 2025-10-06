@@ -6,7 +6,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 
 /**
  * ConnectionProvider with built-in retry, circuit-breaker, and failover to another cluster/database
@@ -16,7 +16,7 @@ import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 @Experimental
 public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFailoverBase {
 
-  public CircuitBreakerFailoverConnectionProvider(MultiDatabaseConnectionProvider provider) {
+  public CircuitBreakerFailoverConnectionProvider(MultiDbConnectionProvider provider) {
     super(provider);
   }
 

@@ -20,7 +20,7 @@ import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
@@ -30,8 +30,8 @@ import redis.clients.jedis.util.ReflectionTestUtil;
  */
 public class CircuitBreakerThresholdsTest {
 
-  private MultiDatabaseConnectionProvider realProvider;
-  private MultiDatabaseConnectionProvider spyProvider;
+  private MultiDbConnectionProvider realProvider;
+  private MultiDbConnectionProvider spyProvider;
   private Database cluster;
   private CircuitBreakerCommandExecutor executor;
   private CommandObject<String> dummyCommand;
@@ -56,7 +56,7 @@ public class CircuitBreakerThresholdsTest {
 
     MultiDbConfig mcc = cfgBuilder.build();
 
-    realProvider = new MultiDatabaseConnectionProvider(mcc);
+    realProvider = new MultiDbConnectionProvider(mcc);
     spyProvider = spy(realProvider);
 
     cluster = spyProvider.getDatabase();
@@ -126,8 +126,8 @@ public class CircuitBreakerThresholdsTest {
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
         .circuitBreakerFailureRateThreshold(80.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
-    MultiDatabaseConnectionProvider rp = new MultiDatabaseConnectionProvider(cfgBuilder.build());
-    MultiDatabaseConnectionProvider sp = spy(rp);
+    MultiDbConnectionProvider rp = new MultiDbConnectionProvider(cfgBuilder.build());
+    MultiDbConnectionProvider sp = spy(rp);
     Database c = sp.getDatabase();
     try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(sp)) {
       CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
@@ -194,8 +194,8 @@ public class CircuitBreakerThresholdsTest {
         .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2)).retryMaxAttempts(1)
         .retryOnFailover(false);
 
-    MultiDatabaseConnectionProvider real = new MultiDatabaseConnectionProvider(cfgBuilder.build());
-    MultiDatabaseConnectionProvider spy = spy(real);
+    MultiDbConnectionProvider real = new MultiDbConnectionProvider(cfgBuilder.build());
+    MultiDbConnectionProvider spy = spy(real);
     Database c = spy.getDatabase();
     try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(spy)) {
 

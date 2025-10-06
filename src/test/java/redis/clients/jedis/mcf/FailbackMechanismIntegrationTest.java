@@ -62,19 +62,19 @@ class FailbackMechanismIntegrationTest {
               .failbackCheckInterval(100) // Short interval for testing
               .build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster2 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Make cluster2 unhealthy to force failover to cluster1
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should now be on cluster1 (only healthy option)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
         // Make cluster2 healthy again (higher weight - would normally trigger failback)
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait longer than failback interval
@@ -102,19 +102,19 @@ class FailbackMechanismIntegrationTest {
               .failbackCheckInterval(100) // Short interval for testing
               .gracePeriod(100).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster1 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
         // Make cluster1 unhealthy to force failover to cluster2
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should now be on cluster2 (lower weight, but only healthy option)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Make cluster1 healthy again
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait for failback check interval + some buffer
@@ -145,12 +145,12 @@ class FailbackMechanismIntegrationTest {
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
               .failbackSupported(true).failbackCheckInterval(100).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster3 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());
 
         // Make cluster3 unhealthy to force failover to cluster2 (medium weight)
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint3,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint3,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should now be on cluster2 (highest weight among healthy clusters)
@@ -158,7 +158,7 @@ class FailbackMechanismIntegrationTest {
 
         // Make cluster1 (lowest weight) healthy - this should NOT trigger failback
         // since we don't failback to lower weight clusters
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait for failback check interval
@@ -184,19 +184,19 @@ class FailbackMechanismIntegrationTest {
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(100).gracePeriod(50).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster1 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
         // Make cluster1 unhealthy to force failover to cluster2
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should now be on cluster2 (only healthy option)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Make cluster1 healthy again
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait for failback check
@@ -223,26 +223,26 @@ class FailbackMechanismIntegrationTest {
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
               .failbackCheckInterval(200).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster1 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
         // Make cluster1 unhealthy to force failover to cluster2
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should now be on cluster2 (only healthy option)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Make cluster1 healthy again (should trigger failback attempt)
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait a bit
         Thread.sleep(100);
 
         // Make cluster1 unhealthy again before failback completes
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Wait past the original failback interval
@@ -272,19 +272,19 @@ class FailbackMechanismIntegrationTest {
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
               .failbackSupported(true).failbackCheckInterval(100).gracePeriod(100).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster3 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());
 
         // Make cluster3 unhealthy to force failover to cluster2 (next highest weight)
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint3,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint3,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should now be on cluster2 (highest weight among healthy clusters)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Make cluster3 healthy again
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint3,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint3,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait for failback
@@ -312,12 +312,12 @@ class FailbackMechanismIntegrationTest {
                                                            // period
               .build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster2 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Now make cluster2 unhealthy - it should be disabled for grace period
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should failover to cluster1
@@ -346,12 +346,12 @@ class FailbackMechanismIntegrationTest {
               .gracePeriod(100) // Short grace period for testing
               .build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Initially, cluster2 should be active (highest weight)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
         // Make cluster2 unhealthy to start grace period and force failover
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Should failover to cluster1
@@ -361,7 +361,7 @@ class FailbackMechanismIntegrationTest {
         assertTrue(provider.getDatabase(endpoint2).isInGracePeriod());
 
         // Make cluster2 healthy again while it's still in grace period
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Should still be on cluster1 because cluster2 is in grace period

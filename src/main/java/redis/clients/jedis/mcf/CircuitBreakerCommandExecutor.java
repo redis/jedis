@@ -9,7 +9,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -24,7 +24,7 @@ import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider.Database;
 public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase
     implements CommandExecutor {
 
-  public CircuitBreakerCommandExecutor(MultiDatabaseConnectionProvider provider) {
+  public CircuitBreakerCommandExecutor(MultiDbConnectionProvider provider) {
     super(provider);
   }
 

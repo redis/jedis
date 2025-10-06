@@ -16,11 +16,11 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProviderHelper;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 
 /**
- * Tests for MultiDatabaseConnectionProvider event handling behavior during initialization and
+ * Tests for MultiDbConnectionProvider event handling behavior during initialization and
  * throughout its lifecycle with HealthStatusChangeEvents.
  */
 @ExtendWith(MockitoExtension.class)
@@ -60,7 +60,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
           config)) {
 
         assertFalse(provider.getDatabase(endpoint1).isInGracePeriod());
@@ -68,7 +68,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
         // This should process immediately since initialization is complete
         assertDoesNotThrow(() -> {
-          MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+          MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
             HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
         }, "Post-initialization events should be processed immediately");
 
@@ -92,14 +92,14 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
           config)) {
         // Verify initial state
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase(),
           "Should start with endpoint1 active");
 
         // Simulate multiple rapid events for the same endpoint (post-init behavior)
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // After first UNHEALTHY on active cluster: it enters grace period and provider fails over
@@ -108,7 +108,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Should fail over to endpoint2");
 
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Healthy event for non-active cluster should not immediately revert active cluster
@@ -117,7 +117,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
         assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "Grace period should still be in effect");
 
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Further UNHEALTHY for non-active cluster is a no-op
@@ -140,7 +140,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
           config)) {
         // This test verifies that multiple endpoints are properly initialized
 
@@ -166,7 +166,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
       // This test verifies that the provider initializes correctly and doesn't lose events
       // In practice, with health checks disabled, no events should be generated during init
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
           config)) {
         // Verify successful initialization
         assertNotNull(provider.getDatabase(), "Provider should have initialized successfully");
@@ -195,11 +195,11 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
           config)) {
         // First event: endpoint1 (active) becomes UNHEALTHY -> failover to endpoint2, endpoint1
         // enters grace
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
         assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "Endpoint1 should be in grace after unhealthy");
@@ -207,7 +207,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
           "Should have failed over to endpoint2");
 
         // Second event: endpoint2 (now active) becomes UNHEALTHY -> failover to endpoint3
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
         assertTrue(provider.getDatabase(endpoint2).isInGracePeriod(),
           "Endpoint2 should be in grace after unhealthy");
@@ -216,7 +216,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
         // Third event: endpoint1 becomes HEALTHY again -> no immediate switch due to grace period
         // behavior
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase(),
           "Active cluster should remain endpoint3");
@@ -236,18 +236,18 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
           config)) {
         // Verify initial state
         assertEquals(HealthStatus.HEALTHY, provider.getDatabase(endpoint1).getHealthStatus(),
           "Should start as HEALTHY");
 
         // Send rapid sequence of events post-init
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY); // triggers failover and grace
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY); // non-active cluster becomes healthy
-        MultiDatabaseConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY); // still non-active and in grace; no change
 
         // Final expectations: endpoint1 is in grace, provider remains on endpoint2

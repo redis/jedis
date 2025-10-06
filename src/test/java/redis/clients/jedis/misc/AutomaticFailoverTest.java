@@ -18,8 +18,8 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProvider;
-import redis.clients.jedis.mcf.MultiDatabaseConnectionProviderHelper;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.util.IOUtils;
 
@@ -68,7 +68,7 @@ public class AutomaticFailoverTest {
 
   @Test
   public void pipelineWithSwitch() {
-    MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(
             getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
@@ -77,7 +77,7 @@ public class AutomaticFailoverTest {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
+      MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
         SwitchReason.HEALTH_CHECK, provider.getDatabase());
       pipe.sync();
     }
@@ -88,7 +88,7 @@ public class AutomaticFailoverTest {
 
   @Test
   public void transactionWithSwitch() {
-    MultiDatabaseConnectionProvider provider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(
             getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
@@ -97,7 +97,7 @@ public class AutomaticFailoverTest {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      MultiDatabaseConnectionProviderHelper.switchToHealthyCluster(provider,
+      MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
         SwitchReason.HEALTH_CHECK, provider.getDatabase());
       assertEquals(Arrays.asList("OK", 1L), tx.exec());
     }
@@ -119,7 +119,7 @@ public class AutomaticFailoverTest {
             .circuitBreakerMinNumOfFailures(slidingWindowMinFails);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiDatabaseConnectionProvider connectionProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
         builder.build());
     connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
@@ -162,7 +162,7 @@ public class AutomaticFailoverTest {
             .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiDatabaseConnectionProvider connectionProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
         builder.build());
     connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
@@ -200,7 +200,7 @@ public class AutomaticFailoverTest {
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiDatabaseConnectionProvider cacheProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(
         builder.build());
     cacheProvider.setDatabaseSwitchListener(failoverReporter);
 
@@ -232,7 +232,7 @@ public class AutomaticFailoverTest {
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiDatabaseConnectionProvider cacheProvider = new MultiDatabaseConnectionProvider(
+    MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(
         builder.build());
     cacheProvider.setDatabaseSwitchListener(failoverReporter);
 

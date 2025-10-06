@@ -522,10 +522,10 @@ stop:
 test: | start mvn-test-local stop
 
 mvn-test-local:
-	@TEST_ENV_PROVIDER=local mvn -Dwith-param-names=true -Dtest=${TEST} clean compile test
+	@TEST_ENV_PROVIDER=local mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
 
 mvn-test:
-	mvn -Dwith-param-names=true -Dtest=${TEST} clean compile test
+	mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
 
 package: | start mvn-package stop
 

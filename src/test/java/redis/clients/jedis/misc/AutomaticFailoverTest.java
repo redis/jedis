@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 import redis.clients.jedis.mcf.SwitchReason;
@@ -250,13 +250,13 @@ public class AutomaticFailoverTest {
     jedis.close();
   }
 
-  static class RedisFailoverReporter implements Consumer<ClusterSwitchEventArgs> {
+  static class RedisFailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
     boolean failedOver = false;
 
     @Override
-    public void accept(ClusterSwitchEventArgs e) {
-      log.info("Jedis fail over to cluster: " + e.getClusterName());
+    public void accept(DatabaseSwitchEvent e) {
+      log.info("Jedis fail over to cluster: " + e.getDatabaseName());
       failedOver = true;
     }
   }

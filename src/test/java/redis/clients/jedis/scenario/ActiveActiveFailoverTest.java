@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.util.ClientTestUtil;
 
@@ -82,7 +82,7 @@ public class ActiveActiveFailoverTest {
             .fastFailover(true)
             .retryOnFailover(false)
             .build();
-    class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
+    class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
       String currentClusterName = "not set";
 
@@ -99,10 +99,10 @@ public class ActiveActiveFailoverTest {
       }
 
       @Override
-      public void accept(ClusterSwitchEventArgs e) {
-        this.currentClusterName = e.getClusterName();
+      public void accept(DatabaseSwitchEvent e) {
+        this.currentClusterName = e.getDatabaseName();
         log.info("\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n",
-          e.getClusterName());
+          e.getDatabaseName());
 
         if (failoverHappened) {
           failbackHappened = true;

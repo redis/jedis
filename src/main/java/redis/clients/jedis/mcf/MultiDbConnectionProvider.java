@@ -80,7 +80,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * Functional interface for listening to cluster switch events. The event args contain the reason
    * for the switch, the endpoint, and the cluster.
    */
-  private Consumer<ClusterSwitchEventArgs> databaseSwitchListener;
+  private Consumer<DatabaseSwitchEvent> databaseSwitchListener;
 
   private List<Class<? extends Throwable>> fallbackExceptionList;
 
@@ -743,12 +743,12 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   public void onClusterSwitch(SwitchReason reason, Endpoint endpoint, Database database) {
     if (databaseSwitchListener != null) {
-      ClusterSwitchEventArgs eventArgs = new ClusterSwitchEventArgs(reason, endpoint, database);
+      DatabaseSwitchEvent eventArgs = new DatabaseSwitchEvent(reason, endpoint, database);
       databaseSwitchListener.accept(eventArgs);
     }
   }
 
-  public void setDatabaseSwitchListener(Consumer<ClusterSwitchEventArgs> databaseSwitchListener) {
+  public void setDatabaseSwitchListener(Consumer<DatabaseSwitchEvent> databaseSwitchListener) {
     this.databaseSwitchListener = databaseSwitchListener;
   }
 

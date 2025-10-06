@@ -122,7 +122,7 @@ public class ActiveActiveLocalFailoverTest {
     // Use the parameterized fastFailover setting
     builder.fastFailover(fastFailover);
 
-    class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
+    class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
       String currentClusterName = "not set";
 
@@ -139,10 +139,10 @@ public class ActiveActiveLocalFailoverTest {
       }
 
       @Override
-      public void accept(ClusterSwitchEventArgs e) {
-        this.currentClusterName = e.getClusterName();
+      public void accept(DatabaseSwitchEvent e) {
+        this.currentClusterName = e.getDatabaseName();
         log.info("\n\n===={}=== \nJedis switching to cluster: {}\n====End of log===\n",
-          e.getReason(), e.getClusterName());
+          e.getReason(), e.getDatabaseName());
         if ((e.getReason() == SwitchReason.CIRCUIT_BREAKER
             || e.getReason() == SwitchReason.HEALTH_CHECK)) {
           failoverHappened = true;

@@ -11,17 +11,16 @@ import redis.clients.jedis.util.KeyValue;
 
 /**
  * This is high memory dependent solution as all the appending commands will be hold in memory until
- * {@link MultiClusterPipeline#sync() SYNC} (or {@link MultiClusterPipeline#close() CLOSE}) gets
- * called.
+ * {@link MultiDbPipeline#sync() SYNC} (or {@link MultiDbPipeline#close() CLOSE}) gets called.
  */
 @Experimental
-public class MultiClusterPipeline extends PipelineBase implements Closeable {
+public class MultiDbPipeline extends PipelineBase implements Closeable {
 
   private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
   @Deprecated
-  public MultiClusterPipeline(MultiDbConnectionProvider pooledProvider) {
+  public MultiDbPipeline(MultiDbConnectionProvider pooledProvider) {
     super(new CommandObjects());
 
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
@@ -32,8 +31,7 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
     }
   }
 
-  public MultiClusterPipeline(MultiDbConnectionProvider pooledProvider,
-      CommandObjects commandObjects) {
+  public MultiDbPipeline(MultiDbConnectionProvider pooledProvider, CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
   }

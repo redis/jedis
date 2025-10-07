@@ -68,9 +68,12 @@ Continue using the `MultiDbConfig.Builder` builder to set your preferred retry a
 Then build a `MultiDbClient`.
 
 ```java
-multiDbBuilder.circuitBreakerSlidingWindowSize(2) // Sliding window size in number of calls
-        .circuitBreakerFailureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
-        .circuitBreakerMinNumOfFailures(1000) // Minimum number of failures before circuit breaker is tripped
+// Configure circuit breaker for failure detection
+multiDbBuilder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(2) // Sliding window size in number of calls
+                .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+                .minNumOfFailures(1000) // Minimum number of failures before circuit breaker is tripped
+                .build())
 
         .failbackSupported(true) // Enable failback
         .failbackCheckInterval(1000) // Check every second the unhealthy database to see if it has recovered

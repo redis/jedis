@@ -118,30 +118,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     this.retryConfig = buildRetryConfig(commandRetry);
 
     ////////////// Configure Circuit Breaker ////////////////////
-    CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
-
-    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiDbConfig);
-    circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
-    circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
-    circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
-    circuitBreakerConfigBuilder.slidingWindowType(adapter.getSlidingWindowType());
-
-    circuitBreakerConfigBuilder.recordExceptions(
-      multiDbConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
-    circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State
-                                                                                     // transitions
-                                                                                     // are
-                                                                                     // forced. No
-                                                                                     // half open
-                                                                                     // states
-                                                                                     // are used
-
-    List<Class> circuitBreakerIgnoreExceptionList = multiDbConfig
-        .getCircuitBreakerIgnoreExceptionList();
-    if (circuitBreakerIgnoreExceptionList != null) circuitBreakerConfigBuilder
-        .ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
-
-    this.circuitBreakerConfig = circuitBreakerConfigBuilder.build();
+    MultiDbConfig.CircuitBreakerConfig failureDetector = multiDbConfig.getFailureDetector();
+    this.circuitBreakerConfig = buildCircuitBreakerConfig(failureDetector, multiDbConfig);
 
     ////////////// Configure Database Map ////////////////////
     DatabaseConfig[] databaseConfigs = multiDbConfig.getDatabaseConfigs();
@@ -190,6 +168,35 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     builder.retryExceptions(commandRetry.getIncludedExceptionList().stream().toArray(Class[]::new));
 
     List<Class> ignoreExceptions = commandRetry.getIgnoreExceptionList();
+    if (ignoreExceptions != null) {
+      builder.ignoreExceptions(ignoreExceptions.stream().toArray(Class[]::new));
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * Builds Resilience4j CircuitBreakerConfig from Jedis CircuitBreakerConfig.
+   * @param failureDetector the Jedis circuit breaker configuration
+   * @param multiDbConfig the multi-database configuration (for adapter)
+   * @return configured Resilience4j CircuitBreakerConfig
+   */
+  private CircuitBreakerConfig buildCircuitBreakerConfig(
+      MultiDbConfig.CircuitBreakerConfig failureDetector, MultiDbConfig multiDbConfig) {
+    CircuitBreakerConfig.Builder builder = CircuitBreakerConfig.custom();
+
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiDbConfig);
+    builder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
+    builder.failureRateThreshold(adapter.getFailureRateThreshold());
+    builder.slidingWindowSize(adapter.getSlidingWindowSize());
+    builder.slidingWindowType(adapter.getSlidingWindowType());
+
+    builder.recordExceptions(
+      failureDetector.getIncludedExceptionList().stream().toArray(Class[]::new));
+    builder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are forced.
+                                                                 // No half open states are used
+
+    List<Class> ignoreExceptions = failureDetector.getIgnoreExceptionList();
     if (ignoreExceptions != null) {
       builder.ignoreExceptions(ignoreExceptions.stream().toArray(Class[]::new));
     }
@@ -852,11 +859,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
 
     public int getCircuitBreakerMinNumOfFailures() {
-      return multiDbConfig.getCircuitBreakerMinNumOfFailures();
+      return multiDbConfig.getFailureDetector().getMinNumOfFailures();
     }
 
     public float getCircuitBreakerFailureRateThreshold() {
-      return multiDbConfig.getCircuitBreakerFailureRateThreshold();
+      return multiDbConfig.getFailureDetector().getFailureRateThreshold();
     }
 
     public boolean isDisabled() {

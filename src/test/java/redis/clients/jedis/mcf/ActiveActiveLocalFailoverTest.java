@@ -107,9 +107,13 @@ public class ActiveActiveLocalFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(clusterConfig);
 
-    builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
-    builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit
-                                                       // breaker
+    builder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(1) // SLIDING
+                                                                                              // WINDOW
+                                                                                              // SIZE
+                                                                                              // IN
+                                                                                              // SECONDS
+        .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+        .build());
 
     builder.failbackSupported(false);
     // builder.failbackCheckInterval(1000);

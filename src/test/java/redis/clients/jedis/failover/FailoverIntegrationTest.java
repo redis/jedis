@@ -266,8 +266,9 @@ public class FailoverIntegrationTest {
           .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build(),
       endpoint1, endpoint2))
           .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(2).waitDuration(1).build())
-          .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(2)
-          .circuitBreakerFailureRateThreshold(50f) // %50 failure rate
+          .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(3)
+              .minNumOfFailures(2).failureRateThreshold(50f) // %50 failure rate
+              .build())
           .build();
 
     MultiDbConnectionProvider provider = new MultiDbConnectionProvider(failoverConfig);
@@ -427,8 +428,9 @@ public class FailoverIntegrationTest {
         getDatabaseConfigs(clientConfig, endpoint1, endpoint2))
             .commandRetry(
               MultiDbConfig.RetryConfig.builder().maxAttempts(1).waitDuration(1).build())
-            .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
-            .circuitBreakerFailureRateThreshold(50f).build();
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(3)
+                .minNumOfFailures(1).failureRateThreshold(50f).build())
+            .build();
 
     return new MultiDbConnectionProvider(failoverConfig);
   }
@@ -447,8 +449,8 @@ public class FailoverIntegrationTest {
         getDatabaseConfigs(clientConfig, endpoint1, endpoint2))
             .commandRetry(
               MultiDbConfig.RetryConfig.builder().maxAttempts(1).waitDuration(1).build())
-            .circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
-            .circuitBreakerFailureRateThreshold(50f);
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(3)
+                .minNumOfFailures(1).failureRateThreshold(50f).build());
 
     if (configCustomizer != null) {
       builder = configCustomizer.apply(builder);

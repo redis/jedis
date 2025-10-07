@@ -115,8 +115,10 @@ public class AutomaticFailoverTest {
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
             .commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(1).maxAttempts(1).build())
-            .circuitBreakerSlidingWindowSize(slidingWindowSize)
-            .circuitBreakerMinNumOfFailures(slidingWindowMinFails);
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .minNumOfFailures(slidingWindowMinFails)
+                .build());
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
@@ -154,12 +156,12 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(retryMaxAttempts).build()) // Default
-            // is
-            // 3
-            .circuitBreakerFailureRateThreshold(50)
-            .circuitBreakerMinNumOfFailures(slidingWindowMinFails)
-            .circuitBreakerSlidingWindowSize(slidingWindowSize);
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(retryMaxAttempts).build())
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .failureRateThreshold(50)
+                .minNumOfFailures(slidingWindowMinFails)
+                .slidingWindowSize(slidingWindowSize)
+                .build());
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
@@ -196,7 +198,9 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .circuitBreakerSlidingWindowSize(slidingWindowSize)
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .build())
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
@@ -228,7 +232,10 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
-          workingEndpoint.getHostAndPort())).circuitBreakerSlidingWindowSize(slidingWindowSize)
+          workingEndpoint.getHostAndPort()))
+              .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                  .slidingWindowSize(slidingWindowSize)
+                  .build())
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();

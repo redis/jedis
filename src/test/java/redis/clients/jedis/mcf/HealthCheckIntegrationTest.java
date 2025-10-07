@@ -90,7 +90,9 @@ public class HealthCheckIntegrationTest {
 
     MultiDbConfig mccf = new MultiDbConfig.Builder(databaseConfigs)
         .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).waitDuration(1).build())
-        .circuitBreakerSlidingWindowSize(1).circuitBreakerFailureRateThreshold(100).build();
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(1)
+            .failureRateThreshold(100).build())
+        .build();
 
     return new MultiDbConnectionProvider(mccf);
   }

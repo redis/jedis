@@ -111,8 +111,8 @@ public class MultiDbConnectionProviderTest {
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(databaseConfigs);
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
-    builder.circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
-        .circuitBreakerFailureRateThreshold(0);
+    builder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(3)
+        .minNumOfFailures(1).failureRateThreshold(0).build());
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 
@@ -273,7 +273,9 @@ public class MultiDbConnectionProviderTest {
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2)
             .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
-            .circuitBreakerSlidingWindowSize(5).circuitBreakerFailureRateThreshold(60).build()) {
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(5)
+                .failureRateThreshold(60).build())
+            .build()) {
     };
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {

@@ -71,8 +71,10 @@ public class ActiveActiveFailoverTest {
     MultiDbConfig multiConfig = MultiDbConfig.builder()
             .database(primary)
             .database(secondary)
-            .circuitBreakerSlidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
-            .circuitBreakerFailureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
+                .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+                .build())
             .failbackSupported(true)
             .failbackCheckInterval(1000)
             .gracePeriod(2000)

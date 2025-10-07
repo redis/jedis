@@ -57,7 +57,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *
  *   // Build multi-cluster configuration
  *   MultiDbConfig config = MultiDbConfig.builder(primary, secondary)
- *       .circuitBreakerFailureRateThreshold(10.0f)
+ *       .failureDetector(CircuitBreakerConfig.builder().failureRateThreshold(10.0f).build())
  *       .commandRetry(RetryConfig.builder().maxAttempts(3).build()).failbackSupported(true)
  *       .gracePeriod(10000).build();
  *
@@ -257,6 +257,196 @@ public final class MultiDbConfig {
     }
   }
 
+  /**
+   * Configuration for circuit breaker failure detection.
+   * <p>
+   * This class encapsulates all circuit breaker-related settings including failure rate threshold,
+   * sliding window size, minimum failures, and exception handling.
+   * </p>
+   * @since 7.0
+   */
+  public static final class CircuitBreakerConfig {
+
+    private final float failureRateThreshold;
+    private final int slidingWindowSize;
+    private final int minNumOfFailures;
+    private final List<Class> includedExceptionList;
+    private final List<Class> ignoreExceptionList;
+
+    private CircuitBreakerConfig(Builder builder) {
+      this.failureRateThreshold = builder.failureRateThreshold;
+      this.slidingWindowSize = builder.slidingWindowSize;
+      this.minNumOfFailures = builder.minNumOfFailures;
+      this.includedExceptionList = builder.includedExceptionList;
+      this.ignoreExceptionList = builder.ignoreExceptionList;
+    }
+
+    /**
+     * Returns the failure rate threshold percentage for circuit breaker activation.
+     * <p>
+     * 0.0f means failure rate is ignored, and only minimum number of failures is considered.
+     * </p>
+     * <p>
+     * When the failure rate exceeds both this threshold and the minimum number of failures, the
+     * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
+     * failing them without attempting to reach the Redis cluster. This prevents cascading failures
+     * and allows the system to fail over to the next available cluster.
+     * </p>
+     * <p>
+     * <strong>Range:</strong> 0.0 to 100.0 (percentage)
+     * </p>
+     * @return failure rate threshold as a percentage (0.0 to 100.0)
+     * @see #getMinNumOfFailures()
+     */
+    public float getFailureRateThreshold() {
+      return failureRateThreshold;
+    }
+
+    /**
+     * Returns the size of the sliding window used to record call outcomes when the circuit breaker
+     * is CLOSED.
+     * <p>
+     * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
+     * </p>
+     * @return sliding window size (calls or seconds depending on window type)
+     */
+    public int getSlidingWindowSize() {
+      return slidingWindowSize;
+    }
+
+    /**
+     * Returns the minimum number of failures before circuit breaker is tripped.
+     * <p>
+     * 0 means minimum number of failures is ignored, and only failure rate is considered.
+     * </p>
+     * <p>
+     * When the number of failures exceeds both this threshold and the failure rate threshold, the
+     * circuit breaker will trip and prevent further requests from being sent to the cluster until
+     * it has recovered.
+     * </p>
+     * @return minimum number of failures before circuit breaker is tripped
+     * @see #getFailureRateThreshold()
+     */
+    public int getMinNumOfFailures() {
+      return minNumOfFailures;
+    }
+
+    /**
+     * Returns the list of exception classes that are recorded as circuit breaker failures and
+     * increase the failure rate.
+     * <p>
+     * Any exception that matches or inherits from the classes in this list counts as a failure for
+     * circuit breaker calculations, unless explicitly ignored via
+     * {@link #getIgnoreExceptionList()}. If you specify this list, all other exceptions count as
+     * successes unless they are explicitly ignored.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> {@link JedisConnectionException}
+     * </p>
+     * @return list of exception classes that count as failures, never null
+     * @see #getIgnoreExceptionList()
+     */
+    public List<Class> getIncludedExceptionList() {
+      return includedExceptionList;
+    }
+
+    /**
+     * Returns the list of exception classes that are ignored by the circuit breaker and neither
+     * count as failures nor successes.
+     * <p>
+     * Any exception that matches or inherits from the classes in this list will not affect circuit
+     * breaker failure rate calculations, even if the exception is included in
+     * {@link #getIncludedExceptionList()}.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> null (no exceptions ignored)
+     * </p>
+     * @return list of exception classes to ignore for circuit breaker calculations, may be null
+     * @see #getIncludedExceptionList()
+     */
+    public List<Class> getIgnoreExceptionList() {
+      return ignoreExceptionList;
+    }
+
+    /**
+     * Creates a new Builder instance for configuring CircuitBreakerConfig.
+     * @return new Builder instance with default values
+     */
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    /**
+     * Builder for {@link CircuitBreakerConfig}.
+     */
+    public static final class Builder {
+
+      private float failureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
+      private int slidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
+      private int minNumOfFailures = CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
+      private List<Class> includedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
+      private List<Class> ignoreExceptionList = null;
+
+      /**
+       * Sets the failure rate threshold percentage that triggers circuit breaker activation.
+       * @param failureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
+       * @return this builder instance for method chaining
+       */
+      public Builder failureRateThreshold(float failureRateThreshold) {
+        this.failureRateThreshold = failureRateThreshold;
+        return this;
+      }
+
+      /**
+       * Sets the size of the sliding window for circuit breaker calculations.
+       * @param slidingWindowSize sliding window size
+       * @return this builder instance for method chaining
+       */
+      public Builder slidingWindowSize(int slidingWindowSize) {
+        this.slidingWindowSize = slidingWindowSize;
+        return this;
+      }
+
+      /**
+       * Sets the minimum number of failures before circuit breaker is tripped.
+       * @param minNumOfFailures minimum number of failures
+       * @return this builder instance for method chaining
+       */
+      public Builder minNumOfFailures(int minNumOfFailures) {
+        this.minNumOfFailures = minNumOfFailures;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that are recorded as circuit breaker failures.
+       * @param includedExceptionList list of exception classes that count as failures
+       * @return this builder instance for method chaining
+       */
+      public Builder includedExceptionList(List<Class> includedExceptionList) {
+        this.includedExceptionList = includedExceptionList;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that are ignored by the circuit breaker.
+       * @param ignoreExceptionList list of exception classes to ignore
+       * @return this builder instance for method chaining
+       */
+      public Builder ignoreExceptionList(List<Class> ignoreExceptionList) {
+        this.ignoreExceptionList = ignoreExceptionList;
+        return this;
+      }
+
+      /**
+       * Builds and returns a new CircuitBreakerConfig instance.
+       * @return new CircuitBreakerConfig instance with configured settings
+       */
+      public CircuitBreakerConfig build() {
+        return new CircuitBreakerConfig(this);
+      }
+    }
+  }
+
   // ============ Default Configuration Constants ============
 
   /** Default maximum number of retry attempts including the initial call. */
@@ -320,79 +510,14 @@ public final class MultiDbConfig {
   // ============ Circuit Breaker Configuration ============
 
   /**
-   * Minimum number of failures before circuit breaker is tripped.
+   * Encapsulated circuit breaker configuration for failure detection.
    * <p>
-   * When the number of failures exceeds both this threshold and the failure rate threshold, the
-   * circuit breaker will trip and prevent further requests from being sent to the cluster until it
-   * has recovered.
+   * This provides a cleaner API for configuring circuit breaker behavior by grouping all circuit
+   * breaker-related settings into a single configuration object.
    * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT}
-   * </p>
-   * @see #getCircuitBreakerMinNumOfFailures()
-   * @see #circuitBreakerFailureRateThreshold
+   * @see CircuitBreakerConfig
    */
-  private int circuitBreakerMinNumOfFailures;
-
-  /**
-   * Failure rate threshold percentage that triggers circuit breaker transition to OPEN state.
-   * <p>
-   * When the failure rate exceeds both this threshold and the minimum number of failures, the
-   * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
-   * failing them without attempting to reach the Redis cluster. This prevents cascading failures
-   * and allows the system to fail over to the next available cluster.
-   * </p>
-   * <p>
-   * <strong>Range:</strong> 0.0 to 100.0 (percentage)
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT}%
-   * </p>
-   * @see #getCircuitBreakerFailureRateThreshold()
-   * @see #circuitBreakerMinNumOfFailures
-   */
-  private float circuitBreakerFailureRateThreshold;
-
-  /**
-   * Size of the sliding window used to record call outcomes when the circuit breaker is CLOSED.
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
-   * </p>
-   * @see #getCircuitBreakerSlidingWindowSize()
-   */
-  private int circuitBreakerSlidingWindowSize;
-
-  /**
-   * List of exception classes that are recorded as circuit breaker failures and increase the
-   * failure rate.
-   * <p>
-   * Any exception that matches or inherits from the classes in this list counts as a failure for
-   * circuit breaker calculations, unless explicitly ignored via
-   * {@link #circuitBreakerIgnoreExceptionList}. If you specify this list, all other exceptions
-   * count as successes unless they are explicitly ignored.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@link JedisConnectionException}
-   * </p>
-   * @see #getCircuitBreakerIncludedExceptionList()
-   * @see #circuitBreakerIgnoreExceptionList
-   */
-  private List<Class> circuitBreakerIncludedExceptionList;
-
-  /**
-   * List of exception classes that are ignored by the circuit breaker and neither count as failures
-   * nor successes.
-   * <p>
-   * Any exception that matches or inherits from the classes in this list will not affect circuit
-   * breaker failure rate calculations, even if the exception is included in
-   * {@link #circuitBreakerIncludedExceptionList}.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> null (no exceptions ignored)
-   * </p>
-   * @see #getCircuitBreakerIgnoreExceptionList()
-   * @see #circuitBreakerIncludedExceptionList
-   */
-  private List<Class> circuitBreakerIgnoreExceptionList;
+  private CircuitBreakerConfig failureDetector;
 
   /**
    * List of exception classes that trigger fallback to the next available cluster.
@@ -561,52 +686,16 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the failure rate threshold percentage for circuit breaker activation. 0.0f means
-   * failure rate is ignored, and only minimum number of failures is considered.
-   * @return failure rate threshold as a percentage (0.0 to 100.0)
-   * @see #circuitBreakerFailureRateThreshold
-   * @see #getCircuitBreakerMinNumOfFailures
+   * Returns the encapsulated circuit breaker configuration for failure detection.
+   * <p>
+   * This provides access to all circuit breaker-related settings through a single configuration
+   * object.
+   * </p>
+   * @return circuit breaker configuration, never null
+   * @see CircuitBreakerConfig
    */
-  public float getCircuitBreakerFailureRateThreshold() {
-    return circuitBreakerFailureRateThreshold;
-  }
-
-  /**
-   * Returns the size of the sliding window used for circuit breaker calculations.
-   * @return sliding window size (calls or seconds depending on window type)
-   * @see #circuitBreakerSlidingWindowSize
-   */
-  public int getCircuitBreakerSlidingWindowSize() {
-    return circuitBreakerSlidingWindowSize;
-  }
-
-  /**
-   * Returns the minimum number of failures before circuit breaker is tripped. 0 means minimum
-   * number of failures is ignored, and only failure rate is considered.
-   * @return minimum number of failures before circuit breaker is tripped
-   * @see #circuitBreakerMinNumOfFailures
-   * @see #getCircuitBreakerFailureRateThreshold
-   */
-  public int getCircuitBreakerMinNumOfFailures() {
-    return circuitBreakerMinNumOfFailures;
-  }
-
-  /**
-   * Returns the list of exception classes that are recorded as circuit breaker failures.
-   * @return list of exception classes that count as failures, never null
-   * @see #circuitBreakerIncludedExceptionList
-   */
-  public List<Class> getCircuitBreakerIncludedExceptionList() {
-    return circuitBreakerIncludedExceptionList;
-  }
-
-  /**
-   * Returns the list of exception classes that are ignored by the circuit breaker.
-   * @return list of exception classes to ignore for circuit breaker calculations, may be null
-   * @see #circuitBreakerIgnoreExceptionList
-   */
-  public List<Class> getCircuitBreakerIgnoreExceptionList() {
-    return circuitBreakerIgnoreExceptionList;
+  public CircuitBreakerConfig getFailureDetector() {
+    return failureDetector;
   }
 
   /**
@@ -1043,17 +1132,8 @@ public final class MultiDbConfig {
     private RetryConfig commandRetry = RetryConfig.builder().build();
 
     // ============ Circuit Breaker Configuration Fields ============
-    /** Failure rate threshold percentage for circuit breaker activation. */
-    private float circuitBreakerFailureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
-
-    /** Size of the sliding window for circuit breaker calculations. */
-    private int circuitBreakerSlidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
-
-    /** List of exception classes that are recorded as circuit breaker failures. */
-    private List<Class> circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
-
-    /** List of exception classes that are ignored by the circuit breaker. */
-    private List<Class> circuitBreakerIgnoreExceptionList = null;
+    /** Encapsulated circuit breaker configuration for failure detection. */
+    private CircuitBreakerConfig failureDetector = CircuitBreakerConfig.builder().build();
 
     /** List of exception classes that trigger immediate fallback to next cluster. */
     private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
@@ -1061,9 +1141,6 @@ public final class MultiDbConfig {
     // ============ Failover Configuration Fields ============
     /** Whether to retry failed commands during failover. */
     private boolean retryOnFailover = false;
-
-    /** Minimum number of failures before circuit breaker is tripped. */
-    private int circuitBreakerMinNumOfFailures = CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
 
     /** Whether automatic failback to higher-priority clusters is supported. */
     private boolean isFailbackSupported = true;
@@ -1164,108 +1241,18 @@ public final class MultiDbConfig {
     // ============ Circuit Breaker Configuration Methods ============
 
     /**
-     * Sets the failure rate threshold percentage that triggers circuit breaker activation.
+     * Sets the encapsulated circuit breaker configuration for failure detection.
      * <p>
-     * When both the failure rate and minimum number of failures exceeds this threshold, the circuit
-     * breaker transitions to the OPEN state and starts short-circuiting calls, enabling immediate
-     * failover to the next available cluster.
+     * This provides a cleaner API for configuring circuit breaker behavior by using a dedicated
+     * {@link CircuitBreakerConfig} object.
      * </p>
-     * <p>
-     * <strong>Typical Values:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>30-40%:</strong> Aggressive failover for high-availability scenarios</li>
-     * <li><strong>50%:</strong> Balanced approach (default)</li>
-     * <li><strong>70-80%:</strong> Conservative failover to avoid false positives</li>
-     * </ul>
-     * @param circuitBreakerFailureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
+     * @param failureDetector the circuit breaker configuration
      * @return this builder instance for method chaining
-     * @see #circuitBreakerMinNumOfFailures(int)
+     * @see CircuitBreakerConfig
      */
-    public Builder circuitBreakerFailureRateThreshold(float circuitBreakerFailureRateThreshold) {
-      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
-      this.circuitBreakerFailureRateThreshold = circuitBreakerFailureRateThreshold;
+    public Builder failureDetector(CircuitBreakerConfig failureDetector) {
+      this.failureDetector = failureDetector;
       return this;
-    }
-
-    /**
-     * Sets the size of the sliding window for circuit breaker calculations.
-     * @param circuitBreakerSlidingWindowSize sliding window size
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerSlidingWindowSize(int circuitBreakerSlidingWindowSize) {
-      this.circuitBreakerSlidingWindowSize = circuitBreakerSlidingWindowSize;
-      return this;
-    }
-
-    /**
-     * Sets the minimum number of failures before circuit breaker is tripped.
-     * <p>
-     * When both the number of failures and failure rate exceeds this threshold, the circuit breaker
-     * will trip and prevent further requests from being sent to the cluster until it has recovered.
-     * </p>
-     * <p>
-     * <strong>Default:</strong> 1000
-     * </p>
-     * @param circuitBreakerMinNumOfFailures minimum number of failures before circuit breaker is
-     *          tripped
-     * @return this builder instance for method chaining
-     * @see #circuitBreakerFailureRateThreshold(float)
-     */
-    public Builder circuitBreakerMinNumOfFailures(int circuitBreakerMinNumOfFailures) {
-      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
-      this.circuitBreakerMinNumOfFailures = circuitBreakerMinNumOfFailures;
-      return this;
-    }
-
-    private void checkThresholds(int failures, float rate) {
-      if (failures == 0 && rate == 0) {
-        throw new JedisValidationException(
-            "Both circuitBreakerMinNumOfFailures and circuitBreakerFailureRateThreshold can not be 0 at the same time!");
-      }
-    }
-
-    /**
-     * Sets the list of exception classes that are recorded as circuit breaker failures.
-     * <p>
-     * Only exceptions matching or inheriting from these classes will count as failures for circuit
-     * breaker calculations. This allows fine-grained control over which errors should trigger
-     * failover.
-     * </p>
-     * @param circuitBreakerIncludedExceptionList list of exception classes that count as failures
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerIncludedExceptionList(
-        List<Class> circuitBreakerIncludedExceptionList) {
-      this.circuitBreakerIncludedExceptionList = circuitBreakerIncludedExceptionList;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that are ignored by the circuit breaker.
-     * <p>
-     * Exceptions matching or inheriting from these classes will not affect circuit breaker failure
-     * rate calculations, even if they are included in the included exception list.
-     * </p>
-     * @param circuitBreakerIgnoreExceptionList list of exception classes to ignore
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerIgnoreExceptionList(
-        List<Class> circuitBreakerIgnoreExceptionList) {
-      this.circuitBreakerIgnoreExceptionList = circuitBreakerIgnoreExceptionList;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that trigger immediate fallback to next cluster.
-     * @param circuitBreakerFallbackExceptionList list of exception classes that trigger fallback
-     * @return this builder instance for method chaining
-     * @deprecated Use {@link #fallbackExceptionList(java.util.List)} instead.
-     */
-    @Deprecated
-    public Builder circuitBreakerFallbackExceptionList(
-        List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
-      return fallbackExceptionList(circuitBreakerFallbackExceptionList);
     }
 
     /**
@@ -1461,11 +1448,7 @@ public final class MultiDbConfig {
       config.commandRetry = this.commandRetry;
 
       // Copy circuit breaker configuration
-      config.circuitBreakerMinNumOfFailures = this.circuitBreakerMinNumOfFailures;
-      config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
-      config.circuitBreakerSlidingWindowSize = this.circuitBreakerSlidingWindowSize;
-      config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
-      config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
+      config.failureDetector = this.failureDetector;
 
       // Copy fallback and failover configuration
       config.fallbackExceptionList = this.fallbackExceptionList;

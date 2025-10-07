@@ -55,14 +55,14 @@ public class DefaultValuesTest {
         .builder(fakeEndpoint, config.getCredentialsProvider()).build();
     assertEquals(Duration.ofMillis(5000), lagAwareConfig.getAvailabilityLagTolerance());
 
-    // TODO: check CB number of failures threshold -- 1000
-    // assertEquals(1000, multiConfig.circuitBreakerMinNumOfFailures());
-
     // check CB failure rate threshold
-    assertEquals(10, multiConfig.getCircuitBreakerFailureRateThreshold());
+    assertEquals(10, multiConfig.getFailureDetector().getFailureRateThreshold());
 
     // check CB sliding window size
-    assertEquals(2, multiConfig.getCircuitBreakerSlidingWindowSize());
+    assertEquals(2, multiConfig.getFailureDetector().getSlidingWindowSize());
+
+    // check CB number of failures threshold
+    assertEquals(1000, multiConfig.getFailureDetector().getMinNumOfFailures());
 
     // check failback check interval
     assertEquals(120000, multiConfig.getFailbackCheckInterval());

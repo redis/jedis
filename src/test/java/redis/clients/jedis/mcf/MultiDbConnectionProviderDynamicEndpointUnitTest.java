@@ -168,7 +168,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testActiveClusterHandlingOnRemove() {
+  void testActiveDatabaseHandlingOnRemove() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.ping()).thenReturn(true);
 

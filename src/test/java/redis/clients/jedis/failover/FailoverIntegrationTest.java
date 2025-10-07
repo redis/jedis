@@ -169,7 +169,7 @@ public class FailoverIntegrationTest {
   }
 
   @Test
-  public void testManualFailoverNewCommandsAreSentToActiveCluster() throws InterruptedException {
+  public void testManualFailoverNewCommandsAreSentToActiveDatabase() throws InterruptedException {
     assertThat(getNodeId(failoverClient.info("server")), equalTo(JEDIS1_ID));
 
     await().atMost(1, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)

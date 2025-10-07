@@ -556,10 +556,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     State originalState = circuitBreaker.getState();
     try {
       // Transitions the state machine to a CLOSED state, allowing state transition, metrics and
-      // event publishing
-      // Safe since the activeMultiClusterIndex has not yet been changed and therefore no traffic
-      // will be routed
-      // yet
+      // event publishing. Safe since the activeDatabase has not yet been changed and therefore no
+      // traffic will be routed yet
       circuitBreaker.transitionToClosedState();
 
       try (Connection targetConnection = database.getConnection()) {

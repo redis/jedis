@@ -168,8 +168,8 @@ public class MultiDbConnectionProviderTest {
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
     try (MultiDbConnectionProvider customProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).build())) {
-      MultiDbConnectionProvider.Database activeCluster = customProvider.getDatabase();
-      ConnectionPool connectionPool = activeCluster.getConnectionPool();
+      MultiDbConnectionProvider.Database activeDatabase = customProvider.getDatabase();
+      ConnectionPool connectionPool = activeDatabase.getConnectionPool();
       assertEquals(8, connectionPool.getMaxTotal());
       assertEquals(4, connectionPool.getMaxIdle());
       assertEquals(1, connectionPool.getMinIdle());

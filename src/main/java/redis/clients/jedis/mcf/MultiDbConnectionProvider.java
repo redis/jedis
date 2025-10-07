@@ -157,7 +157,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
   }
 
-  // New private method
+  /**
+   * Builds a Resilience4j RetryConfig from Jedis MultiDbConfig.RetryConfig.
+   * @param commandRetry the Jedis retry configuration
+   * @return configured Resilience4j RetryConfig
+   */
   private RetryConfig buildRetryConfig(redis.clients.jedis.MultiDbConfig.RetryConfig commandRetry) {
     RetryConfig.Builder builder = RetryConfig.custom();
 

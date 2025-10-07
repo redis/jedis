@@ -41,25 +41,25 @@ Let's look at one way of configuring Jedis for this scenario.
 First, start by defining the initial configuration for each Redis database available and prioritize them using weights.
 
 ```java
-        JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret")
-        .socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
+JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret")
+.socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
 
-        // Custom pool config per database can be provided
-        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-                poolConfig.setMaxTotal(8);
-                poolConfig.setMaxIdle(8);
-                poolConfig.setMinIdle(0);
-                poolConfig.setBlockWhenExhausted(true);
-                poolConfig.setMaxWait(Duration.ofSeconds(1));
-                poolConfig.setTestWhileIdle(true);
-                poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
-        
-        HostAndPort east = new HostAndPort("redis-east.example.com", 14000);
-        HostAndPort west = new HostAndPort("redis-west.example.com", 14000);
-        
-        MultiDbConfig.Builder multiConfig = MultiDbConfig.builder()
-                .database(DatabaseConfig.builder(east, config).connectionPoolConfig(poolConfig).weight(1.0f).build())
-                .database(DatabaseConfig.builder(west, config).connectionPoolConfig(poolConfig).weight(0.5f).build());
+// Custom pool config per database can be provided
+ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+        poolConfig.setMaxTotal(8);
+        poolConfig.setMaxIdle(8);
+        poolConfig.setMinIdle(0);
+        poolConfig.setBlockWhenExhausted(true);
+        poolConfig.setMaxWait(Duration.ofSeconds(1));
+        poolConfig.setTestWhileIdle(true);
+        poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+
+HostAndPort east = new HostAndPort("redis-east.example.com", 14000);
+HostAndPort west = new HostAndPort("redis-west.example.com", 14000);
+
+MultiDbConfig.Builder multiConfig = MultiDbConfig.builder()
+        .database(DatabaseConfig.builder(east, config).connectionPoolConfig(poolConfig).weight(1.0f).build())
+        .database(DatabaseConfig.builder(west, config).connectionPoolConfig(poolConfig).weight(0.5f).build());
 ```
 
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
@@ -68,29 +68,29 @@ Continue using the `MultiDbConfig.Builder` builder to set your preferred retry a
 Then build a `MultiDbClient`.
 
 ```java
-    // Configure circuit breaker for failure detection
-    multiConfig
-            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
-                    .slidingWindowSize(1000)        // Sliding window size in number of calls
-                    .failureRateThreshold(50.0f)    // percentage of failures to trigger circuit breaker
-                    .minNumOfFailures(500)          // Minimum number of failures before circuit breaker is tripped
-                    .build())
-            .failbackSupported(true)                // Enable failback
-            .failbackCheckInterval(1000)            // Check every second the unhealthy database to see if it has recovered
-            .gracePeriod(10000)                     // Keep database disabled for 10 seconds after it becomes unhealthy
-            // Optional: configure retry settings
-            .commandRetry(MultiDbConfig.RetryConfig.builder()
-                    .maxAttempts(3)                  // Maximum number of retry attempts (including the initial call)
-                    .waitDuration(500)               // Number of milliseconds to wait between retry attempts
-                    .exponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
-                    .build())
-            // Optional: configure fast failover
-            .fastFailover(true)                       // Force closing connections to unhealthy database on failover
-            .retryOnFailover(false);                  // Do not retry failed commands during failover
-    
-    MultiDbClient multiDbClient = MultiDbClient.builder()
-            .multiDbConfig(multiConfig.build())
-            .build();
+// Configure circuit breaker for failure detection
+multiConfig
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(1000)        // Sliding window size in number of calls
+                .failureRateThreshold(50.0f)    // percentage of failures to trigger circuit breaker
+                .minNumOfFailures(500)          // Minimum number of failures before circuit breaker is tripped
+                .build())
+        .failbackSupported(true)                // Enable failback
+        .failbackCheckInterval(1000)            // Check every second the unhealthy database to see if it has recovered
+        .gracePeriod(10000)                     // Keep database disabled for 10 seconds after it becomes unhealthy
+        // Optional: configure retry settings
+        .commandRetry(MultiDbConfig.RetryConfig.builder()
+                .maxAttempts(3)                  // Maximum number of retry attempts (including the initial call)
+                .waitDuration(500)               // Number of milliseconds to wait between retry attempts
+                .exponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
+                .build())
+        // Optional: configure fast failover
+        .fastFailover(true)                       // Force closing connections to unhealthy database on failover
+        .retryOnFailover(false);                  // Do not retry failed commands during failover
+
+MultiDbClient multiDbClient = MultiDbClient.builder()
+        .multiDbConfig(multiConfig.build())
+        .build();
 ```
 
 In the configuration here, we've set a sliding window size of 1000 and a failure rate threshold of 50%.
@@ -189,29 +189,29 @@ The `LagAwareStrategy` is designed specifically for Redis Enterprise Active-Acti
 
 **Example Configuration:**
 ```java
-    BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiDbConfig.StrategySupplier> healthCheckStrategySupplier =
-            (HostAndPort dbHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
-                LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(dbHostPort, credentialsSupplier)
-                        .interval(5000)                                          // Check every 5 seconds
-                        .timeout(3000)                                           // 3 second timeout
-                        .extendedCheckEnabled(true)
-                        .build();
-    
-                return (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
-            };
-    
-    // Configure REST API endpoint and credentials
-    HostAndPort restEndpoint = new HostAndPort("redis-enterprise-db-fqdn", 9443);
-    Supplier<RedisCredentials> credentialsSupplier = () ->
-            new DefaultRedisCredentials("rest-api-user", "pwd");
-    
-    MultiDbConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
-            restEndpoint, credentialsSupplier);
-    
-    MultiDbConfig.DatabaseConfig dbConfig =
-            MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
-                    .healthCheckStrategySupplier(lagawareStrategySupplier)
+BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiDbConfig.StrategySupplier> healthCheckStrategySupplier =
+        (HostAndPort dbHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
+            LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(dbHostPort, credentialsSupplier)
+                    .interval(5000)                                          // Check every 5 seconds
+                    .timeout(3000)                                           // 3 second timeout
+                    .extendedCheckEnabled(true)
                     .build();
+
+            return (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
+        };
+
+// Configure REST API endpoint and credentials
+HostAndPort restEndpoint = new HostAndPort("redis-enterprise-db-fqdn", 9443);
+Supplier<RedisCredentials> credentialsSupplier = () ->
+        new DefaultRedisCredentials("rest-api-user", "pwd");
+
+MultiDbConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
+        restEndpoint, credentialsSupplier);
+
+MultiDbConfig.DatabaseConfig dbConfig =
+        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
+                .healthCheckStrategySupplier(lagawareStrategySupplier)
+                .build();
 ```
 
 ##### 3. Custom Health Check Strategies
@@ -226,71 +226,71 @@ You can implement custom health check strategies by implementing the `HealthChec
 Use the `healthCheckStrategySupplier()` method to provide a custom health check implementation:
 
 ```java
-    // Custom strategy supplier
-    MultiDbConfig.StrategySupplier customStrategy =
-            (hostAndPort, jedisClientConfig) -> {
-                // Return your custom HealthCheckStrategy implementation
-                return new MyCustomHealthCheckStrategy(hostAndPort, jedisClientConfig);
-            };
-    
-    MultiDbConfig.DatabaseConfig dbConfig =
-            MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
-                    .healthCheckStrategySupplier(customStrategy)
-                    .weight(1.0f)
-                    .build();
+// Custom strategy supplier
+MultiDbConfig.StrategySupplier customStrategy =
+        (hostAndPort, jedisClientConfig) -> {
+            // Return your custom HealthCheckStrategy implementation
+            return new MyCustomHealthCheckStrategy(hostAndPort, jedisClientConfig);
+        };
+
+MultiDbConfig.DatabaseConfig dbConfig =
+        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
+                .healthCheckStrategySupplier(customStrategy)
+                .weight(1.0f)
+                .build();
 ```
 
 You can implement custom health check strategies by implementing the `HealthCheckStrategy` interface:
 
 ```java
-    MultiDbConfig.StrategySupplier pingStrategy = (hostAndPort, jedisClientConfig) -> {
-        return new HealthCheckStrategy() {
-            @Override
-            public int getInterval() {
-                return 1000; // Check every second
+MultiDbConfig.StrategySupplier pingStrategy = (hostAndPort, jedisClientConfig) -> {
+    return new HealthCheckStrategy() {
+        @Override
+        public int getInterval() {
+            return 1000; // Check every second
+        }
+
+        @Override
+        public int getTimeout() {
+            return 500; // 500ms timeout
+        }
+
+
+        @Override
+        public int getNumProbes() {
+            return 1;
+        }
+
+        @Override
+        public ProbingPolicy getPolicy() {
+            return ProbingPolicy.BuiltIn.ANY_SUCCESS;
+        }
+
+        @Override
+        public int getDelayInBetweenProbes() {
+            return 100;
+        }
+        @Override
+        public HealthStatus doHealthCheck(Endpoint endpoint) {
+            try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+                String result = jedis.ping();
+                return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+            } catch (Exception e) {
+                return HealthStatus.UNHEALTHY;
             }
-    
-            @Override
-            public int getTimeout() {
-                return 500; // 500ms timeout
-            }
-    
-    
-            @Override
-            public int getNumProbes() {
-                return 1;
-            }
-    
-            @Override
-            public ProbingPolicy getPolicy() {
-                return ProbingPolicy.BuiltIn.ANY_SUCCESS;
-            }
-    
-            @Override
-            public int getDelayInBetweenProbes() {
-                return 100;
-            }
-            @Override
-            public HealthStatus doHealthCheck(Endpoint endpoint) {
-                try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
-                    String result = jedis.ping();
-                    return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
-                } catch (Exception e) {
-                    return HealthStatus.UNHEALTHY;
-                }
-            }
-    
-            @Override
-            public void close() {
-                // Cleanup resources if needed
-            }
-        };
+        }
+
+        @Override
+        public void close() {
+            // Cleanup resources if needed
+        }
     };
-    
-    MultiDbConfig.DatabaseConfig dbConfig =
-            MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
-                    .healthCheckStrategySupplier(pingStrategy)
-                    .build();
+};
+
+MultiDbConfig.DatabaseConfig dbConfig =
+        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
+                .healthCheckStrategySupplier(pingStrategy)
+                .build();
 ```
 
 #### Disabling Health Checks
@@ -298,9 +298,9 @@ You can implement custom health check strategies by implementing the `HealthChec
 Use the `healthCheckEnabled(false)` method to completely disable health checks:
 
 ```java
-    MultiDbConfig.DatabaseConfig dbConfig = MultiDbConfig.DatabaseConfig.builder(east, config)
-        .healthCheckEnabled(false) // Disable health checks entirely
-        .build();
+MultiDbConfig.DatabaseConfig dbConfig = MultiDbConfig.DatabaseConfig.builder(east, config)
+    .healthCheckEnabled(false) // Disable health checks entirely
+    .build();
 ```
 
 ### Fallback configuration
@@ -322,7 +322,7 @@ To use this feature, you'll need to design a class that implements `java.util.fu
 This class must implement the `accept` method, as you can see below.
 
 ```java
-    public class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
+public class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
     
     @Override
     public void accept(DatabaseSwitchEvent e) {
@@ -333,18 +333,18 @@ This class must implement the `accept` method, as you can see below.
 
 DatabaseSwitchEvent consumer can be registered as follows:
 
-```
-    FailoverReporter reporter = new FailoverReporter();
-    MultiDbClient client = MultiDbClient.builder()
-            .databaseSwitchListener(reporter)
-            .build();
+```java
+FailoverReporter reporter = new FailoverReporter();
+MultiDbClient client = MultiDbClient.builder()
+        .databaseSwitchListener(reporter)
+        .build();
 ```
 The provider will call your `accept` whenever a failover occurs.
 or directly using lambda expression:
-```
-    MultiDbClient client = MultiDbClient.builder()
-            .databaseSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
-            .build();
+```java
+MultiDbClient client = MultiDbClient.builder()
+        .databaseSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
+        .build();
 ```
 
 

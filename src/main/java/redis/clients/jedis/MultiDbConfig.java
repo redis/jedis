@@ -57,7 +57,8 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  *
  *   // Build multi-cluster configuration
  *   MultiDbConfig config = MultiDbConfig.builder(primary, secondary)
- *       .circuitBreakerFailureRateThreshold(10.0f).retryMaxAttempts(3).failbackSupported(true)
+ *       .circuitBreakerFailureRateThreshold(10.0f)
+ *       .commandRetry(RetryConfig.builder().maxAttempts(3).build()).failbackSupported(true)
  *       .gracePeriod(10000).build();
  *
  *   // Use with connection provider
@@ -112,6 +113,150 @@ public final class MultiDbConfig {
     HealthCheckStrategy get(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig);
   }
 
+  /**
+   * Configuration for command retry behavior.
+   * <p>
+   * This class encapsulates all retry-related settings including maximum attempts, wait duration,
+   * exponential backoff, and exception handling. It provides a clean separation of retry concerns
+   * from other configuration aspects.
+   * </p>
+   * @since 7.0
+   */
+  public static final class RetryConfig {
+
+    private final int maxAttempts;
+    private final Duration waitDuration;
+    private final int exponentialBackoffMultiplier;
+    private final List<Class> includedExceptionList;
+    private final List<Class> ignoreExceptionList;
+
+    private RetryConfig(Builder builder) {
+      this.maxAttempts = builder.maxAttempts;
+      this.waitDuration = Duration.ofMillis(builder.waitDuration);
+      this.exponentialBackoffMultiplier = builder.exponentialBackoffMultiplier;
+      this.includedExceptionList = builder.includedExceptionList;
+      this.ignoreExceptionList = builder.ignoreExceptionList;
+    }
+
+    /**
+     * Returns the maximum number of retry attempts including the initial call.
+     * @return maximum retry attempts
+     */
+    public int getMaxAttempts() {
+      return maxAttempts;
+    }
+
+    /**
+     * Returns the base wait duration between retry attempts.
+     * @return wait duration between retries
+     */
+    public Duration getWaitDuration() {
+      return waitDuration;
+    }
+
+    /**
+     * Returns the exponential backoff multiplier for retry wait duration.
+     * @return exponential backoff multiplier
+     */
+    public int getExponentialBackoffMultiplier() {
+      return exponentialBackoffMultiplier;
+    }
+
+    /**
+     * Returns the list of exception classes that trigger retry attempts.
+     * @return list of exception classes that are retried, never null
+     */
+    public List<Class> getIncludedExceptionList() {
+      return includedExceptionList;
+    }
+
+    /**
+     * Returns the list of exception classes that are ignored for retry purposes.
+     * @return list of exception classes to ignore for retries, may be null
+     */
+    public List<Class> getIgnoreExceptionList() {
+      return ignoreExceptionList;
+    }
+
+    /**
+     * Creates a new Builder instance for configuring RetryConfig.
+     * @return new Builder instance with default values
+     */
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    /**
+     * Builder for {@link RetryConfig}.
+     */
+    public static final class Builder {
+
+      private int maxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
+      private int waitDuration = RETRY_WAIT_DURATION_DEFAULT;
+      private int exponentialBackoffMultiplier = RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT;
+      private List<Class> includedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
+      private List<Class> ignoreExceptionList = null;
+
+      /**
+       * Sets the maximum number of retry attempts including the initial call.
+       * @param maxAttempts maximum number of attempts (must be &gt;= 1)
+       * @return this builder instance for method chaining
+       */
+      public Builder maxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+        return this;
+      }
+
+      /**
+       * Sets the base wait duration between retry attempts in milliseconds.
+       * @param waitDuration wait duration in milliseconds (must be &gt;= 0)
+       * @return this builder instance for method chaining
+       */
+      public Builder waitDuration(int waitDuration) {
+        this.waitDuration = waitDuration;
+        return this;
+      }
+
+      /**
+       * Sets the exponential backoff multiplier for retry wait duration.
+       * @param exponentialBackoffMultiplier exponential backoff multiplier (must be &gt;= 1)
+       * @return this builder instance for method chaining
+       */
+      public Builder exponentialBackoffMultiplier(int exponentialBackoffMultiplier) {
+        this.exponentialBackoffMultiplier = exponentialBackoffMultiplier;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that trigger retry attempts.
+       * @param includedExceptionList list of exception classes that should be retried
+       * @return this builder instance for method chaining
+       */
+      public Builder includedExceptionList(List<Class> includedExceptionList) {
+        this.includedExceptionList = includedExceptionList;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that are ignored for retry purposes.
+       * @param ignoreExceptionList list of exception classes to ignore for retries
+       * @return this builder instance for method chaining
+       */
+      public Builder ignoreExceptionList(List<Class> ignoreExceptionList) {
+        this.ignoreExceptionList = ignoreExceptionList;
+        return this;
+      }
+
+      /**
+       * Builds and returns a new RetryConfig instance.
+       * @return new RetryConfig instance with configured settings
+       */
+      public RetryConfig build() {
+        return new RetryConfig(this);
+      }
+    }
+  }
+
   // ============ Default Configuration Constants ============
 
   /** Default maximum number of retry attempts including the initial call. */
@@ -163,79 +308,14 @@ public final class MultiDbConfig {
   // Based on Resilience4j Retry: https://resilience4j.readme.io/docs/retry
 
   /**
-   * Maximum number of retry attempts including the initial call as the first attempt.
+   * Encapsulated retry configuration for command execution.
    * <p>
-   * For example, if set to 3, the system will make 1 initial attempt plus 2 retry attempts for a
-   * total of 3 attempts before giving up.
+   * This provides a cleaner API for configuring retry behavior by grouping all retry-related
+   * settings into a single configuration object.
    * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #RETRY_MAX_ATTEMPTS_DEFAULT}
-   * </p>
-   * @see #getRetryMaxAttempts()
+   * @see RetryConfig
    */
-  private int retryMaxAttempts;
-
-  /**
-   * Fixed wait duration between retry attempts.
-   * <p>
-   * This duration is used as the base wait time and may be modified by the exponential backoff
-   * multiplier to create increasing delays between retry attempts.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #RETRY_WAIT_DURATION_DEFAULT} milliseconds
-   * </p>
-   * @see #getRetryWaitDuration()
-   * @see #retryWaitDurationExponentialBackoffMultiplier
-   */
-  private Duration retryWaitDuration;
-
-  /**
-   * Exponential backoff multiplier applied to the wait duration between retry attempts.
-   * <p>
-   * The wait duration increases exponentially between attempts using this multiplier. For example,
-   * with an initial wait time of 1 second and a multiplier of 2, the retries would occur after
-   * delays of: 1s, 2s, 4s, 8s, 16s, etc.
-   * </p>
-   * <p>
-   * <strong>Formula:</strong> {@code actualWaitTime = baseWaitTime * (multiplier ^ attemptNumber)}
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT}
-   * </p>
-   * @see #getRetryWaitDurationExponentialBackoffMultiplier()
-   * @see #retryWaitDuration
-   */
-  private int retryWaitDurationExponentialBackoffMultiplier;
-
-  /**
-   * List of exception classes that are recorded as failures and trigger retry attempts.
-   * <p>
-   * This parameter supports inheritance - any exception that is an instance of or extends from the
-   * specified classes will trigger a retry. If this list is specified, all other exceptions are
-   * considered successful unless explicitly ignored.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@link JedisConnectionException}
-   * </p>
-   * @see #getRetryIncludedExceptionList()
-   * @see #retryIgnoreExceptionList
-   */
-  private List<Class> retryIncludedExceptionList;
-
-  /**
-   * List of exception classes that are ignored and do not trigger retry attempts.
-   * <p>
-   * This parameter supports inheritance - any exception that is an instance of or extends from the
-   * specified classes will be ignored for retry purposes, even if they are included in the
-   * {@link #retryIncludedExceptionList}.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> null (no exceptions ignored)
-   * </p>
-   * @see #getRetryIgnoreExceptionList()
-   * @see #retryIncludedExceptionList
-   */
-  private List<Class> retryIgnoreExceptionList;
+  private RetryConfig commandRetry;
 
   // ============ Circuit Breaker Configuration ============
 
@@ -342,7 +422,7 @@ public final class MultiDbConfig {
    * <strong>Default:</strong> false
    * </p>
    * @see #isRetryOnFailover()
-   * @see #retryMaxAttempts
+   * @see #commandRetry
    */
   private boolean retryOnFailover;
 
@@ -469,30 +549,15 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the maximum number of retry attempts including the initial call.
-   * @return maximum retry attempts
-   * @see #retryMaxAttempts
+   * Returns the encapsulated retry configuration for command execution.
+   * <p>
+   * This provides access to all retry-related settings through a single configuration object.
+   * </p>
+   * @return retry configuration, never null
+   * @see RetryConfig
    */
-  public int getRetryMaxAttempts() {
-    return retryMaxAttempts;
-  }
-
-  /**
-   * Returns the base wait duration between retry attempts.
-   * @return wait duration between retries
-   * @see #retryWaitDuration
-   */
-  public Duration getRetryWaitDuration() {
-    return retryWaitDuration;
-  }
-
-  /**
-   * Returns the exponential backoff multiplier for retry wait duration.
-   * @return exponential backoff multiplier
-   * @see #retryWaitDurationExponentialBackoffMultiplier
-   */
-  public int getRetryWaitDurationExponentialBackoffMultiplier() {
-    return retryWaitDurationExponentialBackoffMultiplier;
+  public RetryConfig getCommandRetry() {
+    return commandRetry;
   }
 
   /**
@@ -524,24 +589,6 @@ public final class MultiDbConfig {
    */
   public int getCircuitBreakerMinNumOfFailures() {
     return circuitBreakerMinNumOfFailures;
-  }
-
-  /**
-   * Returns the list of exception classes that trigger retry attempts.
-   * @return list of exception classes that are retried, never null
-   * @see #retryIncludedExceptionList
-   */
-  public List<Class> getRetryIncludedExceptionList() {
-    return retryIncludedExceptionList;
-  }
-
-  /**
-   * Returns the list of exception classes that are ignored for retry purposes.
-   * @return list of exception classes to ignore for retries, may be null
-   * @see #retryIgnoreExceptionList
-   */
-  public List<Class> getRetryIgnoreExceptionList() {
-    return retryIgnoreExceptionList;
   }
 
   /**
@@ -992,20 +1039,8 @@ public final class MultiDbConfig {
     private final List<DatabaseConfig> databaseConfigs = new ArrayList<>();
 
     // ============ Retry Configuration Fields ============
-    /** Maximum number of retry attempts including the initial call. */
-    private int retryMaxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
-
-    /** Wait duration between retry attempts in milliseconds. */
-    private int retryWaitDuration = RETRY_WAIT_DURATION_DEFAULT;
-
-    /** Exponential backoff multiplier for retry wait duration. */
-    private int retryWaitDurationExponentialBackoffMultiplier = RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT;
-
-    /** List of exception classes that trigger retry attempts. */
-    private List<Class> retryIncludedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
-
-    /** List of exception classes that are ignored for retry purposes. */
-    private List<Class> retryIgnoreExceptionList = null;
+    /** Encapsulated retry configuration for command execution. */
+    private RetryConfig commandRetry = RetryConfig.builder().build();
 
     // ============ Circuit Breaker Configuration Fields ============
     /** Failure rate threshold percentage for circuit breaker activation. */
@@ -1112,105 +1147,17 @@ public final class MultiDbConfig {
     // ============ Retry Configuration Methods ============
 
     /**
-     * Sets the maximum number of retry attempts including the initial call.
+     * Sets the encapsulated retry configuration for command execution.
      * <p>
-     * This controls how many times a failed operation will be retried before giving up. For
-     * example, if set to 3, the system will make 1 initial attempt plus 2 retry attempts for a
-     * total of 3 attempts.
+     * This provides a cleaner API for configuring retry behavior by using a dedicated
+     * {@link RetryConfig} object.
      * </p>
-     * <p>
-     * <strong>Recommendations:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>1:</strong> No retries (fail fast)</li>
-     * <li><strong>3:</strong> Standard retry behavior (default)</li>
-     * <li><strong>5+:</strong> Aggressive retry for critical operations, but be careful of retry
-     * storms</li>
-     * </ul>
-     * @param retryMaxAttempts maximum number of attempts (must be &gt;= 1)
+     * @param commandRetry the retry configuration
      * @return this builder instance for method chaining
+     * @see RetryConfig
      */
-    public Builder retryMaxAttempts(int retryMaxAttempts) {
-      this.retryMaxAttempts = retryMaxAttempts;
-      return this;
-    }
-
-    /**
-     * Sets the base wait duration between retry attempts in milliseconds.
-     * <p>
-     * This duration is used as the base wait time and may be modified by the exponential backoff
-     * multiplier to create increasing delays between attempts.
-     * </p>
-     * <p>
-     * <strong>Typical Values:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>100-500ms:</strong> Fast retry for low-latency scenarios</li>
-     * <li><strong>500-1000ms:</strong> Standard retry timing (default: 500ms)</li>
-     * <li><strong>1000-5000ms:</strong> Conservative retry for high-latency networks</li>
-     * </ul>
-     * @param retryWaitDuration wait duration in milliseconds (must be &gt;= 0)
-     * @return this builder instance for method chaining
-     */
-    public Builder retryWaitDuration(int retryWaitDuration) {
-      this.retryWaitDuration = retryWaitDuration;
-      return this;
-    }
-
-    /**
-     * Sets the exponential backoff multiplier for retry wait duration.
-     * <p>
-     * The wait duration increases exponentially between attempts using this multiplier. Formula:
-     * {@code actualWaitTime = baseWaitTime * (multiplier ^ attemptNumber)}
-     * </p>
-     * <p>
-     * <strong>Example with 500ms base wait and multiplier 2:</strong>
-     * </p>
-     * <ul>
-     * <li>Attempt 1: 500ms wait</li>
-     * <li>Attempt 2: 1000ms wait</li>
-     * <li>Attempt 3: 2000ms wait</li>
-     * </ul>
-     * @param retryWaitDurationExponentialBackoffMultiplier exponential backoff multiplier (must be
-     *          &gt;= 1)
-     * @return this builder instance for method chaining
-     */
-    public Builder retryWaitDurationExponentialBackoffMultiplier(
-        int retryWaitDurationExponentialBackoffMultiplier) {
-      this.retryWaitDurationExponentialBackoffMultiplier = retryWaitDurationExponentialBackoffMultiplier;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that trigger retry attempts.
-     * <p>
-     * Only exceptions that match or inherit from the classes in this list will trigger retry
-     * attempts. This parameter supports inheritance - subclasses of the specified exceptions will
-     * also trigger retries.
-     * </p>
-     * <p>
-     * <strong>Default:</strong> {@link JedisConnectionException}
-     * </p>
-     * @param retryIncludedExceptionList list of exception classes that should be retried
-     * @return this builder instance for method chaining
-     */
-    public Builder retryIncludedExceptionList(List<Class> retryIncludedExceptionList) {
-      this.retryIncludedExceptionList = retryIncludedExceptionList;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that are ignored for retry purposes.
-     * <p>
-     * Exceptions that match or inherit from the classes in this list will not trigger retry
-     * attempts, even if they are included in the retry included exception list. This allows for
-     * fine-grained control over retry behavior.
-     * </p>
-     * @param retryIgnoreExceptionList list of exception classes to ignore for retries
-     * @return this builder instance for method chaining
-     */
-    public Builder retryIgnoreExceptionList(List<Class> retryIgnoreExceptionList) {
-      this.retryIgnoreExceptionList = retryIgnoreExceptionList;
+    public Builder commandRetry(RetryConfig commandRetry) {
+      this.commandRetry = commandRetry;
       return this;
     }
 
@@ -1511,11 +1458,7 @@ public final class MultiDbConfig {
       MultiDbConfig config = new MultiDbConfig(this.databaseConfigs.toArray(new DatabaseConfig[0]));
 
       // Copy retry configuration
-      config.retryMaxAttempts = this.retryMaxAttempts;
-      config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);
-      config.retryWaitDurationExponentialBackoffMultiplier = this.retryWaitDurationExponentialBackoffMultiplier;
-      config.retryIncludedExceptionList = this.retryIncludedExceptionList;
-      config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
+      config.commandRetry = this.commandRetry;
 
       // Copy circuit breaker configuration
       config.circuitBreakerMinNumOfFailures = this.circuitBreakerMinNumOfFailures;

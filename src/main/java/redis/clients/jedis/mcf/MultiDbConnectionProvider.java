@@ -82,9 +82,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    */
   private Consumer<DatabaseSwitchEvent> databaseSwitchListener;
 
-  private List<Class<? extends Throwable>> fallbackExceptionList;
+  private final List<Class<? extends Throwable>> fallbackExceptionList;
 
-  private HealthStatusManager healthStatusManager = new HealthStatusManager();
+  private final HealthStatusManager healthStatusManager = new HealthStatusManager();
 
   // Flag to control when handleHealthStatusChange should process events (only after initialization)
   private volatile boolean initializationComplete = false;
@@ -99,12 +99,12 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       });
 
   // Store retry and circuit breaker configs for dynamic database addition/removal
-  private RetryConfig retryConfig;
-  private CircuitBreakerConfig circuitBreakerConfig;
-  private MultiDbConfig multiDbConfig;
+  private final RetryConfig retryConfig;
+  private final CircuitBreakerConfig circuitBreakerConfig;
+  private final MultiDbConfig multiDbConfig;
 
-  private AtomicLong failoverFreezeUntil = new AtomicLong(0);
-  private AtomicInteger failoverAttemptCount = new AtomicInteger(0);
+  private final AtomicLong failoverFreezeUntil = new AtomicLong(0);
+  private final AtomicInteger failoverAttemptCount = new AtomicInteger(0);
 
   public MultiDbConnectionProvider(MultiDbConfig multiDbConfig) {
 
@@ -114,24 +114,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     this.multiDbConfig = multiDbConfig;
 
     ////////////// Configure Retry ////////////////////
-
-    RetryConfig.Builder retryConfigBuilder = RetryConfig.custom();
-    retryConfigBuilder.maxAttempts(multiDbConfig.getRetryMaxAttempts());
-    retryConfigBuilder.intervalFunction(
-      IntervalFunction.ofExponentialBackoff(multiDbConfig.getRetryWaitDuration(),
-        multiDbConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
-    retryConfigBuilder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
-    retryConfigBuilder.retryExceptions(
-      multiDbConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
-
-    List<Class> retryIgnoreExceptionList = multiDbConfig.getRetryIgnoreExceptionList();
-    if (retryIgnoreExceptionList != null)
-      retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
-
-    this.retryConfig = retryConfigBuilder.build();
+    MultiDbConfig.RetryConfig commandRetry = multiDbConfig.getCommandRetry();
+    this.retryConfig = buildRetryConfig(commandRetry);
 
     ////////////// Configure Circuit Breaker ////////////////////
-
     CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiDbConfig);
@@ -158,7 +144,6 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     this.circuitBreakerConfig = circuitBreakerConfigBuilder.build();
 
     ////////////// Configure Database Map ////////////////////
-
     DatabaseConfig[] databaseConfigs = multiDbConfig.getDatabaseConfigs();
 
     // Now add databases - health checks will start but events will be queued
@@ -192,6 +177,24 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       failbackScheduler.scheduleAtFixedRate(this::periodicFailbackCheck, failbackInterval,
         failbackInterval, TimeUnit.MILLISECONDS);
     }
+  }
+
+  // New private method
+  private RetryConfig buildRetryConfig(redis.clients.jedis.MultiDbConfig.RetryConfig commandRetry) {
+    RetryConfig.Builder builder = RetryConfig.custom();
+
+    builder.maxAttempts(commandRetry.getMaxAttempts());
+    builder.intervalFunction(IntervalFunction.ofExponentialBackoff(commandRetry.getWaitDuration(),
+      commandRetry.getExponentialBackoffMultiplier()));
+    builder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
+    builder.retryExceptions(commandRetry.getIncludedExceptionList().stream().toArray(Class[]::new));
+
+    List<Class> ignoreExceptions = commandRetry.getIgnoreExceptionList();
+    if (ignoreExceptions != null) {
+      builder.ignoreExceptions(ignoreExceptions.stream().toArray(Class[]::new));
+    }
+
+    return builder.build();
   }
 
   /**
@@ -569,7 +572,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   /**
    * Returns the set of all configured endpoints.
-   * @return
+   * @return the set of all configured endpoints
    */
   public Set<Endpoint> getEndpoints() {
     return new HashSet<>(databaseMap.keySet());

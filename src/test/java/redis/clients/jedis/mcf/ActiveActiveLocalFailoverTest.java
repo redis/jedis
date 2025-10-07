@@ -115,9 +115,8 @@ public class ActiveActiveLocalFailoverTest {
     // builder.failbackCheckInterval(1000);
     builder.gracePeriod(10000);
 
-    builder.retryWaitDuration(10);
-    builder.retryMaxAttempts(1);
-    builder.retryWaitDurationExponentialBackoffMultiplier(1);
+    builder.commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(10).maxAttempts(1)
+        .exponentialBackoffMultiplier(1).build());
 
     // Use the parameterized fastFailover setting
     builder.fastFailover(fastFailover);

@@ -129,8 +129,8 @@ public class MultiDbClientTest {
         .build();
 
     try (MultiDbClient testClient = MultiDbClient.builder().multiDbConfig(clientConfig).build()) {
-      assertThat(testClient.getEndpoints().size(), equalTo(2));
-      assertThat(testClient.getEndpoints(),
+      assertThat(testClient.getDatabaseEndpoints().size(), equalTo(2));
+      assertThat(testClient.getDatabaseEndpoints(),
         hasItems(endpoint1.getHostAndPort(), endpoint2.getHostAndPort()));
     }
   }

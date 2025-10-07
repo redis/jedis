@@ -233,7 +233,8 @@ public class MultiDbConnectionProviderTest {
 
     MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).build());
+            .maxNumFailoverAttempts(2)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build());
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
       jedis.get("foo");
@@ -270,8 +271,9 @@ public class MultiDbConnectionProviderTest {
     // and open to impact from other defaulted values withing the components in use.
     MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
-            .circuitBreakerFailureRateThreshold(60).build()) {
+            .maxNumFailoverAttempts(2)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+            .circuitBreakerSlidingWindowSize(5).circuitBreakerFailureRateThreshold(60).build()) {
     };
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {

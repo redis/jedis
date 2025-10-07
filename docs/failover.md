@@ -77,9 +77,11 @@ multiDbBuilder.circuitBreakerSlidingWindowSize(2) // Sliding window size in numb
         .gracePeriod(10000) // Keep database disabled for 10 seconds after it becomes unhealthy
 
 // Optional: configure retry settings
-        .retryMaxAttempts(3) // Maximum number of retry attempts (including the initial call)
-        .retryWaitDuration(500) // Number of milliseconds to wait between retry attempts
-        .retryWaitDurationExponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
+        .commandRetry(MultiDbConfig.RetryConfig.builder()
+                .maxAttempts(3) // Maximum number of retry attempts (including the initial call)
+                .waitDuration(500) // Number of milliseconds to wait between retry attempts
+                .exponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
+                .build())
 
 // Optional: configure fast failover
         .fastFailover(true) // Force closing connections to unhealthy database on failover

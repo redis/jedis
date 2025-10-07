@@ -52,7 +52,9 @@ public class MultiDbCircuitBreakerThresholdsTest {
 
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(databaseConfigs)
         .circuitBreakerFailureRateThreshold(50.0f).circuitBreakerMinNumOfFailures(3)
-        .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
+        .circuitBreakerSlidingWindowSize(10)
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+        .retryOnFailover(false);
 
     MultiDbConfig mcc = cfgBuilder.build();
 
@@ -125,7 +127,9 @@ public class MultiDbCircuitBreakerThresholdsTest {
     // Use local provider with higher threshold (80%) and no retries
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
         .circuitBreakerFailureRateThreshold(80.0f).circuitBreakerMinNumOfFailures(3)
-        .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
+        .circuitBreakerSlidingWindowSize(10)
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+        .retryOnFailover(false);
     MultiDbConnectionProvider rp = new MultiDbConnectionProvider(cfgBuilder.build());
     MultiDbConnectionProvider sp = spy(rp);
     Database c = sp.getDatabase();
@@ -191,7 +195,8 @@ public class MultiDbCircuitBreakerThresholdsTest {
 
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
         .circuitBreakerFailureRateThreshold(ratePercent).circuitBreakerMinNumOfFailures(minFailures)
-        .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2)).retryMaxAttempts(1)
+        .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2))
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
         .retryOnFailover(false);
 
     MultiDbConnectionProvider real = new MultiDbConnectionProvider(cfgBuilder.build());

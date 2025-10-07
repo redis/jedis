@@ -114,7 +114,7 @@ public class AutomaticFailoverTest {
     HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
-            .retryWaitDuration(1).retryMaxAttempts(1)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(1).maxAttempts(1).build())
             .circuitBreakerSlidingWindowSize(slidingWindowSize)
             .circuitBreakerMinNumOfFailures(slidingWindowMinFails);
 
@@ -154,7 +154,7 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .retryMaxAttempts(retryMaxAttempts) // Default
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(retryMaxAttempts).build()) // Default
             // is
             // 3
             .circuitBreakerFailureRateThreshold(50)

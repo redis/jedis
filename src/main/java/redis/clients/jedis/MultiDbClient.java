@@ -55,7 +55,9 @@ import java.util.Set;
  *                                                 DefaultJedisClientConfig.builder().build())
  *                                         .weight(50.0f).build())
  *                                 .circuitBreakerFailureRateThreshold(50.0f)
- *                                 .retryMaxAttempts(3)
+ *                                 .commandRetry(MultiDbConfig.RetryConfig.builder()
+ *                                         .maxAttempts(3)
+ *                                         .build())
  *                                 .build()
  *                 )
  *                 .databaseSwitchListener(event -&gt;

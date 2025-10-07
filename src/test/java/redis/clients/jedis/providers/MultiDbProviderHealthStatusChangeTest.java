@@ -20,11 +20,11 @@ import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 
 /**
- * Tests for MultiDbConnectionProvider event handling behavior during initialization and
- * throughout its lifecycle with HealthStatusChangeEvents.
+ * Tests for MultiDbConnectionProvider event handling behavior during initialization and throughout
+ * its lifecycle with HealthStatusChangeEvents.
  */
 @ExtendWith(MockitoExtension.class)
-public class MultiClusterProviderHealthStatusChangeEventTest {
+public class MultiDbProviderHealthStatusChangeTest {
 
   private HostAndPort endpoint1;
   private HostAndPort endpoint2;
@@ -60,8 +60,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
 
         assertFalse(provider.getDatabase(endpoint1).isInGracePeriod());
         assertEquals(provider.getDatabase(), provider.getDatabase(endpoint1));
@@ -92,8 +91,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Verify initial state
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase(),
           "Should start with endpoint1 active");
@@ -140,8 +138,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // This test verifies that multiple endpoints are properly initialized
 
         // Verify both clusters are initialized properly
@@ -166,8 +163,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
 
       // This test verifies that the provider initializes correctly and doesn't lose events
       // In practice, with health checks disabled, no events should be generated during init
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Verify successful initialization
         assertNotNull(provider.getDatabase(), "Provider should have initialized successfully");
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase(),
@@ -195,8 +191,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 }).build();
 
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // First event: endpoint1 (active) becomes UNHEALTHY -> failover to endpoint2, endpoint1
         // enters grace
         MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
@@ -236,8 +231,7 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
       MultiDbConfig config = new MultiDbConfig.Builder(
           new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Verify initial state
         assertEquals(HealthStatus.HEALTHY, provider.getDatabase(endpoint1).getHealthStatus(),
           "Should start as HEALTHY");

@@ -44,7 +44,7 @@ public class UnifiedJedisConstructorReflectionTest {
     for (Constructor<?> ctor : ctors) {
       if (isUnsafeConstructor(ctor) || clusterConstructorThatShouldBeDeprecatedAndRemoved(ctor)
           || retriesConstructorThatShouldBeIncorporatedIntoBuilderAsDefault(ctor)
-          || multiClusterPooledConnectionProviderShouldBeReplacedWithResilientClient(ctor)) {
+          || multiDbConnectionProviderShouldBeReplacedWithMultiDbClient(ctor)) {
         // Exclude unsafe constructors from analysis as requested
         continue;
       }
@@ -181,7 +181,7 @@ public class UnifiedJedisConstructorReflectionTest {
   }
 
   // FIXME: Remove this when we add convince class and builder for ResilientClient
-  private static boolean multiClusterPooledConnectionProviderShouldBeReplacedWithResilientClient(
+  private static boolean multiDbConnectionProviderShouldBeReplacedWithMultiDbClient(
       Constructor<?> ctor) {
     Class<?>[] types = ctor.getParameterTypes();
     return types.length == 1 && types[0].getSimpleName().equals("MultiDbConnectionProvider");

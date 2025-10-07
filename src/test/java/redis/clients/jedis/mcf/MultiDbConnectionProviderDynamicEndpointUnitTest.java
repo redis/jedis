@@ -129,7 +129,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testAddAndRemoveMultipleClusters() {
+  void testAddAndRemoveMultipleDatabases() {
     // Add endpoint2 as second database
     DatabaseConfig config2 = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
 

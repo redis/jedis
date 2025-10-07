@@ -68,8 +68,8 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void testIterateActiveCluster() throws InterruptedException {
-    waitForClustersToGetHealthy(provider.getDatabase(endpointStandalone0.getHostAndPort()),
+  public void testSwitchToHealthyDatabase() throws InterruptedException {
+    waitForDatabaseToGetHealthy(provider.getDatabase(endpointStandalone0.getHostAndPort()),
       provider.getDatabase(endpointStandalone1.getHostAndPort()));
 
     Endpoint e2 = provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK,
@@ -80,7 +80,7 @@ public class MultiDbConnectionProviderTest {
   @Test
   public void testCanIterateOnceMore() {
     Endpoint endpoint0 = endpointStandalone0.getHostAndPort();
-    waitForClustersToGetHealthy(provider.getDatabase(endpoint0),
+    waitForDatabaseToGetHealthy(provider.getDatabase(endpoint0),
       provider.getDatabase(endpointStandalone1.getHostAndPort()));
 
     provider.setActiveDatabase(endpoint0);
@@ -90,14 +90,14 @@ public class MultiDbConnectionProviderTest {
     assertFalse(provider.canIterateFrom(provider.getDatabase()));
   }
 
-  private void waitForClustersToGetHealthy(Database... clusters) {
+  private void waitForDatabaseToGetHealthy(Database... databases) {
     Awaitility.await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
         .atMost(Durations.TWO_SECONDS)
-        .until(() -> Arrays.stream(clusters).allMatch(Database::isHealthy));
+        .until(() -> Arrays.stream(databases).allMatch(Database::isHealthy));
   }
 
   @Test
-  public void testRunClusterFailoverPostProcessor() {
+  public void testDatabaseSwitchListener() {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig
         .builder(new HostAndPort("purposefully-incorrect", 0000),
@@ -136,7 +136,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void testSetActiveMultiClusterIndexEqualsZero() {
+  public void testSetActiveDatabaseIndexEqualsZero() {
     assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(null)); // Should
                                                                                           // throw
                                                                                           // an
@@ -144,15 +144,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void testSetActiveMultiClusterIndexLessThanZero() {
-    assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(null)); // Should
-                                                                                          // throw
-                                                                                          // an
-                                                                                          // exception
-  }
-
-  @Test
-  public void testSetActiveMultiClusterIndexOutOfRange() {
+  public void testSetActiveDatabaseByMissingEndpoint() {
     assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(new Endpoint() {
       @Override
       public String getHost() {
@@ -249,7 +241,7 @@ public class MultiDbConnectionProviderTest {
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
       jedis.get("foo");
 
-      // Disable both clusters so any attempt to switch results in 'no healthy cluster' path
+      // Disable both databases so any attempt to switch results in 'no healthy database' path
       testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
       testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
 
@@ -288,7 +280,7 @@ public class MultiDbConnectionProviderTest {
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
       jedis.get("foo");
 
-      // disable most weighted cluster so that it will fail on initial requests
+      // disable most weighted database so that it will fail on initial requests
       testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
 
       Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get("foo"));

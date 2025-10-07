@@ -47,9 +47,9 @@ import redis.clients.jedis.util.Pool;
 /**
  * @author Allen Terleto (aterleto)
  *         <p>
- *         ConnectionProvider which supports multiple cluster/database endpoints each with their own
+ *         ConnectionProvider which supports multiple database endpoints each with their own
  *         isolated connection pool. With this ConnectionProvider users can seamlessly failover to
- *         Disaster Recovery (DR), Backup, and Active-Active cluster(s) by using simple
+ *         Disaster Recovery (DR), Backup, and Active-Active database(s) by using simple
  *         configuration which is passed through from Resilience4j -
  *         <a href="https://resilience4j.readme.io/docs">docs</a>
  *         <p>
@@ -77,8 +77,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   private final Lock activeDatabaseChangeLock = new ReentrantLock(true);
 
   /**
-   * Functional interface for listening to cluster switch events. The event args contain the reason
-   * for the switch, the endpoint, and the cluster.
+   * Functional interface for listening to database switch events. The event args contain the reason
+   * for the switch, the endpoint, and the database.
    */
   private Consumer<DatabaseSwitchEvent> databaseSwitchListener;
 
@@ -169,8 +169,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     // Initialize StatusTracker for waiting on health check results
     StatusTracker statusTracker = new StatusTracker(healthStatusManager);
 
-    // Wait for initial health check results and select active cluster based on weights
-    activeDatabase = waitForInitialHealthyCluster(statusTracker);
+    // Wait for initial health check results and select active database based on weights
+    activeDatabase = waitForInitialHealthyDatabase(statusTracker);
 
     // Mark initialization as complete - handleHealthStatusChange can now process events
     initializationComplete = true;
@@ -181,7 +181,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       // is set to true.
       // Simple rule is to never assign value of 'activeDatabase' outside of
       // 'activeDatabaseChangeLock' once the 'initializationComplete' is done.
-      waitForInitialHealthyCluster(statusTracker);
+      waitForInitialHealthyDatabase(statusTracker);
       switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, temp);
     }
     this.fallbackExceptionList = multiDbConfig.getFallbackExceptionList();
@@ -195,7 +195,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Adds a new cluster endpoint to the provider.
+   * Adds a new database endpoint to the provider.
    * @param databaseConfig the configuration for the new database
    * @throws JedisValidationException if the endpoint already exists
    */
@@ -219,7 +219,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Removes a cluster endpoint from the provider.
+   * Removes a database endpoint from the provider.
    * @param endpoint the endpoint to remove
    * @throws JedisValidationException if the endpoint doesn't exist or is the last remaining
    *           endpoint
@@ -246,18 +246,18 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       boolean isActiveDatabase = (activeDatabase == databaseToRemove);
 
       if (isActiveDatabase) {
-        log.info("Active cluster is being removed. Finding a new active cluster...");
+        log.info("Active database is being removed. Finding a new active database...");
         Map.Entry<Endpoint, Database> candidate = findWeightedHealthyClusterToIterate(
           databaseToRemove);
         if (candidate != null) {
           Database selectedCluster = candidate.getValue();
           if (setActiveDatabase(selectedCluster, true)) {
-            log.info("New active cluster set to {}", candidate.getKey());
+            log.info("New active database set to {}", candidate.getKey());
             notificationData = candidate;
           }
         } else {
           throw new JedisException(
-              "Database can not be removed due to no healthy cluster available to switch!");
+              "Database can not be removed due to no healthy database available to switch!");
         }
       }
 
@@ -265,10 +265,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       healthStatusManager.unregisterListener(endpoint, this::onHealthStatusChange);
       healthStatusManager.remove(endpoint);
 
-      // Remove from cluster map
+      // Remove from database map
       databaseMap.remove(endpoint);
 
-      // Close the cluster resources
+      // Close the database resources
       if (databaseToRemove != null) {
         databaseToRemove.setDisabled(true);
         databaseToRemove.close();
@@ -291,16 +291,16 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
           "Endpoint " + config.getEndpoint() + " already exists in the provider");
     }
 
-    String clusterId = "database:" + config.getEndpoint();
+    String databaseId = "database:" + config.getEndpoint();
 
-    Retry retry = RetryRegistry.of(retryConfig).retry(clusterId);
+    Retry retry = RetryRegistry.of(retryConfig).retry(databaseId);
 
     Retry.EventPublisher retryPublisher = retry.getEventPublisher();
     retryPublisher.onRetry(event -> log.warn(String.valueOf(event)));
     retryPublisher.onError(event -> log.error(String.valueOf(event)));
 
     CircuitBreaker circuitBreaker = CircuitBreakerRegistry.of(circuitBreakerConfig)
-        .circuitBreaker(clusterId);
+        .circuitBreaker(databaseId);
 
     CircuitBreaker.EventPublisher circuitBreakerEventPublisher = circuitBreaker.getEventPublisher();
     circuitBreakerEventPublisher.onCallNotPermitted(event -> log.error(String.valueOf(event)));
@@ -317,7 +317,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     if (strategySupplier != null) {
       HealthCheckStrategy hcs = strategySupplier.get(hostPort(config.getEndpoint()),
         config.getJedisClientConfig());
-      // Register listeners BEFORE adding clusters to avoid missing events
+      // Register listeners BEFORE adding databases to avoid missing events
       healthStatusManager.registerListener(config.getEndpoint(), this::onHealthStatusChange);
       HealthCheck hc = healthStatusManager.add(config.getEndpoint(), hcs);
       database = new Database(config.getEndpoint(), pool, retry, hc, circuitBreaker,
@@ -341,8 +341,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Handles health status changes for clusters. This method is called by the health status manager
-   * when the health status of a cluster changes.
+   * Handles health status changes for databases. This method is called by the health status manager
+   * when the health status of a database changes.
    */
   @VisibleForTesting
   void onHealthStatusChange(HealthStatusChangeEvent eventArgs) {
@@ -350,37 +350,37 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     HealthStatus newStatus = eventArgs.getNewStatus();
     log.debug("Health status changed for {} from {} to {}", endpoint, eventArgs.getOldStatus(),
       newStatus);
-    Database clusterWithHealthChange = databaseMap.get(endpoint);
+    Database databaseWithHealthChange = databaseMap.get(endpoint);
 
-    if (clusterWithHealthChange == null) return;
+    if (databaseWithHealthChange == null) return;
 
     if (initializationComplete) {
-      if (!newStatus.isHealthy() && clusterWithHealthChange == activeDatabase) {
-        clusterWithHealthChange.setGracePeriod();
-        switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, clusterWithHealthChange);
+      if (!newStatus.isHealthy() && databaseWithHealthChange == activeDatabase) {
+        databaseWithHealthChange.setGracePeriod();
+        switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange);
       }
     }
   }
 
   /**
-   * Waits for initial health check results and selects the first healthy cluster based on weight
-   * priority. Blocks until at least one cluster becomes healthy or all clusters are determined to
+   * Waits for initial health check results and selects the first healthy database based on weight
+   * priority. Blocks until at least one database becomes healthy or all databases are determined to
    * be unhealthy.
    * @param statusTracker the status tracker to use for waiting on health check results
-   * @return the first healthy cluster found, ordered by weight (highest first)
-   * @throws JedisConnectionException if all clusters are unhealthy
+   * @return the first healthy database found, ordered by weight (highest first)
+   * @throws JedisConnectionException if all databases are unhealthy
    */
-  private Database waitForInitialHealthyCluster(StatusTracker statusTracker) {
-    // Sort clusters by weight in descending order
-    List<Map.Entry<Endpoint, Database>> sortedClusters = databaseMap.entrySet().stream()
+  private Database waitForInitialHealthyDatabase(StatusTracker statusTracker) {
+    // Sort databases by weight in descending order
+    List<Map.Entry<Endpoint, Database>> sortedDatabases = databaseMap.entrySet().stream()
         .sorted(Map.Entry.<Endpoint, Database> comparingByValue(
           Comparator.comparing(Database::getWeight).reversed()))
         .collect(Collectors.toList());
 
-    log.info("Selecting initial cluster from {} configured clusters", sortedClusters.size());
+    log.info("Selecting initial database from {} configured databases", sortedDatabases.size());
 
-    // Select cluster in weight order
-    for (Map.Entry<Endpoint, Database> entry : sortedClusters) {
+    // Select database in weight order
+    for (Map.Entry<Endpoint, Database> entry : sortedDatabases) {
       Endpoint endpoint = entry.getKey();
       Database database = entry.getValue();
 
@@ -407,9 +407,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       }
     }
 
-    // All clusters are unhealthy
+    // All databases are unhealthy
     throw new JedisConnectionException(
-        "All configured clusters are unhealthy. Cannot initialize MultiDbConnectionProvider.");
+        "All configured databases are unhealthy. Cannot initialize MultiDbConnectionProvider.");
   }
 
   /**
@@ -418,7 +418,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   @VisibleForTesting
   void periodicFailbackCheck() {
     try {
-      // Find the best candidate cluster for failback
+      // Find the best candidate database for failback
       Map.Entry<Endpoint, Database> bestCandidate = null;
       float bestWeight = activeDatabase.getWeight();
 
@@ -445,7 +445,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       // Perform failback if we found a better candidate
       if (bestCandidate != null) {
         Database selectedCluster = bestCandidate.getValue();
-        log.info("Performing failback from {} to {} (higher weight cluster available)",
+        log.info("Performing failback from {} to {} (higher weight database available)",
           activeDatabase.getCircuitBreaker().getName(),
           selectedCluster.getCircuitBreaker().getName());
         if (setActiveDatabase(selectedCluster, true)) {
@@ -475,7 +475,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   private void handleNoHealthyCluster() {
     int max = multiDbConfig.getMaxNumFailoverAttempts();
-    log.error("No healthy cluster available to switch to");
+    log.error("No healthy database available to switch to");
     if (failoverAttemptCount.get() > max) {
       throw new JedisPermanentlyNotAvailableException();
     }
@@ -502,12 +502,12 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Asserts that the active cluster is operable. If not, throws an exception.
+   * Asserts that the active database is operable. If not, throws an exception.
    * <p>
    * This method is called by the circuit breaker command executor before executing a command.
-   * @throws JedisPermanentlyNotAvailableException if the there is no operable cluster and the max
+   * @throws JedisPermanentlyNotAvailableException if the there is no operable database and the max
    *           number of failover attempts has been exceeded.
-   * @throws JedisTemporarilyNotAvailableException if the there is no operable cluster and the max
+   * @throws JedisTemporarilyNotAvailableException if the there is no operable database and the max
    *           number of failover attempts has not been exceeded.
    */
   @VisibleForTesting
@@ -531,7 +531,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   /**
    * Design decision was made to defer responsibility for cross-replication validation to the user.
-   * Alternatively there was discussion to handle cross-cluster replication validation by setting a
+   * Alternatively there was discussion to handle cross-database replication validation by setting a
    * key/value pair per hashslot in the active connection (with a TTL) and subsequently reading it
    * from the target connection.
    */
@@ -614,7 +614,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   private boolean setActiveDatabase(Database database, boolean validateConnection) {
     // Database database = clusterEntry.getValue();
     // Field-level synchronization is used to avoid the edge case in which
-    // incrementActiveMultiClusterIndex() is called at the same time
+    // setActiveDatabase() is called at the same time
     activeDatabaseChangeLock.lock();
     Database oldCluster;
     try {
@@ -667,7 +667,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       Thread.currentThread().interrupt();
     }
 
-    // Close all cluster connection pools
+    // Close all database connection pools
     for (Database database : databaseMap.values()) {
       database.close();
     }
@@ -707,7 +707,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * <p>
    * Active endpoint is the one which is currently being used for all operations. It can change at
    * any time due to health checks, failover, failback, etc.
-   * @return the active cluster endpoint
+   * @return the active database endpoint
    */
   public Endpoint getActiveEndpoint() {
     return activeDatabase.getEndpoint();
@@ -732,9 +732,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Indicates the final cluster/database endpoint (connection pool), according to the
-   * pre-configured list provided at startup via the MultiDbConfig, is unavailable and therefore no
-   * further failover is possible. Users can manually failback to an available cluster
+   * Indicates the final database endpoint (connection pool), according to the pre-configured list
+   * provided at startup via the MultiDbConfig, is unavailable and therefore no further failover is
+   * possible. Users can manually failback to an available database
    */
   public boolean canIterateFrom(Database iterateFrom) {
     Map.Entry<Endpoint, Database> e = findWeightedHealthyClusterToIterate(iterateFrom);
@@ -825,7 +825,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
 
     /**
-     * Assigned weight for this cluster
+     * Assigned weight for this database
      */
     public float getWeight() {
       return weight;
@@ -865,14 +865,14 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
 
     /**
-     * Checks if the cluster is currently in grace period
+     * Checks if the da is currently in grace period
      */
     public boolean isInGracePeriod() {
       return System.currentTimeMillis() < gracePeriodEndsAt;
     }
 
     /**
-     * Sets the grace period for this cluster
+     * Sets the grace period for this database
      */
     public void setGracePeriod() {
       setGracePeriod(multiDbConfig.getGracePeriod());
@@ -931,7 +931,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     public String toString() {
       return circuitBreaker.getName() + "{" + "connectionPool=" + connectionPool + ", retry="
           + retry + ", circuitBreaker=" + circuitBreaker + ", weight=" + weight + ", healthStatus="
-          + getHealthStatus() + ", multiClusterClientConfig=" + multiDbConfig + '}';
+          + getHealthStatus() + ", multiDbConfig=" + multiDbConfig + '}';
     }
 
   }

@@ -38,67 +38,60 @@ If `redis-east` becomes unavailable, you want your application to connect to `re
 
 Let's look at one way of configuring Jedis for this scenario.
 
-First, create an array of `ClusterConfig` objects, one for each Redis database.
+First, start by defining the initial configuration for each Redis database available and prioritize them using weights.
 
 ```java
-JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret")
-    .socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
+        JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret")
+        .socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
 
+// Custom pool config per database can be provided
 ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-poolConfig.setMaxTotal(8);
-poolConfig.setMaxIdle(8);
-poolConfig.setMinIdle(0);
-poolConfig.setBlockWhenExhausted(true);
-poolConfig.setMaxWait(Duration.ofSeconds(1));
-poolConfig.setTestWhileIdle(true);
-poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+        poolConfig.setMaxTotal(8);
+        poolConfig.setMaxIdle(8);
+        poolConfig.setMinIdle(0);
+        poolConfig.setBlockWhenExhausted(true);
+        poolConfig.setMaxWait(Duration.ofSeconds(1));
+        poolConfig.setTestWhileIdle(true);
+        poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
 
-MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
 HostAndPort east = new HostAndPort("redis-east.example.com", 14000);
-clusterConfig[0] = ClusterConfig.builder(east, config).connectionPoolConfig(poolConfig).weight(1.0f).build();
-
 HostAndPort west = new HostAndPort("redis-west.example.com", 14000);
-clusterConfig[1] = ClusterConfig.builder(west, config).connectionPoolConfig(poolConfig).weight(0.5f).build();
+
+MultiDbConfig.Builder multiConfig = MultiDbConfig.builder()
+        .endpoint(DatabaseConfig.builder(east, config).connectionPoolConfig(poolConfig).weight(1.0f).build())
+        .endpoint(DatabaseConfig.builder(west, config).connectionPoolConfig(poolConfig).weight(0.5f).build());
 ```
 
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
-You'll use this array of configuration objects to create a connection provider that supports failover.
 
-Use the `MultiClusterClientConfig` builder to set your preferred retry and failover configuration, passing in the client configs you just created.
-Then build a `MultiClusterPooledConnectionProvider`.
+Continue using the `MultiDbConfig.Builder` builder to set your preferred retry and failover configuration.
+Then build a `MultiDbClient`.
 
 ```java
-MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clientConfigs);
-builder.circuitBreakerSlidingWindowSize(2); // Sliding window size in number of calls
-builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
+multiDbBuilder.circuitBreakerSlidingWindowSize(2) // Sliding window size in number of calls
+        .circuitBreakerFailureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+        .circuitBreakerMinNumOfFailures(1000) // Minimum number of failures before circuit breaker is tripped
 
-builder.failbackSupported(true); // Enable failback
-builder.failbackCheckInterval(1000); // Check every second the unhealthy cluster to see if it has recovered
-builder.gracePeriod(10000); // Keep cluster disabled for 10 seconds after it becomes unhealthy
+        .failbackSupported(true) // Enable failback
+        .failbackCheckInterval(1000) // Check every second the unhealthy cluster to see if it has recovered
+        .gracePeriod(10000) // Keep cluster disabled for 10 seconds after it becomes unhealthy
 
 // Optional: configure retry settings
-builder.retryMaxAttempts(3); // Maximum number of retry attempts (including the initial call)
-builder.retryWaitDuration(500); // Number of milliseconds to wait between retry attempts
-builder.retryWaitDurationExponentialBackoffMultiplier(2); // Exponential backoff factor multiplied against wait duration between retries
+        .retryMaxAttempts(3) // Maximum number of retry attempts (including the initial call)
+        .retryWaitDuration(500) // Number of milliseconds to wait between retry attempts
+        .retryWaitDurationExponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
 
 // Optional: configure fast failover
-builder.fastFailover(true); // Force closing connections to unhealthy cluster on failover
-builder.retryOnFailover(false); // Do not retry failed commands during failover
+        .fastFailover(true) // Force closing connections to unhealthy cluster on failover
+        .retryOnFailover(false); // Do not retry failed commands during failover
 
-MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
+MultiDbClient  multiDbClient =  multiDbBuilder.build();
 ```
 
-Internally, the connection provider uses a [highly configurable circuit breaker and retry implementation](https://resilience4j.readme.io/docs/circuitbreaker) to determine when to fail over.
 In the configuration here, we've set a sliding window size of 10 and a failure rate threshold of 50%.
 This means that a failover will be triggered if 5 out of any 10 calls to Redis fail.
 
-Once you've configured and created a `MultiClusterPooledConnectionProvider`, instantiate a `UnifiedJedis` instance for your application, passing in the provider you just created:
-
-```java
-UnifiedJedis jedis = new UnifiedJedis(provider);
-```
-
-You can now use this `UnifiedJedis` instance, and the connection management and failover will be handled transparently.
+You can now use this `MultiDbClient` instance, and the connection management and failover will be handled transparently.
 
 ## Configuration options
 
@@ -108,7 +101,7 @@ a fault-tolerance library that implements [retry](https://resilience4j.readme.io
 Once you configure Jedis for failover using the `MultiClusterPooledConnectionProvider`, each call to Redis is decorated with a resilience4j retry and circuit breaker.
 
 By default, any call that throws a `JedisConnectionException` will be retried up to 3 times.
-If the call continues to fail after the maximum number of retry attempts, then the circuit breaker will record a failure.
+If the call fail then the circuit breaker will record a failure.
 
 The circuit breaker maintains a record of failures in a sliding window data structure.
 If the failure rate reaches a configured threshold (e.g., when 50% of the last 10 calls have failed),
@@ -147,7 +140,7 @@ Jedis uses the following circuit breaker settings:
 
 ### Health Check Configuration and Customization
 
-The `MultiClusterPooledConnectionProvider` includes a comprehensive health check system that continuously monitors the availability of Redis clusters to enable automatic failover and failback.
+The `MultiDbClient` includes a comprehensive health check system that continuously monitors the availability of Redis clusters to enable automatic failover and failback.
 
 The health check system serves several critical purposes in the failover architecture:
 
@@ -190,29 +183,29 @@ The `LagAwareStrategy` is designed specifically for Redis Enterprise Active-Acti
 
 **Example Configuration:**
 ```java
-BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiClusterClientConfig.StrategySupplier> healthCheckStrategySupplier =
-(HostAndPort clusterHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
-  LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(clusterHostPort, credentialsSupplier)
-      .interval(5000)                                          // Check every 5 seconds
-      .timeout(3000)                                           // 3 second timeout
-      .extendedCheckEnabled(true)
-      .build();
+BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiDbConfig.StrategySupplier> healthCheckStrategySupplier =
+        (HostAndPort clusterHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
+            LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(clusterHostPort, credentialsSupplier)
+                    .interval(5000)                                          // Check every 5 seconds
+                    .timeout(3000)                                           // 3 second timeout
+                    .extendedCheckEnabled(true)
+                    .build();
 
-  return (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
-};
+            return (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
+        };
 
 // Configure REST API endpoint and credentials
-Endpoint restEndpoint = new HostAndPort("redis-enterprise-cluster-fqdn", 9443);
-Supplier<RedisCredentials> credentialsSupplier = () -> 
-    new DefaultRedisCredentials("rest-api-user", "pwd");
+HostAndPort restEndpoint = new HostAndPort("redis-enterprise-cluster-fqdn", 9443);
+Supplier<RedisCredentials> credentialsSupplier = () ->
+        new DefaultRedisCredentials("rest-api-user", "pwd");
 
-MultiClusterClientConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
-    restEndpoint, credentialsSupplier);
+MultiDbConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
+        restEndpoint, credentialsSupplier);
 
-MultiClusterClientConfig.ClusterConfig clusterConfig =
-    MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
-        .healthCheckStrategySupplier(lagawareStrategySupplier)
-        .build();
+MultiDbConfig.DatabaseConfig clusterConfig =
+        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
+                .healthCheckStrategySupplier(lagawareStrategySupplier)
+                .build();
 ```
 
 ##### 3. Custom Health Check Strategies
@@ -289,9 +282,9 @@ MultiClusterClientConfig.ClusterConfig clusterConfig =
 Use the `healthCheckEnabled(false)` method to completely disable health checks:
 
 ```java
-clusterConfig[0] = ClusterConfig.builder(east, config)
-    .healthCheckEnabled(false) // Disable health checks entirely
-    .build();
+DatabaseConfig dbConfig = DatabaseConfig.builder(east, config)
+        .healthCheckEnabled(false) // Disable health checks entirely
+        .build();
 ```
 
 ### Fallback configuration
@@ -306,36 +299,38 @@ Jedis uses the following fallback settings:
 
 In the event that Jedis fails over, you may wish to take some action. This might include logging a warning, recording
 a metric, or externally persisting the cluster connection state, to name just a few examples. For this reason,
-`MultiPooledConnectionProvider` lets you register a custom callback that will be called whenever Jedis
+`MultiDbClient` lets you register a custom callback that will be called whenever Jedis
 fails over to a new cluster.
 
 To use this feature, you'll need to design a class that implements `java.util.function.Consumer`.
 This class must implement the `accept` method, as you can see below.
 
 ```java
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.function.Consumer;
-
-public class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
-
+    public class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
+    
     @Override
-    public void accept(ClusterSwitchEventArgs e) {
-        Logger logger = LoggerFactory.getLogger(FailoverReporter.class);
-        logger.warn("Jedis failover to cluster: " + e.getClusterName() + " due to " + e.getReason());
+    public void accept(DatabaseSwitchEvent e) {
+        System.out.println("Jedis failover to cluster: " + e.getDatabaseName() + " due to " + e.getReason());
     }
 }
 ```
 
-You can then pass an instance of this class to your `MultiPooledConnectionProvider`.
+DatabaseSwitchEvent consumer can be registered as follows:
 
 ```
-FailoverReporter reporter = new FailoverReporter();
-provider.setClusterSwitchListener(reporter);
+    FailoverReporter reporter = new FailoverReporter();
+    MultiDbClient client = MultiDbClient.builder()
+            .databaseSwitchListener(reporter)
+            .build();
 ```
-
 The provider will call your `accept` whenever a failover occurs.
+or directly using lambda expression:
+```
+    MultiDbClient client = MultiDbClient.builder()
+            .databaseSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
+            .build();
+```
+
 
 ## Failing back
 
@@ -368,17 +363,18 @@ The automatic failback process works as follows:
 Once you've determined that it's safe to fail back to a previously-unavailable cluster,
 you need to decide how to trigger the failback. There are two ways to accomplish this:
 
-`MultiClusterPooledConnectionProvider` exposes a method that you can use to manually select which cluster Jedis should use.
-To select a different cluster to use, pass the cluster's `HostAndPort` to `setActiveCluster()`:
+`MultiDbClient` exposes a method that you can use to manually select which cluster Jedis should use.
+To select a different cluster to use, pass the cluster's `HostAndPort` to `setActiveDatabase()`:
 ```
-provider.setActiveCluster(west);
+        Endpoint endpoint =  new HostAndPort("redis-east.example.com", 14000);
+        client.setActiveDatabase(endpoint);
 ```
 
 This method is thread-safe.
 
 If you decide to implement manual failback, you will need a way for external systems to trigger this method in your
 application. For example, if your application exposes a REST API, you might consider creating a REST endpoint
-to call `setActiveCluster` and fail back the application.
+to call `setActiveDatabase` and fail back the application.
 
 ## Troubleshooting Failover and Failback Issues
 
@@ -418,9 +414,9 @@ HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
     .build();
 
 // Adjust failback timing
-MultiClusterClientConfig multiConfig = new MultiClusterClientConfig.Builder(clusterConfigs)
-    .gracePeriod(5000)                 // Shorter grace period
-    .build();
+MultiDbConfig multiConfig = new MultiDbConfig.Builder()
+        .gracePeriod(5000)                 // Shorter grace period
+        .build();
 ```
 
 ## Need help or have questions?

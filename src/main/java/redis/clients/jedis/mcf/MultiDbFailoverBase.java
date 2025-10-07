@@ -43,7 +43,7 @@ public class MultiDbFailoverBase implements AutoCloseable {
 
     CircuitBreaker circuitBreaker = database.getCircuitBreaker();
     try {
-      // Check state to handle race conditions since iterateActiveCluster() is
+      // Check state to handle race conditions since () is
       // non-idempotent
       if (!CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState())) {
 

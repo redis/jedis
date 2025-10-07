@@ -73,7 +73,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testRemoveExistingCluster() {
+  void testRemoveExistingDatabase() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.ping()).thenReturn(true);
 
@@ -155,7 +155,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testActiveClusterHandlingOnAdd() {
+  void testActiveDatabaseHandlingOnAdd() {
     // The initial database should be active
     assertNotNull(provider.getDatabase());
 
@@ -186,8 +186,8 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
         providerWithMockedPool.add(newConfig);
 
         // Get current active database
-        Object initialActiveCluster = providerWithMockedPool.getDatabase();
-        assertNotNull(initialActiveCluster);
+        Object initialActiveDb = providerWithMockedPool.getDatabase();
+        assertNotNull(initialActiveDb);
 
         // Remove endpoint1 (original database, might be active)
         providerWithMockedPool.remove(endpoint1.getHostAndPort());

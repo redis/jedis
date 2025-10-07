@@ -72,51 +72,51 @@ public class MultiDbClientTest {
   }
 
   @Test
-  void testAddRemoveEndpointWithEndpointInterface() {
+  void testAddRemoveDatabaseWithEndpointInterface() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
 
     assertDoesNotThrow(
-      () -> client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
+      () -> client.addDatabase(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
 
-    assertThat(client.getEndpoints(), hasItems(newEndpoint));
+    assertThat(client.getDatabaseEndpoints(), hasItems(newEndpoint));
 
-    assertDoesNotThrow(() -> client.removeEndpoint(newEndpoint));
+    assertDoesNotThrow(() -> client.removeDatabase(newEndpoint));
 
-    assertThat(client.getEndpoints(), not(hasItems(newEndpoint)));
+    assertThat(client.getDatabaseEndpoints(), not(hasItems(newEndpoint)));
   }
 
   @Test
-  void testAddRemoveEndpointWithDatabaseConfig() {
+  void testAddRemoveDatabaseWithDatabaseConfig() {
     // todo : (@ggivo) Replace HostAndPort with Endpoint
     HostAndPort newEndpoint = new HostAndPort("unavailable", 6381);
 
     DatabaseConfig newConfig = DatabaseConfig
         .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f).build();
 
-    assertDoesNotThrow(() -> client.addEndpoint(newConfig));
+    assertDoesNotThrow(() -> client.addDatabase(newConfig));
 
-    assertThat(client.getEndpoints(), hasItems(newEndpoint));
+    assertThat(client.getDatabaseEndpoints(), hasItems(newEndpoint));
 
-    assertDoesNotThrow(() -> client.removeEndpoint(newEndpoint));
+    assertDoesNotThrow(() -> client.removeDatabase(newEndpoint));
 
-    assertThat(client.getEndpoints(), not(hasItems(newEndpoint)));
+    assertThat(client.getDatabaseEndpoints(), not(hasItems(newEndpoint)));
   }
 
   @Test
   void testSetActiveDatabase() {
-    Endpoint endpoint = client.getActiveEndpoint();
+    Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
     awaitIsHealthy(endpoint1.getHostAndPort());
     awaitIsHealthy(endpoint2.getHostAndPort());
     // Ensure we have a healthy endpoint to switch to
-    Endpoint newEndpoint = client.getEndpoints().stream()
+    Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
         .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Switch to the new endpoint
     client.setActiveDatabase(newEndpoint);
 
-    assertEquals(newEndpoint, client.getActiveEndpoint());
+    assertEquals(newEndpoint, client.getActiveDatabaseEndpoint());
   }
 
   @Test
@@ -136,37 +136,37 @@ public class MultiDbClientTest {
   }
 
   @Test
-  public void testForceActiveEndpoint() {
-    Endpoint endpoint = client.getActiveEndpoint();
+  public void testForceActiveDatabase() {
+    Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
     // Ensure we have a healthy endpoint to switch to
     awaitIsHealthy(endpoint1.getHostAndPort());
     awaitIsHealthy(endpoint2.getHostAndPort());
-    Endpoint newEndpoint = client.getEndpoints().stream()
+    Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
         .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Force switch to the new endpoint for 10 seconds
-    client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis());
+    client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis());
 
     // Verify the active endpoint has changed
-    assertEquals(newEndpoint, client.getActiveEndpoint());
+    assertEquals(newEndpoint, client.getActiveDatabaseEndpoint());
   }
 
   @Test
-  public void testForceActiveEndpointWithNonHealthyEndpoint() {
+  public void testForceActiveDatabaseWithNonHealthyEndpoint() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
-    client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build());
+    client.addDatabase(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build());
 
     assertThrows(JedisValidationException.class,
-      () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
+      () -> client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
 
   @Test
-  public void testForceActiveEndpointWithNonExistingEndpoint() {
+  public void testForceActiveDatabaseWithNonExistingEndpoint() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
     assertThrows(JedisValidationException.class,
-      () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
+      () -> client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
 
   @Test

@@ -127,7 +127,7 @@ public class MultiDbClient extends UnifiedJedis {
   }
 
   /**
-   * Adds a pre-configured cluster configuration.
+   * Adds a pre-configured database configuration.
    * <p>
    * This method allows adding a fully configured DatabaseConfig instance, providing maximum
    * flexibility for advanced configurations including custom health check strategies, connection
@@ -135,23 +135,23 @@ public class MultiDbClient extends UnifiedJedis {
    * </p>
    * @param databaseConfig the pre-configured database configuration
    */
-  public void addEndpoint(DatabaseConfig databaseConfig) {
+  public void addDatabase(DatabaseConfig databaseConfig) {
     getMultiDbConnectionProvider().add(databaseConfig);
   }
 
   /**
-   * Dynamically adds a new cluster endpoint to the resilient client.
+   * Dynamically adds a new database endpoint to the multi-database client.
    * <p>
-   * This allows adding new endpoints at runtime without recreating the client. The new endpoint
-   * will be available for failover operations immediately after being added and passing health
-   * checks (if configured).
+   * This allows adding new database endpoints at runtime without recreating the client. The new
+   * endpoint will be available for failover operations immediately after being added and passing
+   * health checks (if configured).
    * </p>
    * @param endpoint the Redis server endpoint
    * @param weight the weight for this endpoint (higher values = higher priority)
    * @param clientConfig the client configuration for this endpoint
    * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint already exists
    */
-  public void addEndpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
+  public void addDatabase(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
     DatabaseConfig databaseConfig = DatabaseConfig.builder(endpoint, clientConfig).weight(weight)
         .build();
 
@@ -159,18 +159,19 @@ public class MultiDbClient extends UnifiedJedis {
   }
 
   /**
-   * Returns the set of all configured endpoints.
+   * Returns the set of all configured database endpoints.
    * <p>
-   * This method provides a view of all endpoints currently configured in the resilient client.
+   * This method provides a view of all database endpoints currently configured in the
+   * multi-database client. These are the endpoints that can be used for failover operations.
    * </p>
-   * @return the set of all configured endpoints
+   * @return the set of all configured database endpoints
    */
-  public Set<Endpoint> getEndpoints() {
+  public Set<Endpoint> getDatabaseEndpoints() {
     return getMultiDbConnectionProvider().getEndpoints();
   }
 
   /**
-   * Returns the health status of the specified endpoint.
+   * Returns the health status of the specified database.
    * <p>
    * This method provides the current health status of a specific endpoint.
    * </p>
@@ -182,34 +183,34 @@ public class MultiDbClient extends UnifiedJedis {
   }
 
   /**
-   * Dynamically removes a cluster endpoint from the resilient client.
+   * Dynamically removes a database endpoint from the multi-database client.
    * <p>
-   * This allows removing endpoints at runtime. If the removed endpoint is currently active, the
-   * client will automatically failover to the next available healthy endpoint based on weight
-   * priority.
+   * This allows removing database endpoints at runtime. If the removed endpoint is currently
+   * active, the client will automatically failover to the next available healthy endpoint based on
+   * weight priority.
    * </p>
    * @param endpoint the endpoint to remove
    * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint doesn't exist
    * @throws redis.clients.jedis.exceptions.JedisException if removing the endpoint would leave no
-   *           healthy clusters available
+   *           healthy databases available
    */
-  public void removeEndpoint(Endpoint endpoint) {
+  public void removeDatabase(Endpoint endpoint) {
     getMultiDbConnectionProvider().remove(endpoint);
   }
 
   /**
-   * Forces the client to switch to a specific endpoint for a duration.
+   * Forces the client to switch to a specific database for a duration.
    * <p>
-   * This method forces the client to use the specified endpoint and puts all other endpoints in a
-   * grace period, preventing automatic failover for the specified duration. This is useful for
-   * maintenance scenarios or testing specific endpoints.
+   * This method forces the client to use the specified database endpoint and puts all other
+   * endpoints in a grace period, preventing automatic failover for the specified duration. This is
+   * useful for maintenance scenarios or testing specific database endpoints.
    * </p>
    * @param endpoint the endpoint to force as active
    * @param forcedActiveDurationMs the duration in milliseconds to keep this endpoint forced
    * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint is not healthy
    *           or doesn't exist
    */
-  public void forceActiveEndpoint(Endpoint endpoint, long forcedActiveDurationMs) {
+  public void forceActiveDatabase(Endpoint endpoint, long forcedActiveDurationMs) {
     getMultiDbConnectionProvider().forceActiveDatabase(endpoint, forcedActiveDurationMs);
   }
 
@@ -253,7 +254,15 @@ public class MultiDbClient extends UnifiedJedis {
     return new MultiDbTransaction(getMultiDbConnectionProvider(), doMulti, commandObjects);
   }
 
-  public Endpoint getActiveEndpoint() {
+  /**
+   * Returns the currently active database endpoint.
+   * <p>
+   * The active endpoint is the one currently being used for all operations. It can change at any
+   * time due to health checks, failover, failback, or manual switching.
+   * </p>
+   * @return the active database endpoint
+   */
+  public Endpoint getActiveDatabaseEndpoint() {
     return getMultiDbConnectionProvider().getDatabase().getEndpoint();
   }
 

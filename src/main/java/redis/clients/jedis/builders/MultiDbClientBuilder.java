@@ -38,7 +38,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <pre>
  * MultiDbClient client = MultiDbClient.builder()
  *                 .multiDbConfig(
- *                         w.builder()
+ *                         MultiDbConfig.builder()
  *                                 .database(
  *                                         DatabaseConfig.builder(
  *                                                         east,

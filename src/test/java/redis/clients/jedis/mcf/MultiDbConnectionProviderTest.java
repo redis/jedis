@@ -136,11 +136,8 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void testSetActiveDatabaseIndexEqualsZero() {
-    assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(null)); // Should
-                                                                                          // throw
-                                                                                          // an
-                                                                                          // exception
+  public void testSetActiveDatabaseNull() {
+    assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(null));
   }
 
   @Test

@@ -19,7 +19,7 @@ The remainder of this guide describes:
 
 * A basic failover and health check configuration
 * Supported retry and circuit breaker settings
-* Failback and the cluster selection API
+* Failback and the database selection API
 
 We recommend that you read this guide carefully and understand the configuration settings before enabling Jedis failover
 in production.
@@ -73,8 +73,8 @@ multiDbBuilder.circuitBreakerSlidingWindowSize(2) // Sliding window size in numb
         .circuitBreakerMinNumOfFailures(1000) // Minimum number of failures before circuit breaker is tripped
 
         .failbackSupported(true) // Enable failback
-        .failbackCheckInterval(1000) // Check every second the unhealthy cluster to see if it has recovered
-        .gracePeriod(10000) // Keep cluster disabled for 10 seconds after it becomes unhealthy
+        .failbackCheckInterval(1000) // Check every second the unhealthy database to see if it has recovered
+        .gracePeriod(10000) // Keep database disabled for 10 seconds after it becomes unhealthy
 
 // Optional: configure retry settings
         .retryMaxAttempts(3) // Maximum number of retry attempts (including the initial call)
@@ -82,7 +82,7 @@ multiDbBuilder.circuitBreakerSlidingWindowSize(2) // Sliding window size in numb
         .retryWaitDurationExponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
 
 // Optional: configure fast failover
-        .fastFailover(true) // Force closing connections to unhealthy cluster on failover
+        .fastFailover(true) // Force closing connections to unhealthy database on failover
         .retryOnFailover(false); // Do not retry failed commands during failover
 
 MultiDbClient  multiDbClient =  multiDbBuilder.build();
@@ -140,16 +140,16 @@ Jedis uses the following circuit breaker settings:
 
 ### Health Check Configuration and Customization
 
-The `MultiDbClient` includes a comprehensive health check system that continuously monitors the availability of Redis clusters to enable automatic failover and failback.
+The `MultiDbClient` includes a comprehensive health check system that continuously monitors the availability of Redis databases to enable automatic failover and failback.
 
 The health check system serves several critical purposes in the failover architecture:
 
-1. **Proactive Monitoring**: Continuously monitors passive clusters that aren't currently receiving traffic
-2. **Failback Detection**: Determines when a previously failed cluster has recovered and is ready to accept traffic
-3. **Circuit Breaker Integration**: Works with the circuit breaker pattern to manage cluster state transitions
+1. **Proactive Monitoring**: Continuously monitors passive databases that aren't currently receiving traffic
+2. **Failback Detection**: Determines when a previously failed database has recovered and is ready to accept traffic
+3. **Circuit Breaker Integration**: Works with the circuit breaker pattern to manage database state transitions
 4. **Customizable Strategies**: Supports pluggable health check implementations for different deployment scenarios
 
-The health check system operates independently of your application traffic, running background checks at configurable intervals to assess cluster health without impacting performance.
+The health check system operates independently of your application traffic, running background checks at configurable intervals to assess database health without impacting performance.
 
 #### Available Health Check Types
 
@@ -184,8 +184,8 @@ The `LagAwareStrategy` is designed specifically for Redis Enterprise Active-Acti
 **Example Configuration:**
 ```java
 BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiDbConfig.StrategySupplier> healthCheckStrategySupplier =
-        (HostAndPort clusterHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
-            LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(clusterHostPort, credentialsSupplier)
+        (HostAndPort dbHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
+            LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(dbHostPort, credentialsSupplier)
                     .interval(5000)                                          // Check every 5 seconds
                     .timeout(3000)                                           // 3 second timeout
                     .extendedCheckEnabled(true)
@@ -195,14 +195,14 @@ BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiDbConfig.StrategySuppli
         };
 
 // Configure REST API endpoint and credentials
-HostAndPort restEndpoint = new HostAndPort("redis-enterprise-cluster-fqdn", 9443);
+HostAndPort restEndpoint = new HostAndPort("redis-enterprise-db-fqdn", 9443);
 Supplier<RedisCredentials> credentialsSupplier = () ->
         new DefaultRedisCredentials("rest-api-user", "pwd");
 
 MultiDbConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
         restEndpoint, credentialsSupplier);
 
-MultiDbConfig.DatabaseConfig clusterConfig =
+MultiDbConfig.DatabaseConfig dbConfig =
         MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
                 .healthCheckStrategySupplier(lagawareStrategySupplier)
                 .build();
@@ -227,7 +227,7 @@ MultiClusterClientConfig.StrategySupplier customStrategy =
         return new MyCustomHealthCheckStrategy(hostAndPort, jedisClientConfig);
     };
 
-MultiClusterClientConfig.ClusterConfig clusterConfig =
+MultiClusterClientConfig.ClusterConfig dbConfig =
     MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
         .healthCheckStrategySupplier(customStrategy)
         .weight(1.0f)
@@ -271,7 +271,7 @@ MultiClusterClientConfig.StrategySupplier pingStrategy = (hostAndPort, jedisClie
     };
 };
 
-MultiClusterClientConfig.ClusterConfig clusterConfig =
+MultiClusterClientConfig.ClusterConfig dbConfig =
     MultiClusterClientConfig.ClusterConfig.builder(hostAndPort, clientConfig)
         .healthCheckStrategySupplier(pingStrategy)
         .build();
@@ -298,9 +298,9 @@ Jedis uses the following fallback settings:
 ### Failover callbacks
 
 In the event that Jedis fails over, you may wish to take some action. This might include logging a warning, recording
-a metric, or externally persisting the cluster connection state, to name just a few examples. For this reason,
+a metric, or externally persisting the database connection state, to name just a few examples. For this reason,
 `MultiDbClient` lets you register a custom callback that will be called whenever Jedis
-fails over to a new cluster.
+fails over to a new database.
 
 To use this feature, you'll need to design a class that implements `java.util.function.Consumer`.
 This class must implement the `accept` method, as you can see below.
@@ -310,7 +310,7 @@ This class must implement the `accept` method, as you can see below.
     
     @Override
     public void accept(DatabaseSwitchEvent e) {
-        System.out.println("Jedis failover to cluster: " + e.getDatabaseName() + " due to " + e.getReason());
+        System.out.println("Jedis failover to database: " + e.getDatabaseName() + " due to " + e.getReason());
     }
 }
 ```
@@ -334,7 +334,7 @@ or directly using lambda expression:
 
 ## Failing back
 
-Jedis supports automatic failback based on health checks or manual failback using the cluster selection API.
+Jedis supports automatic failback based on health checks or manual failback using the database selection API.
 
 ## Failback scenario
 
@@ -350,21 +350,21 @@ You will likely want to fail your application back to `redis-east`.
 
 ### Automatic failback based on health checks
 
-When health checks are enabled, Jedis automatically monitors the health of all configured clusters, including those that are currently inactive due to previous failures. 
+When health checks are enabled, Jedis automatically monitors the health of all configured databases, including those that are currently inactive due to previous failures. 
 The automatic failback process works as follows:
 
-1. **Continuous Monitoring**: Health checks run continuously for all clusters, regardless of their current active status
-2. **Recovery Detection**: When a previously failed cluster passes the required number of consecutive health checks, it's marked as healthy
-3. **Weight-Based Failback**: If automatic failback is enabled and a recovered cluster has a higher weight than the currently active cluster, Jedis will automatically switch to the recovered cluster
-4. **Grace Period Respect**: Failback only occurs after the configured grace period has elapsed since the cluster was marked as unhealthy
+1. **Continuous Monitoring**: Health checks run continuously for all databases, regardless of their current active status
+2. **Recovery Detection**: When a previously failed database passes the required number of consecutive health checks, it's marked as healthy
+3. **Weight-Based Failback**: If automatic failback is enabled and a recovered database has a higher weight than the currently active database, Jedis will automatically switch to the recovered database
+4. **Grace Period Respect**: Failback only occurs after the configured grace period has elapsed since the database was marked as unhealthy
 
-## Manual Failback using the cluster selection API
+## Manual Failback using the database selection API
 
-Once you've determined that it's safe to fail back to a previously-unavailable cluster,
+Once you've determined that it's safe to fail back to a previously-unavailable database,
 you need to decide how to trigger the failback. There are two ways to accomplish this:
 
-`MultiDbClient` exposes a method that you can use to manually select which cluster Jedis should use.
-To select a different cluster to use, pass the cluster's `HostAndPort` to `setActiveDatabase()`:
+`MultiDbClient` exposes a method that you can use to manually select which database Jedis should use.
+To select a different database to use, pass the database's `HostAndPort` to `setActiveDatabase()`:
 ```
         Endpoint endpoint =  new HostAndPort("redis-east.example.com", 14000);
         client.setActiveDatabase(endpoint);

@@ -163,7 +163,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
     // Now add databases - health checks will start but events will be queued
     for (DatabaseConfig config : databaseConfigs) {
-      addClusterInternal(multiDbConfig, config);
+      addDatabaseInternal(multiDbConfig, config);
     }
 
     // Initialize StatusTracker for waiting on health check results
@@ -212,7 +212,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
     activeDatabaseChangeLock.lock();
     try {
-      addClusterInternal(multiDbConfig, databaseConfig);
+      addDatabaseInternal(multiDbConfig, databaseConfig);
     } finally {
       activeDatabaseChangeLock.unlock();
     }
@@ -277,7 +277,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       activeDatabaseChangeLock.unlock();
     }
     if (notificationData != null) {
-      onClusterSwitch(SwitchReason.FORCED, notificationData.getKey(), notificationData.getValue());
+      onDatabaseSwitch(SwitchReason.FORCED, notificationData.getKey(), notificationData.getValue());
     }
   }
 
@@ -285,7 +285,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * Internal method to add a database configuration. This method is not thread-safe and should be
    * called within appropriate locks.
    */
-  private void addClusterInternal(MultiDbConfig multiDbConfig, DatabaseConfig config) {
+  private void addDatabaseInternal(MultiDbConfig multiDbConfig, DatabaseConfig config) {
     if (databaseMap.containsKey(config.getEndpoint())) {
       throw new JedisValidationException(
           "Endpoint " + config.getEndpoint() + " already exists in the provider");
@@ -449,7 +449,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
           activeDatabase.getCircuitBreaker().getName(),
           selectedCluster.getCircuitBreaker().getName());
         if (setActiveDatabase(selectedCluster, true)) {
-          onClusterSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedCluster);
+          onDatabaseSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedCluster);
         }
       }
     } catch (Exception e) {
@@ -469,7 +469,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     boolean changed = setActiveDatabase(database, false);
     if (!changed) return null;
     failoverAttemptCount.set(0);
-    onClusterSwitch(reason, databaseToIterate.getKey(), database);
+    onDatabaseSwitch(reason, databaseToIterate.getKey(), database);
     return databaseToIterate.getKey();
   }
 
@@ -586,7 +586,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
           + "the configured endpoints. Please use one from the configuration");
     }
     if (setActiveDatabase(database, true)) {
-      onClusterSwitch(SwitchReason.FORCED, endpoint, database);
+      onDatabaseSwitch(SwitchReason.FORCED, endpoint, database);
     }
   }
 
@@ -741,7 +741,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     return e != null;
   }
 
-  public void onClusterSwitch(SwitchReason reason, Endpoint endpoint, Database database) {
+  public void onDatabaseSwitch(SwitchReason reason, Endpoint endpoint, Database database) {
     if (databaseSwitchListener != null) {
       DatabaseSwitchEvent eventArgs = new DatabaseSwitchEvent(reason, endpoint, database);
       databaseSwitchListener.accept(eventArgs);

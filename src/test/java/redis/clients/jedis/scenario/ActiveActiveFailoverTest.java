@@ -69,8 +69,8 @@ public class ActiveActiveFailoverTest {
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
     MultiDbConfig multiConfig = MultiDbConfig.builder()
-            .endpoint(primary)
-            .endpoint(secondary)
+            .database(primary)
+            .database(secondary)
             .circuitBreakerSlidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
             .circuitBreakerFailureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
             .failbackSupported(true)

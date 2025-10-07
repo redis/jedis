@@ -1074,7 +1074,7 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Adds a pre-configured endpoint configuration.
+     * Adds a pre-configured database configuration.
      * <p>
      * This method allows adding a fully configured DatabaseConfig instance, providing maximum
      * flexibility for advanced configurations including custom health check strategies, connection
@@ -1083,24 +1083,24 @@ public final class MultiDbConfig {
      * @param databaseConfig the pre-configured database configuration
      * @return this builder
      */
-    public Builder endpoint(DatabaseConfig databaseConfig) {
+    public Builder database(DatabaseConfig databaseConfig) {
       this.databaseConfigs.add(databaseConfig);
       return this;
     }
 
     /**
-     * Adds a Redis endpoint with custom client configuration.
+     * Adds a database endpoint with custom client configuration.
      * <p>
-     * This method allows specifying endpoint-specific configuration such as authentication, SSL
+     * This method allows specifying database-specific configuration such as authentication, SSL
      * settings, timeouts, etc. This configuration will override the default client configuration
-     * for this specific endpoint.
+     * for this specific database endpoint.
      * </p>
      * @param endpoint the Redis server endpoint
      * @param weight the weight for this endpoint (higher values = higher priority)
      * @param clientConfig the client configuration for this endpoint
      * @return this builder
      */
-    public Builder endpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
+    public Builder database(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
 
       DatabaseConfig databaseConfig = DatabaseConfig.builder(endpoint, clientConfig).weight(weight)
           .build();

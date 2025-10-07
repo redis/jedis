@@ -38,14 +38,14 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <pre>
  * MultiDbClient client = MultiDbClient.builder()
  *                 .multiDbConfig(
- *                         MultiDbConfig.builder()
- *                                 .endpoint(
+ *                         w.builder()
+ *                                 .database(
  *                                         DatabaseConfig.builder(
  *                                                         east,
  *                                                         DefaultJedisClientConfig.builder().credentials(credentialsEast).build())
  *                                                 .weight(100.0f)
  *                                                 .build())
- *                                 .endpoint(DatabaseConfig.builder(
+ *                                 .database(DatabaseConfig.builder(
  *                                                 west,
  *                                                 DefaultJedisClientConfig.builder().credentials(credentialsWest).build())
  *                                         .weight(50.0f).build())

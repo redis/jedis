@@ -57,8 +57,8 @@ public class MultiDbClientTest {
   void setUp() {
     // Create a simple resilient client with mock endpoints for testing
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .endpoint(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
-        .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
+        .database(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
+        .database(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
         .build();
 
     client = MultiDbClient.builder().multiDbConfig(clientConfig).build();
@@ -122,8 +122,8 @@ public class MultiDbClientTest {
   @Test
   void testBuilderWithMultipleEndpointTypes() {
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .endpoint(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
-        .endpoint(DatabaseConfig
+        .database(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
+        .database(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder().build())
             .weight(50.0f).build())
         .build();
@@ -173,10 +173,10 @@ public class MultiDbClientTest {
   public void testWithDatabaseSwitchListener() {
 
     MultiDbConfig endpointsConfig = MultiDbConfig.builder()
-        .endpoint(DatabaseConfig
+        .database(DatabaseConfig
             .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
             .weight(100.0f).build())
-        .endpoint(DatabaseConfig
+        .database(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
             .weight(50.0f).build())
         .build();

@@ -44,13 +44,13 @@ import java.util.Set;
  * MultiDbClient client = MultiDbClient.builder()
  *                 .multiDbConfig(
  *                         MultiDbConfig.builder()
- *                                 .endpoint(
+ *                                 .database(
  *                                         DatabaseConfig.builder(
  *                                                         primary,
  *                                                         DefaultJedisClientConfig.builder().build())
  *                                                 .weight(100.0f)
  *                                                 .build())
- *                                 .endpoint(DatabaseConfig.builder(
+ *                                 .database(DatabaseConfig.builder(
  *                                                 secondary,
  *                                                 DefaultJedisClientConfig.builder().build())
  *                                         .weight(50.0f).build())

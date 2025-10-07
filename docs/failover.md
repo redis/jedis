@@ -94,7 +94,7 @@ MultiDbClient multiDbClient = MultiDbClient.builder()
 ```
 
 In the configuration here, we've set a sliding window size of 1000 and a failure rate threshold of 50%.
-This means that a failover will be triggered if 500 out of any 1000 calls to Redis fail.
+This means that a failover will be triggered only if both 500 out of any 1000 calls to Redis fail (i.e., the failure rate threshold is reached) and the minimum number of failures is also met.
 
 You can now use this `MultiDbClient` instance, and the connection management and failover will be handled transparently.
 

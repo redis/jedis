@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.util.ClientTestUtil;
 
 import java.io.IOException;
@@ -62,13 +62,13 @@ public class ActiveActiveFailoverTest {
       .socketTimeoutMillis(SOCKET_TIMEOUT_MS)
       .connectionTimeoutMillis(CONNECTION_TIMEOUT_MS).build();
 
-    ClusterConfig primary = ClusterConfig.builder(endpoint.getHostAndPort(0), config)
+    DatabaseConfig primary = DatabaseConfig.builder(endpoint.getHostAndPort(0), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
 
-    ClusterConfig secondary = ClusterConfig.builder(endpoint.getHostAndPort(1), config)
+    DatabaseConfig secondary = DatabaseConfig.builder(endpoint.getHostAndPort(1), config)
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiClusterClientConfig multiConfig = MultiClusterClientConfig.builder()
+    MultiDbConfig multiConfig = MultiDbConfig.builder()
             .endpoint(primary)
             .endpoint(secondary)
             .circuitBreakerSlidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
@@ -82,7 +82,7 @@ public class ActiveActiveFailoverTest {
             .fastFailover(true)
             .retryOnFailover(false)
             .build();
-    class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
+    class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
       String currentClusterName = "not set";
 
@@ -99,10 +99,10 @@ public class ActiveActiveFailoverTest {
       }
 
       @Override
-      public void accept(ClusterSwitchEventArgs e) {
-        this.currentClusterName = e.getClusterName();
+      public void accept(DatabaseSwitchEvent e) {
+        this.currentClusterName = e.getDatabaseName();
         log.info("\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n",
-          e.getClusterName());
+          e.getDatabaseName());
 
         if (failoverHappened) {
           failbackHappened = true;
@@ -208,9 +208,9 @@ public class ActiveActiveFailoverTest {
       throw new RuntimeException(e);
     }
 
-    MultiClusterPooledConnectionProvider provider = ClientTestUtil.getConnectionProvider(client);
-    ConnectionPool pool1 = provider.getCluster(endpoint.getHostAndPort(0)).getConnectionPool();
-    ConnectionPool pool2 = provider.getCluster(endpoint.getHostAndPort(1)).getConnectionPool();
+    MultiDbConnectionProvider provider = ClientTestUtil.getConnectionProvider(client);
+    ConnectionPool pool1 = provider.getDatabase(endpoint.getHostAndPort(0)).getConnectionPool();
+    ConnectionPool pool2 = provider.getDatabase(endpoint.getHostAndPort(1)).getConnectionPool();
 
     await().atMost(Duration.ofSeconds(1)).until(() -> pool1.getNumActive() == 0);
     await().atMost(Duration.ofSeconds(1)).until(() -> pool2.getNumActive() == 0);

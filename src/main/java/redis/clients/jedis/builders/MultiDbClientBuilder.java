@@ -2,12 +2,12 @@ package redis.clients.jedis.builders;
 
 import java.util.function.Consumer;
 
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 
 /**
@@ -38,14 +38,14 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <pre>
  * MultiDbClient client = MultiDbClient.builder()
  *                 .multiDbConfig(
- *                         MultiClusterClientConfig.builder()
+ *                         MultiDbConfig.builder()
  *                                 .endpoint(
- *                                         ClusterConfig.builder(
+ *                                         DatabaseConfig.builder(
  *                                                         east,
  *                                                         DefaultJedisClientConfig.builder().credentials(credentialsEast).build())
  *                                                 .weight(100.0f)
  *                                                 .build())
- *                                 .endpoint(ClusterConfig.builder(
+ *                                 .endpoint(DatabaseConfig.builder(
  *                                                 west,
  *                                                 DefaultJedisClientConfig.builder().credentials(credentialsWest).build())
  *                                         .weight(50.0f).build())
@@ -60,15 +60,15 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * 
  * @param <C> the client type that this builder creates
  * @author Ivo Gaydazhiev
- * @since 5.2.0
+ * @since 7.0.0
  */
 @Experimental
 public abstract class MultiDbClientBuilder<C>
     extends AbstractClientBuilder<MultiDbClientBuilder<C>, C> {
 
   // Multi-db specific configuration fields
-  private MultiClusterClientConfig multiDbConfig = null;
-  private Consumer<ClusterSwitchEventArgs> databaseSwitchListener = null;
+  private MultiDbConfig multiDbConfig = null;
+  private Consumer<DatabaseSwitchEvent> databaseSwitchListener = null;
 
   /**
    * Sets the multi-database configuration.
@@ -79,7 +79,7 @@ public abstract class MultiDbClientBuilder<C>
    * @param config the multi-database configuration
    * @return this builder
    */
-  public MultiDbClientBuilder<C> multiDbConfig(MultiClusterClientConfig config) {
+  public MultiDbClientBuilder<C> multiDbConfig(MultiDbConfig config) {
     this.multiDbConfig = config;
     return this;
   }
@@ -94,7 +94,7 @@ public abstract class MultiDbClientBuilder<C>
    * @param listener the database switch event listener
    * @return this builder
    */
-  public MultiDbClientBuilder<C> databaseSwitchListener(Consumer<ClusterSwitchEventArgs> listener) {
+  public MultiDbClientBuilder<C> databaseSwitchListener(Consumer<DatabaseSwitchEvent> listener) {
     this.databaseSwitchListener = listener;
     return this;
   }
@@ -107,18 +107,17 @@ public abstract class MultiDbClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
 
-    if (this.multiDbConfig == null || this.multiDbConfig.getClusterConfigs() == null
-        || this.multiDbConfig.getClusterConfigs().length < 1) {
+    if (this.multiDbConfig == null || this.multiDbConfig.getDatabaseConfigs() == null
+        || this.multiDbConfig.getDatabaseConfigs().length < 1) {
       throw new IllegalArgumentException("At least one endpoint must be specified");
     }
 
     // Create the multi-cluster connection provider
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        multiDbConfig);
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(multiDbConfig);
 
     // Set database switch listener if provided
     if (this.databaseSwitchListener != null) {
-      provider.setClusterSwitchListener(this.databaseSwitchListener);
+      provider.setDatabaseSwitchListener(this.databaseSwitchListener);
     }
 
     return provider;
@@ -126,9 +125,8 @@ public abstract class MultiDbClientBuilder<C>
 
   @Override
   protected CommandExecutor createDefaultCommandExecutor() {
-    // For multi-db clients, we always use CircuitBreakerCommandExecutor
-    return new CircuitBreakerCommandExecutor(
-        (MultiClusterPooledConnectionProvider) this.connectionProvider);
+    // For multi-db clients, we always use MultiDbCommandExecutor
+    return new MultiDbCommandExecutor((MultiDbConnectionProvider) this.connectionProvider);
   }
 
   @Override

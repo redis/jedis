@@ -1,7 +1,5 @@
 package redis.clients.jedis.mcf;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
@@ -18,7 +16,7 @@ import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.Toxic;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.scenario.ActiveActiveFailoverTest;
 import redis.clients.jedis.scenario.MultiThreadedFakeApp;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -96,18 +94,18 @@ public class ActiveActiveLocalFailoverTest {
       "TESTING WITH PARAMETERS: fastFailover: {} numberOfThreads: {} minFailoverCompletionDuration: {} maxFailoverCompletionDuration: {] ",
       fastFailover, numberOfThreads, minFailoverCompletionDuration, maxFailoverCompletionDuration);
 
-    MultiClusterClientConfig.ClusterConfig[] clusterConfig = new MultiClusterClientConfig.ClusterConfig[2];
+    MultiDbConfig.DatabaseConfig[] clusterConfig = new MultiDbConfig.DatabaseConfig[2];
 
     JedisClientConfig config = endpoint1.getClientConfigBuilder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-    clusterConfig[0] = ClusterConfig.builder(endpoint1.getHostAndPort(), config)
+    clusterConfig[0] = DatabaseConfig.builder(endpoint1.getHostAndPort(), config)
         .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
-    clusterConfig[1] = ClusterConfig.builder(endpoint2.getHostAndPort(), config)
+    clusterConfig[1] = DatabaseConfig.builder(endpoint2.getHostAndPort(), config)
         .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfig);
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(clusterConfig);
 
     builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
     builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit
@@ -124,7 +122,7 @@ public class ActiveActiveLocalFailoverTest {
     // Use the parameterized fastFailover setting
     builder.fastFailover(fastFailover);
 
-    class FailoverReporter implements Consumer<ClusterSwitchEventArgs> {
+    class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
       String currentClusterName = "not set";
 
@@ -141,10 +139,10 @@ public class ActiveActiveLocalFailoverTest {
       }
 
       @Override
-      public void accept(ClusterSwitchEventArgs e) {
-        this.currentClusterName = e.getClusterName();
+      public void accept(DatabaseSwitchEvent e) {
+        this.currentClusterName = e.getDatabaseName();
         log.info("\n\n===={}=== \nJedis switching to cluster: {}\n====End of log===\n",
-          e.getReason(), e.getClusterName());
+          e.getReason(), e.getDatabaseName());
         if ((e.getReason() == SwitchReason.CIRCUIT_BREAKER
             || e.getReason() == SwitchReason.HEALTH_CHECK)) {
           failoverHappened = true;
@@ -164,11 +162,10 @@ public class ActiveActiveLocalFailoverTest {
     ensureEndpointAvailability(endpoint2.getHostAndPort(), config);
 
     // Create the connection provider
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        builder.build());
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
-    provider.setClusterSwitchListener(reporter);
-    provider.setActiveCluster(endpoint1.getHostAndPort());
+    provider.setDatabaseSwitchListener(reporter);
+    provider.setActiveDatabase(endpoint1.getHostAndPort());
 
     UnifiedJedis client = new UnifiedJedis(provider);
 
@@ -180,7 +177,7 @@ public class ActiveActiveLocalFailoverTest {
     AtomicBoolean unexpectedErrors = new AtomicBoolean(false);
     AtomicReference<Exception> lastException = new AtomicReference<Exception>();
     AtomicLong stopRunningAt = new AtomicLong();
-    String cluster2Id = provider.getCluster(endpoint2.getHostAndPort()).getCircuitBreaker()
+    String cluster2Id = provider.getDatabase(endpoint2.getHostAndPort()).getCircuitBreaker()
         .getName();
 
     // Start thread that imitates an application that uses the client
@@ -198,7 +195,7 @@ public class ActiveActiveLocalFailoverTest {
       while (true) {
         try {
           if (System.currentTimeMillis() > stopRunningAt.get()) break;
-          currentClusterId = provider.getCluster().getCircuitBreaker().getName();
+          currentClusterId = provider.getDatabase().getCircuitBreaker().getName();
           Map<String, String> executionInfo = new HashMap<String, String>() {
             {
               put("threadId", String.valueOf(threadId));
@@ -287,7 +284,7 @@ public class ActiveActiveLocalFailoverTest {
     }
     log.info("Fake app completed");
 
-    ConnectionPool pool = provider.getCluster(endpoint1.getHostAndPort()).getConnectionPool();
+    ConnectionPool pool = provider.getDatabase(endpoint1.getHostAndPort()).getConnectionPool();
 
     log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(),
       pool.getNumIdle());

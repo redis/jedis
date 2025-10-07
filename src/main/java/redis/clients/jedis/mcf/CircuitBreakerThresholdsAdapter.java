@@ -1,7 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDbConfig;
 
 /**
  * Adapter that disables Resilience4j's built-in circuit breaker evaluation and help delegate
@@ -9,10 +9,10 @@ import redis.clients.jedis.MultiClusterClientConfig;
  * <p>
  * This adapter sets maximum values for failure rate (100%) and minimum calls (Integer.MAX_VALUE) to
  * effectively disable Resilience4j's automatic circuit breaker transitions, allowing
- * {@link MultiClusterPooledConnectionProvider.Cluster#evaluateThresholds(boolean)} to control when
- * the circuit breaker opens based on both minimum failure count AND failure rate.
+ * {@link MultiDbConnectionProvider.Database#evaluateThresholds(boolean)} to control when the
+ * circuit breaker opens based on both minimum failure count AND failure rate.
  * </p>
- * @see MultiClusterPooledConnectionProvider.Cluster#evaluateThresholds(boolean)
+ * @see MultiDbConnectionProvider.Database#evaluateThresholds(boolean)
  */
 class CircuitBreakerThresholdsAdapter {
   /** Maximum failure rate threshold (100%) to disable Resilience4j evaluation */
@@ -67,9 +67,9 @@ class CircuitBreakerThresholdsAdapter {
    * method controls circuit breaker state based on the original configuration's dual-threshold
    * logic.
    * </p>
-   * @param multiClusterClientConfig configuration containing sliding window size
+   * @param multiDbConfig configuration containing sliding window size
    */
-  CircuitBreakerThresholdsAdapter(MultiClusterClientConfig multiClusterClientConfig) {
+  CircuitBreakerThresholdsAdapter(MultiDbConfig multiDbConfig) {
 
     // IMPORTANT: failureRateThreshold is set to max theoretically disable Resilience4j's evaluation
     // and rely on our custom evaluateThresholds() logic.
@@ -79,6 +79,6 @@ class CircuitBreakerThresholdsAdapter {
     // and rely on our custom evaluateThresholds() logic.
     minimumNumberOfCalls = Integer.MAX_VALUE;
 
-    slidingWindowSize = multiClusterClientConfig.getCircuitBreakerSlidingWindowSize();
+    slidingWindowSize = multiDbConfig.getCircuitBreakerSlidingWindowSize();
   }
 }

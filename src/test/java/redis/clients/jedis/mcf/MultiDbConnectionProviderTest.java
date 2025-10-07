@@ -5,10 +5,10 @@ import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.*;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
@@ -23,27 +23,26 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @see MultiClusterPooledConnectionProvider
+ * @see MultiDbConnectionProvider
  */
 @Tag("integration")
-public class MultiClusterPooledConnectionProviderTest {
+public class MultiDbConnectionProviderTest {
 
   private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
   private final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
 
-  private MultiClusterPooledConnectionProvider provider;
+  private MultiDbConnectionProvider provider;
 
   @BeforeEach
   public void setUp() {
 
-    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = ClusterConfig.builder(endpointStandalone0.getHostAndPort(),
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
       endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
-    clusterConfigs[1] = ClusterConfig.builder(endpointStandalone1.getHostAndPort(),
+    databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
-    provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(clusterConfigs).build());
+    provider = new MultiDbConnectionProvider(new MultiDbConfig.Builder(databaseConfigs).build());
   }
 
   @AfterEach
@@ -55,7 +54,7 @@ public class MultiClusterPooledConnectionProviderTest {
   @Test
   public void testCircuitBreakerForcedTransitions() {
 
-    CircuitBreaker circuitBreaker = provider.getClusterCircuitBreaker();
+    CircuitBreaker circuitBreaker = provider.getDatabaseCircuitBreaker();
     circuitBreaker.getState();
 
     if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))
@@ -69,46 +68,47 @@ public class MultiClusterPooledConnectionProviderTest {
   }
 
   @Test
-  public void testIterateActiveCluster() throws InterruptedException {
-    waitForClustersToGetHealthy(provider.getCluster(endpointStandalone0.getHostAndPort()),
-      provider.getCluster(endpointStandalone1.getHostAndPort()));
+  public void testSwitchToHealthyDatabase() throws InterruptedException {
+    waitForDatabaseToGetHealthy(provider.getDatabase(endpointStandalone0.getHostAndPort()),
+      provider.getDatabase(endpointStandalone1.getHostAndPort()));
 
-    Endpoint e2 = provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster());
+    Endpoint e2 = provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK,
+      provider.getDatabase());
     assertEquals(endpointStandalone1.getHostAndPort(), e2);
   }
 
   @Test
   public void testCanIterateOnceMore() {
     Endpoint endpoint0 = endpointStandalone0.getHostAndPort();
-    waitForClustersToGetHealthy(provider.getCluster(endpoint0),
-      provider.getCluster(endpointStandalone1.getHostAndPort()));
+    waitForDatabaseToGetHealthy(provider.getDatabase(endpoint0),
+      provider.getDatabase(endpointStandalone1.getHostAndPort()));
 
-    provider.setActiveCluster(endpoint0);
-    provider.getCluster().setDisabled(true);
-    provider.switchToHealthyCluster(SwitchReason.HEALTH_CHECK, provider.getCluster(endpoint0));
+    provider.setActiveDatabase(endpoint0);
+    provider.getDatabase().setDisabled(true);
+    provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase(endpoint0));
 
-    assertFalse(provider.canIterateFrom(provider.getCluster()));
+    assertFalse(provider.canIterateFrom(provider.getDatabase()));
   }
 
-  private void waitForClustersToGetHealthy(Cluster... clusters) {
+  private void waitForDatabaseToGetHealthy(Database... databases) {
     Awaitility.await().pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
         .atMost(Durations.TWO_SECONDS)
-        .until(() -> Arrays.stream(clusters).allMatch(Cluster::isHealthy));
+        .until(() -> Arrays.stream(databases).allMatch(Database::isHealthy));
   }
 
   @Test
-  public void testRunClusterFailoverPostProcessor() {
-    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = ClusterConfig
+  public void testDatabaseSwitchListener() {
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig
         .builder(new HostAndPort("purposefully-incorrect", 0000),
           DefaultJedisClientConfig.builder().build())
         .weight(0.5f).healthCheckEnabled(false).build();
-    clusterConfigs[1] = ClusterConfig
+    databaseConfigs[1] = DatabaseConfig
         .builder(new HostAndPort("purposefully-incorrect", 0001),
           DefaultJedisClientConfig.builder().build())
         .weight(0.4f).healthCheckEnabled(false).build();
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterConfigs);
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(databaseConfigs);
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
     builder.circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
@@ -116,9 +116,8 @@ public class MultiClusterPooledConnectionProviderTest {
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 
-    MultiClusterPooledConnectionProvider localProvider = new MultiClusterPooledConnectionProvider(
-        builder.build());
-    localProvider.setClusterSwitchListener(a -> {
+    MultiDbConnectionProvider localProvider = new MultiDbConnectionProvider(builder.build());
+    localProvider.setDatabaseSwitchListener(a -> {
       isValidTest.set(true);
     });
 
@@ -137,22 +136,13 @@ public class MultiClusterPooledConnectionProviderTest {
   }
 
   @Test
-  public void testSetActiveMultiClusterIndexEqualsZero() {
-    assertThrows(JedisValidationException.class, () -> provider.setActiveCluster(null)); // Should
-                                                                                         // throw an
-                                                                                         // exception
+  public void testSetActiveDatabaseNull() {
+    assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(null));
   }
 
   @Test
-  public void testSetActiveMultiClusterIndexLessThanZero() {
-    assertThrows(JedisValidationException.class, () -> provider.setActiveCluster(null)); // Should
-                                                                                         // throw an
-                                                                                         // exception
-  }
-
-  @Test
-  public void testSetActiveMultiClusterIndexOutOfRange() {
-    assertThrows(JedisValidationException.class, () -> provider.setActiveCluster(new Endpoint() {
+  public void testSetActiveDatabaseByMissingEndpoint() {
+    assertThrows(JedisValidationException.class, () -> provider.setActiveDatabase(new Endpoint() {
       @Override
       public String getHost() {
         return "purposefully-incorrect";
@@ -171,15 +161,14 @@ public class MultiClusterPooledConnectionProviderTest {
     poolConfig.setMaxTotal(8);
     poolConfig.setMaxIdle(4);
     poolConfig.setMinIdle(1);
-    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(),
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = new DatabaseConfig(endpointStandalone0.getHostAndPort(),
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
-    clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(),
+    databaseConfigs[1] = new DatabaseConfig(endpointStandalone1.getHostAndPort(),
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
-    try (
-        MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
-            new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
-      MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
+    try (MultiDbConnectionProvider customProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).build())) {
+      MultiDbConnectionProvider.Database activeCluster = customProvider.getDatabase();
       ConnectionPool connectionPool = activeCluster.getConnectionPool();
       assertEquals(8, connectionPool.getMaxTotal());
       assertEquals(4, connectionPool.getMaxIdle());
@@ -202,13 +191,13 @@ public class MultiClusterPooledConnectionProviderTest {
         });
 
     // Create new provider with health check strategy (don't use the setUp() provider)
-    ClusterConfig config = ClusterConfig
+    DatabaseConfig config = DatabaseConfig
         .builder(endpointStandalone0.getHostAndPort(),
           endpointStandalone0.getClientConfigBuilder().build())
         .healthCheckStrategy(countingStrategy).build();
 
-    MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(Collections.singletonList(config)).build());
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(Collections.singletonList(config)).build());
 
     try {
       // Wait for some health checks to occur
@@ -236,22 +225,22 @@ public class MultiClusterPooledConnectionProviderTest {
 
   @Test
   public void userCommand_firstTemporary_thenPermanent_inOrder() {
-    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = ClusterConfig.builder(endpointStandalone0.getHostAndPort(),
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
       endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
-    clusterConfigs[1] = ClusterConfig.builder(endpointStandalone1.getHostAndPort(),
+    databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
       endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
 
-    MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(100)
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2).retryMaxAttempts(1).build());
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
       jedis.get("foo");
 
-      // Disable both clusters so any attempt to switch results in 'no healthy cluster' path
-      testProvider.getCluster(endpointStandalone0.getHostAndPort()).setDisabled(true);
-      testProvider.getCluster(endpointStandalone1.getHostAndPort()).setDisabled(true);
+      // Disable both databases so any attempt to switch results in 'no healthy database' path
+      testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
+      testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
 
       // Simulate user running a command that fails and triggers failover iteration
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
@@ -266,12 +255,12 @@ public class MultiClusterPooledConnectionProviderTest {
 
   @Test
   public void userCommand_connectionExceptions_thenMultipleTemporary_thenPermanent_inOrder() {
-    ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-    clusterConfigs[0] = ClusterConfig
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig
         .builder(endpointStandalone0.getHostAndPort(),
           endpointStandalone0.getClientConfigBuilder().build())
         .weight(0.5f).healthCheckEnabled(false).build();
-    clusterConfigs[1] = ClusterConfig
+    databaseConfigs[1] = DatabaseConfig
         .builder(endpointStandalone1.getHostAndPort(),
           endpointStandalone1.getClientConfigBuilder().build())
         .weight(0.3f).healthCheckEnabled(false).build();
@@ -279,8 +268,8 @@ public class MultiClusterPooledConnectionProviderTest {
     // ATTENTION: these configuration settings are not random and
     // adjusted to get exact numbers of failures with exact exception types
     // and open to impact from other defaulted values withing the components in use.
-    MultiClusterPooledConnectionProvider testProvider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(clusterConfigs).delayInBetweenFailoverAttempts(100)
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
             .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
             .circuitBreakerFailureRateThreshold(60).build()) {
     };
@@ -288,8 +277,8 @@ public class MultiClusterPooledConnectionProviderTest {
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
       jedis.get("foo");
 
-      // disable most weighted cluster so that it will fail on initial requests
-      testProvider.getCluster(endpointStandalone0.getHostAndPort()).setDisabled(true);
+      // disable most weighted database so that it will fail on initial requests
+      testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
 
       Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get("foo"));
       assertEquals(JedisConnectionException.class, e.getClass());
@@ -298,7 +287,7 @@ public class MultiClusterPooledConnectionProviderTest {
       assertEquals(JedisConnectionException.class, e.getClass());
 
       // then disable the second ones
-      testProvider.getCluster(endpointStandalone1.getHostAndPort()).setDisabled(true);
+      testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
 

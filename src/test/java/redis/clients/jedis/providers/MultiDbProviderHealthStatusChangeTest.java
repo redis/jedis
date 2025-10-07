@@ -14,17 +14,17 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
+import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.mcf.HealthStatus;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProviderHelper;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 
 /**
- * Tests for MultiClusterPooledConnectionProvider event handling behavior during initialization and
- * throughout its lifecycle with HealthStatusChangeEvents.
+ * Tests for MultiDbConnectionProvider event handling behavior during initialization and throughout
+ * its lifecycle with HealthStatusChangeEvents.
  */
 @ExtendWith(MockitoExtension.class)
-public class MultiClusterProviderHealthStatusChangeEventTest {
+public class MultiDbProviderHealthStatusChangeTest {
 
   private HostAndPort endpoint1;
   private HostAndPort endpoint2;
@@ -52,30 +52,29 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   void postInit_unhealthy_active_sets_grace_and_fails_over() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
       // Create clusters without health checks
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
 
-        assertFalse(provider.getCluster(endpoint1).isInGracePeriod());
-        assertEquals(provider.getCluster(), provider.getCluster(endpoint1));
+        assertFalse(provider.getDatabase(endpoint1).isInGracePeriod());
+        assertEquals(provider.getDatabase(), provider.getDatabase(endpoint1));
 
         // This should process immediately since initialization is complete
         assertDoesNotThrow(() -> {
-          MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+          MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
             HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
         }, "Post-initialization events should be processed immediately");
 
         // Verify the cluster has changed according to the UNHEALTHY status
-        assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+        assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "UNHEALTHY status on active cluster should cause a grace period");
-        assertNotEquals(provider.getCluster(), provider.getCluster(endpoint1),
+        assertNotEquals(provider.getDatabase(), provider.getDatabase(endpoint1),
           "UNHEALTHY status on active cluster should cause a failover");
       }
     }
@@ -84,46 +83,45 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void postInit_nonActive_changes_do_not_switch_active() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Verify initial state
-        assertEquals(provider.getCluster(endpoint1), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint1), provider.getDatabase(),
           "Should start with endpoint1 active");
 
         // Simulate multiple rapid events for the same endpoint (post-init behavior)
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // After first UNHEALTHY on active cluster: it enters grace period and provider fails over
-        assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+        assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "Active cluster should enter grace period");
-        assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Should fail over to endpoint2");
 
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Healthy event for non-active cluster should not immediately revert active cluster
-        assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Active cluster should remain endpoint2");
-        assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+        assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "Grace period should still be in effect");
 
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
         // Further UNHEALTHY for non-active cluster is a no-op
-        assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Active cluster unchanged");
-        assertTrue(provider.getCluster(endpoint1).isInGracePeriod(), "Still in grace period");
+        assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(), "Still in grace period");
       }
     }
   }
@@ -131,26 +129,25 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void init_selects_highest_weight_healthy_when_checks_disabled() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // This test verifies that multiple endpoints are properly initialized
 
         // Verify both clusters are initialized properly
-        assertNotNull(provider.getCluster(endpoint1), "Cluster 1 should be available");
-        assertNotNull(provider.getCluster(endpoint2), "Cluster 2 should be available");
+        assertNotNull(provider.getDatabase(endpoint1), "Database 1 should be available");
+        assertNotNull(provider.getDatabase(endpoint2), "Database 2 should be available");
 
         // Both should be healthy (no health checks = assumed healthy)
-        assertTrue(provider.getCluster(endpoint1).isHealthy(), "Cluster 1 should be healthy");
-        assertTrue(provider.getCluster(endpoint2).isHealthy(), "Cluster 2 should be healthy");
+        assertTrue(provider.getDatabase(endpoint1).isHealthy(), "Database 1 should be healthy");
+        assertTrue(provider.getDatabase(endpoint2).isHealthy(), "Database 2 should be healthy");
       }
     }
   }
@@ -158,22 +155,21 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void init_single_cluster_initializes_and_is_healthy() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1 }).build();
 
       // This test verifies that the provider initializes correctly and doesn't lose events
       // In practice, with health checks disabled, no events should be generated during init
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Verify successful initialization
-        assertNotNull(provider.getCluster(), "Provider should have initialized successfully");
-        assertEquals(provider.getCluster(endpoint1), provider.getCluster(),
+        assertNotNull(provider.getDatabase(), "Provider should have initialized successfully");
+        assertEquals(provider.getDatabase(endpoint1), provider.getDatabase(),
           "Should have selected the configured cluster");
-        assertTrue(provider.getCluster().isHealthy(),
-          "Cluster should be healthy (assumed healthy with no health checks)");
+        assertTrue(provider.getDatabase().isHealthy(),
+          "Database should be healthy (assumed healthy with no health checks)");
       }
     }
   }
@@ -183,42 +179,41 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void postInit_two_hop_failover_chain_respected() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig.ClusterConfig cluster3 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster3 = MultiDbConfig.DatabaseConfig
           .builder(endpoint3, clientConfig).weight(0.2f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2, cluster3 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // First event: endpoint1 (active) becomes UNHEALTHY -> failover to endpoint2, endpoint1
         // enters grace
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
-        assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+        assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "Endpoint1 should be in grace after unhealthy");
-        assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Should have failed over to endpoint2");
 
         // Second event: endpoint2 (now active) becomes UNHEALTHY -> failover to endpoint3
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
-        assertTrue(provider.getCluster(endpoint2).isInGracePeriod(),
+        assertTrue(provider.getDatabase(endpoint2).isInGracePeriod(),
           "Endpoint2 should be in grace after unhealthy");
-        assertEquals(provider.getCluster(endpoint3), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint3), provider.getDatabase(),
           "Should have failed over to endpoint3");
 
         // Third event: endpoint1 becomes HEALTHY again -> no immediate switch due to grace period
         // behavior
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
-        assertEquals(provider.getCluster(endpoint3), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint3), provider.getDatabase(),
           "Active cluster should remain endpoint3");
       }
     }
@@ -227,33 +222,32 @@ public class MultiClusterProviderHealthStatusChangeEventTest {
   @Test
   void postInit_rapid_events_respect_grace_and_keep_active_stable() throws Exception {
     try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
-      MultiClusterClientConfig.ClusterConfig cluster1 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig.ClusterConfig cluster2 = MultiClusterClientConfig.ClusterConfig
+      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
           .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
 
-      MultiClusterClientConfig config = new MultiClusterClientConfig.Builder(
-          new MultiClusterClientConfig.ClusterConfig[] { cluster1, cluster2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).build();
 
-      try (MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-          config)) {
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Verify initial state
-        assertEquals(HealthStatus.HEALTHY, provider.getCluster(endpoint1).getHealthStatus(),
+        assertEquals(HealthStatus.HEALTHY, provider.getDatabase(endpoint1).getHealthStatus(),
           "Should start as HEALTHY");
 
         // Send rapid sequence of events post-init
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY); // triggers failover and grace
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.UNHEALTHY, HealthStatus.HEALTHY); // non-active cluster becomes healthy
-        MultiClusterPooledConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
           HealthStatus.HEALTHY, HealthStatus.UNHEALTHY); // still non-active and in grace; no change
 
         // Final expectations: endpoint1 is in grace, provider remains on endpoint2
-        assertTrue(provider.getCluster(endpoint1).isInGracePeriod(),
+        assertTrue(provider.getDatabase(endpoint1).isInGracePeriod(),
           "Endpoint1 should be in grace period");
-        assertEquals(provider.getCluster(endpoint2), provider.getCluster(),
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Active cluster should remain endpoint2");
       }
     }

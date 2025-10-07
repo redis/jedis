@@ -8,7 +8,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.MultiClusterClientConfig.StrategySupplier;
+import redis.clients.jedis.MultiDbConfig.StrategySupplier;
 
 public class EchoStrategy implements HealthCheckStrategy {
   private static final int MAX_HEALTH_CHECK_POOL_SIZE = 2;

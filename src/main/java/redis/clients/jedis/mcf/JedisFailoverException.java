@@ -11,7 +11,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * @see JedisFailoverException.JedisTemporarilyNotAvailableException
  */
 public class JedisFailoverException extends JedisConnectionException {
-  private static final String MESSAGE = "Cluster/database endpoint could not failover since the MultiClusterClientConfig was not "
+  private static final String MESSAGE = "Cluster/database endpoint could not failover since the MultiDbConfig was not "
       + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
       + "If applicable, consider falling back OR restarting with an available cluster/database endpoint";
 
@@ -28,9 +28,8 @@ public class JedisFailoverException extends JedisConnectionException {
    * the max number of failover attempts has been exceeded. And there is still no healthy cluster.
    * <p>
    * See the configuration properties
-   * {@link redis.clients.jedis.MultiClusterClientConfig#maxNumFailoverAttempts} and
-   * {@link redis.clients.jedis.MultiClusterClientConfig#delayInBetweenFailoverAttempts} for more
-   * details.
+   * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and
+   * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more details.
    */
   public static class JedisPermanentlyNotAvailableException extends JedisFailoverException {
     public JedisPermanentlyNotAvailableException(String s) {
@@ -49,9 +48,8 @@ public class JedisFailoverException extends JedisConnectionException {
    * temporary condition and it is possible that there will be a healthy cluster available.
    * <p>
    * See the configuration properties
-   * {@link redis.clients.jedis.MultiClusterClientConfig#maxNumFailoverAttempts} and
-   * {@link redis.clients.jedis.MultiClusterClientConfig#delayInBetweenFailoverAttempts} for more
-   * details.
+   * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and
+   * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more details.
    */
   public static class JedisTemporarilyNotAvailableException extends JedisFailoverException {
 

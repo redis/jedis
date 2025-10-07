@@ -16,11 +16,11 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.MultiDbConfig;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider.Cluster;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
@@ -28,40 +28,40 @@ import redis.clients.jedis.util.ReflectionTestUtil;
  * must be exceeded to trigger failover. Uses a real CircuitBreaker and real Retry, but mocks the
  * provider and cluster wiring to avoid network I/O.
  */
-public class CircuitBreakerThresholdsTest {
+public class MultiDbCircuitBreakerThresholdsTest {
 
-  private MultiClusterPooledConnectionProvider realProvider;
-  private MultiClusterPooledConnectionProvider spyProvider;
-  private Cluster cluster;
-  private CircuitBreakerCommandExecutor executor;
+  private MultiDbConnectionProvider realProvider;
+  private MultiDbConnectionProvider spyProvider;
+  private Database cluster;
+  private MultiDbCommandExecutor executor;
   private CommandObject<String> dummyCommand;
   private TrackingConnectionPool poolMock;
   private HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
   private HostAndPort fakeEndpoint2 = new HostAndPort("fake2", 6379);
-  private ClusterConfig[] fakeClusterConfigs;
+  private DatabaseConfig[] fakeDatabaseConfigs;
 
   @BeforeEach
   public void setup() throws Exception {
 
-    ClusterConfig[] clusterConfigs = new ClusterConfig[] {
-        ClusterConfig.builder(fakeEndpoint, DefaultJedisClientConfig.builder().build())
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[] {
+        DatabaseConfig.builder(fakeEndpoint, DefaultJedisClientConfig.builder().build())
             .healthCheckEnabled(false).weight(1.0f).build(),
-        ClusterConfig.builder(fakeEndpoint2, DefaultJedisClientConfig.builder().build())
+        DatabaseConfig.builder(fakeEndpoint2, DefaultJedisClientConfig.builder().build())
             .healthCheckEnabled(false).weight(0.5f).build() };
-    fakeClusterConfigs = clusterConfigs;
+    fakeDatabaseConfigs = databaseConfigs;
 
-    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig.builder(clusterConfigs)
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(databaseConfigs)
         .circuitBreakerFailureRateThreshold(50.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
 
-    MultiClusterClientConfig mcc = cfgBuilder.build();
+    MultiDbConfig mcc = cfgBuilder.build();
 
-    realProvider = new MultiClusterPooledConnectionProvider(mcc);
+    realProvider = new MultiDbConnectionProvider(mcc);
     spyProvider = spy(realProvider);
 
-    cluster = spyProvider.getCluster();
+    cluster = spyProvider.getDatabase();
 
-    executor = new CircuitBreakerCommandExecutor(spyProvider);
+    executor = new MultiDbCommandExecutor(spyProvider);
 
     dummyCommand = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
         BuilderFactory.STRING);
@@ -88,7 +88,7 @@ public class CircuitBreakerThresholdsTest {
     }
 
     // Below min failures; CB remains CLOSED
-    assertEquals(CircuitBreaker.State.CLOSED, spyProvider.getClusterCircuitBreaker().getState());
+    assertEquals(CircuitBreaker.State.CLOSED, spyProvider.getDatabaseCircuitBreaker().getState());
   }
 
   /**
@@ -111,10 +111,10 @@ public class CircuitBreakerThresholdsTest {
     // Next call should hit open CB (CallNotPermitted) and trigger failover
     assertThrows(JedisConnectionException.class, () -> executor.executeCommand(dummyCommand));
 
-    verify(spyProvider, atLeastOnce()).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER),
+    verify(spyProvider, atLeastOnce()).switchToHealthyDatabase(eq(SwitchReason.CIRCUIT_BREAKER),
       any());
     assertEquals(CircuitBreaker.State.FORCED_OPEN,
-      spyProvider.getCluster(fakeEndpoint).getCircuitBreaker().getState());
+      spyProvider.getDatabase(fakeEndpoint).getCircuitBreaker().getState());
   }
 
   /**
@@ -123,15 +123,13 @@ public class CircuitBreakerThresholdsTest {
   @Test
   public void rateBelowThreshold_doesNotFailover() throws Exception {
     // Use local provider with higher threshold (80%) and no retries
-    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
-        .builder(fakeClusterConfigs).circuitBreakerFailureRateThreshold(80.0f)
-        .circuitBreakerMinNumOfFailures(3).circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1)
-        .retryOnFailover(false);
-    MultiClusterPooledConnectionProvider rp = new MultiClusterPooledConnectionProvider(
-        cfgBuilder.build());
-    MultiClusterPooledConnectionProvider sp = spy(rp);
-    Cluster c = sp.getCluster();
-    try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(sp)) {
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
+        .circuitBreakerFailureRateThreshold(80.0f).circuitBreakerMinNumOfFailures(3)
+        .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
+    MultiDbConnectionProvider rp = new MultiDbConnectionProvider(cfgBuilder.build());
+    MultiDbConnectionProvider sp = spy(rp);
+    Database c = sp.getDatabase();
+    try (MultiDbCommandExecutor ex = new MultiDbCommandExecutor(sp)) {
       CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
           BuilderFactory.STRING);
 
@@ -158,17 +156,16 @@ public class CircuitBreakerThresholdsTest {
         assertThrows(JedisConnectionException.class, () -> ex.executeCommand(cmd));
       }
 
-      assertEquals(CircuitBreaker.State.CLOSED, sp.getClusterCircuitBreaker().getState());
+      assertEquals(CircuitBreaker.State.CLOSED, sp.getDatabaseCircuitBreaker().getState());
     }
   }
 
   @Test
   public void providerBuilder_zeroRate_mapsToHundredAndHugeMinCalls() {
-    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
-        .builder(fakeClusterConfigs);
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs);
     cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
         .circuitBreakerSlidingWindowSize(10);
-    MultiClusterClientConfig mcc = cfgBuilder.build();
+    MultiDbConfig mcc = cfgBuilder.build();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);
 
@@ -192,17 +189,15 @@ public class CircuitBreakerThresholdsTest {
   public void thresholdMatrix(int minFailures, float ratePercent, int successes, int failures,
       boolean expectFailoverOnNext) throws Exception {
 
-    MultiClusterClientConfig.Builder cfgBuilder = MultiClusterClientConfig
-        .builder(fakeClusterConfigs).circuitBreakerFailureRateThreshold(ratePercent)
-        .circuitBreakerMinNumOfFailures(minFailures)
+    MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
+        .circuitBreakerFailureRateThreshold(ratePercent).circuitBreakerMinNumOfFailures(minFailures)
         .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2)).retryMaxAttempts(1)
         .retryOnFailover(false);
 
-    MultiClusterPooledConnectionProvider real = new MultiClusterPooledConnectionProvider(
-        cfgBuilder.build());
-    MultiClusterPooledConnectionProvider spy = spy(real);
-    Cluster c = spy.getCluster();
-    try (CircuitBreakerCommandExecutor ex = new CircuitBreakerCommandExecutor(spy)) {
+    MultiDbConnectionProvider real = new MultiDbConnectionProvider(cfgBuilder.build());
+    MultiDbConnectionProvider spy = spy(real);
+    Database c = spy.getDatabase();
+    try (MultiDbCommandExecutor ex = new MultiDbCommandExecutor(spy)) {
 
       CommandObject<String> cmd = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
           BuilderFactory.STRING);
@@ -237,7 +232,7 @@ public class CircuitBreakerThresholdsTest {
 
       if (expectFailoverOnNext) {
         assertThrows(Exception.class, () -> ex.executeCommand(cmd));
-        verify(spy, atLeastOnce()).switchToHealthyCluster(eq(SwitchReason.CIRCUIT_BREAKER), any());
+        verify(spy, atLeastOnce()).switchToHealthyDatabase(eq(SwitchReason.CIRCUIT_BREAKER), any());
         assertEquals(CircuitBreaker.State.FORCED_OPEN, c.getCircuitBreaker().getState());
       } else {
         CircuitBreaker.State st = c.getCircuitBreaker().getState();

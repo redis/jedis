@@ -28,14 +28,14 @@ import redis.clients.jedis.executors.*;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.MultiClusterPipeline;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.mcf.MultiClusterTransaction;
+import redis.clients.jedis.mcf.MultiDbPipeline;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
@@ -240,8 +240,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    */
   @Experimental
-  public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
-    this(new CircuitBreakerCommandExecutor(provider), provider);
+  public UnifiedJedis(MultiDbConnectionProvider provider) {
+    this(new MultiDbCommandExecutor(provider), provider);
   }
 
   /**
@@ -5099,8 +5099,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
-    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
+    } else if (provider instanceof MultiDbConnectionProvider) {
+      return new MultiDbPipeline((MultiDbConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true, commandObjects);
     }
@@ -5120,8 +5120,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public AbstractTransaction transaction(boolean doMulti) {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
-    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, doMulti, commandObjects);
+    } else if (provider instanceof MultiDbConnectionProvider) {
+      return new MultiDbTransaction((MultiDbConnectionProvider) provider, doMulti, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
     }

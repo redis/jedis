@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.mcf.ClusterSwitchEventArgs;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.mcf.MultiClusterPooledConnectionProviderHelper;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.util.IOUtils;
 
@@ -47,10 +47,10 @@ public class AutomaticFailoverTest {
 
   private Jedis jedis2;
 
-  private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(
+  private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
       JedisClientConfig clientConfig, HostAndPort... hostPorts) {
     return Arrays.stream(hostPorts)
-        .map(hp -> new MultiClusterClientConfig.ClusterConfig(hp, clientConfig))
+        .map(hp -> new MultiDbConfig.DatabaseConfig(hp, clientConfig))
         .collect(Collectors.toList());
   }
 
@@ -68,17 +68,17 @@ public class AutomaticFailoverTest {
 
   @Test
   public void pipelineWithSwitch() {
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(
-            getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(
+            getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
-        SwitchReason.HEALTH_CHECK, provider.getCluster());
+      MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getDatabase());
       pipe.sync();
     }
 
@@ -88,17 +88,17 @@ public class AutomaticFailoverTest {
 
   @Test
   public void transactionWithSwitch() {
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(
-            getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(
+            getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      MultiClusterPooledConnectionProviderHelper.switchToHealthyCluster(provider,
-        SwitchReason.HEALTH_CHECK, provider.getCluster());
+      MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
+        SwitchReason.HEALTH_CHECK, provider.getDatabase());
       assertEquals(Arrays.asList("OK", 1L), tx.exec());
     }
 
@@ -112,16 +112,16 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 2;
 
     HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
             .retryWaitDuration(1).retryMaxAttempts(1)
             .circuitBreakerSlidingWindowSize(slidingWindowSize)
             .circuitBreakerMinNumOfFailures(slidingWindowMinFails);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
+    MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
         builder.build());
-    connectionProvider.setClusterSwitchListener(failoverReporter);
+    connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
     UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
@@ -152,8 +152,8 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 6;
     int retryMaxAttempts = 3;
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
             .retryMaxAttempts(retryMaxAttempts) // Default
             // is
             // 3
@@ -162,9 +162,9 @@ public class AutomaticFailoverTest {
             .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider connectionProvider = new MultiClusterPooledConnectionProvider(
+    MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
         builder.build());
-    connectionProvider.setClusterSwitchListener(failoverReporter);
+    connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
     UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
 
@@ -194,15 +194,15 @@ public class AutomaticFailoverTest {
   public void pipelineFailover() {
     int slidingWindowSize = 10;
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
             .circuitBreakerSlidingWindowSize(slidingWindowSize)
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(
+    MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(
         builder.build());
-    cacheProvider.setClusterSwitchListener(failoverReporter);
+    cacheProvider.setDatabaseSwitchListener(failoverReporter);
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
@@ -226,15 +226,15 @@ public class AutomaticFailoverTest {
   public void failoverFromAuthError() {
     int slidingWindowSize = 10;
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
           workingEndpoint.getHostAndPort())).circuitBreakerSlidingWindowSize(slidingWindowSize)
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(
+    MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(
         builder.build());
-    cacheProvider.setClusterSwitchListener(failoverReporter);
+    cacheProvider.setDatabaseSwitchListener(failoverReporter);
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
@@ -250,13 +250,13 @@ public class AutomaticFailoverTest {
     jedis.close();
   }
 
-  static class RedisFailoverReporter implements Consumer<ClusterSwitchEventArgs> {
+  static class RedisFailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
     boolean failedOver = false;
 
     @Override
-    public void accept(ClusterSwitchEventArgs e) {
-      log.info("Jedis fail over to cluster: " + e.getClusterName());
+    public void accept(DatabaseSwitchEvent e) {
+      log.info("Jedis fail over to cluster: " + e.getDatabaseName());
       failedOver = true;
     }
   }

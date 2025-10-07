@@ -20,13 +20,13 @@ import redis.clients.jedis.util.KeyValue;
  * This is high memory dependent solution as all the appending commands will be hold in memory.
  */
 @Experimental
-public class MultiClusterTransaction extends TransactionBase {
+public class MultiDbTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
   private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
-  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
+  private final MultiDbConnectionSupplier failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
@@ -39,7 +39,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param provider
    */
   @Deprecated
-  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider) {
+  public MultiDbTransaction(MultiDbConnectionProvider provider) {
     this(provider, true);
   }
 
@@ -50,8 +50,8 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   @Deprecated
-  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+  public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti) {
+    this.failoverProvider = new MultiDbConnectionSupplier(provider);
 
     try (Connection connection = failoverProvider.getConnection()) {
       RedisProtocol proto = connection.getRedisProtocol();
@@ -68,10 +68,10 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param commandObjects command objects
    */
-  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti,
+  public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti,
       CommandObjects commandObjects) {
     super(commandObjects);
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+    this.failoverProvider = new MultiDbConnectionSupplier(provider);
 
     if (doMulti) multi();
   }

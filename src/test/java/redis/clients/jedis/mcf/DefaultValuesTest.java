@@ -33,8 +33,8 @@ public class DefaultValuesTest {
     // check healthchecks enabled
     assertNotNull(databaseConfig.getHealthCheckStrategySupplier());
 
-    // check default healthcheck strategy is echo
-    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
+    // check default healthcheck strategy is PingStrategy
+    assertEquals(PingStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
 
     // check number of probes
     assertEquals(3,

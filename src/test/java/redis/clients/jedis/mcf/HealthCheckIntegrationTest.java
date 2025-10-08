@@ -42,9 +42,9 @@ public class HealthCheckIntegrationTest {
 
   @Test
   public void testDefaultStrategySupplier() {
-    // Create a default strategy supplier that creates EchoStrategy instances
+    // Create a default strategy supplier that creates PingStrategy instances
     MultiDbConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
-      return new EchoStrategy(hostAndPort, jedisClientConfig);
+      return new PingStrategy(hostAndPort, jedisClientConfig);
     };
     MultiDbConnectionProvider customProvider = getMCCF(defaultSupplier);
     try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
@@ -113,8 +113,8 @@ public class HealthCheckIntegrationTest {
         }
         // Third attempt succeeds - do actual health check
         try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
-          String result = jedis.echo("HealthCheck");
-          return "HealthCheck".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+          String result = jedis.ping();
+          return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
         } catch (Exception e) {
           return HealthStatus.UNHEALTHY;
         }

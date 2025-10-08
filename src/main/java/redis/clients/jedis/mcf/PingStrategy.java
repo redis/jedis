@@ -10,17 +10,17 @@ import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
 
-public class EchoStrategy implements HealthCheckStrategy {
+public class PingStrategy implements HealthCheckStrategy {
   private static final int MAX_HEALTH_CHECK_POOL_SIZE = 2;
 
   private final UnifiedJedis jedis;
   private final HealthCheckStrategy.Config config;
 
-  public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
+  public PingStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
     this(hostAndPort, jedisClientConfig, HealthCheckStrategy.Config.create());
   }
 
-  public EchoStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig,
+  public PingStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig,
       HealthCheckStrategy.Config config) {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(MAX_HEALTH_CHECK_POOL_SIZE);
@@ -55,8 +55,7 @@ public class EchoStrategy implements HealthCheckStrategy {
 
   @Override
   public HealthStatus doHealthCheck(Endpoint endpoint) {
-    return "HealthCheck".equals(jedis.echo("HealthCheck")) ? HealthStatus.HEALTHY
-        : HealthStatus.UNHEALTHY;
+    return "PONG".equals(jedis.ping()) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
   }
 
   @Override
@@ -64,6 +63,6 @@ public class EchoStrategy implements HealthCheckStrategy {
     jedis.close();
   }
 
-  public static final StrategySupplier DEFAULT = EchoStrategy::new;
+  public static final StrategySupplier DEFAULT = PingStrategy::new;
 
 }

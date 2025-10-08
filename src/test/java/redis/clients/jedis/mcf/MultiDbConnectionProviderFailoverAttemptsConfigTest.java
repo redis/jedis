@@ -47,7 +47,7 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
 
     provider = new MultiDbConnectionProvider(builder.build());
 
-    // Disable both databases to force handleNoHealthyCluster path
+    // Disable both databases to force handleNoHealthyDatabase path
     provider.getDatabase(endpoint0).setDisabled(true);
     provider.getDatabase(endpoint1).setDisabled(true);
   }
@@ -69,8 +69,8 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
-    assertThrows(JedisTemporarilyNotAvailableException.class, () -> MultiDbConnectionProviderHelper
-        .switchToHealthyCluster(provider, SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+    assertThrows(JedisTemporarilyNotAvailableException.class,
+      () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 
@@ -78,8 +78,7 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
     // and should NOT increment the attempt count beyond 1
     for (int i = 0; i < 50; i++) {
       assertThrows(JedisTemporarilyNotAvailableException.class,
-        () -> MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
-          SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+        () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
       assertEquals(1, getProviderAttemptCount());
     }
   }
@@ -96,8 +95,8 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
-    assertThrows(JedisTemporarilyNotAvailableException.class, () -> MultiDbConnectionProviderHelper
-        .switchToHealthyCluster(provider, SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+    assertThrows(JedisTemporarilyNotAvailableException.class,
+      () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();
     assertEquals(1, afterFirst);
 

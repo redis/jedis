@@ -111,8 +111,8 @@ public class MultiDbConnectionProviderTest {
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(databaseConfigs);
 
     // Configures a single failed command to trigger an open circuit on the next subsequent failure
-    builder.circuitBreakerSlidingWindowSize(3).circuitBreakerMinNumOfFailures(1)
-        .circuitBreakerFailureRateThreshold(0);
+    builder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(3)
+        .minNumOfFailures(1).failureRateThreshold(0).build());
 
     AtomicBoolean isValidTest = new AtomicBoolean(false);
 
@@ -168,8 +168,8 @@ public class MultiDbConnectionProviderTest {
         endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
     try (MultiDbConnectionProvider customProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).build())) {
-      MultiDbConnectionProvider.Database activeCluster = customProvider.getDatabase();
-      ConnectionPool connectionPool = activeCluster.getConnectionPool();
+      MultiDbConnectionProvider.Database activeDatabase = customProvider.getDatabase();
+      ConnectionPool connectionPool = activeDatabase.getConnectionPool();
       assertEquals(8, connectionPool.getMaxTotal());
       assertEquals(4, connectionPool.getMaxIdle());
       assertEquals(1, connectionPool.getMinIdle());
@@ -233,7 +233,8 @@ public class MultiDbConnectionProviderTest {
 
     MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).build());
+            .maxNumFailoverAttempts(2)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build());
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
       jedis.get("foo");
@@ -270,8 +271,11 @@ public class MultiDbConnectionProviderTest {
     // and open to impact from other defaulted values withing the components in use.
     MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
-            .maxNumFailoverAttempts(2).retryMaxAttempts(1).circuitBreakerSlidingWindowSize(5)
-            .circuitBreakerFailureRateThreshold(60).build()) {
+            .maxNumFailoverAttempts(2)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(5)
+                .failureRateThreshold(60).build())
+            .build()) {
     };
 
     try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {

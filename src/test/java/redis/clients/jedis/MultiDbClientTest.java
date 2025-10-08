@@ -57,8 +57,8 @@ public class MultiDbClientTest {
   void setUp() {
     // Create a simple resilient client with mock endpoints for testing
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .endpoint(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
-        .endpoint(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
+        .database(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
+        .database(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
         .build();
 
     client = MultiDbClient.builder().multiDbConfig(clientConfig).build();
@@ -72,111 +72,111 @@ public class MultiDbClientTest {
   }
 
   @Test
-  void testAddRemoveEndpointWithEndpointInterface() {
+  void testAddRemoveDatabaseWithEndpointInterface() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
 
     assertDoesNotThrow(
-      () -> client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
+      () -> client.addDatabase(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
 
-    assertThat(client.getEndpoints(), hasItems(newEndpoint));
+    assertThat(client.getDatabaseEndpoints(), hasItems(newEndpoint));
 
-    assertDoesNotThrow(() -> client.removeEndpoint(newEndpoint));
+    assertDoesNotThrow(() -> client.removeDatabase(newEndpoint));
 
-    assertThat(client.getEndpoints(), not(hasItems(newEndpoint)));
+    assertThat(client.getDatabaseEndpoints(), not(hasItems(newEndpoint)));
   }
 
   @Test
-  void testAddRemoveEndpointWithDatabaseConfig() {
+  void testAddRemoveDatabaseWithDatabaseConfig() {
     // todo : (@ggivo) Replace HostAndPort with Endpoint
     HostAndPort newEndpoint = new HostAndPort("unavailable", 6381);
 
     DatabaseConfig newConfig = DatabaseConfig
         .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f).build();
 
-    assertDoesNotThrow(() -> client.addEndpoint(newConfig));
+    assertDoesNotThrow(() -> client.addDatabase(newConfig));
 
-    assertThat(client.getEndpoints(), hasItems(newEndpoint));
+    assertThat(client.getDatabaseEndpoints(), hasItems(newEndpoint));
 
-    assertDoesNotThrow(() -> client.removeEndpoint(newEndpoint));
+    assertDoesNotThrow(() -> client.removeDatabase(newEndpoint));
 
-    assertThat(client.getEndpoints(), not(hasItems(newEndpoint)));
+    assertThat(client.getDatabaseEndpoints(), not(hasItems(newEndpoint)));
   }
 
   @Test
   void testSetActiveDatabase() {
-    Endpoint endpoint = client.getActiveEndpoint();
+    Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
     awaitIsHealthy(endpoint1.getHostAndPort());
     awaitIsHealthy(endpoint2.getHostAndPort());
     // Ensure we have a healthy endpoint to switch to
-    Endpoint newEndpoint = client.getEndpoints().stream()
+    Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
         .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Switch to the new endpoint
     client.setActiveDatabase(newEndpoint);
 
-    assertEquals(newEndpoint, client.getActiveEndpoint());
+    assertEquals(newEndpoint, client.getActiveDatabaseEndpoint());
   }
 
   @Test
   void testBuilderWithMultipleEndpointTypes() {
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .endpoint(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
-        .endpoint(DatabaseConfig
+        .database(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
+        .database(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder().build())
             .weight(50.0f).build())
         .build();
 
     try (MultiDbClient testClient = MultiDbClient.builder().multiDbConfig(clientConfig).build()) {
-      assertThat(testClient.getEndpoints().size(), equalTo(2));
-      assertThat(testClient.getEndpoints(),
+      assertThat(testClient.getDatabaseEndpoints().size(), equalTo(2));
+      assertThat(testClient.getDatabaseEndpoints(),
         hasItems(endpoint1.getHostAndPort(), endpoint2.getHostAndPort()));
     }
   }
 
   @Test
-  public void testForceActiveEndpoint() {
-    Endpoint endpoint = client.getActiveEndpoint();
+  public void testForceActiveDatabase() {
+    Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
     // Ensure we have a healthy endpoint to switch to
     awaitIsHealthy(endpoint1.getHostAndPort());
     awaitIsHealthy(endpoint2.getHostAndPort());
-    Endpoint newEndpoint = client.getEndpoints().stream()
+    Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
         .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Force switch to the new endpoint for 10 seconds
-    client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis());
+    client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis());
 
     // Verify the active endpoint has changed
-    assertEquals(newEndpoint, client.getActiveEndpoint());
+    assertEquals(newEndpoint, client.getActiveDatabaseEndpoint());
   }
 
   @Test
-  public void testForceActiveEndpointWithNonHealthyEndpoint() {
+  public void testForceActiveDatabaseWithNonHealthyEndpoint() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
-    client.addEndpoint(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build());
+    client.addDatabase(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build());
 
     assertThrows(JedisValidationException.class,
-      () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
+      () -> client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
 
   @Test
-  public void testForceActiveEndpointWithNonExistingEndpoint() {
+  public void testForceActiveDatabaseWithNonExistingEndpoint() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
     assertThrows(JedisValidationException.class,
-      () -> client.forceActiveEndpoint(newEndpoint, Duration.ofMillis(100).toMillis()));
+      () -> client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
 
   @Test
   public void testWithDatabaseSwitchListener() {
 
     MultiDbConfig endpointsConfig = MultiDbConfig.builder()
-        .endpoint(DatabaseConfig
+        .database(DatabaseConfig
             .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
             .weight(100.0f).build())
-        .endpoint(DatabaseConfig
+        .database(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
             .weight(50.0f).build())
         .build();

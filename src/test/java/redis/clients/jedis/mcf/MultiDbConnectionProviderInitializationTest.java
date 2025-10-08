@@ -96,7 +96,7 @@ public class MultiDbConnectionProviderInitializationTest {
   }
 
   @Test
-  void testInitializationWithSingleCluster() {
+  void testInitializationWithSingleDatabase() {
     try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
       DatabaseConfig db = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
@@ -118,7 +118,7 @@ public class MultiDbConnectionProviderInitializationTest {
   }
 
   @Test
-  void testErrorHandlingWithEmptyClusterArray() {
+  void testErrorHandlingWithEmptyDatabaseArray() {
     assertThrows(JedisValidationException.class, () -> {
       new MultiDbConfig.Builder(new DatabaseConfig[0]).build();
     });

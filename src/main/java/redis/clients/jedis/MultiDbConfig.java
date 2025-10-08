@@ -15,12 +15,12 @@ import redis.clients.jedis.mcf.EchoStrategy;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
- * Configuration class for multi-cluster Redis deployments with automatic failover and failback
+ * Configuration class for multi-database Redis deployments with automatic failover and failback
  * capabilities.
  * <p>
- * This configuration enables seamless failover between multiple Redis clusters, databases, or
- * endpoints by providing comprehensive settings for retry logic, circuit breaker behavior, health
- * checks, and failback mechanisms. It is designed to work with
+ * This configuration enables seamless failover between multiple Redis databases endpoints by
+ * providing comprehensive settings for retry logic, circuit breaker behavior, health checks, and
+ * failback mechanisms. It is designed to work with
  * {@link redis.clients.jedis.mcf.MultiDbConnectionProvider} to provide high availability and
  * disaster recovery capabilities.
  * </p>
@@ -28,7 +28,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * <strong>Key Features:</strong>
  * </p>
  * <ul>
- * <li><strong>Multi-Cluster Support:</strong> Configure multiple Redis endpoints with individual
+ * <li><strong>Multi-Database Support:</strong> Configure multiple Redis endpoints with individual
  * weights and health checks</li>
  * <li><strong>Circuit Breaker Pattern:</strong> Automatic failure detection and circuit opening
  * based on configurable thresholds</li>
@@ -36,9 +36,9 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * transient failures</li>
  * <li><strong>Health Check Integration:</strong> Pluggable health check strategies for proactive
  * monitoring</li>
- * <li><strong>Automatic Failback:</strong> Intelligent failback to higher-priority clusters when
+ * <li><strong>Automatic Failback:</strong> Intelligent failback to higher-priority databases when
  * they recover</li>
- * <li><strong>Weight-Based Routing:</strong> Priority-based cluster selection using configurable
+ * <li><strong>Weight-Based Routing:</strong> Priority-based database selection using configurable
  * weights</li>
  * </ul>
  * <p>
@@ -48,16 +48,17 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * <pre>
  * {
  *   &#64;code
- *   // Configure individual clusters
+ *   // Configure individual databases
  *   DatabaseConfig primary = DatabaseConfig.builder(primaryEndpoint, clientConfig).weight(1.0f)
  *       .build();
  *
  *   DatabaseConfig secondary = DatabaseConfig.builder(secondaryEndpoint, clientConfig).weight(0.5f)
  *       .healthCheckEnabled(true).build();
  *
- *   // Build multi-cluster configuration
+ *   // Build multi-database configuration
  *   MultiDbConfig config = MultiDbConfig.builder(primary, secondary)
- *       .circuitBreakerFailureRateThreshold(10.0f).retryMaxAttempts(3).failbackSupported(true)
+ *       .failureDetector(CircuitBreakerConfig.builder().failureRateThreshold(10.0f).build())
+ *       .commandRetry(RetryConfig.builder().maxAttempts(3).build()).failbackSupported(true)
  *       .gracePeriod(10000).build();
  *
  *   // Use with connection provider
@@ -112,6 +113,340 @@ public final class MultiDbConfig {
     HealthCheckStrategy get(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig);
   }
 
+  /**
+   * Configuration for command retry behavior.
+   * <p>
+   * This class encapsulates all retry-related settings including maximum attempts, wait duration,
+   * exponential backoff, and exception handling. It provides a clean separation of retry concerns
+   * from other configuration aspects.
+   * </p>
+   * @since 7.0
+   */
+  public static final class RetryConfig {
+
+    private final int maxAttempts;
+    private final Duration waitDuration;
+    private final int exponentialBackoffMultiplier;
+    private final List<Class> includedExceptionList;
+    private final List<Class> ignoreExceptionList;
+
+    private RetryConfig(Builder builder) {
+      this.maxAttempts = builder.maxAttempts;
+      this.waitDuration = Duration.ofMillis(builder.waitDuration);
+      this.exponentialBackoffMultiplier = builder.exponentialBackoffMultiplier;
+      this.includedExceptionList = builder.includedExceptionList;
+      this.ignoreExceptionList = builder.ignoreExceptionList;
+    }
+
+    /**
+     * Returns the maximum number of retry attempts including the initial call.
+     * @return maximum retry attempts
+     */
+    public int getMaxAttempts() {
+      return maxAttempts;
+    }
+
+    /**
+     * Returns the base wait duration between retry attempts.
+     * @return wait duration between retries
+     */
+    public Duration getWaitDuration() {
+      return waitDuration;
+    }
+
+    /**
+     * Returns the exponential backoff multiplier for retry wait duration.
+     * @return exponential backoff multiplier
+     */
+    public int getExponentialBackoffMultiplier() {
+      return exponentialBackoffMultiplier;
+    }
+
+    /**
+     * Returns the list of exception classes that trigger retry attempts.
+     * @return list of exception classes that are retried, never null
+     */
+    public List<Class> getIncludedExceptionList() {
+      return includedExceptionList;
+    }
+
+    /**
+     * Returns the list of exception classes that are ignored for retry purposes.
+     * @return list of exception classes to ignore for retries, may be null
+     */
+    public List<Class> getIgnoreExceptionList() {
+      return ignoreExceptionList;
+    }
+
+    /**
+     * Creates a new Builder instance for configuring RetryConfig.
+     * @return new Builder instance with default values
+     */
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    /**
+     * Builder for {@link RetryConfig}.
+     */
+    public static final class Builder {
+
+      private int maxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
+      private int waitDuration = RETRY_WAIT_DURATION_DEFAULT;
+      private int exponentialBackoffMultiplier = RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT;
+      private List<Class> includedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
+      private List<Class> ignoreExceptionList = null;
+
+      /**
+       * Sets the maximum number of retry attempts including the initial call.
+       * @param maxAttempts maximum number of attempts (must be &gt;= 1)
+       * @return this builder instance for method chaining
+       */
+      public Builder maxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+        return this;
+      }
+
+      /**
+       * Sets the base wait duration between retry attempts in milliseconds.
+       * @param waitDuration wait duration in milliseconds (must be &gt;= 0)
+       * @return this builder instance for method chaining
+       */
+      public Builder waitDuration(int waitDuration) {
+        this.waitDuration = waitDuration;
+        return this;
+      }
+
+      /**
+       * Sets the exponential backoff multiplier for retry wait duration.
+       * @param exponentialBackoffMultiplier exponential backoff multiplier (must be &gt;= 1)
+       * @return this builder instance for method chaining
+       */
+      public Builder exponentialBackoffMultiplier(int exponentialBackoffMultiplier) {
+        this.exponentialBackoffMultiplier = exponentialBackoffMultiplier;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that trigger retry attempts.
+       * @param includedExceptionList list of exception classes that should be retried
+       * @return this builder instance for method chaining
+       */
+      public Builder includedExceptionList(List<Class> includedExceptionList) {
+        this.includedExceptionList = includedExceptionList;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that are ignored for retry purposes.
+       * @param ignoreExceptionList list of exception classes to ignore for retries
+       * @return this builder instance for method chaining
+       */
+      public Builder ignoreExceptionList(List<Class> ignoreExceptionList) {
+        this.ignoreExceptionList = ignoreExceptionList;
+        return this;
+      }
+
+      /**
+       * Builds and returns a new RetryConfig instance.
+       * @return new RetryConfig instance with configured settings
+       */
+      public RetryConfig build() {
+        return new RetryConfig(this);
+      }
+    }
+  }
+
+  /**
+   * Configuration for circuit breaker failure detection.
+   * <p>
+   * This class encapsulates all circuit breaker-related settings including failure rate threshold,
+   * sliding window size, minimum failures, and exception handling.
+   * </p>
+   * @since 7.0
+   */
+  public static final class CircuitBreakerConfig {
+
+    private final float failureRateThreshold;
+    private final int slidingWindowSize;
+    private final int minNumOfFailures;
+    private final List<Class> includedExceptionList;
+    private final List<Class> ignoreExceptionList;
+
+    private CircuitBreakerConfig(Builder builder) {
+      this.failureRateThreshold = builder.failureRateThreshold;
+      this.slidingWindowSize = builder.slidingWindowSize;
+      this.minNumOfFailures = builder.minNumOfFailures;
+      this.includedExceptionList = builder.includedExceptionList;
+      this.ignoreExceptionList = builder.ignoreExceptionList;
+    }
+
+    /**
+     * Returns the failure rate threshold percentage for circuit breaker activation.
+     * <p>
+     * 0.0f means failure rate is ignored, and only minimum number of failures is considered.
+     * </p>
+     * <p>
+     * When the failure rate exceeds both this threshold and the minimum number of failures, the
+     * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
+     * failing them without attempting to reach the Redis database. This prevents cascading failures
+     * and allows the system to fail over to the next available database.
+     * </p>
+     * <p>
+     * <strong>Range:</strong> 0.0 to 100.0 (percentage)
+     * </p>
+     * @return failure rate threshold as a percentage (0.0 to 100.0)
+     * @see #getMinNumOfFailures()
+     */
+    public float getFailureRateThreshold() {
+      return failureRateThreshold;
+    }
+
+    /**
+     * Returns the size of the sliding window used to record call outcomes when the circuit breaker
+     * is CLOSED.
+     * <p>
+     * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
+     * </p>
+     * @return sliding window size (calls or seconds depending on window type)
+     */
+    public int getSlidingWindowSize() {
+      return slidingWindowSize;
+    }
+
+    /**
+     * Returns the minimum number of failures before circuit breaker is tripped.
+     * <p>
+     * 0 means minimum number of failures is ignored, and only failure rate is considered.
+     * </p>
+     * <p>
+     * When the number of failures exceeds both this threshold and the failure rate threshold, the
+     * circuit breaker will trip and prevent further requests from being sent to the database until
+     * it has recovered.
+     * </p>
+     * @return minimum number of failures before circuit breaker is tripped
+     * @see #getFailureRateThreshold()
+     */
+    public int getMinNumOfFailures() {
+      return minNumOfFailures;
+    }
+
+    /**
+     * Returns the list of exception classes that are recorded as circuit breaker failures and
+     * increase the failure rate.
+     * <p>
+     * Any exception that matches or inherits from the classes in this list counts as a failure for
+     * circuit breaker calculations, unless explicitly ignored via
+     * {@link #getIgnoreExceptionList()}. If you specify this list, all other exceptions count as
+     * successes unless they are explicitly ignored.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> {@link JedisConnectionException}
+     * </p>
+     * @return list of exception classes that count as failures, never null
+     * @see #getIgnoreExceptionList()
+     */
+    public List<Class> getIncludedExceptionList() {
+      return includedExceptionList;
+    }
+
+    /**
+     * Returns the list of exception classes that are ignored by the circuit breaker and neither
+     * count as failures nor successes.
+     * <p>
+     * Any exception that matches or inherits from the classes in this list will not affect circuit
+     * breaker failure rate calculations, even if the exception is included in
+     * {@link #getIncludedExceptionList()}.
+     * </p>
+     * <p>
+     * <strong>Default:</strong> null (no exceptions ignored)
+     * </p>
+     * @return list of exception classes to ignore for circuit breaker calculations, may be null
+     * @see #getIncludedExceptionList()
+     */
+    public List<Class> getIgnoreExceptionList() {
+      return ignoreExceptionList;
+    }
+
+    /**
+     * Creates a new Builder instance for configuring CircuitBreakerConfig.
+     * @return new Builder instance with default values
+     */
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    /**
+     * Builder for {@link CircuitBreakerConfig}.
+     */
+    public static final class Builder {
+
+      private float failureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
+      private int slidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
+      private int minNumOfFailures = CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
+      private List<Class> includedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
+      private List<Class> ignoreExceptionList = null;
+
+      /**
+       * Sets the failure rate threshold percentage that triggers circuit breaker activation.
+       * @param failureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
+       * @return this builder instance for method chaining
+       */
+      public Builder failureRateThreshold(float failureRateThreshold) {
+        this.failureRateThreshold = failureRateThreshold;
+        return this;
+      }
+
+      /**
+       * Sets the size of the sliding window for circuit breaker calculations.
+       * @param slidingWindowSize sliding window size
+       * @return this builder instance for method chaining
+       */
+      public Builder slidingWindowSize(int slidingWindowSize) {
+        this.slidingWindowSize = slidingWindowSize;
+        return this;
+      }
+
+      /**
+       * Sets the minimum number of failures before circuit breaker is tripped.
+       * @param minNumOfFailures minimum number of failures
+       * @return this builder instance for method chaining
+       */
+      public Builder minNumOfFailures(int minNumOfFailures) {
+        this.minNumOfFailures = minNumOfFailures;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that are recorded as circuit breaker failures.
+       * @param includedExceptionList list of exception classes that count as failures
+       * @return this builder instance for method chaining
+       */
+      public Builder includedExceptionList(List<Class> includedExceptionList) {
+        this.includedExceptionList = includedExceptionList;
+        return this;
+      }
+
+      /**
+       * Sets the list of exception classes that are ignored by the circuit breaker.
+       * @param ignoreExceptionList list of exception classes to ignore
+       * @return this builder instance for method chaining
+       */
+      public Builder ignoreExceptionList(List<Class> ignoreExceptionList) {
+        this.ignoreExceptionList = ignoreExceptionList;
+        return this;
+      }
+
+      /**
+       * Builds and returns a new CircuitBreakerConfig instance.
+       * @return new CircuitBreakerConfig instance with configured settings
+       */
+      public CircuitBreakerConfig build() {
+        return new CircuitBreakerConfig(this);
+      }
+    }
+  }
+
   // ============ Default Configuration Constants ============
 
   /** Default maximum number of retry attempts including the initial call. */
@@ -140,14 +475,16 @@ public final class MultiDbConfig {
   private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays
       .asList(JedisConnectionException.class);
 
-  /** Default list of exceptions that trigger fallback to next available cluster. */
+  /** Default list of exceptions that trigger fallback to next available database. */
   private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays
       .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
-  /** Default interval in milliseconds for checking if failed clusters have recovered. */
+  /** Default interval in milliseconds for checking if failed databases have recovered. */
   private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 120000;
 
-  /** Default grace period in milliseconds to keep clusters disabled after they become unhealthy. */
+  /**
+   * Default grace period in milliseconds to keep databases disabled after they become unhealthy.
+   */
   private static final long GRACE_PERIOD_DEFAULT = 60000;
 
   /** Default maximum number of failover attempts. */
@@ -156,168 +493,38 @@ public final class MultiDbConfig {
   /** Default delay in milliseconds between failover attempts. */
   private static final int DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT = 12000;
 
-  /** Array of cluster configurations defining the available Redis endpoints and their settings. */
+  /** Array of database configurations defining the available Redis endpoints and their settings. */
   private final DatabaseConfig[] databaseConfigs;
 
   // ============ Retry Configuration ============
   // Based on Resilience4j Retry: https://resilience4j.readme.io/docs/retry
 
   /**
-   * Maximum number of retry attempts including the initial call as the first attempt.
+   * Encapsulated retry configuration for command execution.
    * <p>
-   * For example, if set to 3, the system will make 1 initial attempt plus 2 retry attempts for a
-   * total of 3 attempts before giving up.
+   * This provides a cleaner API for configuring retry behavior by grouping all retry-related
+   * settings into a single configuration object.
    * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #RETRY_MAX_ATTEMPTS_DEFAULT}
-   * </p>
-   * @see #getRetryMaxAttempts()
+   * @see RetryConfig
    */
-  private int retryMaxAttempts;
-
-  /**
-   * Fixed wait duration between retry attempts.
-   * <p>
-   * This duration is used as the base wait time and may be modified by the exponential backoff
-   * multiplier to create increasing delays between retry attempts.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #RETRY_WAIT_DURATION_DEFAULT} milliseconds
-   * </p>
-   * @see #getRetryWaitDuration()
-   * @see #retryWaitDurationExponentialBackoffMultiplier
-   */
-  private Duration retryWaitDuration;
-
-  /**
-   * Exponential backoff multiplier applied to the wait duration between retry attempts.
-   * <p>
-   * The wait duration increases exponentially between attempts using this multiplier. For example,
-   * with an initial wait time of 1 second and a multiplier of 2, the retries would occur after
-   * delays of: 1s, 2s, 4s, 8s, 16s, etc.
-   * </p>
-   * <p>
-   * <strong>Formula:</strong> {@code actualWaitTime = baseWaitTime * (multiplier ^ attemptNumber)}
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT}
-   * </p>
-   * @see #getRetryWaitDurationExponentialBackoffMultiplier()
-   * @see #retryWaitDuration
-   */
-  private int retryWaitDurationExponentialBackoffMultiplier;
-
-  /**
-   * List of exception classes that are recorded as failures and trigger retry attempts.
-   * <p>
-   * This parameter supports inheritance - any exception that is an instance of or extends from the
-   * specified classes will trigger a retry. If this list is specified, all other exceptions are
-   * considered successful unless explicitly ignored.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@link JedisConnectionException}
-   * </p>
-   * @see #getRetryIncludedExceptionList()
-   * @see #retryIgnoreExceptionList
-   */
-  private List<Class> retryIncludedExceptionList;
-
-  /**
-   * List of exception classes that are ignored and do not trigger retry attempts.
-   * <p>
-   * This parameter supports inheritance - any exception that is an instance of or extends from the
-   * specified classes will be ignored for retry purposes, even if they are included in the
-   * {@link #retryIncludedExceptionList}.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> null (no exceptions ignored)
-   * </p>
-   * @see #getRetryIgnoreExceptionList()
-   * @see #retryIncludedExceptionList
-   */
-  private List<Class> retryIgnoreExceptionList;
+  private RetryConfig commandRetry;
 
   // ============ Circuit Breaker Configuration ============
 
   /**
-   * Minimum number of failures before circuit breaker is tripped.
+   * Encapsulated circuit breaker configuration for failure detection.
    * <p>
-   * When the number of failures exceeds both this threshold and the failure rate threshold, the
-   * circuit breaker will trip and prevent further requests from being sent to the cluster until it
-   * has recovered.
+   * This provides a cleaner API for configuring circuit breaker behavior by grouping all circuit
+   * breaker-related settings into a single configuration object.
    * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT}
-   * </p>
-   * @see #getCircuitBreakerMinNumOfFailures()
-   * @see #circuitBreakerFailureRateThreshold
+   * @see CircuitBreakerConfig
    */
-  private int circuitBreakerMinNumOfFailures;
+  private CircuitBreakerConfig failureDetector;
 
   /**
-   * Failure rate threshold percentage that triggers circuit breaker transition to OPEN state.
+   * List of exception classes that trigger fallback to the next available database.
    * <p>
-   * When the failure rate exceeds both this threshold and the minimum number of failures, the
-   * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
-   * failing them without attempting to reach the Redis cluster. This prevents cascading failures
-   * and allows the system to fail over to the next available cluster.
-   * </p>
-   * <p>
-   * <strong>Range:</strong> 0.0 to 100.0 (percentage)
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT}%
-   * </p>
-   * @see #getCircuitBreakerFailureRateThreshold()
-   * @see #circuitBreakerMinNumOfFailures
-   */
-  private float circuitBreakerFailureRateThreshold;
-
-  /**
-   * Size of the sliding window used to record call outcomes when the circuit breaker is CLOSED.
-   * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
-   * </p>
-   * @see #getCircuitBreakerSlidingWindowSize()
-   */
-  private int circuitBreakerSlidingWindowSize;
-
-  /**
-   * List of exception classes that are recorded as circuit breaker failures and increase the
-   * failure rate.
-   * <p>
-   * Any exception that matches or inherits from the classes in this list counts as a failure for
-   * circuit breaker calculations, unless explicitly ignored via
-   * {@link #circuitBreakerIgnoreExceptionList}. If you specify this list, all other exceptions
-   * count as successes unless they are explicitly ignored.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> {@link JedisConnectionException}
-   * </p>
-   * @see #getCircuitBreakerIncludedExceptionList()
-   * @see #circuitBreakerIgnoreExceptionList
-   */
-  private List<Class> circuitBreakerIncludedExceptionList;
-
-  /**
-   * List of exception classes that are ignored by the circuit breaker and neither count as failures
-   * nor successes.
-   * <p>
-   * Any exception that matches or inherits from the classes in this list will not affect circuit
-   * breaker failure rate calculations, even if the exception is included in
-   * {@link #circuitBreakerIncludedExceptionList}.
-   * </p>
-   * <p>
-   * <strong>Default:</strong> null (no exceptions ignored)
-   * </p>
-   * @see #getCircuitBreakerIgnoreExceptionList()
-   * @see #circuitBreakerIncludedExceptionList
-   */
-  private List<Class> circuitBreakerIgnoreExceptionList;
-
-  /**
-   * List of exception classes that trigger fallback to the next available cluster.
-   * <p>
-   * When these exceptions occur, the system will attempt to failover to the next available cluster
+   * When these exceptions occur, the system will attempt to failover to the next available database
    * based on weight priority. This enables immediate failover for specific error conditions without
    * waiting for circuit breaker thresholds.
    * </p>
@@ -342,15 +549,15 @@ public final class MultiDbConfig {
    * <strong>Default:</strong> false
    * </p>
    * @see #isRetryOnFailover()
-   * @see #retryMaxAttempts
+   * @see #commandRetry
    */
   private boolean retryOnFailover;
 
   /**
-   * Whether automatic failback to higher-priority clusters is supported.
+   * Whether automatic failback to higher-priority databases is supported.
    * <p>
-   * When enabled, the system will automatically monitor failed clusters using health checks and
-   * failback to higher-priority (higher weight) clusters when they recover. When disabled, manual
+   * When enabled, the system will automatically monitor failed databases using health checks and
+   * failback to higher-priority (higher weight) databases when they recover. When disabled, manual
    * intervention is required to failback.
    * </p>
    * <p>
@@ -363,9 +570,9 @@ public final class MultiDbConfig {
   private boolean isFailbackSupported;
 
   /**
-   * Interval in milliseconds between checks for failback opportunities to recovered clusters.
+   * Interval in milliseconds between checks for failback opportunities to recovered databases.
    * <p>
-   * This setting controls how frequently the system checks if a higher-priority cluster has
+   * This setting controls how frequently the system checks if a higher-priority database has
    * recovered and is available for failback. Lower values provide faster failback but increase
    * monitoring overhead.
    * </p>
@@ -379,11 +586,11 @@ public final class MultiDbConfig {
   private long failbackCheckInterval;
 
   /**
-   * Grace period in milliseconds to keep clusters disabled after they become unhealthy.
+   * Grace period in milliseconds to keep databases disabled after they become unhealthy.
    * <p>
-   * After a cluster is marked as unhealthy, it remains disabled for this grace period before being
+   * After a database is marked as unhealthy, it remains disabled for this grace period before being
    * eligible for failback, even if health checks indicate recovery. This prevents rapid oscillation
-   * between clusters during intermittent failures.
+   * between databases during intermittent failures.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #GRACE_PERIOD_DEFAULT} milliseconds (10 seconds)
@@ -395,9 +602,9 @@ public final class MultiDbConfig {
   private long gracePeriod;
 
   /**
-   * Whether to forcefully terminate connections during failover for faster cluster switching.
+   * Whether to forcefully terminate connections during failover for faster database switching.
    * <p>
-   * When enabled, existing connections to the failed cluster are immediately closed during
+   * When enabled, existing connections to the failed database are immediately closed during
    * failover, potentially reducing failover time but may cause some in-flight operations to fail.
    * When disabled, connections are closed gracefully.
    * </p>
@@ -411,9 +618,9 @@ public final class MultiDbConfig {
   /**
    * Maximum number of failover attempts.
    * <p>
-   * This setting controls how many times the system will attempt to failover to a different cluster
-   * before giving up. For example, if set to 3, the system will make 1 initial attempt plus 2
-   * failover attempts for a total of 3 attempts.
+   * This setting controls how many times the system will attempt to failover to a different
+   * database before giving up. For example, if set to 3, the system will make 1 initial attempt
+   * plus 2 failover attempts for a total of 3 attempts.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
@@ -426,8 +633,8 @@ public final class MultiDbConfig {
    * Delay in milliseconds between failover attempts.
    * <p>
    * This setting controls how long the system will wait before attempting to failover to a
-   * different cluster. For example, if set to 1000, the system will wait 1 second before attempting
-   * to failover to a different cluster.
+   * different database. For example, if set to 1000, the system will wait 1 second before
+   * attempting to failover to a different database.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
@@ -437,15 +644,15 @@ public final class MultiDbConfig {
   private int delayInBetweenFailoverAttempts;
 
   /**
-   * Constructs a new MultiDbConfig with the specified cluster configurations.
+   * Constructs a new MultiDbConfig with the specified database configurations.
    * <p>
-   * This constructor validates that at least one cluster configuration is provided and that all
+   * This constructor validates that at least one database configuration is provided and that all
    * configurations are non-null. Use the {@link Builder} class for more convenient configuration
    * with default values.
    * </p>
-   * @param databaseConfigs array of cluster configurations defining the available Redis endpoints
+   * @param databaseConfigs array of database configurations defining the available Redis endpoints
    * @throws JedisValidationException if databaseConfigs is null or empty
-   * @throws IllegalArgumentException if any cluster configuration is null
+   * @throws IllegalArgumentException if any database configuration is null
    * @see Builder#Builder(DatabaseConfig[])
    */
   public MultiDbConfig(DatabaseConfig[] databaseConfigs) {
@@ -461,109 +668,40 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the array of cluster configurations defining available Redis endpoints.
-   * @return array of cluster configurations, never null or empty
+   * Returns the array of database configurations defining available Redis endpoints.
+   * @return array of database configurations, never null or empty
    */
   public DatabaseConfig[] getDatabaseConfigs() {
     return databaseConfigs;
   }
 
   /**
-   * Returns the maximum number of retry attempts including the initial call.
-   * @return maximum retry attempts
-   * @see #retryMaxAttempts
+   * Returns the encapsulated retry configuration for command execution.
+   * <p>
+   * This provides access to all retry-related settings through a single configuration object.
+   * </p>
+   * @return retry configuration, never null
+   * @see RetryConfig
    */
-  public int getRetryMaxAttempts() {
-    return retryMaxAttempts;
+  public RetryConfig getCommandRetry() {
+    return commandRetry;
   }
 
   /**
-   * Returns the base wait duration between retry attempts.
-   * @return wait duration between retries
-   * @see #retryWaitDuration
+   * Returns the encapsulated circuit breaker configuration for failure detection.
+   * <p>
+   * This provides access to all circuit breaker-related settings through a single configuration
+   * object.
+   * </p>
+   * @return circuit breaker configuration, never null
+   * @see CircuitBreakerConfig
    */
-  public Duration getRetryWaitDuration() {
-    return retryWaitDuration;
+  public CircuitBreakerConfig getFailureDetector() {
+    return failureDetector;
   }
 
   /**
-   * Returns the exponential backoff multiplier for retry wait duration.
-   * @return exponential backoff multiplier
-   * @see #retryWaitDurationExponentialBackoffMultiplier
-   */
-  public int getRetryWaitDurationExponentialBackoffMultiplier() {
-    return retryWaitDurationExponentialBackoffMultiplier;
-  }
-
-  /**
-   * Returns the failure rate threshold percentage for circuit breaker activation. 0.0f means
-   * failure rate is ignored, and only minimum number of failures is considered.
-   * @return failure rate threshold as a percentage (0.0 to 100.0)
-   * @see #circuitBreakerFailureRateThreshold
-   * @see #getCircuitBreakerMinNumOfFailures
-   */
-  public float getCircuitBreakerFailureRateThreshold() {
-    return circuitBreakerFailureRateThreshold;
-  }
-
-  /**
-   * Returns the size of the sliding window used for circuit breaker calculations.
-   * @return sliding window size (calls or seconds depending on window type)
-   * @see #circuitBreakerSlidingWindowSize
-   */
-  public int getCircuitBreakerSlidingWindowSize() {
-    return circuitBreakerSlidingWindowSize;
-  }
-
-  /**
-   * Returns the minimum number of failures before circuit breaker is tripped. 0 means minimum
-   * number of failures is ignored, and only failure rate is considered.
-   * @return minimum number of failures before circuit breaker is tripped
-   * @see #circuitBreakerMinNumOfFailures
-   * @see #getCircuitBreakerFailureRateThreshold
-   */
-  public int getCircuitBreakerMinNumOfFailures() {
-    return circuitBreakerMinNumOfFailures;
-  }
-
-  /**
-   * Returns the list of exception classes that trigger retry attempts.
-   * @return list of exception classes that are retried, never null
-   * @see #retryIncludedExceptionList
-   */
-  public List<Class> getRetryIncludedExceptionList() {
-    return retryIncludedExceptionList;
-  }
-
-  /**
-   * Returns the list of exception classes that are ignored for retry purposes.
-   * @return list of exception classes to ignore for retries, may be null
-   * @see #retryIgnoreExceptionList
-   */
-  public List<Class> getRetryIgnoreExceptionList() {
-    return retryIgnoreExceptionList;
-  }
-
-  /**
-   * Returns the list of exception classes that are recorded as circuit breaker failures.
-   * @return list of exception classes that count as failures, never null
-   * @see #circuitBreakerIncludedExceptionList
-   */
-  public List<Class> getCircuitBreakerIncludedExceptionList() {
-    return circuitBreakerIncludedExceptionList;
-  }
-
-  /**
-   * Returns the list of exception classes that are ignored by the circuit breaker.
-   * @return list of exception classes to ignore for circuit breaker calculations, may be null
-   * @see #circuitBreakerIgnoreExceptionList
-   */
-  public List<Class> getCircuitBreakerIgnoreExceptionList() {
-    return circuitBreakerIgnoreExceptionList;
-  }
-
-  /**
-   * Returns the list of exception classes that trigger immediate fallback to next cluster.
+   * Returns the list of exception classes that trigger immediate fallback to next database.
    * @return list of exception classes that trigger fallback, never null
    * @see #fallbackExceptionList
    */
@@ -581,7 +719,7 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns whether automatic failback to higher-priority clusters is supported.
+   * Returns whether automatic failback to higher-priority databases is supported.
    * @return true if automatic failback is enabled, false if manual failback is required
    * @see #isFailbackSupported
    */
@@ -599,7 +737,7 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the grace period to keep clusters disabled after they become unhealthy.
+   * Returns the grace period to keep databases disabled after they become unhealthy.
    * @return grace period in milliseconds
    * @see #gracePeriod
    */
@@ -638,8 +776,8 @@ public final class MultiDbConfig {
   /**
    * Creates a new Builder instance for configuring MultiDbConfig.
    * <p>
-   * At least one cluster configuration must be added to the builder before calling build(). Use the
-   * endpoint() methods to add cluster configurations.
+   * At least one database configuration must be added to the builder before calling build(). Use
+   * the endpoint() methods to add database configurations.
    * </p>
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
@@ -651,7 +789,7 @@ public final class MultiDbConfig {
 
   /**
    * Creates a new Builder instance for configuring MultiDbConfig.
-   * @param databaseConfigs array of cluster configurations defining available Redis endpoints
+   * @param databaseConfigs array of database configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
    * @see Builder#Builder(DatabaseConfig[])
@@ -662,7 +800,7 @@ public final class MultiDbConfig {
 
   /**
    * Creates a new Builder instance for configuring MultiDbConfig.
-   * @param databaseConfigs list of cluster configurations defining available Redis endpoints
+   * @param databaseConfigs list of database configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
    * @see Builder#Builder(List)
@@ -672,10 +810,10 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Configuration class for individual Redis cluster endpoints within a multi-cluster setup.
+   * Configuration class for individual Redis database endpoints within a multi-database setup.
    * <p>
    * Each DatabaseConfig represents a single Redis endpoint that can participate in the
-   * multi-cluster failover system. It encapsulates the connection details, weight for
+   * multi-database failover system. It encapsulates the connection details, weight for
    * priority-based selection, and health check configuration for that endpoint.
    * </p>
    * @see Builder
@@ -978,7 +1116,7 @@ public final class MultiDbConfig {
   /**
    * Builder class for creating MultiDbConfig instances with comprehensive configuration options.
    * <p>
-   * The Builder provides a fluent API for configuring all aspects of multi-cluster failover
+   * The Builder provides a fluent API for configuring all aspects of multi-database failover
    * behavior, including retry logic, circuit breaker settings, and failback mechanisms. It uses
    * sensible defaults based on production best practices while allowing fine-tuning for specific
    * requirements.
@@ -992,51 +1130,27 @@ public final class MultiDbConfig {
     private final List<DatabaseConfig> databaseConfigs = new ArrayList<>();
 
     // ============ Retry Configuration Fields ============
-    /** Maximum number of retry attempts including the initial call. */
-    private int retryMaxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
-
-    /** Wait duration between retry attempts in milliseconds. */
-    private int retryWaitDuration = RETRY_WAIT_DURATION_DEFAULT;
-
-    /** Exponential backoff multiplier for retry wait duration. */
-    private int retryWaitDurationExponentialBackoffMultiplier = RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT;
-
-    /** List of exception classes that trigger retry attempts. */
-    private List<Class> retryIncludedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
-
-    /** List of exception classes that are ignored for retry purposes. */
-    private List<Class> retryIgnoreExceptionList = null;
+    /** Encapsulated retry configuration for command execution. */
+    private RetryConfig commandRetry = RetryConfig.builder().build();
 
     // ============ Circuit Breaker Configuration Fields ============
-    /** Failure rate threshold percentage for circuit breaker activation. */
-    private float circuitBreakerFailureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
+    /** Encapsulated circuit breaker configuration for failure detection. */
+    private CircuitBreakerConfig failureDetector = CircuitBreakerConfig.builder().build();
 
-    /** Size of the sliding window for circuit breaker calculations. */
-    private int circuitBreakerSlidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
-
-    /** List of exception classes that are recorded as circuit breaker failures. */
-    private List<Class> circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
-
-    /** List of exception classes that are ignored by the circuit breaker. */
-    private List<Class> circuitBreakerIgnoreExceptionList = null;
-
-    /** List of exception classes that trigger immediate fallback to next cluster. */
+    /** List of exception classes that trigger immediate fallback to next database. */
     private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
 
     // ============ Failover Configuration Fields ============
     /** Whether to retry failed commands during failover. */
     private boolean retryOnFailover = false;
 
-    /** Minimum number of failures before circuit breaker is tripped. */
-    private int circuitBreakerMinNumOfFailures = CIRCUITBREAKER_THRESHOLD_MIN_NUM_OF_FAILURES_DEFAULT;
-
-    /** Whether automatic failback to higher-priority clusters is supported. */
+    /** Whether automatic failback to higher-priority databases is supported. */
     private boolean isFailbackSupported = true;
 
     /** Interval between checks for failback opportunities in milliseconds. */
     private long failbackCheckInterval = FAILBACK_CHECK_INTERVAL_DEFAULT;
 
-    /** Grace period to keep clusters disabled after they become unhealthy in milliseconds. */
+    /** Grace period to keep databases disabled after they become unhealthy in milliseconds. */
     private long gracePeriod = GRACE_PERIOD_DEFAULT;
 
     /** Whether to forcefully terminate connections during failover. */
@@ -1049,14 +1163,14 @@ public final class MultiDbConfig {
     private int delayInBetweenFailoverAttempts = DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT;
 
     /**
-     * Constructs a new Builder with the specified cluster configurations.
+     * Constructs a new Builder with the specified database configurations.
      */
     public Builder() {
     }
 
     /**
-     * Constructs a new Builder with the specified cluster configurations.
-     * @param databaseConfigs array of cluster configurations defining available Redis endpoints
+     * Constructs a new Builder with the specified database configurations.
+     * @param databaseConfigs array of database configurations defining available Redis endpoints
      * @throws JedisValidationException if databaseConfigs is null or empty
      */
     public Builder(DatabaseConfig[] databaseConfigs) {
@@ -1074,7 +1188,7 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Adds a pre-configured endpoint configuration.
+     * Adds a pre-configured database configuration.
      * <p>
      * This method allows adding a fully configured DatabaseConfig instance, providing maximum
      * flexibility for advanced configurations including custom health check strategies, connection
@@ -1083,24 +1197,24 @@ public final class MultiDbConfig {
      * @param databaseConfig the pre-configured database configuration
      * @return this builder
      */
-    public Builder endpoint(DatabaseConfig databaseConfig) {
+    public Builder database(DatabaseConfig databaseConfig) {
       this.databaseConfigs.add(databaseConfig);
       return this;
     }
 
     /**
-     * Adds a Redis endpoint with custom client configuration.
+     * Adds a database endpoint with custom client configuration.
      * <p>
-     * This method allows specifying endpoint-specific configuration such as authentication, SSL
+     * This method allows specifying database-specific configuration such as authentication, SSL
      * settings, timeouts, etc. This configuration will override the default client configuration
-     * for this specific endpoint.
+     * for this specific database endpoint.
      * </p>
      * @param endpoint the Redis server endpoint
      * @param weight the weight for this endpoint (higher values = higher priority)
      * @param clientConfig the client configuration for this endpoint
      * @return this builder
      */
-    public Builder endpoint(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
+    public Builder database(Endpoint endpoint, float weight, JedisClientConfig clientConfig) {
 
       DatabaseConfig databaseConfig = DatabaseConfig.builder(endpoint, clientConfig).weight(weight)
           .build();
@@ -1112,221 +1226,43 @@ public final class MultiDbConfig {
     // ============ Retry Configuration Methods ============
 
     /**
-     * Sets the maximum number of retry attempts including the initial call.
+     * Sets the encapsulated retry configuration for command execution.
      * <p>
-     * This controls how many times a failed operation will be retried before giving up. For
-     * example, if set to 3, the system will make 1 initial attempt plus 2 retry attempts for a
-     * total of 3 attempts.
+     * This provides a cleaner API for configuring retry behavior by using a dedicated
+     * {@link RetryConfig} object.
      * </p>
-     * <p>
-     * <strong>Recommendations:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>1:</strong> No retries (fail fast)</li>
-     * <li><strong>3:</strong> Standard retry behavior (default)</li>
-     * <li><strong>5+:</strong> Aggressive retry for critical operations, but be careful of retry
-     * storms</li>
-     * </ul>
-     * @param retryMaxAttempts maximum number of attempts (must be &gt;= 1)
+     * @param commandRetry the retry configuration
      * @return this builder instance for method chaining
+     * @see RetryConfig
      */
-    public Builder retryMaxAttempts(int retryMaxAttempts) {
-      this.retryMaxAttempts = retryMaxAttempts;
-      return this;
-    }
-
-    /**
-     * Sets the base wait duration between retry attempts in milliseconds.
-     * <p>
-     * This duration is used as the base wait time and may be modified by the exponential backoff
-     * multiplier to create increasing delays between attempts.
-     * </p>
-     * <p>
-     * <strong>Typical Values:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>100-500ms:</strong> Fast retry for low-latency scenarios</li>
-     * <li><strong>500-1000ms:</strong> Standard retry timing (default: 500ms)</li>
-     * <li><strong>1000-5000ms:</strong> Conservative retry for high-latency networks</li>
-     * </ul>
-     * @param retryWaitDuration wait duration in milliseconds (must be &gt;= 0)
-     * @return this builder instance for method chaining
-     */
-    public Builder retryWaitDuration(int retryWaitDuration) {
-      this.retryWaitDuration = retryWaitDuration;
-      return this;
-    }
-
-    /**
-     * Sets the exponential backoff multiplier for retry wait duration.
-     * <p>
-     * The wait duration increases exponentially between attempts using this multiplier. Formula:
-     * {@code actualWaitTime = baseWaitTime * (multiplier ^ attemptNumber)}
-     * </p>
-     * <p>
-     * <strong>Example with 500ms base wait and multiplier 2:</strong>
-     * </p>
-     * <ul>
-     * <li>Attempt 1: 500ms wait</li>
-     * <li>Attempt 2: 1000ms wait</li>
-     * <li>Attempt 3: 2000ms wait</li>
-     * </ul>
-     * @param retryWaitDurationExponentialBackoffMultiplier exponential backoff multiplier (must be
-     *          &gt;= 1)
-     * @return this builder instance for method chaining
-     */
-    public Builder retryWaitDurationExponentialBackoffMultiplier(
-        int retryWaitDurationExponentialBackoffMultiplier) {
-      this.retryWaitDurationExponentialBackoffMultiplier = retryWaitDurationExponentialBackoffMultiplier;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that trigger retry attempts.
-     * <p>
-     * Only exceptions that match or inherit from the classes in this list will trigger retry
-     * attempts. This parameter supports inheritance - subclasses of the specified exceptions will
-     * also trigger retries.
-     * </p>
-     * <p>
-     * <strong>Default:</strong> {@link JedisConnectionException}
-     * </p>
-     * @param retryIncludedExceptionList list of exception classes that should be retried
-     * @return this builder instance for method chaining
-     */
-    public Builder retryIncludedExceptionList(List<Class> retryIncludedExceptionList) {
-      this.retryIncludedExceptionList = retryIncludedExceptionList;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that are ignored for retry purposes.
-     * <p>
-     * Exceptions that match or inherit from the classes in this list will not trigger retry
-     * attempts, even if they are included in the retry included exception list. This allows for
-     * fine-grained control over retry behavior.
-     * </p>
-     * @param retryIgnoreExceptionList list of exception classes to ignore for retries
-     * @return this builder instance for method chaining
-     */
-    public Builder retryIgnoreExceptionList(List<Class> retryIgnoreExceptionList) {
-      this.retryIgnoreExceptionList = retryIgnoreExceptionList;
+    public Builder commandRetry(RetryConfig commandRetry) {
+      this.commandRetry = commandRetry;
       return this;
     }
 
     // ============ Circuit Breaker Configuration Methods ============
 
     /**
-     * Sets the failure rate threshold percentage that triggers circuit breaker activation.
+     * Sets the encapsulated circuit breaker configuration for failure detection.
      * <p>
-     * When both the failure rate and minimum number of failures exceeds this threshold, the circuit
-     * breaker transitions to the OPEN state and starts short-circuiting calls, enabling immediate
-     * failover to the next available cluster.
+     * This provides a cleaner API for configuring circuit breaker behavior by using a dedicated
+     * {@link CircuitBreakerConfig} object.
      * </p>
-     * <p>
-     * <strong>Typical Values:</strong>
-     * </p>
-     * <ul>
-     * <li><strong>30-40%:</strong> Aggressive failover for high-availability scenarios</li>
-     * <li><strong>50%:</strong> Balanced approach (default)</li>
-     * <li><strong>70-80%:</strong> Conservative failover to avoid false positives</li>
-     * </ul>
-     * @param circuitBreakerFailureRateThreshold failure rate threshold as percentage (0.0 to 100.0)
+     * @param failureDetector the circuit breaker configuration
      * @return this builder instance for method chaining
-     * @see #circuitBreakerMinNumOfFailures(int)
+     * @see CircuitBreakerConfig
      */
-    public Builder circuitBreakerFailureRateThreshold(float circuitBreakerFailureRateThreshold) {
-      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
-      this.circuitBreakerFailureRateThreshold = circuitBreakerFailureRateThreshold;
+    public Builder failureDetector(CircuitBreakerConfig failureDetector) {
+      this.failureDetector = failureDetector;
       return this;
-    }
-
-    /**
-     * Sets the size of the sliding window for circuit breaker calculations.
-     * @param circuitBreakerSlidingWindowSize sliding window size
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerSlidingWindowSize(int circuitBreakerSlidingWindowSize) {
-      this.circuitBreakerSlidingWindowSize = circuitBreakerSlidingWindowSize;
-      return this;
-    }
-
-    /**
-     * Sets the minimum number of failures before circuit breaker is tripped.
-     * <p>
-     * When both the number of failures and failure rate exceeds this threshold, the circuit breaker
-     * will trip and prevent further requests from being sent to the cluster until it has recovered.
-     * </p>
-     * <p>
-     * <strong>Default:</strong> 1000
-     * </p>
-     * @param circuitBreakerMinNumOfFailures minimum number of failures before circuit breaker is
-     *          tripped
-     * @return this builder instance for method chaining
-     * @see #circuitBreakerFailureRateThreshold(float)
-     */
-    public Builder circuitBreakerMinNumOfFailures(int circuitBreakerMinNumOfFailures) {
-      checkThresholds(circuitBreakerMinNumOfFailures, circuitBreakerFailureRateThreshold);
-      this.circuitBreakerMinNumOfFailures = circuitBreakerMinNumOfFailures;
-      return this;
-    }
-
-    private void checkThresholds(int failures, float rate) {
-      if (failures == 0 && rate == 0) {
-        throw new JedisValidationException(
-            "Both circuitBreakerMinNumOfFailures and circuitBreakerFailureRateThreshold can not be 0 at the same time!");
-      }
-    }
-
-    /**
-     * Sets the list of exception classes that are recorded as circuit breaker failures.
-     * <p>
-     * Only exceptions matching or inheriting from these classes will count as failures for circuit
-     * breaker calculations. This allows fine-grained control over which errors should trigger
-     * failover.
-     * </p>
-     * @param circuitBreakerIncludedExceptionList list of exception classes that count as failures
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerIncludedExceptionList(
-        List<Class> circuitBreakerIncludedExceptionList) {
-      this.circuitBreakerIncludedExceptionList = circuitBreakerIncludedExceptionList;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that are ignored by the circuit breaker.
-     * <p>
-     * Exceptions matching or inheriting from these classes will not affect circuit breaker failure
-     * rate calculations, even if they are included in the included exception list.
-     * </p>
-     * @param circuitBreakerIgnoreExceptionList list of exception classes to ignore
-     * @return this builder instance for method chaining
-     */
-    public Builder circuitBreakerIgnoreExceptionList(
-        List<Class> circuitBreakerIgnoreExceptionList) {
-      this.circuitBreakerIgnoreExceptionList = circuitBreakerIgnoreExceptionList;
-      return this;
-    }
-
-    /**
-     * Sets the list of exception classes that trigger immediate fallback to next cluster.
-     * @param circuitBreakerFallbackExceptionList list of exception classes that trigger fallback
-     * @return this builder instance for method chaining
-     * @deprecated Use {@link #fallbackExceptionList(java.util.List)} instead.
-     */
-    @Deprecated
-    public Builder circuitBreakerFallbackExceptionList(
-        List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
-      return fallbackExceptionList(circuitBreakerFallbackExceptionList);
     }
 
     /**
      * Sets the list of exception classes that trigger immediate fallback to the next available
-     * cluster.
+     * database.
      * <p>
      * When these exceptions occur, the system will immediately attempt to failover to the next
-     * available cluster without waiting for circuit breaker thresholds. This enables fast failover
+     * available database without waiting for circuit breaker thresholds. This enables fast failover
      * for specific error conditions.
      * </p>
      * <p>
@@ -1351,7 +1287,7 @@ public final class MultiDbConfig {
      * Sets whether failed commands should be retried during the failover process.
      * <p>
      * When enabled, commands that fail during failover will be retried according to the configured
-     * retry settings on the new cluster. When disabled, failed commands during failover will
+     * retry settings on the new database. When disabled, failed commands during failover will
      * immediately return the failure to the caller.
      * </p>
      * <p>
@@ -1370,19 +1306,19 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets whether automatic failback to higher-priority clusters is supported.
+     * Sets whether automatic failback to higher-priority databases is supported.
      * <p>
-     * When enabled, the system will automatically monitor failed clusters using health checks and
-     * failback to higher-priority (higher weight) clusters when they recover. When disabled,
+     * When enabled, the system will automatically monitor failed da using health checks and
+     * failback to higher-priority (higher weight) databases when they recover. When disabled,
      * failback must be triggered manually.
      * </p>
      * <p>
      * <strong>Requirements for automatic failback:</strong>
      * </p>
      * <ul>
-     * <li>Health checks must be enabled on cluster configurations</li>
-     * <li>Grace period must elapse after cluster becomes unhealthy</li>
-     * <li>Higher-priority cluster must pass health checks</li>
+     * <li>Health checks must be enabled on database configurations</li>
+     * <li>Grace period must elapse after database becomes unhealthy</li>
+     * <li>Higher-priority database must pass health checks</li>
      * </ul>
      * @param supported true to enable automatic failback, false for manual failback only
      * @return this builder instance for method chaining
@@ -1393,10 +1329,10 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets the interval between checks for failback opportunities to recovered clusters.
+     * Sets the interval between checks for failback opportunities to recovered databases.
      * <p>
-     * This controls how frequently the system checks if a higher-priority cluster has recovered and
-     * is available for failback. Lower values provide faster failback response but increase
+     * This controls how frequently the system checks if a higher-priority database has recovered
+     * and is available for failback. Lower values provide faster failback response but increase
      * monitoring overhead.
      * </p>
      * <p>
@@ -1416,11 +1352,11 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets the grace period to keep clusters disabled after they become unhealthy.
+     * Sets the grace period to keep databases disabled after they become unhealthy.
      * <p>
-     * After a cluster is marked as unhealthy, it remains disabled for this grace period before
+     * After a database is marked as unhealthy, it remains disabled for this grace period before
      * being eligible for failback, even if health checks indicate recovery. This prevents rapid
-     * oscillation between clusters during intermittent failures.
+     * oscillation between databases during intermittent failures.
      * </p>
      * <p>
      * <strong>Considerations:</strong>
@@ -1439,10 +1375,10 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets whether to forcefully terminate connections during failover for faster cluster
+     * Sets whether to forcefully terminate connections during failover for faster database
      * switching.
      * <p>
-     * When enabled, existing connections to the failed cluster are immediately closed during
+     * When enabled, existing connections to the failed database are immediately closed during
      * failover, potentially reducing failover time but may cause some in-flight operations to fail.
      * When disabled, connections are closed gracefully.
      * </p>
@@ -1465,7 +1401,7 @@ public final class MultiDbConfig {
      * Sets the maximum number of failover attempts.
      * <p>
      * This setting controls how many times the system will attempt to failover to a different
-     * cluster before giving up. For example, if set to 3, the system will make 1 initial attempt
+     * database before giving up. For example, if set to 3, the system will make 1 initial attempt
      * plus 2 failover attempts for a total of 3 attempts.
      * </p>
      * <p>
@@ -1483,8 +1419,8 @@ public final class MultiDbConfig {
      * Sets the delay in milliseconds between failover attempts.
      * <p>
      * This setting controls how long the system will wait before attempting to failover to a
-     * different cluster. For example, if set to 1000, the system will wait 1 second before
-     * attempting to failover to a different cluster.
+     * different database. For example, if set to 1000, the system will wait 1 second before
+     * attempting to failover to a different database.
      * </p>
      * <p>
      * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
@@ -1511,18 +1447,10 @@ public final class MultiDbConfig {
       MultiDbConfig config = new MultiDbConfig(this.databaseConfigs.toArray(new DatabaseConfig[0]));
 
       // Copy retry configuration
-      config.retryMaxAttempts = this.retryMaxAttempts;
-      config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);
-      config.retryWaitDurationExponentialBackoffMultiplier = this.retryWaitDurationExponentialBackoffMultiplier;
-      config.retryIncludedExceptionList = this.retryIncludedExceptionList;
-      config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
+      config.commandRetry = this.commandRetry;
 
       // Copy circuit breaker configuration
-      config.circuitBreakerMinNumOfFailures = this.circuitBreakerMinNumOfFailures;
-      config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
-      config.circuitBreakerSlidingWindowSize = this.circuitBreakerSlidingWindowSize;
-      config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
-      config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
+      config.failureDetector = this.failureDetector;
 
       // Copy fallback and failover configuration
       config.fallbackExceptionList = this.fallbackExceptionList;

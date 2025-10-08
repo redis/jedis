@@ -69,16 +69,20 @@ public class ActiveActiveFailoverTest {
       .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
     MultiDbConfig multiConfig = MultiDbConfig.builder()
-            .endpoint(primary)
-            .endpoint(secondary)
-            .circuitBreakerSlidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
-            .circuitBreakerFailureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+            .database(primary)
+            .database(secondary)
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
+                .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+                .build())
             .failbackSupported(true)
             .failbackCheckInterval(1000)
             .gracePeriod(2000)
-            .retryWaitDuration(10)
-            .retryMaxAttempts(1)
-            .retryWaitDurationExponentialBackoffMultiplier(1)
+            .commandRetry(MultiDbConfig.RetryConfig.builder()
+                .waitDuration(10)
+                .maxAttempts(1)
+                .exponentialBackoffMultiplier(1)
+                .build())
             .fastFailover(true)
             .retryOnFailover(false)
             .build();

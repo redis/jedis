@@ -9,7 +9,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 
 /**
- * ConnectionProvider with built-in retry, circuit-breaker, and failover to another cluster/database
+ * ConnectionProvider with built-in retry, circuit-breaker, and failover to another /database
  * endpoint. With this executor users can seamlessly failover to Disaster Recovery (DR), Backup, and
  * Active-Active cluster(s) by using simple configuration
  */
@@ -21,21 +21,21 @@ public class MultiDbConnectionSupplier extends MultiDbFailoverBase {
   }
 
   public Connection getConnection() {
-    Database cluster = provider.getDatabase(); // Pass this by reference for thread safety
+    Database database = provider.getDatabase(); // Pass this by reference for thread safety
 
     DecorateSupplier<Connection> supplier = Decorators
-        .ofSupplier(() -> this.handleGetConnection(cluster));
+        .ofSupplier(() -> this.handleGetConnection(database));
 
-    supplier.withRetry(cluster.getRetry());
-    supplier.withCircuitBreaker(cluster.getCircuitBreaker());
+    supplier.withRetry(database.getRetry());
+    supplier.withCircuitBreaker(database.getCircuitBreaker());
     supplier.withFallback(provider.getFallbackExceptionList(),
-      e -> this.handleClusterFailover(cluster));
+      e -> this.handleDatabaseFailover(database));
 
     try {
       return supplier.decorate().get();
     } catch (Exception e) {
-      if (cluster.getCircuitBreaker().getState() == State.OPEN && isActiveDatabase(cluster)) {
-        clusterFailover(cluster);
+      if (database.getCircuitBreaker().getState() == State.OPEN && isActiveDatabase(database)) {
+        databaseFailover(database);
       }
       throw e;
     }
@@ -44,8 +44,8 @@ public class MultiDbConnectionSupplier extends MultiDbFailoverBase {
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
-  private Connection handleGetConnection(Database cluster) {
-    Connection connection = cluster.getConnection();
+  private Connection handleGetConnection(Database database) {
+    Connection connection = database.getConnection();
     connection.ping();
     return connection;
   }
@@ -54,11 +54,11 @@ public class MultiDbConnectionSupplier extends MultiDbFailoverBase {
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  private Connection handleClusterFailover(Database cluster) {
+  private Connection handleDatabaseFailover(Database database) {
 
-    clusterFailover(cluster);
+    databaseFailover(database);
 
-    // Recursive call to the initiating method so the operation can be retried on the next cluster
+    // Recursive call to the initiating method so the operation can be retried on the next database
     // connection
     return getConnection();
   }

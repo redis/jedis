@@ -26,65 +26,65 @@ class FailbackMechanismUnitTest {
   @Test
   void testFailbackCheckIntervalConfiguration() {
     // Test default value
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     MultiDbConfig defaultConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).build();
 
     assertEquals(120000, defaultConfig.getFailbackCheckInterval());
 
     // Test custom value
     MultiDbConfig customConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(3000).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).failbackCheckInterval(3000).build();
 
     assertEquals(3000, customConfig.getFailbackCheckInterval());
   }
 
   @Test
   void testFailbackSupportedConfiguration() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test default (should be true)
     MultiDbConfig defaultConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).build();
 
     assertTrue(defaultConfig.isFailbackSupported());
 
     // Test disabled
     MultiDbConfig disabledConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(false).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).failbackSupported(false).build();
 
     assertFalse(disabledConfig.isFailbackSupported());
   }
 
   @Test
   void testFailbackCheckIntervalValidation() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test zero interval (should be allowed)
     MultiDbConfig zeroConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(0).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).failbackCheckInterval(0).build();
 
     assertEquals(0, zeroConfig.getFailbackCheckInterval());
 
     // Test negative interval (should be allowed - implementation decision)
     MultiDbConfig negativeConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackCheckInterval(-1000).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).failbackCheckInterval(-1000).build();
 
     assertEquals(-1000, negativeConfig.getFailbackCheckInterval());
   }
 
   @Test
   void testBuilderChaining() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test that builder methods can be chained
     MultiDbConfig config = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(true)
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).failbackSupported(true)
             .failbackCheckInterval(2000).retryOnFailover(true).build();
 
     assertTrue(config.isFailbackSupported());
@@ -95,47 +95,47 @@ class FailbackMechanismUnitTest {
   @Test
   void testGracePeriodConfiguration() {
     // Test default value
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     MultiDbConfig defaultConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).build();
 
     assertEquals(60000, defaultConfig.getGracePeriod());
 
     // Test custom value
     MultiDbConfig customConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).gracePeriod(5000).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).gracePeriod(5000).build();
 
     assertEquals(5000, customConfig.getGracePeriod());
   }
 
   @Test
   void testGracePeriodValidation() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test zero grace period (should be allowed)
     MultiDbConfig zeroConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).gracePeriod(0).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).gracePeriod(0).build();
 
     assertEquals(0, zeroConfig.getGracePeriod());
 
     // Test negative grace period (should be allowed - implementation decision)
     MultiDbConfig negativeConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).gracePeriod(-1000).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).gracePeriod(-1000).build();
 
     assertEquals(-1000, negativeConfig.getGracePeriod());
   }
 
   @Test
   void testGracePeriodBuilderChaining() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(endpoint1, clientConfig).healthCheckEnabled(false).build();
 
     // Test that builder methods can be chained
     MultiDbConfig config = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).failbackSupported(true)
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).failbackSupported(true)
             .failbackCheckInterval(2000).gracePeriod(8000).retryOnFailover(true).build();
 
     assertTrue(config.isFailbackSupported());

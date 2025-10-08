@@ -109,7 +109,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testRemoveNonExistentCluster() {
+  void testRemoveNonExistentDatabase() {
     HostAndPort nonExistentEndpoint = new HostAndPort("localhost", 9999);
 
     // Should throw validation exception for non-existent endpoint
@@ -168,7 +168,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testActiveClusterHandlingOnRemove() {
+  void testActiveDatabaseHandlingOnRemove() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.ping()).thenReturn(true);
 

@@ -3,7 +3,7 @@ package redis.clients.jedis.mcf;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
- * Exception thrown when a failover attempt fails due to lack of available/healthy clusters.
+ * Exception thrown when a failover attempt fails due to lack of available/healthy databases.
  * <p>
  * This exception itself is not thrown, see the child exceptions for more details.
  * </p>
@@ -11,9 +11,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * @see JedisFailoverException.JedisTemporarilyNotAvailableException
  */
 public class JedisFailoverException extends JedisConnectionException {
-  private static final String MESSAGE = "Cluster/database endpoint could not failover since the MultiDbConfig was not "
-      + "provided with an additional cluster/database endpoint according to its prioritized sequence. "
-      + "If applicable, consider falling back OR restarting with an available cluster/database endpoint";
+  private static final String MESSAGE = "Database endpoint could not failover since the MultiDbConfig was not "
+      + "provided with an additional database endpoint according to its prioritized sequence. "
+      + "If applicable, consider falling back OR restarting with an available database endpoint";
 
   public JedisFailoverException(String s) {
     super(s);
@@ -24,8 +24,8 @@ public class JedisFailoverException extends JedisConnectionException {
   }
 
   /**
-   * Exception thrown when a failover attempt fails due to lack of available/healthy clusters, and
-   * the max number of failover attempts has been exceeded. And there is still no healthy cluster.
+   * Exception thrown when a failover attempt fails due to lack of available/healthy databases, and
+   * the max number of failover attempts has been exceeded. And there is still no healthy databases.
    * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and
@@ -42,10 +42,10 @@ public class JedisFailoverException extends JedisConnectionException {
   }
 
   /**
-   * Exception thrown when a failover attempt fails due to lack of available/healthy clusters, but
+   * Exception thrown when a failover attempt fails due to lack of available/healthy databases, but
    * the max number of failover attempts has not been exceeded yet. Though there is no healthy
-   * cluster including the selected/current one, given configuration suggests that it should be a
-   * temporary condition and it is possible that there will be a healthy cluster available.
+   * database including the selected/current one, given configuration suggests that it should be a
+   * temporary condition and it is possible that there will be a healthy database available.
    * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and

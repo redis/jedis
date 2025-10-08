@@ -79,6 +79,6 @@ class CircuitBreakerThresholdsAdapter {
     // and rely on our custom evaluateThresholds() logic.
     minimumNumberOfCalls = Integer.MAX_VALUE;
 
-    slidingWindowSize = multiDbConfig.getCircuitBreakerSlidingWindowSize();
+    slidingWindowSize = multiDbConfig.getFailureDetector().getSlidingWindowSize();
   }
 }

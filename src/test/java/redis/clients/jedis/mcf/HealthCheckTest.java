@@ -349,14 +349,14 @@ public class HealthCheckTest {
   @Test
   void testNewFieldLocations() {
     // Test new field locations in DatabaseConfig and MultiDbConfig
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).weight(2.5f).build();
 
     MultiDbConfig multiConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).retryOnFailover(true)
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).retryOnFailover(true)
             .failbackSupported(false).build();
 
-    assertEquals(2.5f, clusterConfig.getWeight());
+    assertEquals(2.5f, databaseConfig.getWeight());
     assertTrue(multiConfig.isRetryOnFailover());
     assertFalse(multiConfig.isFailbackSupported());
   }
@@ -364,19 +364,19 @@ public class HealthCheckTest {
   @Test
   void testDefaultValues() {
     // Test default values in DatabaseConfig
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).build();
 
-    assertEquals(1.0f, clusterConfig.getWeight()); // Default weight
-    assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier()); // Default
-                                                                                        // is null
-                                                                                        // (no
-                                                                                        // health
-                                                                                        // check)
+    assertEquals(1.0f, databaseConfig.getWeight()); // Default weight
+    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier()); // Default
+                                                                                         // is null
+                                                                                         // (no
+                                                                                         // health
+                                                                                         // check)
 
     // Test default values in MultiDbConfig
     MultiDbConfig multiConfig = new MultiDbConfig.Builder(
-        new MultiDbConfig.DatabaseConfig[] { clusterConfig }).build();
+        new MultiDbConfig.DatabaseConfig[] { databaseConfig }).build();
 
     assertFalse(multiConfig.isRetryOnFailover()); // Default is false
     assertTrue(multiConfig.isFailbackSupported()); // Default is true
@@ -388,11 +388,11 @@ public class HealthCheckTest {
 
     MultiDbConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> customStrategy;
 
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(supplier).build();
 
-    assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
-    HealthCheckStrategy result = clusterConfig.getHealthCheckStrategySupplier().get(testEndpoint,
+    assertNotNull(databaseConfig.getHealthCheckStrategySupplier());
+    HealthCheckStrategy result = databaseConfig.getHealthCheckStrategySupplier().get(testEndpoint,
       testConfig);
     assertEquals(customStrategy, result);
   }
@@ -403,10 +403,10 @@ public class HealthCheckTest {
       return mock(HealthCheckStrategy.class);
     };
 
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(customSupplier).build();
 
-    assertEquals(customSupplier, clusterConfig.getHealthCheckStrategySupplier());
+    assertEquals(customSupplier, databaseConfig.getHealthCheckStrategySupplier());
   }
 
   @Test
@@ -415,38 +415,38 @@ public class HealthCheckTest {
       return new EchoStrategy(hostAndPort, jedisClientConfig);
     };
 
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckStrategySupplier(echoSupplier).build();
 
-    MultiDbConfig.StrategySupplier supplier = clusterConfig.getHealthCheckStrategySupplier();
+    MultiDbConfig.StrategySupplier supplier = databaseConfig.getHealthCheckStrategySupplier();
     assertNotNull(supplier);
     assertInstanceOf(EchoStrategy.class, supplier.get(testEndpoint, testConfig));
   }
 
   @Test
   void testDatabaseConfigWithDefaultHealthCheck() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).build(); // Should use default EchoStrategy
 
-    assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
-    assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier());
+    assertNotNull(databaseConfig.getHealthCheckStrategySupplier());
+    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
   }
 
   @Test
   void testDatabaseConfigWithDisabledHealthCheck() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckEnabled(false).build();
 
-    assertNull(clusterConfig.getHealthCheckStrategySupplier());
+    assertNull(databaseConfig.getHealthCheckStrategySupplier());
   }
 
   @Test
   void testDatabaseConfigHealthCheckEnabledExplicitly() {
-    MultiDbConfig.DatabaseConfig clusterConfig = MultiDbConfig.DatabaseConfig
+    MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
         .builder(testEndpoint, testConfig).healthCheckEnabled(true).build();
 
-    assertNotNull(clusterConfig.getHealthCheckStrategySupplier());
-    assertEquals(EchoStrategy.DEFAULT, clusterConfig.getHealthCheckStrategySupplier());
+    assertNotNull(databaseConfig.getHealthCheckStrategySupplier());
+    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
   }
 
   // ========== Integration Tests ==========

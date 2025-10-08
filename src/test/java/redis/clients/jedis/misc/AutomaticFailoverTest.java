@@ -77,7 +77,7 @@ public class AutomaticFailoverTest {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
+      MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider,
         SwitchReason.HEALTH_CHECK, provider.getDatabase());
       pipe.sync();
     }
@@ -97,7 +97,7 @@ public class AutomaticFailoverTest {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      MultiDbConnectionProviderHelper.switchToHealthyCluster(provider,
+      MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider,
         SwitchReason.HEALTH_CHECK, provider.getDatabase());
       assertEquals(Arrays.asList("OK", 1L), tx.exec());
     }
@@ -114,9 +114,11 @@ public class AutomaticFailoverTest {
     HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
-            .retryWaitDuration(1).retryMaxAttempts(1)
-            .circuitBreakerSlidingWindowSize(slidingWindowSize)
-            .circuitBreakerMinNumOfFailures(slidingWindowMinFails);
+            .commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(1).maxAttempts(1).build())
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .minNumOfFailures(slidingWindowMinFails)
+                .build());
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
@@ -154,12 +156,12 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .retryMaxAttempts(retryMaxAttempts) // Default
-            // is
-            // 3
-            .circuitBreakerFailureRateThreshold(50)
-            .circuitBreakerMinNumOfFailures(slidingWindowMinFails)
-            .circuitBreakerSlidingWindowSize(slidingWindowSize);
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(retryMaxAttempts).build())
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .failureRateThreshold(50)
+                .minNumOfFailures(slidingWindowMinFails)
+                .slidingWindowSize(slidingWindowSize)
+                .build());
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
@@ -196,7 +198,9 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-            .circuitBreakerSlidingWindowSize(slidingWindowSize)
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .build())
             .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
@@ -228,7 +232,10 @@ public class AutomaticFailoverTest {
 
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
         getDatabaseConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
-          workingEndpoint.getHostAndPort())).circuitBreakerSlidingWindowSize(slidingWindowSize)
+          workingEndpoint.getHostAndPort()))
+              .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                  .slidingWindowSize(slidingWindowSize)
+                  .build())
               .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();

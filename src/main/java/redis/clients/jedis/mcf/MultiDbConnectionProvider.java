@@ -82,9 +82,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    */
   private Consumer<DatabaseSwitchEvent> databaseSwitchListener;
 
-  private List<Class<? extends Throwable>> fallbackExceptionList;
+  private final List<Class<? extends Throwable>> fallbackExceptionList;
 
-  private HealthStatusManager healthStatusManager = new HealthStatusManager();
+  private final HealthStatusManager healthStatusManager = new HealthStatusManager();
 
   // Flag to control when handleHealthStatusChange should process events (only after initialization)
   private volatile boolean initializationComplete = false;
@@ -99,12 +99,12 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       });
 
   // Store retry and circuit breaker configs for dynamic database addition/removal
-  private RetryConfig retryConfig;
-  private CircuitBreakerConfig circuitBreakerConfig;
-  private MultiDbConfig multiDbConfig;
+  private final RetryConfig retryConfig;
+  private final CircuitBreakerConfig circuitBreakerConfig;
+  private final MultiDbConfig multiDbConfig;
 
-  private AtomicLong failoverFreezeUntil = new AtomicLong(0);
-  private AtomicInteger failoverAttemptCount = new AtomicInteger(0);
+  private final AtomicLong failoverFreezeUntil = new AtomicLong(0);
+  private final AtomicInteger failoverAttemptCount = new AtomicInteger(0);
 
   public MultiDbConnectionProvider(MultiDbConfig multiDbConfig) {
 
@@ -114,51 +114,14 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     this.multiDbConfig = multiDbConfig;
 
     ////////////// Configure Retry ////////////////////
-
-    RetryConfig.Builder retryConfigBuilder = RetryConfig.custom();
-    retryConfigBuilder.maxAttempts(multiDbConfig.getRetryMaxAttempts());
-    retryConfigBuilder.intervalFunction(
-      IntervalFunction.ofExponentialBackoff(multiDbConfig.getRetryWaitDuration(),
-        multiDbConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
-    retryConfigBuilder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
-    retryConfigBuilder.retryExceptions(
-      multiDbConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
-
-    List<Class> retryIgnoreExceptionList = multiDbConfig.getRetryIgnoreExceptionList();
-    if (retryIgnoreExceptionList != null)
-      retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
-
-    this.retryConfig = retryConfigBuilder.build();
+    MultiDbConfig.RetryConfig commandRetry = multiDbConfig.getCommandRetry();
+    this.retryConfig = buildRetryConfig(commandRetry);
 
     ////////////// Configure Circuit Breaker ////////////////////
-
-    CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
-
-    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiDbConfig);
-    circuitBreakerConfigBuilder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
-    circuitBreakerConfigBuilder.failureRateThreshold(adapter.getFailureRateThreshold());
-    circuitBreakerConfigBuilder.slidingWindowSize(adapter.getSlidingWindowSize());
-    circuitBreakerConfigBuilder.slidingWindowType(adapter.getSlidingWindowType());
-
-    circuitBreakerConfigBuilder.recordExceptions(
-      multiDbConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
-    circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State
-                                                                                     // transitions
-                                                                                     // are
-                                                                                     // forced. No
-                                                                                     // half open
-                                                                                     // states
-                                                                                     // are used
-
-    List<Class> circuitBreakerIgnoreExceptionList = multiDbConfig
-        .getCircuitBreakerIgnoreExceptionList();
-    if (circuitBreakerIgnoreExceptionList != null) circuitBreakerConfigBuilder
-        .ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
-
-    this.circuitBreakerConfig = circuitBreakerConfigBuilder.build();
+    MultiDbConfig.CircuitBreakerConfig failureDetector = multiDbConfig.getFailureDetector();
+    this.circuitBreakerConfig = buildCircuitBreakerConfig(failureDetector, multiDbConfig);
 
     ////////////// Configure Database Map ////////////////////
-
     DatabaseConfig[] databaseConfigs = multiDbConfig.getDatabaseConfigs();
 
     // Now add databases - health checks will start but events will be queued
@@ -192,6 +155,57 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       failbackScheduler.scheduleAtFixedRate(this::periodicFailbackCheck, failbackInterval,
         failbackInterval, TimeUnit.MILLISECONDS);
     }
+  }
+
+  /**
+   * Builds a Resilience4j RetryConfig from Jedis MultiDbConfig.RetryConfig.
+   * @param commandRetry the Jedis retry configuration
+   * @return configured Resilience4j RetryConfig
+   */
+  private RetryConfig buildRetryConfig(redis.clients.jedis.MultiDbConfig.RetryConfig commandRetry) {
+    RetryConfig.Builder builder = RetryConfig.custom();
+
+    builder.maxAttempts(commandRetry.getMaxAttempts());
+    builder.intervalFunction(IntervalFunction.ofExponentialBackoff(commandRetry.getWaitDuration(),
+      commandRetry.getExponentialBackoffMultiplier()));
+    builder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
+    builder.retryExceptions(commandRetry.getIncludedExceptionList().stream().toArray(Class[]::new));
+
+    List<Class> ignoreExceptions = commandRetry.getIgnoreExceptionList();
+    if (ignoreExceptions != null) {
+      builder.ignoreExceptions(ignoreExceptions.stream().toArray(Class[]::new));
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * Builds Resilience4j CircuitBreakerConfig from Jedis CircuitBreakerConfig.
+   * @param failureDetector the Jedis circuit breaker configuration
+   * @param multiDbConfig the multi-database configuration (for adapter)
+   * @return configured Resilience4j CircuitBreakerConfig
+   */
+  private CircuitBreakerConfig buildCircuitBreakerConfig(
+      MultiDbConfig.CircuitBreakerConfig failureDetector, MultiDbConfig multiDbConfig) {
+    CircuitBreakerConfig.Builder builder = CircuitBreakerConfig.custom();
+
+    CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(multiDbConfig);
+    builder.minimumNumberOfCalls(adapter.getMinimumNumberOfCalls());
+    builder.failureRateThreshold(adapter.getFailureRateThreshold());
+    builder.slidingWindowSize(adapter.getSlidingWindowSize());
+    builder.slidingWindowType(adapter.getSlidingWindowType());
+
+    builder.recordExceptions(
+      failureDetector.getIncludedExceptionList().stream().toArray(Class[]::new));
+    builder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are forced.
+                                                                 // No half open states are used
+
+    List<Class> ignoreExceptions = failureDetector.getIgnoreExceptionList();
+    if (ignoreExceptions != null) {
+      builder.ignoreExceptions(ignoreExceptions.stream().toArray(Class[]::new));
+    }
+
+    return builder.build();
   }
 
   /**
@@ -247,11 +261,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       if (isActiveDatabase) {
         log.info("Active database is being removed. Finding a new active database...");
-        Map.Entry<Endpoint, Database> candidate = findWeightedHealthyClusterToIterate(
+        Map.Entry<Endpoint, Database> candidate = findWeightedHealthyDatabaseToIterate(
           databaseToRemove);
         if (candidate != null) {
-          Database selectedCluster = candidate.getValue();
-          if (setActiveDatabase(selectedCluster, true)) {
+          Database selectedDatabase = candidate.getValue();
+          if (setActiveDatabase(selectedDatabase, true)) {
             log.info("New active database set to {}", candidate.getKey());
             notificationData = candidate;
           }
@@ -444,12 +458,12 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       // Perform failback if we found a better candidate
       if (bestCandidate != null) {
-        Database selectedCluster = bestCandidate.getValue();
+        Database selectedDatabase = bestCandidate.getValue();
         log.info("Performing failback from {} to {} (higher weight database available)",
           activeDatabase.getCircuitBreaker().getName(),
-          selectedCluster.getCircuitBreaker().getName());
-        if (setActiveDatabase(selectedCluster, true)) {
-          onDatabaseSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedCluster);
+          selectedDatabase.getCircuitBreaker().getName());
+        if (setActiveDatabase(selectedDatabase, true)) {
+          onDatabaseSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedDatabase);
         }
       }
     } catch (Exception e) {
@@ -458,11 +472,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   Endpoint switchToHealthyDatabase(SwitchReason reason, Database iterateFrom) {
-    Map.Entry<Endpoint, Database> databaseToIterate = findWeightedHealthyClusterToIterate(
+    Map.Entry<Endpoint, Database> databaseToIterate = findWeightedHealthyDatabaseToIterate(
       iterateFrom);
     if (databaseToIterate == null) {
       // throws exception anyway since not able to iterate
-      handleNoHealthyCluster();
+      handleNoHealthyDatabase();
     }
 
     Database database = databaseToIterate.getValue();
@@ -473,7 +487,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     return databaseToIterate.getKey();
   }
 
-  private void handleNoHealthyCluster() {
+  private void handleNoHealthyDatabase() {
     int max = multiDbConfig.getMaxNumFailoverAttempts();
     log.error("No healthy database available to switch to");
     if (failoverAttemptCount.get() > max) {
@@ -514,7 +528,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   public void assertOperability() {
     Database current = activeDatabase;
     if (!current.isHealthy() && !this.canIterateFrom(current)) {
-      handleNoHealthyCluster();
+      handleNoHealthyDatabase();
     }
   }
 
@@ -524,7 +538,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   private static Predicate<Map.Entry<Endpoint, Database>> filterByHealth = c -> c.getValue()
       .isHealthy();
 
-  private Map.Entry<Endpoint, Database> findWeightedHealthyClusterToIterate(Database iterateFrom) {
+  private Map.Entry<Endpoint, Database> findWeightedHealthyDatabaseToIterate(Database iterateFrom) {
     return databaseMap.entrySet().stream().filter(filterByHealth)
         .filter(entry -> entry.getValue() != iterateFrom).max(maxByWeight).orElse(null);
   }
@@ -546,10 +560,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     State originalState = circuitBreaker.getState();
     try {
       // Transitions the state machine to a CLOSED state, allowing state transition, metrics and
-      // event publishing
-      // Safe since the activeMultiClusterIndex has not yet been changed and therefore no traffic
-      // will be routed
-      // yet
+      // event publishing. Safe since the activeDatabase has not yet been changed and therefore no
+      // traffic will be routed yet
       circuitBreaker.transitionToClosedState();
 
       try (Connection targetConnection = database.getConnection()) {
@@ -569,7 +581,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   /**
    * Returns the set of all configured endpoints.
-   * @return
+   * @return the set of all configured endpoints
    */
   public Set<Endpoint> getEndpoints() {
     return new HashSet<>(databaseMap.keySet());
@@ -612,11 +624,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   private boolean setActiveDatabase(Database database, boolean validateConnection) {
-    // Database database = clusterEntry.getValue();
+    // Database database = databaseEntry.getValue();
     // Field-level synchronization is used to avoid the edge case in which
     // setActiveDatabase() is called at the same time
     activeDatabaseChangeLock.lock();
-    Database oldCluster;
+    Database oldDatabase;
     try {
 
       // Allows an attempt to reset the current database from a FORCED_OPEN to CLOSED state in the
@@ -625,25 +637,25 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       if (validateConnection) validateTargetConnection(database);
 
-      String originalClusterName = getDatabaseCircuitBreaker().getName();
+      String originalDatabaseName = getDatabaseCircuitBreaker().getName();
 
       if (activeDatabase == database)
         log.warn("Database/database endpoint '{}' successfully closed its circuit breaker",
-          originalClusterName);
+          originalDatabaseName);
       else log.warn("Database/database endpoint successfully updated from '{}' to '{}'",
-        originalClusterName, database.circuitBreaker.getName());
-      oldCluster = activeDatabase;
+        originalDatabaseName, database.circuitBreaker.getName());
+      oldDatabase = activeDatabase;
       activeDatabase = database;
     } finally {
       activeDatabaseChangeLock.unlock();
     }
-    boolean switched = oldCluster != database;
+    boolean switched = oldDatabase != database;
     if (switched && this.multiDbConfig.isFastFailover()) {
       log.info("Forcing disconnect of all active connections in old database: {}",
-        oldCluster.circuitBreaker.getName());
-      oldCluster.forceDisconnect();
+        oldDatabase.circuitBreaker.getName());
+      oldDatabase.forceDisconnect();
       log.info("Disconnected all active connections in old database: {}",
-        oldCluster.circuitBreaker.getName());
+        oldDatabase.circuitBreaker.getName());
 
     }
     return switched;
@@ -737,7 +749,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * possible. Users can manually failback to an available database
    */
   public boolean canIterateFrom(Database iterateFrom) {
-    Map.Entry<Endpoint, Database> e = findWeightedHealthyClusterToIterate(iterateFrom);
+    Map.Entry<Endpoint, Database> e = findWeightedHealthyDatabaseToIterate(iterateFrom);
     return e != null;
   }
 
@@ -849,11 +861,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
 
     public int getCircuitBreakerMinNumOfFailures() {
-      return multiDbConfig.getCircuitBreakerMinNumOfFailures();
+      return multiDbConfig.getFailureDetector().getMinNumOfFailures();
     }
 
     public float getCircuitBreakerFailureRateThreshold() {
-      return multiDbConfig.getCircuitBreakerFailureRateThreshold();
+      return multiDbConfig.getFailureDetector().getFailureRateThreshold();
     }
 
     public boolean isDisabled() {

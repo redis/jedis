@@ -88,9 +88,11 @@ public class HealthCheckIntegrationTest {
             .apply(MultiDbConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig)).build())
         .collect(Collectors.toList());
 
-    MultiDbConfig mccf = new MultiDbConfig.Builder(databaseConfigs).retryMaxAttempts(1)
-        .retryWaitDuration(1).circuitBreakerSlidingWindowSize(1)
-        .circuitBreakerFailureRateThreshold(100).build();
+    MultiDbConfig mccf = new MultiDbConfig.Builder(databaseConfigs)
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).waitDuration(1).build())
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(1)
+            .failureRateThreshold(100).build())
+        .build();
 
     return new MultiDbConnectionProvider(mccf);
   }

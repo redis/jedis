@@ -26,18 +26,18 @@ import redis.clients.jedis.util.ReflectionTestUtil;
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
  * must be exceeded to trigger failover. Uses a real CircuitBreaker and real Retry, but mocks the
- * provider and cluster wiring to avoid network I/O.
+ * provider and database wiring to avoid network I/O.
  */
 public class MultiDbCircuitBreakerThresholdsTest {
 
   private MultiDbConnectionProvider realProvider;
   private MultiDbConnectionProvider spyProvider;
-  private Database cluster;
+  private Database database;
   private MultiDbCommandExecutor executor;
   private CommandObject<String> dummyCommand;
   private TrackingConnectionPool poolMock;
-  private HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
-  private HostAndPort fakeEndpoint2 = new HostAndPort("fake2", 6379);
+  private final HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
+  private final HostAndPort fakeEndpoint2 = new HostAndPort("fake2", 6379);
   private DatabaseConfig[] fakeDatabaseConfigs;
 
   @BeforeEach
@@ -51,24 +51,26 @@ public class MultiDbCircuitBreakerThresholdsTest {
     fakeDatabaseConfigs = databaseConfigs;
 
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(databaseConfigs)
-        .circuitBreakerFailureRateThreshold(50.0f).circuitBreakerMinNumOfFailures(3)
-        .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().failureRateThreshold(50.0f)
+            .minNumOfFailures(3).slidingWindowSize(10).build())
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+        .retryOnFailover(false);
 
     MultiDbConfig mcc = cfgBuilder.build();
 
     realProvider = new MultiDbConnectionProvider(mcc);
     spyProvider = spy(realProvider);
 
-    cluster = spyProvider.getDatabase();
+    database = spyProvider.getDatabase();
 
     executor = new MultiDbCommandExecutor(spyProvider);
 
     dummyCommand = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
         BuilderFactory.STRING);
 
-    // Replace the cluster's pool with a mock to avoid real network I/O
+    // Replace the database's pool with a mock to avoid real network I/O
     poolMock = mock(TrackingConnectionPool.class);
-    ReflectionTestUtil.setField(cluster, "connectionPool", poolMock);
+    ReflectionTestUtil.setField(database, "connectionPool", poolMock);
   }
 
   /**
@@ -124,8 +126,10 @@ public class MultiDbCircuitBreakerThresholdsTest {
   public void rateBelowThreshold_doesNotFailover() throws Exception {
     // Use local provider with higher threshold (80%) and no retries
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
-        .circuitBreakerFailureRateThreshold(80.0f).circuitBreakerMinNumOfFailures(3)
-        .circuitBreakerSlidingWindowSize(10).retryMaxAttempts(1).retryOnFailover(false);
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().failureRateThreshold(80.0f)
+            .minNumOfFailures(3).slidingWindowSize(10).build())
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+        .retryOnFailover(false);
     MultiDbConnectionProvider rp = new MultiDbConnectionProvider(cfgBuilder.build());
     MultiDbConnectionProvider sp = spy(rp);
     Database c = sp.getDatabase();
@@ -163,8 +167,8 @@ public class MultiDbCircuitBreakerThresholdsTest {
   @Test
   public void providerBuilder_zeroRate_mapsToHundredAndHugeMinCalls() {
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs);
-    cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
-        .circuitBreakerSlidingWindowSize(10);
+    cfgBuilder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+        .failureRateThreshold(0.0f).minNumOfFailures(3).slidingWindowSize(10).build());
     MultiDbConfig mcc = cfgBuilder.build();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);
@@ -190,8 +194,10 @@ public class MultiDbCircuitBreakerThresholdsTest {
       boolean expectFailoverOnNext) throws Exception {
 
     MultiDbConfig.Builder cfgBuilder = MultiDbConfig.builder(fakeDatabaseConfigs)
-        .circuitBreakerFailureRateThreshold(ratePercent).circuitBreakerMinNumOfFailures(minFailures)
-        .circuitBreakerSlidingWindowSize(Math.max(10, successes + failures + 2)).retryMaxAttempts(1)
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+            .failureRateThreshold(ratePercent).minNumOfFailures(minFailures)
+            .slidingWindowSize(Math.max(10, successes + failures + 2)).build())
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
         .retryOnFailover(false);
 
     MultiDbConnectionProvider real = new MultiDbConnectionProvider(cfgBuilder.build());

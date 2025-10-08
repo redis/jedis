@@ -104,8 +104,8 @@ public class DatabaseEvaluateThresholdsTest {
         .builder(java.util.Arrays.asList(MultiDbConfig.DatabaseConfig
             .builder(new HostAndPort("localhost", 6379), DefaultJedisClientConfig.builder().build())
             .healthCheckEnabled(false).build()));
-    cfgBuilder.circuitBreakerFailureRateThreshold(0.0f).circuitBreakerMinNumOfFailures(3)
-        .circuitBreakerSlidingWindowSize(10);
+    cfgBuilder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+        .failureRateThreshold(0.0f).minNumOfFailures(3).slidingWindowSize(10).build());
     MultiDbConfig mcc = cfgBuilder.build();
 
     CircuitBreakerThresholdsAdapter adapter = new CircuitBreakerThresholdsAdapter(mcc);

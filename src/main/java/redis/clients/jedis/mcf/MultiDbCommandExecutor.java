@@ -42,7 +42,7 @@ public class MultiDbCommandExecutor extends MultiDbFailoverBase implements Comma
       return supplier.decorate().get();
     } catch (Exception e) {
       if (database.getCircuitBreaker().getState() == State.OPEN && isActiveDatabase(database)) {
-        clusterFailover(database);
+        databaseFailover(database);
       }
       throw e;
     }
@@ -79,7 +79,7 @@ public class MultiDbCommandExecutor extends MultiDbFailoverBase implements Comma
    */
   private <T> T handleClusterFailover(CommandObject<T> commandObject, Database cluster) {
 
-    clusterFailover(cluster);
+    databaseFailover(cluster);
 
     // Recursive call to the initiating method so the operation can be retried on the next cluster
     // connection

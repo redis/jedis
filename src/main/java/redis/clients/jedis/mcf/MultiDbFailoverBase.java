@@ -13,7 +13,7 @@ import redis.clients.jedis.util.IOUtils;
  * @author Allen Terleto (aterleto)
  *         <p>
  *         Base class for CommandExecutor with built-in retry, circuit-breaker, and failover to
- *         another cluster/database endpoint. With this executor users can seamlessly failover to
+ *         another database endpoint. With this executor users can seamlessly failover to
  *         Disaster Recovery (DR), Backup, and Active-Active cluster(s) by using simple
  *         configuration which is passed through from Resilience4j -
  *         https://resilience4j.readme.io/docs
@@ -38,7 +38,7 @@ public class MultiDbFailoverBase implements AutoCloseable {
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  protected void clusterFailover(Database database) {
+  protected void databaseFailover(Database database) {
     lock.lock();
 
     CircuitBreaker circuitBreaker = database.getCircuitBreaker();
@@ -70,7 +70,7 @@ public class MultiDbFailoverBase implements AutoCloseable {
       // only the first one will trigger a failover, and make the CB FORCED_OPEN.
       // when the rest reaches here, the active database is already the next one, and should be
       // different than
-      // active CB. If its the same one and there are no more clusters to failover to, then throw an
+      // active CB. If its the same one and there are no more databases to failover to, then throw an
       // exception
       else if (database == provider.getDatabase()) {
         provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);

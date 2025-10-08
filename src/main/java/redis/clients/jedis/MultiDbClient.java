@@ -219,7 +219,7 @@ public class MultiDbClient extends UnifiedJedis {
   }
 
   /**
-   * Creates a new pipeline for batch operations with multi-cluster support.
+   * Creates a new pipeline for batch operations with multi-db support.
    * <p>
    * The returned pipeline supports the same resilience features as the main client, including
    * automatic failover during batch execution.

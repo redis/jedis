@@ -57,33 +57,27 @@ public class ActiveActiveFailoverIT {
   public void testFailover() {
 
     JedisClientConfig config = endpoint.getClientConfigBuilder()
-      .socketTimeoutMillis(SOCKET_TIMEOUT_MS)
-      .connectionTimeoutMillis(CONNECTION_TIMEOUT_MS).build();
+        .socketTimeoutMillis(SOCKET_TIMEOUT_MS).connectionTimeoutMillis(CONNECTION_TIMEOUT_MS)
+        .build();
 
     DatabaseConfig primary = DatabaseConfig.builder(endpoint.getHostAndPort(0), config)
-      .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
+        .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
 
     DatabaseConfig secondary = DatabaseConfig.builder(endpoint.getHostAndPort(1), config)
-      .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
+        .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiDbConfig multiConfig = MultiDbConfig.builder()
-            .database(primary)
-            .database(secondary)
-            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
-                .slidingWindowSize(1) // SLIDING WINDOW SIZE IN SECONDS
-                .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
-                .build())
-            .failbackSupported(true)
-            .failbackCheckInterval(1000)
-            .gracePeriod(2000)
-            .commandRetry(MultiDbConfig.RetryConfig.builder()
-                .waitDuration(10)
-                .maxAttempts(1)
-                .exponentialBackoffMultiplier(1)
-                .build())
-            .fastFailover(true)
-            .retryOnFailover(false)
-            .build();
+    MultiDbConfig multiConfig = MultiDbConfig.builder().database(primary).database(secondary)
+        .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(1) // SLIDING
+                                                                                           // WINDOW
+                                                                                           // SIZE
+                                                                                           // IN
+                                                                                           // SECONDS
+            .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
+            .build())
+        .failbackSupported(true).failbackCheckInterval(1000).gracePeriod(2000)
+        .commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(10).maxAttempts(1)
+            .exponentialBackoffMultiplier(1).build())
+        .fastFailover(true).retryOnFailover(false).build();
     class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
       String currentClusterName = "not set";
@@ -103,7 +97,8 @@ public class ActiveActiveFailoverIT {
       @Override
       public void accept(DatabaseSwitchEvent e) {
         this.currentClusterName = e.getDatabaseName();
-        log.info("\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n",
+        log.info(
+          "\n\n====FailoverEvent=== \nJedis failover to cluster: {}\n====FailoverEvent===\n\n",
           e.getDatabaseName());
 
         if (failoverHappened) {
@@ -118,10 +113,8 @@ public class ActiveActiveFailoverIT {
 
     FailoverReporter reporter = new FailoverReporter();
 
-    MultiDbClient client = MultiDbClient.builder()
-            .multiDbConfig(multiConfig)
-            .databaseSwitchListener(reporter)
-            .build();
+    MultiDbClient client = MultiDbClient.builder().multiDbConfig(multiConfig)
+        .databaseSwitchListener(reporter).build();
 
     AtomicLong executedCommands = new AtomicLong(0);
     AtomicLong retryingThreadsCounter = new AtomicLong(0);
@@ -162,7 +155,8 @@ public class ActiveActiveFailoverIT {
 
           if (attempt == 0) {
             long failedThreads = retryingThreadsCounter.incrementAndGet();
-            log.warn("Thread {} failed to execute command. Failed threads: {}", threadId, failedThreads);
+            log.warn("Thread {} failed to execute command. Failed threads: {}", threadId,
+              failedThreads);
           }
           try {
             Thread.sleep(retryingDelay);
@@ -217,8 +211,10 @@ public class ActiveActiveFailoverIT {
     await().atMost(Duration.ofSeconds(1)).until(() -> pool1.getNumActive() == 0);
     await().atMost(Duration.ofSeconds(1)).until(() -> pool2.getNumActive() == 0);
 
-    log.info("Connection pool {}: active: {}, idle: {}", endpoint.getHostAndPort(0), pool1.getNumActive(), pool1.getNumIdle());
-    log.info("Connection pool {}: active: {}, idle: {}", endpoint.getHostAndPort(1), pool2.getNumActive(), pool2.getNumIdle());
+    log.info("Connection pool {}: active: {}, idle: {}", endpoint.getHostAndPort(0),
+      pool1.getNumActive(), pool1.getNumIdle());
+    log.info("Connection pool {}: active: {}, idle: {}", endpoint.getHostAndPort(1),
+      pool2.getNumActive(), pool2.getNumIdle());
     log.info("Failover happened at: {}", reporter.failoverAt);
     log.info("Failback happened at: {}", reporter.failbackAt);
     log.info("Last failed command at: {}", lastFailedCommandAt.get());
@@ -230,7 +226,8 @@ public class ActiveActiveFailoverIT {
     assertTrue(fakeApp.capturedExceptions().isEmpty());
     assertTrue(reporter.failoverHappened);
     assertTrue(reporter.failbackHappened);
-    assertThat( Duration.between(reporter.failoverAt, reporter.failbackAt).getSeconds(), greaterThanOrEqualTo(NETWORK_FAILURE_INTERVAL));
+    assertThat(Duration.between(reporter.failoverAt, reporter.failbackAt).getSeconds(),
+      greaterThanOrEqualTo(NETWORK_FAILURE_INTERVAL));
 
     client.close();
   }

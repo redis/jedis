@@ -19,7 +19,6 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiDbConfig.CircuitBreakerConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.MultiDbConfig.RetryConfig;
-import redis.clients.jedis.scenario.ActiveActiveFailoverTest;
 import redis.clients.jedis.scenario.MultiThreadedFakeApp;
 import redis.clients.jedis.scenario.RecommendedSettings;
 import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;

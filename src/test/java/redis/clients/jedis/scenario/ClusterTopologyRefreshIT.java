@@ -1,6 +1,7 @@
 package redis.clients.jedis.scenario;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
@@ -20,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.*;
 
-@Tag("scenario")
-public class ClusterTopologyRefreshTest {
+@Tags({ @Tag("scenario") })
+public class ClusterTopologyRefreshIT {
 
-  private static final Logger log = LoggerFactory.getLogger(ClusterTopologyRefreshTest.class);
+  private static final Logger log = LoggerFactory.getLogger(ClusterTopologyRefreshIT.class);
 
   private static EndpointConfig endpoint;
 
@@ -32,7 +33,8 @@ public class ClusterTopologyRefreshTest {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ClusterTopologyRefreshTest.endpoint = HostAndPorts.getRedisEndpoint("re-single-shard-oss-cluster");
+      ClusterTopologyRefreshIT.endpoint = HostAndPorts
+          .getRedisEndpoint("re-single-shard-oss-cluster");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);
@@ -48,14 +50,14 @@ public class ClusterTopologyRefreshTest {
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(jedisClusterNode, config, RecommendedSettings.poolConfig);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(jedisClusterNode, config,
+        RecommendedSettings.poolConfig);
     ClusterConnectionProvider spyProvider = spy(provider);
 
-    try (JedisCluster client = new JedisCluster(spyProvider,
-        RecommendedSettings.MAX_RETRIES, RecommendedSettings.MAX_TOTAL_RETRIES_DURATION)) {
-      assertEquals(1,
-          client.getClusterNodes().size(),"Was this BDB used to run this test before?");
+    try (JedisCluster client = new JedisCluster(spyProvider, RecommendedSettings.MAX_RETRIES,
+        RecommendedSettings.MAX_TOTAL_RETRIES_DURATION)) {
+      assertEquals(1, client.getClusterNodes().size(),
+        "Was this BDB used to run this test before?");
 
       AtomicLong commandsExecuted = new AtomicLong();
 

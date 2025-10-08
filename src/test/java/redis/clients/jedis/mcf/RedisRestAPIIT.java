@@ -30,7 +30,7 @@ import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.scenario.RestEndpointUtil;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
-public class RedisRestAPIIntegrationTest {
+public class RedisRestAPIIT {
   public static class SSLBypass {
     private static SSLSocketFactory originalSSLSocketFactory;
     private static HostnameVerifier originalHostnameVerifier;
@@ -79,7 +79,7 @@ public class RedisRestAPIIntegrationTest {
   private static EndpointConfig endpointConfig;
   private static Endpoint restAPIEndpoint;
   private static Supplier<RedisCredentials> credentialsSupplier;
-  private static final Logger log = LoggerFactory.getLogger(RedisRestAPIIntegrationTest.class);
+  private static final Logger log = LoggerFactory.getLogger(RedisRestAPIIT.class);
 
   @BeforeAll
   public static void beforeClass() {

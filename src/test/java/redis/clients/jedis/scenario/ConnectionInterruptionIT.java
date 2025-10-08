@@ -1,6 +1,8 @@
 package redis.clients.jedis.scenario;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
@@ -18,19 +20,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class ConnectionInterruptionTest {
+@Tags({ @Tag("scenario") })
+public class ConnectionInterruptionIT {
 
-  private static final Logger log = LoggerFactory.getLogger(ConnectionInterruptionTest.class);
+  private static final Logger log = LoggerFactory.getLogger(ConnectionInterruptionIT.class);
 
   private static EndpointConfig endpoint;
 
   private final FaultInjectionClient faultClient = new FaultInjectionClient();
 
-
   @BeforeAll
   public static void beforeClass() {
     try {
-      ConnectionInterruptionTest.endpoint = HostAndPorts.getRedisEndpoint("re-standalone");
+      ConnectionInterruptionIT.endpoint = HostAndPorts.getRedisEndpoint("re-standalone");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);
@@ -38,7 +40,7 @@ public class ConnectionInterruptionTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"dmc_restart", "network_failure"})
+  @ValueSource(strings = { "dmc_restart", "network_failure" })
   public void testWithPool(String triggerAction) {
     ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder().build(), RecommendedSettings.poolConfig);
@@ -58,7 +60,7 @@ public class ConnectionInterruptionTest {
       log.info("Command executed {}", currentCount);
       return true;
     });
-    fakeApp.setKeepExecutingForSeconds(RecommendedSettings.DEFAULT_TIMEOUT_MS/1000 * 2);
+    fakeApp.setKeepExecutingForSeconds(RecommendedSettings.DEFAULT_TIMEOUT_MS / 1000 * 2);
     Thread t = new Thread(fakeApp);
     t.start();
 
@@ -91,7 +93,7 @@ public class ConnectionInterruptionTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"dmc_restart", "network_failure"})
+  @ValueSource(strings = { "dmc_restart", "network_failure" })
   public void testWithPubSub(String triggerAction) {
     ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder().build(), RecommendedSettings.poolConfig);
@@ -135,8 +137,7 @@ public class ConnectionInterruptionTest {
       throw new RuntimeException(e);
     }
 
-    if (subscriberThread.isAlive())
-      subscriberThread.interrupt();
+    if (subscriberThread.isAlive()) subscriberThread.interrupt();
 
     assertEquals(messagesSent.get() - 1, messagesReceived.get());
     assertTrue(fakeApp.capturedExceptions().isEmpty());

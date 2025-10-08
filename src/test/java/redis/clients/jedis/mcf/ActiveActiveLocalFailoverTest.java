@@ -43,7 +43,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @Tags({ @Tag("failover"), @Tag("integration") })
 public class ActiveActiveLocalFailoverTest {
-  private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
+  private static final Logger log = LoggerFactory.getLogger(ActiveActiveLocalFailoverTest.class);
 
   private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
   private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");

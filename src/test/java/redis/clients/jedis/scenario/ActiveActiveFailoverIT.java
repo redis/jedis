@@ -1,7 +1,5 @@
 package redis.clients.jedis.scenario;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
@@ -34,8 +32,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static redis.clients.jedis.Protocol.DEFAULT_TIMEOUT;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
-public class ActiveActiveFailoverTest {
-  private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverTest.class);
+public class ActiveActiveFailoverIT {
+  private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverIT.class);
   private static final int NUM_OF_THREADS = 18;
   private static final int SOCKET_TIMEOUT_MS = DEFAULT_TIMEOUT;
   private static final int CONNECTION_TIMEOUT_MS = DEFAULT_TIMEOUT;
@@ -48,7 +46,7 @@ public class ActiveActiveFailoverTest {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ActiveActiveFailoverTest.endpoint = HostAndPorts.getRedisEndpoint("re-active-active");
+      ActiveActiveFailoverIT.endpoint = HostAndPorts.getRedisEndpoint("re-active-active");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

@@ -2,6 +2,7 @@ package redis.clients.jedis.scenario;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Test class demonstrating SSL configuration for LagAwareStrategy
  */
-@Tag("scenario")
+@Tags({ @Tag("scenario") })
 public class LagAwareStrategySslIT {
   private static EndpointConfig endpointConfig;
   private static Endpoint restEndpoint;

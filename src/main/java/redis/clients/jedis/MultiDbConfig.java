@@ -15,12 +15,12 @@ import redis.clients.jedis.mcf.EchoStrategy;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
- * Configuration class for multi-cluster Redis deployments with automatic failover and failback
+ * Configuration class for multi-database Redis deployments with automatic failover and failback
  * capabilities.
  * <p>
- * This configuration enables seamless failover between multiple Redis clusters, databases, or
- * endpoints by providing comprehensive settings for retry logic, circuit breaker behavior, health
- * checks, and failback mechanisms. It is designed to work with
+ * This configuration enables seamless failover between multiple Redis databases endpoints by
+ * providing comprehensive settings for retry logic, circuit breaker behavior, health checks, and
+ * failback mechanisms. It is designed to work with
  * {@link redis.clients.jedis.mcf.MultiDbConnectionProvider} to provide high availability and
  * disaster recovery capabilities.
  * </p>
@@ -28,7 +28,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * <strong>Key Features:</strong>
  * </p>
  * <ul>
- * <li><strong>Multi-Cluster Support:</strong> Configure multiple Redis endpoints with individual
+ * <li><strong>Multi-Database Support:</strong> Configure multiple Redis endpoints with individual
  * weights and health checks</li>
  * <li><strong>Circuit Breaker Pattern:</strong> Automatic failure detection and circuit opening
  * based on configurable thresholds</li>
@@ -36,9 +36,9 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * transient failures</li>
  * <li><strong>Health Check Integration:</strong> Pluggable health check strategies for proactive
  * monitoring</li>
- * <li><strong>Automatic Failback:</strong> Intelligent failback to higher-priority clusters when
+ * <li><strong>Automatic Failback:</strong> Intelligent failback to higher-priority databases when
  * they recover</li>
- * <li><strong>Weight-Based Routing:</strong> Priority-based cluster selection using configurable
+ * <li><strong>Weight-Based Routing:</strong> Priority-based database selection using configurable
  * weights</li>
  * </ul>
  * <p>
@@ -48,14 +48,14 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * <pre>
  * {
  *   &#64;code
- *   // Configure individual clusters
+ *   // Configure individual databases
  *   DatabaseConfig primary = DatabaseConfig.builder(primaryEndpoint, clientConfig).weight(1.0f)
  *       .build();
  *
  *   DatabaseConfig secondary = DatabaseConfig.builder(secondaryEndpoint, clientConfig).weight(0.5f)
  *       .healthCheckEnabled(true).build();
  *
- *   // Build multi-cluster configuration
+ *   // Build multi-database configuration
  *   MultiDbConfig config = MultiDbConfig.builder(primary, secondary)
  *       .failureDetector(CircuitBreakerConfig.builder().failureRateThreshold(10.0f).build())
  *       .commandRetry(RetryConfig.builder().maxAttempts(3).build()).failbackSupported(true)
@@ -289,8 +289,8 @@ public final class MultiDbConfig {
      * <p>
      * When the failure rate exceeds both this threshold and the minimum number of failures, the
      * circuit breaker transitions to the OPEN state and starts short-circuiting calls, immediately
-     * failing them without attempting to reach the Redis cluster. This prevents cascading failures
-     * and allows the system to fail over to the next available cluster.
+     * failing them without attempting to reach the Redis database. This prevents cascading failures
+     * and allows the system to fail over to the next available database.
      * </p>
      * <p>
      * <strong>Range:</strong> 0.0 to 100.0 (percentage)
@@ -321,7 +321,7 @@ public final class MultiDbConfig {
      * </p>
      * <p>
      * When the number of failures exceeds both this threshold and the failure rate threshold, the
-     * circuit breaker will trip and prevent further requests from being sent to the cluster until
+     * circuit breaker will trip and prevent further requests from being sent to the database until
      * it has recovered.
      * </p>
      * @return minimum number of failures before circuit breaker is tripped
@@ -475,14 +475,16 @@ public final class MultiDbConfig {
   private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays
       .asList(JedisConnectionException.class);
 
-  /** Default list of exceptions that trigger fallback to next available cluster. */
+  /** Default list of exceptions that trigger fallback to next available database. */
   private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays
       .asList(CallNotPermittedException.class, ConnectionFailoverException.class);
 
-  /** Default interval in milliseconds for checking if failed clusters have recovered. */
+  /** Default interval in milliseconds for checking if failed databases have recovered. */
   private static final long FAILBACK_CHECK_INTERVAL_DEFAULT = 120000;
 
-  /** Default grace period in milliseconds to keep clusters disabled after they become unhealthy. */
+  /**
+   * Default grace period in milliseconds to keep databases disabled after they become unhealthy.
+   */
   private static final long GRACE_PERIOD_DEFAULT = 60000;
 
   /** Default maximum number of failover attempts. */
@@ -491,7 +493,7 @@ public final class MultiDbConfig {
   /** Default delay in milliseconds between failover attempts. */
   private static final int DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT = 12000;
 
-  /** Array of cluster configurations defining the available Redis endpoints and their settings. */
+  /** Array of database configurations defining the available Redis endpoints and their settings. */
   private final DatabaseConfig[] databaseConfigs;
 
   // ============ Retry Configuration ============
@@ -520,9 +522,9 @@ public final class MultiDbConfig {
   private CircuitBreakerConfig failureDetector;
 
   /**
-   * List of exception classes that trigger fallback to the next available cluster.
+   * List of exception classes that trigger fallback to the next available database.
    * <p>
-   * When these exceptions occur, the system will attempt to failover to the next available cluster
+   * When these exceptions occur, the system will attempt to failover to the next available database
    * based on weight priority. This enables immediate failover for specific error conditions without
    * waiting for circuit breaker thresholds.
    * </p>
@@ -552,10 +554,10 @@ public final class MultiDbConfig {
   private boolean retryOnFailover;
 
   /**
-   * Whether automatic failback to higher-priority clusters is supported.
+   * Whether automatic failback to higher-priority databases is supported.
    * <p>
-   * When enabled, the system will automatically monitor failed clusters using health checks and
-   * failback to higher-priority (higher weight) clusters when they recover. When disabled, manual
+   * When enabled, the system will automatically monitor failed databases using health checks and
+   * failback to higher-priority (higher weight) databases when they recover. When disabled, manual
    * intervention is required to failback.
    * </p>
    * <p>
@@ -568,9 +570,9 @@ public final class MultiDbConfig {
   private boolean isFailbackSupported;
 
   /**
-   * Interval in milliseconds between checks for failback opportunities to recovered clusters.
+   * Interval in milliseconds between checks for failback opportunities to recovered databases.
    * <p>
-   * This setting controls how frequently the system checks if a higher-priority cluster has
+   * This setting controls how frequently the system checks if a higher-priority database has
    * recovered and is available for failback. Lower values provide faster failback but increase
    * monitoring overhead.
    * </p>
@@ -584,11 +586,11 @@ public final class MultiDbConfig {
   private long failbackCheckInterval;
 
   /**
-   * Grace period in milliseconds to keep clusters disabled after they become unhealthy.
+   * Grace period in milliseconds to keep databases disabled after they become unhealthy.
    * <p>
-   * After a cluster is marked as unhealthy, it remains disabled for this grace period before being
+   * After a database is marked as unhealthy, it remains disabled for this grace period before being
    * eligible for failback, even if health checks indicate recovery. This prevents rapid oscillation
-   * between clusters during intermittent failures.
+   * between databases during intermittent failures.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #GRACE_PERIOD_DEFAULT} milliseconds (10 seconds)
@@ -600,9 +602,9 @@ public final class MultiDbConfig {
   private long gracePeriod;
 
   /**
-   * Whether to forcefully terminate connections during failover for faster cluster switching.
+   * Whether to forcefully terminate connections during failover for faster database switching.
    * <p>
-   * When enabled, existing connections to the failed cluster are immediately closed during
+   * When enabled, existing connections to the failed database are immediately closed during
    * failover, potentially reducing failover time but may cause some in-flight operations to fail.
    * When disabled, connections are closed gracefully.
    * </p>
@@ -616,9 +618,9 @@ public final class MultiDbConfig {
   /**
    * Maximum number of failover attempts.
    * <p>
-   * This setting controls how many times the system will attempt to failover to a different cluster
-   * before giving up. For example, if set to 3, the system will make 1 initial attempt plus 2
-   * failover attempts for a total of 3 attempts.
+   * This setting controls how many times the system will attempt to failover to a different
+   * database before giving up. For example, if set to 3, the system will make 1 initial attempt
+   * plus 2 failover attempts for a total of 3 attempts.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
@@ -631,8 +633,8 @@ public final class MultiDbConfig {
    * Delay in milliseconds between failover attempts.
    * <p>
    * This setting controls how long the system will wait before attempting to failover to a
-   * different cluster. For example, if set to 1000, the system will wait 1 second before attempting
-   * to failover to a different cluster.
+   * different database. For example, if set to 1000, the system will wait 1 second before
+   * attempting to failover to a different database.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
@@ -642,15 +644,15 @@ public final class MultiDbConfig {
   private int delayInBetweenFailoverAttempts;
 
   /**
-   * Constructs a new MultiDbConfig with the specified cluster configurations.
+   * Constructs a new MultiDbConfig with the specified database configurations.
    * <p>
-   * This constructor validates that at least one cluster configuration is provided and that all
+   * This constructor validates that at least one database configuration is provided and that all
    * configurations are non-null. Use the {@link Builder} class for more convenient configuration
    * with default values.
    * </p>
-   * @param databaseConfigs array of cluster configurations defining the available Redis endpoints
+   * @param databaseConfigs array of database configurations defining the available Redis endpoints
    * @throws JedisValidationException if databaseConfigs is null or empty
-   * @throws IllegalArgumentException if any cluster configuration is null
+   * @throws IllegalArgumentException if any database configuration is null
    * @see Builder#Builder(DatabaseConfig[])
    */
   public MultiDbConfig(DatabaseConfig[] databaseConfigs) {
@@ -666,8 +668,8 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the array of cluster configurations defining available Redis endpoints.
-   * @return array of cluster configurations, never null or empty
+   * Returns the array of database configurations defining available Redis endpoints.
+   * @return array of database configurations, never null or empty
    */
   public DatabaseConfig[] getDatabaseConfigs() {
     return databaseConfigs;
@@ -699,7 +701,7 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the list of exception classes that trigger immediate fallback to next cluster.
+   * Returns the list of exception classes that trigger immediate fallback to next database.
    * @return list of exception classes that trigger fallback, never null
    * @see #fallbackExceptionList
    */
@@ -717,7 +719,7 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns whether automatic failback to higher-priority clusters is supported.
+   * Returns whether automatic failback to higher-priority databases is supported.
    * @return true if automatic failback is enabled, false if manual failback is required
    * @see #isFailbackSupported
    */
@@ -735,7 +737,7 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Returns the grace period to keep clusters disabled after they become unhealthy.
+   * Returns the grace period to keep databases disabled after they become unhealthy.
    * @return grace period in milliseconds
    * @see #gracePeriod
    */
@@ -774,8 +776,8 @@ public final class MultiDbConfig {
   /**
    * Creates a new Builder instance for configuring MultiDbConfig.
    * <p>
-   * At least one cluster configuration must be added to the builder before calling build(). Use the
-   * endpoint() methods to add cluster configurations.
+   * At least one database configuration must be added to the builder before calling build(). Use
+   * the endpoint() methods to add database configurations.
    * </p>
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
@@ -787,7 +789,7 @@ public final class MultiDbConfig {
 
   /**
    * Creates a new Builder instance for configuring MultiDbConfig.
-   * @param databaseConfigs array of cluster configurations defining available Redis endpoints
+   * @param databaseConfigs array of database configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
    * @see Builder#Builder(DatabaseConfig[])
@@ -798,7 +800,7 @@ public final class MultiDbConfig {
 
   /**
    * Creates a new Builder instance for configuring MultiDbConfig.
-   * @param databaseConfigs list of cluster configurations defining available Redis endpoints
+   * @param databaseConfigs list of database configurations defining available Redis endpoints
    * @return new Builder instance
    * @throws JedisValidationException if databaseConfigs is null or empty
    * @see Builder#Builder(List)
@@ -808,10 +810,10 @@ public final class MultiDbConfig {
   }
 
   /**
-   * Configuration class for individual Redis cluster endpoints within a multi-cluster setup.
+   * Configuration class for individual Redis database endpoints within a multi-database setup.
    * <p>
    * Each DatabaseConfig represents a single Redis endpoint that can participate in the
-   * multi-cluster failover system. It encapsulates the connection details, weight for
+   * multi-database failover system. It encapsulates the connection details, weight for
    * priority-based selection, and health check configuration for that endpoint.
    * </p>
    * @see Builder
@@ -1114,7 +1116,7 @@ public final class MultiDbConfig {
   /**
    * Builder class for creating MultiDbConfig instances with comprehensive configuration options.
    * <p>
-   * The Builder provides a fluent API for configuring all aspects of multi-cluster failover
+   * The Builder provides a fluent API for configuring all aspects of multi-database failover
    * behavior, including retry logic, circuit breaker settings, and failback mechanisms. It uses
    * sensible defaults based on production best practices while allowing fine-tuning for specific
    * requirements.
@@ -1135,20 +1137,20 @@ public final class MultiDbConfig {
     /** Encapsulated circuit breaker configuration for failure detection. */
     private CircuitBreakerConfig failureDetector = CircuitBreakerConfig.builder().build();
 
-    /** List of exception classes that trigger immediate fallback to next cluster. */
+    /** List of exception classes that trigger immediate fallback to next database. */
     private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
 
     // ============ Failover Configuration Fields ============
     /** Whether to retry failed commands during failover. */
     private boolean retryOnFailover = false;
 
-    /** Whether automatic failback to higher-priority clusters is supported. */
+    /** Whether automatic failback to higher-priority databases is supported. */
     private boolean isFailbackSupported = true;
 
     /** Interval between checks for failback opportunities in milliseconds. */
     private long failbackCheckInterval = FAILBACK_CHECK_INTERVAL_DEFAULT;
 
-    /** Grace period to keep clusters disabled after they become unhealthy in milliseconds. */
+    /** Grace period to keep databases disabled after they become unhealthy in milliseconds. */
     private long gracePeriod = GRACE_PERIOD_DEFAULT;
 
     /** Whether to forcefully terminate connections during failover. */
@@ -1161,14 +1163,14 @@ public final class MultiDbConfig {
     private int delayInBetweenFailoverAttempts = DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT;
 
     /**
-     * Constructs a new Builder with the specified cluster configurations.
+     * Constructs a new Builder with the specified database configurations.
      */
     public Builder() {
     }
 
     /**
-     * Constructs a new Builder with the specified cluster configurations.
-     * @param databaseConfigs array of cluster configurations defining available Redis endpoints
+     * Constructs a new Builder with the specified database configurations.
+     * @param databaseConfigs array of database configurations defining available Redis endpoints
      * @throws JedisValidationException if databaseConfigs is null or empty
      */
     public Builder(DatabaseConfig[] databaseConfigs) {
@@ -1257,10 +1259,10 @@ public final class MultiDbConfig {
 
     /**
      * Sets the list of exception classes that trigger immediate fallback to the next available
-     * cluster.
+     * database.
      * <p>
      * When these exceptions occur, the system will immediately attempt to failover to the next
-     * available cluster without waiting for circuit breaker thresholds. This enables fast failover
+     * available database without waiting for circuit breaker thresholds. This enables fast failover
      * for specific error conditions.
      * </p>
      * <p>
@@ -1285,7 +1287,7 @@ public final class MultiDbConfig {
      * Sets whether failed commands should be retried during the failover process.
      * <p>
      * When enabled, commands that fail during failover will be retried according to the configured
-     * retry settings on the new cluster. When disabled, failed commands during failover will
+     * retry settings on the new database. When disabled, failed commands during failover will
      * immediately return the failure to the caller.
      * </p>
      * <p>
@@ -1304,19 +1306,19 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets whether automatic failback to higher-priority clusters is supported.
+     * Sets whether automatic failback to higher-priority databases is supported.
      * <p>
-     * When enabled, the system will automatically monitor failed clusters using health checks and
-     * failback to higher-priority (higher weight) clusters when they recover. When disabled,
+     * When enabled, the system will automatically monitor failed da using health checks and
+     * failback to higher-priority (higher weight) databases when they recover. When disabled,
      * failback must be triggered manually.
      * </p>
      * <p>
      * <strong>Requirements for automatic failback:</strong>
      * </p>
      * <ul>
-     * <li>Health checks must be enabled on cluster configurations</li>
-     * <li>Grace period must elapse after cluster becomes unhealthy</li>
-     * <li>Higher-priority cluster must pass health checks</li>
+     * <li>Health checks must be enabled on database configurations</li>
+     * <li>Grace period must elapse after database becomes unhealthy</li>
+     * <li>Higher-priority database must pass health checks</li>
      * </ul>
      * @param supported true to enable automatic failback, false for manual failback only
      * @return this builder instance for method chaining
@@ -1327,10 +1329,10 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets the interval between checks for failback opportunities to recovered clusters.
+     * Sets the interval between checks for failback opportunities to recovered databases.
      * <p>
-     * This controls how frequently the system checks if a higher-priority cluster has recovered and
-     * is available for failback. Lower values provide faster failback response but increase
+     * This controls how frequently the system checks if a higher-priority database has recovered
+     * and is available for failback. Lower values provide faster failback response but increase
      * monitoring overhead.
      * </p>
      * <p>
@@ -1350,11 +1352,11 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets the grace period to keep clusters disabled after they become unhealthy.
+     * Sets the grace period to keep databases disabled after they become unhealthy.
      * <p>
-     * After a cluster is marked as unhealthy, it remains disabled for this grace period before
+     * After a database is marked as unhealthy, it remains disabled for this grace period before
      * being eligible for failback, even if health checks indicate recovery. This prevents rapid
-     * oscillation between clusters during intermittent failures.
+     * oscillation between databases during intermittent failures.
      * </p>
      * <p>
      * <strong>Considerations:</strong>
@@ -1373,10 +1375,10 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Sets whether to forcefully terminate connections during failover for faster cluster
+     * Sets whether to forcefully terminate connections during failover for faster database
      * switching.
      * <p>
-     * When enabled, existing connections to the failed cluster are immediately closed during
+     * When enabled, existing connections to the failed database are immediately closed during
      * failover, potentially reducing failover time but may cause some in-flight operations to fail.
      * When disabled, connections are closed gracefully.
      * </p>
@@ -1399,7 +1401,7 @@ public final class MultiDbConfig {
      * Sets the maximum number of failover attempts.
      * <p>
      * This setting controls how many times the system will attempt to failover to a different
-     * cluster before giving up. For example, if set to 3, the system will make 1 initial attempt
+     * database before giving up. For example, if set to 3, the system will make 1 initial attempt
      * plus 2 failover attempts for a total of 3 attempts.
      * </p>
      * <p>
@@ -1417,8 +1419,8 @@ public final class MultiDbConfig {
      * Sets the delay in milliseconds between failover attempts.
      * <p>
      * This setting controls how long the system will wait before attempting to failover to a
-     * different cluster. For example, if set to 1000, the system will wait 1 second before
-     * attempting to failover to a different cluster.
+     * different database. For example, if set to 1000, the system will wait 1 second before
+     * attempting to failover to a different database.
      * </p>
      * <p>
      * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds

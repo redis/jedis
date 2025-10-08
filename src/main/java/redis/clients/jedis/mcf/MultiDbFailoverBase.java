@@ -14,8 +14,7 @@ import redis.clients.jedis.util.IOUtils;
  *         <p>
  *         Base class for CommandExecutor with built-in retry, circuit-breaker, and failover to
  *         another database endpoint. With this executor users can seamlessly failover to Disaster
- *         Recovery (DR), Backup, and Active-Active cluster(s) by using simple configuration which
- *         is passed through from Resilience4j - https://resilience4j.readme.io/docs
+ *         Recovery (DR), Backup, and Active-Active cluster(s) by using simple configuration
  *         <p>
  */
 @Experimental

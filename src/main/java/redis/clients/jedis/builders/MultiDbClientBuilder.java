@@ -26,9 +26,9 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * <li><strong>Circuit Breaker Integration:</strong> Built-in circuit breaker with configurable
  * thresholds</li>
  * <li><strong>Health Monitoring:</strong> Automatic health checks with configurable strategies</li>
- * <li><strong>Event Handling:</strong> Listen to cluster switch events for monitoring and
+ * <li><strong>Event Handling:</strong> Listen to database switch events for monitoring and
  * alerting</li>
- * <li><strong>Flexible Configuration:</strong> Support for both simple and advanced multi-cluster
+ * <li><strong>Flexible Configuration:</strong> Support for both simple and advanced multi-database
  * configurations</li>
  * </ul>
  * <p>
@@ -116,7 +116,7 @@ public abstract class MultiDbClientBuilder<C>
       throw new IllegalArgumentException("At least one endpoint must be specified");
     }
 
-    // Create the multi-cluster connection provider
+    // Create the multi-database connection provider
     MultiDbConnectionProvider provider = new MultiDbConnectionProvider(multiDbConfig);
 
     // Set database switch listener if provided

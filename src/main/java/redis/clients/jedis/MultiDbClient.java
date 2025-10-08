@@ -108,8 +108,8 @@ public class MultiDbClient extends UnifiedJedis {
   /**
    * Returns the underlying MultiDbConnectionProvider.
    * <p>
-   * This provides access to multi-cluster specific operations like manual failover, health status
-   * monitoring, and cluster switch event handling.
+   * This provides access to multi-database specific operations like manual failover, health status
+   * monitoring, and database switch event handling.
    * </p>
    * @return the multi-db connection provider
    * @throws ClassCastException if the provider is not a MultiDbConnectionProvider
@@ -232,7 +232,7 @@ public class MultiDbClient extends UnifiedJedis {
   }
 
   /**
-   * Creates a new transaction with multi-cluster support.
+   * Creates a new transaction with multi-database support.
    * <p>
    * The returned transaction supports the same resilience features as the main client, including
    * automatic failover during transaction execution.

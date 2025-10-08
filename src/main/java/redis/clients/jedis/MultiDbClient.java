@@ -111,7 +111,7 @@ public class MultiDbClient extends UnifiedJedis {
    * This provides access to multi-cluster specific operations like manual failover, health status
    * monitoring, and cluster switch event handling.
    * </p>
-   * @return the multi-cluster connection provider
+   * @return the multi-db connection provider
    * @throws ClassCastException if the provider is not a MultiDbConnectionProvider
    */
   private MultiDbConnectionProvider getMultiDbConnectionProvider() {

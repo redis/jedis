@@ -24,8 +24,6 @@ public class MultiDbTransaction extends AbstractTransaction {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
-  private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
-
   private final MultiDbConnectionSupplier failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();

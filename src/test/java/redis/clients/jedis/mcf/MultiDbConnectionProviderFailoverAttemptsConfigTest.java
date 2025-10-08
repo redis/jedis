@@ -69,7 +69,6 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
     // 1
-    provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase());
     assertThrows(JedisTemporarilyNotAvailableException.class,
       () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
     int afterFirst = getProviderAttemptCount();

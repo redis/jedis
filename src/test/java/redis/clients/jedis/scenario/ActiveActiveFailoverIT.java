@@ -120,6 +120,7 @@ public class ActiveActiveFailoverIT {
     AtomicLong retryingThreadsCounter = new AtomicLong(0);
     AtomicLong failedCommandsAfterFailover = new AtomicLong(0);
     AtomicReference<Instant> lastFailedCommandAt = new AtomicReference<>();
+    Endpoint primaryEndpoint = client.getActiveDatabaseEndpoint();
 
     // Start thread that imitates an application that uses the client
     MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(client, (UnifiedJedis c) -> {
@@ -130,6 +131,7 @@ public class ActiveActiveFailoverIT {
       int maxTries = 500;
       int retryingDelay = 5;
       while (true) {
+        boolean attemptToExecuteOnFailedCluster = true;
         try {
           Map<String, String> executionInfo = new HashMap<String, String>() {
             {
@@ -137,6 +139,7 @@ public class ActiveActiveFailoverIT {
               put("cluster", reporter.getCurrentClusterName());
             }
           };
+          attemptToExecuteOnFailedCluster = client.getActiveDatabaseEndpoint() == primaryEndpoint;
           client.xadd("execution_log", StreamEntryID.NEW_ENTRY, executionInfo);
           executedCommands.incrementAndGet();
 
@@ -148,7 +151,7 @@ public class ActiveActiveFailoverIT {
           break;
         } catch (JedisConnectionException e) {
 
-          if (reporter.failoverHappened) {
+          if (reporter.failoverHappened && !reporter.failbackHappened && attemptToExecuteOnFailedCluster) {
             failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
           }
@@ -219,9 +222,12 @@ public class ActiveActiveFailoverIT {
     log.info("Failback happened at: {}", reporter.failbackAt);
     log.info("Last failed command at: {}", lastFailedCommandAt.get());
     log.info("Failed commands after failover: {}", failedCommandsAfterFailover.get());
-    Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
-    log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
-
+    if (lastFailedCommandAt.get() == null) {
+      log.info("No failed commands after failover!");
+    } else {
+      Duration fullFailoverTime = Duration.between(reporter.failoverAt, lastFailedCommandAt.get());
+      log.info("Full failover time: {} s", fullFailoverTime.getSeconds());
+    }
     assertEquals(0, pool1.getNumActive());
     assertTrue(fakeApp.capturedExceptions().isEmpty());
     assertTrue(reporter.failoverHappened);

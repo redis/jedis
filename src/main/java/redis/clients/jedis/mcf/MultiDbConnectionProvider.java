@@ -261,11 +261,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       if (isActiveDatabase) {
         log.info("Active database is being removed. Finding a new active database...");
-        Map.Entry<Endpoint, Database> candidate = findWeightedHealthyClusterToIterate(
+        Map.Entry<Endpoint, Database> candidate = findWeightedHealthyDatabaseToIterate(
           databaseToRemove);
         if (candidate != null) {
-          Database selectedCluster = candidate.getValue();
-          if (setActiveDatabase(selectedCluster, true)) {
+          Database selectedDatabase = candidate.getValue();
+          if (setActiveDatabase(selectedDatabase, true)) {
             log.info("New active database set to {}", candidate.getKey());
             notificationData = candidate;
           }
@@ -458,12 +458,12 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       // Perform failback if we found a better candidate
       if (bestCandidate != null) {
-        Database selectedCluster = bestCandidate.getValue();
+        Database selectedDatabase = bestCandidate.getValue();
         log.info("Performing failback from {} to {} (higher weight database available)",
           activeDatabase.getCircuitBreaker().getName(),
-          selectedCluster.getCircuitBreaker().getName());
-        if (setActiveDatabase(selectedCluster, true)) {
-          onDatabaseSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedCluster);
+          selectedDatabase.getCircuitBreaker().getName());
+        if (setActiveDatabase(selectedDatabase, true)) {
+          onDatabaseSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedDatabase);
         }
       }
     } catch (Exception e) {
@@ -472,11 +472,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   Endpoint switchToHealthyDatabase(SwitchReason reason, Database iterateFrom) {
-    Map.Entry<Endpoint, Database> databaseToIterate = findWeightedHealthyClusterToIterate(
+    Map.Entry<Endpoint, Database> databaseToIterate = findWeightedHealthyDatabaseToIterate(
       iterateFrom);
     if (databaseToIterate == null) {
       // throws exception anyway since not able to iterate
-      handleNoHealthyCluster();
+      handleNoHealthyDatabase();
     }
 
     Database database = databaseToIterate.getValue();
@@ -487,7 +487,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     return databaseToIterate.getKey();
   }
 
-  private void handleNoHealthyCluster() {
+  private void handleNoHealthyDatabase() {
     int max = multiDbConfig.getMaxNumFailoverAttempts();
     log.error("No healthy database available to switch to");
     if (failoverAttemptCount.get() > max) {
@@ -528,7 +528,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   public void assertOperability() {
     Database current = activeDatabase;
     if (!current.isHealthy() && !this.canIterateFrom(current)) {
-      handleNoHealthyCluster();
+      handleNoHealthyDatabase();
     }
   }
 
@@ -538,7 +538,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   private static Predicate<Map.Entry<Endpoint, Database>> filterByHealth = c -> c.getValue()
       .isHealthy();
 
-  private Map.Entry<Endpoint, Database> findWeightedHealthyClusterToIterate(Database iterateFrom) {
+  private Map.Entry<Endpoint, Database> findWeightedHealthyDatabaseToIterate(Database iterateFrom) {
     return databaseMap.entrySet().stream().filter(filterByHealth)
         .filter(entry -> entry.getValue() != iterateFrom).max(maxByWeight).orElse(null);
   }
@@ -624,11 +624,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   private boolean setActiveDatabase(Database database, boolean validateConnection) {
-    // Database database = clusterEntry.getValue();
+    // Database database = databaseEntry.getValue();
     // Field-level synchronization is used to avoid the edge case in which
     // setActiveDatabase() is called at the same time
     activeDatabaseChangeLock.lock();
-    Database oldCluster;
+    Database oldDatabase;
     try {
 
       // Allows an attempt to reset the current database from a FORCED_OPEN to CLOSED state in the
@@ -637,25 +637,25 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       if (validateConnection) validateTargetConnection(database);
 
-      String originalClusterName = getDatabaseCircuitBreaker().getName();
+      String originalDatabaseName = getDatabaseCircuitBreaker().getName();
 
       if (activeDatabase == database)
         log.warn("Database/database endpoint '{}' successfully closed its circuit breaker",
-          originalClusterName);
+          originalDatabaseName);
       else log.warn("Database/database endpoint successfully updated from '{}' to '{}'",
-        originalClusterName, database.circuitBreaker.getName());
-      oldCluster = activeDatabase;
+        originalDatabaseName, database.circuitBreaker.getName());
+      oldDatabase = activeDatabase;
       activeDatabase = database;
     } finally {
       activeDatabaseChangeLock.unlock();
     }
-    boolean switched = oldCluster != database;
+    boolean switched = oldDatabase != database;
     if (switched && this.multiDbConfig.isFastFailover()) {
       log.info("Forcing disconnect of all active connections in old database: {}",
-        oldCluster.circuitBreaker.getName());
-      oldCluster.forceDisconnect();
+        oldDatabase.circuitBreaker.getName());
+      oldDatabase.forceDisconnect();
       log.info("Disconnected all active connections in old database: {}",
-        oldCluster.circuitBreaker.getName());
+        oldDatabase.circuitBreaker.getName());
 
     }
     return switched;
@@ -749,7 +749,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * possible. Users can manually failback to an available database
    */
   public boolean canIterateFrom(Database iterateFrom) {
-    Map.Entry<Endpoint, Database> e = findWeightedHealthyClusterToIterate(iterateFrom);
+    Map.Entry<Endpoint, Database> e = findWeightedHealthyDatabaseToIterate(iterateFrom);
     return e != null;
   }
 

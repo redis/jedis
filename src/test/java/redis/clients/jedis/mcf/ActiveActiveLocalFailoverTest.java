@@ -16,7 +16,9 @@ import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.Toxic;
 import redis.clients.jedis.*;
+import redis.clients.jedis.MultiDbConfig.CircuitBreakerConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
+import redis.clients.jedis.MultiDbConfig.RetryConfig;
 import redis.clients.jedis.scenario.ActiveActiveFailoverTest;
 import redis.clients.jedis.scenario.MultiThreadedFakeApp;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -94,40 +96,27 @@ public class ActiveActiveLocalFailoverTest {
       "TESTING WITH PARAMETERS: fastFailover: {} numberOfThreads: {} minFailoverCompletionDuration: {} maxFailoverCompletionDuration: {] ",
       fastFailover, numberOfThreads, minFailoverCompletionDuration, maxFailoverCompletionDuration);
 
-    MultiDbConfig.DatabaseConfig[] clusterConfig = new MultiDbConfig.DatabaseConfig[2];
-
     JedisClientConfig config = endpoint1.getClientConfigBuilder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-    clusterConfig[0] = DatabaseConfig.builder(endpoint1.getHostAndPort(), config)
+    DatabaseConfig db1 = DatabaseConfig.builder(endpoint1.getHostAndPort(), config)
         .connectionPoolConfig(RecommendedSettings.poolConfig).weight(1.0f).build();
-    clusterConfig[1] = DatabaseConfig.builder(endpoint2.getHostAndPort(), config)
+    DatabaseConfig db2 = DatabaseConfig.builder(endpoint2.getHostAndPort(), config)
         .connectionPoolConfig(RecommendedSettings.poolConfig).weight(0.5f).build();
 
-    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(clusterConfig);
-
-    builder.failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(1) // SLIDING
-                                                                                              // WINDOW
-                                                                                              // SIZE
-                                                                                              // IN
-                                                                                              // SECONDS
-        .failureRateThreshold(10.0f) // percentage of failures to trigger circuit breaker
-        .build());
-
-    builder.failbackSupported(false);
-    // builder.failbackCheckInterval(1000);
-    builder.gracePeriod(10000);
-
-    builder.commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(10).maxAttempts(1)
-        .exponentialBackoffMultiplier(1).build());
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder().database(db1).database(db2)
+        .failureDetector(
+          CircuitBreakerConfig.builder().slidingWindowSize(1).failureRateThreshold(10.0f).build())
+        .failbackSupported(false).gracePeriod(10000).commandRetry(RetryConfig.builder()
+            .waitDuration(10).maxAttempts(1).exponentialBackoffMultiplier(1).build());
 
     // Use the parameterized fastFailover setting
     builder.fastFailover(fastFailover);
 
     class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
-      String currentClusterName = "not set";
+      String currentDatabaseName = "not set";
 
       boolean failoverHappened = false;
 
@@ -137,14 +126,14 @@ public class ActiveActiveLocalFailoverTest {
 
       Instant failbackAt = null;
 
-      public String getCurrentClusterName() {
-        return currentClusterName;
+      public String getCurrentDatabaseName() {
+        return currentDatabaseName;
       }
 
       @Override
       public void accept(DatabaseSwitchEvent e) {
-        this.currentClusterName = e.getDatabaseName();
-        log.info("\n\n===={}=== \nJedis switching to cluster: {}\n====End of log===\n",
+        this.currentDatabaseName = e.getDatabaseName();
+        log.info("\n\n===={}=== \nJedis switching to database: {}\n====End of log===\n",
           e.getReason(), e.getDatabaseName());
         if ((e.getReason() == SwitchReason.CIRCUIT_BREAKER
             || e.getReason() == SwitchReason.HEALTH_CHECK)) {
@@ -180,7 +169,7 @@ public class ActiveActiveLocalFailoverTest {
     AtomicBoolean unexpectedErrors = new AtomicBoolean(false);
     AtomicReference<Exception> lastException = new AtomicReference<Exception>();
     AtomicLong stopRunningAt = new AtomicLong();
-    String cluster2Id = provider.getDatabase(endpoint2.getHostAndPort()).getCircuitBreaker()
+    String database2Id = provider.getDatabase(endpoint2.getHostAndPort()).getCircuitBreaker()
         .getName();
 
     // Start thread that imitates an application that uses the client
@@ -194,15 +183,15 @@ public class ActiveActiveLocalFailoverTest {
       int attempt = 0;
       int maxTries = 500;
       int retryingDelay = 5;
-      String currentClusterId = null;
+      String currentDatabaseId = null;
       while (true) {
         try {
           if (System.currentTimeMillis() > stopRunningAt.get()) break;
-          currentClusterId = provider.getDatabase().getCircuitBreaker().getName();
+          currentDatabaseId = provider.getDatabase().getCircuitBreaker().getName();
           Map<String, String> executionInfo = new HashMap<String, String>() {
             {
               put("threadId", String.valueOf(threadId));
-              put("cluster", reporter.getCurrentClusterName());
+              put("database", reporter.getCurrentDatabaseName());
             }
           };
 
@@ -215,7 +204,7 @@ public class ActiveActiveLocalFailoverTest {
 
           break;
         } catch (JedisConnectionException e) {
-          if (cluster2Id.equals(currentClusterId)) {
+          if (database2Id.equals(currentDatabaseId)) {
             break;
           }
           lastException.set(e);
@@ -243,7 +232,7 @@ public class ActiveActiveLocalFailoverTest {
           }
           if (++attempt == maxTries) throw e;
         } catch (Exception e) {
-          if (cluster2Id.equals(currentClusterId)) {
+          if (database2Id.equals(currentDatabaseId)) {
             break;
           }
           lastException.set(e);

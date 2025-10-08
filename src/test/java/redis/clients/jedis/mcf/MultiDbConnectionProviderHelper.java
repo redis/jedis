@@ -13,7 +13,7 @@ public class MultiDbConnectionProviderHelper {
     provider.periodicFailbackCheck();
   }
 
-  public static Endpoint switchToHealthyCluster(MultiDbConnectionProvider provider,
+  public static Endpoint switchToHealthyDatabase(MultiDbConnectionProvider provider,
       SwitchReason reason, MultiDbConnectionProvider.Database iterateFrom) {
     return provider.switchToHealthyDatabase(reason, iterateFrom);
   }

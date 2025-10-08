@@ -26,18 +26,18 @@ import redis.clients.jedis.util.ReflectionTestUtil;
 /**
  * Tests for circuit breaker thresholds: both failure-rate threshold and minimum number of failures
  * must be exceeded to trigger failover. Uses a real CircuitBreaker and real Retry, but mocks the
- * provider and cluster wiring to avoid network I/O.
+ * provider and database wiring to avoid network I/O.
  */
 public class MultiDbCircuitBreakerThresholdsTest {
 
   private MultiDbConnectionProvider realProvider;
   private MultiDbConnectionProvider spyProvider;
-  private Database cluster;
+  private Database database;
   private MultiDbCommandExecutor executor;
   private CommandObject<String> dummyCommand;
   private TrackingConnectionPool poolMock;
-  private HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
-  private HostAndPort fakeEndpoint2 = new HostAndPort("fake2", 6379);
+  private final HostAndPort fakeEndpoint = new HostAndPort("fake", 6379);
+  private final HostAndPort fakeEndpoint2 = new HostAndPort("fake2", 6379);
   private DatabaseConfig[] fakeDatabaseConfigs;
 
   @BeforeEach
@@ -61,16 +61,16 @@ public class MultiDbCircuitBreakerThresholdsTest {
     realProvider = new MultiDbConnectionProvider(mcc);
     spyProvider = spy(realProvider);
 
-    cluster = spyProvider.getDatabase();
+    database = spyProvider.getDatabase();
 
     executor = new MultiDbCommandExecutor(spyProvider);
 
     dummyCommand = new CommandObject<>(new CommandArguments(Protocol.Command.PING),
         BuilderFactory.STRING);
 
-    // Replace the cluster's pool with a mock to avoid real network I/O
+    // Replace the database's pool with a mock to avoid real network I/O
     poolMock = mock(TrackingConnectionPool.class);
-    ReflectionTestUtil.setField(cluster, "connectionPool", poolMock);
+    ReflectionTestUtil.setField(database, "connectionPool", poolMock);
   }
 
   /**

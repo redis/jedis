@@ -21,13 +21,13 @@ class PeriodicFailbackTest {
 
   private HostAndPort endpoint1;
   private HostAndPort endpoint2;
-  private JedisClientConfig clientConfig;
+  private JedisClientConfig databaseConfig;
 
   @BeforeEach
   void setUp() {
     endpoint1 = new HostAndPort("localhost", 6379);
     endpoint2 = new HostAndPort("localhost", 6380);
-    clientConfig = DefaultJedisClientConfig.builder().build();
+    databaseConfig = DefaultJedisClientConfig.builder().build();
   }
 
   private MockedConstruction<TrackingConnectionPool> mockPool() {
@@ -40,70 +40,70 @@ class PeriodicFailbackTest {
   }
 
   @Test
-  void testPeriodicFailbackCheckWithDisabledCluster() throws InterruptedException {
+  void testPeriodicFailbackCheckWithDisabledDatabase() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, databaseConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, databaseConfig).weight(2.0f).healthCheckEnabled(false).build();
 
       MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+          new MultiDbConfig.DatabaseConfig[] { database1, database2 }).failbackSupported(true)
               .failbackCheckInterval(100).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Initially, cluster2 should be active (highest weight: 2.0f vs 1.0f)
+        // Initially, database2 should be active (highest weight: 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
-        // Start grace period for cluster2 manually
+        // Start grace period for database2 manually
         provider.getDatabase(endpoint2).setGracePeriod();
         provider.getDatabase(endpoint2).setDisabled(true);
 
-        // Force failover to cluster1 since cluster2 is disabled
+        // Force failover to database1 since database2 is disabled
         provider.switchToHealthyDatabase(SwitchReason.FORCED, provider.getDatabase(endpoint2));
 
         // Manually trigger periodic check
         MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
-        // Should still be on cluster1 (cluster2 is in grace period)
+        // Should still be on database1 (database2 is in grace period)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
       }
     }
   }
 
   @Test
-  void testPeriodicFailbackCheckWithHealthyCluster() throws InterruptedException {
+  void testPeriodicFailbackCheckWithHealthyDatabase() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, databaseConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, databaseConfig).weight(2.0f).healthCheckEnabled(false).build();
 
       MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(true)
+          new MultiDbConfig.DatabaseConfig[] { database1, database2 }).failbackSupported(true)
               .failbackCheckInterval(50).gracePeriod(100).build(); // Add
                                                                    // grace
                                                                    // period
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Initially, cluster2 should be active (highest weight: 2.0f vs 1.0f)
+        // Initially, database2 should be active (highest weight: 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
-        // Make cluster2 unhealthy to force failover to cluster1
+        // Make database2 unhealthy to force failover to database1
         onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
-        // Should now be on cluster1 (cluster2 is in grace period)
+        // Should now be on database1 (database2 is in grace period)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
-        // Verify cluster2 is in grace period
+        // Verify database2 is in grace period
         assertTrue(provider.getDatabase(endpoint2).isInGracePeriod());
 
-        // Make cluster2 healthy again (but it's still in grace period)
+        // Make database2 healthy again (but it's still in grace period)
         onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
-        // Trigger periodic check immediately - should still be on cluster1
+        // Trigger periodic check immediately - should still be on database1
         MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
@@ -113,7 +113,7 @@ class PeriodicFailbackTest {
         // Trigger periodic check after grace period expires
         MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
-        // Should have failed back to cluster2 (higher weight, grace period expired)
+        // Should have failed back to database2 (higher weight, grace period expired)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
       }
     }
@@ -122,27 +122,27 @@ class PeriodicFailbackTest {
   @Test
   void testPeriodicFailbackCheckWithFailbackDisabled() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, databaseConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, databaseConfig).weight(2.0f).healthCheckEnabled(false).build();
 
       MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2 }).failbackSupported(false) // Disabled
+          new MultiDbConfig.DatabaseConfig[] { database1, database2 }).failbackSupported(false) // Disabled
               .failbackCheckInterval(50).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Initially, cluster2 should be active (highest weight: 2.0f vs 1.0f)
+        // Initially, database2 should be active (highest weight: 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
-        // Make cluster2 unhealthy to force failover to cluster1
+        // Make database2 unhealthy to force failover to database1
         onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
-        // Should now be on cluster1
+        // Should now be on database1
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
-        // Make cluster2 healthy again
+        // Make database2 healthy again
         onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
         // Wait for stability period
@@ -151,50 +151,50 @@ class PeriodicFailbackTest {
         // Trigger periodic check
         MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
-        // Should still be on cluster1 (failback disabled)
+        // Should still be on database1 (failback disabled)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
       }
     }
   }
 
   @Test
-  void testPeriodicFailbackCheckSelectsHighestWeightCluster() throws InterruptedException {
+  void testPeriodicFailbackCheckSelectsHighestWeightDatabase() throws InterruptedException {
     try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       HostAndPort endpoint3 = new HostAndPort("localhost", 6381);
 
-      MultiDbConfig.DatabaseConfig cluster1 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, databaseConfig).weight(1.0f).healthCheckEnabled(false).build();
 
-      MultiDbConfig.DatabaseConfig cluster2 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint2, clientConfig).weight(2.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, databaseConfig).weight(2.0f).healthCheckEnabled(false).build();
 
-      MultiDbConfig.DatabaseConfig cluster3 = MultiDbConfig.DatabaseConfig
-          .builder(endpoint3, clientConfig).weight(3.0f) // Highest weight
+      MultiDbConfig.DatabaseConfig database3 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint3, databaseConfig).weight(3.0f) // Highest weight
           .healthCheckEnabled(false).build();
 
       MultiDbConfig config = new MultiDbConfig.Builder(
-          new MultiDbConfig.DatabaseConfig[] { cluster1, cluster2, cluster3 })
+          new MultiDbConfig.DatabaseConfig[] { database1, database2, database3 })
               .failbackSupported(true).failbackCheckInterval(50).gracePeriod(100).build(); // Add
                                                                                            // grace
                                                                                            // period
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Initially, cluster3 should be active (highest weight: 3.0f vs 2.0f vs 1.0f)
+        // Initially, database3 should be active (highest weight: 3.0f vs 2.0f vs 1.0f)
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());
 
-        // Make cluster3 unhealthy to force failover to cluster2 (next highest weight)
+        // Make database3 unhealthy to force failover to database2 (next highest weight)
         onHealthStatusChange(provider, endpoint3, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
-        // Should now be on cluster2 (weight 2.0f, higher than cluster1's 1.0f)
+        // Should now be on database2 (weight 2.0f, higher than database1's 1.0f)
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
 
-        // Make cluster2 unhealthy to force failover to cluster1
+        // Make database2 unhealthy to force failover to database1
         onHealthStatusChange(provider, endpoint2, HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
 
-        // Should now be on cluster1 (only healthy cluster left)
+        // Should now be on database1 (only healthy databases left)
         assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
 
-        // Make cluster2 and cluster3 healthy again
+        // Make database2 and database3 healthy again
         onHealthStatusChange(provider, endpoint2, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
         onHealthStatusChange(provider, endpoint3, HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
 
@@ -204,7 +204,7 @@ class PeriodicFailbackTest {
         // Trigger periodic check
         MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);
 
-        // Should have failed back to cluster3 (highest weight, grace period expired)
+        // Should have failed back to database3 (highest weight, grace period expired)
         assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());
       }
     }

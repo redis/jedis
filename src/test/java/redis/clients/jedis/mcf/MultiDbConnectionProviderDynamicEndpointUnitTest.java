@@ -109,7 +109,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
-  void testRemoveNonExistentCluster() {
+  void testRemoveNonExistentDatabase() {
     HostAndPort nonExistentEndpoint = new HostAndPort("localhost", 9999);
 
     // Should throw validation exception for non-existent endpoint

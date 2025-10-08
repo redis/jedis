@@ -14,10 +14,10 @@ import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 /**
  * @author Allen Terleto (aterleto)
  *         <p>
- *         CommandExecutor with built-in retry, circuit-breaker, and failover to another
- *         cluster/database endpoint. With this executor users can seamlessly failover to Disaster
- *         Recovery (DR), Backup, and Active-Active cluster(s) by using simple configuration which
- *         is passed through from Resilience4j - https://resilience4j.readme.io/docs
+ *         CommandExecutor with built-in retry, circuit-breaker, and failover to another database
+ *         endpoint. With this executor users can seamlessly failover to Disaster Recovery (DR),
+ *         Backup, and Active-Active cluster(s) by using simple configuration which is passed
+ *         through from Resilience4j - https://resilience4j.readme.io/docs
  *         <p>
  */
 @Experimental
@@ -37,7 +37,7 @@ public class MultiDbCommandExecutor extends MultiDbFailoverBase implements Comma
     supplier.withCircuitBreaker(database.getCircuitBreaker());
     supplier.withRetry(database.getRetry());
     supplier.withFallback(provider.getFallbackExceptionList(),
-      e -> this.handleClusterFailover(commandObject, database));
+      e -> this.handleDatabaseFailover(commandObject, database));
     try {
       return supplier.decorate().get();
     } catch (Exception e) {
@@ -51,10 +51,10 @@ public class MultiDbCommandExecutor extends MultiDbFailoverBase implements Comma
   /**
    * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
    */
-  private <T> T handleExecuteCommand(CommandObject<T> commandObject, Database cluster) {
+  private <T> T handleExecuteCommand(CommandObject<T> commandObject, Database database) {
     Connection connection;
     try {
-      connection = cluster.getConnection();
+      connection = database.getConnection();
     } catch (JedisConnectionException e) {
       provider.assertOperability();
       throw e;
@@ -62,10 +62,10 @@ public class MultiDbCommandExecutor extends MultiDbFailoverBase implements Comma
     try {
       return connection.executeCommand(commandObject);
     } catch (Exception e) {
-      if (cluster.retryOnFailover() && !isActiveDatabase(cluster)
-          && isCircuitBreakerTrackedException(e, cluster)) {
+      if (database.retryOnFailover() && !isActiveDatabase(database)
+          && isCircuitBreakerTrackedException(e, database)) {
         throw new ConnectionFailoverException(
-            "Command failed during failover: " + cluster.getCircuitBreaker().getName(), e);
+            "Command failed during failover: " + database.getCircuitBreaker().getName(), e);
       }
       throw e;
     } finally {
@@ -77,11 +77,11 @@ public class MultiDbCommandExecutor extends MultiDbFailoverBase implements Comma
    * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker
    * failure scenarios
    */
-  private <T> T handleClusterFailover(CommandObject<T> commandObject, Database cluster) {
+  private <T> T handleDatabaseFailover(CommandObject<T> commandObject, Database database) {
 
-    databaseFailover(cluster);
+    databaseFailover(database);
 
-    // Recursive call to the initiating method so the operation can be retried on the next cluster
+    // Recursive call to the initiating method so the operation can be retried on the next database
     // connection
     return executeCommand(commandObject);
   }

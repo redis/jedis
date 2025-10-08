@@ -5056,9 +5056,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // RedisBloom commands
 
   /**
-   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   * @return pipeline object
    */
-  public PipelineBase pipelined() {
+  public AbstractPipeline pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiDbConnectionProvider) {

@@ -14,7 +14,7 @@ import redis.clients.jedis.util.KeyValue;
  * {@link MultiDbPipeline#sync() SYNC} (or {@link MultiDbPipeline#close() CLOSE}) gets called.
  */
 @Experimental
-public class MultiDbPipeline extends PipelineBase implements Closeable {
+public class MultiDbPipeline extends AbstractPipeline implements Closeable {
 
   private final MultiDbConnectionSupplier failoverProvider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();

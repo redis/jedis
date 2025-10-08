@@ -169,8 +169,8 @@ The `PingStrategy` is the default health check implementation that uses Redis's 
 - Simple connectivity validation
 
 **How it works:**
-- Sends `PING "HealthCheck"` command to the Redis server
-- Expects exact response `"HealthCheck"` to consider the server healthy
+- Sends `PING` command to the Redis server
+- Expects exact response `"PONG"` to consider the server healthy
 - Any exception or unexpected response marks the server as unhealthy
 
 ##### 2. LagAwareStrategy [PREVIEW] (Redis Enterprise)

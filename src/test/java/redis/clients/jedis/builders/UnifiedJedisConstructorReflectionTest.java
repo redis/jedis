@@ -158,8 +158,7 @@ public class UnifiedJedisConstructorReflectionTest {
   private static boolean isUnsafeConstructor(Constructor<?> ctor) {
     Class<?>[] types = ctor.getParameterTypes();
     for (Class<?> t : types) {
-      if (t == Connection.class || t == JedisSocketFactory.class
-          || t.getSimpleName().equals("ShardedConnectionProvider")) {
+      if (t == Connection.class || t == JedisSocketFactory.class) {
         return true;
       }
     }

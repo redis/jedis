@@ -17,7 +17,7 @@ import redis.clients.jedis.exceptions.JedisException;
 /**
  * A transaction where commands are immediately sent to Redis server and the {@code QUEUED} reply checked.
  */
-public class ReliableTransaction extends TransactionBase {
+public class ReliableTransaction extends AbstractTransaction {
 
   private static final String QUEUED_STR = "QUEUED";
 

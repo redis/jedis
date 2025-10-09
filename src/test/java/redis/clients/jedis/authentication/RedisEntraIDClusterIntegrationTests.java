@@ -37,7 +37,6 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 
-@Tag("integration")
 public class RedisEntraIDClusterIntegrationTests {
     private static final Logger log = LoggerFactory
             .getLogger(RedisEntraIDClusterIntegrationTests.class);

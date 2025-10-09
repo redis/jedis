@@ -22,6 +22,7 @@ nav:
   - Jedis Maven: jedis-maven.md
   - Migrating to newer versions:
       - Jedis 7: migration-guides/v6-to-v7.md
+      - Jedis 6: migration-guides/v5-to-v6.md
       - Jedis 5: migration-guides/v4-to-v5.md
       - Jedis 4:
         - Breaking changes: migration-guides/v3-to-v4.md

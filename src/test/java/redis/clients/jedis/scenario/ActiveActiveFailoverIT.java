@@ -151,7 +151,8 @@ public class ActiveActiveFailoverIT {
           break;
         } catch (JedisConnectionException e) {
 
-          if (reporter.failoverHappened && !reporter.failbackHappened && attemptToExecuteOnFailedCluster) {
+          if (reporter.failoverHappened && !reporter.failbackHappened
+              && attemptToExecuteOnFailedCluster) {
             failedCommandsAfterFailover.incrementAndGet();
             lastFailedCommandAt.set(Instant.now());
           }

@@ -23,7 +23,6 @@ CRDB
 Dockerfile
 EVAL
 EVALSHA
-EchoStrategy
 FTCreateParams
 FTSearchParams
 Failback
@@ -71,6 +70,7 @@ OpenCensus
 OpenTelemetry
 OpenTracing
 Otel
+PingStrategy
 POJO
 POJOs
 PoolConfig

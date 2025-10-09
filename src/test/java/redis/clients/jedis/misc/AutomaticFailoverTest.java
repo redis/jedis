@@ -73,7 +73,7 @@ public class AutomaticFailoverTest {
             getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
 
-    try (UnifiedJedis client = new UnifiedJedis(provider)) {
+    try (MultiDbClient client = MultiDbClient.builder().connectionProvider(provider).build()) {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
@@ -93,7 +93,7 @@ public class AutomaticFailoverTest {
             getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
                 .build());
 
-    try (UnifiedJedis client = new UnifiedJedis(provider)) {
+    try (MultiDbClient client = MultiDbClient.builder().connectionProvider(provider).build()) {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
@@ -125,7 +125,7 @@ public class AutomaticFailoverTest {
         builder.build());
     connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(connectionProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -168,7 +168,7 @@ public class AutomaticFailoverTest {
         builder.build());
     connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(connectionProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(connectionProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -208,7 +208,7 @@ public class AutomaticFailoverTest {
         builder.build());
     cacheProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(cacheProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -243,7 +243,7 @@ public class AutomaticFailoverTest {
         builder.build());
     cacheProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(cacheProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");

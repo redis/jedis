@@ -11,7 +11,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.ConnectionFailoverException;
-import redis.clients.jedis.mcf.EchoStrategy;
+import redis.clients.jedis.mcf.PingStrategy;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
 
 /**
@@ -71,7 +71,7 @@ import redis.clients.jedis.mcf.HealthCheckStrategy;
  * </p>
  * @see redis.clients.jedis.mcf.MultiDbConnectionProvider
  * @see redis.clients.jedis.mcf.HealthCheckStrategy
- * @see redis.clients.jedis.mcf.EchoStrategy
+ * @see redis.clients.jedis.mcf.PingStrategy
  * @see redis.clients.jedis.mcf.LagAwareStrategy
  * @since 7.0
  */
@@ -90,13 +90,13 @@ public final class MultiDbConfig {
    * <strong>Common Implementations:</strong>
    * </p>
    * <ul>
-   * <li>{@link redis.clients.jedis.mcf.EchoStrategy#DEFAULT} - Uses Redis ECHO command for health
+   * <li>{@link redis.clients.jedis.mcf.PingStrategy#DEFAULT} - Uses Redis PING command for health
    * checks</li>
    * <li>Custom implementations for specific monitoring requirements</li>
    * <li>Redis Enterprise implementations using REST API monitoring</li>
    * </ul>
    * @see redis.clients.jedis.mcf.HealthCheckStrategy
-   * @see redis.clients.jedis.mcf.EchoStrategy
+   * @see redis.clients.jedis.mcf.PingStrategy
    * @see redis.clients.jedis.mcf.LagAwareStrategy
    */
   public static interface StrategySupplier {
@@ -839,7 +839,7 @@ public final class MultiDbConfig {
 
     /**
      * Strategy supplier for creating health check instances for this database. Default is
-     * EchoStrategy.DEFAULT.
+     * PingStrategy.DEFAULT.
      */
     private StrategySupplier healthCheckStrategySupplier;
 
@@ -847,7 +847,7 @@ public final class MultiDbConfig {
      * Constructs a DatabaseConfig with basic endpoint and client configuration.
      * <p>
      * This constructor creates a database configuration with default settings: weight of 1.0f and
-     * EchoStrategy for health checks. Use the {@link Builder} for more advanced configuration
+     * PingStrategy for health checks. Use the {@link Builder} for more advanced configuration
      * options.
      * </p>
      * @param endpoint the Redis endpoint (host and port)
@@ -863,7 +863,7 @@ public final class MultiDbConfig {
      * Constructs a DatabaseConfig with endpoint, client, and connection pool configuration.
      * <p>
      * This constructor allows specification of connection pool settings in addition to basic
-     * endpoint configuration. Default weight of 1.0f and EchoStrategy for health checks are used.
+     * endpoint configuration. Default weight of 1.0f and PingStrategy for health checks are used.
      * </p>
      * @param endpoint the Redis endpoint (host and port)
      * @param clientConfig the Jedis client configuration
@@ -963,7 +963,7 @@ public final class MultiDbConfig {
      * </p>
      * <ul>
      * <li><strong>Weight:</strong> 1.0f (standard priority)</li>
-     * <li><strong>Health Check:</strong> {@link redis.clients.jedis.mcf.EchoStrategy#DEFAULT}</li>
+     * <li><strong>Health Check:</strong> {@link redis.clients.jedis.mcf.PingStrategy#DEFAULT}</li>
      * <li><strong>Connection Pool:</strong> null (uses default pooling)</li>
      * </ul>
      */
@@ -980,8 +980,8 @@ public final class MultiDbConfig {
       /** Weight for database selection priority. Default: 1.0f */
       private float weight = 1.0f;
 
-      /** Health check strategy supplier. Default: EchoStrategy.DEFAULT */
-      private StrategySupplier healthCheckStrategySupplier = EchoStrategy.DEFAULT;
+      /** Health check strategy supplier. Default: PingStrategy.DEFAULT */
+      private StrategySupplier healthCheckStrategySupplier = PingStrategy.DEFAULT;
 
       /**
        * Constructs a new Builder with required endpoint and client configuration.
@@ -1089,7 +1089,7 @@ public final class MultiDbConfig {
        * </ul>
        * <p>
        * When health checks are enabled (true) and no strategy supplier was previously set, the
-       * default {@link redis.clients.jedis.mcf.EchoStrategy#DEFAULT} will be used.
+       * default {@link redis.clients.jedis.mcf.PingStrategy#DEFAULT} will be used.
        * </p>
        * @param healthCheckEnabled true to enable health checks, false to disable
        * @return this builder instance for method chaining
@@ -1098,7 +1098,7 @@ public final class MultiDbConfig {
         if (!healthCheckEnabled) {
           this.healthCheckStrategySupplier = null;
         } else if (healthCheckStrategySupplier == null) {
-          this.healthCheckStrategySupplier = EchoStrategy.DEFAULT;
+          this.healthCheckStrategySupplier = PingStrategy.DEFAULT;
         }
         return this;
       }

@@ -20,7 +20,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("failover")
-public class EchoStrategyIntegrationTest {
+public class PingStrategyIntegrationTest {
 
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("redis-failover-1");
   private static final HostAndPort proxyHostAndPort = endpoint.getHostAndPort();
@@ -55,10 +55,10 @@ public class EchoStrategyIntegrationTest {
   }
 
   @Test
-  public void testEchoStrategyRecoversAfterDisconnect() throws Exception {
+  public void testPingStrategyRecoversAfterDisconnect() throws Exception {
     JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(1000)
         .connectionTimeoutMillis(1000).build();
-    try (EchoStrategy strategy = new EchoStrategy(proxyHostAndPort, config,
+    try (PingStrategy strategy = new PingStrategy(proxyHostAndPort, config,
         HealthCheckStrategy.Config.create())) {
 
       // Initial health check should work
@@ -81,11 +81,11 @@ public class EchoStrategyIntegrationTest {
   }
 
   @Test
-  public void testEchoStrategyWithConnectionTimeout() throws Exception {
+  public void testPingStrategyWithConnectionTimeout() throws Exception {
     JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(100)
         .connectionTimeoutMillis(100).build();
 
-    try (EchoStrategy strategy = new EchoStrategy(proxyHostAndPort, config,
+    try (PingStrategy strategy = new PingStrategy(proxyHostAndPort, config,
         HealthCheckStrategy.Config.builder().interval(1000).timeout(500).numProbes(1).build())) {
 
       // Initial health check should work
@@ -110,7 +110,7 @@ public class EchoStrategyIntegrationTest {
   @Test
   public void testConnectionDropDuringHealthCheck() throws Exception {
     JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(2000).build();
-    try (EchoStrategy strategy = new EchoStrategy(proxyHostAndPort, config,
+    try (PingStrategy strategy = new PingStrategy(proxyHostAndPort, config,
         HealthCheckStrategy.Config.create())) {
 
       // Initial health check

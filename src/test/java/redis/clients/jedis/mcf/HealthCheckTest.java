@@ -321,11 +321,11 @@ public class HealthCheckTest {
     verify(closeableStrategy).close();
   }
 
-  // ========== EchoStrategy Tests ==========
+  // ========== PingStrategy Tests ==========
 
   @Test
-  void testEchoStrategyCustomIntervalTimeout() {
-    try (EchoStrategy strategy = new EchoStrategy(testEndpoint, testConfig,
+  void testPingStrategyCustomIntervalTimeout() {
+    try (PingStrategy strategy = new PingStrategy(testEndpoint, testConfig,
         HealthCheckStrategy.Config.builder().interval(2000).timeout(1500).delayInBetweenProbes(50)
             .numProbes(11).policy(BuiltIn.ANY_SUCCESS).build())) {
       assertEquals(2000, strategy.getInterval());
@@ -337,11 +337,11 @@ public class HealthCheckTest {
   }
 
   @Test
-  void testEchoStrategyDefaultSupplier() {
-    MultiDbConfig.StrategySupplier supplier = EchoStrategy.DEFAULT;
+  void testPingStrategyDefaultSupplier() {
+    MultiDbConfig.StrategySupplier supplier = PingStrategy.DEFAULT;
     HealthCheckStrategy strategy = supplier.get(testEndpoint, testConfig);
 
-    assertInstanceOf(EchoStrategy.class, strategy);
+    assertInstanceOf(PingStrategy.class, strategy);
   }
 
   // ========== Failover configuration Tests ==========
@@ -368,7 +368,7 @@ public class HealthCheckTest {
         .builder(testEndpoint, testConfig).build();
 
     assertEquals(1.0f, databaseConfig.getWeight()); // Default weight
-    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier()); // Default
+    assertEquals(PingStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier()); // Default
                                                                                          // is null
                                                                                          // (no
                                                                                          // health
@@ -410,26 +410,26 @@ public class HealthCheckTest {
   }
 
   @Test
-  void testDatabaseConfigWithEchoStrategy() {
-    MultiDbConfig.StrategySupplier echoSupplier = (hostAndPort, jedisClientConfig) -> {
-      return new EchoStrategy(hostAndPort, jedisClientConfig);
+  void testDatabaseConfigWithPingStrategy() {
+    MultiDbConfig.StrategySupplier pingSupplier = (hostAndPort, jedisClientConfig) -> {
+      return new PingStrategy(hostAndPort, jedisClientConfig);
     };
 
     MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
-        .builder(testEndpoint, testConfig).healthCheckStrategySupplier(echoSupplier).build();
+        .builder(testEndpoint, testConfig).healthCheckStrategySupplier(pingSupplier).build();
 
     MultiDbConfig.StrategySupplier supplier = databaseConfig.getHealthCheckStrategySupplier();
     assertNotNull(supplier);
-    assertInstanceOf(EchoStrategy.class, supplier.get(testEndpoint, testConfig));
+    assertInstanceOf(PingStrategy.class, supplier.get(testEndpoint, testConfig));
   }
 
   @Test
   void testDatabaseConfigWithDefaultHealthCheck() {
     MultiDbConfig.DatabaseConfig databaseConfig = MultiDbConfig.DatabaseConfig
-        .builder(testEndpoint, testConfig).build(); // Should use default EchoStrategy
+        .builder(testEndpoint, testConfig).build(); // Should use default PingStrategy
 
     assertNotNull(databaseConfig.getHealthCheckStrategySupplier());
-    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
+    assertEquals(PingStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
   }
 
   @Test
@@ -446,7 +446,7 @@ public class HealthCheckTest {
         .builder(testEndpoint, testConfig).healthCheckEnabled(true).build();
 
     assertNotNull(databaseConfig.getHealthCheckStrategySupplier());
-    assertEquals(EchoStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
+    assertEquals(PingStrategy.DEFAULT, databaseConfig.getHealthCheckStrategySupplier());
   }
 
   // ========== Integration Tests ==========
@@ -516,10 +516,10 @@ public class HealthCheckTest {
     // Test that the polymorphic design works correctly
     MultiDbConfig.StrategySupplier supplier = (hostAndPort, jedisClientConfig) -> {
       if (jedisClientConfig != null) {
-        return new EchoStrategy(hostAndPort, jedisClientConfig,
+        return new PingStrategy(hostAndPort, jedisClientConfig,
             HealthCheckStrategy.Config.builder().interval(500).timeout(250).numProbes(1).build());
       } else {
-        return new EchoStrategy(hostAndPort, DefaultJedisClientConfig.builder().build());
+        return new PingStrategy(hostAndPort, DefaultJedisClientConfig.builder().build());
       }
     };
 

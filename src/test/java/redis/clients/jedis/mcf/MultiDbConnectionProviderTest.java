@@ -121,7 +121,7 @@ public class MultiDbConnectionProviderTest {
       isValidTest.set(true);
     });
 
-    try (UnifiedJedis jedis = new UnifiedJedis(localProvider)) {
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(localProvider).build()) {
 
       // This will fail due to unable to connect and open the circuit which will trigger the post
       // processor
@@ -236,7 +236,7 @@ public class MultiDbConnectionProviderTest {
             .maxNumFailoverAttempts(2)
             .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build());
 
-    try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       jedis.get("foo");
 
       // Disable both databases so any attempt to switch results in 'no healthy database' path
@@ -278,7 +278,7 @@ public class MultiDbConnectionProviderTest {
             .build()) {
     };
 
-    try (UnifiedJedis jedis = new UnifiedJedis(testProvider)) {
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       jedis.get("foo");
 
       // disable most weighted database so that it will fail on initial requests

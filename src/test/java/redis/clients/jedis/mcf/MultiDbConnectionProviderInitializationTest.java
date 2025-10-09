@@ -56,7 +56,7 @@ public class MultiDbConnectionProviderInitializationTest {
           .build();
 
       DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(2.0f)
-          .healthCheckStrategySupplier(EchoStrategy.DEFAULT) // With
+          .healthCheckStrategySupplier(PingStrategy.DEFAULT) // With
                                                              // health
                                                              // check
           .build();

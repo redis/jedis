@@ -209,9 +209,9 @@ The health check system operates independently of your application traffic, runn
 
 #### Available Health Check Types
 
-##### 1. EchoStrategy (Default)
+##### 1. PingStrategy (Default)
 
-The `EchoStrategy` is the default health check implementation that uses Redis's `ECHO` command to verify both connectivity and write capability.
+The `PingStrategy` is the default health check implementation that uses Redis's `PING` command to verify both connectivity and write capability.
 
 **Use Cases:**
 - General-purpose health checking for most Redis deployments
@@ -219,8 +219,8 @@ The `EchoStrategy` is the default health check implementation that uses Redis's 
 - Simple connectivity validation
 
 **How it works:**
-- Sends `ECHO "HealthCheck"` command to the Redis server
-- Expects exact response `"HealthCheck"` to consider the server healthy
+- Sends `PING` command to the Redis server
+- Expects exact response `"PONG"` to consider the server healthy
 - Any exception or unexpected response marks the server as unhealthy
 
 ##### 2. LagAwareStrategy [PREVIEW] (Redis Enterprise)

@@ -66,7 +66,7 @@ public class LagAwareStrategySslIT {
     restEndpoint = RestEndpointUtil.getRestAPIEndpoint(crdb);
     credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
     try {
-      TlsUtil.createUntrustedTruststore(dummyTrustStore, trustStorePassword);
+      TlsUtil.createEmptyTruststore(dummyTrustStore, trustStorePassword);
       createTrustedTruststore(crdbTrustStore, restEndpoint.getHost(), restEndpoint.getPort(),
         certificateAlias, trustStorePassword);
     } catch (Exception e) {

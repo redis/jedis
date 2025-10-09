@@ -72,7 +72,7 @@ public abstract class MultiDbClientBuilder<C>
 
   // Multi-db specific configuration fields
   private MultiDbConfig multiDbConfig = null;
-  protected Consumer<DatabaseSwitchEvent> databaseSwitchListener = null;
+  private Consumer<DatabaseSwitchEvent> databaseSwitchListener = null;
 
   /**
    * Sets the multi-database configuration.

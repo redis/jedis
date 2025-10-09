@@ -180,7 +180,7 @@ AbstractPipeline pipelined()
 
 Jedis 7.0.0 significantly refactors the automatic failover and failback API. If you were using the failover features in v6.2.0 with `MultiClusterClientConfig` and `MultiClusterPooledConnectionProvider`, these have been renamed and improved in v7.0.0.
 
-**For detailed migration guidance on automatic failover and failback** please refer to the **[Automatic Failover and Failback Migration Guide](failover.md#migration-from-6x-to-7x)**.
+**For detailed migration guidance on automatic failover and failback** please refer to the **[Automatic Failover and Failback Migration Guide](https://redis.github.io/jedis/failover/#migration-from-6x-to-7x)**.
 
 ### Builder Pattern for Client Creation
 

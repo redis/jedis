@@ -30,8 +30,9 @@ Are you looking for a high-level library to handle object mapping? See [redis-om
 The most recent version of this library supports redis version 
 [7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES),
 [7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES),
-[8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES) and
-[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES).
+[8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES),
+[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES) and
+[8.4](https://github.com/redis/redis/blob/8.4/00-RELEASENOTES)
 
 The table below highlights version compatibility of the most-recent library versions with Redis and JDK versions. Compatibility means communication features, and Redis command capabilities.
 
@@ -53,7 +54,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>6.2.0</version>
+    <version>7.0.0</version>
 </dependency>
 ```
 
@@ -65,37 +66,13 @@ Next, you'll need to connect to Redis. Consider installing a redis server with d
 docker run -p 6379:6379 -it redis:latest
 ```
 
-For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
-
-```java
-JedisPool pool = new JedisPool("localhost", 6379);
-```
-
-With a `JedisPool` instance, you can use a
-[try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
-block to get a connection and run Redis commands.
-
-Here's how to run a single [SET](https://redis.io/commands/set) command within a *try-with-resources* block:
-
-```java
-try (Jedis jedis = pool.getResource()) {
-  jedis.set("clientName", "Jedis");
-}
-```
-
-`Jedis` instances implement most Redis commands. See the
-[Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/Jedis.html)
-for the complete list of supported commands.
-
-### Easier way of using connection pool
-
-Using a *try-with-resources* block for each command may be cumbersome, so you may consider using JedisPooled.
+For many applications, it's best to use a connection pool. You can instantiate a JedisPooled like so:
 
 ```java
 JedisPooled jedis = new JedisPooled("localhost", 6379);
 ```
 
-Now you can send commands like sending from Jedis.
+Now you can send commands:
 
 ```java
 jedis.sadd("planets", "Venus");
@@ -157,8 +134,7 @@ package](https://github.com/redis/jedis/tree/master/src/test/java/redis/clients/
 If you run into trouble or have any questions, we're here to help!
 
 Hit us up on the [Redis Discord Server](http://discord.gg/redis) or 
-[Jedis GitHub Discussions](https://github.com/redis/jedis/discussions) or 
-[Jedis mailing list](http://groups.google.com/group/jedis_redis).
+[Jedis GitHub Discussions](https://github.com/redis/jedis/discussions).
 
 ## Contributing
 

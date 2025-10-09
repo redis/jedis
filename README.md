@@ -96,12 +96,10 @@ Now you can use the `JedisCluster` instance and send commands like you would wit
 jedis.sadd("planets", "Mars");
 ```
 
-## Using Redis modules
+## Support for Redis data types
 
-Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
-[RedisJSON](https://redis.io/json/) and [RediSearch](https://redis.io/search/).
-
-See the [RedisJSON Jedis](https://redis.github.io/jedis/redisjson/) or [RediSearch Jedis](https://redis.github.io/jedis/redisearch/) for details.
+Jedis includes support for all [Redis data types](https://redis.io/docs/latest/develop/data-types/) and features such as
+[JSON](https://redis.io/docs/latest/develop/data-types/json/) and [VectorSets](https://redis.io/docs/latest/develop/data-types/vector-sets/).
 
 ## Failover
 

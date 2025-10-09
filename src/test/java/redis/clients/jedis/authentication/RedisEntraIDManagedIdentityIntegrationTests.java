@@ -22,7 +22,6 @@ import redis.clients.jedis.JedisPooled;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@Tag("integration")
 public class RedisEntraIDManagedIdentityIntegrationTests {
   private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
 

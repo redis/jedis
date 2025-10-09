@@ -64,6 +64,9 @@
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
 		<excludedGroupsForUnitTests>integration,scenario</excludedGroupsForUnitTests>
+		<skipUnitTests>false</skipUnitTests>
+		<skipIntegrationTests>false</skipIntegrationTests>
+		<skipScenarioTests>true</skipScenarioTests>
 	</properties>
 
 	<dependencyManagement>
@@ -287,6 +290,17 @@
 							<destFile>${project.build.directory}/jacoco-it-suffix.exec</destFile>
 						</configuration>
 					</execution>
+					<!-- Collect coverage for scenario tests -->
+					<execution>
+						<id>prepare-agent-scenario</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<propertyName>failsafeScenarioArgLine</propertyName>
+							<destFile>${project.build.directory}/jacoco-scenario.exec</destFile>
+						</configuration>
+					</execution>
 					<!-- Merge all coverage data after all integration tests -->
 					<execution>
 						<id>merge-coverage</id>
@@ -302,6 +316,7 @@
 										<include>jacoco-ut.exec</include>
 										<include>jacoco-it-tagged.exec</include>
 										<include>jacoco-it-suffix.exec</include>
+										<include>jacoco-scenario.exec</include>
 									</includes>
 								</fileSet>
 							</fileSets>
@@ -333,6 +348,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
+					<skipTests>${skipUnitTests}</skipTests>
 					<argLine>@{argLine} ${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
@@ -358,13 +374,13 @@
 					</systemPropertyVariables>
 					<summaryFile>${project.build.directory}/failsafe-summary.xml</summaryFile>
 					<!-- Default includes used when invoking failsafe goals directly (e.g., mvn failsafe:integration-test) -->
+					<excludedGroups>scenario</excludedGroups>
 					<includes>
 						<include>**/*IntegrationTest.java</include>
 						<include>**/*IntegrationTests.java</include>
 					</includes>
 					<excludes>
 						<exclude>**/examples/*.java</exclude>
-						<exclude>**/scenario/*Test.java</exclude>
 						<!-- Exclude unit tests -->
 						<exclude>**/mocked/*.java</exclude>
 					</excludes>
@@ -377,8 +393,10 @@
 							<goal>integration-test</goal>
 						</goals>
 						<configuration>
+							<skip>${skipIntegrationTests}</skip>
 							<argLine>@{failsafeTaggedArgLine} ${JVM_OPTS}</argLine>
 							<groups>integration</groups>
+							<excludedGroups>scenario,unit</excludedGroups>
 							<includes>
 								<include>**/*Test.java</include>
 								<include>**/*Tests.java</include>
@@ -392,12 +410,35 @@
 							<goal>integration-test</goal>
 						</goals>
 						<configuration>
+							<skip>${skipIntegrationTests}</skip>
 							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
-
+							<excludedGroups>scenario,unit</excludedGroups>
 							<includes>
+								<include>**/*IT.java</include>
+								<include>**/*ITs.java</include>
 								<include>**/*IntegrationTest.java</include>
 								<include>**/*IntegrationTests.java</include>
 							</includes>
+						</configuration>
+					</execution>
+					<!-- Run all tests tagged with @Tag("scenario") regardless of file name -->
+					<execution>
+						<id>scenario-tests</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+						<configuration>
+							<skip>${skipScenarioTests}</skip>
+							<argLine>@{failsafeScenarioArgLine} ${JVM_OPTS}</argLine>
+							<groups>scenario</groups>
+							<excludedGroups>integration,unit</excludedGroups>
+							<includes>
+								<include>**/*IT.java</include>
+								<include>**/*ITs.java</include>
+							</includes>
+							<excludes>
+								<!-- ensure plugin level excludes are overridden -->
+							</excludes>
 						</configuration>
 					</execution>
 					<!-- Verify phase should run once after both IT executions -->
@@ -574,35 +615,43 @@
 				</plugins>
 			</build>
 		</profile>
-			<profile>
-				<id>tests-with-params</id>
-				<activation>
-					<property>
-						<name>with-param-names</name>
-						<value>true</value>
-					</property>
-				</activation>
-				<build>
-					<plugins>
-						<plugin>
-							<artifactId>maven-compiler-plugin</artifactId>
-							<version>3.14.0</version>
-							<configuration>
-								<source>1.8</source>
-								<target>1.8</target>
-								<parameters>true</parameters>
-							</configuration>
-						</plugin>
-						<plugin>
-							<artifactId>maven-surefire-plugin</artifactId>
-							<version>${maven.surefire.version}</version>
-							<configuration>
-								<argLine>@{argLine} ${JVM_OPTS}</argLine>
-							</configuration>
-						</plugin>
-					</plugins>
-				</build>
-			</profile>
+		<profile>
+			<id>tests-with-params</id>
+			<activation>
+				<property>
+					<name>with-param-names</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<version>3.14.0</version>
+						<configuration>
+							<source>1.8</source>
+							<target>1.8</target>
+							<parameters>true</parameters>
+						</configuration>
+					</plugin>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>${maven.surefire.version}</version>
+						<configuration>
+							<argLine>@{argLine} ${JVM_OPTS}</argLine>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>scenario-tests</id>
+			<properties>
+				<skipUnitTests>true</skipUnitTests>
+				<skipIntegrationTests>true</skipIntegrationTests>
+				<skipScenarioTests>false</skipScenarioTests>
+			</properties>
+		</profile>
 
 	</profiles>
 </project>

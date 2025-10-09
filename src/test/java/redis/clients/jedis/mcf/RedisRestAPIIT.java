@@ -30,7 +30,7 @@ import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.scenario.RestEndpointUtil;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
-public class RedisRestAPIIntegrationTest {
+public class RedisRestAPIIT {
   public static class SSLBypass {
     private static SSLSocketFactory originalSSLSocketFactory;
     private static HostnameVerifier originalHostnameVerifier;
@@ -76,16 +76,19 @@ public class RedisRestAPIIntegrationTest {
     }
   }
 
-  private static EndpointConfig endpointConfig;
+  private static EndpointConfig crdb;
+  private static EndpointConfig db1;
+
   private static Endpoint restAPIEndpoint;
   private static Supplier<RedisCredentials> credentialsSupplier;
-  private static final Logger log = LoggerFactory.getLogger(RedisRestAPIIntegrationTest.class);
+  private static final Logger log = LoggerFactory.getLogger(RedisRestAPIIT.class);
 
   @BeforeAll
   public static void beforeClass() {
     try {
-      endpointConfig = HostAndPorts.getRedisEndpoint("re-active-active");
-      restAPIEndpoint = RestEndpointUtil.getRestAPIEndpoint(endpointConfig);
+      crdb = HostAndPorts.getRedisEndpoint("re-active-active");
+      db1 = HostAndPorts.getRedisEndpoint("re-standalone");
+      restAPIEndpoint = RestEndpointUtil.getRestAPIEndpoint(crdb);
       credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
       SSLBypass.disableSSLVerification();
     } catch (IllegalArgumentException e) {
@@ -104,7 +107,7 @@ public class RedisRestAPIIntegrationTest {
     RedisRestAPI api = new RedisRestAPI(restAPIEndpoint, credentialsSupplier);
 
     List<RedisRestAPI.BdbInfo> bdbs = api.getBdbs();
-    assertEquals(3, bdbs.size());
+    assertEquals(4, bdbs.size());
     assertFalse(bdbs.isEmpty());
 
     // Verify that each BDB has a UID and endpoints
@@ -119,10 +122,17 @@ public class RedisRestAPIIntegrationTest {
     RedisRestAPI api = new RedisRestAPI(restAPIEndpoint, credentialsSupplier);
 
     List<RedisRestAPI.BdbInfo> bdbs = api.getBdbs();
-    assertFalse(bdbs.isEmpty());
-    String firstBdbUid = bdbs.get(0).getUid();
-    assertTrue(api.checkBdbAvailability(firstBdbUid, false));
-    assertFalse(api.checkBdbAvailability(firstBdbUid, true));
+    // Verify availability against CRDB - without extended lag aware checks
+    assertTrue(api.checkBdbAvailability(String.valueOf(crdb.getBdbId()), false));
+    // Verify availability against CRDB - with lag aware
+    assertTrue(api.checkBdbAvailability(String.valueOf(crdb.getBdbId()), true));
+
+    // Verify availability checks against non-CRDB with lag aware
+    assertTrue(api.checkBdbAvailability(String.valueOf(db1.getBdbId()), false));
+    assertFalse(api.checkBdbAvailability(String.valueOf(db1.getBdbId()), true));
+
+    assertFalse(api.checkBdbAvailability("non-existent-bdb", false));
+    assertFalse(api.checkBdbAvailability("non-existent-bdb", true));
   }
 
 }

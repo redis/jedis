@@ -16,6 +16,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -58,7 +59,7 @@ public class FailoverIntegrationTest {
   private static String JEDIS1_ID = "";
   private static String JEDIS2_ID = "";
   private MultiDbConnectionProvider provider;
-  private UnifiedJedis failoverClient;
+  private MultiDbClient failoverClient;
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
@@ -110,7 +111,7 @@ public class FailoverIntegrationTest {
 
     // Create default provider and client for most tests
     provider = createProvider();
-    failoverClient = new UnifiedJedis(provider);
+    failoverClient = MultiDbClient.builder().connectionProvider(provider).build();
   }
 
   @AfterEach
@@ -272,7 +273,7 @@ public class FailoverIntegrationTest {
           .build();
 
     MultiDbConnectionProvider provider = new MultiDbConnectionProvider(failoverConfig);
-    try (UnifiedJedis client = new UnifiedJedis(provider)) {
+    try (MultiDbClient client = MultiDbClient.builder().connectionProvider(provider).build()) {
       // Verify initial connection to first endpoint
       assertThat(getNodeId(client.info("server")), equalTo(JEDIS1_ID));
 
@@ -321,7 +322,8 @@ public class FailoverIntegrationTest {
       builder -> builder.retryOnFailover(true));
 
     // Create a custom client with retryOnFailover enabled for this specific test
-    try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
+    try (MultiDbClient customClient = MultiDbClient.builder().connectionProvider(customProvider)
+        .build()) {
 
       assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
       Thread.sleep(1000);
@@ -362,7 +364,8 @@ public class FailoverIntegrationTest {
     MultiDbConnectionProvider customProvider = createProvider(
       builder -> builder.retryOnFailover(false));
 
-    try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
+    try (MultiDbClient customClient = MultiDbClient.builder().connectionProvider(customProvider)
+        .build()) {
 
       assertThat(getNodeId(customClient.info("server")), equalTo(JEDIS1_ID));
       Future<List<String>> blpop = executor.submit(() -> customClient.blpop(500, "test-list-2"));

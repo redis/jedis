@@ -1,5 +1,9 @@
 # Automatic Failover and Failback with Jedis
 
+> API was significantly changed in 7.0.0. Please follow the migration guide below.
+> 
+> This feature is experimental and may change in future versions.
+
 Jedis supports failover and failback for your Redis deployments. This is useful when:
 1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
 2. You want your application to connect to and use one deployment at a time.
@@ -24,6 +28,51 @@ The remainder of this guide describes:
 We recommend that you read this guide carefully and understand the configuration settings before enabling Jedis failover
 in production.
 
+## Migration from 6.x to 7.x
+
+In Jedis 6.x, failover was supported using special constructor for `UnifiedJedis`.
+In Jedis 7.x, failover is supported using `MultiDbClient` and `MultiDbConfig.builder`:
+```java
+// Jedis 6.x
+JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret").build();
+
+ClusterConfig[] clientConfigs = new ClusterConfig[2];
+clientConfigs[0] = new ClusterConfig(new HostAndPort("redis-east.example.com", 14000), config);
+clientConfigs[1] = new ClusterConfig(new HostAndPort("redis-west.example.com", 14000), config);
+
+MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clientConfigs);
+// ...
+MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
+UnifiedJedis client = new UnifiedJedis(provider);
+
+// Jedis 7.x
+// MultiClusterClientConfig was renamed to MultiDbConfig and MultiDbClient with convenient builder was added
+MultiDbConfig multiConfig = MultiDbConfig.builder()
+        .database(DatabaseConfig.builder(east, config).weight(1.0f).build())
+        .database(DatabaseConfig.builder(west, config).weight(0.5f).build())
+        .build();
+// Use MultiDbClient instead of UnifiedJedis
+MultiDbClient multiDbClient = MultiDbClient.builder().multiDbConfig(multiConfig).build();
+```
+For more details on configuration options see sections below.
+
+## Installing optional dependencies
+
+Jedis failover support is provided by optional dependencies.
+To use failover, add the following dependencies to your project:
+```xml
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-circuitbreaker</artifactId>
+    <version>1.7.1</version>
+</dependency>
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-retry</artifactId>
+    <version>1.7.1</version>
+</dependency>
+```
+
 ## Basic usage
 
 To configure Jedis for failover, you specify a weighted list of Redis databases.
@@ -41,18 +90,19 @@ Let's look at one way of configuring Jedis for this scenario.
 First, start by defining the initial configuration for each Redis database available and prioritize them using weights.
 
 ```java
-JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret")
-.socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
+JedisClientConfig config = DefaultJedisClientConfig.builder()
+        .user("cache").password("secret")
+        .socketTimeoutMillis(5000).connectionTimeoutMillis(5000).build();
 
 // Custom pool config per database can be provided
 ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-        poolConfig.setMaxTotal(8);
-        poolConfig.setMaxIdle(8);
-        poolConfig.setMinIdle(0);
-        poolConfig.setBlockWhenExhausted(true);
-        poolConfig.setMaxWait(Duration.ofSeconds(1));
-        poolConfig.setTestWhileIdle(true);
-        poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
+poolConfig.setMaxTotal(8);
+poolConfig.setMaxIdle(8);
+poolConfig.setMinIdle(0);
+poolConfig.setBlockWhenExhausted(true);
+poolConfig.setMaxWait(Duration.ofSeconds(1));
+poolConfig.setTestWhileIdle(true);
+poolConfig.setTimeBetweenEvictionRuns(Duration.ofSeconds(1));
 
 HostAndPort east = new HostAndPort("redis-east.example.com", 14000);
 HostAndPort west = new HostAndPort("redis-west.example.com", 14000);
@@ -65,7 +115,7 @@ MultiDbConfig.Builder multiConfig = MultiDbConfig.builder()
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
 
 Continue using the `MultiDbConfig.Builder` builder to set your preferred retry and failover configuration.
-Then build a `MultiDbClient`.
+Then build a `MultiDbClient`:
 
 ```java
 // Configure circuit breaker for failure detection
@@ -96,14 +146,14 @@ MultiDbClient multiDbClient = MultiDbClient.builder()
 In the configuration here, we've set a sliding window size of 1000 and a failure rate threshold of 50%.
 This means that a failover will be triggered only if both 500 out of any 1000 calls to Redis fail (i.e., the failure rate threshold is reached) and the minimum number of failures is also met.
 
-You can now use this `MultiDbClient` instance, and the connection management and failover will be handled transparently.
+You can now use this `MultiDbClient` instance in your application to execute Redis commands.
 
 ## Configuration options
 
 Under the hood, Jedis' failover support relies on [resilience4j](https://resilience4j.readme.io/docs/getting-started),
 a fault-tolerance library that implements [retry](https://resilience4j.readme.io/docs/retry) and [circuit breakers](https://resilience4j.readme.io/docs/circuitbreaker).
 
-Once you configure Jedis for failover using the `MultiDbConnectionProvider`, each call to Redis is decorated with a resilience4j retry and circuit breaker.
+Once you configure a `MultiDbClient`, each call to Redis is decorated with a resilience4j retry and circuit breaker.
 
 By default, any call that throws a `JedisConnectionException` will be retried up to 3 times.
 If the call fail then the circuit breaker will record a failure.
@@ -136,13 +186,13 @@ For failover, Jedis uses a circuit breaker to detect when a Redis database has f
 Failover configuration is encapsulated in `MultiDbConfig.CircuitBreakerConfig` and can be provided using the `MultiDbConfig.Builder.failureDetector()`.
 Jedis uses the following circuit breaker settings:
 
-| Setting                                 | Default value              | Description                                                                                                                                                                   |
-|-----------------------------------------|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Sliding window size                     | 2                          | The size of the sliding window. Units depend on sliding window type. The size represents seconds. |
-| Threshold min number of failures        | 1000                       | Minimum number of failures before circuit breaker is tripped.                                                                                                                 |
-| Failure rate threshold                  | `10.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state.                                                      |
-| Circuit breaker included exception list | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                                                                               |
-| Circuit breaker ignored exception list  | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                                                                               |                                                                                                               |
+| Setting                                 | Default value              | Description                                                                                                              |
+|-----------------------------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| Sliding window size                     | 2                          | The size of the sliding window. Units depend on sliding window type. The size represents seconds.                        |
+| Threshold min number of failures        | 1000                       | Minimum number of failures before circuit breaker is tripped.                                                            |
+| Failure rate threshold                  | `10.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state. |
+| Circuit breaker included exception list | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                          |
+| Circuit breaker ignored exception list  | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                          |                                                                                                               |
 
 ### Health Check Configuration and Customization
 

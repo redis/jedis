@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
@@ -173,59 +171,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    this(jedisClusterNodes, clientConfig, maxAttempts,
-        Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
-  }
-
-  @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts,
-      Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
-        clientConfig.getRedisProtocol());
-  }
-
-  @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts,
-        maxTotalRetriesDuration, clientConfig.getRedisProtocol());
-  }
-
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects());
   }
 
+  @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol);
   }
 
-  @Experimental
+  @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache cache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol, cache);
-  }
-
-  /**
-   * @deprecated Sharding/Sharded feature will be removed in next major release.
-   */
-  @Deprecated
-  public UnifiedJedis(ShardedConnectionProvider provider) {
-    this(new DefaultCommandExecutor(provider), provider, new ShardedCommandObjects(provider.getHashingAlgo()));
-  }
-
-  /**
-   * @deprecated Sharding/Sharded feature will be removed in next major release.
-   */
-  @Deprecated
-  public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
-    this(new DefaultCommandExecutor(provider), provider,
-        new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern));
   }
 
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
@@ -5082,9 +5044,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // RedisBloom commands
 
   /**
-   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   * @return pipeline object
    */
-  public PipelineBase pipelined() {
+  public AbstractPipeline pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiDbConnectionProvider) {

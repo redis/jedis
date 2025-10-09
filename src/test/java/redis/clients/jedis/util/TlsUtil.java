@@ -260,6 +260,17 @@ public class TlsUtil {
         return sslContext.getSocketFactory();
     }
 
+    public static void createEmptyTruststore(Path emptyTrustStore, char[] trustStorePassword) throws Exception {
+      // Create empty truststore
+      KeyStore ks = KeyStore.getInstance("JKS");
+      ks.load(null, trustStorePassword);
+
+      // Save truststore
+      try (FileOutputStream fos = new FileOutputStream(emptyTrustStore.toFile())) {
+        ks.store(fos, trustStorePassword);
+      }
+    }
+
     /**
      * Very basic hostname verifier implementation for testing. NOT recommended for production.
      */

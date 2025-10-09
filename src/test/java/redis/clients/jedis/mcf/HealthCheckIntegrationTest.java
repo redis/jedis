@@ -15,10 +15,11 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
-import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.scenario.RecommendedSettings;
 
@@ -32,8 +33,9 @@ public class HealthCheckIntegrationTest {
   @Test
   public void testDisableHealthCheck() {
     // No health check strategy supplier means health check is disabled
-    MultiDbConnectionProvider customProvider = getMCCF(null);
-    try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
+    MultiDbConfig multiDbConfig = getMCCF(null);
+    try (
+        MultiDbClient customClient = MultiDbClient.builder().multiDbConfig(multiDbConfig).build()) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
       assertEquals("PONG", result);
@@ -46,8 +48,9 @@ public class HealthCheckIntegrationTest {
     MultiDbConfig.StrategySupplier defaultSupplier = (hostAndPort, jedisClientConfig) -> {
       return new PingStrategy(hostAndPort, jedisClientConfig);
     };
-    MultiDbConnectionProvider customProvider = getMCCF(defaultSupplier);
-    try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
+    MultiDbConfig multiDbConfig = getMCCF(defaultSupplier);
+    try (
+        MultiDbClient customClient = MultiDbClient.builder().multiDbConfig(multiDbConfig).build()) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
       assertEquals("PONG", result);
@@ -70,15 +73,16 @@ public class HealthCheckIntegrationTest {
           });
     };
 
-    MultiDbConnectionProvider customProvider = getMCCF(strategySupplier);
-    try (UnifiedJedis customClient = new UnifiedJedis(customProvider)) {
+    MultiDbConfig multiDbConfig = getMCCF(strategySupplier);
+    try (
+        MultiDbClient customClient = MultiDbClient.builder().multiDbConfig(multiDbConfig).build()) {
       // Verify that the client can connect and execute commands
       String result = customClient.ping();
       assertEquals("PONG", result);
     }
   }
 
-  private MultiDbConnectionProvider getMCCF(MultiDbConfig.StrategySupplier strategySupplier) {
+  private MultiDbConfig getMCCF(MultiDbConfig.StrategySupplier strategySupplier) {
     Function<DatabaseConfig.Builder, DatabaseConfig.Builder> modifier = builder -> strategySupplier == null
         ? builder.healthCheckEnabled(false)
         : builder.healthCheckStrategySupplier(strategySupplier);
@@ -88,13 +92,13 @@ public class HealthCheckIntegrationTest {
             .apply(MultiDbConfig.DatabaseConfig.builder(e.getHostAndPort(), clientConfig)).build())
         .collect(Collectors.toList());
 
-    MultiDbConfig mccf = new MultiDbConfig.Builder(databaseConfigs)
+    MultiDbConfig multiDbConfig = new MultiDbConfig.Builder(databaseConfigs)
         .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).waitDuration(1).build())
         .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder().slidingWindowSize(1)
             .failureRateThreshold(100).build())
         .build();
 
-    return new MultiDbConnectionProvider(mccf);
+    return multiDbConfig;
   }
 
   // ========== Probe Logic Integration Tests ==========

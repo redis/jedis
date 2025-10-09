@@ -1,7 +1,18 @@
 package redis.clients.jedis.util;
 
+import sun.security.x509.AlgorithmId;
+import sun.security.x509.CertificateAlgorithmId;
+import sun.security.x509.CertificateSerialNumber;
+import sun.security.x509.CertificateValidity;
+import sun.security.x509.CertificateVersion;
+import sun.security.x509.CertificateX509Key;
+import sun.security.x509.X500Name;
+import sun.security.x509.X509CertImpl;
+import sun.security.x509.X509CertInfo;
+
 import javax.net.ssl.*;
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
@@ -9,6 +20,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -258,6 +270,46 @@ public class TlsUtil {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, unTrustManagers, new SecureRandom());
         return sslContext.getSocketFactory();
+    }
+
+    public static X509Certificate createDummyCert(String dn) throws Exception {
+      KeyPair keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+
+      long now = System.currentTimeMillis();
+      Date from = new Date(now);
+      Date to = new Date(now + 1000L * 60 * 60); // 1 hour validity
+      X500Name owner = new X500Name(dn);
+
+      X509CertInfo info = new X509CertInfo();
+      info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
+      info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(BigInteger.valueOf(now)));
+      info.set(X509CertInfo.SUBJECT, owner); // <-- directly use X500Name
+      info.set(X509CertInfo.ISSUER, owner); // <-- directly use X500Name
+      info.set(X509CertInfo.VALIDITY, new CertificateValidity(from, to));
+      info.set(X509CertInfo.KEY, new CertificateX509Key(keyPair.getPublic()));
+      info.set(X509CertInfo.ALGORITHM_ID,
+        new CertificateAlgorithmId(new AlgorithmId(AlgorithmId.sha256WithRSAEncryption_oid)));
+
+      X509CertImpl cert = new X509CertImpl(info);
+      cert.sign(keyPair.getPrivate(), "SHA256withRSA");
+
+      return cert;
+    }
+
+    public static void createUntrustedTruststore(Path emptyTrustStore, char[] trustStorePassword) throws Exception {
+      // Create empty truststore
+      KeyStore ks = KeyStore.getInstance("JKS");
+      ks.load(null, trustStorePassword);
+
+      X509Certificate cert = createDummyCert("CN=Dummy");
+
+      // Add dummy certificate to truststore
+      ks.setCertificateEntry("dummy-cert", cert);
+
+      // Save truststore
+      try (FileOutputStream fos = new FileOutputStream(emptyTrustStore.toFile())) {
+        ks.store(fos, trustStorePassword);
+      }
     }
 
     /**

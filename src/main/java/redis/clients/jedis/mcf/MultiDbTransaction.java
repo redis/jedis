@@ -20,11 +20,9 @@ import redis.clients.jedis.util.KeyValue;
  * This is high memory dependent solution as all the appending commands will be hold in memory.
  */
 @Experimental
-public class MultiDbTransaction extends TransactionBase {
+public class MultiDbTransaction extends AbstractTransaction {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
-
-  private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
   private final MultiDbConnectionSupplier failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();

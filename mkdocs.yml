@@ -21,11 +21,12 @@ nav:
   - Home: index.md
   - Jedis Maven: jedis-maven.md
   - Migrating to newer versions:
-      - Jedis 5: breaking-5.md
+      - Jedis 7: migration-guides/v6-to-v7.md
+      - Jedis 5: migration-guides/v4-to-v5.md
       - Jedis 4:
-        - Breaking changes: 3to4.md
-        - Primitives: 3to4-primitives.md
-        - ZSET: 3to4-zset-list.md
+        - Breaking changes: migration-guides/v3-to-v4.md
+        - Primitives: migration-guides/v3-to-v4-primitives.md
+        - ZSET: migration-guides/v3-to-v4-zset-list.md
   - Using Jedis with ...:
     - Search: redisearch.md
     - JSON: redisjson.md

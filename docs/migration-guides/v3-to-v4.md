@@ -40,12 +40,12 @@ connection would go into an unusable state.
 - `JedisExhaustedPoolException` has been removed. A `JedisException` with a similar message is thrown
   instead.
 
-- [Many sorted set methods](3to4-zset-list.md) return a Java `List` instead of a
-`Set`. [See the complete list](3to4-zset-list.md).
+- [Many sorted set methods](v3-to-v4-zset-list.md) return a Java `List` instead of a
+`Set`. [See the complete list](v3-to-v4-zset-list.md).
 
-- [Many methods return primitive values](3to4-primitives.md)) (`long`/`boolean`/`double` instead of
+- [Many methods return primitive values](v3-to-v4-primitives.md)) (`long`/`boolean`/`double` instead of
 `Long`/`Boolean`/
-  `Double`). [See the complete list](3to4-primitives.md).
+  `Double`). [See the complete list](v3-to-v4-primitives.md).
 
 - `scriptExists(byte[])` method now returns `Boolean` instead of `Long`.
 

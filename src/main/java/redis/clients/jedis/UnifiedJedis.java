@@ -195,18 +195,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * Constructor which supports multiple cluster/database endpoints each with their own isolated connection pool.
-   * <p>
-   * With this Constructor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
-   * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
-   * <p>
-   */
-  @Experimental
-  public UnifiedJedis(MultiDbConnectionProvider provider) {
-    this(new MultiDbCommandExecutor(provider), provider);
-  }
-
-  /**
    * The constructor to use a custom {@link CommandExecutor}.
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if

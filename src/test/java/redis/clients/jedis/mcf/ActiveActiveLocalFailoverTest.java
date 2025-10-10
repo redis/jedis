@@ -23,6 +23,7 @@ import redis.clients.jedis.scenario.MultiThreadedFakeApp;
 import redis.clients.jedis.scenario.RecommendedSettings;
 import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.ClientTestUtil;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -152,13 +153,12 @@ public class ActiveActiveLocalFailoverTest {
     ensureEndpointAvailability(endpoint1.getHostAndPort(), config);
     ensureEndpointAvailability(endpoint2.getHostAndPort(), config);
 
-    // Create the connection provider
-    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(builder.build());
     FailoverReporter reporter = new FailoverReporter();
-    provider.setDatabaseSwitchListener(reporter);
-    provider.setActiveDatabase(endpoint1.getHostAndPort());
 
-    UnifiedJedis client = new UnifiedJedis(provider);
+    MultiDbClient multiDbClient = MultiDbClient.builder().multiDbConfig(builder.build())
+        .databaseSwitchListener(reporter).build();
+
+    multiDbClient.setActiveDatabase(endpoint1.getHostAndPort());
 
     AtomicLong retryingThreadsCounter = new AtomicLong(0);
     AtomicLong failedCommandsAfterFailover = new AtomicLong(0);
@@ -168,25 +168,24 @@ public class ActiveActiveLocalFailoverTest {
     AtomicBoolean unexpectedErrors = new AtomicBoolean(false);
     AtomicReference<Exception> lastException = new AtomicReference<Exception>();
     AtomicLong stopRunningAt = new AtomicLong();
-    String database2Id = provider.getDatabase(endpoint2.getHostAndPort()).getCircuitBreaker()
-        .getName();
+    Endpoint db2Endpoint = endpoint2.getHostAndPort();
 
-    // Start thread that imitates an application that uses the client
+    // Start thread that imitates an application that uses the multiDbClient
     RateLimiterConfig rateLimiterConfig = RateLimiterConfig.custom().limitForPeriod(100)
         .limitRefreshPeriod(Duration.ofSeconds(1)).timeoutDuration(Duration.ofSeconds(1)).build();
 
-    MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(client, (UnifiedJedis c) -> {
+    MultiThreadedFakeApp fakeApp = new MultiThreadedFakeApp(multiDbClient, (UnifiedJedis c) -> {
 
       long threadId = Thread.currentThread().getId();
 
       int attempt = 0;
       int maxTries = 500;
       int retryingDelay = 5;
-      String currentDatabaseId = null;
+      String currentDbKey = null;
       while (true) {
         try {
           if (System.currentTimeMillis() > stopRunningAt.get()) break;
-          currentDatabaseId = provider.getDatabase().getCircuitBreaker().getName();
+          currentDbKey = dbKey(multiDbClient.getActiveDatabaseEndpoint());
           Map<String, String> executionInfo = new HashMap<String, String>() {
             {
               put("threadId", String.valueOf(threadId));
@@ -194,7 +193,7 @@ public class ActiveActiveLocalFailoverTest {
             }
           };
 
-          client.xadd("execution_log", StreamEntryID.NEW_ENTRY, executionInfo);
+          multiDbClient.xadd("execution_log", StreamEntryID.NEW_ENTRY, executionInfo);
 
           if (attempt > 0) {
             log.info("Thread {} recovered after {} ms. Threads still not recovered: {}", threadId,
@@ -203,7 +202,7 @@ public class ActiveActiveLocalFailoverTest {
 
           break;
         } catch (JedisConnectionException e) {
-          if (database2Id.equals(currentDatabaseId)) {
+          if (dbKey(db2Endpoint).equals(currentDbKey)) {
             break;
           }
           lastException.set(e);
@@ -231,7 +230,7 @@ public class ActiveActiveLocalFailoverTest {
           }
           if (++attempt == maxTries) throw e;
         } catch (Exception e) {
-          if (database2Id.equals(currentDatabaseId)) {
+          if (dbKey(db2Endpoint).equals(currentDbKey)) {
             break;
           }
           lastException.set(e);
@@ -275,6 +274,7 @@ public class ActiveActiveLocalFailoverTest {
     }
     log.info("Fake app completed");
 
+    MultiDbConnectionProvider provider = ClientTestUtil.getConnectionProvider(multiDbClient);
     ConnectionPool pool = provider.getDatabase(endpoint1.getHostAndPort()).getConnectionPool();
 
     log.info("First connection pool state: active: {}, idle: {}", pool.getNumActive(),
@@ -305,7 +305,11 @@ public class ActiveActiveLocalFailoverTest {
     }
     assertFalse(unexpectedErrors.get());
 
-    client.close();
+    multiDbClient.close();
+  }
+
+  private String dbKey(Endpoint endpoint) {
+    return endpoint.getHost() + ":" + endpoint.getPort();
   }
 
   private static void ensureEndpointAvailability(HostAndPort endpoint, JedisClientConfig config) {

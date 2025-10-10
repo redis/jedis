@@ -191,8 +191,7 @@ Jedis 7.0.0 introduces a fluent builder pattern for creating client instances, m
 **New in v7.0.0:**
 ```java
 JedisPooled jedis = JedisPooled.builder()
-    .host("localhost")
-    .port(6379)
+    .hostAndPort("localhost", 6379)
     .clientConfig(DefaultJedisClientConfig.builder()
         .user("myuser")
         .password("mypassword")

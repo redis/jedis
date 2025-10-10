@@ -419,7 +419,6 @@
 							<skip>${skipIntegrationTests}</skip>
 							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
 							<excludedGroups>scenario,unit</excludedGroups>
-
 							<includes>
 								<include>**/*IT.java</include>
 								<include>**/*ITs.java</include>

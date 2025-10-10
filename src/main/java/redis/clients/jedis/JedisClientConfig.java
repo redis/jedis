@@ -6,7 +6,6 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
-import redis.clients.jedis.util.ReadOnlyCommands;
 
 public interface JedisClientConfig {
   default RedisProtocol getRedisProtocol() {

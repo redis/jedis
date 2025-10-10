@@ -1,0 +1,5 @@
+mkdocs~=1.6
+mkdocs-material~=9.5
+pymdown-extensions~=10.8
+mkdocs-macros-plugin~=1.0
+mkdocs-glightbox

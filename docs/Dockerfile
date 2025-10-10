@@ -1,3 +1,3 @@
 FROM squidfunk/mkdocs-material
-RUN pip install mkdocs-macros-plugin
-RUN pip install mkdocs-glightbox
+COPY requirements.txt .
+RUN pip install -r requirements.txt

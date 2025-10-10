@@ -63,6 +63,11 @@ To use failover, add the following dependencies to your project:
 ```xml
 <dependency>
     <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-all</artifactId>
+    <version>1.7.1</version>
+</dependency>
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
     <artifactId>resilience4j-circuitbreaker</artifactId>
     <version>1.7.1</version>
 </dependency>

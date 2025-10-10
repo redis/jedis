@@ -2,10 +2,13 @@ package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.awaitility.Awaitility.await;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.awaitility.Durations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -158,10 +161,12 @@ public class StatusTrackerTest {
     waitingThread.start();
 
     // Give some time for the listener to be registered
-    Thread.sleep(50);
+    await().atMost(Durations.FIVE_HUNDRED_MILLISECONDS)
+        .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).untilAsserted(() -> {
+          assertNotNull(capturedListener[0], "Listener should have been registered");
+        });
 
     // Simulate status change for different endpoint (should be ignored)
-    assertNotNull(capturedListener[0], "Listener should have been registered");
     HealthStatusChangeEvent otherEvent = new HealthStatusChangeEvent(otherEndpoint,
         HealthStatus.UNKNOWN, HealthStatus.HEALTHY);
     capturedListener[0].onStatusChange(otherEvent);
@@ -184,15 +189,20 @@ public class StatusTrackerTest {
   void testWaitForHealthStatus_InterruptHandling() {
     // Given: Health status is initially UNKNOWN and will stay that way
     when(mockHealthStatusManager.getHealthStatus(testEndpoint)).thenReturn(HealthStatus.UNKNOWN);
+    when(mockHealthStatusManager.getMaxWaitFor(any())).thenReturn(3000L);
 
-    // When: Interrupt the waiting thread
+    AtomicReference<String> interruptedThreadName = new AtomicReference<>();
+    AtomicReference<Throwable> thrownException = new AtomicReference<>();
+    AtomicReference<Boolean> isInterrupted = new AtomicReference<>();
+    // When: Interrupt thse waiting thread
     Thread testThread = new Thread(() -> {
       try {
         statusTracker.waitForHealthStatus(testEndpoint);
         fail("Should have thrown JedisConnectionException due to interrupt");
       } catch (Exception e) {
-        assertTrue(e.getMessage().contains("Interrupted while waiting"));
-        assertTrue(Thread.currentThread().isInterrupted());
+        interruptedThreadName.set(Thread.currentThread().getName());
+        thrownException.set(e);
+        isInterrupted.set(Thread.currentThread().isInterrupted());
       }
     });
 
@@ -215,6 +225,8 @@ public class StatusTrackerTest {
     }
 
     assertFalse(testThread.isAlive(), "Test thread should have completed");
+    assertTrue(thrownException.get().getMessage().contains("Interrupted while waiting"));
+    assertTrue(isInterrupted.get(), "Thread should be interrupted");
   }
 
   @Test

@@ -16,7 +16,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 /**
  * A transaction based on <a href="https://redis.io/docs/manual/pipelining/">pipelining</a>.
  */
-public class Transaction extends TransactionBase {
+public class Transaction extends AbstractTransaction {
 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
 

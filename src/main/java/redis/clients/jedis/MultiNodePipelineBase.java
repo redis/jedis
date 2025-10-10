@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.IOUtils;
 
-public abstract class MultiNodePipelineBase extends PipelineBase {
+public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 

@@ -1,7 +1,6 @@
 package redis.clients.jedis.mcf;
 
 import java.io.Closeable;
-
 import redis.clients.jedis.Endpoint;
 
 public interface HealthCheckStrategy extends Closeable {
@@ -32,23 +31,50 @@ public interface HealthCheckStrategy extends Closeable {
   }
 
   /**
-   * Get the minimum number of consecutive successful health checks required to mark the endpoint as
-   * healthy.
-   * @return the minimum number of consecutive successful health checks
+   * Get the number of probes for health checks to repeat.
+   * @return the number of probes
    */
-  default int minConsecutiveSuccessCount() {
-    return 1;
-  }
+  int getNumProbes();
+
+  /**
+   * Get the policy for health checks.
+   * @return the policy
+   */
+  ProbingPolicy getPolicy();
+
+  /**
+   * Get the delay (in milliseconds) between retries for failed health checks.
+   * @return the delay in milliseconds
+   */
+  int getDelayInBetweenProbes();
 
   public static class Config {
+    private static final int INTERVAL_DEFAULT = 5000;
+    private static final int TIMEOUT_DEFAULT = 1000;
+    private static final int NUM_PROBES_DEFAULT = 3;
+    private static final int DELAY_IN_BETWEEN_PROBES_DEFAULT = 500;
+
     protected final int interval;
     protected final int timeout;
-    protected final int minConsecutiveSuccessCount;
+    protected final int numProbes;
+    protected final int delayInBetweenProbes;
+    protected final ProbingPolicy policy;
 
-    public Config(int interval, int timeout, int minConsecutiveSuccessCount) {
+    public Config(int interval, int timeout, int numProbes, int delayInBetweenProbes,
+        ProbingPolicy policy) {
       this.interval = interval;
       this.timeout = timeout;
-      this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+      this.numProbes = numProbes;
+      this.delayInBetweenProbes = delayInBetweenProbes;
+      this.policy = policy;
+    }
+
+    Config(Builder<?, ?> builder) {
+      this.interval = builder.interval;
+      this.timeout = builder.timeout;
+      this.numProbes = builder.numProbes;
+      this.delayInBetweenProbes = builder.delayInBetweenProbes;
+      this.policy = builder.policy;
     }
 
     public int getInterval() {
@@ -59,8 +85,16 @@ public interface HealthCheckStrategy extends Closeable {
       return timeout;
     }
 
-    public int getMinConsecutiveSuccessCount() {
-      return minConsecutiveSuccessCount;
+    public int getNumProbes() {
+      return numProbes;
+    }
+
+    public int getDelayInBetweenProbes() {
+      return delayInBetweenProbes;
+    }
+
+    public ProbingPolicy getPolicy() {
+      return policy;
     }
 
     /**
@@ -68,14 +102,14 @@ public interface HealthCheckStrategy extends Closeable {
      * @return a new Config instance
      */
     public static Config create() {
-      return new Builder<>().build();
+      return builder().build();
     }
 
     /**
      * Create a new builder for HealthCheckStrategy.Config.
      * @return a new Builder instance
      */
-    public static Builder<?, Config> builder() {
+    public static Builder<?, ? extends Config> builder() {
       return new Builder<>();
     }
 
@@ -85,9 +119,11 @@ public interface HealthCheckStrategy extends Closeable {
      * @param <C> the config type being built
      */
     public static class Builder<T extends Builder<T, C>, C extends Config> {
-      protected int interval = 1000;
-      protected int timeout = 1000;
-      protected int minConsecutiveSuccessCount = 3;
+      protected int interval = INTERVAL_DEFAULT;
+      protected int timeout = TIMEOUT_DEFAULT;
+      protected int numProbes = NUM_PROBES_DEFAULT;
+      protected ProbingPolicy policy = ProbingPolicy.BuiltIn.ALL_SUCCESS;
+      protected int delayInBetweenProbes = DELAY_IN_BETWEEN_PROBES_DEFAULT;
 
       /**
        * Set the interval between health checks in milliseconds.
@@ -112,13 +148,35 @@ public interface HealthCheckStrategy extends Closeable {
       }
 
       /**
-       * Set the minimum number of consecutive successful health checks required.
-       * @param minConsecutiveSuccessCount the minimum count (default: 3)
+       * Set the number of probes for health check.
+       * @param numProbes the number of repeats (default: 3)
        * @return this builder
        */
       @SuppressWarnings("unchecked")
-      public T minConsecutiveSuccessCount(int minConsecutiveSuccessCount) {
-        this.minConsecutiveSuccessCount = minConsecutiveSuccessCount;
+      public T numProbes(int numProbes) {
+        this.numProbes = numProbes;
+        return (T) this;
+      }
+
+      /**
+       * Set the policy for health checks.
+       * @param policy the policy (default: ProbingPolicy.BuiltIn.ALL_SUCCESS)
+       * @return this builder
+       */
+      @SuppressWarnings("unchecked")
+      public T policy(ProbingPolicy policy) {
+        this.policy = policy;
+        return (T) this;
+      }
+
+      /**
+       * Set the delay between retries for failed health checks in milliseconds.
+       * @param delayInBetweenProbes the delay in milliseconds (default: 100)
+       * @return this builder
+       */
+      @SuppressWarnings("unchecked")
+      public T delayInBetweenProbes(int delayInBetweenProbes) {
+        this.delayInBetweenProbes = delayInBetweenProbes;
         return (T) this;
       }
 
@@ -126,8 +184,9 @@ public interface HealthCheckStrategy extends Closeable {
        * Build the Config instance.
        * @return a new Config instance
        */
-      public Config build() {
-        return new Config(interval, timeout, minConsecutiveSuccessCount);
+      @SuppressWarnings("unchecked")
+      public C build() {
+        return (C) new Config(this);
       }
     }
   }

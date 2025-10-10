@@ -80,9 +80,9 @@ jobs:
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
           if [ -z "$TESTS" ]; then
-            mvn clean compile verify
+            mvn -Dwith-param-names=true clean compile verify
           else
-            mvn -Dtest=$TESTS clean verify
+            mvn -Dwith-param-names=true -Dtest=$TESTS clean verify
           fi
         env:
           JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"

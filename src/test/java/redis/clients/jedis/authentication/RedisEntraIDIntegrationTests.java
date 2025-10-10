@@ -72,7 +72,6 @@ import redis.clients.jedis.scenario.FaultInjectionClient;
 import redis.clients.jedis.scenario.FaultInjectionClient.TriggerActionResponse;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
-@Tag("integration")
 public class RedisEntraIDIntegrationTests {
   private static final Logger log = LoggerFactory.getLogger(RedisEntraIDIntegrationTests.class);
 

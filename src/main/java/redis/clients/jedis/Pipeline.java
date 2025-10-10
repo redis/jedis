@@ -12,7 +12,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
-public class Pipeline extends PipelineBase implements DatabasePipelineCommands, Closeable {
+public class Pipeline extends AbstractPipeline implements DatabasePipelineCommands, Closeable {
 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;

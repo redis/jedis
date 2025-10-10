@@ -17,14 +17,28 @@ plugins:
   - macros:
       include_dir: .
 
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+
 nav:
   - Home: index.md
+  - Jedis Maven: jedis-maven.md
   - Migrating to newer versions:
-      - Jedis 5: breaking-5.md
+      - Jedis 7: migration-guides/v6-to-v7.md
+      - Jedis 6: migration-guides/v5-to-v6.md
+      - Jedis 5: migration-guides/v4-to-v5.md
       - Jedis 4:
-        - Breaking changes: 3to4.md
-        - Primitives: 3to4-primitives.md
-        - ZSET: 3to4-zset-list.md
+        - Breaking changes: migration-guides/v3-to-v4.md
+        - Primitives: migration-guides/v3-to-v4-primitives.md
+        - ZSET: migration-guides/v3-to-v4-zset-list.md
   - Using Jedis with ...:
     - Search: redisearch.md
     - JSON: redisjson.md
@@ -35,4 +49,5 @@ nav:
   - Tutorials and Examples:  tutorials_examples.md
   - Jedis Guide: https://redis.io/docs/latest/develop/connect/clients/java/jedis/
   - Redis Command Reference: https://redis.io/docs/latest/commands/
+  - Advanced Usage: advanced-usage.md
 

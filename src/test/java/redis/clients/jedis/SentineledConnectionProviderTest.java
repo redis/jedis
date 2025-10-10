@@ -53,7 +53,7 @@ public class SentineledConnectionProviderTest {
     for (int i = 0; i < 20; ++i) {
 
       try (SentineledConnectionProvider provider = new SentineledConnectionProvider(MASTER_NAME,
-          DefaultJedisClientConfig.builder().timeoutMillis(1000).password(password).database(2).build(),
+          DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
           sentinels, DefaultJedisClientConfig.builder().build())) {
 
         provider.getConnection().close();
@@ -87,9 +87,10 @@ public class SentineledConnectionProviderTest {
   public void checkCloseableConnections() throws Exception {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
 
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
-        DefaultJedisClientConfig.builder().timeoutMillis(1000).password(password).database(2).build(),
-        config, sentinels, DefaultJedisClientConfig.builder().build())) {
+    try (JedisSentineled jedis = JedisSentineled
+        .builder().masterName(MASTER_NAME).clientConfig(DefaultJedisClientConfig.builder()
+            .timeoutMillis(1000).password("foobared").database(2).build())
+        .poolConfig(config).sentinels(sentinels).build()) {
       assertSame(SentineledConnectionProvider.class, jedis.provider.getClass());
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -102,9 +103,10 @@ public class SentineledConnectionProviderTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
-        DefaultJedisClientConfig.builder().timeoutMillis(1000).password(password).database(2).build(),
-        config, sentinels, DefaultJedisClientConfig.builder().build())) {
+    try (JedisSentineled jedis = JedisSentineled
+        .builder().masterName(MASTER_NAME).clientConfig(DefaultJedisClientConfig.builder()
+            .timeoutMillis(1000).password("foobared").database(2).build())
+        .poolConfig(config).sentinels(sentinels).build()) {
 
       Connection conn = jedis.provider.getConnection();
       try {
@@ -125,12 +127,13 @@ public class SentineledConnectionProviderTest {
   @Test
   public void testResetInvalidPassword() {
     DefaultRedisCredentialsProvider credentialsProvider
-        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, password));
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "foobared"));
 
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, DefaultJedisClientConfig.builder()
-        .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
-        .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
-        sentinels, DefaultJedisClientConfig.builder().build())) {
+    try (JedisSentineled jedis = JedisSentineled.builder().masterName(MASTER_NAME)
+        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000)
+            .credentialsProvider(credentialsProvider).database(2).clientName("my_shiny_client_name")
+            .build())
+        .sentinels(sentinels).build()) {
 
       jedis.set("foo", "bar");
 
@@ -157,16 +160,17 @@ public class SentineledConnectionProviderTest {
     DefaultRedisCredentialsProvider credentialsProvider
         = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "wrong password"));
 
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, DefaultJedisClientConfig.builder()
-        .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
-        .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
-        sentinels, DefaultJedisClientConfig.builder().build())) {
+    try (JedisSentineled jedis = JedisSentineled.builder().masterName(MASTER_NAME)
+        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000)
+            .credentialsProvider(credentialsProvider).database(2).clientName("my_shiny_client_name")
+            .build())
+        .sentinels(sentinels).build()) {
 
       try (Connection conn1 = jedis.provider.getConnection()) {
         fail("Should not get resource from pool");
       } catch (JedisException e) { }
 
-      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, password));
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
 
       try (Connection conn2 = jedis.provider.getConnection()) {
         new Jedis(conn2).set("foo", "bar");

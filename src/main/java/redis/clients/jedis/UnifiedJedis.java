@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
@@ -28,13 +26,14 @@ import redis.clients.jedis.executors.*;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.MultiClusterPipeline;
-import redis.clients.jedis.mcf.MultiClusterTransaction;
+import redis.clients.jedis.mcf.MultiDbPipeline;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
@@ -172,75 +171,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    this(jedisClusterNodes, clientConfig, maxAttempts,
-        Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
-  }
-
-  @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts,
-      Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
-        clientConfig.getRedisProtocol());
-  }
-
-  @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts,
-        maxTotalRetriesDuration, clientConfig.getRedisProtocol());
-  }
-
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects());
   }
 
+  @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol);
   }
 
-  @Experimental
+  @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache cache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol, cache);
   }
 
-  /**
-   * @deprecated Sharding/Sharded feature will be removed in next major release.
-   */
-  @Deprecated
-  public UnifiedJedis(ShardedConnectionProvider provider) {
-    this(new DefaultCommandExecutor(provider), provider, new ShardedCommandObjects(provider.getHashingAlgo()));
-  }
-
-  /**
-   * @deprecated Sharding/Sharded feature will be removed in next major release.
-   */
-  @Deprecated
-  public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
-    this(new DefaultCommandExecutor(provider), provider,
-        new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern));
-  }
-
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  /**
-   * Constructor which supports multiple cluster/database endpoints each with their own isolated connection pool.
-   * <p>
-   * With this Constructor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
-   * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
-   * <p>
-   */
-  @Experimental
-  public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
-    this(new CircuitBreakerCommandExecutor(provider), provider);
   }
 
   /**
@@ -281,7 +232,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+  UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, Cache cache) {
 
     if (cache != null && protocol != RedisProtocol.RESP3) {
@@ -5093,13 +5044,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // RedisBloom commands
 
   /**
-   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   * @return pipeline object
    */
-  public PipelineBase pipelined() {
+  public AbstractPipeline pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
-    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
+    } else if (provider instanceof MultiDbConnectionProvider) {
+      return new MultiDbPipeline((MultiDbConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true, commandObjects);
     }
@@ -5119,8 +5070,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public AbstractTransaction transaction(boolean doMulti) {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
-    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, doMulti, commandObjects);
+    } else if (provider instanceof MultiDbConnectionProvider) {
+      return new MultiDbTransaction((MultiDbConnectionProvider) provider, doMulti, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
     }

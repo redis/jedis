@@ -12,9 +12,9 @@ public class ClusterCommandsTestHelper {
 
   static JedisCluster getCleanCluster(RedisProtocol protocol) {
     clearClusterData();
-    return new JedisCluster(
-        Collections.singleton(HostAndPorts.getStableClusterServers().get(0)),
-        DefaultJedisClientConfig.builder().password("cluster").protocol(protocol).build());
+
+    return JedisCluster.builder().nodes(Collections.singleton(HostAndPorts.getStableClusterServers().get(0)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").protocol(protocol).build()).build();
   }
 
   static void clearClusterData() {

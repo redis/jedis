@@ -40,7 +40,6 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 
-@Tag("integration")
 public class TokenBasedAuthenticationClusterIntegrationTests {
     private static final Logger log = LoggerFactory
             .getLogger(TokenBasedAuthenticationClusterIntegrationTests.class);

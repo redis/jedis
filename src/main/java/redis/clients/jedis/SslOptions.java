@@ -343,7 +343,7 @@ public class SslOptions {
 
         if (keystoreResource != null) {
 
-            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType==null ? KeyStore.getDefaultType() : keyStoreType);
             try (InputStream keystoreStream = keystoreResource.get()) {
                 keyStore.load(keystoreStream, keystorePassword);
             }
@@ -355,7 +355,8 @@ public class SslOptions {
 
         if (trustManagers == null && truststoreResource != null) {
 
-            KeyStore trustStore = KeyStore.getInstance(trustStoreType);
+
+            KeyStore trustStore = KeyStore.getInstance(trustStoreType == null ? KeyStore.getDefaultType() : trustStoreType);
             try (InputStream truststoreStream = truststoreResource.get()) {
                 trustStore.load(truststoreStream, truststorePassword);
             }
@@ -377,6 +378,15 @@ public class SslOptions {
      */
     public SSLParameters getSslParameters() {
         return sslParameters;
+    }
+
+
+    /**
+     * Configured ssl verify mode.
+     * @return {@link SslVerifyMode}
+     */
+    public SslVerifyMode getSslVerifyMode() {
+        return sslVerifyMode;
     }
 
     private static char[] getPassword(char[] chars) {

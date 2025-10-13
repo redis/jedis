@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -8,10 +9,16 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Timeout;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.ReflectionTestUtil;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,6 +34,8 @@ public class SentineledConnectionProviderTest {
 
   protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
+
+  private static final EndpointConfig primary = HostAndPorts.getRedisEndpoint("standalone2-primary");
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
@@ -49,6 +58,68 @@ public class SentineledConnectionProviderTest {
         provider.getConnection().close();
       }
     }
+  }
+
+  /**
+   * Ensure that getConnectionMap() does not cause connection leak. (#4323)
+   */
+  @Test
+  @Timeout( value = 1)
+  public void getConnectionMapDoesNotCauseConnectionLeak() {
+
+    ConnectionPoolConfig config = new ConnectionPoolConfig();
+    config.setMaxTotal(1);
+
+    try (SentineledConnectionProvider sut = new SentineledConnectionProvider(MASTER_NAME,
+            primary.getClientConfigBuilder().build(), config, sentinels,
+            DefaultJedisClientConfig.builder().build())) {
+
+      HostAndPort resolvedPrimary = sut.getCurrentMaster();
+      ConnectionPool pool = ReflectionTestUtil.getField(sut,"pool");
+      assertThat(pool.getNumActive(), equalTo(0));
+
+      Map<?, ?> cm = sut.getConnectionMap();
+
+      // exactly one entry for current primary
+      // and no active connections
+      assertThat(cm.size(), equalTo(1));
+      assertThat(cm, hasKey(resolvedPrimary));
+      assertThat(pool.getNumActive(), equalTo(0));
+      // primary did not change
+      assertThat(ReflectionTestUtil.getField(sut,"pool"), sameInstance(pool));
+    }
+  }
+
+  /**
+   * Ensure that getPrimaryNodesConnectionMap() does not cause connection leak. (#4323)
+   */
+  @Test
+  @Timeout( value = 1)
+  public void getPrimaryNodesConnectionMapDoesNotCauseConnectionLeak() {
+
+    ConnectionPoolConfig config = new ConnectionPoolConfig();
+    config.setMaxTotal(1);
+
+    try (SentineledConnectionProvider sut = new SentineledConnectionProvider(MASTER_NAME,
+            primary.getClientConfigBuilder().build(), config, sentinels,
+            DefaultJedisClientConfig.builder().build())) {
+
+      HostAndPort resolvedPrimary = sut.getCurrentMaster();
+      ConnectionPool pool = ReflectionTestUtil.getField(sut,"pool");
+      assertThat(pool.getNumActive(), equalTo(0));
+
+
+      Map<?, ?> cm = sut.getPrimaryNodesConnectionMap();
+
+      // exactly one entry for current primary
+      // and no active connections
+      assertThat(cm.size(), equalTo(1));
+      assertThat(cm, hasKey(resolvedPrimary));
+      assertThat(pool.getNumActive(), equalTo(0));
+      // primary did not change
+      assertThat(ReflectionTestUtil.getField(sut,"pool"), sameInstance(pool));
+    }
+
   }
 
   @Test

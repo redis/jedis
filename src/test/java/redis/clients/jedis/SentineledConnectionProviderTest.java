@@ -248,4 +248,22 @@ public class SentineledConnectionProviderTest {
       assertDoesNotThrow(() -> jedis.get("foo"));
     }
   }
+
+  @Test
+  public void testCreateJedisSentineledWithBuilder() throws InterruptedException {
+    DefaultRedisCredentialsProvider credentialsProvider
+            = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, password));
+
+    JedisSentineled jedis = JedisSentineled.builder().
+            masterName(MASTER_NAME).
+            clientConfig(DefaultJedisClientConfig.builder()
+                    .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
+                    .clientName("my_shiny_client_name").build()).readForm(ReadFrom.REPLICA_PREFERRED).readOnlyPredicate(command -> false).build();
+    Thread.sleep(1000);
+    Whitebox.setInternalState(jedis.provider, "slavePools", new ArrayList<>());
+    jedis.set("foo", "bar");
+    Thread.sleep(1000);
+    assertDoesNotThrow(() -> jedis.get("foo"));
+
+  }
 }

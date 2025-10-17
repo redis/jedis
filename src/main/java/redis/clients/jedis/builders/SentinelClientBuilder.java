@@ -4,6 +4,7 @@ import java.util.Set;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.ReadOnlyCommands;
 
 /**
  * Builder for creating JedisSentineled instances (Redis Sentinel connections).
@@ -20,6 +21,10 @@ public abstract class SentinelClientBuilder<C>
   private String masterName = null;
   private Set<HostAndPort> sentinels = null;
   private JedisClientConfig sentinelClientConfig = null;
+
+  private ReadFrom readFrom = ReadFrom.UPSTREAM;
+
+  private ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate = ReadOnlyCommands.asPredicate();
 
   /**
    * Sets the master name for the Redis Sentinel configuration.
@@ -48,6 +53,33 @@ public abstract class SentinelClientBuilder<C>
   }
 
   /**
+   * Sets the readFrom.
+   * <p>
+   * It is used to specify the policy preference of which nodes the client should read data from.
+   * It defines which type of node the client should prioritize reading data from when there are
+   * multiple Redis instances (such as master nodes and slave nodes) available in the Redis
+   * Sentinel environment.
+   * @param readFrom the read preferences
+   * @return this builder
+   */
+  public SentinelClientBuilder<C> readForm(ReadFrom readFrom) {
+    this.readFrom = readFrom;
+    return this;
+  }
+
+  /**
+   * Sets the readOnlyPredicate.
+   * <p>
+   * Check a Redis command is a read request.
+   * @param readOnlyPredicate
+   * @return this builder
+   */
+  public SentinelClientBuilder<C> readOnlyPredicate(ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+    this.readOnlyPredicate = readOnlyPredicate;
+    return this;
+  }
+
+  /**
    * Sets the client configuration for Sentinel connections.
    * <p>
    * This configuration is used for connections to the Sentinel instances. It may have different
@@ -68,7 +100,7 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom, this.readOnlyPredicate);
   }
 
   @Override

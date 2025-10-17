@@ -106,6 +106,11 @@ public class SentineledConnectionProvider implements ConnectionProvider {
             DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, readOnlyPredicate);
   }
 
+  public SentineledConnectionProvider(String masterName, JedisClientConfig clientConfig, Cache cache, GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels, JedisClientConfig sentinelClientConfig, ReadFrom readFrom, ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+    this(masterName, clientConfig, cache, poolConfig, sentinels, sentinelClientConfig,
+            DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, readOnlyPredicate);
+  }
+
   @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,

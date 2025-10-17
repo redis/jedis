@@ -102,11 +102,18 @@ public class ClusterCommandExecutor implements CommandExecutor {
     int consecutiveConnectionFailures = 0;
     Exception lastException = null;
 
+    RequiredConnectionType connectionType;
+    if (commandObject.getFlags().contains(CommandObject.CommandFlag.READONLY)) {
+        connectionType = RequiredConnectionType.REPLICA;
+    } else {
+        connectionType = RequiredConnectionType.PRIMARY;
+    }
+
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
       Connection connection = null;
       try {
         // Use round-robin distribution for keyless commands
-        connection = getNextConnection();
+        connection = getNextConnection(connectionType);
         return execute(connection, commandObject);
 
       } catch (JedisConnectionException jce) {
@@ -209,6 +216,11 @@ public class ClusterCommandExecutor implements CommandExecutor {
     throw maxAttemptsException;
   }
 
+    private enum RequiredConnectionType {
+        PRIMARY,
+        REPLICA
+    }
+  
   /**
    * Gets a connection using round-robin distribution across all cluster nodes.
    * This ensures even distribution of keyless commands across the cluster.
@@ -216,16 +228,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * @return Connection from the next node in round-robin sequence
    * @throws JedisClusterOperationException if no cluster nodes are available
    */
-  private Connection getNextConnection() {
-    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
-
-    if (connectionMap.isEmpty()) {
-      throw new JedisClusterOperationException("No cluster nodes available.");
-    }
-
-    // Convert connection map to list for round-robin access
-    List<Map.Entry<String, ConnectionPool>> nodeList = new ArrayList<>(connectionMap.entrySet());
-
+  private Connection getNextConnection(RequiredConnectionType connectionType) {
+      List<Map.Entry<String, ConnectionPool>> nodeList = selectNextConnectionPool(connectionType);
     // Select node using round-robin distribution for true unified distribution
     // Use modulo directly on the node list size to create a circular counter
     int roundRobinIndex = roundRobinCounter.getAndUpdate(current -> (current + 1) % nodeList.size());
@@ -235,7 +239,25 @@ public class ClusterCommandExecutor implements CommandExecutor {
     return pool.getResource();
   }
 
-  /**
+    private List<Map.Entry<String, ConnectionPool>> selectNextConnectionPool(RequiredConnectionType connectionType) {
+        Map<String, ConnectionPool> connectionMap;
+
+        // NOTE(imalinovskyi): If we need to connect to replica, we use all nodes, otherwise we use only primary nodes
+        if (connectionType == RequiredConnectionType.REPLICA) {
+            connectionMap = provider.getConnectionMap();
+        } else {
+            connectionMap = provider.getPrimaryNodesConnectionMap();
+        }
+
+        if (connectionMap.isEmpty()) {
+          throw new JedisClusterOperationException("No cluster nodes available.");
+        }
+
+        // Convert connection map to list for round-robin access
+        return new ArrayList<>(connectionMap.entrySet());
+    }
+
+    /**
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */

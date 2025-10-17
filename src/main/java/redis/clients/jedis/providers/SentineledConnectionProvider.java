@@ -514,6 +514,9 @@ public class SentineledConnectionProvider implements ConnectionProvider {
                   }
                   break;
                 case "+sdown":
+                  if (switchMsg.length < 6) {
+                    return;
+                  }
                   if (switchMsg[0].equals("master")) {
                     return;
                   }
@@ -536,6 +539,9 @@ public class SentineledConnectionProvider implements ConnectionProvider {
                   addSlave(new HostAndPort(slaveIp, slavePort));
                   break;
                 case "+slave":
+                  if (switchMsg.length < 8) {
+                    return;
+                  }
                   if (!masterName.equals(switchMsg[5])) {
                     return;
                   }

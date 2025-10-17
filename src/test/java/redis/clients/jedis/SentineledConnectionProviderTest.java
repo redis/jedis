@@ -260,11 +260,11 @@ public class SentineledConnectionProviderTest {
             .masterName(MASTER_NAME)
             .clientConfig(DefaultJedisClientConfig.builder()
                     .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
-                    .clientName("my_shiny_client_name").build()).readForm(ReadFrom.REPLICA_PREFERRED).readOnlyPredicate(command -> false)
+                    .clientName("my_shiny_client_name").build())
+            .readForm(ReadFrom.REPLICA_PREFERRED)
             .sentinels(sentinels)
             .build();
-    Thread.sleep(1000);
-    Whitebox.setInternalState(jedis.provider, "slavePools", new ArrayList<>());
+
     jedis.set("foo", "bar");
     Thread.sleep(1000);
     assertDoesNotThrow(() -> jedis.get("foo"));

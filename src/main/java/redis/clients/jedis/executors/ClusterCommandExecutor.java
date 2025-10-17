@@ -51,7 +51,13 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    Map<String, ConnectionPool> connectionMap = provider.getPrimaryNodesConnectionMap();
+    Map<String, ConnectionPool> connectionMap;
+
+    if (commandObject.getFlags().contains(CommandObject.CommandFlag.READONLY)) {
+        connectionMap = provider.getConnectionMap();
+    } else {
+        connectionMap = provider.getPrimaryNodesConnectionMap();
+    }
 
     boolean isErrored = false;
     T reply = null;

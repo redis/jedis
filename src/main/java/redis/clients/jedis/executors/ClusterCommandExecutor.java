@@ -104,9 +104,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
     RequiredConnectionType connectionType;
     if (commandObject.getFlags().contains(CommandObject.CommandFlag.READONLY)) {
-        connectionType = RequiredConnectionType.REPLICA;
+      connectionType = RequiredConnectionType.REPLICA;
     } else {
-        connectionType = RequiredConnectionType.PRIMARY;
+      connectionType = RequiredConnectionType.PRIMARY;
     }
 
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
@@ -125,15 +125,18 @@ public class ClusterCommandExecutor implements CommandExecutor {
           continue;
         }
 
-        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures,
+          deadline);
         if (reset) {
           consecutiveConnectionFailures = 0;
         }
       } catch (JedisRedirectionException jre) {
-        // For keyless commands, we don't follow redirections since we're not targeting a specific slot
+        // For keyless commands, we don't follow redirections since we're not targeting a specific
+        // slot
         // Just retry with a different random node
         lastException = jre;
-        log.debug("Received redirection for keyless command, retrying with different node: {}", jre.getMessage());
+        log.debug("Received redirection for keyless command, retrying with different node: {}",
+          jre.getMessage());
         consecutiveConnectionFailures = 0;
       } finally {
         IOUtils.closeQuietly(connection);
@@ -143,8 +146,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
       }
     }
 
-    JedisClusterOperationException maxAttemptsException
-        = new JedisClusterOperationException("No more cluster attempts left.");
+    JedisClusterOperationException maxAttemptsException = new JedisClusterOperationException(
+        "No more cluster attempts left.");
     maxAttemptsException.addSuppressed(lastException);
     throw maxAttemptsException;
   }
@@ -216,46 +219,47 @@ public class ClusterCommandExecutor implements CommandExecutor {
     throw maxAttemptsException;
   }
 
-    private enum RequiredConnectionType {
-        PRIMARY,
-        REPLICA
-    }
-  
+  private enum RequiredConnectionType {
+    PRIMARY, REPLICA
+  }
+
   /**
-   * Gets a connection using round-robin distribution across all cluster nodes.
-   * This ensures even distribution of keyless commands across the cluster.
-   *
+   * Gets a connection using round-robin distribution across all cluster nodes. This ensures even
+   * distribution of keyless commands across the cluster.
    * @return Connection from the next node in round-robin sequence
    * @throws JedisClusterOperationException if no cluster nodes are available
    */
   private Connection getNextConnection(RequiredConnectionType connectionType) {
-      List<Map.Entry<String, ConnectionPool>> nodeList = selectNextConnectionPool(connectionType);
+    List<Map.Entry<String, ConnectionPool>> nodeList = selectNextConnectionPool(connectionType);
     // Select node using round-robin distribution for true unified distribution
     // Use modulo directly on the node list size to create a circular counter
-    int roundRobinIndex = roundRobinCounter.getAndUpdate(current -> (current + 1) % nodeList.size());
+    int roundRobinIndex = roundRobinCounter
+        .getAndUpdate(current -> (current + 1) % nodeList.size());
     Map.Entry<String, ConnectionPool> selectedEntry = nodeList.get(roundRobinIndex);
     ConnectionPool pool = selectedEntry.getValue();
 
     return pool.getResource();
   }
 
-    private List<Map.Entry<String, ConnectionPool>> selectNextConnectionPool(RequiredConnectionType connectionType) {
-        Map<String, ConnectionPool> connectionMap;
+  private List<Map.Entry<String, ConnectionPool>> selectNextConnectionPool(
+      RequiredConnectionType connectionType) {
+    Map<String, ConnectionPool> connectionMap;
 
-        // NOTE(imalinovskyi): If we need to connect to replica, we use all nodes, otherwise we use only primary nodes
-        if (connectionType == RequiredConnectionType.REPLICA) {
-            connectionMap = provider.getConnectionMap();
-        } else {
-            connectionMap = provider.getPrimaryNodesConnectionMap();
-        }
-
-        if (connectionMap.isEmpty()) {
-          throw new JedisClusterOperationException("No cluster nodes available.");
-        }
-
-        // Convert connection map to list for round-robin access
-        return new ArrayList<>(connectionMap.entrySet());
+    // NOTE(imalinovskyi): If we need to connect to replica, we use all nodes, otherwise we use only
+    // primary nodes
+    if (connectionType == RequiredConnectionType.REPLICA) {
+      connectionMap = provider.getConnectionMap();
+    } else {
+      connectionMap = provider.getPrimaryNodesConnectionMap();
     }
+
+    if (connectionMap.isEmpty()) {
+      throw new JedisClusterOperationException("No cluster nodes available.");
+    }
+
+    // Convert connection map to list for round-robin access
+    return new ArrayList<>(connectionMap.entrySet());
+  }
 
     /**
    * WARNING: This method is accessible for the purpose of testing.
@@ -268,7 +272,6 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   /**
    * Related values should be reset if <code>TRUE</code> is returned.
-   *
    * @param attemptsLeft
    * @param consecutiveConnectionFailures
    * @param doneDeadline

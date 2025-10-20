@@ -55,10 +55,10 @@ public abstract class SentinelClientBuilder<C>
   /**
    * Sets the readFrom.
    * <p>
-   * It is used to specify the policy preference of which nodes the client should read data from.
-   * It defines which type of node the client should prioritize reading data from when there are
-   * multiple Redis instances (such as master nodes and slave nodes) available in the Redis
-   * Sentinel environment.
+   * It is used to specify the policy preference of which nodes the client should read data from. It
+   * defines which type of node the client should prioritize reading data from when there are
+   * multiple Redis instances (such as master nodes and slave nodes) available in the Redis Sentinel
+   * environment.
    * @param readFrom the read preferences
    * @return this builder
    */
@@ -74,7 +74,8 @@ public abstract class SentinelClientBuilder<C>
    * @param readOnlyPredicate
    * @return this builder
    */
-  public SentinelClientBuilder<C> readOnlyPredicate(ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+  public SentinelClientBuilder<C> readOnlyPredicate(
+      ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
     this.readOnlyPredicate = readOnlyPredicate;
     return this;
   }
@@ -100,7 +101,8 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom, this.readOnlyPredicate);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom,
+        this.readOnlyPredicate);
   }
 
   @Override

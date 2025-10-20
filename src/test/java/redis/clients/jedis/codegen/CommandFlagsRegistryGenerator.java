@@ -134,7 +134,7 @@ public class CommandFlagsRegistryGenerator {
   }
 
   private Map<String, List<String>> retrieveCommandsFromRedis() {
-    Map<String, List<String>> result = new LinkedHashMap<String, List<String>>();
+    Map<String, List<String>> result = new LinkedHashMap<>();
 
     try (Jedis jedis = new Jedis(redisHost, redisPort)) {
       jedis.connect();
@@ -147,7 +147,7 @@ public class CommandFlagsRegistryGenerator {
         String commandName = normalizeCommandName(cmdInfo.getName());
 
         // Get flags
-        List<String> flags = new ArrayList<String>();
+        List<String> flags = new ArrayList<>();
         if (cmdInfo.getFlags() != null) {
           for (String flag : cmdInfo.getFlags()) {
             flags.add(flag.toLowerCase());
@@ -170,7 +170,7 @@ public class CommandFlagsRegistryGenerator {
             }
 
             // Get subcommand flags
-            List<String> subFlags = new ArrayList<String>();
+            List<String> subFlags = new ArrayList<>();
             if (subCmdInfo.getFlags() != null) {
               for (String flag : subCmdInfo.getFlags()) {
                 subFlags.add(flag.toLowerCase());
@@ -243,7 +243,7 @@ public class CommandFlagsRegistryGenerator {
     @SuppressWarnings("unchecked")
     Map<String, List<String>> parsed = gson.fromJson(jsonContent, Map.class);
 
-    return new LinkedHashMap<String, List<String>>(parsed);
+    return new LinkedHashMap<>(parsed);
   }
 
   private Map<FlagSet, List<String>> groupByFlags(Map<String, List<String>> commandsFlags) {

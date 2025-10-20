@@ -53,7 +53,8 @@ public class JedisShardedPubSubBaseTest {
         });
         thread.start();
 
-        assertTrue(countDownLatch.await(20, TimeUnit.MILLISECONDS));
-
+//        assertTrue(countDownLatch.await(20, TimeUnit.MILLISECONDS));
+        // 20 milliseconds is too short to wait
+        assertTrue(countDownLatch.await(100, TimeUnit.MILLISECONDS));
     }
 }

@@ -2,6 +2,7 @@ package redis.clients.jedis.providers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.ReadOnlyCommands;
+import redis.clients.jedis.util.Pool;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
   class PoolInfo {
@@ -226,6 +228,16 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       default:
         return pool.getResource();
     }
+  }
+
+  @Override
+  public Map<?, Pool<Connection>> getConnectionMap() {
+    return Collections.singletonMap(currentMaster, pool);
+  }
+
+  @Override
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return Collections.singletonMap(currentMaster, pool);
   }
 
   @Override

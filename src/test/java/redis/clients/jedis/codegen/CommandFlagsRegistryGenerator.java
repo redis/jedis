@@ -2,6 +2,7 @@ package redis.clients.jedis.codegen;
 
 import com.google.gson.Gson;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Module;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
@@ -10,25 +11,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Code generator for CommandObject flags registry. This generator connects to a Redis server,
- * retrieves all command metadata using the COMMAND command, and automatically updates the static
- * initializer block in CommandObject.java with the complete command-to-flags mapping. Usage: java
- * -cp ... redis.clients.jedis.codegen.CommandFlagsRegistryGenerator [host] [port] Arguments: host -
+ * Code generator for StaticCommandFlagsRegistry. This generator connects to a Redis server,
+ * retrieves all command metadata using the COMMAND command, and automatically generates the
+ * StaticCommandFlagsRegistry class that implements CommandFlagsRegistry interface. Usage: java -cp
+ * ... redis.clients.jedis.codegen.CommandFlagsRegistryGenerator [host] [port] Arguments: host -
  * Redis server hostname (default: localhost) port - Redis server port (default: 6379) Note: This is
  * a code generation tool and should NOT be executed as part of regular tests.
  */
 public class CommandFlagsRegistryGenerator {
 
-  private static final String JAVA_FILE = "src/main/java/redis/clients/jedis/CommandObject.java";
+  private static final String JAVA_FILE = "src/main/java/redis/clients/jedis/StaticCommandFlagsRegistry.java";
   private static final String BACKUP_JSON_FILE = "redis_commands_flags.json";
 
   private final String redisHost;
   private final int redisPort;
+
+  // Server metadata collected during generation
+  private ServerMetadata serverMetadata;
 
   // Map JSON flag names to Java enum names
   private static final Map<String, String> FLAG_MAPPING = new LinkedHashMap<>();
@@ -64,7 +66,7 @@ public class CommandFlagsRegistryGenerator {
 
   public static void main(String[] args) {
     printLine();
-    System.out.println("CommandObject Flags Registry Generator");
+    System.out.println("StaticCommandFlagsRegistry Generator");
     printLine();
 
     // Parse command line arguments
@@ -122,15 +124,15 @@ public class CommandFlagsRegistryGenerator {
     Map<FlagSet, List<String>> flagCombinations = groupByFlags(commandsFlags);
     System.out.println("✓ Found " + flagCombinations.size() + " unique flag combinations");
 
-    // Step 3: Generate static initializer block
-    System.out.println("\nStep 3: Generating static initializer block...");
-    String staticBlock = generateStaticBlock(flagCombinations);
-    System.out.println("✓ Generated " + staticBlock.split("\n").length + " lines of code");
+    // Step 3: Generate StaticCommandFlagsRegistry class
+    System.out.println("\nStep 3: Generating StaticCommandFlagsRegistry class...");
+    String classContent = generateRegistryClass(flagCombinations);
+    System.out.println("✓ Generated " + classContent.split("\n").length + " lines of code");
 
-    // Step 4: Update CommandObject.java
-    System.out.println("\nStep 4: Updating " + JAVA_FILE + "...");
-    updateJavaFile(staticBlock);
-    System.out.println("✓ Successfully updated CommandObject.java");
+    // Step 4: Write StaticCommandFlagsRegistry.java
+    System.out.println("\nStep 4: Writing " + JAVA_FILE + "...");
+    writeJavaFile(classContent);
+    System.out.println("✓ Successfully created StaticCommandFlagsRegistry.java");
   }
 
   private Map<String, List<String>> retrieveCommandsFromRedis() {
@@ -138,6 +140,25 @@ public class CommandFlagsRegistryGenerator {
 
     try (Jedis jedis = new Jedis(redisHost, redisPort)) {
       jedis.connect();
+
+      // Collect server metadata
+      String infoServer = jedis.info("server");
+      String version = extractInfoValue(infoServer, "redis_version");
+      String mode = extractInfoValue(infoServer, "redis_mode");
+
+      // Get loaded modules
+      List<String> modules = new ArrayList<>();
+      try {
+        List<Module> moduleList = jedis.moduleList();
+        for (Module module : moduleList) {
+          modules.add(module.getName());
+        }
+      } catch (Exception e) {
+        // Module list might not be available in all Redis versions
+        System.out.println("  Note: Could not retrieve module list: " + e.getMessage());
+      }
+
+      serverMetadata = new ServerMetadata(version, mode, modules);
 
       // Get all commands using COMMAND
       Map<String, redis.clients.jedis.resps.CommandInfo> commands = jedis.command();
@@ -218,6 +239,16 @@ public class CommandFlagsRegistryGenerator {
     return commandName.startsWith("FT.DEBUG ") || commandName.startsWith("_FT.DEBUG ");
   }
 
+  private String extractInfoValue(String info, String key) {
+    String[] lines = info.split("\n");
+    for (String line : lines) {
+      if (line.startsWith(key + ":")) {
+        return line.substring(key.length() + 1).trim();
+      }
+    }
+    return "unknown";
+  }
+
   private void saveToJsonFile(Map<String, List<String>> commandsFlags) throws IOException {
     Gson gson = new Gson();
     String json = gson.toJson(commandsFlags);
@@ -264,8 +295,55 @@ public class CommandFlagsRegistryGenerator {
     return result;
   }
 
-  private String generateStaticBlock(Map<FlagSet, List<String>> flagCombinations) {
+  private String generateRegistryClass(Map<FlagSet, List<String>> flagCombinations) {
     StringBuilder sb = new StringBuilder();
+
+    // Package and imports
+    sb.append("package redis.clients.jedis;\n\n");
+    sb.append("import java.util.EnumSet;\n");
+    sb.append("import java.util.HashMap;\n");
+    sb.append("import java.util.Map;\n");
+    sb.append("import redis.clients.jedis.commands.ProtocolCommand;\n");
+    sb.append("import redis.clients.jedis.util.SafeEncoder;\n\n");
+
+    // Class javadoc
+    sb.append("/**\n");
+    sb.append(" * Static implementation of CommandFlagsRegistry.\n");
+    sb.append(" * This class is auto-generated by CommandFlagsRegistryGenerator.\n");
+    sb.append(" * DO NOT EDIT MANUALLY.\n");
+    sb.append(" *\n");
+
+    // Add server metadata if available
+    if (serverMetadata != null) {
+      sb.append(" * Generated from Redis Server:\n");
+      sb.append(" * - Version: ").append(serverMetadata.version).append("\n");
+      sb.append(" * - Mode: ").append(serverMetadata.mode).append("\n");
+      if (!serverMetadata.modules.isEmpty()) {
+        sb.append(" * - Loaded Modules: ").append(String.join(", ", serverMetadata.modules))
+            .append("\n");
+      } else {
+        sb.append(" * - Loaded Modules: none\n");
+      }
+      sb.append(" * - Generated at: ").append(serverMetadata.generatedAt).append("\n");
+    }
+
+    sb.append(" */\n");
+    sb.append("public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {\n\n");
+
+    // Empty flags constant
+    sb.append("  // Empty flags constant for commands with no flags\n");
+    sb.append(
+      "  private static final EnumSet<CommandFlag> EMPTY_FLAGS = EnumSet.noneOf(CommandFlag.class);\n\n");
+
+    // Command flags registry map
+    sb.append("  // Command flags registry - maps command names to their flags\n");
+    sb.append(
+      "  // Command names are stored in uppercase with original spacing/dots (e.g., GET, FT.SEARCH, FUNCTION DELETE)\n");
+    sb.append("  // Registry uses shared EnumSet instances to minimize memory usage\n");
+    sb.append(
+      "  private static final Map<String, EnumSet<CommandFlag>> COMMAND_FLAGS_REGISTRY = new HashMap<>();\n\n");
+
+    // Static initializer block
     sb.append("  static {\n");
 
     // Sort by flag count, then alphabetically
@@ -296,7 +374,29 @@ public class CommandFlagsRegistryGenerator {
       sb.append("\n");
     }
 
-    sb.append("  }");
+    sb.append("  }\n\n");
+
+    // getFlags method implementation
+    sb.append("  /**\n");
+    sb.append(
+      "   * Get the flags for a given command. Flags are looked up from a static registry based on the command name.\n");
+    sb.append(
+      "   * This approach significantly reduces memory usage by sharing flag instances across all CommandObject instances.\n");
+    sb.append("   *\n");
+    sb.append("   * @param cmd the protocol command\n");
+    sb.append(
+      "   * @return EnumSet of CommandFlag for this command, or empty set if command has no flags\n");
+    sb.append("   */\n");
+    sb.append("  @Override\n");
+    sb.append("  public EnumSet<CommandFlag> getFlags(ProtocolCommand cmd) {\n");
+    sb.append("    byte[] raw = cmd.getRaw();\n");
+    sb.append("    String commandName = SafeEncoder.encode(raw).toUpperCase();\n");
+    sb.append("    return COMMAND_FLAGS_REGISTRY.getOrDefault(commandName, EMPTY_FLAGS);\n");
+    sb.append("  }\n");
+
+    // Close class
+    sb.append("}\n");
+
     return sb.toString();
   }
 
@@ -312,31 +412,11 @@ public class CommandFlagsRegistryGenerator {
     }
   }
 
-  private void updateJavaFile(String staticBlock) throws IOException {
+  private void writeJavaFile(String classContent) throws IOException {
     Path javaPath = Paths.get(JAVA_FILE);
-    if (!Files.exists(javaPath)) {
-      throw new IOException("File not found: " + JAVA_FILE);
-    }
-
-    // JDK 8 compatible: read file as bytes and convert to string
-    byte[] bytes = Files.readAllBytes(javaPath);
-    String content = new String(bytes, StandardCharsets.UTF_8);
-
-    // Pattern to match the static block after COMMAND_FLAGS_REGISTRY declaration
-    Pattern pattern = Pattern.compile(
-      "(private static final Map<String, EnumSet<CommandFlag>> COMMAND_FLAGS_REGISTRY = new HashMap<>\\(\\);)\\s*\\n\\s*static \\{.*?\\n {2}}",
-      Pattern.DOTALL);
-
-    Matcher matcher = pattern.matcher(content);
-    if (!matcher.find()) {
-      throw new IOException("Could not find static block pattern in " + JAVA_FILE);
-    }
-
-    String replacement = "$1\n\n" + staticBlock;
-    String newContent = matcher.replaceFirst(replacement);
 
     // JDK 8 compatible: write string as bytes
-    Files.write(javaPath, newContent.getBytes(StandardCharsets.UTF_8));
+    Files.write(javaPath, classContent.getBytes(StandardCharsets.UTF_8));
   }
 
   /**
@@ -367,6 +447,24 @@ public class CommandFlagsRegistryGenerator {
     @Override
     public String toString() {
       return flags.toString();
+    }
+  }
+
+  /**
+   * Holds metadata about the Redis server used for generation
+   */
+  private static class ServerMetadata {
+    final String version;
+    final String mode;
+    final List<String> modules;
+    final String generatedAt;
+
+    ServerMetadata(String version, String mode, List<String> modules) {
+      this.version = version;
+      this.mode = mode;
+      this.modules = modules;
+      this.generatedAt = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")
+          .format(new java.util.Date());
     }
   }
 }

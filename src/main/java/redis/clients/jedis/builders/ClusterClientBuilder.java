@@ -24,6 +24,7 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
   private Duration maxTotalRetriesDuration = Duration
       .ofMillis(JedisCluster.DEFAULT_TIMEOUT * JedisCluster.DEFAULT_MAX_ATTEMPTS);
   private Duration topologyRefreshPeriod = null;
+  private CommandFlagsRegistry commandFlags = null;
 
   /**
    * Sets the cluster nodes to connect to.
@@ -78,6 +79,16 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
     return this;
   }
 
+  /**
+   * Overrides the default command flags registry.
+   * @param commandFlags custom command flags registry
+   * @return this builder
+   */
+  public ClusterClientBuilder<C> commandFlags(CommandFlagsRegistry commandFlags) {
+    this.commandFlags = commandFlags;
+    return this;
+  }
+
   @Override
   protected ClusterClientBuilder<C> self() {
     return this;
@@ -89,10 +100,22 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
         this.topologyRefreshPeriod);
   }
 
+  /**
+   * Creates a default command flags registry based on the current configuration.
+   * @return CommandFlagsRegistry
+   */
+  protected CommandFlagsRegistry createDefaultCommandFlagsRegistry() {
+    return new StaticCommandFlagsRegistry();
+  }
+
   @Override
   protected CommandExecutor createDefaultCommandExecutor() {
+    if (this.commandFlags == null) {
+      this.commandFlags = createDefaultCommandFlagsRegistry();
+    }
+
     return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
-        this.maxAttempts, this.maxTotalRetriesDuration);
+        this.maxAttempts, this.maxTotalRetriesDuration, this.commandFlags);
   }
 
   @Override

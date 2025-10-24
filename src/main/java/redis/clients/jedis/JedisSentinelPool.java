@@ -407,8 +407,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
         } catch (JedisException e) {
 
           if (running.get()) {
-            LOG.warn("Lost connection to Sentinel at {}:{}. Sleeping 5000ms and retrying.", host,
-              port, e);
+            LOG.warn("Lost connection to Sentinel {}:{}. Sleeping {}ms and retrying.", host, port, subscribeRetryWaitTimeMillis,
+                    e);
             try {
               Thread.sleep(subscribeRetryWaitTimeMillis);
             } catch (InterruptedException e1) {

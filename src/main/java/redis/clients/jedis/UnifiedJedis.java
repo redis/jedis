@@ -172,21 +172,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Deprecated
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, new StaticCommandFlagsRegistry()), provider,
         new ClusterCommandObjects());
   }
 
   @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, new StaticCommandFlagsRegistry()), provider,
         new ClusterCommandObjects(), protocol);
   }
 
   @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache cache) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, new StaticCommandFlagsRegistry()), provider,
         new ClusterCommandObjects(), protocol, cache);
   }
 

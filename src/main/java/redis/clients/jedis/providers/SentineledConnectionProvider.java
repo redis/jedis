@@ -310,7 +310,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         } catch (JedisException e) {
 
           if (running.get()) {
-            LOG.error("Lost connection to sentinel {}. Sleeping {}ms and retrying.", node,
+            LOG.error("Lost connection to Sentinel {}. Sleeping {}ms and retrying.", node,
                 subscribeRetryWaitTimeMillis, e);
             try {
               Thread.sleep(subscribeRetryWaitTimeMillis);

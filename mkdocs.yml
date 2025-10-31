@@ -1,0 +1,53 @@
+site_name: Jedis
+repo_name: Jedis
+site_author: Redis, Inc.
+site_description: Jedis is a Redis client for the JVM.
+repo_url: https://github.com/redis/jedis
+remote_branch: gh-pages
+
+theme:
+  name: material
+  logo: assets/images/logo.png
+  favicon: assets/images/favicon-16x16.png
+extra_css:
+  - css/extra.css
+
+plugins:
+  - search
+  - macros:
+      include_dir: .
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+
+nav:
+  - Home: index.md
+  - Jedis Maven: jedis-maven.md
+  - Migrating to newer versions:
+      - Jedis 7: migration-guides/v6-to-v7.md
+      - Jedis 6: migration-guides/v5-to-v6.md
+      - Jedis 5: migration-guides/v4-to-v5.md
+      - Jedis 4:
+        - Breaking changes: migration-guides/v3-to-v4.md
+        - Primitives: migration-guides/v3-to-v4-primitives.md
+        - ZSET: migration-guides/v3-to-v4-zset-list.md
+  - Using Jedis with ...:
+    - Search: redisearch.md
+    - JSON: redisjson.md
+  - Failover: failover.md
+  - Verifying artifacts: verifying-artifacts.md
+  - FAQ: faq.md
+  - API Reference: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
+  - Tutorials and Examples:  tutorials_examples.md
+  - Jedis Guide: https://redis.io/docs/latest/develop/connect/clients/java/jedis/
+  - Redis Command Reference: https://redis.io/docs/latest/commands/
+  - Advanced Usage: advanced-usage.md
+

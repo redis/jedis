@@ -6,24 +6,23 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.util.GeoCoordinateMatcher.atCoordinates;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.GeoUnit;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -31,7 +30,8 @@ import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -180,14 +180,12 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.sync();
 
-    assertThat(coordinates.get(), contains(
-        atCoordinates(3.0, 4.0),
+    assertThat(coordinates.get(), contains(atCoordinates(3.0, 4.0),
         atCoordinates(2.0, 3.0),
         null
     ));
 
-    assertThat(bcoordinates.get(), contains(
-        atCoordinates(3.0, 4.0),
+    assertThat(bcoordinates.get(), contains(atCoordinates(3.0, 4.0),
         atCoordinates(2.0, 3.0),
         null
     ));
@@ -798,24 +796,28 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
         contains(0L));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void geosearchSearchParamCombineFromMemberAndFromLonLat() {
-    pipe.geosearch("barcelona", new GeoSearchParam().fromMember("foobar").fromLonLat(10, 10));
+    assertThrows(IllegalArgumentException.class, () -> pipe.geosearch("barcelona",
+        new GeoSearchParam().fromMember("foobar").fromLonLat(10, 10)));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void geosearchSearchParamWithoutFromMemberAndFromLonLat() {
-    pipe.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI));
+    assertThrows(IllegalArgumentException.class,
+        () -> pipe.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI)));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void geosearchSearchParamCombineByRadiousAndByBox() {
-    pipe.geosearch("barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
+    assertThrows(IllegalArgumentException.class, () -> pipe.geosearch("barcelona",
+        new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M)));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void geosearchSearchParamWithoutByRadiousAndByBox() {
-    pipe.geosearch("barcelona", new GeoSearchParam().fromMember("foobar"));
+    assertThrows(IllegalArgumentException.class,
+        () -> pipe.geosearch("barcelona", new GeoSearchParam().fromMember("foobar")));
   }
 
   @Test

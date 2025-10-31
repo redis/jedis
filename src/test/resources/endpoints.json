@@ -1,4 +1,16 @@
 {
+  "redis-failover-1": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:29379"
+    ]
+  },
+  "redis-failover-2": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:29380"
+    ]
+  },
   "standalone0": {
     "password": "foobared",
     "tls": false,
@@ -10,6 +22,7 @@
     "username": "default",
     "password": "foobared",
     "tls": true,
+    "certificatesLocation": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
     ]
@@ -26,6 +39,7 @@
     "username": "acljedis",
     "password": "fizzbuzz",
     "tls": true,
+    "certificatesLocation": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
     ]

@@ -1,11 +1,12 @@
 package redis.clients.jedis.misc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.resps.GeoRadiusResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ResponsesToStringTest {
 
@@ -23,7 +24,7 @@ public class ResponsesToStringTest {
     response_copy.setCoordinate(new GeoCoordinate(2, 3));
     response_copy.setRawScore(10);
 
-    assertEquals(response, response);
+    assertTrue(response.equals(response));
     assertEquals(response, response_copy);
     assertNotEquals(response, new Object());
   }

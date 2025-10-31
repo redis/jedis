@@ -1,21 +1,24 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@Tag("integration")
 public class UnavailableConnectionTest {
 
   private static final HostAndPort unavailableNode = new HostAndPort("localhost", 6400);
 
-  @BeforeClass
+  @BeforeAll
   public static void setup() {
     setupAvoidQuitInDestroyObject();
 
@@ -47,7 +50,8 @@ public class UnavailableConnectionTest {
     threadForBrokenJedis1.start();
   }
 
-  @Test(timeout = 5000)
+  @Test
+  @Timeout(5)
   public void testAvoidQuitInDestroyObjectForBrokenConnection() throws InterruptedException {
     threadForBrokenJedis1.join();
     assertFalse(threadForBrokenJedis1.isAlive());
@@ -59,9 +63,6 @@ public class UnavailableConnectionTest {
       fail("Should not get connection from pool");
     } catch (Exception ex) {
       assertSame(JedisConnectionException.class, ex.getClass());
-      // assertSame(JedisConnectionException.class, ex.getCause().getClass());
-      // assertSame(java.net.ConnectException.class, ex.getCause().getCause().getClass());
-      // assertSame(java.net.ConnectException.class, ex.getCause().getClass());
     }
   }
 

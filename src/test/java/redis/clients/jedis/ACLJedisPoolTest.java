@@ -1,36 +1,43 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.time.Duration;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.RedisVersionUtil;
+import redis.clients.jedis.util.RedisVersionCondition;
 
 /**
  * This test class is a copy of {@link JedisPoolTest}.
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
+@SinceRedisVersion("6.0.0")
+@Tag("integration")
 public class ACLJedisPoolTest {
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 
   private static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0");
 
-  @BeforeClass
-  public static void prepare() throws Exception {
-    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
-  }
+  @RegisterExtension
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
 
   @Test
   public void checkConnections() {
@@ -114,7 +121,7 @@ public class ACLJedisPoolTest {
     assertTrue(pool.isClosed());
   }
 
-  @Test(expected = JedisException.class)
+  @Test
   public void checkPoolOverflow() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
@@ -123,9 +130,11 @@ public class ACLJedisPoolTest {
         Jedis jedis = pool.getResource()) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
 
-      try (Jedis jedis2 = pool.getResource()) {
-        jedis2.auth(endpoint.getUsername(), endpoint.getPassword());
-      }
+      assertThrows(JedisException.class, () -> {
+        try (Jedis jedis2 = pool.getResource()) {
+          jedis2.auth(endpoint.getUsername(), endpoint.getPassword());
+        }
+      });
     }
   }
 
@@ -205,9 +214,11 @@ public class ACLJedisPoolTest {
     }
   }
 
-  @Test(expected = InvalidURIException.class)
-  public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    new JedisPool(new URI("localhost:6379")).close();
+  @Test
+  public void shouldThrowInvalidURIExceptionForInvalidURI() {
+    assertThrows(InvalidURIException.class, () -> {
+      new JedisPool(new URI("redis://localhost:")).close();
+    });
   }
 
   @Test
@@ -230,7 +241,7 @@ public class ACLJedisPoolTest {
       jedis0.close();
 
       Jedis jedis1 = pool.getResource();
-      assertTrue("Jedis instance was not reused", jedis1 == jedis0);
+      assertSame(jedis1, jedis0);
       assertEquals(0, jedis1.getDB());
 
       jedis1.close();
@@ -265,12 +276,11 @@ public class ACLJedisPoolTest {
         Jedis jedis = new Jedis(endpointWithDefaultUser.getURIBuilder()
             .credentials("", endpointWithDefaultUser.getPassword()).build())) {
       int currentClientCount = getClientCount(jedis.clientList());
-      try {
-        pool.getResource();
-        fail("Should throw exception as password is incorrect.");
-      } catch (Exception e) {
-        assertEquals(currentClientCount, getClientCount(jedis.clientList()));
-      }
+      assertThrows(JedisAccessControlException.class, pool::getResource);
+      // wait for the redis server to close the connection
+      await().pollDelay(Duration.ofMillis(10)).atMost(500, MILLISECONDS)
+          .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
+      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
   }
 

@@ -1,7 +1,8 @@
 package redis.clients.jedis.modules;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.Baz;
 import static redis.clients.jedis.modules.json.JsonObjects.IRLObject;
@@ -14,11 +15,10 @@ import java.util.Map;
 import java.util.Collections;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
@@ -29,12 +29,13 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
@@ -99,7 +100,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(protocol == RedisProtocol.RESP3);
 
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");

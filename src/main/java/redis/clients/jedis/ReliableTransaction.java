@@ -13,12 +13,11 @@ import java.util.Queue;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
  * A transaction where commands are immediately sent to Redis server and the {@code QUEUED} reply checked.
  */
-public class ReliableTransaction extends TransactionBase {
+public class ReliableTransaction extends AbstractTransaction {
 
   private static final String QUEUED_STR = "QUEUED";
 
@@ -82,9 +81,6 @@ public class ReliableTransaction extends TransactionBase {
     super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
-    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
-    setGraphCommands(graphCommandObjects);
     if (doMulti) multi();
   }
 

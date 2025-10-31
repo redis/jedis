@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
@@ -25,18 +23,17 @@ import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.gears.TFunctionListParams;
-import redis.clients.jedis.gears.TFunctionLoadParams;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.mcf.MultiDbCommandExecutor;
+import redis.clients.jedis.params.VAddParams;
+import redis.clients.jedis.params.VSimParams;
+import redis.clients.jedis.resps.RawVector;
 import redis.clients.jedis.json.JsonObjectMapper;
-import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.mcf.MultiClusterPipeline;
-import redis.clients.jedis.mcf.MultiClusterTransaction;
+import redis.clients.jedis.mcf.MultiDbPipeline;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
@@ -59,7 +56,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
-  private final GraphCommandObjects graphCommandObjects;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
@@ -82,6 +78,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
+  /**
+   * Create a new UnifiedJedis with the provided URI and JedisClientConfig object. Note that all fields
+   * that can be parsed from the URI will be used instead of the corresponding configuration values. This includes
+   * the following fields: user, password, database, protocol version, and whether to use SSL.
+   *
+   * For example, if the URI is "redis://user:password@localhost:6379/1", the user and password fields will be set
+   * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
+   * from the JedisClientConfig object.
+   *
+   * @param uri The URI to connect to
+   * @param config The JedisClientConfig object to use
+   */
   public UnifiedJedis(final URI uri, JedisClientConfig config) {
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
@@ -155,7 +163,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (proto != null) {
       this.commandObjects.setProtocol(proto);
     }
-    this.graphCommandObjects = new GraphCommandObjects(this);
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
     } else {
@@ -164,75 +171,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    this(jedisClusterNodes, clientConfig, maxAttempts,
-        Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
-  }
-
-  @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts,
-      Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
-        clientConfig.getRedisProtocol());
-  }
-
-  @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts,
-        maxTotalRetriesDuration, clientConfig.getRedisProtocol());
-  }
-
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects());
   }
 
+  @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol);
   }
 
-  @Experimental
+  @Deprecated
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache cache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol, cache);
   }
 
-  /**
-   * @deprecated Sharding/Sharded feature will be removed in next major release.
-   */
-  @Deprecated
-  public UnifiedJedis(ShardedConnectionProvider provider) {
-    this(new DefaultCommandExecutor(provider), provider, new ShardedCommandObjects(provider.getHashingAlgo()));
-  }
-
-  /**
-   * @deprecated Sharding/Sharded feature will be removed in next major release.
-   */
-  @Deprecated
-  public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
-    this(new DefaultCommandExecutor(provider), provider,
-        new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern));
-  }
-
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  /**
-   * Constructor which supports multiple cluster/database endpoints each with their own isolated connection pool.
-   * <p>
-   * With this Constructor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
-   * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
-   * <p>
-   */
-  @Experimental
-  public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
-    this(new CircuitBreakerCommandExecutor(provider), provider);
   }
 
   /**
@@ -273,7 +232,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+  UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, Cache cache) {
 
     if (cache != null && protocol != RedisProtocol.RESP3) {
@@ -288,8 +247,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       this.commandObjects.setProtocol(protocol);
     }
 
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
     this.cache = cache;
   }
 
@@ -338,6 +295,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return checkAndBroadcastCommand(commandObjects.ping());
   }
 
+  public String echo(String string) {
+    return executeCommand(commandObjects.echo(string));
+  }
+
   public String flushDB() {
     return checkAndBroadcastCommand(commandObjects.flushDB());
   }
@@ -348,6 +309,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public String configSet(String parameter, String value) {
     return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+  }
+
+  public String info() {
+    return executeCommand(commandObjects.info());
+  }
+
+  public String info(String section) {
+    return executeCommand(commandObjects.info(section));
   }
 
   // Key commands
@@ -1469,8 +1438,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long hsetex(String key, HSetExParams params, String field, String value) {
+   return executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+  
+  @Override
   public String hget(String key, String field) {
     return executeCommand(commandObjects.hget(key, field));
+  }
+    
+  @Override
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {
+    return executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  @Override
+  public List<String> hgetdel(String key, String... fields) {
+    return executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -1499,8 +1488,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+   return executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
+  @Override
   public byte[] hget(byte[] key, byte[] field) {
     return executeCommand(commandObjects.hget(key, field));
+  }
+
+  @Override
+  public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  @Override
+  public List<byte[]> hgetdel(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -3151,6 +3160,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3188,6 +3207,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long xdel(String key, StreamEntryID... ids) {
     return executeCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(String key, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -3306,6 +3335,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3333,6 +3372,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long xdel(byte[] key, byte[]... ids) {
     return executeCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, byte[]... ids) {
+    return executeCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -3400,14 +3449,55 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   @Override
   public List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   @Override
-  public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(
+        commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return executeCommand(
+        commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return executeCommand(
+        commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
 
@@ -3976,19 +4066,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map.Entry<AggregationResult, Map<String, Object>> ftProfileAggregate(String indexName,
+  public Map.Entry<AggregationResult, ProfilingInfo> ftProfileAggregate(String indexName,
       FTProfileParams profileParams, AggregationBuilder aggr) {
     return executeCommand(commandObjects.ftProfileAggregate(indexName, profileParams, aggr));
   }
 
   @Override
-  public Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, Query query) {
     return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query));
   }
 
   @Override
-  public Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+  public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams));
   }
@@ -4055,21 +4145,25 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> ftConfigGet(String option) {
     return executeCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> ftConfigGet(String indexName, String option) {
     return executeCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
+  @Deprecated
   public String ftConfigSet(String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(option, value));
   }
 
   @Override
+  @Deprecated
   public String ftConfigSet(String indexName, String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
@@ -4949,138 +5043,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisBloom commands
 
-  // RedisGraph commands
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, long timeout) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, long timeout) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, Map<String, Object> params) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, params));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return executeCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
-  }
-
-  @Override
-  @Deprecated
-  public String graphDelete(String name) {
-    return executeCommand(graphCommandObjects.graphDelete(name));
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphList() {
-    return executeCommand(commandObjects.graphList());
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphProfile(String graphName, String query) {
-    return executeCommand(commandObjects.graphProfile(graphName, query));
-  }
-
-  @Override
-  @Deprecated
-  public List<String> graphExplain(String graphName, String query) {
-    return executeCommand(commandObjects.graphExplain(graphName, query));
-  }
-
-  @Override
-  @Deprecated
-  public List<List<Object>> graphSlowlog(String graphName) {
-    return executeCommand(commandObjects.graphSlowlog(graphName));
-  }
-
-  @Override
-  @Deprecated
-  public String graphConfigSet(String configName, Object value) {
-    return executeCommand(commandObjects.graphConfigSet(configName, value));
-  }
-
-  @Override
-  @Deprecated
-  public Map<String, Object> graphConfigGet(String configName) {
-    return executeCommand(commandObjects.graphConfigGet(configName));
-  }
-  // RedisGraph commands
-
-  // RedisGears commands
-  @Deprecated
-  @Override
-  public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
-  }
-
-  @Deprecated
-  @Override
-  public String tFunctionDelete(String libraryName) {
-    return executeCommand(commandObjects.tFunctionDelete(libraryName));
-  }
-
-  @Deprecated
-  @Override
-  public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
-    return executeCommand(commandObjects.tFunctionList(params));
-  }
-
-  @Deprecated
-  @Override
-  public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
-  }
-
-  @Deprecated
-  @Override
-  public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));
-  }
-  // RedisGears commands
-
   /**
-   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   * @return pipeline object
    */
-  public PipelineBase pipelined() {
+  public AbstractPipeline pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
-    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
+    } else if (provider instanceof MultiDbConnectionProvider) {
+      return new MultiDbPipeline((MultiDbConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true, commandObjects);
     }
@@ -5100,8 +5070,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public AbstractTransaction transaction(boolean doMulti) {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
-    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, doMulti, commandObjects);
+    } else if (provider instanceof MultiDbConnectionProvider) {
+      return new MultiDbTransaction((MultiDbConnectionProvider) provider, doMulti, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
     }
@@ -5160,5 +5130,262 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public void setDefaultSearchDialect(int dialect) {
     this.commandObjects.setDefaultSearchDialect(dialect);
+  }
+
+  // Vector Set commands
+  @Override
+  public boolean vadd(String key, float[] vector, String element) {
+    return executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector) {
+    return executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimWithScores(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element) {
+    return executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
+  }
+
+  @Override
+  public long vdim(String key) {
+    return executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(String key) {
+    return executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(String key, String element) {
+    return executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(String key, String element) {
+    return executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(String key, String element) {
+    return executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<List<String>> vlinks(String key, String element) {
+    return executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public List<Map<String, Double>> vlinksWithScores(String key, String element) {
+    return executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public String vrandmember(String key) {
+    return executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<String> vrandmember(String key, int count) {
+    return executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public String vgetattr(String key, String element) {
+    return executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(String key, String element, String attributes) {
+    return executeCommand(commandObjects.vsetattr(key, element, attributes));
+  }
+
+  @Override
+  public VectorInfo vinfo(String key) {
+    return executeCommand(commandObjects.vinfo(key));
+  }
+
+  // Binary vector set commands
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element) {
+    return executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector) {
+    return executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
+    return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {
+    return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
+  }
+
+  @Override
+  public long vdim(byte[] key) {
+    return executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(byte[] key) {
+    return executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<List<byte[]>> vlinks(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public List<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public byte[] vrandmember(byte[] key) {
+    return executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<byte[]> vrandmember(byte[] key, int count) {
+    return executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public byte[] vgetattr(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(byte[] key, byte[] element, byte[] attributes) {
+    return executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 }

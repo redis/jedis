@@ -5,6 +5,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.authentication.AuthXManager;
+
 public interface JedisClientConfig {
 
   default RedisProtocol getRedisProtocol() {
@@ -44,9 +46,14 @@ public interface JedisClientConfig {
     return null;
   }
 
+  // TODO: return null
   default Supplier<RedisCredentials> getCredentialsProvider() {
     return new DefaultRedisCredentialsProvider(
         new DefaultRedisCredentials(getUser(), getPassword()));
+  }
+
+  default AuthXManager getAuthXManager() {
+    return null;
   }
 
   default int getDatabase() {
@@ -69,6 +76,16 @@ public interface JedisClientConfig {
   }
 
   default SSLParameters getSslParameters() {
+    return null;
+  }
+
+  /**
+   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
+   * {@link JedisClientConfig#getSslParameters()} will be ignored if
+   * {@link JedisClientConfig#getSslOptions() this} is set.
+   * @return ssl options
+   */
+  default SslOptions getSslOptions() {
     return null;
   }
 

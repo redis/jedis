@@ -5,40 +5,23 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.graph.ResultSet;
-import redis.clients.jedis.resps.FunctionStats;
-import redis.clients.jedis.resps.GeoRadiusResponse;
-import redis.clients.jedis.resps.LCSMatchResult;
-import redis.clients.jedis.resps.LibraryInfo;
-import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.resps.StreamConsumerInfo;
-import redis.clients.jedis.resps.StreamConsumersInfo;
-import redis.clients.jedis.resps.StreamEntry;
-import redis.clients.jedis.resps.StreamFullInfo;
-import redis.clients.jedis.resps.StreamGroupInfo;
-import redis.clients.jedis.resps.StreamInfo;
-import redis.clients.jedis.resps.StreamPendingEntry;
-import redis.clients.jedis.resps.StreamPendingSummary;
-import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.ProfilingInfo;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.timeseries.TSElement;
-import redis.clients.jedis.timeseries.TSInfo;
-import redis.clients.jedis.timeseries.TSMGetElement;
-import redis.clients.jedis.timeseries.TSMRangeElements;
+import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Provides an exhaustive list of mocked {@link redis.clients.jedis.CommandObject}s for use in unit tests.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public abstract class MockedCommandObjectsTestBase {
 
   /**
@@ -77,7 +60,6 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Boolean>> listBooleanCommandObject;
   @Mock protected CommandObject<List<Class<?>>> listClassCommandObject;
   @Mock protected CommandObject<List<Double>> listDoubleCommandObject;
-  @Mock protected CommandObject<List<GearsLibraryInfo>> listGearsLibraryInfoCommandObject;
   @Mock protected CommandObject<List<GeoCoordinate>> listGeoCoordinateCommandObject;
   @Mock protected CommandObject<List<GeoRadiusResponse>> listGeoRadiusResponseCommandObject;
   @Mock protected CommandObject<List<JSONArray>> listJsonArrayCommandObject;
@@ -101,9 +83,9 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Tuple>> listTupleCommandObject;
   @Mock protected CommandObject<List<byte[]>> listBytesCommandObject;
   @Mock protected CommandObject<Long> longCommandObject;
-  @Mock protected CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> entryAggregationResultMapStringObjectCommandObject;
+  @Mock protected CommandObject<Map.Entry<AggregationResult, ProfilingInfo>> entryAggregationResultMapStringObjectCommandObject;
   @Mock protected CommandObject<Map.Entry<Long, byte[]>> entryLongBytesCommandObject;
-  @Mock protected CommandObject<Map.Entry<SearchResult, Map<String, Object>>> entrySearchResultMapStringObjectCommandObject;
+  @Mock protected CommandObject<Map.Entry<SearchResult, ProfilingInfo>> entrySearchResultMapStringObjectCommandObject;
   @Mock protected CommandObject<Map.Entry<StreamEntryID, List<StreamEntry>>> entryStreamEntryIdListStreamEntryCommandObject;
   @Mock protected CommandObject<Map.Entry<StreamEntryID, List<StreamEntryID>>> entryStreamEntryIdListStreamEntryIdCommandObject;
   @Mock protected CommandObject<Map<String, List<String>>> mapStringListStringCommandObject;
@@ -117,7 +99,6 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
-  @Mock protected CommandObject<ResultSet> resultSetCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> scanResultEntryBytesBytesCommandObject;
   @Mock protected CommandObject<ScanResult<String>> scanResultStringCommandObject;

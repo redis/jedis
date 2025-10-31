@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
@@ -31,6 +33,7 @@ import redis.clients.jedis.resps.ScanResult;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=generic">Generic</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsGenericCommandsTest(RedisProtocol protocol) {
@@ -202,6 +205,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireAndExpireTime() {
     String key = "expireKey";
     String value = "value";
@@ -221,6 +225,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireAndExpireTimeBinary() {
     byte[] key = "expireKey".getBytes();
     byte[] value = "value".getBytes();
@@ -240,6 +245,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireWithExpiryOption() {
     String key = "expireWithOptionKey";
     String value = "value";
@@ -263,6 +269,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireWithExpiryOptionTimeBinary() {
     byte[] key = "expireWithOptionKey".getBytes();
     byte[] value = "value".getBytes();
@@ -286,6 +293,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testPexpireAndPexpireTime() {
     String key = "pexpireKey";
     String value = "value";
@@ -305,6 +313,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testPexpireAndPexpireTimeBinary() {
     byte[] key = "pexpireKey".getBytes();
     byte[] value = "value".getBytes();
@@ -324,6 +333,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testPexpireWithOptionsAndPexpireTime() {
     String key = "pexpireWithOptionsKey";
     String value = "value";
@@ -349,6 +359,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void testPexpireWithOptionsAndPexpireTimeBinary() {
     byte[] key = "pexpireWithOptionsKey".getBytes();
     byte[] value = "value".getBytes();
@@ -374,6 +385,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireAtAndExpireTime() {
     String key = "expireAtKey";
     String value = "value";
@@ -399,6 +411,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireAtAndExpireTimeBinary() {
     byte[] key = "expireAtKey".getBytes();
     byte[] value = "value".getBytes();
@@ -424,6 +437,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireAtWithOptionsAndExpireTime() {
     String key = "expireAtWithOptionsKey";
     String value = "value";
@@ -456,6 +470,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testExpireAtWithOptionsAndExpireTimeBinary() {
     byte[] key = "expireAtWithOptionsKey".getBytes();
     byte[] value = "value".getBytes();
@@ -488,6 +503,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testPexpireAtAndPexpireTime() {
     String key = "pexpireAtKey";
     String value = "value";
@@ -512,6 +528,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testPexpireAtAndPexpireTimeBinary() {
     byte[] key = "pexpireAtKey".getBytes();
     byte[] value = "value".getBytes();
@@ -536,6 +553,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Starting with Redis version 7.0.0: Added options: NX, XX, GT and LT.")
   public void testPexpireAtWithOptionsAndPexpireTime() {
     String key = "pexpireAtWithOptionsKey";
     String value = "value";
@@ -568,6 +586,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testPexpireAtWithOptionsAndPexpireTimeBinary() {
     byte[] key = "pexpireAtWithOptionsKey".getBytes();
     byte[] value = "value".getBytes();
@@ -812,6 +831,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testSortReadonly() {
     String listKey = "readonlySortList";
 
@@ -824,6 +844,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testSortReadonlyBinary() {
     byte[] listKey = "readonlySortList".getBytes();
 

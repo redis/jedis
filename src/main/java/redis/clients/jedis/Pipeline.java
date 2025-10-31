@@ -8,12 +8,11 @@ import java.util.Queue;
 
 import redis.clients.jedis.commands.DatabasePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
-public class Pipeline extends PipelineBase implements DatabasePipelineCommands, Closeable {
+public class Pipeline extends AbstractPipeline implements DatabasePipelineCommands, Closeable {
 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
@@ -43,9 +42,6 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
     super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
-    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
-    setGraphCommands(graphCommandObjects);
   }
 
   @Override

@@ -3,8 +3,8 @@ package redis.clients.jedis.mocked.unified;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.CommandObjects;
@@ -47,12 +47,12 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
   @Mock
   protected CommandObjects commandObjects;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     jedis = new UnifiedJedis(commandExecutor, connectionProvider, commandObjects);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     // We want to be accurate about our mocks, hence we verify no more interactions here.
     // This might mean that some methods need to verify their interactions in a more verbose way,

@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
@@ -37,7 +39,9 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -542,6 +546,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.2.0", message = "Starting with Redis version 7.2.0: Added the optional WITHSCORE argument.")
   public void zrankWithScore() {
     pipe.zadd("foo", 1d, "a");
     pipe.zadd("foo", 2d, "b");
@@ -1516,6 +1521,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zintercard() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1840,6 +1846,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void zmpop() {
     pipe.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     pipe.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1863,6 +1870,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void bzmpopSimple() {
     pipe.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     pipe.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());

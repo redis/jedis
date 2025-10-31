@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
@@ -257,7 +257,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonGetWithClass() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "user:2000";
 
@@ -544,7 +544,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonTypeOldPath() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "jsonKey";
 
@@ -609,7 +609,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonStrAppendRootPath() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "user:1000";
 
@@ -629,7 +629,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonStrLenRootPath() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "user:1001";
 
@@ -1199,7 +1199,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonArrLenRoot() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "json";
 
@@ -1256,7 +1256,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonObjLenRoot() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "json";
 
@@ -1307,7 +1307,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonObjKeysRoot() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
 
     String key = "json";
 
@@ -1358,7 +1358,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   @Test
   @Deprecated
   public void testJsonDebugMemoryRoot() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
+    assumeTrue(protocol != RedisProtocol.RESP3);
     String key = "json";
 
     JSONObject data = new JSONObject()

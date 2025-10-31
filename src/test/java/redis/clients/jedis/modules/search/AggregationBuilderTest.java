@@ -1,12 +1,11 @@
 package redis.clients.jedis.modules.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.search.aggr.Reducer;
 import redis.clients.jedis.search.aggr.Reducers;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class AggregationBuilderTest {
 

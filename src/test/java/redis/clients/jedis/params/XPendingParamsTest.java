@@ -1,9 +1,9 @@
 package redis.clients.jedis.params;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.StreamEntryID;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class XPendingParamsTest {
 

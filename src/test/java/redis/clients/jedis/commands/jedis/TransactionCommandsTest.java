@@ -1,6 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
 import static redis.clients.jedis.Protocol.Command.INCR;
@@ -12,11 +19,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -29,7 +37,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class TransactionCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -44,7 +53,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
@@ -53,7 +62,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
         endpoint.getClientConfigBuilder().timeoutMillis(500).build());
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     nj.close();
@@ -147,10 +156,10 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", resp.get(0));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void validateWhenInMulti() {
     jedis.multi();
-    jedis.ping();
+    assertThrows(IllegalStateException.class, () -> jedis.ping());
   }
 
   @Test
@@ -246,13 +255,13 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals("foo".getBytes(), set.get());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void transactionResponseWithinPipeline() {
     jedis.set("string", "foo");
 
     Transaction t = jedis.multi();
     Response<String> string = t.get("string");
-    string.get();
+    assertThrows(IllegalStateException.class, string::get);
     t.exec();
   }
 

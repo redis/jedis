@@ -1,68 +1,84 @@
 package redis.clients.jedis.misc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.mcf.DatabaseSwitchEvent;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
+import redis.clients.jedis.mcf.SwitchReason;
 import redis.clients.jedis.util.IOUtils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Tag("failover")
+@Tag("integration")
 public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 
-  private final HostAndPort hostPortWithFailure = new HostAndPort(HostAndPorts.getRedisEndpoint("standalone0").getHost(), 6378);
-  private final EndpointConfig endpointForAuthFailure = HostAndPorts.getRedisEndpoint("standalone0");
-  private final EndpointConfig workingEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private final HostAndPort hostPortWithFailure = new HostAndPort(
+      HostAndPorts.getRedisEndpoint("standalone0").getHost(), 6378);
+  private final EndpointConfig endpointForAuthFailure = HostAndPorts
+      .getRedisEndpoint("standalone0");
+  private final EndpointConfig workingEndpoint = HostAndPorts
+      .getRedisEndpoint("standalone7-with-lfu-policy");
 
   private final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
 
   private Jedis jedis2;
 
-  private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(
+  private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
       JedisClientConfig clientConfig, HostAndPort... hostPorts) {
     return Arrays.stream(hostPorts)
-        .map(hp -> new MultiClusterClientConfig.ClusterConfig(hp, clientConfig))
+        .map(hp -> new MultiDbConfig.DatabaseConfig(hp, clientConfig))
         .collect(Collectors.toList());
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     jedis2 = new Jedis(workingEndpoint.getHostAndPort(),
         workingEndpoint.getClientConfigBuilder().build());
     jedis2.flushAll();
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     IOUtils.closeQuietly(jedis2);
   }
 
   @Test
   public void pipelineWithSwitch() {
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(
+            getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+                .build());
 
-    try (UnifiedJedis client = new UnifiedJedis(provider)) {
+    try (MultiDbClient client = MultiDbClient.builder().connectionProvider(provider).build()) {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      provider.incrementActiveMultiClusterIndex();
+      MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider,
+        SwitchReason.HEALTH_CHECK, provider.getDatabase());
       pipe.sync();
     }
 
@@ -72,15 +88,18 @@ public class AutomaticFailoverTest {
 
   @Test
   public void transactionWithSwitch() {
-    MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(
+            getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+                .build());
 
-    try (UnifiedJedis client = new UnifiedJedis(provider)) {
+    try (MultiDbClient client = MultiDbClient.builder().connectionProvider(provider).build()) {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      provider.incrementActiveMultiClusterIndex();
-      assertEquals(Arrays.asList("OK", Long.valueOf(1L)), tx.exec());
+      MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider,
+        SwitchReason.HEALTH_CHECK, provider.getDatabase());
+      assertEquals(Arrays.asList("OK", 1L), tx.exec());
     }
 
     assertEquals("foobar", jedis2.get("tstr"));
@@ -88,36 +107,40 @@ public class AutomaticFailoverTest {
   }
 
   @Test
-  public void commandFailover() {
-    int slidingWindowMinCalls = 10;
-    int slidingWindowSize = 10;
+  public void commandFailoverUnresolvableHost() {
+    int slidingWindowMinFails = 2;
+    int slidingWindowSize = 2;
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-        .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
-        .circuitBreakerSlidingWindowSize(slidingWindowSize);
+    HostAndPort unresolvableHostAndPort = new HostAndPort("unresolvable", 6379);
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, unresolvableHostAndPort, workingEndpoint.getHostAndPort()))
+            .commandRetry(MultiDbConfig.RetryConfig.builder().waitDuration(1).maxAttempts(1).build())
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .minNumOfFailures(slidingWindowMinFails)
+                .build());
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
+        builder.build());
+    connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(connectionProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
     assertFalse(failoverReporter.failedOver);
-    for (int attempt = 0; attempt < 10; attempt++) {
-      try {
-        jedis.hset(key, "f1", "v1");
-      } catch (JedisConnectionException jce) {
-        //
-      }
+
+    for (int attempt = 0; attempt < slidingWindowMinFails; attempt++) {
       assertFalse(failoverReporter.failedOver);
+      Throwable thrown = assertThrows(JedisConnectionException.class,
+        () -> jedis.hset(key, "f1", "v1"));
+      assertThat(thrown.getCause(), instanceOf(UnknownHostException.class));
     }
 
-    // should failover now
-    jedis.hset(key, "f1", "v1");
+    // already failed over now
     assertTrue(failoverReporter.failedOver);
+    jedis.hset(key, "f1", "v1");
 
     assertEquals(Collections.singletonMap("f1", "v1"), jedis.hgetAll(key));
     jedis.flushAll();
@@ -126,21 +149,66 @@ public class AutomaticFailoverTest {
   }
 
   @Test
-  public void pipelineFailover() {
-    int slidingWindowMinCalls = 10;
-    int slidingWindowSize = 10;
+  public void commandFailover() {
+    int slidingWindowMinFails = 6;
+    int slidingWindowSize = 6;
+    int retryMaxAttempts = 3;
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
-        .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
-        .circuitBreakerSlidingWindowSize(slidingWindowSize)
-        .fallbackExceptionList(Arrays.asList(JedisConnectionException.class));
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(retryMaxAttempts).build())
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .failureRateThreshold(50)
+                .minNumOfFailures(slidingWindowMinFails)
+                .slidingWindowSize(slidingWindowSize)
+                .build());
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    MultiDbConnectionProvider connectionProvider = new MultiDbConnectionProvider(
+        builder.build());
+    connectionProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(connectionProvider).build();
+
+    String key = "hash-" + System.nanoTime();
+    log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
+    // First call fails - will be retried 3 times
+    // this will increase the CircuitBreaker failure count to 3
+    assertThrows(JedisConnectionException.class, () -> jedis.hset(key, "c1", "v1"));
+
+    // Second call fails - will be retried 3 times
+    // this will increase the CircuitBreaker failure count to 6
+    // should failover now
+    assertThrows(JedisConnectionException.class, () -> jedis.hset(key, "c2", "v1"));
+
+    // CB is in OPEN state now, next call should cause failover
+    assertEquals(1L, jedis.hset(key, "c3", "v1"));
+    assertTrue(failoverReporter.failedOver);
+
+    assertEquals(Collections.singletonMap("c3", "v1"), jedis.hgetAll(key));
+    jedis.flushAll();
+
+    jedis.close();
+  }
+
+  @Test
+  public void pipelineFailover() {
+    int slidingWindowSize = 10;
+
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .build())
+            .fallbackExceptionList(Collections.singletonList(JedisConnectionException.class));
+
+    RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
+    MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(
+        builder.build());
+    cacheProvider.setDatabaseSwitchListener(failoverReporter);
+
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(cacheProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -160,20 +228,22 @@ public class AutomaticFailoverTest {
 
   @Test
   public void failoverFromAuthError() {
-    int slidingWindowMinCalls = 10;
     int slidingWindowSize = 10;
 
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(), workingEndpoint.getHostAndPort()))
-        .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
-        .circuitBreakerSlidingWindowSize(slidingWindowSize)
-        .fallbackExceptionList(Arrays.asList(JedisAccessControlException.class));
+    MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
+        getDatabaseConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
+          workingEndpoint.getHostAndPort()))
+              .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                  .slidingWindowSize(slidingWindowSize)
+                  .build())
+              .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
-    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
-    cacheProvider.setClusterFailoverPostProcessor(failoverReporter);
+    MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(
+        builder.build());
+    cacheProvider.setDatabaseSwitchListener(failoverReporter);
 
-    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+    MultiDbClient jedis = MultiDbClient.builder().connectionProvider(cacheProvider).build();
 
     String key = "hash-" + System.nanoTime();
     log.info("Starting calls to Redis");
@@ -187,13 +257,13 @@ public class AutomaticFailoverTest {
     jedis.close();
   }
 
-  class RedisFailoverReporter implements Consumer<String> {
+  static class RedisFailoverReporter implements Consumer<DatabaseSwitchEvent> {
 
     boolean failedOver = false;
 
     @Override
-    public void accept(String clusterName) {
-      log.info("Jedis fail over to cluster: " + clusterName);
+    public void accept(DatabaseSwitchEvent e) {
+      log.info("Jedis fail over to cluster: " + e.getDatabaseName());
       failedOver = true;
     }
   }

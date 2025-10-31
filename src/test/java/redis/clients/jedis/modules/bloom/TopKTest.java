@@ -1,31 +1,28 @@
 package redis.clients.jedis.modules.bloom;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class TopKTest extends RedisModuleCommandsTestBase {
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-//
-//  @AfterClass
-//  public static void tearDown() {
-////    RedisModuleCommandsTestBase.tearDown();
-//  }
 
   public TopKTest(RedisProtocol protocol) {
     super(protocol);
@@ -48,7 +45,7 @@ public class TopKTest extends RedisModuleCommandsTestBase {
       assertEquals(Long.valueOf(1), count);
     });
 
-    assertEquals(null, client.topkIncrBy("aaa", "ff", 5));
+    assertNull(client.topkIncrBy("aaa", "ff", 5));
     assertEquals(Arrays.asList("ff", "bb", "cc"), client.topkList("aaa"));
 
     assertEquals(Collections.<String>singletonList(null),

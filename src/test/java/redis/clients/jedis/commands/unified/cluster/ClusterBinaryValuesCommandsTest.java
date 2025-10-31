@@ -1,42 +1,42 @@
 package redis.clients.jedis.commands.unified.cluster;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.BinaryValuesCommandsTestBase;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterBinaryValuesCommandsTest extends BinaryValuesCommandsTestBase {
 
   public ClusterBinaryValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
-  public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
-    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void mget() {
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void mset() {
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void msetnx() {
   }

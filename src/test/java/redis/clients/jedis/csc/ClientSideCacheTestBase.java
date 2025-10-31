@@ -1,19 +1,19 @@
 package redis.clients.jedis.csc;
 
 import java.util.function.Supplier;
+
+import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.*;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPoolConfig;
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisClientConfig;
-
-abstract class ClientSideCacheTestBase {
+@SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
+@Tag("integration")
+public abstract class ClientSideCacheTestBase {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
 
@@ -21,13 +21,16 @@ abstract class ClientSideCacheTestBase {
 
   protected Jedis control;
 
-  @Before
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone1"));
+
+  @BeforeEach
   public void setUp() throws Exception {
     control = new Jedis(hnp, endpoint.getClientConfigBuilder().build());
     control.flushAll();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     control.close();
   }

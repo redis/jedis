@@ -1,34 +1,37 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
+import io.redis.test.utils.RedisVersion;
 import java.net.URISyntaxException;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
-import redis.clients.jedis.util.RedisVersionUtil;
-
 /**
  * This test class is a copy of {@link JedisTest}.
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ACLJedisTest extends JedisCommandsTestBase {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 
   /**
    * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
    */
-  @BeforeClass
-  public static void prepare() throws Exception {
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+  @BeforeAll
+  public static void prepare() {
+    assumeTrue(getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.of("6.0.0")),
+        "Not running ACL test on this version of Redis");
   }
 
   public ACLJedisTest(RedisProtocol redisProtocol) {

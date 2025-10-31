@@ -223,34 +223,39 @@ public final class Protocol {
 
   @Experimental
   public static Object read(final RedisInputStream is, final Cache cache) {
-    readPushes(is, cache, false);
-    return process(is);
+    Object unhandledPush = readPushes(is, cache, false);
+    return unhandledPush == null ? process(is) : unhandledPush;
   }
 
   @Experimental
-  public static void readPushes(final RedisInputStream is, final Cache cache, boolean onlyPendingBuffer) {
+  public static Object readPushes(final RedisInputStream is, final Cache cache,
+      boolean onlyPendingBuffer) {
+    Object unhandledPush = null;
     if (onlyPendingBuffer) {
       try {
-        while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
-          is.readByte();
-          processPush(is, cache);
+        while (unhandledPush == null && is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
+          unhandledPush = processPush(is, cache);
         }
       } catch (IOException e) {
         throw new JedisConnectionException("Failed to read pending buffer for push messages!", e);
       }
     } else {
-      while (is.peek(GREATER_THAN_BYTE)) {
-        is.readByte();
-        processPush(is, cache);
+      while (unhandledPush == null && is.peek(GREATER_THAN_BYTE)) {
+        unhandledPush = processPush(is, cache);
       }
     }
+    return unhandledPush;
   }
 
-  private static void processPush(final RedisInputStream is, Cache cache) {
+  private static Object processPush(final RedisInputStream is, Cache cache) {
+    is.readByte();
     List<Object> list = processMultiBulkReply(is);
     if (list.size() == 2 && list.get(0) instanceof byte[]
         && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
       cache.deleteByRedisKeys((List) list.get(1));
+      return null;
+    } else {
+      return list;
     }
   }
 
@@ -287,7 +292,7 @@ public final class Protocol {
     SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, BITCOUNT, BITOP, BITFIELD, BITFIELD_RO, // <-- bit (string)
     HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HSTRLEN,
     HEXPIRE, HPEXPIRE, HEXPIREAT, HPEXPIREAT, HTTL, HPTTL, HEXPIRETIME, HPEXPIRETIME, HPERSIST,
-    HRANDFIELD, HINCRBYFLOAT, // <-- hash
+    HRANDFIELD, HINCRBYFLOAT, HSETEX, HGETEX, HGETDEL, // <-- hash
     RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, BLPOP, BRPOP, LINSERT, LPOS,
     RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, LMPOP, BLMPOP, LPUSHX, RPUSHX, // <-- list
     SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE,
@@ -300,13 +305,14 @@ public final class Protocol {
     GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, // <-- geo
     PFADD, PFCOUNT, PFMERGE, // <-- hyper log log
     XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
-    XAUTOCLAIM, XINFO, // <-- stream
+    XAUTOCLAIM, XINFO, XDELEX, XACKDEL, // <-- stream
     EVAL, EVALSHA, SCRIPT, EVAL_RO, EVALSHA_RO, FUNCTION, FCALL, FCALL_RO, // <-- program
     SUBSCRIBE, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBLISH, PUBSUB,
     SSUBSCRIBE, SUNSUBSCRIBE, SPUBLISH, // <-- pub sub
     SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST, ROLE, FAILOVER, SLOWLOG, OBJECT, CLIENT, TIME,
     SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF, COPY,
-    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF;
+    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF,
+    VADD, VSIM, VDIM, VCARD, VEMB, VREM, VLINKS, VRANDMEMBER, VGETATTR, VSETATTR, VINFO; // <-- vector set
 
     private final byte[] raw;
 
@@ -334,7 +340,9 @@ public final class Protocol {
     DELETE, LIBRARYNAME, WITHCODE, DESCRIPTION, GETKEYS, GETKEYSANDFLAGS, DOCS, FILTERBY, DUMP,
     MODULE, ACLCAT, PATTERN, DOCTOR, LATEST, HISTORY, USAGE, SAMPLES, PURGE, STATS, LOADEX, CONFIG,
     ARGS, RANK, NOW, VERSION, ADDR, SKIPME, USER, LADDR, FIELDS,
-    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE;
+    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE, FXX, FNX,
+    // Vector set keywords
+    REDUCE, CAS, NOQUANT, Q8, BIN, EF, SETATTR, M, VALUES, FP32, ELE, FILTER, FILTER_EF, TRUTH, NOTHREAD, RAW, EPSILON, WITHATTRIBS;
 
     private final byte[] raw;
 

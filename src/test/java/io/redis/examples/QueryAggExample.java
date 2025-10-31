@@ -2,13 +2,13 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 // REMOVE_END
 
 // HIDE_START
 import java.util.List;
 import java.util.ArrayList;
+
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.FTCreateParams;
@@ -16,10 +16,15 @@ import redis.clients.jedis.search.IndexDataType;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 // HIDE_END
 
 // HIDE_START
 public class QueryAggExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -232,12 +237,11 @@ public class QueryAggExample {
 
         // Tests for 'agg1' step.
         // REMOVE_START
-        Assert.assertEquals(5, rows1.size());
-        Assert.assertEquals("{__key=bicycle:0, discounted=243, price=270}", rows1.get(0).toString());
-        Assert.assertEquals("{__key=bicycle:5, discounted=729, price=810}", rows1.get(1).toString());
-        Assert.assertEquals("{__key=bicycle:6, discounted=2070, price=2300}", rows1.get(2).toString());
-        Assert.assertEquals("{__key=bicycle:7, discounted=387, price=430}", rows1.get(3).toString());
-        Assert.assertEquals("{__key=bicycle:8, discounted=1080, price=1200}", rows1.get(4).toString());
+        assertEquals(5, rows1.size());
+        assertArrayEquals(
+            new String[]{"bicycle:0", "bicycle:5", "bicycle:6", "bicycle:7", "bicycle:8"},
+            rows1.stream().map(e->e.get("__key")).sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -263,10 +267,12 @@ public class QueryAggExample {
 
         // Tests for 'agg2' step.
         // REMOVE_START
-        Assert.assertEquals(3, rows2.size());
-        Assert.assertEquals("{condition=refurbished, num_affordable=1}", rows2.get(0).toString());
-        Assert.assertEquals("{condition=used, num_affordable=1}", rows2.get(1).toString());
-        Assert.assertEquals("{condition=new, num_affordable=3}", rows2.get(2).toString());
+        assertEquals(3, rows2.size());
+        assertArrayEquals(
+            new String[] { "new, 3", "refurbished, 1", "used, 1" },
+            rows2.stream().map(e->e.get("condition") + ", " + e.get("num_affordable"))
+                    .sorted().toArray()
+        );
         // REMOVE_END
 
 
@@ -288,8 +294,8 @@ public class QueryAggExample {
 
         // Tests for 'agg3' step.
         // REMOVE_START
-        Assert.assertEquals(1, rows3.size());
-        Assert.assertEquals("{type=bicycle, num_total=10}", rows3.get(0).toString());
+        assertEquals(1, rows3.size());
+        assertEquals("{type=bicycle, num_total=10}", rows3.get(0).toString());
         // REMOVE_END
 
 
@@ -314,35 +320,35 @@ public class QueryAggExample {
 
         // Tests for 'agg4' step.
         // REMOVE_START
-        Assert.assertEquals(3, rows4.size());
+        assertEquals(3, rows4.size());
 
         Row test4Row = rows4.get(0);
-        Assert.assertEquals("refurbished", test4Row.getString("condition"));
+        assertEquals("refurbished", test4Row.getString("condition"));
 
         ArrayList<String> test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        Assert.assertEquals(1, test4Bikes.size());
-        Assert.assertTrue(test4Bikes.contains("bicycle:9"));
+        assertEquals(1, test4Bikes.size());
+        assertTrue(test4Bikes.contains("bicycle:9"));
 
         test4Row = rows4.get(1);
-        Assert.assertEquals("used", test4Row.getString("condition"));
+        assertEquals("used", test4Row.getString("condition"));
         
         test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        Assert.assertEquals(4, test4Bikes.size());
-        Assert.assertTrue(test4Bikes.contains("bicycle:1"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:2"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:3"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:4"));
+        assertEquals(4, test4Bikes.size());
+        assertTrue(test4Bikes.contains("bicycle:1"));
+        assertTrue(test4Bikes.contains("bicycle:2"));
+        assertTrue(test4Bikes.contains("bicycle:3"));
+        assertTrue(test4Bikes.contains("bicycle:4"));
         
         test4Row = rows4.get(2);
-        Assert.assertEquals("new", test4Row.getString("condition"));
+        assertEquals("new", test4Row.getString("condition"));
 
         test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        Assert.assertEquals(5, test4Bikes.size());
-        Assert.assertTrue(test4Bikes.contains("bicycle:0"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:5"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:6"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:7"));
-        Assert.assertTrue(test4Bikes.contains("bicycle:8"));
+        assertEquals(5, test4Bikes.size());
+        assertTrue(test4Bikes.contains("bicycle:0"));
+        assertTrue(test4Bikes.contains("bicycle:5"));
+        assertTrue(test4Bikes.contains("bicycle:6"));
+        assertTrue(test4Bikes.contains("bicycle:7"));
+        assertTrue(test4Bikes.contains("bicycle:8"));
         // REMOVE_END
 
 // HIDE_START

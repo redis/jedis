@@ -34,7 +34,7 @@ import redis.clients.jedis.util.Pool;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-    SentinelCommands, Closeable {
+    SentinelCommands, CommandCommands,  Closeable {
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
@@ -193,6 +193,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         .hostnameVerifier(hostnameVerifier).build());
   }
 
+  /**
+   * Create a new Jedis with the provided URI and JedisClientConfig object. Note that all fields
+   * that can be parsed from the URI will be used instead of the corresponding configuration values. This includes
+   * the following fields: user, password, database, protocol version, and whether to use SSL.
+   *
+   * For example, if the URI is "redis://user:password@localhost:6379/1", the user and password fields will be set
+   * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
+   * from the JedisClientConfig object.
+   *
+   * @param uri The URI to connect to
+   * @param config The JedisClientConfig object to use
+   */
   public Jedis(final URI uri, JedisClientConfig config) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
@@ -1155,6 +1167,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
@@ -1169,6 +1193,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] hget(final byte[] key, final byte[] field) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hget(key, field));
+  }
+
+  @Override
+  public List<byte[]> hgetex(byte[] key, HGetExParams params, byte[]... fields){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  @Override
+  public List<byte[]> hgetdel(byte[] key, byte[]... fields){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   /**
@@ -4734,17 +4770,58 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hpersist(key, fields));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   @Override
   public List<Object> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   @Override
   public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public List<Map.Entry<byte[], List<StreamEntryBinary>>> xreadGroupBinary(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -4790,6 +4867,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xgroupCreate(key, consumer, id, makeStream));
@@ -4823,6 +4912,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long xdel(byte[] key, byte[]... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -5675,6 +5776,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
+  @Override
+  public long hsetex(String key, HSetExParams params, String field, String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  @Override
+  public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
@@ -5689,6 +5802,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String hget(final String key, final String field) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hget(key, field));
+  }
+
+  @Override
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  @Override
+  public List<String> hgetdel(String key, String... fields) {    
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }
 
   /**
@@ -8211,42 +8336,56 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
+  @Override
   public long commandCount() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, COUNT);
     return connection.getIntegerReply();
   }
 
+  @Override
   public Map<String, CommandDocument> commandDocs(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(DOCS.name(), commands));
     return BuilderFactory.COMMAND_DOCS_RESPONSE.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandGetKeys(String... command) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(GETKEYS.name(), command));
     return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
+  @Override
   public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(GETKEYSANDFLAGS.name(), command));
     return BuilderFactory.KEYED_STRING_LIST_LIST.build(connection.getOne());
   }
 
+  @Override
   public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
-    return BuilderFactory.COMMAND_INFO_RESPONSE.build(connection.getOne());
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
+  @Override
+  public Map<String, CommandInfo> command() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND);
+    return CommandInfo.COMMAND_INFO_RESPONSE.build(connection.getOne());
+  }
+
+  @Override
   public List<String> commandList() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(COMMAND, LIST);
     return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
+  @Override
   public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
     checkIsInMultiOrPipeline();
     CommandArguments args = new CommandArguments(COMMAND).add(LIST).addParams(filterByParams);
@@ -9563,6 +9702,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<StreamEntryDeletionResult> xackdel(final String key, final String group, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xackdel(final String key, final String group, final StreamDeletionPolicy trimMode, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public String xgroupCreate(final String key, final String groupName, final StreamEntryID id,
       final boolean makeStream) {
     checkIsInMultiOrPipeline();
@@ -9597,6 +9748,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long xdel(final String key, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(final String key, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public List<StreamEntryDeletionResult> xdelex(final String key, final StreamDeletionPolicy trimMode, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -9828,6 +9991,314 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     result[1] = second;
     System.arraycopy(rest, 0, result, 2, rest.length);
     return result;
+  }
+
+  // Vector Set commands
+  @Override
+  public boolean vadd(String key, float[] vector, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public List<String> vsim(String key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimWithScores(String key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public List<String> vsimByElement(String key, String element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
+  }
+
+  @Override
+  public long vdim(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<List<String>> vlinks(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public List<Map<String, Double>> vlinksWithScores(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public String vrandmember(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<String> vrandmember(String key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public String vgetattr(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(String key, String element, String attributes) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsetattr(key, element, attributes));
+  }
+
+  @Override
+  public VectorInfo vinfo(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vinfo(key));
+  }
+
+  // Binary vector set commands
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public List<byte[]> vsim(byte[] key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
+  }
+
+  @Override
+  public long vdim(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public long vcard(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public List<Double> vemb(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public RawVector vembRaw(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public boolean vrem(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public List<List<byte[]>> vlinks(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public List<Map<byte[], Double>> vlinksWithScores(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public byte[] vrandmember(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public List<byte[]> vrandmember(byte[] key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public byte[] vgetattr(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public boolean vsetattr(byte[] key, byte[] element, byte[] attributes) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
 
 }

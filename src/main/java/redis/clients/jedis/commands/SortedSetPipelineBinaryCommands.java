@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
@@ -140,7 +139,7 @@ public interface SortedSetPipelineBinaryCommands {
   Response<List<Tuple>> zdiffWithScores(byte[]... keys);
 
   /**
-   * @deprecated Use {@link #zdiffstore(byte..., byte[]...)}.
+   * @deprecated Use {@link #zdiffstore(byte[], byte[][])}.
    */
   @Deprecated
   Response<Long> zdiffStore(byte[] dstkey, byte[]... keys);

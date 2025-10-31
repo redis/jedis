@@ -1,44 +1,62 @@
 package redis.clients.jedis.commands.unified.cluster;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.unified.ListCommandsTestBase;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
+          HostAndPorts.getStableClusterServers().get(0),
+          DefaultJedisClientConfig.builder().password("cluster").build());
 
   public ClusterListCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
-  public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
-    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 
@@ -259,6 +277,7 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void lmpop() {
     String mylist1 = "mylist1{.}";
     String mylist2 = "mylist2{.}";
@@ -284,6 +303,7 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void blmpopSimple() {
     String mylist1 = "mylist1{.}";
     String mylist2 = "mylist2{.}";

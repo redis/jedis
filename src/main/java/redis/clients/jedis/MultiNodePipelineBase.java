@@ -8,17 +8,18 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
-public abstract class MultiNodePipelineBase extends PipelineBase {
+public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -52,17 +53,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
   }
-
-  /**
-   * Sub-classes must call this method, if graph commands are going to be used.
-   * @param connectionProvider connection provider
-   */
-  protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
-    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(connectionProvider);
-    graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
-    super.setGraphCommands(graphCommandObjects);
-  }
-
+  
   protected abstract HostAndPort getNodeKey(CommandArguments args);
 
   protected abstract Connection getConnection(HostAndPort nodeKey);

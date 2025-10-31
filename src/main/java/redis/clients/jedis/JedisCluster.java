@@ -8,12 +8,15 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.builders.ClusterClientBuilder;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
+import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
@@ -128,7 +131,9 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster with multiple entry points.
-   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * <p>
+   * Here, the default timeout of {@value redis.clients.jedis.JedisCluster#DEFAULT_TIMEOUT} ms is being used with
+   * {@value redis.clients.jedis.JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param nodes Nodes to connect to.
    */
   public JedisCluster(Set<HostAndPort> nodes) {
@@ -137,7 +142,9 @@ public class JedisCluster extends UnifiedJedis {
 
   /**
    * Creates a JedisCluster with multiple entry points.
-   * Here, the default timeout of {@value JedisCluster#DEFAULT_TIMEOUT} ms is being used with {@value JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * <p>
+   * Here, the default timeout of {@value redis.clients.jedis.JedisCluster#DEFAULT_TIMEOUT} ms is being used with
+   * {@value redis.clients.jedis.JedisCluster#DEFAULT_MAX_ATTEMPTS} maximum attempts.
    * @param nodes Nodes to connect to.
    * @param timeout connection and socket timeout in milliseconds.
    */
@@ -343,10 +350,38 @@ public class JedisCluster extends UnifiedJedis {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
   }
 
+
   @Override
   public void close() {
     super.close();
     IOUtils.closeQuietly(this.clusterPipelineExecutor);
+  }
+
+  private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  }
+
+  /**
+   * Fluent builder for {@link JedisCluster} (Redis Cluster).
+   * <p>
+   * Obtain an instance via {@link #builder()}.
+   * </p>
+   */
+  static public class Builder extends ClusterClientBuilder<JedisCluster> {
+
+    @Override
+    protected JedisCluster createClient() {
+      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, clientConfig.getRedisProtocol(),
+          cache);
+    }
+  }
+
+  /**
+   * Create a new builder for configuring JedisCluster instances.
+   * @return a new {@link JedisCluster.Builder} instance
+   */
+  public static Builder builder() {
+    return new Builder();
   }
 
   /**

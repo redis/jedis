@@ -2,11 +2,16 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
+@Tag("integration")
 public abstract class JedisClusterTestBase {
 
   protected static Jedis node1;
@@ -23,7 +28,12 @@ public abstract class JedisClusterTestBase {
 
   protected static final String LOCAL_IP = "127.0.0.1";
 
-  @Before
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1,DefaultJedisClientConfig.builder().password("cluster").build());
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+
+  @BeforeEach
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
@@ -83,7 +93,7 @@ public abstract class JedisClusterTestBase {
     node4.clusterReset(ClusterResetType.HARD);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     cleanUp();
   }

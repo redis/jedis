@@ -1,14 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
@@ -16,7 +15,14 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class StringValuesCommandsTest extends JedisCommandsTestBase {
 
   public StringValuesCommandsTest(RedisProtocol protocol) {
@@ -148,10 +154,10 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, jedis.incr("foo"));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incr("foo");
+    assertThrows(JedisDataException.class, () -> jedis.incr("foo"));
   }
 
   @Test
@@ -160,10 +166,10 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(5, jedis.incrBy("foo", 3));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrByWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incrBy("foo", 2);
+    assertThrows(JedisDataException.class, () -> jedis.incrBy("foo", 2));
   }
 
   @Test
@@ -172,16 +178,16 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(10.6, jedis.incrByFloat("foo", 0.1), 0.0);
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrByFloatWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incrByFloat("foo", 2d);
+    assertThrows(JedisDataException.class, () -> jedis.incrByFloat("foo", 2d));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void decrWrongValue() {
     jedis.set("foo", "bar");
-    jedis.decr("foo");
+    assertThrows(JedisDataException.class, () -> jedis.decr("foo"));
   }
 
   @Test
@@ -196,10 +202,10 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(-4, jedis.decrBy("foo", 2));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void decrByWrongValue() {
     jedis.set("foo", "bar");
-    jedis.decrBy("foo", 2);
+    assertThrows(JedisDataException.class, () -> jedis.decrBy("foo", 2));
   }
 
   @Test
@@ -232,10 +238,10 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(1L + Integer.MAX_VALUE, jedis.incrBy("foo", Integer.MAX_VALUE));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    jedis.incr("foo"); // Should throw an exception 
+    assertThrows(JedisDataException.class, () -> jedis.incr("foo"));
   }
 
   @Test
@@ -247,6 +253,7 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 

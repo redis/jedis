@@ -2,13 +2,16 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.BinaryJedisShardedPubSub;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Jedis;
@@ -16,6 +19,8 @@ import redis.clients.jedis.JedisShardedPubSub;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
 
+@SinceRedisVersion(value = "7.0.0", message = "Sharded Pub/Sub")
+@Tag("integration")
 public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisCommandsTestBase {
 
   private void publishOne(final String channel, final String message) {

@@ -25,9 +25,9 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up publishing to maven central
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
@@ -37,7 +37,7 @@ jobs:
           sudo apt install -y stunnel make
           make system-setup
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -51,12 +51,8 @@ jobs:
           mvn javadoc:jar
       - name: Run tests
         run: |
+          export TEST_ENV_PROVIDER=local
           make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}

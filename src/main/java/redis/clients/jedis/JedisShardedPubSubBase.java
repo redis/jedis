@@ -4,14 +4,16 @@ import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class JedisShardedPubSubBase<T> {
 
   private int subscribedChannels = 0;
-  private volatile Connection client;
+  private final JedisSafeAuthenticator authenticator = new JedisSafeAuthenticator();
 
   public void onSMessage(T channel, T message) {
   }
@@ -23,12 +25,7 @@ public abstract class JedisShardedPubSubBase<T> {
   }
 
   private void sendAndFlushCommand(Command command, T... args) {
-    if (client == null) {
-      throw new JedisException(getClass() + " is not connected to a Connection.");
-    }
-    CommandArguments cargs = new CommandArguments(command).addObjects(args);
-    client.sendCommand(cargs);
-    client.flush();
+    authenticator.sendAndFlushCommand(command, args);
   }
 
   public final void sunsubscribe() {
@@ -40,7 +37,16 @@ public abstract class JedisShardedPubSubBase<T> {
   }
 
   public final void ssubscribe(T... channels) {
+    checkConnectionSuitableForPubSub();
     sendAndFlushCommand(Command.SSUBSCRIBE, channels);
+  }
+
+  private void checkConnectionSuitableForPubSub() {
+    if (authenticator.client.protocol != RedisProtocol.RESP3
+        && authenticator.client.isTokenBasedAuthenticationEnabled()) {
+      throw new JedisException(
+          "Blocking pub/sub operations are not supported on token-based authentication enabled connections with RESP2 protocol!");
+    }
   }
 
   public final boolean isSubscribed() {
@@ -52,23 +58,22 @@ public abstract class JedisShardedPubSubBase<T> {
   }
 
   public final void proceed(Connection client, T... channels) {
-    this.client = client;
-    this.client.setTimeoutInfinite();
+    authenticator.registerForAuthentication(client);
+    authenticator.client.setTimeoutInfinite();
     try {
       ssubscribe(channels);
       process();
     } finally {
-      this.client.rollbackTimeout();
+      authenticator.client.rollbackTimeout();
     }
   }
 
   protected abstract T encode(byte[] raw);
 
-//  private void process(Client client) {
   private void process() {
 
     do {
-      Object reply = client.getUnflushedObject();
+      Object reply = authenticator.client.getUnflushedObject();
 
       if (reply instanceof List) {
         List<Object> listReply = (List<Object>) reply;
@@ -96,6 +101,12 @@ public abstract class JedisShardedPubSubBase<T> {
         } else {
           throw new JedisException("Unknown message type: " + firstObj);
         }
+      } else if (reply instanceof byte[]) {
+        Consumer<Object> resultHandler = authenticator.resultHandler.poll();
+        if (resultHandler == null) {
+          throw new JedisException("Unexpected message : " + SafeEncoder.encode((byte[]) reply));
+        }
+        resultHandler.accept(reply);
       } else {
         throw new JedisException("Unknown message type: " + reply);
       }

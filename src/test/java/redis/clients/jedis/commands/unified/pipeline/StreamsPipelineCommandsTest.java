@@ -13,10 +13,10 @@ import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -27,10 +27,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.util.RedisVersionUtil;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
@@ -55,7 +59,9 @@ import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
   public StreamsPipelineCommandsTest(RedisProtocol protocol) {
@@ -251,6 +257,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Added support for XADD ID auto sequence is introduced in 7.0.0")
   public void xaddParamsId() {
     String key = "kk";
     Map<String, String> map = singletonMap("ff", "vv");
@@ -1208,7 +1215,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(MY_CONSUMER, consumersInfo.get(0).getName());
     assertEquals(0L, consumersInfo.get(0).getPending());
     assertThat(consumersInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
-    assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
+    if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
+    }
 
     // Consumer info test
     List<StreamConsumerInfo> consumerInfo = consumerInfoResponse.get();
@@ -1222,7 +1231,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(MY_CONSUMER, consumerInfo.get(0).getName());
     assertEquals(0L, consumerInfo.get(0).getPending());
     assertThat(consumerInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
-    assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
+    if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
+    }
 
     // test with more groups and consumers
     pipe.xgroupCreate(STREAM_NAME, G2, StreamEntryID.XGROUP_LAST_ENTRY, false);
@@ -1305,7 +1316,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     StreamConsumerFullInfo consumer = group.getConsumers().get(0);
     assertEquals("xreadGroup-consumer", consumer.getName());
     assertThat(consumer.getSeenTime(), Matchers.greaterThanOrEqualTo(0L));
-    assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
+    if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
+    }
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));

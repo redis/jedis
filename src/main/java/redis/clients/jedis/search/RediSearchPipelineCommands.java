@@ -95,12 +95,16 @@ public interface RediSearchPipelineCommands {
 
   Response<Set<String>> ftTagVals(String indexName, String fieldName);
 
+  @Deprecated
   Response<Map<String, Object>> ftConfigGet(String option);
 
+  @Deprecated
   Response<Map<String, Object>> ftConfigGet(String indexName, String option);
 
+  @Deprecated
   Response<String> ftConfigSet(String option, String value);
 
+  @Deprecated
   Response<String> ftConfigSet(String indexName, String option, String value);
 
   Response<Long> ftSugAdd(String key, String string, double score);

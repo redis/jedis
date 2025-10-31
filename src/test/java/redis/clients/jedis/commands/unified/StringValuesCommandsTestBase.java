@@ -1,19 +1,25 @@
 package redis.clients.jedis.commands.unified;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 
+@Tag("integration")
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   public StringValuesCommandsTestBase(RedisProtocol protocol) {
@@ -40,6 +46,19 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  public void setGetWithParams() {
+    jedis.del("foo");
+
+    // no previous, return null
+    assertNull(jedis.setGet("foo", "bar", setParams().nx()));
+
+    // key already exists, new value should not be set, previous value should be bbar
+    assertEquals("bar", jedis.setGet("foo", "foobar", setParams().nx()));
+
+    assertEquals("bar", jedis.setGet("foo", "foobar", setParams().xx()));
+  }
+
+  @Test
   public void getDel() {
     String status = jedis.set("foo", "bar");
     assertEquals("OK", status);
@@ -59,7 +78,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     long ttl = jedis.ttl("foo");
     assertTrue(ttl > 0 && ttl <= 10);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().px(20000l)));
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().px(20000L)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 10 && ttl <= 20);
 
@@ -67,7 +86,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000L)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 30 && ttl <= 40);
 
@@ -145,10 +164,10 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(2, jedis.incr("foo"));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incr("foo");
+    assertThrows(JedisDataException.class, ()->jedis.incr("foo"));
   }
 
   @Test
@@ -157,10 +176,10 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(5, jedis.incrBy("foo", 3));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrByWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incrBy("foo", 2);
+    assertThrows(JedisDataException.class, ()->jedis.incrBy("foo", 2));
   }
 
   @Test
@@ -169,16 +188,16 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(10.6, jedis.incrByFloat("foo", 0.1), 0.0);
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrByFloatWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incrByFloat("foo", 2d);
+    assertThrows(JedisDataException.class, ()->jedis.incrByFloat("foo", 2d));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void decrWrongValue() {
     jedis.set("foo", "bar");
-    jedis.decr("foo");
+    assertThrows(JedisDataException.class, ()->jedis.decr("foo"));
   }
 
   @Test
@@ -193,10 +212,10 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(-4, jedis.decrBy("foo", 2));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void decrByWrongValue() {
     jedis.set("foo", "bar");
-    jedis.decrBy("foo", 2);
+    assertThrows(JedisDataException.class, ()->jedis.decrBy("foo", 2));
   }
 
   @Test
@@ -229,10 +248,10 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(1L + Integer.MAX_VALUE, jedis.incrBy("foo", Integer.MAX_VALUE));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    jedis.incr("foo"); // Should throw an exception 
+    assertThrows(JedisDataException.class, ()->jedis.incr("foo")); // Should throw an exception
   }
 
   @Test
@@ -244,6 +263,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 

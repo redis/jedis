@@ -1,7 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,12 +11,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
 
+@Tag("integration")
 public class SentinelCommandsTest {
 
   protected static final String MASTER_NAME = "mymaster";

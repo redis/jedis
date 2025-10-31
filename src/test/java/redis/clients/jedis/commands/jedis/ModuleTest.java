@@ -1,29 +1,43 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.util.TestEnvUtil;
 
 import redis.clients.jedis.Module;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ModuleTest extends JedisCommandsTestBase {
 
-  static enum ModuleCommand implements ProtocolCommand {
+  @BeforeEach
+  public void isDockerEnv() {
+    Assumptions.assumeFalse(TestEnvUtil.isContainerEnv(), "Module tests not supported against dockerized test env yet!");
+  }
+
+  enum ModuleCommand implements ProtocolCommand {
 
     SIMPLE("testmodule.simple");
 
     private final byte[] raw;
 
-    private ModuleCommand(String alt) {
+    ModuleCommand(String alt) {
       raw = SafeEncoder.encode(alt);
     }
 
@@ -40,11 +54,11 @@ public class ModuleTest extends JedisCommandsTestBase {
   @Test
   public void testModules() {
     try {
-      assertEquals("OK", jedis.moduleLoad("/tmp/testmodule.so"));
+      assertEquals("OK", jedis.moduleLoad(TestEnvUtil.testModuleSoPath()));
 
       List<Module> modules = jedis.moduleList();
 
-      assertEquals("testmodule", modules.get(0).getName());
+      assertThat(modules, hasItem(hasProperty("name", equalTo("testmodule"))));
 
       Object output = jedis.sendCommand(ModuleCommand.SIMPLE);
       assertTrue((Long) output > 0);
@@ -52,7 +66,8 @@ public class ModuleTest extends JedisCommandsTestBase {
     } finally {
 
       assertEquals("OK", jedis.moduleUnload("testmodule"));
-      assertEquals(Collections.emptyList(), jedis.moduleList());
+      List<Module> modules = jedis.moduleList();
+      assertThat(modules, not(hasItem(hasProperty("name", equalTo("testmodule")))));
     }
   }
 }

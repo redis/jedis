@@ -1,40 +1,41 @@
 package redis.clients.jedis.commands.unified.cluster;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
 
   public ClusterGeoCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
-  public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return  ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
-    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 
@@ -57,7 +58,7 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
     assertEquals(expected, jedis.zrange("{ITA} SicilyStore", 0, -1));
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void georadiusStoreBinary() {
   }
@@ -79,17 +80,17 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
     assertEquals(expected, jedis.zrange("{ITA} SicilyStore", 0, -1));
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void georadiusByMemberStoreBinary() {
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void geosearchstore() {
   }
 
-  @Ignore
+  @Disabled
   @Override
   public void geosearchstoreWithdist() {
   }

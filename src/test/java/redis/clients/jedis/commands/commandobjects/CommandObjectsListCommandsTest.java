@@ -9,7 +9,9 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 
-import org.junit.Test;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
@@ -19,6 +21,7 @@ import redis.clients.jedis.util.KeyValue;
 /**
  * Tests related to <a href="https://redis.io/commands/?group=list">List</a> commands.
  */
+@Tag("integration")
 public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTestBase {
 
   public CommandObjectsListCommandsTest(RedisProtocol protocol) {
@@ -608,6 +611,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testLmpopAndBlmpop() {
     String key1 = "list1";
     String key2 = "list2";
@@ -635,6 +639,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void testLmpopAndBlmpopBinary() {
     byte[] key1 = "list1".getBytes();
     byte[] key2 = "list2".getBytes();

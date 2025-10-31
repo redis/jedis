@@ -11,8 +11,6 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -30,17 +28,9 @@ public abstract class PipeliningBase
     implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands {
 
   protected final CommandObjects commandObjects;
-  private GraphCommandObjects graphCommandObjects;
 
   protected PipeliningBase(CommandObjects commandObjects) {
     this.commandObjects = commandObjects;
-  }
-
-  /**
-   * Sub-classes must call this method, if graph commands are going to be used.
-   */
-  protected final void setGraphCommands(GraphCommandObjects graphCommandObjects) {
-    this.graphCommandObjects = graphCommandObjects;
   }
 
   protected abstract <T> Response<T> appendCommand(CommandObject<T> commandObject);
@@ -635,9 +625,75 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params additional parameters for the HSETEX command
+   * @param field the field in the hash to set
+   * @param value the value to set in the specified field
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(String key, HSetExParams params, String field, String value) {
+    return appendCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
+    return appendCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   @Override
   public Response<String> hget(String key, String field) {
     return appendCommand(commandObjects.hget(key, field));
+  }
+
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  @Override
+  public Response<List<String>> hgetex(String key, HGetExParams params, String... fields) {
+    return appendCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  @Override
+  public Response<List<String>> hgetdel(String key, String... fields) {
+    return appendCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -1497,6 +1553,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -1534,6 +1600,16 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> xdel(String key, StreamEntryID... ids) {
     return appendCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(String key, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(String key, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -1981,9 +2057,75 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hset(key, hash));
   }
 
+  /**
+   * Sets the specified field in the hash stored at key to the specified value with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param field the field in the hash to set
+   * @param value the value to set in the specified field
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
+    return appendCommand(commandObjects.hsetex(key, params, field, value));
+  }
+
+  /**
+   * Sets the specified fields in the hash stored at key to the specified values with additional parameters,
+   * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
+   * This command can overwrite any existing fields in the hash.
+   * If key does not exist, a new key holding a hash is created.
+   * 
+   * @param key the key of the hash
+   * @param params the parameters for the HSetEx command
+   * @param hash the map containing field-value pairs to set in the hash
+   * @return 0 if no fields were set, 1 if all the fields were set 
+   * 
+   * @see HSetExParams
+   */
+  @Override
+  public Response<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
+    return appendCommand(commandObjects.hsetex(key, params, hash));
+  }
+
   @Override
   public Response<byte[]> hget(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hget(key, field));
+  }
+  
+  /**
+   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
+   *
+   * @param key the key of the hash
+   * @param params additional parameters for the HGETEX command
+   * @param fields the fields whose values are to be retrieved
+   * @return a list of the value associated with each field or nil if the field doesn’t exist.
+   * 
+   * @see HGetExParams
+   */
+  @Override
+  public Response<List<byte[]>> hgetex(byte[] key, HGetExParams params, byte[]... fields) {
+    return appendCommand(commandObjects.hgetex(key, params, fields));
+  }
+
+  /**
+   * Retrieves the values associated with the specified fields in the hash stored at the given key
+   * and then deletes those fields from the hash.
+   *
+   * @param key the key of the hash
+   * @param fields the fields whose values are to be retrieved and then deleted
+   * @return a list of values associated with the specified fields before they were deleted
+   */
+  @Override
+  public Response<List<byte[]>> hgetdel(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hgetdel(key, fields));
   }
 
   @Override
@@ -3143,6 +3285,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, byte[]... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return appendCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3170,6 +3322,16 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> xdel(byte[] key, byte[]... ids) {
     return appendCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(byte[] key, byte[]... ids) {
+    return appendCommand(commandObjects.xdelex(key, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryDeletionResult>> xdelex(byte[] key, StreamDeletionPolicy trimMode, byte[]... ids) {
+    return appendCommand(commandObjects.xdelex(key, trimMode, ids));
   }
 
   @Override
@@ -3237,15 +3399,54 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.xinfoConsumers(key, group));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use {@link #xreadBinary(XReadParams, Map)} or
+   *     {@link #xreadBinaryAsMap(XReadParams, Map)} for type safety and better stream entry
+   *     parsing.
+   */
+  @Deprecated
   @Override
-  public Response<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<Object>> xread(XReadParams xReadParams,
+      Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xread(xReadParams, streams));
   }
 
+  /**
+   * @deprecated As of Jedis 6.1.0, use
+   *     {@link #xreadGroupBinary(byte[], byte[], XReadGroupParams, Map)} or
+   *     {@link #xreadGroupBinaryAsMap(byte[], byte[], XReadGroupParams, Map)} instead.
+   */
+  @Deprecated
   @Override
   public Response<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadBinary(xReadParams, streams));
+  }
+
+  @Override
+  public Response<Map<byte[], List<StreamEntryBinary>>> xreadBinaryAsMap(XReadParams xReadParams,
+      Map<byte[], StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadBinaryAsMap(xReadParams, streams));
+  }
+
+  @Override
+  public Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return appendCommand(
+        commandObjects.xreadGroupBinary(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(byte[] groupName,
+      byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
+    return appendCommand(
+        commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -3565,21 +3766,25 @@ public abstract class PipeliningBase
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String option) {
     return appendCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
+  @Deprecated
   public Response<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return appendCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(option, value));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
@@ -4366,57 +4571,243 @@ public abstract class PipeliningBase
   }
   // RedisBloom commands
 
-  // RedisGraph commands
+  // Vector Set commands
   @Override
-  public Response<ResultSet> graphQuery(String name, String query) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query));
+  public Response<Boolean> vadd(String key, float[] vector, String element) {
+    return appendCommand(commandObjects.vadd(key, vector, element));
   }
 
   @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query));
+  public Response<Boolean> vadd(String key, float[] vector, String element, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, params));
   }
 
   @Override
-  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, timeout));
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element));
   }
 
   @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
   }
 
   @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, params));
+  public Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
   }
 
   @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
   }
 
   @Override
-  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return appendCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
+  public Response<List<String>> vsim(String key, float[] vector) {
+    return appendCommand(commandObjects.vsim(key, vector));
   }
 
   @Override
-  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
+  public Response<List<String>> vsim(String key, float[] vector, VSimParams params) {
+    return appendCommand(commandObjects.vsim(key, vector, params));
   }
 
   @Override
-  public Response<String> graphDelete(String name) {
-    return appendCommand(graphCommandObjects.graphDelete(name));
+  public Response<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params) {
+    return appendCommand(commandObjects.vsimWithScores(key, vector, params));
   }
 
   @Override
-  public Response<List<String>> graphProfile(String graphName, String query) {
-    return appendCommand(commandObjects.graphProfile(graphName, query));
+  public Response<List<String>> vsimByElement(String key, String element) {
+    return appendCommand(commandObjects.vsimByElement(key, element));
   }
-  // RedisGraph commands
+
+  @Override
+  public Response<List<String>> vsimByElement(String key, String element, VSimParams params) {
+    return appendCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Response<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params) {
+    return appendCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Response<Long> vdim(String key) {
+    return appendCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public Response<Long> vcard(String key) {
+    return appendCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public Response<List<Double>> vemb(String key, String element) {
+    return appendCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public Response<RawVector> vembRaw(String key, String element) {
+    return appendCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public Response<Boolean> vrem(String key, String element) {
+    return appendCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public Response<List<List<String>>> vlinks(String key, String element) {
+    return appendCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public Response<List<Map<String, Double>>> vlinksWithScores(String key, String element) {
+    return appendCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public Response<String> vrandmember(String key) {
+    return appendCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public Response<List<String>> vrandmember(String key, int count) {
+    return appendCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public Response<String> vgetattr(String key, String element) {
+    return appendCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public Response<Boolean> vsetattr(String key, String element, String attributes) {
+    return appendCommand(commandObjects.vsetattr(key, element, attributes));
+  }
+
+  @Override
+  public Response<VectorInfo> vinfo(String key) {
+    return appendCommand(commandObjects.vinfo(key));
+  }
+
+  // Binary vector set pipeline commands
+  @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element) {
+    return appendCommand(commandObjects.vadd(key, vector, element));
+  }
+
+  @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, params));
+  }
+
+  @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsim(byte[] key, float[] vector) {
+    return appendCommand(commandObjects.vsim(key, vector));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsim(byte[] key, float[] vector, VSimParams params) {
+    return appendCommand(commandObjects.vsim(key, vector, params));
+  }
+
+  @Override
+  public Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
+    return appendCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsimByElement(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vsimByElement(key, element));
+  }
+
+  @Override
+  public Response<List<byte[]>> vsimByElement(byte[] key, byte[] element, VSimParams params) {
+    return appendCommand(commandObjects.vsimByElement(key, element, params));
+  }
+
+  @Override
+  public Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
+    return appendCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Response<Long> vdim(byte[] key) {
+    return appendCommand(commandObjects.vdim(key));
+  }
+
+  @Override
+  public Response<Long> vcard(byte[] key) {
+    return appendCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public Response<List<Double>> vemb(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vemb(key, element));
+  }
+
+  @Override
+  public Response<RawVector> vembRaw(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vembRaw(key, element));
+  }
+
+  @Override
+  public Response<Boolean> vrem(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vrem(key, element));
+  }
+
+  @Override
+  public Response<List<List<byte[]>>> vlinks(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vlinks(key, element));
+  }
+
+  @Override
+  public Response<List<Map<byte[], Double>>> vlinksWithScores(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vlinksWithScores(key, element));
+  }
+
+  @Override
+  public Response<byte[]> vrandmember(byte[] key) {
+    return appendCommand(commandObjects.vrandmember(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> vrandmember(byte[] key, int count) {
+    return appendCommand(commandObjects.vrandmember(key, count));
+  }
+
+  @Override
+  public Response<byte[]> vgetattr(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vgetattr(key, element));
+  }
+
+  @Override
+  public Response<Boolean> vsetattr(byte[] key, byte[] element, byte[] attributes) {
+    return appendCommand(commandObjects.vsetattr(key, element, attributes));
+  }
+  // Vector Set pipeline commands end
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

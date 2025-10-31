@@ -5,21 +5,28 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.util.Arrays;
 import java.util.List;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Jedis;
@@ -30,35 +37,40 @@ import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
-import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * TODO: properly define and test exceptions
  */
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static final String USER_NAME = "newuser";
   public static final String USER_PASSWORD = "secret";
+  public static final String USER_ANTIREZ = "antirez";
 
-  @BeforeClass
+  @BeforeAll
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
+    assumeTrue(getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.V6_0_0),
+        "Not running ACL test on this version of Redis");
   }
 
   public AccessControlListCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     try {
       jedis.aclDelUser(USER_NAME);
-    } catch (Exception e) { }
+      jedis.aclDelUser(USER_ANTIREZ);
+    } catch (Exception e) {
+      // Ignore exception
+    }
     super.tearDown();
   }
 
@@ -95,13 +107,15 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   @Test
   public void aclUsers() {
     List<String> users = jedis.aclUsers();
-    assertEquals(2, users.size());
+    assertEquals(3, users.size());
     assertThat(users, Matchers.hasItem("default"));
-
-    assertEquals(2, jedis.aclUsersBinary().size()); // Test binary
+    assertThat(users, Matchers.hasItem("deploy"));
+    assertThat(users, Matchers.hasItem("acljedis"));
+    assertEquals(3, jedis.aclUsersBinary().size()); // Test binary
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x misses [~]>")
   public void aclGetUser() {
     // get default user information
     AccessControlUser userInfo = jedis.aclGetUser("default");
@@ -219,13 +233,14 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
       assertThat(e.getMessage(), startsWith("NOPERM "));
-      assertThat(e.getMessage(), endsWith(" has no permissions to run the 'ping' command"));
+      assertThat(e.getMessage(), containsString(" has no permissions to run the 'ping' command"));
     }
 
     jedis2.close();
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void aclDryRun() {
     jedis.aclSetUser(USER_NAME, "nopass", "allkeys", "+set", "-get");
 
@@ -240,6 +255,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void aclDryRunBinary() {
     byte[] username = USER_NAME.getBytes();
 
@@ -284,7 +300,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
       assertThat(e.getMessage(), startsWith("NOPERM "));
-      assertThat(e.getMessage(), endsWith(" has no permissions to run the 'set' command"));
+      assertThat(e.getMessage(), containsString(" has no permissions to run the 'set' command"));
     }
 
     // change permissions of the user
@@ -305,7 +321,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // allow user to access a subset of the key
-    jedis.aclSetUser(USER_NAME, "allcommands", "~foo:*", "~bar:*"); // TODO : Define a DSL
+    jedis.aclSetUser(USER_NAME, "allcommands", "~foo:*", "~bar:*"); // TODO : a DSL
 
     // create key foo, bar and zap
     jedis2.set("foo:1", "a");
@@ -347,9 +363,9 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.aclLog().isEmpty());
 
     // create new user and cconnect
-    jedis.aclSetUser("antirez", ">foo", "on", "+set", "~object:1234");
-    jedis.aclSetUser("antirez", "+eval", "+multi", "+exec");
-    jedis.auth("antirez", "foo");
+    jedis.aclSetUser(USER_ANTIREZ, ">foo", "on", "+set", "~object:1234");
+    jedis.aclSetUser(USER_ANTIREZ, "+eval", "+multi", "+exec");
+    jedis.auth(USER_ANTIREZ, "foo");
 
     // generate an error (antirez user does not have the permission to access foo)
     try {
@@ -362,9 +378,9 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
 
     List<AccessControlLogEntry> aclEntries = jedis.aclLog();
-    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals(1, aclEntries.size(), "Number of log messages ");
     assertEquals(1, aclEntries.get(0).getCount());
-    assertEquals("antirez", aclEntries.get(0).getUsername());
+    assertEquals(USER_ANTIREZ, aclEntries.get(0).getUsername());
     assertEquals("toplevel", aclEntries.get(0).getContext());
     assertEquals("command", aclEntries.get(0).getReason());
     assertEquals("get", aclEntries.get(0).getObject());
@@ -373,7 +389,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
-    jedis.auth("antirez", "foo");
+    jedis.auth(USER_ANTIREZ, "foo");
 
     for (int i = 0; i < 10; i++) {
       // generate an error (antirez user does not have the permission to access foo)
@@ -386,12 +402,12 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // test the ACL Log
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals(1, jedis.aclLog().size(), "Number of log messages ");
     assertEquals(10, jedis.aclLog().get(0).getCount());
     assertEquals("get", jedis.aclLog().get(0).getObject());
 
     // Generate another type of error
-    jedis.auth("antirez", "foo");
+    jedis.auth(USER_ANTIREZ, "foo");
     try {
       jedis.set("somekeynotallowed", "1234");
       fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"somekeynotallowed\", \"1234\")");
@@ -400,7 +416,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // test the ACL Log
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 2, jedis.aclLog().size());
+    assertEquals( 2, jedis.aclLog().size(), "Number of log messages ");
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
     assertEquals("key", jedis.aclLog().get(0).getReason());
@@ -408,7 +424,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
-    jedis.auth("antirez", "foo");
+    jedis.auth(USER_ANTIREZ, "foo");
     Transaction t = jedis.multi();
     t.incr("foo");
     try {
@@ -419,13 +435,13 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     t.close();
 
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals( 1, jedis.aclLog().size(), "Number of log messages ");
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("multi", jedis.aclLog().get(0).getContext());
     assertEquals("incr", jedis.aclLog().get(0).getObject());
 
     // ACL LOG can accept a numerical argument to show less entries
-    jedis.auth("antirez", "foo");
+    jedis.auth(USER_ANTIREZ, "foo");
     for (int i = 0; i < 5; i++) {
       try {
         jedis.incr("foo");
@@ -440,21 +456,22 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
-    assertEquals("Number of log messages ", 3, jedis.aclLog().size());
-    assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
+    assertEquals( 3, jedis.aclLog().size(), "Number of log messages ");
+    assertEquals( 2, jedis.aclLog(2).size(), "Number of log messages ");
 
     // Binary tests
-    assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
-    assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
+    assertEquals( 3, jedis.aclLogBinary().size(), "Number of log messages ");
+    assertEquals( 2, jedis.aclLogBinary(2).size(), "Number of log messages ");
 
     // RESET
     String status = jedis.aclLogReset();
     assertEquals(status, "OK");
 
-    jedis.aclDelUser("antirez");
+    jedis.aclDelUser(USER_ANTIREZ);
   }
 
   @Test
+  @SinceRedisVersion(value = "7.2.0", message = "Starting with Redis version 7.2.0: Added entry ID, timestamp created, and timestamp last updated.")
   public void aclLogWithEntryID() {
     try {
       jedis.auth("wronguser", "wrongpass");
@@ -463,7 +480,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     List<AccessControlLogEntry> aclEntries = jedis.aclLog();
-    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals( 1, aclEntries.size(), "Number of log messages ");
     assertEquals(1, aclEntries.get(0).getCount());
     assertEquals("wronguser", aclEntries.get(0).getUsername());
     assertEquals("toplevel", aclEntries.get(0).getContext());
@@ -497,6 +514,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x skips [&]>")
   public void aclBinaryCommandsTest() {
     jedis.aclSetUser(USER_NAME.getBytes());
     assertNotNull(jedis.aclGetUser(USER_NAME));

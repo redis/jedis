@@ -1,10 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.params.ClientKillParams.SkipMe;
 
 import java.util.concurrent.ExecutionException;
@@ -15,12 +18,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedClass;
 
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -30,7 +35,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.resps.TrackingInfo;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
@@ -38,11 +45,12 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private Jedis client;
 
+
   public ClientCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
@@ -51,7 +59,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     client.clientSetname(clientName);
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     client.close();
@@ -73,6 +81,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
   public void clientSetInfoCommand() {
     String libName = "Jedis::A-Redis-Java-library";
     String libVersion = "999.999.999";
@@ -174,7 +183,9 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    assertEquals(1, jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));
+
+    ClientKillParams skipmeNo = new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO);
+    assertThat(jedis.clientKill(skipmeNo), greaterThanOrEqualTo(1L));
     assertDisconnected(jedis);
   }
 
@@ -243,6 +254,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "MAXAGE (since Redis 7.4)")
   public void killMaxAge() throws InterruptedException {
     long maxAge = 2;
 

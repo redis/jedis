@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UnifiedJedisPubSubCommandsTest extends UnifiedJedisMockedTestBase {
 

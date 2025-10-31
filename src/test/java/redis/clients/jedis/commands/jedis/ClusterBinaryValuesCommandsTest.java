@@ -1,9 +1,11 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
@@ -12,8 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -151,8 +153,10 @@ public class ClusterBinaryValuesCommandsTest extends ClusterJedisCommandsTestBas
     assertEquals("2", SafeEncoder.encode((byte[]) returnObj));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void failKeys() {
-    cluster.keys("*".getBytes());
+    assertThrows(IllegalArgumentException.class, () -> {
+      cluster.keys("*".getBytes());
+    });
   }
 }

@@ -1,21 +1,23 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.JedisSentinelTestUtil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@Tag("integration")
 public class JedisSentinelTest {
 
   private static final String MASTER_NAME = "mymaster";
@@ -29,11 +31,11 @@ public class JedisSentinelTest {
 
   protected static HostAndPort sentinelForFailover = HostAndPorts.getSentinelServers().get(2);
 
-  @Before
+  @BeforeEach
   public void setup() throws InterruptedException {
   }
 
-  @After
+  @AfterEach
   public void clear() throws InterruptedException {
     // New Sentinel (after 2.8.1)
     // when slave promoted to master (slave of no one), New Sentinel force
@@ -60,11 +62,10 @@ public class JedisSentinelTest {
       List<String> masterHostAndPort = j.sentinelGetMasterAddrByName(MASTER_NAME);
       HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0),
           Integer.parseInt(masterHostAndPort.get(1)));
-//      assertEquals(master, masterFromSentinel);
       assertEquals(master.getPort(), masterFromSentinel.getPort());
 
       List<Map<String, String>> slaves = j.sentinelReplicas(MASTER_NAME);
-      assertTrue(!slaves.isEmpty());
+      assertFalse(slaves.isEmpty());
       assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
       // DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
@@ -171,12 +172,11 @@ public class JedisSentinelTest {
 
   private void ensureMonitored(HostAndPort sentinel, String masterName, String ip, int port,
       int quorum) {
-    Jedis j = new Jedis(sentinel);
-    try {
+
+    try (Jedis j = new Jedis(sentinel)) {
       j.sentinelMonitor(masterName, ip, port, quorum);
     } catch (JedisDataException e) {
-    } finally {
-      j.close();
+      // ignore
     }
   }
 

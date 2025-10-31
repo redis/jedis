@@ -53,13 +53,6 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return cco;
   }
 
-  /**
-   * This method must be called after constructor, if graph commands are going to be used.
-   */
-  public void prepareGraphCommands() {
-    super.prepareGraphCommands(provider);
-  }
-
   @Override
   public void close() {
     try {

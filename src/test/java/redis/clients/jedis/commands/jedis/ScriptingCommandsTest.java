@@ -1,19 +1,21 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
@@ -26,20 +28,35 @@ import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   public ScriptingCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    jedis.functionFlush();
+    if (RedisVersionUtil.getRedisVersion(jedis)
+            .isGreaterThanOrEqualTo(RedisVersion.V7_0_0)) {
+      jedis.functionFlush();
+    }
   }
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -142,6 +159,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void evalReadonly() {
     String script = "return KEYS[1]";
     List<String> keys = new ArrayList<String>();
@@ -165,6 +183,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void evalshaReadonly() {
     jedis.set("foo", "bar");
     jedis.eval("return redis.call('get','foo')");
@@ -185,6 +204,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void evalshaReadonlyBinary() {
     jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
     jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
@@ -194,9 +214,11 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }
 
-  @Test(expected = JedisNoScriptException.class)
+  @Test
   public void evalshaShaNotFound() {
-    jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
+    assertThrows(JedisNoScriptException.class, () -> {
+      jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
+    });
   }
 
   @Test
@@ -335,6 +357,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void functionLoadAndDelete() {
     String engine = "Lua";
     String library = "mylib";
@@ -354,6 +377,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void functionFlush() {
     String engine = "Lua";
     String library = "mylib";
@@ -369,6 +393,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void functionList() {
     String engine = "LUA";
     String library = "mylib";
@@ -436,6 +461,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void functionDumpRestore() {
     String engine = "Lua";
     String library = "mylib";
@@ -455,6 +481,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void functionStatsWithoutRunning() {
     String engine = "Lua";
     String library = "mylib";
@@ -490,6 +517,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 //  }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void functionKillWithoutRunningFunction() {
     String engine = "Lua";
     String library = "mylib";
@@ -505,6 +533,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void fcall() {
     String engine = "Lua";
     String library = "mylib";
@@ -516,6 +545,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void fcallBinary() {
     String engine = "Lua";
     String library = "mylib";
@@ -527,6 +557,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.0.0")
   public void fcallReadonly() {
     String engine = "Lua";
     String library = "mylib";

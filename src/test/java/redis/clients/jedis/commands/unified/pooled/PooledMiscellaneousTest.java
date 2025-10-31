@@ -1,41 +1,55 @@
 package redis.clients.jedis.commands.unified.pooled;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.RedisVersionCondition;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@Tag("integration")
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(PooledCommandsTestHelper.nodeInfo);
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
 
   public PooledMiscellaneousTest(RedisProtocol protocol) {
     super(protocol);
   }
 
-  @Before
-  public void setUp() {
-    jedis = PooledCommandsTestHelper.getPooled(protocol);
-    PooledCommandsTestHelper.clearData();
+  @Override
+  protected UnifiedJedis createTestClient() {
+    return PooledCommandsTestHelper.getPooled(protocol);
   }
 
-  @After
-  public void cleanUp() {
-    jedis.close();
+  @BeforeEach
+  public void setUp() {
+    PooledCommandsTestHelper.clearData();
   }
 
   @Test
@@ -148,9 +162,19 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(value="7.0.0")
   public void broadcastWithError() {
     JedisDataException error = assertThrows(JedisDataException.class,
         () -> jedis.functionDelete("xyz"));
     assertEquals("ERR Library not found", error.getMessage());
+  }
+
+  @Test
+  public void info() {
+    String info = jedis.info();
+    assertThat(info, notNullValue());
+
+    info = jedis.info("server");
+    assertThat(info, notNullValue());
   }
 }

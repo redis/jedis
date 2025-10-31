@@ -1,34 +1,37 @@
 package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Test;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+@Tag("integration")
 public class ConnectionTest {
 
   private Connection client;
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (client != null) {
       client.close();
     }
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test
   public void checkUnknownHost() {
     client = new Connection("someunknownhost", Protocol.DEFAULT_PORT);
-    client.connect();
+    assertThrows(JedisConnectionException.class, ()->client.connect());
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test
   public void checkWrongPort() {
     client = new Connection(Protocol.DEFAULT_HOST, 55665);
-    client.connect();
+    assertThrows(JedisConnectionException.class, ()->client.connect());
   }
 
   @Test

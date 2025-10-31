@@ -2,19 +2,25 @@
 // REMOVE_START
 package io.redis.examples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+// REMOVE_END
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Collections;
 
-// REMOVE_END
 // HIDE_START
 import redis.clients.jedis.UnifiedJedis;
 // HIDE_END
 
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 // HIDE_START
 public class CmdsHashExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -24,57 +30,6 @@ public class CmdsHashExample {
         jedis.del("myhash");
         //REMOVE_END
 // HIDE_END
-
-
-        // STEP_START hdel
-
-        // STEP_END
-
-        // Tests for 'hdel' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hexists
-
-        // STEP_END
-
-        // Tests for 'hexists' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hexpire
-
-        // STEP_END
-
-        // Tests for 'hexpire' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hexpireat
-
-        // STEP_END
-
-        // Tests for 'hexpireat' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hexpiretime
-
-        // STEP_END
-
-        // Tests for 'hexpiretime' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
 
         // STEP_START hget
         Map<String, String> hGetExampleParams = new HashMap<>();
@@ -89,155 +44,42 @@ public class CmdsHashExample {
         String hGetResult3 = jedis.hget("myhash", "field2");
         System.out.println(hGetResult3);    // >>> null
         // STEP_END
-
-        // Tests for 'hget' step.
         // REMOVE_START
-        Assert.assertEquals(1, hGetResult1);
-        Assert.assertEquals("foo", hGetResult2);
-        Assert.assertNull(hGetResult3);
+        // Tests for 'hget' step.
+        assertEquals(1, hGetResult1);
+        assertEquals("foo", hGetResult2);
+        assertNull(hGetResult3);
         jedis.del("myhash");
         // REMOVE_END
 
-
         // STEP_START hgetall
+        Map<String, String> hGetAllExampleParams = new HashMap<>();
+        hGetAllExampleParams.put("field1", "Hello");
+        hGetAllExampleParams.put("field2", "World");
 
+        long hGetAllResult1 = jedis.hset("myhash", hGetAllExampleParams);
+        System.out.println(hGetAllResult1); // >>> 2
+
+        Map<String, String> hGetAllResult2 = jedis.hgetAll("myhash");
+        System.out.println(
+            hGetAllResult2.entrySet().stream()
+                    .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
+                    .collect(toList())
+                    .toString()
+        );
+        // >>> [field1=Hello, field2=World]
         // STEP_END
-
+        // REMOVE_START
         // Tests for 'hgetall' step.
-        // REMOVE_START
-
+        assertEquals(2, hGetAllResult1);
+        assertEquals("[field1=Hello, field2=World]",
+            hGetAllResult2.entrySet().stream()
+                    .sorted((s1, s2)-> s1.getKey().compareTo(s2.getKey()))
+                    .collect(toList())
+                    .toString()
+        );
+        jedis.del("myhash");
         // REMOVE_END
-
-
-        // STEP_START hincrby
-
-        // STEP_END
-
-        // Tests for 'hincrby' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hincrbyfloat
-
-        // STEP_END
-
-        // Tests for 'hincrbyfloat' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hkeys
-
-        // STEP_END
-
-        // Tests for 'hkeys' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hlen
-
-        // STEP_END
-
-        // Tests for 'hlen' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hmget
-
-        // STEP_END
-
-        // Tests for 'hmget' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hmset
-
-        // STEP_END
-
-        // Tests for 'hmset' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hpersist
-
-        // STEP_END
-
-        // Tests for 'hpersist' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hpexpire
-
-        // STEP_END
-
-        // Tests for 'hpexpire' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hpexpireat
-
-        // STEP_END
-
-        // Tests for 'hpexpireat' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hpexpiretime
-
-        // STEP_END
-
-        // Tests for 'hpexpiretime' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hpttl
-
-        // STEP_END
-
-        // Tests for 'hpttl' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hrandfield
-
-        // STEP_END
-
-        // Tests for 'hrandfield' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hscan
-
-        // STEP_END
-
-        // Tests for 'hscan' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
 
         // STEP_START hset
         Map<String, String> hSetExampleParams = new HashMap<>();
@@ -269,64 +111,42 @@ public class CmdsHashExample {
         // >>> Key: field2, Value: Hi
         // >>> Key: field1, Value: Hello
         // STEP_END
-
-        // Tests for 'hset' step.
         // REMOVE_START
-        Assert.assertEquals(1, hSetResult1);
-        Assert.assertEquals("Hello", hSetResult2);
-        Assert.assertEquals(2, hSetResult3);
-        Assert.assertEquals("Hi", hSetResult4);
-        Assert.assertEquals("World", hSetResult5);
-        Assert.assertEquals(3, hSetResult6.size());
-        Assert.assertEquals("Hello", hSetResult6.get("field1"));
-        Assert.assertEquals("Hi", hSetResult6.get("field2"));
-        Assert.assertEquals("World", hSetResult6.get("field3"));
+        // Tests for 'hset' step.
+        assertEquals(1, hSetResult1);
+        assertEquals("Hello", hSetResult2);
+        assertEquals(2, hSetResult3);
+        assertEquals("Hi", hSetResult4);
+        assertEquals("World", hSetResult5);
+        assertEquals(3, hSetResult6.size());
+        assertEquals("Hello", hSetResult6.get("field1"));
+        assertEquals("Hi", hSetResult6.get("field2"));
+        assertEquals("World", hSetResult6.get("field3"));
         jedis.del("myhash");
         // REMOVE_END
 
-
-        // STEP_START hsetnx
-
-        // STEP_END
-
-        // Tests for 'hsetnx' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START hstrlen
-
-        // STEP_END
-
-        // Tests for 'hstrlen' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
-        // STEP_START httl
-
-        // STEP_END
-
-        // Tests for 'httl' step.
-        // REMOVE_START
-
-        // REMOVE_END
-
-
         // STEP_START hvals
+        Map<String, String> hValsExampleParams = new HashMap<>();
+        hValsExampleParams.put("field1", "Hello");
+        hValsExampleParams.put("field2", "World");
 
+        long hValsResult1 = jedis.hset("myhash", hValsExampleParams);
+        System.out.println(hValsResult1); // >>> 2
+
+        List<String> hValsResult2 = jedis.hvals("myhash");
+        Collections.sort(hValsResult2);
+        System.out.println(hValsResult2);
+        // >>> [Hello, World]
         // STEP_END
-
+        // REMOVE_START       
         // Tests for 'hvals' step.
-        // REMOVE_START
-
+        assertEquals(2, hValsResult1);
+        assertEquals("[Hello, World]", hValsResult2.toString());
+        jedis.del("myhash");
         // REMOVE_END
-
 
 // HIDE_START
-        
+        jedis.close();
     }
 }
 // HIDE_END

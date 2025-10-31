@@ -10,10 +10,9 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.*;
 // REMOVE_START
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 // REMOVE_END
 
 class Bicycle {
@@ -218,7 +217,7 @@ public class SearchQuickstartExample {
     // Prints: Documents found: 10
     // STEP_END
     // REMOVE_START
-    assertEquals("Validate total results", 10, result1.size());
+    assertEquals(10, result1.size(), "Validate total results");
     // REMOVE_END
 
     // STEP_START query_single_term
@@ -229,7 +228,7 @@ public class SearchQuickstartExample {
     // properties:[$={"brand":"Velorim","model":"Jigger","price":270,"description":"Small and powerful, the Jigger is the best ride for the smallest of tikes! This is the tiniest kids’ pedal bike on the market available without a coaster brake, the Jigger is the vehicle of choice for the rare tenacious little rider raring to go.","condition":"new"}]]
     // STEP_END
     // REMOVE_START
-    assertEquals("Validate bike id", "bicycle:0", result2.get(0).getId());
+    assertEquals("bicycle:0", result2.get(0).getId(), "Validate bike id");
     // REMOVE_END
 
     // STEP_START query_single_term_limit_fields
@@ -239,7 +238,7 @@ public class SearchQuickstartExample {
     // Prints: [id:bicycle:0, score: 1.0, payload:null, properties:[price=270]]
     // STEP_END
     // REMOVE_START
-    assertEquals("Validate cargo bike id", "bicycle:0", result3.get(0).getId());
+    assertEquals("bicycle:0", result3.get(0).getId(),"Validate cargo bike id");
     // REMOVE_END
 
     // STEP_START query_single_term_and_num_range
@@ -250,7 +249,7 @@ public class SearchQuickstartExample {
     // properties:[$={"brand":"Breakout","model":"XBN 2.1 Alloy","price":810,"description":"The XBN 2.1 Alloy is our entry-level road bike – but that’s not to say that it’s a basic machine. With an internal weld aluminium frame, a full carbon fork, and the slick-shifting Claris gears from Shimano’s, this is a bike which doesn’t break the bank and delivers craved performance.","condition":"new"}]]
     // STEP_END
     // REMOVE_START
-    assertEquals("Validate bike id", "bicycle:5", result4.get(0).getId());
+    assertEquals("bicycle:5", result4.get(0).getId(), "Validate bike id");
     // REMOVE_END
 
     // STEP_START query_exact_matching
@@ -261,7 +260,7 @@ public class SearchQuickstartExample {
     // properties:[$={"brand":"Noka Bikes","model":"Kahuna","price":3200,"description":"Whether you want to try your hand at XC racing or are looking for a lively trail bike that's just as inspiring on the climbs as it is over rougher ground, the Wilder is one heck of a bike built specifically for short women. Both the frames and components have been tweaked to include a women’s saddle, different bars and unique colourway.","condition":"used"}]]
     // STEP_END
     // REMOVE_START
-    assertEquals("Validate bike id", "bicycle:4", result5.get(0).getId());
+    assertEquals("bicycle:4", result5.get(0).getId(), "Validate bike id");
     // REMOVE_END
 
     // STEP_START simple_aggregation
@@ -276,7 +275,7 @@ public class SearchQuickstartExample {
     // refurbished - 1
     // used - 5
     // new - 4
-    assertEquals("Validate aggregation results", 3, ar.getTotalResults());
+    assertEquals(3, ar.getTotalResults(), "Validate aggregation results");
     // STEP_END
 
     jedis.close();

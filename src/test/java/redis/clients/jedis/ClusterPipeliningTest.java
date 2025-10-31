@@ -1,6 +1,15 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
@@ -10,12 +19,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
+import org.junit.jupiter.api.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
@@ -24,9 +29,12 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.GeoCoordinateMatcher;
+import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Tag("integration")
 public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";
@@ -43,7 +51,7 @@ public class ClusterPipeliningTest {
   private static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
   private Set<HostAndPort> nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
@@ -83,21 +91,21 @@ public class ClusterPipeliningTest {
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
   }
 
-  @Before
+  @BeforeEach
   public void prepare() {
     node1.flushAll();
     node2.flushAll();
     node3.flushAll();
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     node1.flushDB();
     node2.flushDB();
     node3.flushDB();
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDown() throws InterruptedException {
     node1.flushDB();
     node2.flushDB();
@@ -354,12 +362,12 @@ public class ClusterPipeliningTest {
     assertTrue(Arrays.equals(secondKey, value1) || Arrays.equals(secondKey, value2));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void pipelineResponseWithinPipeline() {
     try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       Response<String> string = p.get("string");
-      string.get();
+      assertThrows(IllegalStateException.class,string::get);
       p.sync();
     }
   }
@@ -696,10 +704,6 @@ public class ClusterPipeliningTest {
     hm.put("place1", new GeoCoordinate(2.1909389952632, 41.433791470673));
     hm.put("place2", new GeoCoordinate(2.1873744593677, 41.406342043777));
 
-    List<GeoCoordinate> values = new ArrayList<>();
-    values.add(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
-    values.add(new GeoCoordinate(2.18737632036209106, 41.40634178640635099));
-
     List<String> hashValues = new ArrayList<>();
     hashValues.add("sp3e9yg3kd0");
     hashValues.add("sp3e9cbc3t0");
@@ -708,11 +712,6 @@ public class ClusterPipeliningTest {
     GeoRadiusParam params = new GeoRadiusParam().withCoord().withHash().withDist();
     GeoRadiusParam params2 = new GeoRadiusParam().count(1, true);
     GeoRadiusStoreParam storeParams = new GeoRadiusStoreParam().store("radius{#}");
-
-    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
-    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
-    expectedResponse.setDistance(0.0881);
-    expectedResponse.setRawScore(3471609698139488L);
 
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
@@ -741,11 +740,21 @@ public class ClusterPipeliningTest {
     assertEquals(Double.valueOf(3067.4157), r2.get());
     assertEquals(Double.valueOf(3.0674), r3.get());
     assertEquals(hashValues, r4.get());
-    assertEquals(values, r5.get());
+    assertThat(r5.get(), contains(
+            GeoCoordinateMatcher.atCoordinates(2.19093829393386841, 41.43379028184083523),
+            GeoCoordinateMatcher.atCoordinates(2.18737632036209106, 41.40634178640635099))
+    );
     assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
     assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
-    assertEquals(expectedResponse, r8.get().get(0));
-    assertEquals(expectedResponse, r9.get().get(0));
+
+    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
+    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
+    expectedResponse.setDistance(0.0881);
+    expectedResponse.setRawScore(3471609698139488L);
+
+    assertThat(r8.get().get(0), GeoRadiusResponseMatcher.ofResponse(expectedResponse));
+    assertThat(r9.get().get(0), GeoRadiusResponseMatcher.ofResponse(expectedResponse));
+
     assertEquals(Long.valueOf(1), r10.get());
     assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));
     assertTrue(r12.get().size() == 2 && r12.get().get(0).getMemberByString().equals("place2"));
@@ -891,9 +900,11 @@ public class ClusterPipeliningTest {
     try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline p = new ClusterPipeline(provider);
       p.set(key, "0");
-      Response<Object> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+      Response<Object> result0 = p.eval(script, Collections.singletonList(key),
+          Collections.singletonList(arg));
       p.incr(key);
-      Response<Object> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+      Response<Object> result1 = p.eval(script, Collections.singletonList(key),
+          Collections.singletonList(arg));
       Response<String> result2 = p.get(key);
       p.sync();
 
@@ -913,9 +924,11 @@ public class ClusterPipeliningTest {
     try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
       ClusterPipeline bP = new ClusterPipeline(provider);
       bP.set(bKey, SafeEncoder.encode("0"));
-      Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
+      Response<Object> bResult0 = bP.eval(bScript, Collections.singletonList(bKey),
+          Collections.singletonList(bArg));
       bP.incr(bKey);
-      Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
+      Response<Object> bResult1 = bP.eval(bScript, Collections.singletonList(bKey),
+          Collections.singletonList(bArg));
       Response<byte[]> bResult2 = bP.get(bKey);
       bP.sync();
 
@@ -1119,6 +1132,49 @@ public class ClusterPipeliningTest {
           pipeline.sync();
         }
         assertThreadsCount();
+      }
+    }
+  }
+
+  @Test
+  public void testPipelineKeysAtSameNode() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+
+      // test simple key
+      cluster.set("foo", "bar");
+
+      try (ClusterPipeline pipeline = cluster.pipelined()) {
+        Response<String> foo = pipeline.get("foo");
+        pipeline.sync();
+
+        assertEquals("bar", foo.get());
+      }
+
+      // test multi key but at same node
+      int cnt = 3;
+      String prefix = "{foo}:";
+      for (int i = 0; i < cnt; i++) {
+        String key = prefix + i;
+        cluster.set(key, String.valueOf(i));
+      }
+
+      try (ClusterPipeline pipeline = cluster.pipelined()) {
+        List<Response<String>> results = new ArrayList<>();
+        for (int i = 0; i < cnt; i++) {
+          String key = prefix + i;
+          results.add(pipeline.get(key));
+        }
+
+        Response<Object> foo = pipeline.eval("return redis.call('get', KEYS[1])",
+            Collections.singletonList("foo"), Collections.emptyList());
+
+        pipeline.sync();
+        int idx = 0;
+        for (Response<String> res : results) {
+          assertEquals(String.valueOf(idx), res.get());
+          idx++;
+        }
+        assertEquals("bar", String.valueOf(foo.get()));
       }
     }
   }

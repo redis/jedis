@@ -1,25 +1,32 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Assert;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+@Tag("integration")
 public class JedisPoolTest {
 
   private static final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
@@ -46,7 +53,6 @@ public class JedisPoolTest {
       try (Jedis jedis = pool.getResource()) {
         assertEquals("PONG", jedis.ping());
         assertEquals(5000, jedis.getClient().getSoTimeout());
-        jedis.close();
       }
     }
   }
@@ -88,7 +94,7 @@ public class JedisPoolTest {
       jedis.close();
 
       Jedis jedis2 = pool.getResource();
-      assertEquals(jedis, jedis2);
+      assertSame(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
       jedis2.close();
     }
@@ -111,7 +117,7 @@ public class JedisPoolTest {
     assertTrue(pool.isClosed());
   }
 
-  @Test(expected = JedisException.class)
+  @Test
   public void checkPoolOverflow() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
@@ -120,9 +126,7 @@ public class JedisPoolTest {
         Jedis jedis = pool.getResource()) {
       jedis.auth(endpointStandalone0.getPassword());
 
-      try (Jedis jedis2 = pool.getResource()) {
-        jedis2.auth(endpointStandalone0.getPassword());
-      }
+      assertThrows(JedisException.class, pool::getResource);
     }
   }
 
@@ -183,9 +187,9 @@ public class JedisPoolTest {
     }
   }
 
-  @Test(expected = InvalidURIException.class)
+  @Test
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    new JedisPool(new URI("localhost:6380")).close();
+    assertThrows(InvalidURIException.class, ()->new JedisPool(new URI("localhost:6380")).close());
   }
 
   @Test
@@ -208,7 +212,7 @@ public class JedisPoolTest {
       jedis0.close();
 
       Jedis jedis1 = pool.getResource();
-      assertTrue("Jedis instance was not reused", jedis1 == jedis0);
+      assertSame(jedis1, jedis0);
       assertEquals(0, jedis1.getDB());
 
       jedis1.close();
@@ -230,7 +234,7 @@ public class JedisPoolTest {
         endpointStandalone0.getPassword(), 0, "invalid client name"); Jedis jedis = pool.getResource()) {
     } catch (Exception e) {
       if (!e.getMessage().startsWith("client info cannot contain space")) {
-        Assert.fail("invalid client name test fail");
+       fail("invalid client name test fail");
       }
     }
   }
@@ -302,12 +306,9 @@ public class JedisPoolTest {
       jedis.close();
     }
 
-    Jedis jedis2 = pool.getResource();
-    try {
-      assertTrue(jedis == jedis2);
+    try (Jedis jedis2 = pool.getResource()) {
+      assertSame(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
-    } finally {
-      jedis2.close();
     }
 
     pool.close();
@@ -380,7 +381,7 @@ public class JedisPoolTest {
         j.getClient().getOne();
         fail();
       } catch (Exception e) {
-        assertTrue(e instanceof JedisConnectionException);
+        assertInstanceOf(JedisConnectionException.class, e);
       }
       assertTrue(j.isBroken());
       j.close();
@@ -396,12 +397,11 @@ public class JedisPoolTest {
         endpointStandalone0.getPort(), 2000, "wrong pass");
         Jedis jedis = new Jedis(endpointStandalone0.getURIBuilder().defaultCredentials().build())) {
       int currentClientCount = getClientCount(jedis.clientList());
-      try {
-        pool.getResource();
-        fail("Should throw exception as password is incorrect.");
-      } catch (Exception e) {
-        assertEquals(currentClientCount, getClientCount(jedis.clientList()));
-      }
+      assertThrows(JedisAccessControlException.class, pool::getResource);
+      // wait for the redis server to close the connection
+      await().pollDelay(Duration.ofMillis(10)).atMost(500, MILLISECONDS)
+          .until(() -> getClientCount(jedis.clientList()) == currentClientCount);
+      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
   }
 
@@ -431,7 +431,9 @@ public class JedisPoolTest {
         credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "wrong password"));
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
-        } catch (JedisException e) { }
+        } catch (JedisException e) {
+          //ignore
+        }
         assertEquals(1, pool.getNumActive());
       }
       assertEquals(0, pool.getNumActive());
@@ -448,7 +450,9 @@ public class JedisPoolTest {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
         fail("Should not get resource from pool");
-      } catch (JedisException e) { }
+      } catch (JedisException e) {
+        //ignore
+      }
       assertEquals(0, pool.getNumActive());
 
       credentialsProvider.setCredentials(new DefaultRedisCredentials(null, endpointStandalone0.getPassword()));

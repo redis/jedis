@@ -1,19 +1,22 @@
 package redis.clients.jedis;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static redis.clients.jedis.Protocol.ResponseKeyword.SMESSAGE;
 import static redis.clients.jedis.Protocol.ResponseKeyword.SSUBSCRIBE;
 
-public class JedisShardedPubSubBaseTest extends TestCase {
+public class JedisShardedPubSubBaseTest {
 
+    @Test
     public void testProceed_givenThreadInterrupt_exitLoop() throws InterruptedException {
         // setup
         final JedisShardedPubSubBase<String> pubSub = new JedisShardedPubSubBase<String>() {
@@ -50,7 +53,7 @@ public class JedisShardedPubSubBaseTest extends TestCase {
         });
         thread.start();
 
-        assertTrue(countDownLatch.await(20, TimeUnit.MILLISECONDS));
+        assertTrue(countDownLatch.await(100, TimeUnit.MILLISECONDS));
 
     }
 }

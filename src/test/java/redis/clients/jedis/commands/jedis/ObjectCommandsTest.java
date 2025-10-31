@@ -3,21 +3,26 @@ package redis.clients.jedis.commands.jedis;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
@@ -29,7 +34,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     super(protocol);
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void setUp() throws Exception {
     super.setUp();
@@ -40,7 +45,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     lfuJedis.flushAll();
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     lfuJedis.disconnect();
@@ -93,11 +98,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   public void objectHelp() {
     // String
     List<String> helpTexts = jedis.objectHelp();
-    Assert.assertNotNull(helpTexts);
+    assertNotNull(helpTexts);
 
     // Binary
     List<byte[]> helpBinaryTexts = jedis.objectHelpBinary();
-    Assert.assertNotNull(helpBinaryTexts);
+    assertNotNull(helpBinaryTexts);
   }
 
   @Test
@@ -109,9 +114,9 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     // Binary
     assertThat(lfuJedis.objectFreq(binaryKey), greaterThanOrEqualTo(1L));
 
-    Assert.assertNull(lfuJedis.objectFreq("no_such_key"));
+    assertNull(lfuJedis.objectFreq("no_such_key"));
 
     jedis.set(key, "test2");
-    Assert.assertThrows("Freq is only allowed with LFU policy", JedisDataException.class, () -> jedis.objectFreq(key));
+    assertThrows(JedisDataException.class, () -> jedis.objectFreq(key), "Freq is only allowed with LFU policy");
   }
 }

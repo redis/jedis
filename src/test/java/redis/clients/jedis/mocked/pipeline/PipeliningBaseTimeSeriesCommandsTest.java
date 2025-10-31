@@ -10,7 +10,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.timeseries.*;
 

@@ -1,26 +1,31 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.junit.Test;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+
+@Tag("integration")
 public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
 
-  @Test(expected = JedisClusterOperationException.class)
+  @Test
   public void testJedisClusterException() {
     String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
     List<String> keys = new ArrayList<>();
@@ -30,7 +35,10 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     args.add("first");
     args.add("second");
     args.add("third");
-    cluster.eval(script, keys, args);
+
+    assertThrows(JedisClusterOperationException.class, () -> {
+      cluster.eval(script, keys, args);
+    });
   }
 
   @Test
@@ -55,7 +63,7 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     assertEquals("10", o.toString());
   }
 
-  @Test(expected = JedisClusterOperationException.class)
+  @Test
   public void testJedisClusterException2() {
     byte[] script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}".getBytes();
     List<byte[]> keys = new ArrayList<byte[]>();
@@ -65,7 +73,9 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     args.add("first".getBytes());
     args.add("second".getBytes());
     args.add("third".getBytes());
-    cluster.eval(script, keys, args);
+
+    assertThrows( JedisClusterOperationException.class, ()-> cluster.eval(script, keys, args));
+
   }
 
   @Test
@@ -84,10 +94,10 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     assertEquals("OK", cluster.scriptFlush(byteKey, FlushMode.SYNC));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test
   public void testBinaryScriptKill() {
     byte[] byteKey = "key1".getBytes();
-    cluster.scriptKill(byteKey);
+    assertThrows(JedisDataException.class, ()-> cluster.scriptKill(byteKey));
   }
 
   @Test
@@ -115,6 +125,7 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.0.0")
   public void broadcastWithError() {
 
     JedisBroadcastException error = assertThrows(JedisBroadcastException.class, () -> cluster.functionDelete("xyz"));

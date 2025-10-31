@@ -1,12 +1,9 @@
 package redis.clients.jedis.modules;
 
-import static org.junit.Assume.assumeTrue;
-
-import java.util.Collection;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
@@ -16,8 +13,18 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.RedisVersionCondition;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+@Tag("integration")
 public abstract class RedisModuleCommandsTestBase {
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(hnp, DefaultJedisClientConfig.builder().build());
+
+  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
+  protected static final HostAndPort hnp = HostAndPort.from(address);
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this
@@ -25,15 +32,9 @@ public abstract class RedisModuleCommandsTestBase {
    *
    * @see CommandsTestsParameters#respVersions()
    */
-  @Parameters
-  public static Collection<Object[]> data() {
-    return CommandsTestsParameters.respVersions();
-  }
-
-  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
-  protected static final HostAndPort hnp = HostAndPort.from(address);
   protected final RedisProtocol protocol;
 
+  protected Jedis jedis;
   protected UnifiedJedis client;
 
   /**
@@ -52,30 +53,23 @@ public abstract class RedisModuleCommandsTestBase {
   // BeforeClass
   public static void prepare() {
     try (Connection connection = new Connection(hnp)) {
-      assumeTrue("No Redis running on " + hnp.getPort() + " port.", connection.ping());
+      assumeTrue(connection.ping(), "No Redis running on " + hnp.getPort() + " port.");
     } catch (JedisConnectionException jce) {
-      assumeTrue("Could not connect to Redis running on " + hnp.getPort() + " port.", false);
+      assumeTrue(false, "Could not connect to Redis running on " + hnp.getPort() + " port.");
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
-    try (Jedis jedis = new Jedis(hnp)) {
-      jedis.flushAll();
-    }
+    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
+    jedis.flushAll();
     client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     client.close();
+    jedis.close();
   }
-//
-//  public static void tearDown() {
-//    client.close();
-//  }
-//
-//  protected static Connection createConnection() {
-//    return new Connection(hnp);
-//  }
+
 }

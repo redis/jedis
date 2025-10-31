@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
@@ -139,7 +138,7 @@ public interface SortedSetBinaryCommands {
   List<Tuple> zdiffWithScores(byte[]... keys);
 
   /**
-   * @deprecated Use {@link #zdiffstore(byte..., byte[]...)}.
+   * @deprecated Use {@link #zdiffstore(byte[], byte[][])}.
    */
   @Deprecated
   long zdiffStore(byte[] dstkey, byte[]... keys);
@@ -155,24 +154,24 @@ public interface SortedSetBinaryCommands {
   long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
 
   /**
-   * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
-   * instead of returning the result set, it returns just the cardinality of the result.
+   * Similar to {@link #zinter(ZParams, byte[][]) ZINTER}, but instead of returning the result set,
+   * it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
    * being the number of input sorted sets
-   * @see SortedSetBinaryCommands#zinter(ZParams, byte[]...)
+   * @see #zinter(ZParams, byte[][])
    * @param keys group of sets
    * @return The number of elements in the resulting intersection
    */
   long zintercard(byte[]... keys);
 
   /**
-   * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
-   * instead of returning the result set, it returns just the cardinality of the result.
+   * Similar to {@link #zinter(ZParams, byte[][]) ZINTER}, but instead of returning the result set,
+   * it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
    * being the number of input sorted sets
-   * @see SortedSetBinaryCommands#zinter(ZParams, byte[]...)
+   * @see #zinter(ZParams, byte[][])
    * @param limit If the intersection cardinality reaches limit partway through the computation,
    *              the algorithm will exit and yield limit as the cardinality
    * @param keys group of sets

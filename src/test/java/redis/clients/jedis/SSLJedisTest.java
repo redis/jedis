@@ -1,46 +1,35 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+import redis.clients.jedis.util.TlsUtil;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+@Tag("integration")
 public class SSLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
 
-  @BeforeClass
+  private static final String trustStoreName = SSLJedisTest.class.getSimpleName();
+
+  @BeforeAll
   public static void prepare() {
-    setupTrustStore();
+    List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+
+    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
 
-  public static void setupTrustStore() {
-    setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
-  }
-
-  private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-        new File(trustStoreFilePath).exists());
-    System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
-    System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
+  @AfterAll
+  public static void teardownTrustStore() {
+    TlsUtil.restoreOriginalTrustStore();
   }
 
   @Test
@@ -98,77 +87,4 @@ public class SSLJedisTest {
     }
   }
 
-  /**
-   * Creates an SSLSocketFactory that trusts all certificates in truststore.jceks.
-   */
-  static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
-
-    KeyStore trustStore = KeyStore.getInstance("jceks");
-
-    try (InputStream inputStream = new FileInputStream("src/test/resources/truststore.jceks")) {
-      trustStore.load(inputStream, null);
-    }
-
-    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
-    trustManagerFactory.init(trustStore);
-    TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-
-    SSLContext sslContext = SSLContext.getInstance("TLS");
-    sslContext.init(null, trustManagers, new SecureRandom());
-    return sslContext.getSocketFactory();
-  }
-
-  /**
-   * Creates an SSLSocketFactory with a trust manager that does not trust any certificates.
-   */
-  static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
-    TrustManager[] unTrustManagers = new TrustManager[] { new X509TrustManager() {
-      public X509Certificate[] getAcceptedIssuers() {
-        return new X509Certificate[0];
-      }
-
-      public void checkClientTrusted(X509Certificate[] chain, String authType) {
-        throw new RuntimeException(new InvalidAlgorithmParameterException());
-      }
-
-      public void checkServerTrusted(X509Certificate[] chain, String authType) {
-        throw new RuntimeException(new InvalidAlgorithmParameterException());
-      }
-    } };
-    SSLContext sslContext = SSLContext.getInstance("TLS");
-    sslContext.init(null, unTrustManagers, new SecureRandom());
-    return sslContext.getSocketFactory();
-  }
-
-  /**
-   * Very basic hostname verifier implementation for testing. NOT recommended for production.
-   */
-  static class BasicHostnameVerifier implements HostnameVerifier {
-
-    private static final String COMMON_NAME_RDN_PREFIX = "CN=";
-
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      X509Certificate peerCertificate;
-      try {
-        peerCertificate = (X509Certificate) session.getPeerCertificates()[0];
-      } catch (SSLPeerUnverifiedException e) {
-        throw new IllegalStateException("The session does not contain a peer X.509 certificate.", e);
-      }
-      String peerCertificateCN = getCommonName(peerCertificate);
-      return hostname.equals(peerCertificateCN);
-    }
-
-    private String getCommonName(X509Certificate peerCertificate) {
-      String subjectDN = peerCertificate.getSubjectDN().getName();
-      String[] dnComponents = subjectDN.split(",");
-      for (String dnComponent : dnComponents) {
-        dnComponent = dnComponent.trim();
-        if (dnComponent.startsWith(COMMON_NAME_RDN_PREFIX)) {
-          return dnComponent.substring(COMMON_NAME_RDN_PREFIX.length());
-        }
-      }
-      throw new IllegalArgumentException("The certificate has no common name.");
-    }
-  }
 }

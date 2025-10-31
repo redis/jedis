@@ -1,16 +1,22 @@
 package redis.clients.jedis.csc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
 
 public abstract class UnifiedJedisClientSideCacheTestBase {
@@ -21,13 +27,13 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   protected abstract UnifiedJedis createCachedJedis(CacheConfig cacheConfig);
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     control = createRegularJedis();
     control.flushAll();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     control.close();
   }
@@ -39,7 +45,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 
@@ -53,9 +60,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(1, cache.getSize());
       control.del("foo");
       assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
-      assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
       assertEquals(1, cache.getSize());
     }
   }
@@ -67,7 +73,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
     }
   }
 
@@ -81,9 +88,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       assertEquals(1, cache.getSize());
       control.flushAll();
       assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
-      assertEquals(1, cache.getSize());
-      assertNull(jedis.get("foo"));
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertNull(jedis.get("foo")));
       assertEquals(1, cache.getSize());
     }
   }
@@ -220,4 +226,81 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
     }
   }
 
+  @Test
+  public void simplePubsubWithClientCache() {
+    String test_channel = "test_channel";
+    String test_message = "test message";
+
+    UnifiedJedis publisher = createCachedJedis(CacheConfig.builder().build());
+    Runnable command = () -> publisher.publish(test_channel, test_message + System.currentTimeMillis());
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    executor.scheduleAtFixedRate(command, 0, 100, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+    List<String> receivedMessages = new ArrayList<>();
+    try (UnifiedJedis subscriber = createCachedJedis(CacheConfig.builder().build())) {
+      JedisPubSub jedisPubSub = new JedisPubSub() {
+        private int count = 0;
+
+        @Override
+        public void onMessage(String channel, String message) {
+          receivedMessages.add(message);
+          if (message.startsWith(test_message) && count++ > 1) {
+            this.unsubscribe(test_channel);
+          }
+        }
+      };
+      subscriber.subscribe(jedisPubSub, test_channel);
+    }
+
+    executor.shutdown();
+    publisher.close();
+
+    assertTrue(receivedMessages.size() > 1);
+    receivedMessages.forEach(message -> assertTrue(message.startsWith(test_message)));
+  }
+
+  @Test
+  public void advancedPubsubWithClientCache() {
+    String test_channel = "test_channel";
+    String test_message = "test message";
+    String test_key = "test_key";
+    String test_value = "test_value";
+
+    UnifiedJedis publisher = createCachedJedis(CacheConfig.builder().build());
+    Runnable command = () -> publisher.publish(test_channel, test_message + System.currentTimeMillis());
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    executor.scheduleAtFixedRate(command, 0, 50, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+    int iteration = 0;
+    int totalIteration = 10;
+    while (iteration++ < totalIteration) {
+
+      List<String> receivedMessages = new ArrayList<>();
+      try (UnifiedJedis subscriber = createCachedJedis(CacheConfig.builder().build())) {
+
+        subscriber.set(test_key, test_value);
+        assertEquals(test_value, subscriber.get(test_key));
+        JedisPubSub jedisPubSub = new JedisPubSub() {
+          private int count = 0;
+
+          @Override
+          public void onMessage(String channel, String message) {
+            receivedMessages.add(message);
+            if (message.startsWith(test_message) && count++ > 1) {
+              this.unsubscribe(test_channel);
+            }
+          }
+        };
+        subscriber.subscribe(jedisPubSub, test_channel);
+        subscriber.set(test_key, test_value);
+        assertEquals(test_value, subscriber.get(test_key));
+      }
+
+      assertTrue(receivedMessages.size() > 1);
+      receivedMessages.forEach(message -> assertTrue(message.startsWith(test_message)));
+    }
+
+    executor.shutdown();
+    publisher.close();
+  }
 }

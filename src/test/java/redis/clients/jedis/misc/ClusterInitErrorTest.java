@@ -1,32 +1,37 @@
 package redis.clients.jedis.misc;
 
 import java.util.Collections;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class ClusterInitErrorTest {
 
   private static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";
 
-  @After
+  @AfterEach
   public void cleanUp() {
     System.getProperties().remove(INIT_NO_ERROR_PROPERTY);
   }
 
-  @Test(expected = JedisClusterOperationException.class)
+  @Test
   public void initError() {
-    Assert.assertNull(System.getProperty(INIT_NO_ERROR_PROPERTY));
+    assertNull(System.getProperty(INIT_NO_ERROR_PROPERTY));
     EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
-    try (JedisCluster cluster = new JedisCluster(
-        Collections.singleton(endpoint.getHostAndPort()),
-        endpoint.getClientConfigBuilder().build())) {
-      throw new IllegalStateException("should not reach here");
-    }
+    assertThrows(JedisClusterOperationException.class, () -> {
+      try (JedisCluster cluster = new JedisCluster(
+          Collections.singleton(endpoint.getHostAndPort()),
+          endpoint.getClientConfigBuilder().build())) {
+        // Intentionally left empty because the exception is expected
+      }
+    });
   }
 
   @Test
@@ -36,7 +41,7 @@ public class ClusterInitErrorTest {
     try (JedisCluster cluster = new JedisCluster(
         Collections.singleton(endpoint.getHostAndPort()),
         endpoint.getClientConfigBuilder().build())) {
-      Assert.assertThrows(JedisClusterOperationException.class, () -> cluster.get("foo"));
+      assertThrows(JedisClusterOperationException.class, () -> cluster.get("foo"));
     }
   }
 }

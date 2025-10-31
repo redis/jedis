@@ -1,0 +1,147 @@
+---
+
+name: Build and Test using a containerized environment
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
+    branches:
+      - master
+      - '[0-9].*'
+      - 'feature/**'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].*'
+      - 'feature/**'
+  schedule:
+    - cron: '0 1 * * *' # nightly build
+  workflow_dispatch:
+    inputs:
+      specific_test:
+        description: 'Run specific test(s) (optional)'
+        required: false
+        default: ''
+jobs:
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    env:
+      REDIS_ENV_WORK_DIR: ${{ github.workspace }}/redis-env-work
+      REDIS_ENV_CONF_DIR: ${{ github.workspace }}/src/test/resources/env
+      CLIENT_LIBS_IMAGE_PREFIX: "redislabs/client-libs-test"
+    strategy:
+      fail-fast: false
+      matrix:
+        redis_version:
+          - "8.2"
+          - "8.0"
+          - "7.4"
+          - "7.2"
+          # - "6.2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: System setup
+        run: |
+          sudo apt update
+          sudo apt install -y make
+          make compile-module
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      # Set up Docker Compose environment
+      - name: Set up Docker Compose environment
+        run: |
+          mkdir -m 777 $REDIS_ENV_WORK_DIR
+          make start-test-env version=${{ matrix.redis_version }}
+      - name: Maven offline
+        run: |
+          mvn -q dependency:go-offline
+      - name: Build docs
+        run: |
+          mvn javadoc:jar
+      # Run Tests
+      - name: Run Maven tests
+        run: |
+          export TEST_ENV_PROVIDER=docker
+          export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
+          echo $TEST_WORK_FOLDER
+          if [ -z "$TESTS" ]; then
+            mvn -Dwith-param-names=true clean compile verify
+          else
+            mvn -Dwith-param-names=true -Dtest=$TESTS clean verify
+          fi
+        env:
+          JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof"
+          TESTS: ${{ github.event.inputs.specific_test || '' }}
+      - name: Upload Heap Dumps
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heap-dumps-${{ matrix.redis_version }}
+          path: ${{ runner.temp }}/heapdump-${{ matrix.redis_version }}.hprof
+          retention-days: 5
+      - name: Upload Surefire Dump File
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-dumpstream
+          path: target/surefire-reports/*.dumpstream
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: github.actor != 'dependabot[bot]'
+        with:
+          files: |
+            target/surefire-reports/**/*.xml
+            target/failsafe-reports/**/*.xml
+      # Collect logs on failure
+      - name: Collect logs on failure
+        if: failure()  # This runs only if the previous steps failed
+        run: |
+           echo "Collecting logs from $WORK_DIR..."
+           ls -la $REDIS_ENV_WORK_DIR
+      # Upload logs as artifacts
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+           name: redis-env-work-logs-${{ matrix.redis_version }}
+           path: ${{ env.REDIS_ENV_WORK_DIR }}
+      # Bring down the Docker Compose test environment
+      - name: Tear down Docker Compose environment
+        if: always()
+        run: |
+          docker compose $COMPOSE_ENV_FILES -f src/test/resources/env/docker-compose.yml down
+        continue-on-error: true
+      # Upload code coverage
+      - name: Upload merged coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          # Upload the merged JaCoCo XML report generated at verify phase
+          files: ./target/site/jacoco/jacoco.xml
+          flags: docker-${{ matrix.redis_version }}
+          name: merged-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov (unit + IT)
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'push') || github.event_name == 'workflow_dispatch'}}
+        uses: codecov/test-results-action@v1
+        with:
+          fail_ci_if_error: false
+          files: |
+            ./target/surefire-reports/*.xml
+            ./target/failsafe-reports/*.xml
+          flags: test-results-docker-${{ matrix.redis_version }}
+          token: ${{ secrets.CODECOV_TOKEN }}

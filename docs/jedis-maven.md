@@ -6,29 +6,35 @@
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>5.0.0</version>
+    <version>6.2.0</version>
 </dependency>
 ```
 
 ### Snapshots
 
 ```xml
-  <repositories>
+<repositories>
     <repository>
-      <id>snapshots-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <id>sonatype-snapshots</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
     </repository>
-  </repositories>
+</repositories>
 ```
 
 and
 
 ```xml
-  <dependencies>
+<dependencies>
     <dependency>
-      <groupId>redis.clients</groupId>
-      <artifactId>jedis</artifactId>
-      <version>5.1.0-SNAPSHOT</version>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>7.0.0-SNAPSHOT</version>
     </dependency>
-  </dependencies>
+</dependencies>
 ```

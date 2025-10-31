@@ -2,13 +2,14 @@
 // HIDE_START
 package io.redis.examples;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ListDirection;
 import java.util.List;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ListExample {
+
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -162,20 +163,20 @@ public class ListExample {
         // REMOVE_END
 
         // STEP_START ltrim
-        long res27 = jedis.lpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
+        long res27 = jedis.rpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
         System.out.println(res27);  // >>> 5
 
         String res28 = jedis.ltrim("bikes:repairs", 0, 2);
         System.out.println(res28);  // >>> OK
 
         List<String> res29 = jedis.lrange("bikes:repairs", 0, -1);
-        System.out.println(res29);  // >>> [bike:5, bike:4, bike:3]
+        System.out.println(res29);  // >>> [bike:1, bike:2, bike:3]
         // STEP_END
 
         // REMOVE_START
         assertEquals(5, res27);
         assertEquals("OK", res28);
-        assertEquals("[bike:5, bike:4, bike:3]", res29.toString());
+        assertEquals("[bike:1, bike:2, bike:3]", res29.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 
@@ -319,5 +320,8 @@ public class ListExample {
         jedis.del("bikes:repairs");
         // REMOVE_END
 
+// HIDE_START
+        jedis.close();
     }
 }
+// HIDE_END

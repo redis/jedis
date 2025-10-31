@@ -5,16 +5,21 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.RedisVersionCondition;
 
+@Tag("integration")
 public abstract class ClusterJedisCommandsTestBase {
 
   private Jedis node1;
@@ -27,7 +32,12 @@ public abstract class ClusterJedisCommandsTestBase {
   private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
   JedisCluster cluster;
 
-  @Before
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+
+  @BeforeEach
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
@@ -53,7 +63,6 @@ public abstract class ClusterJedisCommandsTestBase {
     int[] node1Slots = new int[slotsPerNode];
     int[] node2Slots = new int[slotsPerNode + 1];
     int[] node3Slots = new int[slotsPerNode];
-//    for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < JedisCluster.HASHSLOTS; i++) {
     for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < CLUSTER_HASHSLOTS; i++) {
       if (i < slotsPerNode) {
         node1Slots[slot1++] = i;
@@ -71,28 +80,25 @@ public abstract class ClusterJedisCommandsTestBase {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-//    cluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
-//    cluster = new JedisCluster(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
     cluster = new JedisCluster(jedisClusterNode, null, "cluster");
-
   }
 
-  @AfterClass
+  @AfterAll
   public static void cleanUp() {
     int slotTest = JedisClusterCRC16.getSlot("test");
     int slot51 = JedisClusterCRC16.getSlot("51");
-    String node3Id = getNodeId(node3.clusterNodes());
-    node2.clusterSetSlotNode(slotTest, node3Id);
-    node2.clusterSetSlotNode(slot51, node3Id);
-    node2.clusterDelSlots(slotTest, slot51);
+    if (node3 != null) {
+      String node3Id = getNodeId(node3.clusterNodes());
+      node2.clusterSetSlotNode(slotTest, node3Id);
+      node2.clusterSetSlotNode(slot51, node3Id);
+      node2.clusterDelSlots(slotTest, slot51);
+    }
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     // clear all slots
-//    int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
     int[] slotsToDelete = new int[CLUSTER_HASHSLOTS];
-//    for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
     for (int i = 0; i < CLUSTER_HASHSLOTS; i++) {
       slotsToDelete[i] = i;
     }

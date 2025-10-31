@@ -1,6 +1,14 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -9,12 +17,16 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Tag("integration")
 public class TransactionV2Test {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -30,7 +42,7 @@ public class TransactionV2Test {
   private Connection conn;
   private Jedis nj;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     conn = new Connection(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder().timeoutMillis(500).build());
@@ -41,7 +53,7 @@ public class TransactionV2Test {
     nj.flushAll();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     nj.close();
     conn.close();
@@ -186,13 +198,13 @@ public class TransactionV2Test {
     assertArrayEquals("foo".getBytes(), set.get());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void transactionResponseWithinPipeline() {
     nj.set("string", "foo");
 
     Transaction t = new Transaction(conn);
     Response<String> string = t.get("string");
-    string.get();
+    assertThrows(IllegalStateException.class, string::get);
     t.exec();
   }
 
@@ -211,6 +223,23 @@ public class TransactionV2Test {
       // that is fine we should be here
     }
     assertEquals("bar", r.get());
+  }
+
+  @Test
+  public void transactionPropagatesErrorsBeforeExec() {
+    // A command may fail to be queued, so there may be an error before EXEC is called.
+    // For instance the command may be syntactically wrong (wrong number of arguments, wrong command name, ...)
+    CommandObject<String> invalidCommand =
+        new CommandObject<>(new CommandObjects().commandArguments(SET), BuilderFactory.STRING);
+
+    Transaction t = new Transaction(conn);
+    t.appendCommand(invalidCommand);
+    t.set("foo","bar");
+    JedisDataException exception = assertThrows(JedisDataException.class, t::exec);
+    Throwable[] suppressed = exception.getSuppressed();
+    assertNotNull(suppressed, "Suppressed exceptions should not be null");
+    assertTrue(suppressed.length > 0, "There should be at least one suppressed exception");
+    MatcherAssert.assertThat(suppressed[0].getMessage(), containsString("ERR wrong number of arguments"));
   }
 
   @Test

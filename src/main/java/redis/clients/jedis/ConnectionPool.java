@@ -2,34 +2,21 @@ package redis.clients.jedis;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
+import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
 
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig));
-  }
+  private AuthXManager authXManager;
 
-  @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
-  }
-
+  // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
     super(factory);
-  }
-
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
-  }
-
-  @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-      GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
@@ -37,10 +24,69 @@ public class ConnectionPool extends Pool<Connection> {
     super(factory, poolConfig);
   }
 
+  // Convenience constructors
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+    this(new ConnectionFactory(hostAndPort, clientConfig));
+    attachAuthenticationListener(clientConfig.getAuthXManager());
+  }
+
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
+    attachAuthenticationListener(clientConfig.getAuthXManager());
+  }
+
+  @Experimental
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache) {
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
+    attachAuthenticationListener(clientConfig.getAuthXManager());
+  }
+
+  @Experimental
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
+    attachAuthenticationListener(clientConfig.getAuthXManager());
+  }
+
   @Override
   public Connection getResource() {
     Connection conn = super.getResource();
     conn.setHandlingPool(this);
     return conn;
+  }
+
+  @Override
+  public void close() {
+    try {
+      if (authXManager != null) {
+        authXManager.stop();
+      }
+    } finally {
+      super.close();
+    }
+  }
+
+  protected void attachAuthenticationListener(AuthXManager authXManager) {
+    this.authXManager = authXManager;
+    if (authXManager != null) {
+      authXManager.addPostAuthenticationHook(this::postAuthentication);
+    }
+  }
+
+  protected void detachAuthenticationListener() {
+    if (authXManager != null) {
+      authXManager.removePostAuthenticationHook(this::postAuthentication);
+    }
+  }
+
+  private void postAuthentication(Token token) {
+    try {
+      // this is to trigger validations on each connection via ConnectionFactory
+      evict();
+    } catch (Exception e) {
+      throw new JedisException("Failed to evict connections from pool", e);
+    }
   }
 }

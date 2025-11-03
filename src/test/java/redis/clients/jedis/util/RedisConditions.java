@@ -20,7 +20,8 @@ public class RedisConditions {
 
   public enum ModuleVersion {
 
-    SEARCH_MOD_VER_80M3("SEARCH", 79903);
+    SEARCH_MOD_VER_80M3("SEARCH", 79903),
+    SEARCH_MOD_VER_84RC1("SEARCH", 80390);
 
     private final String moduleName;
     private final int version;

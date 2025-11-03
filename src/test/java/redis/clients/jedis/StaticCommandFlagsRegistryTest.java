@@ -13,9 +13,8 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Unit tests for StaticCommandFlagsRegistry.
- * Tests the retrieval of command flags for various Redis commands,
- * including commands with subcommands.
+ * Unit tests for StaticCommandFlagsRegistry. Tests the retrieval of command flags for various Redis
+ * commands, including commands with subcommands.
  */
 public class StaticCommandFlagsRegistryTest {
 
@@ -27,15 +26,15 @@ public class StaticCommandFlagsRegistryTest {
   }
 
   /**
-   * Test that FUNCTION LOAD command returns the correct flags.
-   * FUNCTION LOAD should have: DENYOOM, NOSCRIPT, WRITE flags.
+   * Test that FUNCTION LOAD command returns the correct flags. FUNCTION LOAD should have: DENYOOM,
+   * NOSCRIPT, WRITE flags.
    */
   @Test
   public void testFunctionLoadCommandFlags() {
-    // Create a mock ProtocolCommand for "FUNCTION LOAD"
-    ProtocolCommand functionLoadCommand = () -> SafeEncoder.encode("FUNCTION LOAD");
+    // Create a CommandArguments for "FUNCTION LOAD"
+    CommandArguments functionLoadArgs = new CommandArguments(Protocol.Command.FUNCTION).add("LOAD");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(functionLoadCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(functionLoadArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "FUNCTION LOAD should have flags");
@@ -46,14 +45,15 @@ public class StaticCommandFlagsRegistryTest {
   }
 
   /**
-   * Test that FUNCTION DELETE command returns the correct flags.
-   * FUNCTION DELETE should have: NOSCRIPT, WRITE flags.
+   * Test that FUNCTION DELETE command returns the correct flags. FUNCTION DELETE should have:
+   * NOSCRIPT, WRITE flags.
    */
   @Test
   public void testFunctionDeleteCommandFlags() {
-    ProtocolCommand functionDeleteCommand = () -> SafeEncoder.encode("FUNCTION DELETE");
+    CommandArguments functionDeleteArgs = new CommandArguments(Protocol.Command.FUNCTION)
+        .add("DELETE");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(functionDeleteCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(functionDeleteArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "FUNCTION DELETE should have flags");
@@ -67,9 +67,9 @@ public class StaticCommandFlagsRegistryTest {
    */
   @Test
   public void testAclSetUserCommandFlags() {
-    ProtocolCommand aclSetUserCommand = () -> SafeEncoder.encode("ACL SETUSER");
+    CommandArguments aclSetUserArgs = new CommandArguments(Protocol.Command.ACL).add("SETUSER");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(aclSetUserCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(aclSetUserArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "ACL SETUSER should have flags");
@@ -82,9 +82,9 @@ public class StaticCommandFlagsRegistryTest {
    */
   @Test
   public void testConfigGetCommandFlags() {
-    ProtocolCommand configGetCommand = () -> SafeEncoder.encode("CONFIG GET");
+    CommandArguments configGetArgs = new CommandArguments(Protocol.Command.CONFIG).add("GET");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(configGetCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(configGetArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "CONFIG GET should have flags");
@@ -98,9 +98,9 @@ public class StaticCommandFlagsRegistryTest {
    */
   @Test
   public void testGetCommandFlags() {
-    ProtocolCommand getCommand = () -> SafeEncoder.encode("GET");
+    CommandArguments getArgs = new CommandArguments(Protocol.Command.GET).add("key");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(getCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(getArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "GET should have flags");
@@ -113,9 +113,9 @@ public class StaticCommandFlagsRegistryTest {
    */
   @Test
   public void testSetCommandFlags() {
-    ProtocolCommand setCommand = () -> SafeEncoder.encode("SET");
+    CommandArguments setArgs = new CommandArguments(Protocol.Command.SET).add("key").add("value");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(setCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(setArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "SET should have flags");
@@ -129,8 +129,9 @@ public class StaticCommandFlagsRegistryTest {
   @Test
   public void testUnknownCommandReturnsEmptyFlags() {
     ProtocolCommand unknownCommand = () -> SafeEncoder.encode("UNKNOWN_COMMAND_XYZ");
+    CommandArguments unknownArgs = new CommandArguments(unknownCommand);
 
-    EnumSet<CommandFlag> flags = registry.getFlags(unknownCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(unknownArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertTrue(flags.isEmpty(), "Unknown command should return empty flags");
@@ -141,9 +142,10 @@ public class StaticCommandFlagsRegistryTest {
    */
   @Test
   public void testCaseInsensitivity() {
-    ProtocolCommand lowerCaseCommand = () -> SafeEncoder.encode("function load");
+    ProtocolCommand functionCommand = () -> SafeEncoder.encode("function");
+    CommandArguments functionLoadArgs = new CommandArguments(functionCommand).add("load");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(lowerCaseCommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(functionLoadArgs);
 
     assertNotNull(flags, "Flags should not be null");
     assertFalse(flags.isEmpty(), "function load (lowercase) should have flags");
@@ -154,20 +156,21 @@ public class StaticCommandFlagsRegistryTest {
   }
 
   /**
-   * Test that unknown subcommands of parent commands fall back to parent command flags.
-   * If the parent command also doesn't exist, it should return empty flags.
+   * Test that unknown subcommands of parent commands fall back to parent command flags. If the
+   * parent command also doesn't exist, it should return empty flags.
    */
   @Test
   public void testUnknownSubcommandFallback() {
-    // Create a mock ProtocolCommand for "FUNCTION UNKNOWN_SUBCOMMAND"
-    // This subcommand doesn't exist, so it should fall back to "FUNCTION" parent
-    // Since "FUNCTION" parent also doesn't exist in the registry, it should return empty flags
-    ProtocolCommand unknownSubcommand = () -> SafeEncoder.encode("FUNCTION UNKNOWN_SUBCOMMAND");
+    // Create a CommandArguments for "FUNCTION UNKNOWN_SUBCOMMAND"
+    // This subcommand doesn't exist, so it should fall back to "FUNCTION" parent flags
+    // Since "FUNCTION" parent has empty flags, it should return empty flags
+    CommandArguments unknownSubcommandArgs = new CommandArguments(Protocol.Command.FUNCTION)
+        .add("UNKNOWN_SUBCOMMAND");
 
-    EnumSet<CommandFlag> flags = registry.getFlags(unknownSubcommand);
+    EnumSet<CommandFlag> flags = registry.getFlags(unknownSubcommandArgs);
 
     assertNotNull(flags, "Flags should not be null");
-    assertTrue(flags.isEmpty(), "Unknown FUNCTION subcommand should return empty flags when parent doesn't exist");
+    assertTrue(flags.isEmpty(),
+      "Unknown FUNCTION subcommand should return empty flags (parent flags)");
   }
 }
-

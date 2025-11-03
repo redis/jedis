@@ -317,9 +317,8 @@ public class CommandFlagsRegistryGenerator {
     sb.append("package redis.clients.jedis;\n\n");
     sb.append("import java.util.EnumSet;\n");
     sb.append("import java.util.HashMap;\n");
-    sb.append("import java.util.HashSet;\n");
     sb.append("import java.util.Map;\n");
-    sb.append("import java.util.Set;\n");
+    sb.append("import redis.clients.jedis.args.Rawable;\n");
     sb.append("import redis.clients.jedis.commands.ProtocolCommand;\n");
     sb.append("import redis.clients.jedis.util.SafeEncoder;\n\n");
 
@@ -353,43 +352,101 @@ public class CommandFlagsRegistryGenerator {
     sb.append(
       "  private static final EnumSet<CommandFlag> EMPTY_FLAGS = EnumSet.noneOf(CommandFlag.class);\n\n");
 
-    // Command flags registry map
-    sb.append("  // Command flags registry - maps command names to their flags\n");
-    sb.append("  // Command names are stored in uppercase with original spacing/dots\n");
-    sb.append("  // (e.g., GET, FT.SEARCH, FUNCTION DELETE)\n");
-    sb.append("  // Registry uses shared EnumSet instances to minimize memory usage\n");
+    // Command flags registry map - now hierarchical
+    sb.append("  // Hierarchical command flags registry\n");
+    sb.append("  // Maps parent command names to their flags and subcommands\n");
     sb.append(
-      "  private static final Map<String, EnumSet<CommandFlag>> COMMAND_FLAGS_REGISTRY = new HashMap<>();\n\n");
+      "  // For simple commands (no subcommands), the parent command maps directly to flags\n");
+    sb.append(
+      "  // For parent commands with subcommands, the parent maps to a SubcommandRegistry\n");
+    sb.append(
+      "  private static final Map<String, Object> COMMAND_FLAGS_REGISTRY = new HashMap<>();\n\n");
 
-    // Parent commands set - commands that have subcommands
-    sb.append("  // Set of parent commands that have subcommands\n");
-    sb.append("  // Used for two-tier lookup: try full command first, then fall back to parent\n");
-    sb.append("  private static final Set<String> PARENT_COMMANDS = new HashSet<>();\n\n");
+    // SubcommandRegistry inner class
+    sb.append("  /**\n");
+    sb.append("   * Internal class to hold subcommand mappings for parent commands\n");
+    sb.append("   */\n");
+    sb.append("  private static class SubcommandRegistry {\n");
+    sb.append("    final EnumSet<CommandFlag> parentFlags;\n");
+    sb.append("    final Map<String, EnumSet<CommandFlag>> subcommands;\n\n");
+    sb.append("    SubcommandRegistry(EnumSet<CommandFlag> parentFlags) {\n");
+    sb.append("      this.parentFlags = parentFlags;\n");
+    sb.append("      this.subcommands = new HashMap<>();\n");
+    sb.append("    }\n");
+    sb.append("  }\n\n");
 
     // Static initializer block
     sb.append("  static {\n");
 
-    // Initialize parent commands set
-    sb.append("    // Initialize parent commands that have subcommands\n");
-    sb.append("    PARENT_COMMANDS.add(\"ACL\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"CLIENT\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"CLUSTER\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"COMMAND\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"CONFIG\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"FUNCTION\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"LATENCY\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"MEMORY\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"MODULE\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"OBJECT\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"PUBSUB\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"SCRIPT\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"SLOWLOG\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"XGROUP\");\n");
-    sb.append("    PARENT_COMMANDS.add(\"XINFO\");\n");
-    sb.append("\n");
+    // Organize commands into parent commands and simple commands
+    Map<String, Map<String, FlagSet>> parentCommands = new LinkedHashMap<>();
+    Map<String, FlagSet> simpleCommands = new LinkedHashMap<>();
+
+    // Known parent commands
+    Set<String> knownParents = new HashSet<>(
+        Arrays.asList("ACL", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION", "LATENCY",
+          "MEMORY", "MODULE", "OBJECT", "PUBSUB", "SCRIPT", "SLOWLOG", "XGROUP", "XINFO"));
+
+    // Categorize commands
+    for (Map.Entry<FlagSet, List<String>> entry : flagCombinations.entrySet()) {
+      FlagSet flagSet = entry.getKey();
+      for (String command : entry.getValue()) {
+        int spaceIndex = command.indexOf(' ');
+        if (spaceIndex > 0) {
+          // This is a compound command (e.g., "FUNCTION LOAD")
+          String parent = command.substring(0, spaceIndex);
+          String subcommand = command.substring(spaceIndex + 1);
+
+          if (knownParents.contains(parent)) {
+            parentCommands.computeIfAbsent(parent, k -> new LinkedHashMap<>()).put(subcommand,
+              flagSet);
+          } else {
+            // Not a known parent, treat as simple command
+            simpleCommands.put(command, flagSet);
+          }
+        } else {
+          // Simple command without subcommands
+          simpleCommands.put(command, flagSet);
+        }
+      }
+    }
+
+    // Generate parent command registries
+    for (String parent : knownParents) {
+      Map<String, FlagSet> subcommands = parentCommands.get(parent);
+      if (subcommands != null && !subcommands.isEmpty()) {
+        sb.append(String.format("    // %s parent command with subcommands\n", parent));
+
+        // Determine parent flags (use EMPTY_FLAGS for now, could be enhanced)
+        sb.append(String.format(
+          "    SubcommandRegistry %sRegistry = new SubcommandRegistry(EMPTY_FLAGS);\n",
+          parent.toLowerCase()));
+
+        // Add subcommands
+        List<String> sortedSubcommands = new ArrayList<>(subcommands.keySet());
+        Collections.sort(sortedSubcommands);
+
+        for (String subcommand : sortedSubcommands) {
+          FlagSet flagSet = subcommands.get(subcommand);
+          String enumSetExpr = createEnumSetExpression(flagSet.flags);
+          sb.append(String.format("    %sRegistry.subcommands.put(\"%s\", %s);\n",
+            parent.toLowerCase(), subcommand, enumSetExpr));
+        }
+
+        sb.append(String.format("    COMMAND_FLAGS_REGISTRY.put(\"%s\", %sRegistry);\n\n", parent,
+          parent.toLowerCase()));
+      }
+    }
+
+    // Generate simple commands grouped by flags
+    Map<FlagSet, List<String>> simpleCommandsByFlags = new LinkedHashMap<>();
+    for (Map.Entry<String, FlagSet> entry : simpleCommands.entrySet()) {
+      simpleCommandsByFlags.computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
+          .add(entry.getKey());
+    }
 
     // Sort by flag count, then alphabetically
-    List<Map.Entry<FlagSet, List<String>>> sortedEntries = flagCombinations.entrySet().stream()
+    List<Map.Entry<FlagSet, List<String>>> sortedEntries = simpleCommandsByFlags.entrySet().stream()
         .sorted(
           Comparator.comparing((Map.Entry<FlagSet, List<String>> e) -> e.getKey().flags.size())
               .thenComparing(e -> e.getKey().toString()))
@@ -421,50 +478,91 @@ public class CommandFlagsRegistryGenerator {
     // getFlags method implementation
     sb.append("  /**\n");
     sb.append("   * Get the flags for a given command. Flags are looked up from a static\n");
-    sb.append("   * registry based on the command name. This approach significantly reduces\n");
+    sb.append(
+      "   * registry based on the command arguments. This approach significantly reduces\n");
     sb.append("   * memory usage by sharing flag instances across all CommandObject instances.\n");
     sb.append("   * <p>\n");
-    sb.append("   * For commands with subcommands (e.g., FUNCTION LOAD, ACL SETUSER), this method\n");
-    sb.append("   * implements a two-tier lookup strategy:\n");
+    sb.append(
+      "   * For commands with subcommands (e.g., FUNCTION LOAD, ACL SETUSER), this method\n");
+    sb.append("   * implements a hierarchical lookup strategy:\n");
     sb.append("   * <ol>\n");
-    sb.append("   * <li>First, extract the parent command (first word) from the command name</li>\n");
-    sb.append("   * <li>If the parent command is in PARENT_COMMANDS set, try to look up the full\n");
-    sb.append("   *     command name (e.g., \"FUNCTION LOAD\")</li>\n");
-    sb.append("   * <li>If the full command lookup fails, fall back to the parent command\n");
-    sb.append("   *     (e.g., \"FUNCTION\")</li>\n");
-    sb.append("   * <li>If the parent command is not in PARENT_COMMANDS set, use the full command\n");
-    sb.append("   *     name directly</li>\n");
+    sb.append(
+      "   * <li>First, retrieve the parent command using CommandArguments.getCommand()</li>\n");
+    sb.append(
+      "   * <li>Check if this is a parent command (has subcommands in the registry)</li>\n");
+    sb.append("   * <li>If it is a parent command, attempt to get the child/subcommand by:\n");
+    sb.append("   *     <ul>\n");
+    sb.append(
+      "   *     <li>Extracting the second argument from the CommandArguments object</li>\n");
+    sb.append(
+      "   *     <li>Matching this second argument against the child items of the parent command</li>\n");
+    sb.append("   *     </ul>\n");
+    sb.append("   * </li>\n");
+    sb.append(
+      "   * <li>Return the appropriate flags based on whether a child command was found or just use the parent command's flags</li>\n");
     sb.append("   * </ol>\n");
     sb.append("   *\n");
-    sb.append("   * @param cmd the protocol command\n");
-    sb.append("   * @return EnumSet of CommandFlag for this command, or empty set if command\n");
-    sb.append("   *         has no flags\n");
+    sb.append(
+      "   * @param commandArguments the command arguments containing the command and its parameters\n");
+    sb.append(
+      "   * @return EnumSet of CommandFlag for this command, or empty set if command has no flags\n");
     sb.append("   */\n");
     sb.append("  @Override\n");
-    sb.append("  public EnumSet<CommandFlag> getFlags(ProtocolCommand cmd) {\n");
+    sb.append("  public EnumSet<CommandFlag> getFlags(CommandArguments commandArguments) {\n");
+    sb.append("    // Get the parent command\n");
+    sb.append("    ProtocolCommand cmd = commandArguments.getCommand();\n");
     sb.append("    byte[] raw = cmd.getRaw();\n");
-    sb.append("    String commandName = SafeEncoder.encode(raw).toUpperCase();\n");
+    sb.append("    String parentCommandName = SafeEncoder.encode(raw).toUpperCase();\n");
     sb.append("\n");
-    sb.append("    // Extract the parent command (first word)\n");
-    sb.append("    int spaceIndex = commandName.indexOf(' ');\n");
-    sb.append("    if (spaceIndex > 0) {\n");
-    sb.append("      String parentCommand = commandName.substring(0, spaceIndex);\n");
-    sb.append("      \n");
-    sb.append("      // Check if this is a known parent command with subcommands\n");
-    sb.append("      if (PARENT_COMMANDS.contains(parentCommand)) {\n");
-    sb.append("        // Try full command first (e.g., \"FUNCTION LOAD\")\n");
-    sb.append("        EnumSet<CommandFlag> flags = COMMAND_FLAGS_REGISTRY.get(commandName);\n");
-    sb.append("        if (flags != null) {\n");
-    sb.append("          return flags;\n");
-    sb.append("        }\n");
-    sb.append("        \n");
-    sb.append("        // Fall back to parent command (e.g., \"FUNCTION\")\n");
-    sb.append("        return COMMAND_FLAGS_REGISTRY.getOrDefault(parentCommand, EMPTY_FLAGS);\n");
-    sb.append("      }\n");
+    sb.append("    // Look up the parent command in the registry\n");
+    sb.append("    Object registryEntry = COMMAND_FLAGS_REGISTRY.get(parentCommandName);\n");
+    sb.append("\n");
+    sb.append("    if (registryEntry == null) {\n");
+    sb.append("      // Command not found in registry\n");
+    sb.append("      return EMPTY_FLAGS;\n");
     sb.append("    }\n");
     sb.append("\n");
-    sb.append("    // For commands without subcommands, use direct lookup\n");
-    sb.append("    return COMMAND_FLAGS_REGISTRY.getOrDefault(commandName, EMPTY_FLAGS);\n");
+    sb.append(
+      "    // Check if this is a simple command (EnumSet) or a parent command with subcommands (SubcommandRegistry)\n");
+    sb.append("    if (registryEntry instanceof EnumSet) {\n");
+    sb.append("      // Simple command without subcommands\n");
+    sb.append("      return (EnumSet<CommandFlag>) registryEntry;\n");
+    sb.append("    } else if (registryEntry instanceof SubcommandRegistry) {\n");
+    sb.append("      // Parent command with subcommands\n");
+    sb.append(
+      "      SubcommandRegistry subcommandRegistry = (SubcommandRegistry) registryEntry;\n");
+    sb.append("\n");
+    sb.append("      // Try to extract the subcommand from the second argument\n");
+    sb.append("      if (commandArguments.size() > 1) {\n");
+    sb.append(
+      "        // Get the second argument (index 1, since index 0 is the command itself)\n");
+    sb.append("        Rawable secondArg = null;\n");
+    sb.append("        int index = 0;\n");
+    sb.append("        for (Rawable arg : commandArguments) {\n");
+    sb.append("          if (index == 1) {\n");
+    sb.append("            secondArg = arg;\n");
+    sb.append("            break;\n");
+    sb.append("          }\n");
+    sb.append("          index++;\n");
+    sb.append("        }\n");
+    sb.append("\n");
+    sb.append("        if (secondArg != null) {\n");
+    sb.append(
+      "          String subcommandName = SafeEncoder.encode(secondArg.getRaw()).toUpperCase();\n");
+    sb.append(
+      "          EnumSet<CommandFlag> subcommandFlags = subcommandRegistry.subcommands.get(subcommandName);\n");
+    sb.append("          if (subcommandFlags != null) {\n");
+    sb.append("            return subcommandFlags;\n");
+    sb.append("          }\n");
+    sb.append("        }\n");
+    sb.append("      }\n");
+    sb.append("\n");
+    sb.append("      // No subcommand found or no second argument, return parent flags\n");
+    sb.append("      return subcommandRegistry.parentFlags;\n");
+    sb.append("    }\n");
+    sb.append("\n");
+    sb.append("    // Should not reach here, but return empty flags as fallback\n");
+    sb.append("    return EMPTY_FLAGS;\n");
     sb.append("  }\n");
 
     // Close class

@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.util.EnumSet;
-import redis.clients.jedis.commands.ProtocolCommand;
 
 /**
  * Registry interface for command flags. Provides a mapping from Redis commands to their flags. This
@@ -46,8 +45,8 @@ public interface CommandFlagsRegistry {
 
   /**
    * Get the flags for a given command.
-   * @param cmd the protocol command
+   * @param commandArguments the command arguments containing the command and its parameters
    * @return EnumSet of CommandFlag for this command, or empty set if command has no flags
    */
-  EnumSet<CommandFlag> getFlags(ProtocolCommand cmd);
+  EnumSet<CommandFlag> getFlags(CommandArguments commandArguments);
 }

@@ -13,10 +13,10 @@ import redis.clients.jedis.util.SafeEncoder;
  * <p>
  * Generated from Redis Server:
  * <ul>
- * <li>Version: 8.2.2</li>
+ * <li>Version: 8.2.3</li>
  * <li>Mode: standalone</li>
- * <li>Loaded Modules: timeseries, vectorset, ReJSON, bf, search</li>
- * <li>Generated at: 2025-11-03 11:52:20 CET</li>
+ * <li>Loaded Modules: ReJSON, timeseries, bf, vectorset, search</li>
+ * <li>Generated at: 2025-11-03 12:09:50 CET</li>
  * </ul>
  */
 public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
@@ -1000,23 +1000,11 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
 
       // Try to extract the subcommand from the second argument
       if (commandArguments.size() > 1) {
-        // Get the second argument (index 1, since index 0 is the command itself)
-        Rawable secondArg = null;
-        int index = 0;
-        for (Rawable arg : commandArguments) {
-          if (index == 1) {
-            secondArg = arg;
-            break;
-          }
-          index++;
-        }
-
-        if (secondArg != null) {
-          String subcommandName = SafeEncoder.encode(secondArg.getRaw()).toUpperCase();
-          EnumSet<CommandFlag> subcommandFlags = subcommandRegistry.subcommands.get(subcommandName);
-          if (subcommandFlags != null) {
-            return subcommandFlags;
-          }
+        Rawable secondArg = commandArguments.get(1);
+        String subcommandName = SafeEncoder.encode(secondArg.getRaw()).toUpperCase();
+        EnumSet<CommandFlag> subcommandFlags = subcommandRegistry.subcommands.get(subcommandName);
+        if (subcommandFlags != null) {
+          return subcommandFlags;
         }
       }
 

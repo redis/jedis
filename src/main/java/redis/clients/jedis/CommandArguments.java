@@ -195,6 +195,16 @@ public class CommandArguments implements Iterable<Rawable> {
     return args.size();
   }
 
+  /**
+   * Get the argument at the specified index.
+   * @param index the index of the argument to retrieve (0-based, where 0 is the command itself)
+   * @return the Rawable argument at the specified index
+   * @throws IndexOutOfBoundsException if the index is out of range
+   */
+  public Rawable get(int index) {
+    return args.get(index);
+  }
+
   @Override
   public Iterator<Rawable> iterator() {
     return args.iterator();

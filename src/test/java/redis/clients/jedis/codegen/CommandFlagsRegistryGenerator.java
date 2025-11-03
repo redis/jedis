@@ -534,26 +534,13 @@ public class CommandFlagsRegistryGenerator {
     sb.append("\n");
     sb.append("      // Try to extract the subcommand from the second argument\n");
     sb.append("      if (commandArguments.size() > 1) {\n");
+    sb.append("        Rawable secondArg = commandArguments.get(1);\n");
     sb.append(
-      "        // Get the second argument (index 1, since index 0 is the command itself)\n");
-    sb.append("        Rawable secondArg = null;\n");
-    sb.append("        int index = 0;\n");
-    sb.append("        for (Rawable arg : commandArguments) {\n");
-    sb.append("          if (index == 1) {\n");
-    sb.append("            secondArg = arg;\n");
-    sb.append("            break;\n");
-    sb.append("          }\n");
-    sb.append("          index++;\n");
-    sb.append("        }\n");
-    sb.append("\n");
-    sb.append("        if (secondArg != null) {\n");
+      "        String subcommandName = SafeEncoder.encode(secondArg.getRaw()).toUpperCase();\n");
     sb.append(
-      "          String subcommandName = SafeEncoder.encode(secondArg.getRaw()).toUpperCase();\n");
-    sb.append(
-      "          EnumSet<CommandFlag> subcommandFlags = subcommandRegistry.subcommands.get(subcommandName);\n");
-    sb.append("          if (subcommandFlags != null) {\n");
-    sb.append("            return subcommandFlags;\n");
-    sb.append("          }\n");
+      "        EnumSet<CommandFlag> subcommandFlags = subcommandRegistry.subcommands.get(subcommandName);\n");
+    sb.append("        if (subcommandFlags != null) {\n");
+    sb.append("          return subcommandFlags;\n");
     sb.append("        }\n");
     sb.append("      }\n");
     sb.append("\n");

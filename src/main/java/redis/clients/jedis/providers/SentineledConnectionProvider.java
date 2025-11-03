@@ -2,7 +2,9 @@ package redis.clients.jedis.providers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -24,6 +26,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.Pool;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
 
@@ -110,6 +113,16 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   @Override
   public Connection getConnection(CommandArguments args) {
     return pool.getResource();
+  }
+
+  @Override
+  public Map<?, Pool<Connection>> getConnectionMap() {
+    return Collections.singletonMap(currentMaster, pool);
+  }
+
+  @Override
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return Collections.singletonMap(currentMaster, pool);
   }
 
   @Override
@@ -297,7 +310,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         } catch (JedisException e) {
 
           if (running.get()) {
-            LOG.error("Lost connection to sentinel {}. Sleeping {}ms and retrying.", node,
+            LOG.error("Lost connection to Sentinel {}. Sleeping {}ms and retrying.", node,
                 subscribeRetryWaitTimeMillis, e);
             try {
               Thread.sleep(subscribeRetryWaitTimeMillis);

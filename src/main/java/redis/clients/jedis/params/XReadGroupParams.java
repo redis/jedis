@@ -10,6 +10,7 @@ public class XReadGroupParams implements IParams {
   private Integer count = null;
   private Integer block = null;
   private boolean noack = false;
+  private Long claim = null;
 
   public static XReadGroupParams xReadGroupParams() {
     return new XReadGroupParams();
@@ -30,6 +31,12 @@ public class XReadGroupParams implements IParams {
     return this;
   }
 
+  public XReadGroupParams claim(long minIdleMillis) {
+    this.claim = minIdleMillis;
+    return this;
+  }
+
+
   @Override
   public void addParams(CommandArguments args) {
     if (count != null) {
@@ -41,6 +48,9 @@ public class XReadGroupParams implements IParams {
     if (noack) {
       args.add(Keyword.NOACK);
     }
+    if (claim != null) {
+      args.add(Keyword.CLAIM).add(claim);
+    }
   }
 
   @Override
@@ -48,11 +58,12 @@ public class XReadGroupParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     XReadGroupParams that = (XReadGroupParams) o;
-    return noack == that.noack && Objects.equals(count, that.count) && Objects.equals(block, that.block);
+    return noack == that.noack && Objects.equals(count, that.count) && Objects.equals(block, that.block)
+        && Objects.equals(claim, that.claim);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, block, noack);
+    return Objects.hash(count, block, noack, claim);
   }
 }

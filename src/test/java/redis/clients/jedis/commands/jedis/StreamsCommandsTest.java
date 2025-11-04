@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
+import static io.redis.test.utils.RedisVersion.V8_4_RC1_STRING;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1426,4 +1427,171 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(id2.get(), entries.get(1).getID());
     assertEquals(map, entries.get(1).getFields());
   }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimReturnsPendingThenNewEntries() throws InterruptedException {
+    String key = "xrg-claim-stream";
+    String group = "xrg-claim-group";
+    String consumer = "c1";
+
+    jedis.del(key);
+    jedis.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true);
+
+    // Make three entries pending (in PEL)
+    jedis.xadd(key, new StreamEntryID("1-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("2-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("3-0"), singletonMap("f", "v"));
+    Map<String, StreamEntryID> streams = singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(group, consumer, XReadGroupParams.xReadGroupParams().count(3), streams);
+
+    // Wait a bit so they become eligible according to min-idle
+    Thread.sleep(60);
+
+    // Add two new (never delivered) entries
+    jedis.xadd(key, new StreamEntryID("4-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("5-0"), singletonMap("f", "v"));
+
+    List<Entry<String, List<StreamEntry>>> messages = jedis.xreadGroup(
+        group, consumer, XReadGroupParams.xReadGroupParams().count(5).claim(50), streams);
+
+    assertEquals(1, messages.size());
+    List<StreamEntry> entries = messages.get(0).getValue();
+    assertEquals(5, entries.size());
+
+    // First 3 must be claimed PEL entries with metadata
+    for (int i = 0; i < 3; i++) {
+      assertNotNull(entries.get(i).getIdleTime());
+      assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    // Last 2 are fresh entries with no metadata
+    for (int i = 3; i < 5; i++) {
+      assertNull(entries.get(i).getIdleTime());
+      assertNull(entries.get(i).getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimNoEligiblePendingReturnsOnlyNewEntries() throws InterruptedException {
+    String key = "xrg-claim-noeligible";
+    String group = "xrg-claim-group";
+    String consumer = "c1";
+
+    jedis.del(key);
+    jedis.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true);
+
+    // Put 2 entries in PEL but do NOT wait enough for min-idle
+    jedis.xadd(key, new StreamEntryID("1-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("2-0"), singletonMap("f", "v"));
+    Map<String, StreamEntryID> streams = singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(group, consumer, XReadGroupParams.xReadGroupParams().count(2), streams);
+
+    // Add new entries that should be returned instead of pending ones
+    jedis.xadd(key, new StreamEntryID("3-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("4-0"), singletonMap("f", "v"));
+
+    List<Entry<String, List<StreamEntry>>> messages = jedis.xreadGroup(
+        group, consumer, XReadGroupParams.xReadGroupParams().count(4).claim(500), streams);
+
+    assertEquals(1, messages.size());
+    List<StreamEntry> entries = messages.get(0).getValue();
+    assertEquals(2, entries.size());
+    for (StreamEntry e : entries) {
+      assertNull(e.getIdleTime());
+      assertNull(e.getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimRespectsCountAndReturnsPendingFirst() throws InterruptedException {
+    String key = "xrg-claim-count";
+    String group = "xrg-claim-group";
+    String consumer = "c1";
+
+    jedis.del(key);
+    jedis.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true);
+
+    // Make 4 entries pending
+    for (int i = 1; i <= 4; i++) {
+      jedis.xadd(key, new StreamEntryID(i + "-0"), singletonMap("f", "v"));
+    }
+    Map<String, StreamEntryID> streams = singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(group, consumer, XReadGroupParams.xReadGroupParams().count(4), streams);
+
+    Thread.sleep(60);
+
+    // Add 2 fresh entries
+    jedis.xadd(key, new StreamEntryID("5-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("6-0"), singletonMap("f", "v"));
+
+    List<Entry<String, List<StreamEntry>>> messages = jedis.xreadGroup(
+        group, consumer, XReadGroupParams.xReadGroupParams().count(2).claim(50), streams);
+
+    assertEquals(1, messages.size());
+    List<StreamEntry> entries = messages.get(0).getValue();
+    assertEquals(2, entries.size());
+    for (StreamEntry e : entries) {
+      assertNotNull(e.getIdleTime());
+      assertNotNull(e.getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimAndNoAckDoesNotAddNewEntriesToPEL() throws InterruptedException {
+    String key = "xrg-claim-noack";
+    String group = "xrg-claim-group";
+    String consumer = "c1";
+
+    jedis.del(key);
+    jedis.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true);
+
+    // Make three entries pending (in PEL)
+    jedis.xadd(key, new StreamEntryID("1-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("2-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("3-0"), singletonMap("f", "v"));
+    Map<String, StreamEntryID> streams = singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(group, consumer, XReadGroupParams.xReadGroupParams().count(3), streams);
+
+    // Verify PEL contains the 3 pending entries
+    List<StreamPendingEntry> pendingBefore = jedis.xpending(key, group, XPendingParams.xPendingParams().count(10));
+    assertEquals(3, pendingBefore.size());
+
+    // Wait so PEL entries cross the idle threshold, then add two new entries
+    Thread.sleep(60);
+    jedis.xadd(key, new StreamEntryID("4-0"), singletonMap("f", "v"));
+    jedis.xadd(key, new StreamEntryID("5-0"), singletonMap("f", "v"));
+
+    // Read with CLAIM and NOACK: pending first (with metadata), then fresh entries (no metadata)
+    List<Entry<String, List<StreamEntry>>> messages = jedis.xreadGroup(
+        group, consumer, XReadGroupParams.xReadGroupParams().count(5).claim(50).noAck(), streams);
+
+    assertEquals(1, messages.size());
+    List<StreamEntry> entries = messages.get(0).getValue();
+    assertEquals(5, entries.size());
+
+    for (int i = 0; i < 3; i++) {
+      assertNotNull(entries.get(i).getIdleTime());
+      assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    for (int i = 3; i < 5; i++) {
+      assertNull(entries.get(i).getIdleTime());
+      assertNull(entries.get(i).getDeliveredTimes());
+    }
+
+    // NOACK must not add the fresh entries to PEL; only the original 3 should remain pending
+    List<StreamPendingEntry> pendingAfter = jedis.xpending(key, group, XPendingParams.xPendingParams().count(20));
+    assertEquals(3, pendingAfter.size());
+    boolean has4 = false, has5 = false;
+    for (StreamPendingEntry pe : pendingAfter) {
+      String id = pe.getID().toString();
+      if ("4-0".equals(id)) has4 = true;
+      if ("5-0".equals(id)) has5 = true;
+    }
+    assertFalse(has4);
+    assertFalse(has5);
+  }
+
 }

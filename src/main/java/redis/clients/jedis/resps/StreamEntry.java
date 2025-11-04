@@ -12,10 +12,28 @@ public class StreamEntry implements Serializable {
   private StreamEntryID id;
   private Map<String, String> fields;
 
+  private Long idleTime; // milliseconds since last delivery (claimed entries)
+  private Long deliveredTimes; // delivery count (claimed entries)
+
   public StreamEntry(StreamEntryID id, Map<String, String> fields) {
     this.id = id;
     this.fields = fields;
   }
+  public StreamEntry(StreamEntryID id, Map<String, String> fields, Long idleTime, Long deliveredTimes) {
+    this.id = id;
+    this.fields = fields;
+    this.idleTime = idleTime;
+    this.deliveredTimes = deliveredTimes;
+  }
+
+  public Long getIdleTime() {
+    return idleTime;
+  }
+
+  public Long getDeliveredTimes() {
+    return deliveredTimes;
+  }
+
 
   public StreamEntryID getID() {
     return id;

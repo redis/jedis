@@ -319,7 +319,6 @@ public class CommandFlagsRegistryGenerator {
     sb.append("import static redis.clients.jedis.StaticCommandFlagsRegistry.EMPTY_FLAGS;\n");
     sb.append("import static redis.clients.jedis.CommandFlagsRegistry.CommandFlag;\n");
 
-
     // Class javadoc
     sb.append("/**\n");
     sb.append(
@@ -348,7 +347,7 @@ public class CommandFlagsRegistryGenerator {
     // Static initializer block
     sb.append("  static void initialize(StaticCommandFlagsRegistry.Builder builder) {\n");
 
-      // Organize commands into parent commands and simple commands
+    // Organize commands into parent commands and simple commands
     Map<String, Map<String, FlagSet>> parentCommands = new LinkedHashMap<>();
     Map<String, FlagSet> simpleCommands = new LinkedHashMap<>();
 
@@ -395,7 +394,8 @@ public class CommandFlagsRegistryGenerator {
         for (String subcommand : sortedSubcommands) {
           FlagSet flagSet = subcommands.get(subcommand);
           String enumSetExpr = createEnumSetExpression(flagSet.flags);
-          sb.append(String.format("builder.register(\"%s\", \"%s\", %s);\n", parent, subcommand, enumSetExpr));
+          sb.append(String.format("builder.register(\"%s\", \"%s\", %s);\n", parent, subcommand,
+            enumSetExpr));
         }
       }
     }

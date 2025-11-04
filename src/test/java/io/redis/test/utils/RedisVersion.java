@@ -7,6 +7,7 @@ public class RedisVersion implements Comparable<RedisVersion> {
     public static final RedisVersion V7_4 = RedisVersion.of("7.4");
     public static final RedisVersion V8_0_0_PRE = RedisVersion.of("7.9.0");
     public static final RedisVersion V8_0_0 = RedisVersion.of("8.0.0");
+    public static final RedisVersion V8_4_0 = RedisVersion.of("8.4.0");
 
     private final int major;
     private final int minor;

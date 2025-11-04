@@ -31,7 +31,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
   @Deprecated
   public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
-    this(provider, maxAttempts, maxTotalRetriesDuration, new StaticCommandFlagsRegistry());
+    this(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry());
   }
 
   public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,

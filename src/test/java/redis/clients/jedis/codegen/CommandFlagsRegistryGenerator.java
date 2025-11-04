@@ -316,10 +316,9 @@ public class CommandFlagsRegistryGenerator {
     // Package and imports
     sb.append("package redis.clients.jedis;\n\n");
     sb.append("import java.util.EnumSet;\n");
-    sb.append("import redis.clients.jedis.args.Rawable;\n");
-    sb.append("import redis.clients.jedis.commands.ProtocolCommand;\n");
-    sb.append("import redis.clients.jedis.util.JedisByteMap;\n");
-    sb.append("import redis.clients.jedis.util.SafeEncoder;\n\n");
+    sb.append("import static redis.clients.jedis.StaticCommandFlagsRegistry.EMPTY_FLAGS;\n");
+    sb.append("import static redis.clients.jedis.CommandFlagsRegistry.CommandFlag;\n");
+
 
     // Class javadoc
     sb.append("/**\n");

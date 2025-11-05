@@ -8,11 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -26,9 +22,21 @@ public class ClusterCommandExecutor implements CommandExecutor {
   public final ClusterConnectionProvider provider;
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
+  protected final CommandFlagsRegistry flags;
 
+  /**
+   * @deprecated use {@link #ClusterCommandExecutor(ClusterConnectionProvider, int, Duration, CommandFlagsRegistry)}
+   * instead. This constructor will be removed in the next major version.
+   */
+  @Deprecated
   public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
+    this(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry());
+  }
+
+  public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, CommandFlagsRegistry flags) {
+    JedisAsserts.notNull(flags, "CommandFlagsRegistry must not be null");
     JedisAsserts.notNull(provider, "provider must not be null");
     JedisAsserts.isTrue(maxAttempts > 0, "maxAttempts must be greater than 0");
     JedisAsserts.notNull(maxTotalRetriesDuration, "maxTotalRetriesDuration must not be null");
@@ -36,6 +44,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
+    this.flags = flags;
   }
 
   @Override

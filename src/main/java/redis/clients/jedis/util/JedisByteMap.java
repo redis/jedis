@@ -89,13 +89,16 @@ public class JedisByteMap<T> implements Map<byte[], T>, Cloneable, Serializable 
     }
 
     private static final class ByteArrayWrapper implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final byte[] data;
+        private final int hashCode;
 
         public ByteArrayWrapper(byte[] data) {
             if (data == null) {
                 throw new NullPointerException();
             }
             this.data = data;
+            this.hashCode = Arrays.hashCode(data);
         }
 
         @Override
@@ -109,7 +112,7 @@ public class JedisByteMap<T> implements Map<byte[], T>, Cloneable, Serializable 
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(data);
+            return hashCode;
         }
     }
 

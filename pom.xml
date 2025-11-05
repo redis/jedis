@@ -360,6 +360,8 @@
 						<!-- Exclude integration tests from unit-test phase -->
 						<exclude>**/*IntegrationTest.java</exclude>
 						<exclude>**/*IntegrationTests.java</exclude>
+						<!-- Exclude code generators - these are tools, not tests -->
+						<exclude>**/codegen/**/*.java</exclude>
 					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
@@ -535,6 +537,7 @@
 						<include>**/MultiDb*.java</include>
 						<include>**/ClientTestUtil.java</include>
 						<include>**/ReflectionTestUtil.java</include>
+						<include>**/*CommandFlags*.java</include>
 					</includes>
 				</configuration>
 				<executions>

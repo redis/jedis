@@ -72,8 +72,8 @@ public class StatusTrackerTest {
     });
     waitingThread.start();
 
-    await().atMost(Duration.ofMillis(100L)).pollInterval(Duration.ofMillis(5L))
-            .untilAsserted(() -> assertNotNull(capturedListener[0], "Listener should have been registered"));
+    await().atMost(Duration.ofMillis(100L)).pollInterval(Duration.ofMillis(5L)).untilAsserted(
+      () -> assertNotNull(capturedListener[0], "Listener should have been registered"));
 
     HealthStatusChangeEvent event = new HealthStatusChangeEvent(testEndpoint, HealthStatus.UNKNOWN,
         HealthStatus.HEALTHY);

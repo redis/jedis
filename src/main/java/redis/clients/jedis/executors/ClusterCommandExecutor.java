@@ -103,7 +103,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
     Exception lastException = null;
 
     RequiredConnectionType connectionType;
-    if (commandObject.getFlags().contains(CommandObject.CommandFlag.READONLY)) {
+    if (flags.getFlags(commandObject.getArguments())
+        .contains(CommandFlagsRegistry.CommandFlag.READONLY)) {
       connectionType = RequiredConnectionType.REPLICA;
     } else {
       connectionType = RequiredConnectionType.PRIMARY;

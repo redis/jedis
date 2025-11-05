@@ -22,7 +22,7 @@ public class StaticCommandFlagsRegistryTest {
 
   @BeforeEach
   public void setUp() {
-    registry = new StaticCommandFlagsRegistry();
+    registry = StaticCommandFlagsRegistry.registry();
   }
 
   /**

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class CommandFlagsRegistryGenerator {
 
-  private static final String JAVA_FILE = "src/main/java/redis/clients/jedis/StaticCommandFlagsRegistry.java";
+  private static final String JAVA_FILE = "src/main/java/redis/clients/jedis/StaticCommandFlagsRegistryInitializer.java";
   private static final String BACKUP_JSON_FILE = "redis_commands_flags.json";
 
   private final String redisHost;
@@ -316,10 +316,8 @@ public class CommandFlagsRegistryGenerator {
     // Package and imports
     sb.append("package redis.clients.jedis;\n\n");
     sb.append("import java.util.EnumSet;\n");
-    sb.append("import redis.clients.jedis.args.Rawable;\n");
-    sb.append("import redis.clients.jedis.commands.ProtocolCommand;\n");
-    sb.append("import redis.clients.jedis.util.JedisByteMap;\n");
-    sb.append("import redis.clients.jedis.util.SafeEncoder;\n\n");
+    sb.append("import static redis.clients.jedis.StaticCommandFlagsRegistry.EMPTY_FLAGS;\n");
+    sb.append("import static redis.clients.jedis.CommandFlagsRegistry.CommandFlag;\n");
 
     // Class javadoc
     sb.append("/**\n");
@@ -344,42 +342,10 @@ public class CommandFlagsRegistryGenerator {
     }
 
     sb.append(" */\n");
-    sb.append("public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {\n\n");
-
-    // Empty flags constant
-    sb.append("  // Empty flags constant for commands with no flags\n");
-    sb.append(
-      "  private static final EnumSet<CommandFlag> EMPTY_FLAGS = EnumSet.noneOf(CommandFlag.class);\n\n");
-
-    // Command flags registry map - now hierarchical and using byte arrays for faster lookup
-    sb.append("  // Hierarchical command flags registry using byte arrays as keys\n");
-    sb.append(
-      "  // Maps parent command names (as uppercase byte arrays) to their flags and subcommands\n");
-    sb.append(
-      "  // For simple commands (no subcommands), the parent command maps directly to flags\n");
-    sb.append(
-      "  // For parent commands with subcommands, the parent maps to a SubcommandRegistry\n");
-    sb.append(
-      "  // Using JedisByteMap avoids String conversion during lookup, providing ~2.5x performance improvement\n");
-    sb.append(
-      "  private static final JedisByteMap<Object> COMMAND_FLAGS_REGISTRY = new JedisByteMap<>();\n\n");
-
-    // SubcommandRegistry inner class
-    sb.append("  /**\n");
-    sb.append("   * Internal class to hold subcommand mappings for parent commands.\n");
-    sb.append("   * Uses JedisByteMap for faster subcommand lookup without String conversion.\n");
-    sb.append("   */\n");
-    sb.append("  private static class SubcommandRegistry {\n");
-    sb.append("    final EnumSet<CommandFlag> parentFlags;\n");
-    sb.append("    final JedisByteMap<EnumSet<CommandFlag>> subcommands;\n\n");
-    sb.append("    SubcommandRegistry(EnumSet<CommandFlag> parentFlags) {\n");
-    sb.append("      this.parentFlags = parentFlags;\n");
-    sb.append("      this.subcommands = new JedisByteMap<>();\n");
-    sb.append("    }\n");
-    sb.append("  }\n\n");
+    sb.append("final class StaticCommandFlagsRegistryInitializer {\n\n");
 
     // Static initializer block
-    sb.append("  static {\n");
+    sb.append("  static void initialize(StaticCommandFlagsRegistry.Builder builder) {\n");
 
     // Organize commands into parent commands and simple commands
     Map<String, Map<String, FlagSet>> parentCommands = new LinkedHashMap<>();
@@ -416,15 +382,11 @@ public class CommandFlagsRegistryGenerator {
 
     // Generate parent command registries
     for (String parent : knownParents) {
+      sb.append(String.format("builder.register(\"%s\", EMPTY_FLAGS);", parent));
+
       Map<String, FlagSet> subcommands = parentCommands.get(parent);
       if (subcommands != null && !subcommands.isEmpty()) {
         sb.append(String.format("    // %s parent command with subcommands\n", parent));
-
-        // Determine parent flags (use EMPTY_FLAGS for now, could be enhanced)
-        sb.append(String.format(
-          "    SubcommandRegistry %sRegistry = new SubcommandRegistry(EMPTY_FLAGS);\n",
-          parent.toLowerCase()));
-
         // Add subcommands
         List<String> sortedSubcommands = new ArrayList<>(subcommands.keySet());
         Collections.sort(sortedSubcommands);
@@ -432,14 +394,9 @@ public class CommandFlagsRegistryGenerator {
         for (String subcommand : sortedSubcommands) {
           FlagSet flagSet = subcommands.get(subcommand);
           String enumSetExpr = createEnumSetExpression(flagSet.flags);
-          sb.append(
-            String.format("    %sRegistry.subcommands.put(SafeEncoder.encode(\"%s\"), %s);\n",
-              parent.toLowerCase(), subcommand, enumSetExpr));
+          sb.append(String.format("builder.register(\"%s\", \"%s\", %s);\n", parent, subcommand,
+            enumSetExpr));
         }
-
-        sb.append(String.format(
-          "    COMMAND_FLAGS_REGISTRY.put(SafeEncoder.encode(\"%s\"), %sRegistry);\n\n", parent,
-          parent.toLowerCase()));
       }
     }
 
@@ -472,96 +429,13 @@ public class CommandFlagsRegistryGenerator {
 
       // Add registry entries using SafeEncoder.encode()
       for (String command : commands) {
-        sb.append(String.format("    COMMAND_FLAGS_REGISTRY.put(SafeEncoder.encode(\"%s\"), %s);\n",
-          command, enumSetExpr));
+        sb.append(String.format("builder.register(\"%s\", %s);\n", command, enumSetExpr));
       }
       sb.append("\n");
     }
 
+    // Close initializer block
     sb.append("  }\n\n");
-
-    // getFlags method implementation
-    sb.append("  /**\n");
-    sb.append("   * Get the flags for a given command. Flags are looked up from a static\n");
-    sb.append(
-      "   * registry based on the command arguments. This approach significantly reduces\n");
-    sb.append("   * memory usage by sharing flag instances across all CommandObject instances.\n");
-    sb.append("   * <p>\n");
-    sb.append(
-      "   * For commands with subcommands (e.g., FUNCTION LOAD, ACL SETUSER), this method\n");
-    sb.append("   * implements a hierarchical lookup strategy:\n");
-    sb.append("   * <ol>\n");
-    sb.append(
-      "   * <li>First, retrieve the parent command using CommandArguments.getCommand()</li>\n");
-    sb.append(
-      "   * <li>Check if this is a parent command (has subcommands in the registry)</li>\n");
-    sb.append("   * <li>If it is a parent command, attempt to get the child/subcommand by:\n");
-    sb.append("   *     <ul>\n");
-    sb.append(
-      "   *     <li>Extracting the second argument from the CommandArguments object</li>\n");
-    sb.append(
-      "   *     <li>Matching this second argument against the child items of the parent command</li>\n");
-    sb.append("   *     </ul>\n");
-    sb.append("   * </li>\n");
-    sb.append(
-      "   * <li>Return the appropriate flags based on whether a child command was found or just use the parent command's flags</li>\n");
-    sb.append("   * </ol>\n");
-    sb.append("   *\n");
-    sb.append(
-      "   * @param commandArguments the command arguments containing the command and its parameters\n");
-    sb.append(
-      "   * @return EnumSet of CommandFlag for this command, or empty set if command has no flags\n");
-    sb.append("   */\n");
-    sb.append("  @Override\n");
-    sb.append("  public EnumSet<CommandFlag> getFlags(CommandArguments commandArguments) {\n");
-    sb.append("    // Get the parent command\n");
-    sb.append("    ProtocolCommand cmd = commandArguments.getCommand();\n");
-    sb.append("    byte[] raw = cmd.getRaw();\n");
-    sb.append("    \n");
-    sb.append(
-      "    // Convert to uppercase using SafeEncoder utility (faster than String.toUpperCase())\n");
-    sb.append("    byte[] uppercaseBytes = SafeEncoder.toUpperCase(raw);\n");
-    sb.append("\n");
-    sb.append("    // Look up the parent command in the registry using byte array key\n");
-    sb.append("    Object registryEntry = COMMAND_FLAGS_REGISTRY.get(uppercaseBytes);\n");
-    sb.append("\n");
-    sb.append("    if (registryEntry == null) {\n");
-    sb.append("      // Command not found in registry\n");
-    sb.append("      return EMPTY_FLAGS;\n");
-    sb.append("    }\n");
-    sb.append("\n");
-    sb.append(
-      "    // Check if this is a simple command (EnumSet) or a parent command with subcommands (SubcommandRegistry)\n");
-    sb.append("    if (registryEntry instanceof EnumSet) {\n");
-    sb.append("      // Simple command without subcommands\n");
-    sb.append("      return (EnumSet<CommandFlag>) registryEntry;\n");
-    sb.append("    } else if (registryEntry instanceof SubcommandRegistry) {\n");
-    sb.append("      // Parent command with subcommands\n");
-    sb.append(
-      "      SubcommandRegistry subcommandRegistry = (SubcommandRegistry) registryEntry;\n");
-    sb.append("\n");
-    sb.append("      // Try to extract the subcommand from the second argument\n");
-    sb.append("      if (commandArguments.size() > 1) {\n");
-    sb.append("        Rawable secondArg = commandArguments.get(1);\n");
-    sb.append("        byte[] subRaw = secondArg.getRaw();\n");
-    sb.append("        \n");
-    sb.append("        // Convert to uppercase using SafeEncoder utility\n");
-    sb.append("        byte[] subUppercaseBytes = SafeEncoder.toUpperCase(subRaw);\n");
-    sb.append("        \n");
-    sb.append(
-      "        EnumSet<CommandFlag> subcommandFlags = subcommandRegistry.subcommands.get(subUppercaseBytes);\n");
-    sb.append("        if (subcommandFlags != null) {\n");
-    sb.append("          return subcommandFlags;\n");
-    sb.append("        }\n");
-    sb.append("      }\n");
-    sb.append("\n");
-    sb.append("      // No subcommand found or no second argument, return parent flags\n");
-    sb.append("      return subcommandRegistry.parentFlags;\n");
-    sb.append("    }\n");
-    sb.append("\n");
-    sb.append("    // Should not reach here, but return empty flags as fallback\n");
-    sb.append("    return EMPTY_FLAGS;\n");
-    sb.append("  }\n");
 
     // Close class
     sb.append("}\n");

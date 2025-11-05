@@ -38,7 +38,7 @@ public class ClusterCommandExecutorTest {
   public void runSuccessfulExecute() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "foo";
@@ -55,7 +55,7 @@ public class ClusterCommandExecutorTest {
   public void runFailOnFirstExecSuccessOnSecondExec() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       boolean isFirstCall = true;
 
       @Override
@@ -82,7 +82,7 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     final LongConsumer sleep = mock(LongConsumer.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         throw new JedisConnectionException("Connection failed");
@@ -113,7 +113,7 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     final HostAndPort movedTarget = new HostAndPort(null, 0);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       boolean isFirstCall = true;
 
       @Override
@@ -151,7 +151,7 @@ public class ClusterCommandExecutorTest {
     when(connectionHandler.getConnection(askTarget)).thenReturn(connection);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       boolean isFirstCall = true;
 
       @Override
@@ -205,7 +205,7 @@ public class ClusterCommandExecutorTest {
     final LongConsumer sleep = mock(LongConsumer.class);
     final HostAndPort movedTarget = new HostAndPort(null, 0);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 5, ONE_SECOND,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         if (redirecter == connection) {
@@ -273,7 +273,7 @@ public class ClusterCommandExecutorTest {
 
     final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 5, ONE_SECOND,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
 
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
@@ -311,7 +311,7 @@ public class ClusterCommandExecutorTest {
         JedisClusterOperationException.class);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
-        Duration.ZERO, new StaticCommandFlagsRegistry()) {
+        Duration.ZERO, StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return null;
@@ -333,7 +333,7 @@ public class ClusterCommandExecutorTest {
     //final LongConsumer sleep = mock(LongConsumer.class);
     final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, Duration.ZERO,
-        new StaticCommandFlagsRegistry()) {
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         try {

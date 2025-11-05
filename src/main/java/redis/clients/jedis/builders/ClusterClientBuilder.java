@@ -105,7 +105,7 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
    * @return CommandFlagsRegistry
    */
   protected CommandFlagsRegistry createDefaultCommandFlagsRegistry() {
-    return new StaticCommandFlagsRegistry();
+    return StaticCommandFlagsRegistry.registry();
   }
 
   @Override

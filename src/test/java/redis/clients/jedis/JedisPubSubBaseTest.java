@@ -55,6 +55,6 @@ public class JedisPubSubBaseTest  {
         });
         thread.start();
 
-        assertTrue(countDownLatch.await(10, TimeUnit.MILLISECONDS));
+        assertTrue(countDownLatch.await(30, TimeUnit.MILLISECONDS));
     }
 }

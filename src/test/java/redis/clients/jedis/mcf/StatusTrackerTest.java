@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.awaitility.Awaitility.await;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,11 +72,9 @@ public class StatusTrackerTest {
     });
     waitingThread.start();
 
-    // Give some time for the listener to be registered
-    Thread.sleep(50);
+    await().atMost(Duration.ofMillis(100L)).pollInterval(Duration.ofMillis(5L)).untilAsserted(
+      () -> assertNotNull(capturedListener[0], "Listener should have been registered"));
 
-    // Simulate health status change event
-    assertNotNull(capturedListener[0], "Listener should have been registered");
     HealthStatusChangeEvent event = new HealthStatusChangeEvent(testEndpoint, HealthStatus.UNKNOWN,
         HealthStatus.HEALTHY);
     capturedListener[0].onStatusChange(event);

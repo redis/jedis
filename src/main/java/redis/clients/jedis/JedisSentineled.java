@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.SentinelClientBuilder;
@@ -10,7 +9,8 @@ import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
-import redis.clients.jedis.util.ReadOnlyCommands;
+
+import java.util.Set;
 
 public class JedisSentineled extends UnifiedJedis {
 
@@ -51,7 +51,7 @@ public class JedisSentineled extends UnifiedJedis {
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
                          final GenericObjectPoolConfig<Connection> poolConfig,
                          Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom,
-                         ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+                         ReadOnlyPredicate readOnlyPredicate) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, readFrom, readOnlyPredicate),
             masterClientConfig.getRedisProtocol());
   }

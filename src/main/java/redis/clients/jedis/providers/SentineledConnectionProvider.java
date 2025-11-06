@@ -1,5 +1,25 @@
 package redis.clients.jedis.providers;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.ReadFrom;
+import redis.clients.jedis.ReadOnlyPredicate;
+import redis.clients.jedis.StaticReadOnlyPredicate;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.Pool;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,26 +29,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.ReadFrom;
-import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.csc.Cache;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.ReadOnlyCommands;
-import redis.clients.jedis.util.Pool;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
   class PoolInfo {
@@ -65,7 +65,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final ReadFrom readFrom;
 
-  private ReadOnlyCommands.ReadOnlyPredicate READ_ONLY_COMMANDS;
+  private ReadOnlyPredicate readOnlyPredicate;
 
   private final Lock initPoolLock = new ReentrantLock(true);
 
@@ -97,18 +97,18 @@ public class SentineledConnectionProvider implements ConnectionProvider {
                                       final GenericObjectPoolConfig<Connection> poolConfig,
                                       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom) {
     this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig,
-            DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, ReadOnlyCommands.asPredicate());
+            DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, StaticReadOnlyPredicate.registry());
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
                                       final GenericObjectPoolConfig<Connection> poolConfig,
                                       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom,
-                                      ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+                                      ReadOnlyPredicate readOnlyPredicate) {
     this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig,
             DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, readOnlyPredicate);
   }
 
-  public SentineledConnectionProvider(String masterName, JedisClientConfig clientConfig, Cache cache, GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels, JedisClientConfig sentinelClientConfig, ReadFrom readFrom, ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+  public SentineledConnectionProvider(String masterName, JedisClientConfig clientConfig, Cache cache, GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels, JedisClientConfig sentinelClientConfig, ReadFrom readFrom, ReadOnlyPredicate readOnlyPredicate) {
     this(masterName, clientConfig, cache, poolConfig, sentinels, sentinelClientConfig,
             DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, readFrom, readOnlyPredicate);
   }
@@ -118,21 +118,21 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
-        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, ReadFrom.UPSTREAM, ReadOnlyCommands.asPredicate());
+        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS, ReadFrom.UPSTREAM, StaticReadOnlyPredicate.registry());
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
       final long subscribeRetryWaitTimeMillis) {
-    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis, ReadFrom.UPSTREAM, ReadOnlyCommands.asPredicate());
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis, ReadFrom.UPSTREAM, StaticReadOnlyPredicate.registry());
   }
 
   @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
-      final long subscribeRetryWaitTimeMillis, ReadFrom readFrom, ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+      final long subscribeRetryWaitTimeMillis, ReadFrom readFrom, ReadOnlyPredicate readOnlyPredicate) {
 
     this.masterName = masterName;
     this.masterClientConfig = masterClientConfig;
@@ -142,7 +142,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     this.sentinelClientConfig = sentinelClientConfig;
     this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
     this.readFrom = readFrom;
-    this.READ_ONLY_COMMANDS = readOnlyPredicate;
+    this.readOnlyPredicate = readOnlyPredicate;
 
     HostAndPort master = initSentinels(sentinels);
     initMaster(master);
@@ -191,7 +191,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Override
   public Connection getConnection(CommandArguments args) {
-    boolean isReadCommand = READ_ONLY_COMMANDS.isReadOnly(args);
+    boolean isReadCommand = readOnlyPredicate.isReadOnly(args);
     if (!isReadCommand) {
       return pool.getResource();
     }

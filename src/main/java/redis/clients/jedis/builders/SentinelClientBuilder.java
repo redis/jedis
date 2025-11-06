@@ -1,10 +1,15 @@
 package redis.clients.jedis.builders;
 
-import java.util.Set;
-import redis.clients.jedis.*;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.ReadFrom;
+import redis.clients.jedis.ReadOnlyPredicate;
+import redis.clients.jedis.StaticReadOnlyPredicate;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
-import redis.clients.jedis.util.ReadOnlyCommands;
+
+import java.util.Set;
 
 /**
  * Builder for creating JedisSentineled instances (Redis Sentinel connections).
@@ -24,7 +29,7 @@ public abstract class SentinelClientBuilder<C>
 
   private ReadFrom readFrom = ReadFrom.UPSTREAM;
 
-  private ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate = ReadOnlyCommands.asPredicate();
+  private ReadOnlyPredicate readOnlyPredicate = StaticReadOnlyPredicate.registry();
 
   /**
    * Sets the master name for the Redis Sentinel configuration.
@@ -75,7 +80,7 @@ public abstract class SentinelClientBuilder<C>
    * @return this builder
    */
   public SentinelClientBuilder<C> readOnlyPredicate(
-      ReadOnlyCommands.ReadOnlyPredicate readOnlyPredicate) {
+      ReadOnlyPredicate readOnlyPredicate) {
     this.readOnlyPredicate = readOnlyPredicate;
     return this;
   }

@@ -21,8 +21,10 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -490,6 +492,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.set(key, value, params));
   }
 
+  @Override
+  public String set(final byte[] key, final byte[] value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, condition));
+  }
+
+  @Override
+  public String set(final byte[] key, final byte[] value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, params, condition));
+  }
+
+  @Override
+  public byte[] setGet(final byte[] key, final byte[] value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, condition));
+  }
+
   /**
    * Get the value of the specified key. If the key does not exist the special value 'nil' is
    * returned. If the value stored at key is not a string an error is returned because GET can only
@@ -506,6 +526,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] digestKey(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value));
@@ -515,6 +541,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] setGet(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value, params));
+  }
+
+  @Override
+  public byte[] setGet(final byte[] key, final byte[] value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, params, condition));
   }
 
   /**
@@ -573,6 +605,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.del(keys));
   }
+  @Override
+  public long delex(final byte[] key, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
 
   @Override
   public long del(final byte[] key) {
@@ -5100,6 +5138,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.set(key, value, params));
   }
 
+  @Override
+  public String set(final String key, final String value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, condition));
+  }
+
+  @Override
+  public String set(final String key, final String value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, params, condition));
+  }
+
+  @Override
+  public String setGet(final String key, final String value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, condition));
+  }
+
   /**
    * Get the value of the specified key. If the key does not exist the special value 'nil' is
    * returned. If the value stored at key is not a string an error is returned because GET can only
@@ -5119,6 +5175,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String setGet(final String key, final String value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
+  public String setGet(final String key, final String value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, params, condition));
   }
 
   @Override
@@ -5145,6 +5207,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String getEx(String key, GetExParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.getEx(key, params));
+  }
+
+  @Override
+  public String digestKey(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public long delex(final String key, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
   }
 
   /**

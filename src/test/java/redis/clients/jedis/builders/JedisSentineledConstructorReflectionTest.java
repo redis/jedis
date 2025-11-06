@@ -21,6 +21,7 @@ import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.ReadOnlyCommands;
 
 /**
  * Reflection-based coverage test for JedisSentineled constructors against builder API.
@@ -85,6 +86,12 @@ public class JedisSentineledConstructorReflectionTest {
         } else if (t == CacheConfig.class) {
           paramCovered[i] = true;
           paramCoverageBy[i] = "JedisSentineled.builder().cacheConfig(...)";
+        } else if (t == ReadFrom.class) {
+          paramCovered[i] = true;
+          paramCoverageBy[i] = "JedisSentineled.builder().readForm(...)";
+        } else if (t == ReadOnlyCommands.ReadOnlyPredicate.class) {
+          paramCovered[i] = true;
+          paramCoverageBy[i] = "DefaultJedisClientConfig.builder().readOnlyPredicate(...)";
         } else if (t == int.class || t == Integer.class) {
           String lname = name.toLowerCase();
           if (lname.contains("db") || lname.contains("database")) {

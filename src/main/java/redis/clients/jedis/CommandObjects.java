@@ -498,27 +498,31 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> set(String key, String value, SetParams params, ValueCondition cond) {
-    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
     cond.addTo(ca);
+    ca.addParams(params);
     return new CommandObject<>(ca, BuilderFactory.STRING);
   }
 
   public final CommandObject<String> setGet(String key, String value, SetParams params, ValueCondition cond) {
-    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
     cond.addTo(ca);
+    ca.addParams(params);
     ca.add(Keyword.GET);
     return new CommandObject<>(ca, BuilderFactory.STRING);
   }
 
   public final CommandObject<String> set(byte[] key, byte[] value, SetParams params, ValueCondition cond) {
-    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
     cond.addTo(ca);
+    ca.addParams(params);
     return new CommandObject<>(ca, BuilderFactory.STRING);
   }
 
   public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params, ValueCondition cond) {
-    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
     cond.addTo(ca);
+    ca.addParams(params);
     ca.add(Keyword.GET);
     return new CommandObject<>(ca, BuilderFactory.BINARY);
   }

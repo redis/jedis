@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.unified.pipeline;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -18,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.redis.test.utils.RedisVersion.V8_4_RC1;
+import static io.redis.test.utils.RedisVersion.V8_4_RC1_STRING;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -115,7 +119,7 @@ public class BinaryStreamsPipelineCommandsTest extends PipelineCommandsTestBase 
 
     Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> response = pipe.xreadBinary(
         XReadParams.xReadParams(), offsets(STREAM_KEY_1, "0-0"));
-    
+
     pipe.sync();
     List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = response.get();
 
@@ -219,6 +223,157 @@ public class BinaryStreamsPipelineCommandsTest extends PipelineCommandsTestBase 
 
     assertThat(actualEntries.get(STREAM_KEY_1), equalsStreamEntries(stream1Entries));
     assertThat(actualEntries.get(STREAM_KEY_2), equalsStreamEntries(stream2Entries));
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupBinaryWithClaimReturnsPendingThenNewEntries_pipeline() throws InterruptedException {
+    // Make 3 entries pending
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("3-0"), HASH_1);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> resp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(3),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+    assertThat(resp.get(), hasSize(1));
+
+    Thread.sleep(60);
+
+    // Add two fresh entries
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("4-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("5-0"), HASH_2);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> claimResp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(5).claim(50),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = claimResp.get();
+    assertThat(messages, hasSize(1));
+    List<StreamEntryBinary> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(5, entries.size());
+
+    for (int i = 0; i < 3; i++) {
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    for (int i = 3; i < 5; i++) {
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupBinaryWithClaimNoEligiblePendingReturnsOnlyNewEntries_pipeline() {
+    // Make 2 entries pending but below min-idle
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> resp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(2),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+    assertThat(resp.get(), hasSize(1));
+
+    // Add fresh entries that should be returned
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("3-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("4-0"), HASH_2);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> claimResp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(4).claim(500),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = claimResp.get();
+    assertThat(messages, hasSize(1));
+    List<StreamEntryBinary> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(2, entries.size());
+    for (StreamEntryBinary e : entries) {
+      org.junit.jupiter.api.Assertions.assertNull(e.getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNull(e.getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupBinaryWithClaimRespectsCountAndReturnsPendingFirst_pipeline() throws InterruptedException {
+    // Make 3 entries pending
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("3-0"), HASH_1);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> resp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(3),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+    assertThat(resp.get(), hasSize(1));
+
+    Thread.sleep(60);
+
+    // Add new entries
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("4-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("5-0"), HASH_2);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> claimResp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(2).claim(50),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = claimResp.get();
+    assertThat(messages, hasSize(1));
+    List<StreamEntryBinary> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(2, entries.size());
+    for (StreamEntryBinary e : entries) {
+      org.junit.jupiter.api.Assertions.assertNotNull(e.getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNotNull(e.getDeliveredTimes());
+    }
+  }
+
+
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupBinaryWithClaimAndNoAckDoesNotAddNewEntriesToPEL_pipeline() throws InterruptedException {
+    // Make 3 entries pending
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("3-0"), HASH_1);
+
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> first = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(3),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+    assertThat(first.get(), hasSize(1));
+
+    // Wait then add fresh entries
+    Thread.sleep(60);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("4-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("5-0"), HASH_2);
+
+    // Read with CLAIM and NOACK
+    Response<List<Map.Entry<byte[], List<StreamEntryBinary>>>> resp = pipe.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(5).claim(50).noAck(),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+    pipe.sync();
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = resp.get();
+    assertThat(messages, hasSize(1));
+    List<StreamEntryBinary> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(5, entries.size());
+    for (int i = 0; i < 3; i++) {
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    for (int i = 3; i < 5; i++) {
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getDeliveredTimes());
+    }
+
+    long acked = jedis.xack(STREAM_KEY_1, GROUP_NAME, "4-0".getBytes(), "5-0".getBytes());
+    org.junit.jupiter.api.Assertions.assertEquals(0L, acked);
   }
 
 }

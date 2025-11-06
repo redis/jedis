@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.redis.test.utils.RedisVersion.V8_4_RC1_STRING;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -541,5 +542,87 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertTrue(trimmed >= 0);
     assertTrue(jedis.xlen(STREAM_KEY_1) <= 5); // Should not exceed original length
   }
+
+
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupBinaryWithClaimIncludesMetadata() throws InterruptedException {
+    setUpTestStream();
+
+    // Add initial entries and read to create PEL entries
+    for (int i = 1; i <= 3; i++) {
+      jedis.xadd(STREAM_KEY_1, new XAddParams().id(i + "-0"), HASH_1);
+    }
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(3), streams);
+
+    // Wait so pending entries cross idle threshold
+    Thread.sleep(60);
+
+    // Add new entries
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("4-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("5-0"), HASH_2);
+
+    // Read with CLAIM
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME,
+        XReadGroupParams.xReadGroupParams().count(5).claim(50),
+        streams);
+
+    assertEquals(1, messages.size());
+    List<StreamEntryBinary> entries = messages.get(0).getValue();
+    assertEquals(5, entries.size());
+
+    // First 3 are claimed pending entries and must contain metadata
+    for (int i = 0; i < 3; i++) {
+      assertNotNull(entries.get(i).getIdleTime());
+      assertNotNull(entries.get(i).getDeliveredTimes());
+      assertTrue(entries.get(i).getDeliveredTimes() >= 1);
+    }
+
+    // Last 2 are new entries without claim metadata
+    for (int i = 3; i < 5; i++) {
+      assertNull(entries.get(i).getIdleTime());
+      assertNull(entries.get(i).getDeliveredTimes());
+    }
+  }
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupBinaryWithClaimAndNoAckDoesNotAddNewEntriesToPEL() throws InterruptedException {
+    setUpTestStream();
+
+    // Make 3 entries pending
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("3-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(3), streams);
+
+    // Wait then add fresh entries
+    Thread.sleep(60);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("4-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("5-0"), HASH_2);
+
+    // Read with CLAIM and NOACK
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(5).claim(50).noAck(), streams);
+
+    assertEquals(1, messages.size());
+    List<StreamEntryBinary> entries = messages.get(0).getValue();
+    assertEquals(5, entries.size());
+    for (int i = 0; i < 3; i++) {
+      assertNotNull(entries.get(i).getIdleTime());
+      assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    for (int i = 3; i < 5; i++) {
+      assertNull(entries.get(i).getIdleTime());
+      assertNull(entries.get(i).getDeliveredTimes());
+    }
+
+    long ackedNew = jedis.xack(STREAM_KEY_1, GROUP_NAME, "4-0".getBytes(), "5-0".getBytes());
+    assertEquals(0L, ackedNew);
+  }
+
 
 }

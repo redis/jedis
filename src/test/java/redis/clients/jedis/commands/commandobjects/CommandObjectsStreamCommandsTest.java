@@ -1,5 +1,9 @@
 package redis.clients.jedis.commands.commandobjects;
 
+
+import io.redis.test.annotations.SinceRedisVersion;
+
+import static io.redis.test.utils.RedisVersion.V8_4_RC1_STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -1102,4 +1106,121 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
     assertThat(xreadGroupConsumer2.get(streamKey).get(0).getID(), equalTo(secondMessageId));
     assertThat(xreadGroupConsumer2.get(streamKey).get(0).getFields(), equalTo(messageBody));
   }
+
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimReturnsPendingThenNewEntries_commandObjects() throws InterruptedException {
+    String key = "co-claim-stream";
+    String group = "co-claim-group";
+    String consumer = "c1";
+
+    exec(commandObjects.del(key));
+    exec(commandObjects.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true));
+
+    // Make 3 entries pending
+    exec(commandObjects.xadd(key, new StreamEntryID("1-0"), Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("2-0"), Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("3-0"), Collections.singletonMap("f", "v")));
+
+    Map<String, StreamEntryID> stream = Collections.singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    exec(commandObjects.xreadGroup(group, consumer, new XReadGroupParams().count(3), stream));
+
+    Thread.sleep(60);
+
+    // Add two fresh entries
+    exec(commandObjects.xadd(key, new StreamEntryID("4-0"), Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("5-0"), Collections.singletonMap("f", "v")));
+
+    List<Map.Entry<String, List<StreamEntry>>> messages = exec(
+        commandObjects.xreadGroup(group, consumer, new XReadGroupParams().count(5).claim(50), stream));
+
+    assertThat(messages, hasSize(1));
+    List<StreamEntry> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(5, entries.size());
+
+    for (int i = 0; i < 3; i++) {
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    for (int i = 3; i < 5; i++) {
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimNoEligiblePendingReturnsOnlyNewEntries_commandObjects() {
+    String key = "co-claim-noeligible";
+    String group = "co-claim-group";
+    String consumer = "c1";
+
+    exec(commandObjects.del(key));
+    exec(commandObjects.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true));
+
+    // Put 2 entries in PEL
+    exec(commandObjects.xadd(key, new StreamEntryID("1-0"), Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("2-0"), Collections.singletonMap("f", "v")));
+    Map<String, StreamEntryID> stream = Collections.singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    exec(commandObjects.xreadGroup(group, consumer, new XReadGroupParams().count(2), stream));
+
+    // Add two new entries that should be returned
+    exec(commandObjects.xadd(key, new StreamEntryID("3-0"), Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("4-0"), Collections.singletonMap("f", "v")));
+
+    List<Map.Entry<String, List<StreamEntry>>> messages = exec(
+        commandObjects.xreadGroup(group, consumer, new XReadGroupParams().count(4).claim(500), stream));
+
+    assertThat(messages, hasSize(1));
+    List<StreamEntry> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(2, entries.size());
+    for (StreamEntry e : entries) {
+      org.junit.jupiter.api.Assertions.assertNull(e.getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNull(e.getDeliveredTimes());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_RC1_STRING)
+  public void xreadGroupWithClaimAndNoAckDoesNotAddNewEntriesToPEL_commandObjects() throws InterruptedException {
+    String key = "co-claim-noack";
+    String group = "co-claim-group";
+    String consumer = "c1";
+
+    exec(commandObjects.del(key));
+    exec(commandObjects.xgroupCreate(key, group, StreamEntryID.XGROUP_LAST_ENTRY, true));
+
+    // Make 3 entries pending
+    exec(commandObjects.xadd(key, new StreamEntryID("1-0"), java.util.Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("2-0"), java.util.Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("3-0"), java.util.Collections.singletonMap("f", "v")));
+    java.util.Map<String, StreamEntryID> stream = java.util.Collections.singletonMap(key, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    exec(commandObjects.xreadGroup(group, consumer, new XReadGroupParams().count(3), stream));
+
+    // Wait then add fresh entries
+    Thread.sleep(60);
+    exec(commandObjects.xadd(key, new StreamEntryID("4-0"), java.util.Collections.singletonMap("f", "v")));
+    exec(commandObjects.xadd(key, new StreamEntryID("5-0"), java.util.Collections.singletonMap("f", "v")));
+
+    // Read with CLAIM and NOACK
+    java.util.List<java.util.Map.Entry<String, java.util.List<StreamEntry>>> messages = exec(
+        commandObjects.xreadGroup(group, consumer, new XReadGroupParams().count(5).claim(50).noAck(), stream));
+
+    assertThat(messages, hasSize(1));
+    java.util.List<StreamEntry> entries = messages.get(0).getValue();
+    org.junit.jupiter.api.Assertions.assertEquals(5, entries.size());
+    for (int i = 0; i < 3; i++) {
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNotNull(entries.get(i).getDeliveredTimes());
+    }
+    for (int i = 3; i < 5; i++) {
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getIdleTime());
+      org.junit.jupiter.api.Assertions.assertNull(entries.get(i).getDeliveredTimes());
+    }
+
+    Long acked = exec(commandObjects.xack(key, group, new StreamEntryID("4-0"), new StreamEntryID("5-0")));
+    org.junit.jupiter.api.Assertions.assertEquals(0L, acked);
+  }
+
 }

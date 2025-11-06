@@ -12,10 +12,28 @@ public class StreamEntryBinary implements Serializable {
   private StreamEntryID id;
   private Map<byte[], byte[]> fields;
 
+  private Long idleTime; // milliseconds since last delivery (claimed entries)
+  private Long deliveredTimes; // delivery count (claimed entries)
+
   public StreamEntryBinary(StreamEntryID id, Map<byte[], byte[]> fields) {
     this.id = id;
     this.fields = fields;
   }
+  public StreamEntryBinary(StreamEntryID id, Map<byte[], byte[]> fields, Long idleTime, Long deliveredTimes) {
+    this.id = id;
+    this.fields = fields;
+    this.idleTime = idleTime;
+    this.deliveredTimes = deliveredTimes;
+  }
+
+  public Long getIdleTime() {
+    return idleTime;
+  }
+
+  public Long getDeliveredTimes() {
+    return deliveredTimes;
+  }
+
 
   public StreamEntryID getID() {
     return id;

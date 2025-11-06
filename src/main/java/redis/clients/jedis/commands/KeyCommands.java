@@ -6,6 +6,8 @@ import java.util.Set;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -417,6 +419,20 @@ public interface KeyCommands {
    * @return An integer greater than 0 if one or more keys were removed, 0 if none of the specified keys existed
    */
   long del(String... keys);
+
+  /**
+   * Compare-and-delete: delete key if optional value/digest condition matches.
+   * @return 1 if the key was deleted, 0 otherwise
+   */
+
+  /**
+   * Experimental: Compare-and-delete guarded by value/digest condition.
+   */
+  @Experimental
+  long delex(String key, ValueCondition condition);
+
+  @Experimental
+  long delex(String key);
 
   /**
    * <b><a href="http://redis.io/commands/unlink">Unlink Command</a></b>

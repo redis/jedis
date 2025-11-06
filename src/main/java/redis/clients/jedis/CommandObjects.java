@@ -32,6 +32,7 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.*;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.conditions.ValueCondition;
 
 public class CommandObjects {
 
@@ -346,6 +347,26 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> delex(String key) {
+    return new CommandObject<>(commandArguments(Command.DELEX).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> delex(String key, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.DELEX).key(key);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> delex(byte[] key) {
+    return new CommandObject<>(commandArguments(Command.DELEX).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> delex(byte[] key, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.DELEX).key(key);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> unlink(String key) {
     return new CommandObject<>(commandArguments(UNLINK).key(key), BuilderFactory.LONG);
   }
@@ -454,12 +475,42 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.SET).key(key).add(value), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> set(String key, String value, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> setGet(String key, String value, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
+    cond.addTo(ca);
+    ca.add(Keyword.GET);
+    return new CommandObject<>(ca, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> set(byte[] key, byte[] value, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> setGet(byte[] key, byte[] value, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value);
+    cond.addTo(ca);
+    ca.add(Keyword.GET);
+    return new CommandObject<>(ca, BuilderFactory.BINARY);
+  }
+
   public final CommandObject<String> set(byte[] key, byte[] value, SetParams params) {
     return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> get(String key) {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> digest(String key) {
+    return new CommandObject<>(commandArguments(Command.DIGEST).key(key), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> setGet(String key, String value) {
@@ -477,6 +528,10 @@ public class CommandObjects {
 
   public final CommandObject<String> getEx(String key, GetExParams params) {
     return new CommandObject<>(commandArguments(Command.GETEX).key(key).addParams(params), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> digest(byte[] key) {
+    return new CommandObject<>(commandArguments(Command.DIGEST).key(key), BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> get(byte[] key) {

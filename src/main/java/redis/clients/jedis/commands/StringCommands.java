@@ -7,6 +7,9 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.conditions.ValueCondition;
+
 public interface StringCommands extends BitCommands {
 
   /**
@@ -35,6 +38,12 @@ public interface StringCommands extends BitCommands {
   String set(String key, String value, SetParams params);
 
   /**
+   * Experimental: SET with compare-and-* condition.
+   */
+  @Experimental
+  String set(String key, String value, ValueCondition condition);
+
+  /**
    * <b><a href="http://redis.io/commands/get">Get Command</a></b>
    * Get the value of the specified key. If the key does not exist the special value 'nil' is
    * returned. If the value stored at key is not a string an error is returned because GET can only
@@ -49,6 +58,12 @@ public interface StringCommands extends BitCommands {
   String setGet(String key, String value);
 
   String setGet(String key, String value, SetParams params);
+
+  /**
+   * Experimental: SET+GET with compare-and-* condition.
+   */
+  @Experimental
+  String setGet(String key, String value, ValueCondition condition);
 
   /**
    * <b><a href="http://redis.io/commands/getdel">GetDel Command</a></b>
@@ -77,6 +92,13 @@ public interface StringCommands extends BitCommands {
    * @return The value stored in key
    */
   String getEx(String key, GetExParams params);
+
+  /**
+   * Compute and return the 64-bit XXH3 digest hex of the string value stored at key.
+   * Returns null if key does not exist.
+   */
+  @Experimental
+  String digest(String key);
 
   /**
    * <b><a href="http://redis.io/commands/setrange">SetRange Command</a></b>

@@ -21,8 +21,10 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -490,6 +492,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.set(key, value, params));
   }
 
+  @Override
+  public String set(final byte[] key, final byte[] value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, condition));
+  }
+
+  @Override
+  public byte[] setGet(final byte[] key, final byte[] value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, condition));
+  }
+
   /**
    * Get the value of the specified key. If the key does not exist the special value 'nil' is
    * returned. If the value stored at key is not a string an error is returned because GET can only
@@ -503,6 +517,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] get(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public byte[] digest(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digest(key));
   }
 
   @Override
@@ -573,11 +593,23 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.del(keys));
   }
+  @Override
+  public long delex(final byte[] key, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
 
   @Override
   public long del(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.del(key));
+  }
+
+  @Override
+  public long delex(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key));
   }
 
   /**
@@ -5100,6 +5132,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.set(key, value, params));
   }
 
+  @Override
+  public String set(final String key, final String value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, condition));
+  }
+
+  @Override
+  public String setGet(final String key, final String value, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, condition));
+  }
+
   /**
    * Get the value of the specified key. If the key does not exist the special value 'nil' is
    * returned. If the value stored at key is not a string an error is returned because GET can only
@@ -5147,6 +5191,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.getEx(key, params));
   }
 
+  @Override
+  public String digest(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digest(key));
+  }
+
+  @Override
+  public long delex(final String key, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
   /**
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
@@ -5170,6 +5226,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public boolean exists(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.exists(key));
+  }
+
+  @Override
+  public long delex(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key));
   }
 
   /**

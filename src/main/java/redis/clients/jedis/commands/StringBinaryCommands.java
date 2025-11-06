@@ -7,7 +7,22 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.conditions.ValueCondition;
+
 public interface StringBinaryCommands extends BitBinaryCommands {
+
+  /**
+   * Experimental: SET with compare-and-* condition.
+   */
+  @Experimental
+  String set(byte[] key, byte[] value, ValueCondition condition);
+
+  /**
+   * Experimental: SET+GET with compare-and-* condition.
+   */
+  @Experimental
+  byte[] setGet(byte[] key, byte[] value, ValueCondition condition);
 
   String set(byte[] key, byte[] value);
 
@@ -22,6 +37,10 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   byte[] getDel(byte[] key);
 
   byte[] getEx(byte[] key, GetExParams params);
+
+  /** Returns the 64-bit XXH3 digest hex (ASCII bytes) of the string value stored at key, or null if missing. */
+  @Experimental
+  byte[] digest(byte[] key);
 
   long setrange(byte[] key, long offset, byte[] value);
 

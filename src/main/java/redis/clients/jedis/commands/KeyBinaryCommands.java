@@ -6,6 +6,8 @@ import java.util.Set;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -59,6 +61,16 @@ public interface KeyBinaryCommands {
   List<byte[]> sort(byte[] key, SortingParams sortingParams);
 
   long del(byte[] key);
+
+
+  /**
+   * Experimental: Compare-and-delete guarded by value/digest condition.
+   */
+  @Experimental
+  long delex(byte[] key, ValueCondition condition);
+
+  @Experimental
+  long delex(byte[] key);
 
   long del(byte[]... keys);
 

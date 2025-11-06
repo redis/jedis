@@ -79,8 +79,7 @@ public abstract class SentinelClientBuilder<C>
    * @param readOnlyPredicate
    * @return this builder
    */
-  public SentinelClientBuilder<C> readOnlyPredicate(
-      ReadOnlyPredicate readOnlyPredicate) {
+  public SentinelClientBuilder<C> readOnlyPredicate(ReadOnlyPredicate readOnlyPredicate) {
     this.readOnlyPredicate = readOnlyPredicate;
     return this;
   }

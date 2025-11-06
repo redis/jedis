@@ -1184,7 +1184,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.3.224")
   public void delexBasicAndConditions() {
     jedis.set("dk", "v");
-    assertEquals(1L, jedis.delex("dk"));
+    assertEquals(1L, jedis.del("dk"));
     assertFalse(jedis.exists("dk"));
 
     jedis.set("dk", "v1");
@@ -1197,7 +1197,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(1L, jedis.delex("dk3", ValueCondition.valueNe("z")));
 
     jedis.del("missing");
-    assertEquals(0L, jedis.delex("missing"));
+    assertEquals(0L, jedis.del("missing"));
     assertEquals(0L, jedis.delex("missing", ValueCondition.valueNe("anything")));
   }
 }

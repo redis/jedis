@@ -969,12 +969,13 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     }
     assertEquals(allIn, allScan);
   }
+
   @Test
   @SinceRedisVersion("8.3.224")
   public void delexBasicAndConditions() {
     // basic
     jedis.set("dk", "v");
-    assertEquals(1L, jedis.delex("dk"));
+    assertEquals(1L, jedis.del("dk"));
     assertFalse(jedis.exists("dk"));
 
     // IFEQ match
@@ -990,7 +991,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     // Missing key: regardless of condition, deletion count should be 0
     jedis.del("missing");
-    assertEquals(0L, jedis.delex("missing"));
+    assertEquals(0L, jedis.del("missing"));
     assertEquals(0L, jedis.delex("missing", ValueCondition.valueNe("anything")));
   }
 

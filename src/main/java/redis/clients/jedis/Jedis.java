@@ -606,12 +606,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.del(key));
   }
 
-  @Override
-  public long delex(final byte[] key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.delex(key));
-  }
-
   /**
    * This command is very similar to DEL: it removes the specified keys. Just like DEL a key is
    * ignored if it does not exist. However, the command performs the actual memory reclaiming in a
@@ -5226,12 +5220,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public boolean exists(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.exists(key));
-  }
-
-  @Override
-  public long delex(final String key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.delex(key));
   }
 
   /**

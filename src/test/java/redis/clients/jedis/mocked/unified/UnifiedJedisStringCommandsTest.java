@@ -902,38 +902,6 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testDelex() {
-    String key = "dk";
-    long expected = 1L;
-
-    when(commandObjects.delex(key)).thenReturn(longCommandObject);
-    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
-
-    long result = jedis.delex(key);
-
-    assertThat(result, equalTo(expected));
-
-    verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).delex(key);
-  }
-
-  @Test
-  public void testDelexBinary() {
-    byte[] key = "dk".getBytes();
-    long expected = 0L;
-
-    when(commandObjects.delex(key)).thenReturn(longCommandObject);
-    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
-
-    long result = jedis.delex(key);
-
-    assertThat(result, equalTo(expected));
-
-    verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).delex(key);
-  }
-
-  @Test
-  public void testDelexWithParams() {
     String key = "dkp";
     ValueCondition cond = ValueCondition.valueEq("v1");
     long expected = 1L;
@@ -950,7 +918,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   @Test
-  public void testDelexWithParamsBinary() {
+  public void testDelexBinary() {
     byte[] key = "dkp".getBytes();
     ValueCondition cond = ValueCondition.digestEq("0123456789abcdef");
     long expected = 0L;

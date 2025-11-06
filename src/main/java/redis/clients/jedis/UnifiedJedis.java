@@ -586,11 +586,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long delex(String key) {
-    return executeCommand(commandObjects.delex(key));
-  }
-
-  @Override
   public long delex(String key, ValueCondition condition) {
     return executeCommand(commandObjects.delex(key, condition));
   }
@@ -603,11 +598,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long unlink(String key) {
     return executeCommand(commandObjects.unlink(key));
-  }
-
-  @Override
-  public long delex(byte[] key) {
-    return executeCommand(commandObjects.delex(key));
   }
 
   @Override

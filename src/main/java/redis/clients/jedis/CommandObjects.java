@@ -347,18 +347,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> delex(String key) {
-    return new CommandObject<>(commandArguments(Command.DELEX).key(key), BuilderFactory.LONG);
-  }
-
   public final CommandObject<Long> delex(String key, ValueCondition cond) {
     CommandArguments ca = commandArguments(Command.DELEX).key(key);
     cond.addTo(ca);
     return new CommandObject<>(ca, BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> delex(byte[] key) {
-    return new CommandObject<>(commandArguments(Command.DELEX).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> delex(byte[] key, ValueCondition cond) {

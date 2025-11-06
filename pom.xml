@@ -62,6 +62,10 @@
 		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
+			<argLine></argLine>
+			<failsafeSuffixArgLine></failsafeSuffixArgLine>
+			<failsafeTaggedArgLine></failsafeTaggedArgLine>
+			<failsafeScenarioArgLine></failsafeScenarioArgLine>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
 		<excludedGroupsForUnitTests>integration,scenario</excludedGroupsForUnitTests>
 		<skipUnitTests>false</skipUnitTests>
@@ -349,7 +353,7 @@
 				<version>${maven.surefire.version}</version>
 				<configuration>
 					<skipTests>${skipUnitTests}</skipTests>
-					<argLine>@{argLine} ${JVM_OPTS}</argLine>
+					<argLine>${argLine} ${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
@@ -368,7 +372,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
 				<configuration>
-					<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
+					<argLine>${failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
@@ -394,7 +398,7 @@
 						</goals>
 						<configuration>
 							<skip>${skipIntegrationTests}</skip>
-							<argLine>@{failsafeTaggedArgLine} ${JVM_OPTS}</argLine>
+							<argLine>${failsafeTaggedArgLine} ${JVM_OPTS}</argLine>
 							<groups>integration</groups>
 							<excludedGroups>scenario,unit</excludedGroups>
 							<includes>
@@ -411,7 +415,7 @@
 						</goals>
 						<configuration>
 							<skip>${skipIntegrationTests}</skip>
-							<argLine>@{failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
+							<argLine>${failsafeSuffixArgLine} ${JVM_OPTS}</argLine>
 							<excludedGroups>scenario,unit</excludedGroups>
 							<includes>
 								<include>**/*IT.java</include>
@@ -429,7 +433,7 @@
 						</goals>
 						<configuration>
 							<skip>${skipScenarioTests}</skip>
-							<argLine>@{failsafeScenarioArgLine} ${JVM_OPTS}</argLine>
+							<argLine>${failsafeScenarioArgLine} ${JVM_OPTS}</argLine>
 							<groups>scenario</groups>
 							<excludedGroups>integration,unit</excludedGroups>
 							<includes>
@@ -638,7 +642,7 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<version>${maven.surefire.version}</version>
 						<configuration>
-							<argLine>@{argLine} ${JVM_OPTS}</argLine>
+							<argLine>${argLine} ${JVM_OPTS}</argLine>
 						</configuration>
 					</plugin>
 				</plugins>

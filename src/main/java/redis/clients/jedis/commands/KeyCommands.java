@@ -431,9 +431,6 @@ public interface KeyCommands {
   @Experimental
   long delex(String key, ValueCondition condition);
 
-  @Experimental
-  long delex(String key);
-
   /**
    * <b><a href="http://redis.io/commands/unlink">Unlink Command</a></b>
    * This command is very similar to {@link KeyCommands#del(String) DEL}: it removes the specified key.

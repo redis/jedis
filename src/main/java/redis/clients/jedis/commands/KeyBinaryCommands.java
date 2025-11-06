@@ -69,9 +69,6 @@ public interface KeyBinaryCommands {
   @Experimental
   long delex(byte[] key, ValueCondition condition);
 
-  @Experimental
-  long delex(byte[] key);
-
   long del(byte[]... keys);
 
   long unlink(byte[] key);

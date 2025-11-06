@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_80M3;
+import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_84RC1;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
@@ -267,12 +268,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     sc.addSortableNumericField("subj1");
     sc.addSortableNumericField("subj2");
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-//    client.addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
-//    client.addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
-//    client.addDocument(new Document("data3").set("name", "ghi").set("subj1", 50).set("subj2", 80));
-//    client.addDocument(new Document("data4").set("name", "abc").set("subj1", 30).set("subj2", 20));
-//    client.addDocument(new Document("data5").set("name", "def").set("subj1", 65).set("subj2", 45));
-//    client.addDocument(new Document("data6").set("name", "ghi").set("subj1", 70).set("subj2", 70));
+
     addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
     addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
     addDocument(new Document("data3").set("name", "ghi").set("subj1", 50).set("subj2", 80));
@@ -287,7 +283,12 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     // actual search
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(3, res.getTotalResults());
+
+    if (RedisConditions.of(client).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_84RC1)) {
+      //prior to 8.4rc1, the returned total result was reported as 3 (number of results before filter),
+      // while 2 rows were actually returned
+      assertEquals(2, res.getTotalResults());
+    }
 
     Row r1 = res.getRow(0);
     assertNotNull(r1);

@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>7.0.1-SNAPSHOT</version>
+	<version>7.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -255,7 +255,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.13</version>
+				<version>0.8.14</version>
 				<executions>
 					<!-- Collect coverage for unit tests -->
 					<execution>
@@ -360,6 +360,8 @@
 						<!-- Exclude integration tests from unit-test phase -->
 						<exclude>**/*IntegrationTest.java</exclude>
 						<exclude>**/*IntegrationTests.java</exclude>
+						<!-- Exclude code generators - these are tools, not tests -->
+						<exclude>**/codegen/**/*.java</exclude>
 					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
@@ -535,6 +537,7 @@
 						<include>**/MultiDb*.java</include>
 						<include>**/ClientTestUtil.java</include>
 						<include>**/ReflectionTestUtil.java</include>
+						<include>**/*CommandFlags*.java</include>
 					</includes>
 				</configuration>
 				<executions>

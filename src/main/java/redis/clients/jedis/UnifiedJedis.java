@@ -781,6 +781,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String set(String key, String value, SetParams params, ValueCondition condition) {
+    return executeCommand(commandObjects.set(key, value, params, condition));
+  }
+
+  @Override
+  public String setGet(String key, String value, SetParams params, ValueCondition condition) {
+    return executeCommand(commandObjects.setGet(key, value, params, condition));
+  }
+
+  @Override
   public String setGet(String key, String value, ValueCondition condition) {
     return executeCommand(commandObjects.setGet(key, value, condition));
   }
@@ -816,6 +826,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String set(byte[] key, byte[] value, SetParams params, ValueCondition condition) {
+    return executeCommand(commandObjects.set(key, value, params, condition));
+  }
+
+  @Override
   public byte[] get(byte[] key) {
     return executeCommand(commandObjects.get(key));
   }
@@ -848,6 +863,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] getDel(byte[] key) {
     return executeCommand(commandObjects.getDel(key));
+  }
+
+
+  @Override
+  public byte[] setGet(byte[] key, byte[] value, SetParams params, ValueCondition condition) {
+    return executeCommand(commandObjects.setGet(key, value, params, condition));
   }
 
   @Override

@@ -406,4 +406,38 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(1L, jedis.delex(k, cond2));
     assertFalse(jedis.exists(k));
   }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setWithParamsAndIFCondition() {
+    jedis.del("comb1");
+    // missing key: NX + IFNE should set
+    assertEquals("OK", jedis.set("comb1", "v1", setParams().nx(), ValueCondition.valueNe("x")));
+    assertEquals("v1", jedis.get("comb1"));
+
+    // existing key: XX + IFEQ should set
+    assertEquals("OK", jedis.set("comb1", "v2", setParams().xx(), ValueCondition.valueEq("v1")));
+    assertEquals("v2", jedis.get("comb1"));
+
+    // existing key: XX + wrong IFEQ should not set
+    assertNull(jedis.set("comb1", "no", setParams().xx(), ValueCondition.valueEq("nope")));
+    assertEquals("v2", jedis.get("comb1"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setGetWithParamsAndIFCondition() {
+    jedis.set("comb2", "v1");
+
+    // existing key: XX + IFEQ should set and return previous
+    String prev = jedis.setGet("comb2", "v2", setParams().xx(), ValueCondition.valueEq("v1"));
+    assertEquals("v1", prev);
+    assertEquals("v2", jedis.get("comb2"));
+
+    // failing condition: returns current and does not set
+    prev = jedis.setGet("comb2", "no", setParams().xx(), ValueCondition.valueEq("nope"));
+    assertEquals("v2", prev);
+    assertEquals("v2", jedis.get("comb2"));
+  }
+
 }

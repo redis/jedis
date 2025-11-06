@@ -24,6 +24,19 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   @Experimental
   byte[] setGet(byte[] key, byte[] value, ValueCondition condition);
 
+  /**
+   * Experimental: SET with SetParams and compare-and-* condition.
+   */
+  @Experimental
+  String set(byte[] key, byte[] value, SetParams params, ValueCondition condition);
+
+  /**
+   * Experimental: SET+GET with SetParams and compare-and-* condition.
+   */
+  @Experimental
+  byte[] setGet(byte[] key, byte[] value, SetParams params, ValueCondition condition);
+
+
   String set(byte[] key, byte[] value);
 
   String set(byte[] key, byte[] value, SetParams params);

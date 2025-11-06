@@ -50,7 +50,7 @@ public class CommandObjects {
 
   protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
-  private Lock mapperLock = new ReentrantLock(true);    
+  private Lock mapperLock = new ReentrantLock(true);
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(SearchProtocol.DEFAULT_DIALECT);
 
@@ -495,6 +495,32 @@ public class CommandObjects {
 
   public final CommandObject<String> set(byte[] key, byte[] value, SetParams params) {
     return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> set(String key, String value, SetParams params, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> setGet(String key, String value, SetParams params, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    cond.addTo(ca);
+    ca.add(Keyword.GET);
+    return new CommandObject<>(ca, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> set(byte[] key, byte[] value, SetParams params, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params, ValueCondition cond) {
+    CommandArguments ca = commandArguments(Command.SET).key(key).add(value).addParams(params);
+    cond.addTo(ca);
+    ca.add(Keyword.GET);
+    return new CommandObject<>(ca, BuilderFactory.BINARY);
   }
 
   public final CommandObject<String> get(String key) {
@@ -3024,7 +3050,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
-      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], StreamEntryID>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)
@@ -3039,7 +3065,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(
-      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], StreamEntryID>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)

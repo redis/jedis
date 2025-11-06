@@ -499,6 +499,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String set(final byte[] key, final byte[] value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, params, condition));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value, final ValueCondition condition) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value, condition));
@@ -535,6 +541,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] setGet(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value, params));
+  }
+
+  @Override
+  public byte[] setGet(final byte[] key, final byte[] value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, params, condition));
   }
 
   /**
@@ -5133,6 +5145,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String set(final String key, final String value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.set(key, value, params, condition));
+  }
+
+  @Override
   public String setGet(final String key, final String value, final ValueCondition condition) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value, condition));
@@ -5157,6 +5175,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String setGet(final String key, final String value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
+  public String setGet(final String key, final String value, final SetParams params, final ValueCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value, params, condition));
   }
 
   @Override

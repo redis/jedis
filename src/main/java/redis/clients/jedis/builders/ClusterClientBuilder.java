@@ -15,7 +15,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * configuration, retry settings, and topology refresh configuration.
  * </p>
  */
-public abstract class ClusterClientBuilder<C extends JedisCluster>
+public abstract class ClusterClientBuilder<C>
     extends AbstractClientBuilder<ClusterClientBuilder<C>, C> {
 
   // Cluster-specific configuration fields

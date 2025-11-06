@@ -22,7 +22,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 
-import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
+import static redis.clients.jedis.RedisClusterClient.INIT_NO_ERROR_PROPERTY;
 
 public class ClusterConnectionProvider implements ConnectionProvider {
 

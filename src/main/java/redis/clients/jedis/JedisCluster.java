@@ -18,6 +18,14 @@ import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
+/**
+ * JedisCluster is a client for Redis Cluster deployments.
+ *
+ * @deprecated Use {@link RedisClusterClient} instead. RedisClusterClient provides the same functionality
+ *             with a cleaner API and simplified constructor options. For basic usage, simple
+ *             constructors are available. For advanced configuration, use {@link RedisClusterClient#builder()}.
+ */
+@Deprecated
 public class JedisCluster extends UnifiedJedis {
 
   public static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";

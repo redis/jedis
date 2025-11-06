@@ -11,6 +11,14 @@ import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
+/**
+ * JedisSentineled is a client for Redis Sentinel deployments.
+ *
+ * @deprecated Use {@link RedisSentinelClient} instead. RedisSentinelClient provides the same functionality
+ *             with a cleaner API. Use {@link RedisSentinelClient#builder()} to configure the client
+ *             with sentinel settings, master configuration, and connection pooling options.
+ */
+@Deprecated
 public class JedisSentineled extends UnifiedJedis {
 
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,

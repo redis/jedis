@@ -18,6 +18,14 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
+/**
+ * JedisPooled is a pooled connection client for standalone Redis servers.
+ *
+ * @deprecated Use {@link RedisClient} instead. RedisClient provides the same functionality
+ *             with a cleaner API and simplified constructor options. For basic usage, simple
+ *             constructors are available. For advanced configuration, use {@link RedisClient#builder()}.
+ */
+@Deprecated
 public class JedisPooled extends UnifiedJedis {
 
   public JedisPooled() {

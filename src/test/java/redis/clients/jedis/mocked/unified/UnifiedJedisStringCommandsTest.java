@@ -4,11 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
@@ -864,6 +866,155 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(bytesCommandObject);
     verify(commandObjects).substr(key, start, end);
+  }
+
+  @Test
+  public void testDigest() {
+    String key = "key";
+    String expectedHex = "0123456789abcdef";
+
+    when(commandObjects.digest(key)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedHex);
+
+    String result = jedis.digest(key);
+
+    assertThat(result, equalTo(expectedHex));
+
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).digest(key);
+  }
+
+  @Test
+  public void testDigestBinary() {
+    byte[] key = "key".getBytes();
+    byte[] expectedHex = "fedcba9876543210".getBytes();
+
+    when(commandObjects.digest(key)).thenReturn(bytesCommandObject);
+    when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedHex);
+
+    byte[] result = jedis.digest(key);
+
+    assertThat(result, equalTo(expectedHex));
+
+    verify(commandExecutor).executeCommand(bytesCommandObject);
+    verify(commandObjects).digest(key);
+  }
+
+  @Test
+  public void testDelex() {
+    String key = "dk";
+    long expected = 1L;
+
+    when(commandObjects.delex(key)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.delex(key);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).delex(key);
+  }
+
+  @Test
+  public void testDelexBinary() {
+    byte[] key = "dk".getBytes();
+    long expected = 0L;
+
+    when(commandObjects.delex(key)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.delex(key);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).delex(key);
+  }
+
+  @Test
+  public void testDelexWithParams() {
+    String key = "dkp";
+    ValueCondition cond = ValueCondition.valueEq("v1");
+    long expected = 1L;
+
+    when(commandObjects.delex(key, cond)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.delex(key, cond);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).delex(key, cond);
+  }
+
+  @Test
+  public void testDelexWithParamsBinary() {
+    byte[] key = "dkp".getBytes();
+    ValueCondition cond = ValueCondition.digestEq("0123456789abcdef");
+    long expected = 0L;
+
+    when(commandObjects.delex(key, cond)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.delex(key, cond);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).delex(key, cond);
+  }
+
+  @Test
+  public void testSetWithParamsIFConditions() {
+    String key = "k";
+    String value = "v";
+    ValueCondition c1 = ValueCondition.valueEq("v");
+    ValueCondition c2 = ValueCondition.valueNe("x");
+    ValueCondition c3 = ValueCondition.digestEq("0123456789abcdef");
+    ValueCondition c4 = ValueCondition.digestNe("0123456789abcdef");
+
+    when(commandObjects.set(key, value, c1)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
+    assertThat(jedis.set(key, value, c1), equalTo("OK"));
+    verify(commandExecutor, times(1)).executeCommand(stringCommandObject);
+    verify(commandObjects).set(key, value, c1);
+
+    when(commandObjects.set(key, value, c2)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
+    assertThat(jedis.set(key, value, c2), equalTo("OK"));
+    verify(commandExecutor, times(2)).executeCommand(stringCommandObject);
+    verify(commandObjects).set(key, value, c2);
+
+    when(commandObjects.set(key, value, c3)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
+    assertThat(jedis.set(key, value, c3), equalTo("OK"));
+    verify(commandExecutor, times(3)).executeCommand(stringCommandObject);
+    verify(commandObjects).set(key, value, c3);
+
+    when(commandObjects.set(key, value, c4)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
+    assertThat(jedis.set(key, value, c4), equalTo("OK"));
+    verify(commandExecutor, times(4)).executeCommand(stringCommandObject);
+    verify(commandObjects).set(key, value, c4);
+  }
+
+  @Test
+  public void testSetGetWithParamsIFConditions() {
+    String key = "kg";
+    String value = "v";
+    ValueCondition cond = ValueCondition.valueEq("v");
+
+    when(commandObjects.setGet(key, value, cond)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("old");
+
+    String result = jedis.setGet(key, value, cond);
+
+    assertThat(result, equalTo("old"));
+
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).setGet(key, value, cond);
   }
 
 }

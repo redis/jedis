@@ -42,6 +42,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.params.RestoreParams;
@@ -968,4 +969,29 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     }
     assertEquals(allIn, allScan);
   }
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void delexBasicAndConditions() {
+    // basic
+    jedis.set("dk", "v");
+    assertEquals(1L, jedis.delex("dk"));
+    assertFalse(jedis.exists("dk"));
+
+    // IFEQ match
+    jedis.set("dk", "v1");
+    assertEquals(0L, jedis.delex("dk", ValueCondition.valueEq("nope")));
+    assertEquals(1L, jedis.delex("dk", ValueCondition.valueEq("v1")));
+
+    // IFNE non-match
+    jedis.set("dk2", "x");
+    assertEquals(0L, jedis.delex("dk2", ValueCondition.valueNe("x")));
+    jedis.set("dk3", "y");
+    assertEquals(1L, jedis.delex("dk3", ValueCondition.valueNe("z")));
+
+    // Missing key: regardless of condition, deletion count should be 0
+    jedis.del("missing");
+    assertEquals(0L, jedis.delex("missing"));
+    assertEquals(0L, jedis.delex("missing", ValueCondition.valueNe("anything")));
+  }
+
 }

@@ -35,6 +35,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.args.FlushMode;
@@ -1177,5 +1178,26 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     jedis.auth(endpoint.getPassword());
     assertEquals("1", jedis.get(counter));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void delexBasicAndConditions() {
+    jedis.set("dk", "v");
+    assertEquals(1L, jedis.delex("dk"));
+    assertFalse(jedis.exists("dk"));
+
+    jedis.set("dk", "v1");
+    assertEquals(0L, jedis.delex("dk", ValueCondition.valueEq("nope")));
+    assertEquals(1L, jedis.delex("dk", ValueCondition.valueEq("v1")));
+
+    jedis.set("dk2", "x");
+    assertEquals(0L, jedis.delex("dk2", ValueCondition.valueNe("x")));
+    jedis.set("dk3", "y");
+    assertEquals(1L, jedis.delex("dk3", ValueCondition.valueNe("z")));
+
+    jedis.del("missing");
+    assertEquals(0L, jedis.delex("missing"));
+    assertEquals(0L, jedis.delex("missing", ValueCondition.valueNe("anything")));
   }
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -281,4 +283,127 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void digestBasic() {
+    jedis.del("dg");
+    assertNull(jedis.digest("dg"));
+    jedis.set("dg", "val");
+    String hex = jedis.digest("dg");
+    assertTrue(hex != null && (hex.length() == 16));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setWithIfConditions() {
+    jedis.set("kif", "v1");
+
+    // IFEQ matches -> set
+    assertEquals("OK", jedis.set("kif", "v2", ValueCondition.valueEq("v1")));
+    assertEquals("v2", jedis.get("kif"));
+
+    // IFEQ fails -> no set
+    assertNull(jedis.set("kif", "v3", ValueCondition.valueEq("nope")));
+    assertEquals("v2", jedis.get("kif"));
+
+    // IFNE matches -> set
+    assertEquals("OK", jedis.set("kif", "v4", ValueCondition.valueNe("nope")));
+    assertEquals("v4", jedis.get("kif"));
+
+    // Missing key semantics
+    jedis.del("kif_missing");
+    assertNull(jedis.set("kif_missing", "x", ValueCondition.valueEq("anything"))); // missing + IFEQ should fail
+    assertEquals("OK", jedis.set("kif_missing", "x", ValueCondition.valueNe("anything"))); // missing + IFNE should pass
+  }
+
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setGetWithIFConditions() {
+    jedis.del("sgk");
+    // Missing + IFNE should set and return previous (null)
+    assertNull(jedis.setGet("sgk", "v1", ValueCondition.valueNe("x")));
+    assertEquals("v1", jedis.get("sgk"));
+
+    // IFEQ matches -> returns old value and sets
+    assertEquals("v1", jedis.setGet("sgk", "v2", ValueCondition.valueEq("v1")));
+    assertEquals("v2", jedis.get("sgk"));
+
+    // IFEQ fails -> returns old value and does not set
+    assertEquals("v2", jedis.setGet("sgk", "v3", ValueCondition.valueEq("nope")));
+    assertEquals("v2", jedis.get("sgk"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setWithIFDigestConditions() {
+    jedis.set("dk", "abc");
+    String dig = jedis.digest("dk");
+
+    // IFDEQ matches -> set
+    assertEquals("OK", jedis.set("dk", "def", ValueCondition.digestEq(dig)));
+    String newDig = jedis.digest("dk");
+    assertTrue(newDig != null && newDig.length() == 16);
+
+    // IFDEQ fails -> no set
+    assertNull(jedis.set("dk", "ghi", ValueCondition.digestEq(dig)));
+    assertEquals("def", jedis.get("dk"));
+
+    // IFDNE equal digest -> fail (no set)
+    assertNull(jedis.set("dk", "ghi", ValueCondition.digestNe(newDig)));
+    assertEquals("def", jedis.get("dk"));
+
+    // Missing key semantics
+    jedis.del("dm");
+    assertNull(jedis.set("dm", "x", ValueCondition.digestEq("0000000000000000")));
+    jedis.del("dm");
+    assertEquals("OK", jedis.set("dm", "x", ValueCondition.digestNe("0000000000000000")));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void casCadEndToEndExample() {
+    final String k = "cas:ex";
+    jedis.del(k);
+
+    // 1) Create initial value
+    assertEquals("OK", jedis.set(k, "v1"));
+    assertEquals("v1", jedis.get(k));
+
+    // 2) Read digest and use it to CAS to v2
+    String d1 = jedis.digest(k);
+    assertTrue(d1 != null && d1.length() == 16);
+
+    // Wrong digest must not set
+    assertNull(jedis.set(k, "bad", ValueCondition.digestEq("0000000000000000")));
+    assertEquals("v1", jedis.get(k));
+
+    // Correct digest sets the new value
+    assertEquals("OK", jedis.set(k, "v2", ValueCondition.digestEq(d1)));
+    assertEquals("v2", jedis.get(k));
+
+    // 3) Delete using DELEX guarded by the latest digest
+    String d2 = jedis.digest(k);
+    assertEquals(0L, jedis.delex(k, ValueCondition.digestEq("0000000000000000")));
+    assertEquals(1L, jedis.delex(k, ValueCondition.digestEq(d2)));
+    assertFalse(jedis.exists(k));
+  }
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void casCadEndToEndExample_Experimental() {
+    final String k = "cas:ex2";
+    jedis.del(k);
+
+    assertEquals("OK", jedis.set(k, "v1"));
+
+    String d1 = jedis.digest(k);
+    ValueCondition cond1 = ValueCondition.digestEq(d1);
+    assertEquals("OK", jedis.set(k, "v2", cond1));
+    assertEquals("v2", jedis.get(k));
+
+    String d2 = jedis.digest(k);
+    ValueCondition cond2 = ValueCondition.digestEq(d2);
+    assertEquals(1L, jedis.delex(k, cond2));
+    assertFalse(jedis.exists(k));
+  }
 }

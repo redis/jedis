@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.conditions.ValueCondition;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -39,6 +40,44 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
 
     assertNull(jedis.get("bar"));
   }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void digestSimple() {
+    assertNull(jedis.digest("missing"));
+    jedis.set("foo", "bar");
+    String hex = jedis.digest("foo");
+    org.junit.jupiter.api.Assertions.assertNotNull(hex);
+    assertTrue(hex.matches("(?i)[0-9a-f]{16}"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setWithIFConditionsValue() {
+    jedis.del("k");
+
+    // IFEQ on existing value: success
+    jedis.set("k", "v1");
+    assertEquals("OK", jedis.set("k", "v2", ValueCondition.valueEq("v1")));
+    assertEquals("v2", jedis.get("k"));
+
+    // IFEQ no match: no change
+    assertNull(jedis.set("k", "v3", ValueCondition.valueEq("nope")));
+    assertEquals("v2", jedis.get("k"));
+
+    // IFNE on missing key: treated as true -> creates key
+    jedis.del("k");
+    assertEquals("OK", jedis.set("k", "vx", ValueCondition.valueNe("anything")));
+    assertEquals("vx", jedis.get("k"));
+
+    // IFEQ on missing key: false -> no create
+    jedis.del("k");
+    assertNull(jedis.set("k", "vy", ValueCondition.valueEq("anything")));
+    assertNull(jedis.get("k"));
+  }
+
+
+
 
   @Test
   public void getSet() {
@@ -226,6 +265,39 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.3.224")
+  public void digestBasic() {
+    jedis.del("dg");
+    assertNull(jedis.digest("dg"));
+    jedis.set("dg", "val");
+    String hex = jedis.digest("dg");
+    assertTrue(hex != null && (hex.length() == 16));
+  }
+
+  @Test
+  @SinceRedisVersion("8.3.224")
+  public void setWithIfConditions() {
+    jedis.set("kif", "v1");
+
+    // IFEQ matches -> set
+    assertEquals("OK", jedis.set("kif", "v2", ValueCondition.valueEq("v1")));
+    assertEquals("v2", jedis.get("kif"));
+
+    // IFEQ fails -> no set
+    assertNull(jedis.set("kif", "v3", ValueCondition.valueEq("nope")));
+    assertEquals("v2", jedis.get("kif"));
+
+    // IFNE matches -> set
+    assertEquals("OK", jedis.set("kif", "v4", ValueCondition.valueNe("nope")));
+    assertEquals("v4", jedis.get("kif"));
+
+    // Missing key semantics
+    jedis.del("kif_missing");
+    assertNull(jedis.set("kif_missing", "x", ValueCondition.valueEq("anything")));
+    assertEquals("OK", jedis.set("kif_missing", "x", ValueCondition.valueNe("anything")));
+  }
+
+
   public void strlen() {
     String str = "This is a string";
     jedis.set("s", str);

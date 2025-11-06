@@ -287,9 +287,9 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @SinceRedisVersion("8.3.224")
   public void digestBasic() {
     jedis.del("dg");
-    assertNull(jedis.digest("dg"));
+    assertNull(jedis.digestKey("dg"));
     jedis.set("dg", "val");
-    String hex = jedis.digest("dg");
+    String hex = jedis.digestKey("dg");
     assertTrue(hex != null && (hex.length() == 16));
   }
 
@@ -338,11 +338,11 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @SinceRedisVersion("8.3.224")
   public void setWithIFDigestConditions() {
     jedis.set("dk", "abc");
-    String dig = jedis.digest("dk");
+    String dig = jedis.digestKey("dk");
 
     // IFDEQ matches -> set
     assertEquals("OK", jedis.set("dk", "def", ValueCondition.digestEq(dig)));
-    String newDig = jedis.digest("dk");
+    String newDig = jedis.digestKey("dk");
     assertTrue(newDig != null && newDig.length() == 16);
 
     // IFDEQ fails -> no set
@@ -371,7 +371,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals("v1", jedis.get(k));
 
     // 2) Read digest and use it to CAS to v2
-    String d1 = jedis.digest(k);
+    String d1 = jedis.digestKey(k);
     assertTrue(d1 != null && d1.length() == 16);
 
     // Wrong digest must not set
@@ -383,7 +383,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals("v2", jedis.get(k));
 
     // 3) Delete using DELEX guarded by the latest digest
-    String d2 = jedis.digest(k);
+    String d2 = jedis.digestKey(k);
     assertEquals(0L, jedis.delex(k, ValueCondition.digestEq("0000000000000000")));
     assertEquals(1L, jedis.delex(k, ValueCondition.digestEq(d2)));
     assertFalse(jedis.exists(k));
@@ -396,12 +396,12 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
     assertEquals("OK", jedis.set(k, "v1"));
 
-    String d1 = jedis.digest(k);
+    String d1 = jedis.digestKey(k);
     ValueCondition cond1 = ValueCondition.digestEq(d1);
     assertEquals("OK", jedis.set(k, "v2", cond1));
     assertEquals("v2", jedis.get(k));
 
-    String d2 = jedis.digest(k);
+    String d2 = jedis.digestKey(k);
     ValueCondition cond2 = ValueCondition.digestEq(d2);
     assertEquals(1L, jedis.delex(k, cond2));
     assertFalse(jedis.exists(k));

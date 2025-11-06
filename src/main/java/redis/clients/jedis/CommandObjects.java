@@ -527,7 +527,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> digest(String key) {
+  public final CommandObject<String> digestKey(String key) {
     return new CommandObject<>(commandArguments(Command.DIGEST).key(key), BuilderFactory.STRING);
   }
 
@@ -548,7 +548,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GETEX).key(key).addParams(params), BuilderFactory.STRING);
   }
 
-  public final CommandObject<byte[]> digest(byte[] key) {
+  public final CommandObject<byte[]> digestKey(byte[] key) {
     return new CommandObject<>(commandArguments(Command.DIGEST).key(key), BuilderFactory.BINARY);
   }
 

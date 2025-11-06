@@ -53,7 +53,7 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   /** Returns the 64-bit XXH3 digest hex (ASCII bytes) of the string value stored at key, or null if missing. */
   @Experimental
-  byte[] digest(byte[] key);
+  byte[] digestKey(byte[] key);
 
   long setrange(byte[] key, long offset, byte[] value);
 

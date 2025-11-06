@@ -771,8 +771,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String digest(String key) {
-    return executeCommand(commandObjects.digest(key));
+  public String digestKey(String key) {
+    return executeCommand(commandObjects.digestKey(key));
   }
 
   @Override
@@ -846,8 +846,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public byte[] digest(byte[] key) {
-    return executeCommand(commandObjects.digest(key));
+  public byte[] digestKey(byte[] key) {
+    return executeCommand(commandObjects.digestKey(key));
   }
 
   @Override

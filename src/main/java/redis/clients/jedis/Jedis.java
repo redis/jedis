@@ -526,9 +526,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public byte[] digest(final byte[] key) {
+  public byte[] digestKey(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.digest(key));
+    return connection.executeCommand(commandObjects.digestKey(key));
   }
 
   @Override
@@ -5210,9 +5210,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String digest(final String key) {
+  public String digestKey(final String key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.digest(key));
+    return connection.executeCommand(commandObjects.digestKey(key));
   }
 
   @Override

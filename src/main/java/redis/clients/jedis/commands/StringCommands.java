@@ -110,7 +110,7 @@ public interface StringCommands extends BitCommands {
    * Returns null if key does not exist.
    */
   @Experimental
-  String digest(String key);
+  String digestKey(String key);
 
   /**
    * <b><a href="http://redis.io/commands/setrange">SetRange Command</a></b>

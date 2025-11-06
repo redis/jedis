@@ -44,9 +44,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.3.224")
   public void digestSimple() {
-    assertNull(jedis.digest("missing"));
+    assertNull(jedis.digestKey("missing"));
     jedis.set("foo", "bar");
-    String hex = jedis.digest("foo");
+    String hex = jedis.digestKey("foo");
     org.junit.jupiter.api.Assertions.assertNotNull(hex);
     assertTrue(hex.matches("(?i)[0-9a-f]{16}"));
   }
@@ -268,9 +268,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.3.224")
   public void digestBasic() {
     jedis.del("dg");
-    assertNull(jedis.digest("dg"));
+    assertNull(jedis.digestKey("dg"));
     jedis.set("dg", "val");
-    String hex = jedis.digest("dg");
+    String hex = jedis.digestKey("dg");
     assertTrue(hex != null && (hex.length() == 16));
   }
 

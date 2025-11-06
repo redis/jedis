@@ -873,15 +873,15 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "key";
     String expectedHex = "0123456789abcdef";
 
-    when(commandObjects.digest(key)).thenReturn(stringCommandObject);
+    when(commandObjects.digestKey(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedHex);
 
-    String result = jedis.digest(key);
+    String result = jedis.digestKey(key);
 
     assertThat(result, equalTo(expectedHex));
 
     verify(commandExecutor).executeCommand(stringCommandObject);
-    verify(commandObjects).digest(key);
+    verify(commandObjects).digestKey(key);
   }
 
   @Test
@@ -889,15 +889,15 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "key".getBytes();
     byte[] expectedHex = "fedcba9876543210".getBytes();
 
-    when(commandObjects.digest(key)).thenReturn(bytesCommandObject);
+    when(commandObjects.digestKey(key)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedHex);
 
-    byte[] result = jedis.digest(key);
+    byte[] result = jedis.digestKey(key);
 
     assertThat(result, equalTo(expectedHex));
 
     verify(commandExecutor).executeCommand(bytesCommandObject);
-    verify(commandObjects).digest(key);
+    verify(commandObjects).digestKey(key);
   }
 
   @Test

@@ -211,6 +211,14 @@ public interface StringCommands extends BitCommands {
   long msetnx(String... keysvalues);
 
   /**
+   * MSETEX: multi-set with optional NX|XX and expiration.
+   * Returns 1 if all keys were set, 0 if none were set.
+   * Order: key value [key value ...], [NX|XX], [EX|PX|EXAT|PXAT|KEEPTTL].
+   */
+  long msetex(SetParams params, String... keysvalues);
+
+
+  /**
    * <b><a href="http://redis.io/commands/incr">Incr Command</a></b>
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.

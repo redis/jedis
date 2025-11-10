@@ -14,17 +14,22 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
@@ -389,5 +394,34 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, blpop.get(1));
 
     assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+  }
+
+  // MSETEX NX + expiration matrix (binary)
+  static Stream<Arguments> msetexNxArgsProvider() {
+    return java.util.stream.Stream.of(
+        Arguments.of("EX", new SetParams().nx().ex(5)),
+        Arguments.of("PX", new SetParams().nx().px(5000)),
+        Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+        Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+        Arguments.of("KEEPTTL", new SetParams().nx().keepTtl())
+    );
+  }
+
+  @ParameterizedTest(name = "MSETEX NX + {0} (binary)")
+  @MethodSource("msetexNxArgsProvider")
+  @EnabledOnCommand("MSETEX")
+  public void msetexNx_binary_parametrized(String optionLabel, SetParams params) {
+    byte[] k1 = "{t}msetex:jb:k1".getBytes();
+    byte[] k2 = "{t}msetex:jb:k2".getBytes();
+
+    long result = jedis.msetex(params, k1, "v1".getBytes(), k2, "v2".getBytes());
+    assertEquals(1L, result);
+
+    long ttl = jedis.ttl(k1);
+    if ("KEEPTTL".equals(optionLabel)) {
+      assertEquals(-1L, ttl);
+    } else {
+      assertTrue(ttl > 0L);
+    }
   }
 }

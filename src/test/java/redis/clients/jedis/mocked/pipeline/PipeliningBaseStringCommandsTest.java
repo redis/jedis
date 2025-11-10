@@ -374,6 +374,35 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
   }
 
   @Test
+  public void testMsetex() {
+    SetParams params = new SetParams().nx().ex(3);
+    String[] keysvalues = {"k1","v1","k2","v2"};
+
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.msetex(params, keysvalues);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testMsetexBinary() {
+    SetParams params = new SetParams().xx().keepTtl();
+    byte[] k1 = "k1".getBytes();
+    byte[] v1 = "v1".getBytes();
+    byte[] k2 = "k2".getBytes();
+    byte[] v2 = "v2".getBytes();
+
+    when(commandObjects.msetex(params, k1, v1, k2, v2)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.msetex(params, k1, v1, k2, v2);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testPsetex() {
     when(commandObjects.psetex("key", 100000, "value")).thenReturn(stringCommandObject);
 

@@ -45,6 +45,8 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   long msetnx(byte[]... keysvalues);
 
+  long msetex(SetParams params, byte[]... keysvalues);
+
   long incr(byte[] key);
 
   long incrBy(byte[] key, long increment);

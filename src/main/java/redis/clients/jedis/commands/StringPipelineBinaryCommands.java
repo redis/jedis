@@ -46,6 +46,8 @@ public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands 
 
   Response<Long> msetnx(byte[]... keysvalues);
 
+  Response<Long> msetex(SetParams params, byte[]... keysvalues);
+
   Response<Long> incr(byte[] key);
 
   Response<Long> incrBy(byte[] key, long increment);

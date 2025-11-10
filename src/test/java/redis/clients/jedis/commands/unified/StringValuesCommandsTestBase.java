@@ -8,13 +8,19 @@ import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
@@ -281,4 +287,32 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 
+  // MSETEX NX + expiration matrix
+  static Stream<Arguments> msetexNxArgsProvider() {
+    return Stream.of(
+        Arguments.of("EX", new SetParams().nx().ex(5)),
+        Arguments.of("PX", new SetParams().nx().px(5000)),
+        Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+        Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+        Arguments.of("KEEPTTL", new SetParams().nx().keepTtl())
+    );
+  }
+
+  @ParameterizedTest(name = "MSETEX NX + {0}")
+  @MethodSource("msetexNxArgsProvider")
+  @EnabledOnCommand("MSETEX")
+  public void msetexNx_parametrized(String optionLabel, SetParams params) {
+    String k1 = "{t}msetex:unified:k1";
+    String k2 = "{t}msetex:unified:k2";
+
+    long result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertEquals(1L, result);
+
+    long ttl = jedis.ttl(k1);
+    if ("KEEPTTL".equals(optionLabel)) {
+      assertEquals(-1L, ttl);
+    } else {
+      assertTrue(ttl > 0L);
+    }
+  }
 }

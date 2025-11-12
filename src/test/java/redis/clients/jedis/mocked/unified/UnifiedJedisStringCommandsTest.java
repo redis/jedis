@@ -516,6 +516,37 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
     verify(commandObjects).msetnx(keysvalues);
   }
 
+
+  @Test
+  public void testMsetexDelegates() {
+    SetParams params = new SetParams().nx().ex(5);
+    String[] keysvalues = { "k1", "v1", "k2", "v2" };
+
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
+    when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(true);
+
+    boolean result = jedis.msetex(params, keysvalues);
+
+    assertThat(result, equalTo(true));
+    verify(commandExecutor).executeCommand(booleanCommandObject);
+    verify(commandObjects).msetex(params, keysvalues);
+  }
+
+  @Test
+  public void testMsetexBinaryDelegates() {
+    SetParams params = new SetParams().xx().keepTtl();
+    byte[][] keysvalues = { "k1".getBytes(), "v1".getBytes(), "k2".getBytes(), "v2".getBytes() };
+
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
+    when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(false);
+
+    boolean result = jedis.msetex(params, keysvalues);
+
+    assertThat(result, equalTo(false));
+    verify(commandExecutor).executeCommand(booleanCommandObject);
+    verify(commandObjects).msetex(params, keysvalues);
+  }
+
   @Test
   public void testPsetex() {
     String key = "key";

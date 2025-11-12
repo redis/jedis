@@ -2,15 +2,20 @@ package redis.clients.jedis.commands.jedis;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
@@ -72,11 +77,13 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 10 && ttl <= 20);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 30 && ttl <= 40);
 
@@ -257,18 +264,42 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2",
-        LCSParams.LCSParams());
+    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams());
     assertEquals("mytext", stringMatchResult.getMatchString());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().withMatchLen());
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().minMatchLen(10));
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().minMatchLen(10));
     assertEquals(0, stringMatchResult.getMatches().size());
+  }
+
+  // MSETEX NX + expiration matrix
+  static Stream<Arguments> msetexNxArgsProvider() {
+    return Stream.of(Arguments.of("EX", new SetParams().nx().ex(5)),
+      Arguments.of("PX", new SetParams().nx().px(5000)),
+      Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new SetParams().nx().keepTtl()));
+  }
+
+  @ParameterizedTest(name = "MSETEX NX + {0}")
+  @MethodSource("msetexNxArgsProvider")
+  @EnabledOnCommand("MSETEX")
+  public void msetexNx_parametrized(String optionLabel, SetParams params) {
+    String k1 = "{t}msetex:js:k1";
+    String k2 = "{t}msetex:js:k2";
+
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
+
+    long ttl = jedis.ttl(k1);
+    if ("KEEPTTL".equals(optionLabel)) {
+      assertEquals(-1L, ttl);
+    } else {
+      assertTrue(ttl > 0L);
+    }
   }
 
 }

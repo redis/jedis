@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified.cluster;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -127,7 +128,7 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
 
 
   @Test
-  @SinceRedisVersion("8.3.224")
+  @EnabledOnCommand("MSETEX")
   public void msetex_crossslot_throws_server_error() {
       // Intentionally use keys without a hashtag so they map to different hash slots
       String k1 = "cross:k1";

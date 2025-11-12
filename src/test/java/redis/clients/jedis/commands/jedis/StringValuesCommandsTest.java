@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -290,7 +289,7 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
 
   @ParameterizedTest(name = "MSETEX NX + {0}")
   @MethodSource("msetexNxArgsProvider")
-  @EnabledOnCommand("MSETEX")
+  @SinceRedisVersion("8.3.224")
   public void msetexNx_parametrized(String optionLabel, SetParams params) {
     String k1 = "{t}msetex:js:k1";
     String k2 = "{t}msetex:js:k2";

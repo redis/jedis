@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -410,7 +410,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @ParameterizedTest(name = "MSETEX NX + {0} (binary)")
   @MethodSource("msetexNxArgsProvider")
-  @SinceRedisVersion("8.3.224")
+  @EnabledOnCommand("MSETEX")
   public void msetexNx_binary_parametrized(String optionLabel, SetParams params) {
     byte[] k1 = "{t}msetex:unifiedb:k1".getBytes();
     byte[] k2 = "{t}msetex:unifiedb:k2".getBytes();

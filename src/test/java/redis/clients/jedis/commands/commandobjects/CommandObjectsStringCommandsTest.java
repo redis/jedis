@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.List;
 import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -613,7 +614,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
 
   @ParameterizedTest(name = "MSETEX NX + {0}")
   @MethodSource("msetexNxArgsProvider")
-  @SinceRedisVersion("8.3.224")
+  @EnabledOnCommand(value = "MSETEX")
   public void testMsetexNx_parametrized(String optionLabel, SetParams params) {
     String k1 = "{t}msetex:k1";
     String k2 = "{t}msetex:k2";

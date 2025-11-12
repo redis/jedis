@@ -45,26 +45,6 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   long msetnx(byte[]... keysvalues);
 
-  /**
-   * Multi-set with optional condition and expiration.
-   * <p>
-   * Sets the respective keys to the respective values, similar to {@link #mset(byte[]...) MSET},
-   * but allows conditional set (NX|XX) and expiration options via {@link SetParams}.
-   * If the condition is not met for any key, no key is set.
-   * <p>
-   * Both MSET and MSETEX are atomic operations. This means that if multiple keys are provided,
-   * another client will either see the changes for all keys at once, or no changes at all.
-   * <p>
-   * Options (in {@link SetParams}): NX or XX, and expiration: EX seconds | PX milliseconds |
-   * EXAT unix-time-seconds | PXAT unix-time-milliseconds | KEEPTTL.
-   * <p>
-   * Time complexity: O(N) where N is the number of keys to set.
-   * @param params condition and expiration parameters
-   * @param keysvalues pairs of keys and their values, e.g. {@code msetex(params, "foo".getBytes(), "foovalue".getBytes(), "bar".getBytes(), "barvalue".getBytes())}
-   * @return {@code true} if all the keys were set, {@code false} if none were set (condition not satisfied)
-   * @see #mset(byte[]...)
-   * @see #msetnx(byte[]...)
-   */
   boolean msetex(SetParams params, byte[]... keysvalues);
 
   long incr(byte[] key);

@@ -378,11 +378,11 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
     SetParams params = new SetParams().nx().ex(3);
     String[] keysvalues = {"k1","v1","k2","v2"};
 
-    when(commandObjects.msetex(params, keysvalues)).thenReturn(longCommandObject);
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
 
-    Response<Long> response = pipeliningBase.msetex(params, keysvalues);
+    Response<Boolean> response = pipeliningBase.msetex(params, keysvalues);
 
-    assertThat(commands, contains(longCommandObject));
+    assertThat(commands, contains(booleanCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 
@@ -394,11 +394,11 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
     byte[] k2 = "k2".getBytes();
     byte[] v2 = "v2".getBytes();
 
-    when(commandObjects.msetex(params, k1, v1, k2, v2)).thenReturn(longCommandObject);
+    when(commandObjects.msetex(params, k1, v1, k2, v2)).thenReturn(booleanCommandObject);
 
-    Response<Long> response = pipeliningBase.msetex(params, k1, v1, k2, v2);
+    Response<Boolean> response = pipeliningBase.msetex(params, k1, v1, k2, v2);
 
-    assertThat(commands, contains(longCommandObject));
+    assertThat(commands, contains(booleanCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

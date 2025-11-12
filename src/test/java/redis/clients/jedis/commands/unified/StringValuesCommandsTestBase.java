@@ -305,8 +305,8 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     String k1 = "{t}msetex:unified:k1";
     String k2 = "{t}msetex:unified:k2";
 
-    long result = jedis.msetex(params, k1, "v1", k2, "v2");
-    assertEquals(1L, result);
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
 
     long ttl = jedis.ttl(k1);
     if ("KEEPTTL".equals(optionLabel)) {

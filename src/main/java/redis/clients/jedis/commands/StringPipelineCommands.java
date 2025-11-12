@@ -46,7 +46,7 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<Long> msetnx(String... keysvalues);
 
-  Response<Long> msetex(SetParams params, String... keysvalues);
+  Response<Boolean> msetex(SetParams params, String... keysvalues);
 
   Response<Long> incr(String key);
 

@@ -215,8 +215,7 @@ public interface StringCommands extends BitCommands {
    * Returns 1 if all keys were set, 0 if none were set.
    * Order: key value [key value ...], [NX|XX], [EX|PX|EXAT|PXAT|KEEPTTL].
    */
-  long msetex(SetParams params, String... keysvalues);
-
+  boolean msetex(SetParams params, String... keysvalues);
 
   /**
    * <b><a href="http://redis.io/commands/incr">Incr Command</a></b>

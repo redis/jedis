@@ -522,13 +522,13 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
     SetParams params = new SetParams().nx().ex(5);
     String[] keysvalues = { "k1", "v1", "k2", "v2" };
 
-    when(commandObjects.msetex(params, keysvalues)).thenReturn(longCommandObject);
-    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
+    when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(true);
 
-    long result = jedis.msetex(params, keysvalues);
+    boolean result = jedis.msetex(params, keysvalues);
 
-    assertThat(result, equalTo(1L));
-    verify(commandExecutor).executeCommand(longCommandObject);
+    assertThat(result, equalTo(true));
+    verify(commandExecutor).executeCommand(booleanCommandObject);
     verify(commandObjects).msetex(params, keysvalues);
   }
 
@@ -537,13 +537,13 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
     SetParams params = new SetParams().xx().keepTtl();
     byte[][] keysvalues = { "k1".getBytes(), "v1".getBytes(), "k2".getBytes(), "v2".getBytes() };
 
-    when(commandObjects.msetex(params, keysvalues)).thenReturn(longCommandObject);
-    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(0L);
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
+    when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(false);
 
-    long result = jedis.msetex(params, keysvalues);
+    boolean result = jedis.msetex(params, keysvalues);
 
-    assertThat(result, equalTo(0L));
-    verify(commandExecutor).executeCommand(longCommandObject);
+    assertThat(result, equalTo(false));
+    verify(commandExecutor).executeCommand(booleanCommandObject);
     verify(commandObjects).msetex(params, keysvalues);
   }
 

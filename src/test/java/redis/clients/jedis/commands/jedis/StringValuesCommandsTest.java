@@ -295,8 +295,8 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     String k1 = "{t}msetex:js:k1";
     String k2 = "{t}msetex:js:k2";
 
-    long result = jedis.msetex(params, k1, "v1", k2, "v2");
-    assertEquals(1L, result);
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
 
     long ttl = jedis.ttl(k1);
     if ("KEEPTTL".equals(optionLabel)) {

@@ -414,8 +414,8 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
     byte[] k1 = "{t}msetex:jb:k1".getBytes();
     byte[] k2 = "{t}msetex:jb:k2".getBytes();
 
-    long result = jedis.msetex(params, k1, "v1".getBytes(), k2, "v2".getBytes());
-    assertEquals(1L, result);
+    boolean result = jedis.msetex(params, k1, "v1".getBytes(), k2, "v2".getBytes());
+    assertTrue(result);
 
     long ttl = jedis.ttl(k1);
     if ("KEEPTTL".equals(optionLabel)) {

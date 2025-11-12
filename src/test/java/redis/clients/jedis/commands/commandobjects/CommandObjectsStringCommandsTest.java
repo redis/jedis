@@ -619,8 +619,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     String k1 = "{t}msetex:k1";
     String k2 = "{t}msetex:k2";
 
-    Long result = exec(commandObjects.msetex(params, k1, "v1", k2, "v2"));
-    assertThat(result, equalTo(1L));
+    Boolean result = exec(commandObjects.msetex(params, k1, "v1", k2, "v2"));
+    assertThat(result, equalTo(true));
 
     Long ttl = exec(commandObjects.ttl(k1));
     if ("KEEPTTL".equals(optionLabel)) {

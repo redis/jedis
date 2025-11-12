@@ -587,18 +587,18 @@ public class CommandObjects {
   public final CommandObject<Long> msetnx(String... keysvalues) {
     return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
   }
-  public final CommandObject<Long> msetex(SetParams params, String... keysvalues) {
+  public final CommandObject<Boolean> msetex(SetParams params, String... keysvalues) {
     CommandArguments args = commandArguments(Command.MSETEX).add(keysvalues.length / 2);
     addFlatKeyValueArgs(args, keysvalues);
     args.addParams(params);
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
-  public final CommandObject<Long> msetex(SetParams params, byte[]... keysvalues) {
+  public final CommandObject<Boolean> msetex(SetParams params, byte[]... keysvalues) {
     CommandArguments args = commandArguments(Command.MSETEX).add(keysvalues.length / 2);
     addFlatKeyValueArgs(args, keysvalues);
     args.addParams(params);
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
 

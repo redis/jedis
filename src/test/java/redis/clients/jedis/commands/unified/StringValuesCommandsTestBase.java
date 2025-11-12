@@ -88,11 +88,13 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 10 && ttl <= 20);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000L)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000L)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 30 && ttl <= 40);
 
@@ -173,7 +175,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.incr("foo"));
+    assertThrows(JedisDataException.class, () -> jedis.incr("foo"));
   }
 
   @Test
@@ -185,7 +187,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrByWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.incrBy("foo", 2));
+    assertThrows(JedisDataException.class, () -> jedis.incrBy("foo", 2));
   }
 
   @Test
@@ -197,13 +199,13 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrByFloatWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.incrByFloat("foo", 2d));
+    assertThrows(JedisDataException.class, () -> jedis.incrByFloat("foo", 2d));
   }
 
   @Test
   public void decrWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.decr("foo"));
+    assertThrows(JedisDataException.class, () -> jedis.decr("foo"));
   }
 
   @Test
@@ -221,7 +223,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void decrByWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.decrBy("foo", 2));
+    assertThrows(JedisDataException.class, () -> jedis.decrBy("foo", 2));
   }
 
   @Test
@@ -257,7 +259,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    assertThrows(JedisDataException.class, ()->jedis.incr("foo")); // Should throw an exception
+    assertThrows(JedisDataException.class, () -> jedis.incr("foo")); // Should throw an exception
   }
 
   @Test
@@ -269,33 +271,28 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
-  @SinceRedisVersion(value="7.0.0")
+  @SinceRedisVersion(value = "7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2",
-            LCSParams.LCSParams());
+    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams());
     assertEquals("mytext", stringMatchResult.getMatchString());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().withMatchLen());
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().minMatchLen(10));
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().minMatchLen(10));
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 
   // MSETEX NX + expiration matrix
   static Stream<Arguments> msetexNxArgsProvider() {
-    return Stream.of(
-        Arguments.of("EX", new SetParams().nx().ex(5)),
-        Arguments.of("PX", new SetParams().nx().px(5000)),
-        Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
-        Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
-        Arguments.of("KEEPTTL", new SetParams().nx().keepTtl())
-    );
+    return Stream.of(Arguments.of("EX", new SetParams().nx().ex(5)),
+      Arguments.of("PX", new SetParams().nx().px(5000)),
+      Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new SetParams().nx().keepTtl()));
   }
 
   @ParameterizedTest(name = "MSETEX NX + {0}")

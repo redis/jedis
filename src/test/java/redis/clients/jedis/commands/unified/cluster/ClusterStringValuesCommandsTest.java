@@ -46,12 +46,12 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+      HostAndPorts.getStableClusterServers().get(0),
+      DefaultJedisClientConfig.builder().password("cluster").build());
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+      HostAndPorts.getStableClusterServers().get(0),
+      DefaultJedisClientConfig.builder().password("cluster").build());
 
   @AfterEach
   public void tearDown() {
@@ -109,35 +109,35 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
   }
 
   @Test
-  @SinceRedisVersion(value="7.0.0")
+  @SinceRedisVersion(value = "7.0.0")
   public void lcs() {
     jedis.mset("key1{.}", "ohmytext", "key2{.}", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.lcs("key1{.}", "key2{.}",
-        LCSParams.LCSParams());
+    LCSMatchResult stringMatchResult = jedis.lcs("key1{.}", "key2{.}", LCSParams.LCSParams());
     assertEquals("mytext", stringMatchResult.getMatchString());
 
-    stringMatchResult = jedis.lcs("key1{.}", "key2{.}",
-        LCSParams.LCSParams().idx().withMatchLen());
+    stringMatchResult = jedis.lcs("key1{.}", "key2{.}", LCSParams.LCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
     stringMatchResult = jedis.lcs("key1{.}", "key2{.}",
-        LCSParams.LCSParams().idx().minMatchLen(10));
+      LCSParams.LCSParams().idx().minMatchLen(10));
     assertEquals(0, stringMatchResult.getMatches().size());
   }
-
 
   @Test
   @EnabledOnCommand("MSETEX")
   public void msetex_crossslot_throws_server_error() {
-      // Intentionally use keys without a hashtag so they map to different hash slots
-      String k1 = "cross:k1";
-      String k2 = "other:k2";
+    // Intentionally use keys without a hashtag so they map to different hash slots
+    String k1 = "cross:k1";
+    String k2 = "other:k2";
 
-      SetParams params = new SetParams().nx().ex(5);
+    SetParams params = new SetParams().nx().ex(5);
 
-      JedisClusterOperationException ex = assertThrows(JedisClusterOperationException.class, () -> jedis.msetex(params, k1, "v1", k2, "v2"));
-      assertTrue(ex.getMessage().contains("Keys must belong to same hashslot"), () -> "Expected server \" Keys must belong to same hashslot \" error, but got: " + ex.getMessage());
+    JedisClusterOperationException ex = assertThrows(JedisClusterOperationException.class,
+      () -> jedis.msetex(params, k1, "v1", k2, "v2"));
+    assertTrue(ex.getMessage().contains("Keys must belong to same hashslot"),
+      () -> "Expected server \" Keys must belong to same hashslot \" error, but got: "
+          + ex.getMessage());
   }
 
 }

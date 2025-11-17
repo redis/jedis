@@ -421,11 +421,6 @@ public interface KeyCommands {
   long del(String... keys);
 
   /**
-   * Compare-and-delete: delete key if optional value/digest condition matches.
-   * @return 1 if the key was deleted, 0 otherwise
-   */
-
-  /**
    * Experimental: Compare-and-delete guarded by value/digest condition.
    */
   @Experimental

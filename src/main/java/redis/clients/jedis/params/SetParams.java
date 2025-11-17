@@ -4,10 +4,13 @@ import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.conditions.CompareCondition;
 
 public class SetParams extends BaseSetExParams<SetParams> {
 
   private Keyword existance;
+  private CompareCondition condition;
 
   public static SetParams setParams() {
     return new SetParams();
@@ -91,8 +94,24 @@ public class SetParams extends BaseSetExParams<SetParams> {
     return super.keepTtl();
   }
 
+  /**
+   * Set a compare condition for compare-and-set operations.
+   * @param condition the condition to apply
+   * @return {@link SetParams}
+   */
+  @Experimental
+  public SetParams condition(CompareCondition condition) {
+    this.condition = condition;
+    return this;
+  }
+
   @Override
   public void addParams(CommandArguments args) {
+    // Condition must be added before NX/XX per Redis command syntax
+    if (condition != null) {
+      condition.addTo(args);
+    }
+
     if (existance != null) {
       args.add(existance);
     }
@@ -105,11 +124,13 @@ public class SetParams extends BaseSetExParams<SetParams> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SetParams setParams = (SetParams) o;
-    return Objects.equals(existance, setParams.existance) && super.equals((BaseSetExParams) o);
+    return Objects.equals(existance, setParams.existance)
+        && Objects.equals(condition, setParams.condition)
+        && super.equals((BaseSetExParams) o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(existance, super.hashCode());
+    return Objects.hash(existance, condition, super.hashCode());
   }
 }

@@ -32,6 +32,7 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.*;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.conditions.CompareCondition;
 
 public class CommandObjects {
 
@@ -49,7 +50,7 @@ public class CommandObjects {
 
   protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
-  private Lock mapperLock = new ReentrantLock(true);    
+  private Lock mapperLock = new ReentrantLock(true);
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(SearchProtocol.DEFAULT_DIALECT);
 
@@ -346,6 +347,18 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> delex(String key, CompareCondition cond) {
+    CommandArguments ca = commandArguments(Command.DELEX).key(key);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> delex(byte[] key, CompareCondition cond) {
+    CommandArguments ca = commandArguments(Command.DELEX).key(key);
+    cond.addTo(ca);
+    return new CommandObject<>(ca, BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> unlink(String key) {
     return new CommandObject<>(commandArguments(UNLINK).key(key), BuilderFactory.LONG);
   }
@@ -462,6 +475,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> digestKey(String key) {
+    return new CommandObject<>(commandArguments(Command.DIGEST).key(key), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> setGet(String key, String value) {
     return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).add(Keyword.GET), BuilderFactory.STRING);
   }
@@ -477,6 +494,10 @@ public class CommandObjects {
 
   public final CommandObject<String> getEx(String key, GetExParams params) {
     return new CommandObject<>(commandArguments(Command.GETEX).key(key).addParams(params), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> digestKey(byte[] key) {
+    return new CommandObject<>(commandArguments(Command.DIGEST).key(key), BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> get(byte[] key) {
@@ -2977,7 +2998,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
-      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], StreamEntryID>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)
@@ -2992,7 +3013,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(
-      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], StreamEntryID>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)

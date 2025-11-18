@@ -1377,13 +1377,7 @@ public final class BuilderFactory {
       while (hashIterator.hasNext()) {
         map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
       }
-      Long idle = null;
-      Long times = null;
-      if (objectList.size() >= 4) {
-        idle = LONG.build(objectList.get(2));
-        times = LONG.build(objectList.get(3));
-      }
-      return new StreamEntry(entryID, map, idle, times);
+      return new StreamEntry(entryID, map);
     }
 
     @Override
@@ -1421,22 +1415,24 @@ public final class BuilderFactory {
 
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
+
         while (hashIterator.hasNext()) {
           map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
         }
-        Long idle = null;
-        Long times = null;
+
+        Long millisElapsedFromDelivery = null;
+        Long deliveredCount = null;
+
         if (res.size() >= 4) {
           Object idleObj = res.get(2);
           Object timesObj = res.get(3);
-          idle = (idleObj instanceof Long) ? (Long) idleObj : Long.valueOf(STRING.build(idleObj));
-          times = (timesObj instanceof Long) ? (Long) timesObj : Long.valueOf(STRING.build(timesObj));
-          if (idle != null && times != null && idle == 0L && times == 0L) {
-            idle = null;
-            times = null;
-          }
+          millisElapsedFromDelivery = LONG.build(idleObj);
+          deliveredCount = LONG.build(timesObj);
         }
-        responses.add(new StreamEntry(entryID, map, idle, times));
+
+        if (Objects.nonNull(millisElapsedFromDelivery) && Objects.nonNull(deliveredCount)) {
+          responses.add(new StreamEntry(entryID, map, millisElapsedFromDelivery, deliveredCount));
+        }
       }
 
       return responses;
@@ -1984,22 +1980,25 @@ public final class BuilderFactory {
 
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<byte[], byte[]> map = new JedisByteHashMap();
+
         while (hashIterator.hasNext()) {
           map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
         }
-        Long idle = null;
-        Long times = null;
+
+        Long millisElapsedFromDelivery = null;
+        Long deliveredCount = null;
+
         if (res.size() >= 4) {
           Object idleObj = res.get(2);
           Object timesObj = res.get(3);
-          idle = (idleObj instanceof Long) ? (Long) idleObj : Long.valueOf(STRING.build(idleObj));
-          times = (timesObj instanceof Long) ? (Long) timesObj : Long.valueOf(STRING.build(timesObj));
-          if (idle != null && times != null && idle == 0L && times == 0L) {
-            idle = null;
-            times = null;
-          }
+          millisElapsedFromDelivery = LONG.build(idleObj);
+          deliveredCount = LONG.build(timesObj);
         }
-        responses.add(new StreamEntryBinary(entryID, map, idle, times));
+
+        if (Objects.nonNull(millisElapsedFromDelivery) && Objects.nonNull(deliveredCount)) {
+          responses.add(
+              new StreamEntryBinary(entryID, map, millisElapsedFromDelivery, deliveredCount));
+        }
       }
 
       return responses;

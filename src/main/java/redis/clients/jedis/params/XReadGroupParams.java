@@ -36,7 +36,6 @@ public class XReadGroupParams implements IParams {
     return this;
   }
 
-
   @Override
   public void addParams(CommandArguments args) {
     if (count != null) {

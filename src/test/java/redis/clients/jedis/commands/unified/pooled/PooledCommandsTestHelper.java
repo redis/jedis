@@ -13,10 +13,7 @@ public class PooledCommandsTestHelper {
 
   public static void clearData() {
     try (Jedis node = new Jedis(nodeInfo.getHostAndPort())) {
-      String password = nodeInfo.getPassword();
-      if (password != null && !password.isEmpty()) {
-        node.auth(password);
-      }
+      node.auth(nodeInfo.getPassword());
       node.flushAll();
     }
   }

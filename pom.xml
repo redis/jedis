@@ -538,6 +538,7 @@
 						<include>**/ClientTestUtil.java</include>
 						<include>**/ReflectionTestUtil.java</include>
 						<include>**/*CommandFlags*.java</include>
+						<include>**/*CompareCondition*.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -114,8 +114,7 @@ public final class CompareCondition {
   }
 
   /**
-   * Append this condition to the command arguments by emitting the appropriate keyword and
-   * payload.
+   * Append this condition to the command arguments by emitting the appropriate keyword and payload.
    */
   public void addTo(CommandArguments args) {
     args.add(condition.getKeyword()).add(payload);
@@ -157,9 +156,8 @@ public final class CompareCondition {
 
   @Override
   public String toString() {
-    return "CompareCondition{" + "condition=" + condition + (payload != null ? ", payload="
-        + payload : "") + '}';
+    return "CompareCondition{" + "condition=" + condition
+        + (payload != null ? ", payload=" + payload : "") + '}';
   }
 
 }
-

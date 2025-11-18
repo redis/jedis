@@ -80,7 +80,7 @@ public interface Cache {
 
     /**
      * @param cacheKey The key of the cache entry
-     * @return True if the entry is cachable, false otherwise
+     * @return True if the entry is cacheable, false otherwise
      */
     boolean isCacheable(CacheKey cacheKey);
 

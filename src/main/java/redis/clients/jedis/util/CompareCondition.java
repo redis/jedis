@@ -1,4 +1,4 @@
-package redis.clients.jedis.conditions;
+package redis.clients.jedis.util;
 
 import java.util.Arrays;
 import java.util.Objects;

@@ -5,7 +5,7 @@ import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.conditions.CompareCondition;
+import redis.clients.jedis.util.CompareCondition;
 
 public class SetParams extends BaseSetExParams<SetParams> {
 

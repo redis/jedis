@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
-import redis.clients.jedis.conditions.CompareCondition;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.args.FlushMode;

@@ -22,7 +22,7 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.JedisSentineled;
 import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.conditions.CompareCondition;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.params.SetParams;

@@ -51,7 +51,7 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.conditions.CompareCondition;
+import redis.clients.jedis.util.CompareCondition;
 
 @Tag("integration")
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {

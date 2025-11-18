@@ -94,19 +94,21 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @BeforeEach
   public void setUpTestStream() {
+    setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes());
+  }
+
+  private void setUpTestStream(byte[] startId) {
     jedis.del(STREAM_KEY_1);
     jedis.del(STREAM_KEY_2);
     try {
-      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME,
-          StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes(), true);
+      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
       }
     }
     try {
-      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME,
-          StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes(), true);
+      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
@@ -547,6 +549,8 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimReturnsMetadataOrdered() throws InterruptedException {
+    setUpTestStream("0-0".getBytes());
+
     final byte[] CONSUMER_1 = "consumer-1".getBytes();
     final byte[] CONSUMER_2 = "consumer-2".getBytes();
     final long IDLE_TIME_MS = 5;
@@ -554,9 +558,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
-
-    // Create group from beginning and consume with consumer-1 so entries become pending for consumer-1
-    jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, "0-0".getBytes(), false);
     Map<byte[], StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
@@ -611,6 +612,8 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimMovesPendingFromC1ToC2AndRemainsPendingUntilAck()
       throws InterruptedException {
+    setUpTestStream("0-0".getBytes());
+
     final byte[] CONSUMER_1 = "consumer-1".getBytes();
     final byte[] CONSUMER_2 = "consumer-2".getBytes();
     final long IDLE_TIME_MS = 5;
@@ -618,9 +621,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
-
-    // Create group from beginning and consume with consumer-1 so entries become pending for consumer-1
-    jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, "0-0".getBytes(), false);
     Map<byte[], StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
@@ -656,6 +656,8 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimWithNoackDoesNotCreatePendingAndRemovesClaimedFromPel()
       throws InterruptedException {
+    setUpTestStream("0-0".getBytes());
+
     final byte[] CONSUMER_1 = "consumer-1".getBytes();
     final byte[] CONSUMER_2 = "consumer-2".getBytes();
     final long IDLE_TIME_MS = 5;
@@ -663,9 +665,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
-
-    // Create group from beginning and consume with consumer-1 so entries become pending for consumer-1
-    jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, "0-0".getBytes(), false);
     Map<byte[], StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),

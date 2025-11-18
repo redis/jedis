@@ -68,17 +68,21 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   private void setUpTestStream() {
+    setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY);
+  }
+
+  private void setUpTestStream(StreamEntryID startId) {
     jedis.del(STREAM_KEY_1);
     jedis.del(STREAM_KEY_2);
     try {
-      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, StreamEntryID.XGROUP_LAST_ENTRY, true);
+      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
       }
     }
     try {
-      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME, StreamEntryID.XGROUP_LAST_ENTRY, true);
+      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
@@ -821,7 +825,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimReturnsMetadataOrdered() throws InterruptedException {
-    jedis.del(STREAM_KEY_1);
+    setUpTestStream(new StreamEntryID("0-0"));
 
     final String CONSUMER_1 = "consumer-1";
     final String CONSUMER_2 = "consumer-2";
@@ -830,9 +834,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-
-    // Create group from beginning and consume with consumer-1 so entries become pending for consumer-1
-    jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, new StreamEntryID("0-0"), false);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
@@ -887,7 +888,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimMovesPendingFromC1ToC2AndRemainsPendingUntilAck()
       throws InterruptedException {
-    jedis.del(STREAM_KEY_1);
+    setUpTestStream(new StreamEntryID("0-0"));
 
     final String CONSUMER_1 = "consumer-1";
     final String CONSUMER_2 = "consumer-2";
@@ -896,9 +897,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-
-    // Create group from beginning and consume with consumer-1 so entries become pending for consumer-1
-    jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, new StreamEntryID("0-0"), false);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
@@ -943,7 +941,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimWithNoackDoesNotCreatePendingAndRemovesClaimedFromPel()
       throws InterruptedException {
-    jedis.del(STREAM_KEY_1);
+    setUpTestStream(new StreamEntryID("0-0"));
 
     final String CONSUMER_1 = "consumer-1";
     final String CONSUMER_2 = "consumer-2";
@@ -952,9 +950,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-
-    // Create group from beginning and consume with consumer-1 so entries become pending for consumer-1
-    jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, new StreamEntryID("0-0"), false);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),

@@ -1452,7 +1452,13 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     jedis.xadd(streamKey, StreamEntryID.NEW_ENTRY, hash);
 
     // Create group and consume with consumer-1
-    jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+    try {
+      jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+    } catch (JedisDataException e) {
+      if (!e.getMessage().contains("BUSYGROUP")) {
+        throw e;
+      }
+    }
     Map<String, StreamEntryID> streams = singletonMap(streamKey,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(groupName, consumer1, XReadGroupParams.xReadGroupParams().count(10), streams);
@@ -1518,7 +1524,13 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     jedis.xadd(streamKey, StreamEntryID.NEW_ENTRY, hash);
 
     // Create group and consume with consumer-1
-    jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+    try {
+      jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+    } catch (JedisDataException e) {
+      if (!e.getMessage().contains("BUSYGROUP")) {
+        throw e;
+      }
+    }
     Map<String, StreamEntryID> streams = singletonMap(streamKey,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(groupName, consumer1, XReadGroupParams.xReadGroupParams().count(10), streams);
@@ -1575,7 +1587,13 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     jedis.xadd(streamKey, StreamEntryID.NEW_ENTRY, hash);
 
     // Create group and consume with consumer-1
-    jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+    try {
+      jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+    } catch (JedisDataException e) {
+      if (!e.getMessage().contains("BUSYGROUP")) {
+        throw e;
+      }
+    }
     Map<String, StreamEntryID> streams = singletonMap(streamKey,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(groupName, consumer1, XReadGroupParams.xReadGroupParams().count(10), streams);

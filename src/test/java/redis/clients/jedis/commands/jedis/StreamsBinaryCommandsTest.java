@@ -103,19 +103,21 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
 
   @BeforeEach
   public void setUpTestStream() {
+    setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes());
+  }
+  
+  private void setUpTestStream(byte[] startId) {
     jedis.del(STREAM_KEY_1);
     jedis.del(STREAM_KEY_2);
     try {
-      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME,
-          StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes(), true);
+      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
       }
     }
     try {
-      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME,
-          StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes(), true);
+      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
@@ -532,36 +534,30 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimReturnsMetadataOrdered() throws InterruptedException {
-    final byte[] streamKey = "test-stream-claim-binary".getBytes();
-    final byte[] groupName = "test-group".getBytes();
-    final byte[] consumer1 = "consumer-1".getBytes();
-    final byte[] consumer2 = "consumer-2".getBytes();
-    final long idleTimeMs = 5;
+    setUpTestStream("0-0".getBytes());
 
-    jedis.del(streamKey);
+    final byte[] CONSUMER_1 = "consumer-1".getBytes();
+    final byte[] CONSUMER_2 = "consumer-2".getBytes();
+    final long IDLE_TIME_MS = 5;
 
     // Produce two entries
     Map<byte[], byte[]> hash = singletonMap(FIELD_KEY_1, BINARY_VALUE_1);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-
-    // Create group and consume with consumer-1
-    jedis.xgroupCreate(streamKey, groupName, "0-0".getBytes(), false);
-    Map<byte[], StreamEntryID> streams = offsets(streamKey, XREADGROUP_UNDELIVERED_ENTRY);
-    jedis.xreadGroupBinary(groupName, consumer1, XReadGroupParams.xReadGroupParams().count(10),
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
       streams);
 
-    // Ensure idle time
-    Thread.sleep(idleTimeMs);
+    // Ensure idle time so entries are claimable
+    Thread.sleep(IDLE_TIME_MS);
 
-    // Produce fresh entries
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    // Produce fresh entries that are NOT claimed (not pending)
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
 
     // Read with consumer-2 using CLAIM
-    List<Map.Entry<byte[], List<StreamEntryBinary>>> consumer2Result = jedis.xreadGroupBinary(
-      groupName, consumer2, XReadGroupParams.xReadGroupParams().claim(idleTimeMs).count(10),
-      streams);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> consumer2Result = jedis.xreadGroupBinary(GROUP_NAME,
+      CONSUMER_2, XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10), streams);
 
     assertNotNull(consumer2Result);
     assertEquals(1, consumer2Result.size());
@@ -585,8 +581,8 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
     // Claimed entries
     assertTrue(first.getDeliveredCount() != null && first.getDeliveredCount() > 0);
     assertTrue(second.getDeliveredCount() != null && second.getDeliveredCount() > 0);
-    assertTrue(first.getMillisElapsedFromDelivery() >= idleTimeMs);
-    assertTrue(second.getMillisElapsedFromDelivery() >= idleTimeMs);
+    assertTrue(first.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
+    assertTrue(second.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
 
     // Fresh entries
     assertEquals(Long.valueOf(0), third.getDeliveredCount());
@@ -599,35 +595,30 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimMovesPendingFromC1ToC2AndRemainsPendingUntilAck()
       throws InterruptedException {
-    final byte[] streamKey = "test-stream-claim-move-binary".getBytes();
-    final byte[] groupName = "test-group".getBytes();
-    final byte[] consumer1 = "consumer-1".getBytes();
-    final byte[] consumer2 = "consumer-2".getBytes();
-    final long idleTimeMs = 5;
+    setUpTestStream("0-0".getBytes());
 
-    jedis.del(streamKey);
+    final byte[] CONSUMER_1 = "consumer-1".getBytes();
+    final byte[] CONSUMER_2 = "consumer-2".getBytes();
+    final long IDLE_TIME_MS = 5;
 
     // Produce two entries
     Map<byte[], byte[]> hash = singletonMap(FIELD_KEY_1, BINARY_VALUE_1);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-
-    // Create group and consume with consumer-1
-    jedis.xgroupCreate(streamKey, groupName, "0-0".getBytes(), false);
-    Map<byte[], StreamEntryID> streams = offsets(streamKey, XREADGROUP_UNDELIVERED_ENTRY);
-    jedis.xreadGroupBinary(groupName, consumer1, XReadGroupParams.xReadGroupParams().count(10),
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
       streams);
 
     // Ensure idle time
-    Thread.sleep(idleTimeMs);
+    Thread.sleep(IDLE_TIME_MS);
 
     // Verify pending belongs to consumer-1
-    Object beforeObj = jedis.xpending(streamKey, groupName);
+    Object beforeObj = jedis.xpending(STREAM_KEY_1, GROUP_NAME);
     assertNotNull(beforeObj);
 
     // Claim with consumer-2
-    List<Map.Entry<byte[], List<StreamEntryBinary>>> res = jedis.xreadGroupBinary(groupName,
-      consumer2, XReadGroupParams.xReadGroupParams().claim(idleTimeMs).count(10), streams);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> res = jedis.xreadGroupBinary(GROUP_NAME,
+      CONSUMER_2, XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10), streams);
 
     assertNotNull(res);
     assertEquals(1, res.size());
@@ -640,7 +631,7 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
     // XACK the claimed entries
     byte[] id1 = entries.get(0).getID().toString().getBytes();
     byte[] id2 = entries.get(1).getID().toString().getBytes();
-    long acked = jedis.xack(streamKey, groupName, id1, id2);
+    long acked = jedis.xack(STREAM_KEY_1, GROUP_NAME, id1, id2);
     assertEquals(2, acked);
   }
 
@@ -648,39 +639,34 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
   @SinceRedisVersion("8.3.224")
   public void xreadgroupClaimWithNoackDoesNotCreatePendingAndRemovesClaimedFromPel()
       throws InterruptedException {
-    final byte[] streamKey = "test-stream-claim-noack-binary".getBytes();
-    final byte[] groupName = "test-group".getBytes();
-    final byte[] consumer1 = "consumer-1".getBytes();
-    final byte[] consumer2 = "consumer-2".getBytes();
-    final long idleTimeMs = 5;
+    setUpTestStream("0-0".getBytes());
 
-    jedis.del(streamKey);
+    final byte[] CONSUMER_1 = "consumer-1".getBytes();
+    final byte[] CONSUMER_2 = "consumer-2".getBytes();
+    final long IDLE_TIME_MS = 5;
 
     // Produce two entries
     Map<byte[], byte[]> hash = singletonMap(FIELD_KEY_1, BINARY_VALUE_1);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-
-    // Create group and consume with consumer-1
-    jedis.xgroupCreate(streamKey, groupName, "0-0".getBytes(), false);
-    Map<byte[], StreamEntryID> streams = offsets(streamKey, XREADGROUP_UNDELIVERED_ENTRY);
-    jedis.xreadGroupBinary(groupName, consumer1, XReadGroupParams.xReadGroupParams().count(10),
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
       streams);
 
     // Ensure idle time
-    Thread.sleep(idleTimeMs);
+    Thread.sleep(IDLE_TIME_MS);
 
     // Verify pending belongs to consumer-1
-    Object beforeObj = jedis.xpending(streamKey, groupName);
+    Object beforeObj = jedis.xpending(STREAM_KEY_1, GROUP_NAME);
     assertNotNull(beforeObj);
 
     // Produce fresh entries
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
-    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
 
     // Claim with NOACK using consumer-2
-    List<Map.Entry<byte[], List<StreamEntryBinary>>> res = jedis.xreadGroupBinary(groupName,
-      consumer2, XReadGroupParams.xReadGroupParams().claim(idleTimeMs).noAck().count(10), streams);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> res = jedis.xreadGroupBinary(GROUP_NAME,
+      CONSUMER_2, XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).noAck().count(10), streams);
 
     assertNotNull(res);
     assertEquals(1, res.size());

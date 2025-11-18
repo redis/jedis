@@ -348,11 +348,11 @@ public abstract class PipeliningBase
   public Response<Long> msetnx(String... keysvalues) {
     return appendCommand(commandObjects.msetnx(keysvalues));
   }
+
   @Override
   public Response<Boolean> msetex(SetParams params, String... keysvalues) {
     return appendCommand(commandObjects.msetex(params, keysvalues));
   }
-
 
   @Override
   public Response<Long> incr(String key) {

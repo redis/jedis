@@ -302,4 +302,28 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     }
   }
 
+  @Test
+  @EnabledOnCommand("MSETEX")
+  public void msetexXxEx() {
+    String k1 = "{t}msetex:js:xx:k1";
+    String k2 = "{t}msetex:js:xx:k2";
+
+    // First set the keys so they exist (XX requires existing keys)
+    jedis.set(k1, "initial1");
+    jedis.set(k2, "initial2");
+
+    // Now use MSETEX with XX and EX
+    SetParams params = new SetParams().xx().ex(5);
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
+
+    // Verify values were updated
+    assertEquals("v1", jedis.get(k1));
+    assertEquals("v2", jedis.get(k2));
+
+    // Verify TTL is set
+    long ttl = jedis.ttl(k1);
+    assertTrue(ttl > 0L);
+  }
+
 }

@@ -983,12 +983,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
+
   @Override
   public boolean msetex(final SetParams params, final byte[]... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }
-
 
   /**
    * DECRBY work just like {@link Jedis#decr(byte[]) DECR} but instead to decrement by 1 the
@@ -5602,12 +5602,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
+
   @Override
   public boolean msetex(final SetParams params, final String... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }
-
 
   /**
    * IDECRBY work just like {@link Jedis#decr(String) INCR} but instead to decrement by 1 the

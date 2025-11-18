@@ -984,7 +984,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public boolean msetex(redis.clients.jedis.params.SetParams params, byte[]... keysvalues) {
+  public boolean msetex(SetParams params, byte[]... keysvalues) {
     return executeCommand(commandObjects.msetex(params, keysvalues));
   }
 

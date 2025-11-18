@@ -312,4 +312,29 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
       assertTrue(ttl > 0L);
     }
   }
+
+  @Test
+  @EnabledOnCommand("MSETEX")
+  public void msetexXxExAt() {
+    String k1 = "{t}msetex:unified:xx:k1";
+    String k2 = "{t}msetex:unified:xx:k2";
+
+    // First set the keys so they exist (XX requires existing keys)
+    jedis.set(k1, "initial1");
+    jedis.set(k2, "initial2");
+
+    // Now use MSETEX with XX and EXAT
+    long expiryTimestamp = System.currentTimeMillis() / 1000 + 5;
+    SetParams params = new SetParams().xx().exAt(expiryTimestamp);
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
+
+    // Verify values were updated
+    assertEquals("v1", jedis.get(k1));
+    assertEquals("v2", jedis.get(k2));
+
+    // Verify TTL is set
+    long ttl = jedis.ttl(k1);
+    assertTrue(ttl > 0L);
+  }
 }

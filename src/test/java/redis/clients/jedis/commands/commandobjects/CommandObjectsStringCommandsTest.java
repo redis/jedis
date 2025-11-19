@@ -9,14 +9,21 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 
 /**
@@ -321,7 +328,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     assertThat(lcs.getLen(), equalTo(0L));
     assertThat(lcs.getMatchString(), equalTo("abcdfg"));
 
-    LCSMatchResult lcsMatches = exec(commandObjects.lcs(keyA, keyB, new LCSParams().idx().withMatchLen()));
+    LCSMatchResult lcsMatches = exec(
+      commandObjects.lcs(keyA, keyB, new LCSParams().idx().withMatchLen()));
     assertThat(lcsMatches.getLen(), equalTo(6L));
     assertThat(lcsMatches.getMatchString(), nullValue());
     assertThat(lcsMatches.getMatches(), hasSize(2));
@@ -362,7 +370,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     assertThat(lcs.getLen(), equalTo(0L));
     assertThat(lcs.getMatchString(), equalTo("abcdfg"));
 
-    LCSMatchResult lcsMatches = exec(commandObjects.lcs(keyA, keyB, new LCSParams().idx().withMatchLen()));
+    LCSMatchResult lcsMatches = exec(
+      commandObjects.lcs(keyA, keyB, new LCSParams().idx().withMatchLen()));
     assertThat(lcsMatches.getLen(), equalTo(6L));
     assertThat(lcsMatches.getMatchString(), nullValue());
     assertThat(lcsMatches.getMatches(), hasSize(2));
@@ -435,7 +444,8 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
     List<byte[]> mgetAfterDel = exec(commandObjects.mget(key1, key2));
     assertThat(mgetAfterDel, contains(nullValue(), nullValue()));
 
-    Long msetNxAfterDel = exec(commandObjects.msetnx(key1, "new1".getBytes(), key2, "new2".getBytes()));
+    Long msetNxAfterDel = exec(
+      commandObjects.msetnx(key1, "new1".getBytes(), key2, "new2".getBytes()));
     assertThat(msetNxAfterDel, equalTo(1L));
 
     List<byte[]> mgetAfterMsetNxAfterDel = exec(commandObjects.mget(key1, key2));
@@ -594,5 +604,32 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
 
     Long strlenBinary = exec(commandObjects.strlen(key.getBytes()));
     assertThat(strlenBinary, equalTo((long) value.length()));
+  }
+
+  // MSETEX NX + expiration matrix
+  static Stream<Arguments> msetexNxArgsProvider() {
+    return Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
+  }
+
+  @ParameterizedTest(name = "MSETEX NX + {0}")
+  @MethodSource("msetexNxArgsProvider")
+  @EnabledOnCommand(value = "MSETEX")
+  public void testMsetexNx_parametrized(String optionLabel, MSetExParams params) {
+    String k1 = "{t}msetex:k1";
+    String k2 = "{t}msetex:k2";
+
+    Boolean result = exec(commandObjects.msetex(params, k1, "v1", k2, "v2"));
+    assertThat(result, equalTo(true));
+
+    Long ttl = exec(commandObjects.ttl(k1));
+    if ("KEEPTTL".equals(optionLabel)) {
+      assertThat(ttl, equalTo(-1L));
+    } else {
+      assertThat(ttl, greaterThan(0L));
+    }
   }
 }

@@ -20,10 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.redis.test.utils.RedisVersion.V8_4_0_STRING;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -822,25 +824,30 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   // ========== XREADGROUP CLAIM Tests ==========
 
-  @Test
-  @SinceRedisVersion("8.3.224")
-  public void xreadgroupClaimReturnsMetadataOrdered() throws InterruptedException {
-    setUpTestStream(new StreamEntryID("0-0"));
+  private static final String CONSUMER_1 = "consumer-1";
+  private static final String CONSUMER_2 = "consumer-2";
+  private static final long IDLE_TIME_MS = 5;
 
-    final String CONSUMER_1 = "consumer-1";
-    final String CONSUMER_2 = "consumer-2";
-    final long IDLE_TIME_MS = 5;
+  Map<String, StreamEntryID> beforeEachClaimTest() throws InterruptedException {
+    setUpTestStream(new StreamEntryID("0-0"));
 
     // Produce two entries
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
-      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     jedis.xreadGroup(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
-      streams);
+        streams);
 
     // Ensure idle time so entries are claimable
     Thread.sleep(IDLE_TIME_MS);
+    return streams;
+  }
+
+  @Test
+  @SinceRedisVersion(V8_4_0_STRING)
+  public void xreadgroupClaimReturnsMetadataOrdered() throws InterruptedException {
+    Map<String, StreamEntryID> streams = beforeEachClaimTest();
 
     // Produce fresh entries that are NOT claimed (not pending)
     jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
@@ -848,7 +855,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
     // Read with consumer-2 using CLAIM
     List<Map.Entry<String, List<StreamEntry>>> consumer2Result = jedis.xreadGroup(GROUP_NAME,
-      CONSUMER_2, XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10), streams);
+        CONSUMER_2, XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10), streams);
 
     assertNotNull(consumer2Result);
     assertEquals(1, consumer2Result.size());
@@ -856,8 +863,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     List<StreamEntry> entries = consumer2Result.get(0).getValue();
     assertEquals(4, entries.size());
 
-    long claimedCount = entries.stream()
-      .filter(e -> e.getDeliveredCount() != null && e.getDeliveredCount() > 0).count();
+    long claimedCount = entries.stream().filter(StreamEntry::isClaimed).count();
     long freshCount = entries.size() - claimedCount;
 
     assertEquals(2, claimedCount);
@@ -870,13 +876,15 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     StreamEntry fourth = entries.get(3);
 
     // Claimed entries
-    assertTrue(first.getDeliveredCount() != null && first.getDeliveredCount() > 0);
-    assertTrue(second.getDeliveredCount() != null && second.getDeliveredCount() > 0);
+    assertTrue(first.isClaimed());
+    assertTrue(second.isClaimed());
     assertTrue(first.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
     assertTrue(second.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
     assertEquals(HASH_1, first.getFields());
 
     // Fresh entries
+    assertFalse(third.isClaimed());
+    assertFalse(fourth.isClaimed());
     assertEquals(Long.valueOf(0), third.getDeliveredCount());
     assertEquals(Long.valueOf(0), fourth.getDeliveredCount());
     assertEquals(Long.valueOf(0), third.getMillisElapsedFromDelivery());
@@ -885,25 +893,10 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.3.224")
+  @SinceRedisVersion(V8_4_0_STRING)
   public void xreadgroupClaimMovesPendingFromC1ToC2AndRemainsPendingUntilAck()
       throws InterruptedException {
-    setUpTestStream(new StreamEntryID("0-0"));
-
-    final String CONSUMER_1 = "consumer-1";
-    final String CONSUMER_2 = "consumer-2";
-    final long IDLE_TIME_MS = 5;
-
-    // Produce two entries
-    jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-    jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
-      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
-    jedis.xreadGroup(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
-      streams);
-
-    // Ensure idle time so entries are claimable
-    Thread.sleep(IDLE_TIME_MS);
+    Map<String, StreamEntryID> streams = beforeEachClaimTest();
 
     // Verify pending belongs to consumer-1
     StreamPendingSummary before = jedis.xpending(STREAM_KEY_1, GROUP_NAME);
@@ -912,14 +905,13 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
     // Claim with consumer-2
     List<Map.Entry<String, List<StreamEntry>>> res = jedis.xreadGroup(GROUP_NAME, CONSUMER_2,
-      XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10), streams);
+        XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10), streams);
 
     assertNotNull(res);
     assertEquals(1, res.size());
 
     List<StreamEntry> entries = res.get(0).getValue();
-    long claimed = entries.stream()
-      .filter(e -> e.getDeliveredCount() != null && e.getDeliveredCount() > 0).count();
+    long claimed = entries.stream().filter(StreamEntry::isClaimed).count();
     assertEquals(2, claimed);
 
     // After claim: entries are pending for consumer-2 (moved), not acked yet
@@ -930,7 +922,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
     // XACK the claimed entries -> PEL should become empty
     long acked = jedis.xack(STREAM_KEY_1, GROUP_NAME, entries.get(0).getID(),
-      entries.get(1).getID());
+        entries.get(1).getID());
     assertEquals(2, acked);
 
     StreamPendingSummary afterAck = jedis.xpending(STREAM_KEY_1, GROUP_NAME);
@@ -938,25 +930,10 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.3.224")
+  @SinceRedisVersion(V8_4_0_STRING)
   public void xreadgroupClaimWithNoackDoesNotCreatePendingAndRemovesClaimedFromPel()
       throws InterruptedException {
-    setUpTestStream(new StreamEntryID("0-0"));
-
-    final String CONSUMER_1 = "consumer-1";
-    final String CONSUMER_2 = "consumer-2";
-    final long IDLE_TIME_MS = 5;
-
-    // Produce two entries
-    jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-    jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
-    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
-      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
-    jedis.xreadGroup(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
-      streams);
-
-    // Ensure idle time so entries are claimable
-    Thread.sleep(IDLE_TIME_MS);
+    Map<String, StreamEntryID> streams = beforeEachClaimTest();
 
     // Verify pending belongs to consumer-1
     StreamPendingSummary before = jedis.xpending(STREAM_KEY_1, GROUP_NAME);
@@ -970,14 +947,13 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
     // Claim with NOACK using consumer-2
     List<Map.Entry<String, List<StreamEntry>>> res = jedis.xreadGroup(GROUP_NAME, CONSUMER_2,
-      XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).noAck().count(10), streams);
+        XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).noAck().count(10), streams);
 
     assertNotNull(res);
     assertEquals(1, res.size());
 
     List<StreamEntry> entries = res.get(0).getValue();
-    long claimedCount = entries.stream()
-      .filter(e -> e.getDeliveredCount() != null && e.getDeliveredCount() > 0).count();
+    long claimedCount = entries.stream().filter(StreamEntry::isClaimed).count();
     long freshCount = entries.size() - claimedCount;
 
     assertEquals(2, claimedCount);

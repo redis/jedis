@@ -350,6 +350,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> msetex(MSetExParams params, String... keysvalues) {
+    return appendCommand(commandObjects.msetex(params, keysvalues));
+  }
+
+  @Override
   public Response<Long> incr(String key) {
     return appendCommand(commandObjects.incr(key));
   }
@@ -630,13 +635,13 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params additional parameters for the HSETEX command
    * @param field the field in the hash to set
    * @param value the value to set in the specified field
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -649,12 +654,12 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params the parameters for the HSetEx command
    * @param hash the map containing field-value pairs to set in the hash
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -668,14 +673,14 @@ public abstract class PipeliningBase
   }
 
   /**
-   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * Retrieves the values associated with the specified fields in a hash stored at the given key
    * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
    *
    * @param key the key of the hash
    * @param params additional parameters for the HGETEX command
    * @param fields the fields whose values are to be retrieved
    * @return a list of the value associated with each field or nil if the field doesn’t exist.
-   * 
+   *
    * @see HGetExParams
    */
   @Override
@@ -2062,13 +2067,13 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params the parameters for the HSetEx command
    * @param field the field in the hash to set
    * @param value the value to set in the specified field
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -2081,12 +2086,12 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params the parameters for the HSetEx command
    * @param hash the map containing field-value pairs to set in the hash
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -2098,16 +2103,16 @@ public abstract class PipeliningBase
   public Response<byte[]> hget(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hget(key, field));
   }
-  
+
   /**
-   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * Retrieves the values associated with the specified fields in a hash stored at the given key
    * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
    *
    * @param key the key of the hash
    * @param params additional parameters for the HGETEX command
    * @param fields the fields whose values are to be retrieved
    * @return a list of the value associated with each field or nil if the field doesn’t exist.
-   * 
+   *
    * @see HGetExParams
    */
   @Override
@@ -3536,6 +3541,11 @@ public abstract class PipeliningBase
   @Override
   public Response<String> mset(byte[]... keysvalues) {
     return appendCommand(commandObjects.mset(keysvalues));
+  }
+
+  @Override
+  public Response<Boolean> msetex(MSetExParams params, byte[]... keysvalues) {
+    return appendCommand(commandObjects.msetex(params, keysvalues));
   }
 
   @Override

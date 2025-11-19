@@ -588,14 +588,14 @@ public class CommandObjects {
     return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> msetex(SetParams params, String... keysvalues) {
+  public final CommandObject<Boolean> msetex(MSetExParams params, String... keysvalues) {
     CommandArguments args = commandArguments(Command.MSETEX).add(keysvalues.length / 2);
     addFlatKeyValueArgs(args, keysvalues);
     args.addParams(params);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
-  public final CommandObject<Boolean> msetex(SetParams params, byte[]... keysvalues) {
+  public final CommandObject<Boolean> msetex(MSetExParams params, byte[]... keysvalues) {
     CommandArguments args = commandArguments(Command.MSETEX).add(keysvalues.length / 2);
     addFlatKeyValueArgs(args, keysvalues);
     args.addParams(params);

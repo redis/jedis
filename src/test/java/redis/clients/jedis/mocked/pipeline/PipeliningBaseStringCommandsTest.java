@@ -12,6 +12,8 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBase {
@@ -375,7 +377,7 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testMsetex() {
-    SetParams params = new SetParams().nx().ex(3);
+    MSetExParams params = new MSetExParams().nx().ex(3);
     String[] keysvalues = {"k1","v1","k2","v2"};
 
     when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
@@ -388,7 +390,7 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testMsetexBinary() {
-    SetParams params = new SetParams().xx().keepTtl();
+    MSetExParams params = new MSetExParams().xx().keepTtl();
     byte[] k1 = "k1".getBytes();
     byte[] v1 = "v1".getBytes();
     byte[] k2 = "k2".getBytes();

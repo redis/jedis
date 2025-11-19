@@ -4,6 +4,8 @@ import java.util.List;
 
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -214,13 +216,13 @@ public interface StringCommands extends BitCommands {
    * Multi-set with optional condition and expiration.
    * <p>
    * Sets the respective keys to the respective values, similar to {@link #mset(String...) MSET},
-   * but allows conditional set (NX|XX) and expiration options via {@link SetParams}.
+   * but allows conditional set (NX|XX) and expiration options via {@link MSetExParams}.
    * If the condition is not met for any key, no key is set.
    * <p>
    * Both MSET and MSETEX are atomic operations. This means that if multiple keys are provided,
    * another client will either see the changes for all keys at once, or no changes at all.
    * <p>
-   * Options (in {@link SetParams}): NX or XX, and expiration: EX seconds | PX milliseconds |
+   * Options (in {@link MSetExParams}): NX or XX, and expiration: EX seconds | PX milliseconds |
    * EXAT unix-time-seconds | PXAT unix-time-milliseconds | KEEPTTL.
    * <p>
    * Time complexity: O(N) where N is the number of keys to set.
@@ -230,7 +232,7 @@ public interface StringCommands extends BitCommands {
    * @see #mset(String...)
    * @see #msetnx(String...)
    */
-  boolean msetex(SetParams params, String... keysvalues);
+  boolean msetex(MSetExParams params, String... keysvalues);
 
   /**
    * <b><a href="http://redis.io/commands/incr">Incr Command</a></b>

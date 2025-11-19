@@ -29,7 +29,8 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
@@ -400,17 +401,17 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
 
   // MSETEX NX + expiration matrix (binary)
   static Stream<Arguments> msetexNxArgsProvider() {
-    return java.util.stream.Stream.of(Arguments.of("EX", new SetParams().nx().ex(5)),
-      Arguments.of("PX", new SetParams().nx().px(5000)),
-      Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
-      Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
-      Arguments.of("KEEPTTL", new SetParams().nx().keepTtl()));
+    return java.util.stream.Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
   }
 
   @ParameterizedTest(name = "MSETEX NX + {0} (binary)")
   @MethodSource("msetexNxArgsProvider")
   @EnabledOnCommand("MSETEX")
-  public void msetexNx_binary_parametrized(String optionLabel, SetParams params) {
+  public void msetexNx_binary_parametrized(String optionLabel, MSetExParams params) {
     byte[] k1 = "{t}msetex:jb:k1".getBytes();
     byte[] k2 = "{t}msetex:jb:k2".getBytes();
 

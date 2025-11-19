@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
@@ -519,7 +521,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testMsetexDelegates() {
-    SetParams params = new SetParams().nx().ex(5);
+    MSetExParams params = new MSetExParams().nx().ex(5);
     String[] keysvalues = { "k1", "v1", "k2", "v2" };
 
     when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
@@ -534,7 +536,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testMsetexBinaryDelegates() {
-    SetParams params = new SetParams().xx().keepTtl();
+    MSetExParams params = new MSetExParams().xx().keepTtl();
     byte[][] keysvalues = { "k1".getBytes(), "v1".getBytes(), "k2".getBytes(), "v2".getBytes() };
 
     when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);

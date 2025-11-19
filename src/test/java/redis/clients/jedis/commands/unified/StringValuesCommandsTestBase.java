@@ -20,7 +20,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
@@ -288,17 +289,17 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   // MSETEX NX + expiration matrix
   static Stream<Arguments> msetexNxArgsProvider() {
-    return Stream.of(Arguments.of("EX", new SetParams().nx().ex(5)),
-      Arguments.of("PX", new SetParams().nx().px(5000)),
-      Arguments.of("EXAT", new SetParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
-      Arguments.of("PXAT", new SetParams().nx().pxAt(System.currentTimeMillis() + 5000)),
-      Arguments.of("KEEPTTL", new SetParams().nx().keepTtl()));
+    return Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
   }
 
   @ParameterizedTest(name = "MSETEX NX + {0}")
   @MethodSource("msetexNxArgsProvider")
   @EnabledOnCommand("MSETEX")
-  public void msetexNx_parametrized(String optionLabel, SetParams params) {
+  public void msetexNx_parametrized(String optionLabel, MSetExParams params) {
     String k1 = "{t}msetex:unified:k1";
     String k2 = "{t}msetex:unified:k2";
 
@@ -325,7 +326,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
     // Now use MSETEX with XX and EXAT
     long expiryTimestamp = System.currentTimeMillis() / 1000 + 5;
-    SetParams params = new SetParams().xx().exAt(expiryTimestamp);
+    MSetExParams params = new MSetExParams().xx().exAt(expiryTimestamp);
     boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
     assertTrue(result);
 

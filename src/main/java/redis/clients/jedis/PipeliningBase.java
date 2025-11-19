@@ -350,7 +350,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Boolean> msetex(SetParams params, String... keysvalues) {
+  public Response<Boolean> msetex(MSetExParams params, String... keysvalues) {
     return appendCommand(commandObjects.msetex(params, keysvalues));
   }
 
@@ -3544,7 +3544,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Boolean> msetex(SetParams params, byte[]... keysvalues) {
+  public Response<Boolean> msetex(MSetExParams params, byte[]... keysvalues) {
     return appendCommand(commandObjects.msetex(params, keysvalues));
   }
 

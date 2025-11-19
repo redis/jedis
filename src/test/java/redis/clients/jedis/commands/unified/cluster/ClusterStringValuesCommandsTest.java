@@ -16,15 +16,14 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -131,7 +130,7 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
     String k1 = "cross:k1";
     String k2 = "other:k2";
 
-    SetParams params = new SetParams().nx().ex(5);
+    MSetExParams params = new MSetExParams().nx().ex(5);
 
     JedisClusterOperationException ex = assertThrows(JedisClusterOperationException.class,
       () -> jedis.msetex(params, k1, "v1", k2, "v2"));

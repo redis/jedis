@@ -985,7 +985,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public boolean msetex(final SetParams params, final byte[]... keysvalues) {
+  public boolean msetex(final MSetExParams params, final byte[]... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }
@@ -5604,7 +5604,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public boolean msetex(final SetParams params, final String... keysvalues) {
+  public boolean msetex(final MSetExParams params, final String... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }

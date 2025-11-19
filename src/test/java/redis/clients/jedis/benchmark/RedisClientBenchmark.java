@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.*;
 
-public class PooledBenchmark {
+public class RedisClientBenchmark {
 
   private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
   private static final int TOTAL_OPERATIONS = 100000;
@@ -24,7 +24,12 @@ public class PooledBenchmark {
   }
 
   private static void withPool() throws Exception {
-    final JedisPooled j = new JedisPooled(endpoint.getHost(), endpoint.getPort(), null, endpoint.getPassword());
+    final RedisClient j = RedisClient.builder()
+        .hostAndPort(endpoint.getHost(), endpoint.getPort())
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .password(endpoint.getPassword())
+            .build())
+        .build();
     List<Thread> tds = new ArrayList<>();
 
     final AtomicInteger ind = new AtomicInteger();

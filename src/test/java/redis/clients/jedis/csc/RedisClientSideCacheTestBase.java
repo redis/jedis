@@ -3,30 +3,37 @@ package redis.clients.jedis.csc;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class JedisPooledClientSideCacheTestBase extends UnifiedJedisClientSideCacheTestBase {
+public abstract class RedisClientSideCacheTestBase extends UnifiedJedisClientSideCacheTestBase {
 
   protected static EndpointConfig endpoint;
 
   @Override
-  protected JedisPooled createRegularJedis() {
-    return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+  protected RedisClient createRegularJedis() {
+    return RedisClient.builder()
+        .hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(endpoint.getClientConfigBuilder().build())
+        .build();
   }
 
   @Override
-  protected JedisPooled createCachedJedis(CacheConfig cacheConfig) {
-    return new JedisPooled(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().resp3().build(), cacheConfig);
+  protected RedisClient createCachedJedis(CacheConfig cacheConfig) {
+    return RedisClient.builder()
+        .hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(endpoint.getClientConfigBuilder().resp3().build())
+        .cacheConfig(cacheConfig)
+        .build();
   }
 
   @Test
   public void clearIfOneDiesTest() {
-    try (JedisPooled jedis = createCachedJedis(CacheConfig.builder().build())) {
+    try (RedisClient jedis = createCachedJedis(CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();
       // Create 100 keys
       for (int i = 0; i < 100; i++) {

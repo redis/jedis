@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands.unified.pooled;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,12 +18,12 @@ public class PooledGeoCommandsTest extends GeoCommandsTestBase {
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return PooledCommandsTestHelper.getPooled(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol);
   }
 
   @BeforeEach
   public void setUp() {
-    PooledCommandsTestHelper.clearData();
+    RedisClientCommandsTestHelper.clearData();
   }
 
 }

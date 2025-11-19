@@ -22,7 +22,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 @Tag("integration")
-public class JedisPooledTest {
+public class RedisClientTest {
 
   private static final EndpointConfig endpointStandalone7 = HostAndPorts.getRedisEndpoint(
       "standalone7-with-lfu-policy");
@@ -31,7 +31,7 @@ public class JedisPooledTest {
 
   @Test
   public void checkCloseableConnections() {
-    JedisPooled pool = JedisPooled.builder()
+    RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
         .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build()).build();
     pool.set("foo", "bar");
@@ -42,7 +42,7 @@ public class JedisPooledTest {
 
   @Test
   public void checkResourceWithConfig() {
-    try (JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+    try (RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
         .clientConfig(DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())
         .build()) {
 
@@ -59,7 +59,7 @@ public class JedisPooledTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (
-        JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+        RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
             .poolConfig(config).build();
         Connection jedis = pool.getPool().getResource()) {
       assertThrows(JedisException.class, () -> pool.getPool().getResource());
@@ -74,7 +74,7 @@ public class JedisPooledTest {
       j.set("foo", "bar");
     }
 
-    try (JedisPooled pool = JedisPooled.builder()
+    try (RedisClient pool = RedisClient.builder()
         .fromURI(endpointStandalone1.getURIBuilder()
             .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
         .build()) {
@@ -90,7 +90,7 @@ public class JedisPooledTest {
       j.set("foo", "bar");
     }
 
-    try (JedisPooled pool = JedisPooled.builder().fromURI(endpointStandalone1.getURIBuilder()
+    try (RedisClient pool = RedisClient.builder().fromURI(endpointStandalone1.getURIBuilder()
         .credentials("", endpointStandalone1.getPassword()).path("/2").build()).build()) {
       assertEquals("bar", pool.get("foo"));
     }
@@ -99,19 +99,19 @@ public class JedisPooledTest {
   @Test
   public void shouldThrowExceptionForInvalidURI() {
     assertThrows(Exception.class,
-      () -> JedisPooled.builder().fromURI(new URI("localhost:6380")).build());
+      () -> RedisClient.builder().fromURI(new URI("localhost:6380")).build());
   }
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
-    JedisPooled.builder().fromURI(endpointStandalone1.getURI().toString()).build().close();
-    JedisPooled.builder().fromURI(endpointStandalone1.getURI()).build().close();
+    RedisClient.builder().fromURI(endpointStandalone1.getURI().toString()).build().close();
+    RedisClient.builder().fromURI(endpointStandalone1.getURI()).build().close();
   }
 
   @Test
   public void customClientName() {
     try (
-        JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+        RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
             .clientConfig(
               DefaultJedisClientConfig.builder().clientName("my_shiny_client_name").build())
             .build();
@@ -123,7 +123,7 @@ public class JedisPooledTest {
   @Test
   public void invalidClientName() {
     try (
-        JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+        RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
             .clientConfig(
               DefaultJedisClientConfig.builder().clientName("invalid client name").build())
             .build();
@@ -137,7 +137,7 @@ public class JedisPooledTest {
 
   @Test
   public void getNumActiveWhenPoolIsClosed() {
-    JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+    RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
         .build();
 
     try (Connection j = pool.getPool().getResource()) {
@@ -150,7 +150,7 @@ public class JedisPooledTest {
 
   @Test
   public void getNumActiveReturnsTheCorrectNumber() {
-    try (JedisPooled pool = JedisPooled.builder()
+    try (RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
         .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
         .poolConfig(new ConnectionPoolConfig()).build()) {
@@ -171,7 +171,7 @@ public class JedisPooledTest {
 
   @Test
   public void closeResourceTwice() {
-    try (JedisPooled pool = JedisPooled.builder()
+    try (RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
         .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
         .poolConfig(new ConnectionPoolConfig()).build()) {
@@ -184,7 +184,7 @@ public class JedisPooledTest {
 
   @Test
   public void closeBrokenResourceTwice() {
-    try (JedisPooled pool = JedisPooled.builder()
+    try (RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
         .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
         .poolConfig(new ConnectionPoolConfig()).build()) {
@@ -204,10 +204,10 @@ public class JedisPooledTest {
 
   @Test
   public void testResetValidCredentials() {
-    DefaultRedisCredentialsProvider credentialsProvider = 
+    DefaultRedisCredentialsProvider credentialsProvider =
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
 
-    try (JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone1.getHostAndPort())
+    try (RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone1.getHostAndPort())
         .clientConfig(
           DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider).build())
         .build()) {
@@ -269,7 +269,7 @@ public class JedisPooledTest {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(1);
     poolConfig.setTestOnBorrow(true);
-    try (JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone1.getHostAndPort())
+    try (RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone1.getHostAndPort())
         .clientConfig(
           DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider).build())
         .poolConfig(poolConfig).build()) {

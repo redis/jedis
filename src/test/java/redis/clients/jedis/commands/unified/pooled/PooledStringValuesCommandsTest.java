@@ -16,9 +16,11 @@ import redis.clients.jedis.util.RedisVersionCondition;
 public class PooledStringValuesCommandsTest extends StringValuesCommandsTestBase {
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(PooledCommandsTestHelper.nodeInfo);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      RedisClientCommandsTestHelper.nodeInfo);
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(PooledCommandsTestHelper.nodeInfo);
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
+      RedisClientCommandsTestHelper.nodeInfo);
 
   public PooledStringValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -26,11 +28,11 @@ public class PooledStringValuesCommandsTest extends StringValuesCommandsTestBase
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return PooledCommandsTestHelper.getPooled(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol);
   }
 
   @BeforeEach
   public void setUp() {
-    PooledCommandsTestHelper.clearData();
+    RedisClientCommandsTestHelper.clearData();
   }
 }

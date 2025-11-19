@@ -18,12 +18,12 @@ public class PooledBinaryValuesCommandsTest extends BinaryValuesCommandsTestBase
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return PooledCommandsTestHelper.getPooled(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol);
   }
 
   @BeforeEach
   public void setUp() {
-    PooledCommandsTestHelper.clearData();
+    RedisClientCommandsTestHelper.clearData();
   }
 
 }

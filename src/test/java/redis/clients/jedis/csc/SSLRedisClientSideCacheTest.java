@@ -16,9 +16,9 @@ import redis.clients.jedis.util.TlsUtil;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Tag("integration")
-public class SSLJedisPooledClientSideCacheTest extends JedisPooledClientSideCacheTestBase {
+public class SSLRedisClientSideCacheTest extends RedisClientSideCacheTestBase {
 
-  private static final String trustStoreName = SSLJedisPooledClientSideCacheTest.class.getSimpleName();
+  private static final String trustStoreName = SSLRedisClientSideCacheTest.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {

@@ -16,10 +16,10 @@ public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetComman
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      PooledCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper.nodeInfo);
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      PooledCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper.nodeInfo);
 
   public PooledExtendedVectorSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -27,12 +27,12 @@ public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetComman
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return PooledCommandsTestHelper.getPooled(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol);
   }
 
   @Override
   protected void clearData() {
-    PooledCommandsTestHelper.clearData();
+    RedisClientCommandsTestHelper.clearData();
   }
 
 }

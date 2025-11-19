@@ -8,7 +8,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.TestCache;
 
-public class CSCPooleadBenchmark {
+public class RedisClientCSCBenchmark {
 
     private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
     private static final int TOTAL_OPERATIONS = 1000000;
@@ -50,7 +50,11 @@ public class CSCPooleadBenchmark {
                 .password(endpoint.getPassword()).build();
         List<Thread> tds = new ArrayList<>();
         final AtomicInteger ind = new AtomicInteger();
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), config, cache)) {
+        try (RedisClient jedis = RedisClient.builder()
+                .hostAndPort(endpoint.getHostAndPort())
+                .clientConfig(config)
+                .cache(cache)
+                .build()) {
             for (int i = 0; i < NUMBER_OF_THREADS; i++) {
                 Thread hj = new Thread(new Runnable() {
                     @Override
@@ -74,6 +78,6 @@ public class CSCPooleadBenchmark {
             for (Thread t : tds) {
                 t.join();
             }
-        } 
+        }
     }
 }

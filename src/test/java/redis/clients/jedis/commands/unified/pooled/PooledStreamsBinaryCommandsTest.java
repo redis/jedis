@@ -15,11 +15,11 @@ public class PooledStreamsBinaryCommandsTest extends StreamsBinaryCommandsTestBa
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      PooledCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper.nodeInfo);
 
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      PooledCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper.nodeInfo);
 
   public PooledStreamsBinaryCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -27,7 +27,7 @@ public class PooledStreamsBinaryCommandsTest extends StreamsBinaryCommandsTestBa
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return PooledCommandsTestHelper.getPooled(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol);
   }
 
 }

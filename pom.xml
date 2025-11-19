@@ -544,6 +544,7 @@
 						<include>**/ClientTestUtil.java</include>
 						<include>**/ReflectionTestUtil.java</include>
 						<include>**/*CommandFlags*.java</include>
+						<include>**/*MSetExParams*.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands.unified.pooled;
+package redis.clients.jedis.commands.unified.client;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -13,7 +13,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class PooledHashesCommandsTest extends HashesCommandsTestBase {
+public class RedisClientHashesCommandsTest extends HashesCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -22,7 +22,7 @@ public class PooledHashesCommandsTest extends HashesCommandsTestBase {
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       RedisClientCommandsTestHelper.nodeInfo);
 
-  public PooledHashesCommandsTest(RedisProtocol protocol) {
+  public RedisClientHashesCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 

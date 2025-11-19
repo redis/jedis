@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands.unified.pooled;
+package redis.clients.jedis.commands.unified.client;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -10,9 +10,9 @@ import redis.clients.jedis.commands.unified.BinaryValuesCommandsTestBase;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class PooledBinaryValuesCommandsTest extends BinaryValuesCommandsTestBase {
+public class RedisClientBinaryValuesCommandsTest extends BinaryValuesCommandsTestBase {
 
-  public PooledBinaryValuesCommandsTest(RedisProtocol protocol) {
+  public RedisClientBinaryValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 

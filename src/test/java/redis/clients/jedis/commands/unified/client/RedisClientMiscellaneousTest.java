@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands.unified.pooled;
+package redis.clients.jedis.commands.unified.client;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -31,7 +31,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
-public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
+public class RedisClientMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -40,7 +40,7 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       RedisClientCommandsTestHelper.nodeInfo);
 
-  public PooledMiscellaneousTest(RedisProtocol protocol) {
+  public RedisClientMiscellaneousTest(RedisProtocol protocol) {
     super(protocol);
   }
 

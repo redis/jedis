@@ -1,19 +1,19 @@
-package redis.clients.jedis.commands.unified.pooled;
+package redis.clients.jedis.commands.unified.client;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.commands.unified.SetCommandsTestBase;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.commands.unified.BitCommandsTestBase;
+
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class PooledSetCommandsTest extends SetCommandsTestBase {
+public class RedisClientBitCommandsTest extends BitCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -22,7 +22,7 @@ public class PooledSetCommandsTest extends SetCommandsTestBase {
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       RedisClientCommandsTestHelper.nodeInfo);
 
-  public PooledSetCommandsTest(RedisProtocol protocol) {
+  public RedisClientBitCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 

@@ -8,7 +8,7 @@ import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
-import redis.clients.jedis.commands.unified.pooled.RedisClientCommandsTestHelper;
+import redis.clients.jedis.commands.unified.client.RedisClientCommandsTestHelper;
 
 @Tag("integration")
 public abstract class PipelineCommandsTestBase {

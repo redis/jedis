@@ -1,18 +1,19 @@
-package redis.clients.jedis.commands.unified.pooled;
+package redis.clients.jedis.commands.unified.client;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.commands.unified.ExtendedVectorSetCommandsTestBase;
+import redis.clients.jedis.commands.unified.VectorSetCommandsTestBase;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetCommandsTestBase {
+public class RedisClientVectorSetCommandsTest extends VectorSetCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -21,7 +22,7 @@ public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetComman
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       RedisClientCommandsTestHelper.nodeInfo);
 
-  public PooledExtendedVectorSetCommandsTest(RedisProtocol protocol) {
+  public RedisClientVectorSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
 
@@ -30,8 +31,8 @@ public class PooledExtendedVectorSetCommandsTest extends ExtendedVectorSetComman
     return RedisClientCommandsTestHelper.getClient(protocol);
   }
 
-  @Override
-  protected void clearData() {
+  @BeforeEach
+  public void setUp() {
     RedisClientCommandsTestHelper.clearData();
   }
 

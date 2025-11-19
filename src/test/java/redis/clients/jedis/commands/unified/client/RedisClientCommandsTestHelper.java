@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands.unified.pooled;
+package redis.clients.jedis.commands.unified.client;
 
 import redis.clients.jedis.*;
 

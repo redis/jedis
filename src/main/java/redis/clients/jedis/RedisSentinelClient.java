@@ -7,6 +7,7 @@ import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
+// @formatter:off
 /**
  * A high-level client for interacting with Redis Sentinel-managed Redis deployments.
  * <p>
@@ -23,7 +24,7 @@ import redis.clients.jedis.providers.SentineledConnectionProvider;
  *     .masterName("mymaster").build();
  * </pre>
  * <p>
- * <b>Relationship to {@code JedisSentineled}:</b>
+ * <b>Relationship to {@code JedisSentineled}:</b></p>
  * <ul>
  * <li>{@code RedisSentinelClient} is the recommended replacement for the deprecated
  * {@code JedisSentineled} class.</li>
@@ -32,8 +33,8 @@ import redis.clients.jedis.providers.SentineledConnectionProvider;
  * <li>Use {@code RedisSentinelClient} for new codebases and when migrating from
  * {@code JedisSentineled}.</li>
  * </ul>
- * </p>
  */
+ // @formatter:on
 public class RedisSentinelClient extends UnifiedJedis {
   private RedisSentinelClient(CommandExecutor commandExecutor,
       ConnectionProvider connectionProvider, CommandObjects commandObjects,

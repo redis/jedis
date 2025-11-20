@@ -2,7 +2,7 @@
 package io.redis.examples;
 // REMOVE_START
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +15,7 @@ public class HomeProbDtsExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
 
         // REMOVE_START
         jedis.del(

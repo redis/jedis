@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 // REMOVE_END
 import java.util.List;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.Response;
@@ -17,7 +17,7 @@ public class PipeTransExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
 
         // REMOVE_START
         for (int i = 0; i < 5; i++) {

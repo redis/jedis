@@ -3,7 +3,7 @@
 package io.redis.examples;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,7 +13,7 @@ public class BitMapsExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
         // HIDE_END
 
         // REMOVE_START

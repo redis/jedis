@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.redis.test.utils.RedisVersion.V8_4_0_STRING;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -103,19 +105,21 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
 
   @BeforeEach
   public void setUpTestStream() {
+    setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes());
+  }
+  
+  private void setUpTestStream(byte[] startId) {
     jedis.del(STREAM_KEY_1);
     jedis.del(STREAM_KEY_2);
     try {
-      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME,
-          StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes(), true);
+      jedis.xgroupCreate(STREAM_KEY_1, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
       }
     }
     try {
-      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME,
-          StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes(), true);
+      jedis.xgroupCreate(STREAM_KEY_2, GROUP_NAME, startId, true);
     } catch (JedisDataException e) {
       if (!e.getMessage().contains("BUSYGROUP")) {
         throw e;
@@ -527,4 +531,67 @@ public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.xlen(STREAM_KEY_1) <= 5); // Should not exceed original length
   }
 
+  // ========== XREADGROUP CLAIM Tests ==========
+
+  @Test
+  @SinceRedisVersion(V8_4_0_STRING)
+  public void xreadgroupClaimReturnsMetadataOrdered() throws InterruptedException {
+    setUpTestStream("0-0".getBytes());
+
+    final byte[] CONSUMER_1 = "consumer-1".getBytes();
+    final byte[] CONSUMER_2 = "consumer-2".getBytes();
+    final long IDLE_TIME_MS = 5;
+
+    // Produce two entries
+    Map<byte[], byte[]> hash = singletonMap(FIELD_KEY_1, BINARY_VALUE_1);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroupBinary(GROUP_NAME, CONSUMER_1, XReadGroupParams.xReadGroupParams().count(10),
+        streams);
+
+    // Ensure idle time so entries are claimable
+    Thread.sleep(IDLE_TIME_MS);
+
+    // Produce fresh entries that are NOT claimed (not pending)
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), hash);
+
+    // Read with consumer-2 using CLAIM
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> consumer2Result = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_2, XReadGroupParams.xReadGroupParams().claim(IDLE_TIME_MS).count(10),
+        streams);
+
+    assertNotNull(consumer2Result);
+    assertEquals(1, consumer2Result.size());
+
+    List<StreamEntryBinary> entries = consumer2Result.get(0).getValue();
+    assertEquals(4, entries.size());
+
+    long claimedCount = entries.stream().filter(StreamEntryBinary::isClaimed).count();
+    long freshCount = entries.size() - claimedCount;
+
+    assertEquals(2, claimedCount);
+    assertEquals(2, freshCount);
+
+    // Assert order: pending entries are first
+    StreamEntryBinary first = entries.get(0);
+    StreamEntryBinary second = entries.get(1);
+    StreamEntryBinary third = entries.get(2);
+    StreamEntryBinary fourth = entries.get(3);
+
+    // Claimed entries
+    assertTrue(first.isClaimed());
+    assertTrue(second.isClaimed());
+    assertTrue(first.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
+    assertTrue(second.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
+
+    // Fresh entries
+    assertFalse(third.isClaimed());
+    assertFalse(fourth.isClaimed());
+    assertEquals(Long.valueOf(0), third.getDeliveredCount());
+    assertEquals(Long.valueOf(0), fourth.getDeliveredCount());
+    assertEquals(Long.valueOf(0), third.getMillisElapsedFromDelivery());
+    assertEquals(Long.valueOf(0), fourth.getMillisElapsedFromDelivery());
+  }
 }

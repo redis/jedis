@@ -1408,17 +1408,26 @@ public final class BuilderFactory {
         String entryIdString = SafeEncoder.encode((byte[]) res.get(0));
         StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>) res.get(1);
-        if (hash == null) {
-          responses.add(new StreamEntry(entryID, null));
+
+        Map<String, String> fieldsMap = null;
+
+        if (hash != null) {
+          Iterator<byte[]> hashIterator = hash.iterator();
+          fieldsMap = new HashMap<>(hash.size() / 2, 1f);
+
+          while (hashIterator.hasNext()) {
+            fieldsMap.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
+          }
+        }
+
+        if (res.size() >= 4) {
+          Long millisElapsedFromDelivery = LONG.build(res.get(2));
+          Long deliveredCount = LONG.build(res.get(3));
+          responses.add(new StreamEntry(entryID, fieldsMap, millisElapsedFromDelivery, deliveredCount));
           continue;
         }
 
-        Iterator<byte[]> hashIterator = hash.iterator();
-        Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
-        while (hashIterator.hasNext()) {
-          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
-        }
-        responses.add(new StreamEntry(entryID, map));
+        responses.add(new StreamEntry(entryID, fieldsMap));
       }
 
       return responses;
@@ -1959,16 +1968,25 @@ public final class BuilderFactory {
         String entryIdString = SafeEncoder.encode((byte[]) res.get(0));
         StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>) res.get(1);
-        if (hash == null) {
-          responses.add(new StreamEntryBinary(entryID, null));
+
+        Map<byte[], byte[]> map = null;
+
+        if (hash != null) {
+          Iterator<byte[]> hashIterator = hash.iterator();
+          map = new JedisByteHashMap();
+
+          while (hashIterator.hasNext()) {
+            map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
+          }
+        }
+
+        if (res.size() >= 4) {
+          Long millisElapsedFromDelivery = LONG.build(res.get(2));
+          Long deliveredCount = LONG.build(res.get(3));
+          responses.add(new StreamEntryBinary(entryID, map, millisElapsedFromDelivery, deliveredCount));
           continue;
         }
 
-        Iterator<byte[]> hashIterator = hash.iterator();
-        Map<byte[], byte[]> map = new JedisByteHashMap();
-        while (hashIterator.hasNext()) {
-          map.put(BINARY.build(hashIterator.next()), BINARY.build(hashIterator.next()));
-        }
         responses.add(new StreamEntryBinary(entryID, map));
       }
 

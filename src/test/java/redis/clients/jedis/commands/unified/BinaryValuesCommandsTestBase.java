@@ -15,13 +15,20 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -126,7 +133,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void setAndPxat() {
     assertEquals("OK", jedis.set(bfoo, binaryValue,
-        setParams().nx().pxAt(System.currentTimeMillis() + expireMillis)));
+      setParams().nx().pxAt(System.currentTimeMillis() + expireMillis)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
@@ -134,7 +141,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void setAndExat() {
     assertEquals("OK", jedis.set(bfoo, binaryValue,
-        setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds)));
+      setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
@@ -167,11 +174,13 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
     ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 10 && ttl <= 20);
 
-    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    assertArrayEquals(bbar,
+      jedis.getEx(bfoo, GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
     ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    assertArrayEquals(bbar,
+      jedis.getEx(bfoo, GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
     ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 30 && ttl <= 40);
 
@@ -258,7 +267,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrByWrongValue() {
     jedis.set(bfoo, binaryValue);
-    assertThrows(JedisDataException.class, ()->jedis.incrBy(bfoo, 2));
+    assertThrows(JedisDataException.class, () -> jedis.incrBy(bfoo, 2));
   }
 
   @Test
@@ -276,7 +285,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void decrWrongValue() {
     jedis.set(bfoo, binaryValue);
-    assertThrows(JedisDataException.class, ()->jedis.decr(bfoo));
+    assertThrows(JedisDataException.class, () -> jedis.decr(bfoo));
   }
 
   @Test
@@ -288,7 +297,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void decrByWrongValue() {
     jedis.set(bfoo, binaryValue);
-    assertThrows(JedisDataException.class, ()->jedis.decrBy(bfoo, 2));
+    assertThrows(JedisDataException.class, () -> jedis.decrBy(bfoo, 2));
   }
 
   @Test
@@ -390,5 +399,32 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertArrayEquals(bbar, blpop.get(1));
 
     assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+  }
+
+  // MSETEX NX + expiration matrix (binary)
+  static Stream<Arguments> msetexNxArgsProvider() {
+    return Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
+  }
+
+  @ParameterizedTest(name = "MSETEX NX + {0} (binary)")
+  @MethodSource("msetexNxArgsProvider")
+  @EnabledOnCommand("MSETEX")
+  public void msetexNx_binary_parametrized(String optionLabel, MSetExParams params) {
+    byte[] k1 = "{t}msetex:unifiedb:k1".getBytes();
+    byte[] k2 = "{t}msetex:unifiedb:k2".getBytes();
+
+    boolean result = jedis.msetex(params, k1, "v1".getBytes(), k2, "v2".getBytes());
+    assertTrue(result);
+
+    long ttl = jedis.ttl(k1);
+    if ("KEEPTTL".equals(optionLabel)) {
+      assertEquals(-1L, ttl);
+    } else {
+      assertTrue(ttl > 0L);
+    }
   }
 }

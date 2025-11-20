@@ -9,20 +9,20 @@ Let's see how this works.
 
 ## Creating with RedisJSON client
 
-First, let's create a `JedisPooled` client instance:
+First, let's create a `RedisClient` client instance:
 
 ```java
-JedisPooled client = new JedisPooled("localhost", 6479);
+RedisClient client = RedisClient.builder().hostAndPort("localhost", 6479).build();
 ```
 
-Or, a `JedisCluster` client instance:
+Or, a `RedisClusterClient` client instance:
 
 ```java
 Set<HostAndPort> nodes = new HashSet<>();
 nodes.add(new HostAndPort("127.0.0.1", 7379));
 nodes.add(new HostAndPort("127.0.0.1", 7380));
 
-JedisCluster client = new JedisCluster(nodes);
+RedisClusterClient client = RedisClusterClient.builder().nodes(nodes).build();
 ```
 
 Now we can start working with JSON. For these examples, we'll be using [GSON](https://github.com/google/gson)

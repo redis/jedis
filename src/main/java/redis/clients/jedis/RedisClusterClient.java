@@ -105,7 +105,7 @@ public class RedisClusterClient extends UnifiedJedis {
    * Obtain an instance via {@link #builder()}.
    * </p>
    */
-  static public class Builder extends ClusterClientBuilder<RedisClusterClient> {
+  public static class Builder extends ClusterClientBuilder<RedisClusterClient> {
 
     @Override
     protected RedisClusterClient createClient() {

@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import java.net.URI;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
@@ -392,4 +394,17 @@ public class JedisPool extends Pool<Jedis> {
       }
     }
   }
+
+  public void withJedisPoolDo(Consumer<Jedis> consumer) {
+    try (Jedis jedis = this.getResource()) {
+      consumer.accept(jedis);
+    }
+  }
+
+  public <K> K withJedisPoolGet(Function<Jedis, K> function) {
+    try (Jedis jedis = this.getResource()) {
+      return function.apply(jedis);
+    }
+  }
+
 }

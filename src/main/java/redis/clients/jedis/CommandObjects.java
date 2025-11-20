@@ -49,7 +49,7 @@ public class CommandObjects {
 
   protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
-  private Lock mapperLock = new ReentrantLock(true);    
+  private Lock mapperLock = new ReentrantLock(true);
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(SearchProtocol.DEFAULT_DIALECT);
 
@@ -586,6 +586,20 @@ public class CommandObjects {
 
   public final CommandObject<Long> msetnx(String... keysvalues) {
     return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Boolean> msetex(MSetExParams params, String... keysvalues) {
+    CommandArguments args = commandArguments(Command.MSETEX).add(keysvalues.length / 2);
+    addFlatKeyValueArgs(args, keysvalues);
+    args.addParams(params);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> msetex(MSetExParams params, byte[]... keysvalues) {
+    CommandArguments args = commandArguments(Command.MSETEX).add(keysvalues.length / 2);
+    addFlatKeyValueArgs(args, keysvalues);
+    args.addParams(params);
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<String> mset(byte[]... keysvalues) {
@@ -2977,7 +2991,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
-      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], StreamEntryID>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)
@@ -2992,7 +3006,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(
-      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, 
+      byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], StreamEntryID>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)

@@ -984,6 +984,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
 
+  @Override
+  public boolean msetex(final MSetExParams params, final byte[]... keysvalues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.msetex(params, keysvalues));
+  }
+
   /**
    * DECRBY work just like {@link Jedis#decr(byte[]) DECR} but instead to decrement by 1 the
    * decrement is integer.
@@ -5597,6 +5603,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
 
+  @Override
+  public boolean msetex(final MSetExParams params, final String... keysvalues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.msetex(params, keysvalues));
+  }
+
   /**
    * IDECRBY work just like {@link Jedis#decr(String) INCR} but instead to decrement by 1 the
    * decrement is integer.
@@ -5805,13 +5817,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetex(key, params, fields));
   }
 
   @Override
-  public List<String> hgetdel(String key, String... fields) {    
+  public List<String> hgetdel(String key, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }

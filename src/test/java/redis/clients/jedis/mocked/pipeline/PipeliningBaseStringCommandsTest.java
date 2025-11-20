@@ -12,6 +12,8 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBase {
@@ -370,6 +372,35 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
     Response<Long> response = pipeliningBase.msetnx(key1, value1, key2, value2);
 
     assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testMsetex() {
+    MSetExParams params = new MSetExParams().nx().ex(3);
+    String[] keysvalues = {"k1","v1","k2","v2"};
+
+    when(commandObjects.msetex(params, keysvalues)).thenReturn(booleanCommandObject);
+
+    Response<Boolean> response = pipeliningBase.msetex(params, keysvalues);
+
+    assertThat(commands, contains(booleanCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testMsetexBinary() {
+    MSetExParams params = new MSetExParams().xx().keepTtl();
+    byte[] k1 = "k1".getBytes();
+    byte[] v1 = "v1".getBytes();
+    byte[] k2 = "k2".getBytes();
+    byte[] v2 = "v2".getBytes();
+
+    when(commandObjects.msetex(params, k1, v1, k2, v2)).thenReturn(booleanCommandObject);
+
+    Response<Boolean> response = pipeliningBase.msetex(params, k1, v1, k2, v2);
+
+    assertThat(commands, contains(booleanCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

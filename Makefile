@@ -2,7 +2,7 @@ PATH := ./redis-git/src:${PATH}
 
 # Supported test env versions
 SUPPORTED_TEST_ENV_VERSIONS := 8.4 8.2 8.0 7.4 7.2 6.2
-DEFAULT_TEST_ENV_VERSION := 8.2
+DEFAULT_TEST_ENV_VERSION := 8.4
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
 CLIENT_LIBS_TEST_IMAGE := redislabs/client-libs-test:8.2.2
 TOXIPROXY_IMAGE := ghcr.io/shopify/toxiproxy:2.8.0

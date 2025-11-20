@@ -969,6 +969,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public boolean msetex(MSetExParams params, String... keysvalues) {
+    return executeCommand(commandObjects.msetex(params, keysvalues));
+  }
+
+  @Override
   public List<byte[]> mget(byte[]... keys) {
     return executeCommand(commandObjects.mget(keys));
   }
@@ -976,6 +981,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String mset(byte[]... keysvalues) {
     return executeCommand(commandObjects.mset(keysvalues));
+  }
+
+  @Override
+  public boolean msetex(MSetExParams params, byte[]... keysvalues) {
+    return executeCommand(commandObjects.msetex(params, keysvalues));
   }
 
   @Override
@@ -1446,12 +1456,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
     return executeCommand(commandObjects.hsetex(key, params, hash));
   }
-  
+
   @Override
   public String hget(String key, String field) {
     return executeCommand(commandObjects.hget(key, field));
   }
-    
+
   @Override
   public List<String> hgetex(String key, HGetExParams params, String... fields) {
     return executeCommand(commandObjects.hgetex(key, params, fields));
@@ -3997,7 +4007,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link FTSearchParams#limit(int, int)} will be ignored.
-   * 
+   *
    * @param batchSize batch size
    * @param indexName index name
    * @param query query

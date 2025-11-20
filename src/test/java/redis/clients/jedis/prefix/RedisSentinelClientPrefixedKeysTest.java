@@ -8,11 +8,11 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisSentineled;
+import redis.clients.jedis.RedisSentinelClient;
 import org.junit.jupiter.api.Tag;
 
 @Tag("integration")
-public class JedisSentineledPrefixedKeysTest extends PrefixedKeysTest<JedisSentineled> {
+public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisSentinelClient> {
 
   private static final String MASTER_NAME = "mymaster";
   private static final JedisClientConfig MASTER_CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("foobared").build();
@@ -21,7 +21,12 @@ public class JedisSentineledPrefixedKeysTest extends PrefixedKeysTest<JedisSenti
   private static final JedisClientConfig SENTINEL_CLIENT_CONFIG = DefaultJedisClientConfig.builder().build();
 
   @Override
-  JedisSentineled nonPrefixingJedis() {
-    return new JedisSentineled(MASTER_NAME, MASTER_CLIENT_CONFIG, SENTINEL_NODES, SENTINEL_CLIENT_CONFIG);
+  RedisSentinelClient nonPrefixingJedis() {
+    return RedisSentinelClient.builder()
+        .masterName(MASTER_NAME)
+        .clientConfig(MASTER_CLIENT_CONFIG)
+        .sentinels(SENTINEL_NODES)
+        .sentinelClientConfig(SENTINEL_CLIENT_CONFIG)
+        .build();
   }
 }

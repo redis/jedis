@@ -9,19 +9,22 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.RedisClusterClient;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("integration")
-public class JedisClusterPrefixedKeysTest extends PrefixedKeysTest<JedisCluster> {
+public class RedisClusterPrefixedKeysTest extends PrefixedKeysTest<RedisClusterClient> {
 
   private static final JedisClientConfig CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("cluster").build();
   private static final Set<HostAndPort> NODES = HostAndPorts.getStableClusterServers().stream().collect(Collectors.toSet());
 
   @Override
-  JedisCluster nonPrefixingJedis() {
-    return new JedisCluster(NODES, CLIENT_CONFIG);
+  RedisClusterClient nonPrefixingJedis() {
+    return RedisClusterClient.builder()
+        .nodes(NODES)
+        .clientConfig(CLIENT_CONFIG)
+        .build();
   }
 
   @Override

@@ -1,7 +1,7 @@
 package redis.clients.jedis.examples;
 
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.RedisClusterClient;
 
 /**
  * When using the <a href="https://redis.io/docs/reference/cluster-spec/">Open Source Redis Cluster
@@ -16,7 +16,7 @@ public class BroadcastCommandsToAllClusterNodes {
   public static void main(String[] args) {
 
     HostAndPort clusterNode = new HostAndPort("127.0.0.1", 7000);
-    JedisCluster client = new JedisCluster(clusterNode);
+    RedisClusterClient client = new RedisClusterClient(clusterNode);
 
     String reply = client.configSet("maxmemory", "100mb"); // reply is "OK"
   }

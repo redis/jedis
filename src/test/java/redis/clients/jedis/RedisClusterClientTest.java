@@ -42,7 +42,7 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.Pool;
 
 @Tag("integration")
-public class JedisClusterTest extends JedisClusterTestBase {
+public class RedisClusterClientTest extends RedisClusterClientTestBase {
 
   private static final int DEFAULT_TIMEOUT = 2000; //sec
   private static final int DEFAULT_REDIRECTIONS = 5;
@@ -80,13 +80,29 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals(3, jc.getClusterNodes().size());
     }
 
-    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc2 = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 7379)))
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals(3, jc2.getClusterNodes().size());
     }
   }
@@ -95,13 +111,21 @@ public class JedisClusterTest extends JedisClusterTestBase {
   public void testDiscoverNodesAutomaticallyWithSocketConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
 
-    try (JedisCluster jc = new JedisCluster(hp, DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS,
-        DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals(3, jc.getClusterNodes().size());
     }
 
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG,
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals(3, jc.getClusterNodes().size());
     }
   }
@@ -112,8 +136,17 @@ public class JedisClusterTest extends JedisClusterTestBase {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     String clientName = "myAppName";
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .clientName(clientName)
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -126,9 +159,12 @@ public class JedisClusterTest extends JedisClusterTestBase {
   public void testSetClientNameWithConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
     String clientName = "config-pattern-app";
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp),
-        DefaultJedisClientConfig.builder().password("cluster").clientName(clientName).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").clientName(clientName).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.getClusterNodes().values().forEach(pool -> {
         try (Jedis jedis = new Jedis(pool.getResource())) {
           assertEquals(clientName, jedis.clientGetname());
@@ -142,16 +178,32 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.set("foo", "bar");
       jc.set("test", "test");
       assertEquals("bar", node3.get("foo"));
       assertEquals("test", node2.get("test"));
     }
 
-    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc2 = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 7379)))
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc2.set("foo", "bar");
       jc2.set("test", "test");
       assertEquals("bar", node3.get("foo"));
@@ -205,8 +257,12 @@ public class JedisClusterTest extends JedisClusterTestBase {
     DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
         .password("cluster").readOnlyForRedisClusterReplicas().build();
     ClusterCommandObjects commandObjects = new ClusterCommandObjects();
-    try (JedisCluster jedisCluster = new JedisCluster(nodeInfo1, READ_REPLICAS_CLIENT_CONFIG,
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jedisCluster = RedisClusterClient.builder()
+        .nodes(Collections.singleton(nodeInfo1))
+        .clientConfig(READ_REPLICAS_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals("OK", jedisCluster.set("test", "read-from-replicas"));
 
       assertEquals("read-from-replicas", jedisCluster.executeCommandToReplica(commandObjects.get("test")));
@@ -224,8 +280,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
   public void testMigrate() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(nodeInfo1);
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
       String node2Id = JedisClusterTestUtil.getNodeId(node2.clusterNodes());
       node3.clusterSetSlotMigrating(15363, node2Id);
@@ -274,8 +338,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
   public void testMigrateToNewNode() throws InterruptedException {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(nodeInfo1);
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       node3.clusterMeet(LOCAL_IP, nodeInfo4.getPort());
 
       String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
@@ -335,8 +407,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       node2.clusterDelSlots(slot51);
       node3.clusterDelSlots(slot51);
@@ -353,8 +433,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -366,8 +454,12 @@ public class JedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testAskResponseWithConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG,
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -382,8 +474,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     assertThrows(JedisClusterOperationException.class,()-> {
-      try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-          DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+      try (RedisClusterClient jc = RedisClusterClient.builder()
+          .nodes(jedisClusterNode)
+          .clientConfig(DefaultJedisClientConfig.builder()
+              .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+              .socketTimeoutMillis(DEFAULT_TIMEOUT)
+              .password("cluster")
+              .build())
+          .maxAttempts(DEFAULT_REDIRECTIONS)
+          .poolConfig(DEFAULT_POOL_CONFIG)
+          .build()) {
         int slot51 = JedisClusterCRC16.getSlot("51");
         // This will cause an infinite redirection loop
         node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -396,8 +496,12 @@ public class JedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testRedisClusterMaxRedirectionsWithConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG,
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       // This will cause an infinite redirection loop
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -467,8 +571,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 
       int count = 5;
       for (int index = 0; index < count; index++) {
@@ -486,8 +598,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 
       int slot51 = JedisClusterCRC16.getSlot("51");
       jc.set("51", "foo");
@@ -512,8 +632,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     config.setMaxWait(Duration.ofMillis(DEFAULT_TIMEOUT));
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(config)
+        .build()) {
       assertThrows(JedisException.class, ()->jc.set("52", "poolTestValue"));
     }
   }
@@ -523,8 +651,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG);
+    RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build();
     jc.set("51", "foo");
     jc.close();
 
@@ -534,8 +670,12 @@ public class JedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testCloseableWithConfig() {
     HostAndPort hp = nodeInfo1;
-    try (JedisCluster jc = new JedisCluster(hp, DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS,
-        DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.set("51", "foo");
       jc.close();
 
@@ -548,8 +688,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, 4000, 4000, DEFAULT_REDIRECTIONS,
-        "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(4000)
+            .socketTimeoutMillis(4000)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 
       for (Pool<Connection> pool : jc.getClusterNodes().values()) {
         try (Connection conn = pool.getResource()) {
@@ -562,9 +710,13 @@ public class JedisClusterTest extends JedisClusterTestBase {
   @Test
   public void testJedisClusterTimeoutWithConfig() {
     HostAndPort hp = nodeInfo1;
-    try (JedisCluster jc = new JedisCluster(hp, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(4000).socketTimeoutMillis(4000).password("cluster").build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(hp))
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(4000).socketTimeoutMillis(4000).password("cluster").build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 
       jc.getClusterNodes().values().forEach(pool -> {
         try (Connection conn = pool.getResource()) {
@@ -579,8 +731,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
       ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    final JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG);
+    final RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build();
     jc.set("foo", "bar");
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 100, 0, TimeUnit.SECONDS,
@@ -612,8 +772,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(config)
+        .build()) {
 
       try (Connection c = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
         Jedis j = new Jedis(c);
@@ -632,8 +800,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(config)
+        .build()) {
 
       // This will cause an infinite redirection between node 2 and 3
       node3.clusterSetSlotMigrating(15363, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
@@ -651,8 +827,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
 
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(config)
+        .build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
@@ -667,8 +851,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(config)
+        .build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
@@ -697,8 +889,16 @@ public class JedisClusterTest extends JedisClusterTestBase {
     jedisClusterNode.add(nodeInfo2);
     jedisClusterNode.add(nodeInfo3);
 
-    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(DEFAULT_TIMEOUT)
+            .socketTimeoutMillis(DEFAULT_TIMEOUT)
+            .password("cluster")
+            .build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals(3, cluster.getClusterNodes().size());
       cleanUp(); // cleanup and add node4
 
@@ -756,8 +956,14 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     // we set topologyRefreshPeriod is 1s
     Duration topologyRefreshPeriod = Duration.ofSeconds(1);
-    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_CLIENT_CONFIG, DEFAULT_POOL_CONFIG,
-        topologyRefreshPeriod, DEFAULT_REDIRECTIONS, Duration.ofSeconds(10))) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .topologyRefreshPeriod(topologyRefreshPeriod)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .maxTotalRetriesDuration(Duration.ofSeconds(10))
+        .build()) {
       assertEquals(3, cluster.getClusterNodes().size());
       cleanUp(); // cleanup and add node4
 

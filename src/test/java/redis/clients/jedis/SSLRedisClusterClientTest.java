@@ -26,7 +26,7 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 @Tag("integration")
-public class SSLJedisClusterTest extends JedisClusterTestBase {
+public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
@@ -48,7 +48,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort());
   };
 
-  private static final String trustStoreName = SSLJedisClusterTest.class.getSimpleName();
+  private static final String trustStoreName = SSLRedisClusterClientTest.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {
@@ -65,9 +65,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostAndPortMapper(hostAndPortMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       /**
@@ -88,9 +92,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
       jc.get("foo");
     }
 
-    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc2 = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostAndPortMapper(hostAndPortMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
@@ -102,9 +110,12 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   @Test
   public void testSSLWithoutPortMap() {
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       /**
@@ -126,10 +137,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 
   @Test
   public void connectByIpAddress() {
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostAndPortMapper(hostAndPortMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostAndPortMapper(hostAndPortMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.get("foo");
     }
   }
@@ -139,10 +153,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslParameters(sslParameters).hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS,
-        DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .sslParameters(sslParameters).hostAndPortMapper(portMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.get("foo");
       fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
@@ -159,10 +176,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.get("foo");
     }
   }
@@ -172,10 +192,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 //      jc.get("key");
 //      Assert.fail("There should be no reachable node in cluster.");
 ////    } catch (JedisNoReachableClusterNodeException e) {
@@ -190,10 +213,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     HostnameVerifier hostnameVerifier = new TlsUtil.BasicHostnameVerifier();
     HostnameVerifier localhostVerifier = new TlsUtil.LocalhostVerifier();
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc.get("foo");
       fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
@@ -203,10 +229,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
       assertEquals("No more cluster attempts left.", e.getMessage());
     }
 
-    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc2 = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 //      jc2.get("foo");
 //      Assert.fail("There should be no reachable node in cluster.");
 ////    } catch (JedisNoReachableClusterNodeException e) {
@@ -217,31 +246,40 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
       assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
     
-    try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc3 = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       jc3.get("foo");
     }
   }
 
   @Test
   public void connectWithCustomSocketFactory() throws Exception {
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslSocketFactory(sslSocketFactoryForEnv(Paths.get("cluster-unbound/work/tls")))
-            .hostAndPortMapper(portMap).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+            .hostAndPortMapper(portMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
       assertEquals(3, jc.getClusterNodes().size());
     }
   }
 
   @Test
   public void connectWithEmptyTrustStore() throws Exception {
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(true)
-            .sslSocketFactory(createTrustNoOneSslSocketFactory()).build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(true)
+            .sslSocketFactory(createTrustNoOneSslSocketFactory()).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
     } catch (JedisClusterOperationException e) {
       assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
@@ -251,9 +289,13 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   public void defaultHostAndPortUsedIfMapReturnsNull() {
     HostAndPortMapper nullHostAndPortMap = (HostAndPort hostAndPort) -> null;
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379),
-        DefaultJedisClientConfig.builder().password("cluster").ssl(false)
-            .hostAndPortMapper(nullHostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(new HostAndPort("localhost", 7379)))
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").ssl(false)
+            .hostAndPortMapper(nullHostAndPortMap).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
 
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());

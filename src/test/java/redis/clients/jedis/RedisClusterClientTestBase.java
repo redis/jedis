@@ -12,7 +12,7 @@ import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
 @Tag("integration")
-public abstract class JedisClusterTestBase {
+public abstract class RedisClusterClientTestBase {
 
   protected static Jedis node1;
   protected static Jedis node2;

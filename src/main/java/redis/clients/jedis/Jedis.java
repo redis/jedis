@@ -33,6 +33,62 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
 
+/**
+ * Jedis is a lightweight Redis client that uses a single, non-pooled connection to Redis.
+ * <p>
+ * <b>Important:</b> For most production use cases, {@link RedisClient} is the recommended and
+ * preferred option. {@code RedisClient} provides connection pooling, better resource management,
+ * and improved performance for typical applications.
+ * </p>
+ * <p>
+ * <b>When to use Jedis:</b>
+ * </p>
+ * <ul>
+ * <li><b>Short-lived scripts or utilities:</b> When you need a simple, lightweight client for
+ * one-off operations or command-line tools.</li>
+ * <li><b>Testing and development:</b> For unit tests or local development where connection pooling
+ * overhead is unnecessary.</li>
+ * <li><b>Fine-grained connection control:</b> Advanced scenarios requiring explicit control over
+ * individual connections, such as managing connection lifecycle manually or implementing custom
+ * connection strategies.</li>
+ * <li><b>Single-threaded applications:</b> Applications that execute Redis commands sequentially
+ * from a single thread and don't benefit from connection pooling.</li>
+ * </ul>
+ * <p>
+ * <b>When to use RedisClient instead:</b>
+ * </p>
+ * <ul>
+ * <li><b>Production applications:</b> Any multi-threaded or high-throughput application should use
+ * {@link RedisClient} for its connection pooling capabilities.</li>
+ * <li><b>Web applications:</b> Server applications handling concurrent requests benefit from
+ * connection pooling to avoid connection overhead.</li>
+ * <li><b>Long-running services:</b> Applications that maintain persistent connections to Redis
+ * should use {@link RedisClient} for better resource management.</li>
+ * <li><b>Default choice:</b> If you're unsure which to use, choose {@link RedisClient}.</li>
+ * </ul>
+ * <p>
+ * <b>Usage example:</b>
+ * </p>
+ *
+ * <pre>
+ * {
+ *   &#64;code
+ *   // Simple usage for a short-lived operation
+ *   try (Jedis jedis = new Jedis("localhost", 6379)) {
+ *     jedis.set("key", "value");
+ *     String value = jedis.get("key");
+ *   }
+ * }
+ * </pre>
+ * <p>
+ * <b>Note:</b> Each {@code Jedis} instance maintains a single connection. For concurrent access
+ * from multiple threads, either use {@link RedisClient} with connection pooling, or create
+ * separate {@code Jedis} instances per thread (not recommended for production).
+ * </p>
+ *
+ * @see RedisClient for the recommended pooled client for production use
+ * @see JedisPool for legacy pooled connections (deprecated, use RedisClient instead)
+ */
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
     SentinelCommands, CommandCommands,  Closeable {

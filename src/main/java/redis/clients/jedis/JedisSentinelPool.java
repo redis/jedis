@@ -18,6 +18,14 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
+/**
+ * JedisSentinelPool is a pooled connection client for Redis Sentinel deployments.
+ *
+ * @deprecated Use {@link RedisSentinelClient} instead. RedisSentinelClient provides the same functionality
+ *             with a cleaner API and simplified constructor options. For basic usage, simple
+ *             constructors are available. For advanced configuration, use {@link RedisSentinelClient#builder()}.
+ */
+@Deprecated
 public class JedisSentinelPool extends Pool<Jedis> {
 
   private static final Logger LOG = LoggerFactory.getLogger(JedisSentinelPool.class);

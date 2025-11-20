@@ -14,7 +14,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.RedisVersionCondition;
@@ -30,7 +30,7 @@ public abstract class ClusterJedisCommandsTestBase {
   private HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
   private HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
   private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
-  JedisCluster cluster;
+  RedisClusterClient cluster;
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
@@ -80,7 +80,10 @@ public abstract class ClusterJedisCommandsTestBase {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    cluster = new JedisCluster(jedisClusterNode, null, "cluster");
+    cluster = RedisClusterClient.builder()
+        .nodes(jedisClusterNode)
+        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").build())
+        .build();
   }
 
   @AfterAll

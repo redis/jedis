@@ -4,7 +4,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultRedisCredentials;
 import redis.clients.jedis.DefaultRedisCredentialsProvider;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.RedisClient;
 
 public class RedisCredentialsProviderUsage {
 
@@ -23,7 +23,10 @@ public class RedisCredentialsProviderUsage {
         = DefaultJedisClientConfig.builder()
             .credentialsProvider(credentialsProvider).build();
 
-    JedisPooled jedis = new JedisPooled(address, clientConfig);
+    RedisClient jedis = RedisClient.builder()
+        .hostAndPort(address)
+        .clientConfig(clientConfig)
+        .build();
 
     // ...
     // do operations with jedis

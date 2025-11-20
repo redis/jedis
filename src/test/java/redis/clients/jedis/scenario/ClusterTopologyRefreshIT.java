@@ -54,8 +54,9 @@ public class ClusterTopologyRefreshIT {
         RecommendedSettings.poolConfig);
     ClusterConnectionProvider spyProvider = spy(provider);
 
-    try (JedisCluster client = new JedisCluster(spyProvider, RecommendedSettings.MAX_RETRIES,
-        RecommendedSettings.MAX_TOTAL_RETRIES_DURATION)) {
+    try (RedisClusterClient client = RedisClusterClient.builder().connectionProvider(spyProvider)
+        .maxAttempts(RecommendedSettings.MAX_RETRIES)
+        .maxTotalRetriesDuration(RecommendedSettings.MAX_TOTAL_RETRIES_DURATION).build()) {
       assertEquals(1, client.getClusterNodes().size(),
         "Was this BDB used to run this test before?");
 

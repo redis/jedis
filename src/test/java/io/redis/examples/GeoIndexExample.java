@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 // HIDE_START
 import org.json.JSONObject;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.FTCreateParams;
@@ -27,7 +27,7 @@ public class GeoIndexExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
         //REMOVE_START
         // Clear any keys here before using them in tests.
         try {

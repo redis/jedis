@@ -17,9 +17,19 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisURIHelper;
 
 /**
- * PoolableObjectFactory custom impl.
+ * PooledObjectFactory implementation for creating and managing {@link Jedis} instances in connection pools.
+ * <p>
+ * This factory is used internally by {@link JedisPool} and {@link JedisSentinelPool} to create, validate,
+ * and destroy pooled Jedis connections.
+ * </p>
+ *
+ * @deprecated JedisFactory is used exclusively with the deprecated {@link JedisPool} and {@link JedisSentinelPool}
+ *             classes. For modern Redis clients ({@link RedisClient}, {@link RedisSentinelClient}), the framework
+ *             uses {@link ConnectionFactory} internally, which manages {@link Connection} objects instead of
+ *             {@link Jedis} instances. There is no direct replacement for JedisFactory as connection management
+ *             is handled automatically by the new client architecture.
  */
-// Legacy
+@Deprecated
 public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   private static final Logger logger = LoggerFactory.getLogger(JedisFactory.class);

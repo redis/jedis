@@ -18,9 +18,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.JedisSentineled;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
@@ -51,7 +49,7 @@ class ClientBuilderTest {
 
   @Test
   void appliesKeyPreprocessorToCommandObjects() {
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).keyPreProcessor(k -> "prefix:" + k).build()) {
 
       client.set("key", "v");
@@ -65,7 +63,7 @@ class ClientBuilderTest {
     JsonObjectMapper mapper = mock(JsonObjectMapper.class);
     when(mapper.toJson(any())).thenReturn("JSON:{a=1}");
 
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).jsonObjectMapper(mapper).build()) {
 
       client.jsonSetWithEscape("k", Path2.ROOT_PATH, Collections.singletonMap("a", 1));
@@ -76,7 +74,7 @@ class ClientBuilderTest {
 
   @Test
   void appliesSearchDialect() {
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).searchDialect(3).build()) {
 
       client.ftSearch("idx", "q", new FTSearchParams());
@@ -90,7 +88,7 @@ class ClientBuilderTest {
   void cacheRequiresRESP3() {
     Cache cache = mock(Cache.class);
 
-    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> JedisPooled
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> RedisClient
         .builder().commandExecutor(exec).connectionProvider(provider).cache(cache).build(),
       "Cache requires RESP3");
 
@@ -101,7 +99,7 @@ class ClientBuilderTest {
   @Test
   void standaloneValidateHostPortRequired() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> JedisPooled.builder().hostAndPort(null).build());
+      () -> RedisClient.builder().hostAndPort(null).build());
 
     assertThat(ex.getMessage(), containsString("Either URI or host/port must be specified"));
   }
@@ -109,15 +107,15 @@ class ClientBuilderTest {
   @Test
   void sentinelValidateMasterAndSentinels() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> JedisSentineled.builder().build());
+      () -> RedisSentinelClient.builder().build());
     assertThat(ex.getMessage(), containsString("Master name is required for Sentinel mode"));
 
     ex = assertThrows(IllegalArgumentException.class,
-      () -> JedisSentineled.builder().masterName("mymaster").build());
+      () -> RedisSentinelClient.builder().masterName("mymaster").build());
     assertThat(ex.getMessage(),
       containsString("At least one sentinel must be specified for Sentinel mode"));
 
-    ex = assertThrows(IllegalArgumentException.class, () -> JedisSentineled.builder()
+    ex = assertThrows(IllegalArgumentException.class, () -> RedisSentinelClient.builder()
         .masterName("mymaster").sentinels(Collections.emptySet()).build());
     assertThat(ex.getMessage(),
       containsString("At least one sentinel must be specified for Sentinel mode"));

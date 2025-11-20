@@ -65,7 +65,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.scenario.FaultInjectionClient;
@@ -119,7 +119,10 @@ public class RedisEntraIDIntegrationTests {
       DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
           .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-      JedisPooled jedis = new JedisPooled(new HostAndPort("localhost", 6379), jedisConfig);
+      RedisClient jedis = RedisClient.builder()
+          .hostAndPort(new HostAndPort("localhost", 6379))
+          .clientConfig(jedisConfig)
+          .build();
       assertNotNull(jedis);
       assertEquals(1, counter.get());
 
@@ -137,7 +140,10 @@ public class RedisEntraIDIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));
@@ -156,7 +162,10 @@ public class RedisEntraIDIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));
@@ -198,7 +207,10 @@ public class RedisEntraIDIntegrationTests {
     ExecutorService runner = Executors.newSingleThreadExecutor();
     runner.submit(() -> {
 
-      try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+      try (RedisClient jedis = RedisClient.builder()
+          .hostAndPort(hnp)
+          .clientConfig(jedisClientConfig)
+          .build()) {
         List<Future<?>> futures = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
           Future<?> future = jedisExecutors.submit(() -> {
@@ -259,7 +271,10 @@ public class RedisEntraIDIntegrationTests {
     List<Future<?>> futures = new ArrayList<>();
     ExecutorService executor = Executors.newFixedThreadPool(5);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisClientConfig)
+        .build()) {
       for (int i = 0; i < 5; i++) {
         Future<?> future = executor.submit(() -> {
           for (; System.currentTimeMillis() - startTime < 2000;) {
@@ -308,7 +323,10 @@ public class RedisEntraIDIntegrationTests {
     DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
         .authXManager(authXManager).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisClientConfig)
+        .build()) {
       for (int i = 0; i < 50; i++) {
         String key = UUID.randomUUID().toString();
         jedis.set(key, "value");
@@ -346,7 +364,10 @@ public class RedisEntraIDIntegrationTests {
     DefaultJedisClientConfig jedisClientConfig = DefaultJedisClientConfig.builder()
         .authXManager(authXManager).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisClientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisClientConfig)
+        .build()) {
       for (int i = 0; i < 5; i++) {
         String key = UUID.randomUUID().toString();
         jedis.set(key, "value");
@@ -413,7 +434,10 @@ public class RedisEntraIDIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));

@@ -17,7 +17,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -55,7 +55,10 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));
@@ -73,7 +76,10 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));

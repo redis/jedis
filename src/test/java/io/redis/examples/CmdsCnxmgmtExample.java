@@ -20,7 +20,7 @@ public class CmdsCnxmgmtExample {
         // REMOVE_START
         jedis.configSet("requirepass", "temp_pass");
         // REMOVE_END
-        // Note: you must use the `Jedis` class rather than `UnifiedJedis`
+        // Note: you must use the `Jedis` class rather than `RedisClient`
         // to access the `auth` commands.
         String authResult1 = jedis.auth("default",  "temp_pass");
         System.out.println(authResult1); // >>> OK
@@ -34,7 +34,7 @@ public class CmdsCnxmgmtExample {
         // REMOVE_START
         jedis.aclSetUser("test-user", "on", ">strong_password", "+acl");
         // REMOVE_END
-        // Note: you must use the `Jedis` class rather than `UnifiedJedis`
+        // Note: you must use the `Jedis` class rather than `RedisClient`
         // to access the `auth` commands.
         String authResult2 = jedis.auth("test-user", "strong_password");
         System.out.println(authResult2); // >>> OK

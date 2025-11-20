@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.json.JsonObjectMapper;
@@ -62,9 +62,7 @@ class ClusterClientBuilderTest {
   @Test
   void clusterNodesEmptyShouldThrow() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> new JedisCluster.Builder() {
-
-      }.nodes(new HashSet<>()).build());
+      () -> RedisClusterClient.builder().nodes(new HashSet<>()).build());
 
     assertThat(ex.getMessage(),
       containsString("At least one cluster node must be specified for cluster mode"));
@@ -73,9 +71,8 @@ class ClusterClientBuilderTest {
   @Test
   void negativeMaxTotalRetriesDurationShouldThrow() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> new JedisCluster.Builder() {
-
-      }.nodes(someNodes()).maxTotalRetriesDuration(Duration.ofMillis(-1)).build());
+      () -> RedisClusterClient.builder().nodes(someNodes())
+          .maxTotalRetriesDuration(Duration.ofMillis(-1)).build());
 
     assertThat(ex.getMessage(),
       containsString("Max total retries duration cannot be negative for cluster mode"));
@@ -84,9 +81,8 @@ class ClusterClientBuilderTest {
   @Test
   void negativeTopologyRefreshShouldThrow() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> new JedisCluster.Builder() {
-
-      }.nodes(someNodes()).topologyRefreshPeriod(Duration.ofMillis(-1)).build());
+      () -> RedisClusterClient.builder().nodes(someNodes())
+          .topologyRefreshPeriod(Duration.ofMillis(-1)).build());
 
     assertThat(ex.getMessage(),
       containsString("Topology refresh period cannot be negative for cluster mode"));
@@ -94,7 +90,7 @@ class ClusterClientBuilderTest {
 
   @Test
   void buildWithPositiveDurationsAndConfig_usesProvidedExecAndProvider() {
-    try (JedisCluster client = JedisCluster.builder().nodes(someNodes())
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
         .clientConfig(redis.clients.jedis.DefaultJedisClientConfig.builder().build()).maxAttempts(3)
         .maxTotalRetriesDuration(Duration.ofMillis(10)).topologyRefreshPeriod(Duration.ofMillis(50))
         .connectionProvider(provider).commandExecutor(exec).build()) {
@@ -108,9 +104,7 @@ class ClusterClientBuilderTest {
   @Test
   void nodesNotProvidedShouldThrow() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> new JedisCluster.Builder() {
-
-      }.build());
+      () -> RedisClusterClient.builder().build());
 
     assertThat(ex.getMessage(),
       containsString("At least one cluster node must be specified for cluster mode"));
@@ -119,16 +113,16 @@ class ClusterClientBuilderTest {
   @Test
   void searchDialectZeroShouldThrow() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-      () -> JedisCluster.builder().searchDialect(0));
+      () -> RedisClusterClient.builder().searchDialect(0));
 
     assertThat(ex.getMessage(), containsString("DIALECT=0 cannot be set."));
   }
 
   @Test
   void keyPreprocessorAppliedInCluster() {
-    try (
-        JedisCluster client = JedisCluster.builder().nodes(someNodes()).connectionProvider(provider)
-            .commandExecutor(exec).keyPreProcessor(k -> "prefix:" + k).build()) {
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+        .connectionProvider(provider).commandExecutor(exec).keyPreProcessor(k -> "prefix:" + k)
+        .build()) {
 
       client.set("k", "v");
       verify(exec).executeCommand(cap.capture());
@@ -145,7 +139,7 @@ class ClusterClientBuilderTest {
     JsonObjectMapper mapper = Mockito.mock(JsonObjectMapper.class);
     when(mapper.toJson(Mockito.any())).thenReturn("JSON:obj");
 
-    try (JedisCluster client = JedisCluster.builder().nodes(someNodes())
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
         .connectionProvider(provider).commandExecutor(exec).jsonObjectMapper(mapper).build()) {
 
       client.jsonSetWithEscape("k", Path2.ROOT_PATH, Collections.singletonMap("a", 1));
@@ -161,7 +155,7 @@ class ClusterClientBuilderTest {
 
   @Test
   void searchDialectAppliedInCluster() {
-    try (JedisCluster client = JedisCluster.builder().nodes(someNodes())
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
         .connectionProvider(provider).commandExecutor(exec).searchDialect(3).build()) {
 
       client.ftSearch("idx", "q", new FTSearchParams());

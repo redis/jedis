@@ -8,14 +8,14 @@ import java.util.Set;
 
 import redis.clients.jedis.Jedis;
 // HIDE_START
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CmdsServerMgmtExample {
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
 // HIDE_END
 
         // STEP_START flushall
@@ -37,7 +37,7 @@ public class CmdsServerMgmtExample {
 
         // STEP_START info
         // Note: you must use the `Jedis` class to access the `info`
-        // command rather than `UnifiedJedis`.
+        // command rather than `RedisClient`.
         Jedis jedis2 = new Jedis("redis://localhost:6379");
 
         String infoResult = jedis2.info();

@@ -6,7 +6,7 @@ package io.redis.examples;
 //REMOVE_START
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 //REMOVE_END
@@ -16,7 +16,7 @@ public class TDigestExample {
     @Test
     public void run(){
         //HIDE_START
-        UnifiedJedis jedis = new UnifiedJedis("redis://127.0.0.1:6379");
+        RedisClient jedis = new RedisClient("redis://127.0.0.1:6379");
         //HIDE_END
 
         //REMOVE_START

@@ -2,7 +2,7 @@
 //HIDE_START
 package io.redis.examples;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +15,7 @@ public class SetsExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
         // HIDE_END
 
         // REMOVE_START

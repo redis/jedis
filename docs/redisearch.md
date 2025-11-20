@@ -4,20 +4,20 @@ To use RediSearch features with Jedis, you'll need to use an implementation of R
 
 ## Creating the RediSearch client
 
-Initializing the client with JedisPooled:
+Initializing the client with RedisClient:
 
 ```java
-JedisPooled client = new JedisPooled("localhost", 6379);
+RedisClient client = RedisClient.builder().hostAndPort("localhost", 6379).build();
 ```
 
-Initializing the client with JedisCluster:
+Initializing the client with RedisClusterClient:
 
 ```java
 Set<HostAndPort> nodes = new HashSet<>();
 nodes.add(new HostAndPort("127.0.0.1", 7379));
 nodes.add(new HostAndPort("127.0.0.1", 7380));
 
-JedisCluster client = new JedisCluster(nodes);
+RedisClusterClient client = RedisClusterClient.builder().nodes(nodes).build();
 ```
 
 ## Indexing and querying

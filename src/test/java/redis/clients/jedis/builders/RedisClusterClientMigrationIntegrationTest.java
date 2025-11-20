@@ -157,13 +157,12 @@ public class RedisClusterClientMigrationIntegrationTest {
     GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(8);
     poolConfig.setMaxIdle(8);
-
-    // Legacy constructor
-    legacyCluster = new JedisCluster(CLUSTER_NODES, poolConfig);
-
-    // New Builder pattern - need to add password via clientConfig
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password(PASSWORD).build();
 
+    // Legacy constructor
+    legacyCluster = new JedisCluster(CLUSTER_NODES, clientConfig, poolConfig);
+
+    // New Builder pattern - need to add password via clientConfig
     newCluster = RedisClusterClient.builder().nodes(CLUSTER_NODES).clientConfig(clientConfig)
         .poolConfig(poolConfig).build();
 
@@ -198,33 +197,6 @@ public class RedisClusterClientMigrationIntegrationTest {
   }
 
   /**
-   * Test migration from constructor with connection timeout, socket timeout, maxAttempts, and
-   * poolConfig (no password). Tests constructor: JedisCluster(Set&lt;HostAndPort&gt;, int, int,
-   * int, GenericObjectPoolConfig&lt;Connection&gt;)
-   */
-  @Test
-  public void testConstructorWithTimeoutsAndPoolConfigNoPassword() {
-    int connectionTimeout = 2000;
-    int socketTimeout = 2000;
-
-    GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
-
-    // Legacy constructor without password
-    legacyCluster = new JedisCluster(CLUSTER_NODES, connectionTimeout, socketTimeout, MAX_ATTEMPTS,
-        poolConfig);
-
-    // New Builder pattern - need to add password for our test cluster
-    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(socketTimeout)
-        .password(PASSWORD).build();
-
-    newCluster = RedisClusterClient.builder().nodes(CLUSTER_NODES).clientConfig(clientConfig)
-        .maxAttempts(MAX_ATTEMPTS).poolConfig(poolConfig).build();
-
-    verifyBothClients(legacyCluster, newCluster);
-  }
-
-  /**
    * Test migration from constructor with timeout, maxAttempts, and poolConfig. Tests constructor:
    * JedisCluster(Set&lt;HostAndPort&gt;, int, int, GenericObjectPoolConfig&lt;Connection&gt;)
    */
@@ -233,14 +205,14 @@ public class RedisClusterClientMigrationIntegrationTest {
     int timeout = 2000;
 
     GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
-
-    // Legacy constructor - uses same timeout for connection and socket
-    legacyCluster = new JedisCluster(CLUSTER_NODES, timeout, MAX_ATTEMPTS, poolConfig);
-
-    // New Builder pattern
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().timeoutMillis(timeout)
         .password(PASSWORD).build();
 
+    // Legacy constructor - uses same timeout for connection and socket
+    legacyCluster = new JedisCluster(CLUSTER_NODES, timeout, timeout, MAX_ATTEMPTS, PASSWORD,
+        poolConfig);
+
+    // New Builder pattern
     newCluster = RedisClusterClient.builder().nodes(CLUSTER_NODES).clientConfig(clientConfig)
         .maxAttempts(MAX_ATTEMPTS).poolConfig(poolConfig).build();
 
@@ -253,15 +225,16 @@ public class RedisClusterClientMigrationIntegrationTest {
    */
   @Test
   public void testConstructorWithSingleNodeAndPoolConfig() {
+    int timeout = 2000;
     HostAndPort singleNode = HostAndPorts.getStableClusterServers().get(0);
     GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
-
-    // Legacy constructor with single node
-    legacyCluster = new JedisCluster(singleNode, poolConfig);
-
-    // New Builder pattern - need to add password and wrap single node in a Set
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password(PASSWORD).build();
 
+    // Legacy constructor with single node
+    legacyCluster = new JedisCluster(singleNode, timeout, timeout, MAX_ATTEMPTS, PASSWORD,
+        poolConfig);
+
+    // New Builder pattern - need to add password and wrap single node in a Set
     Set<HostAndPort> singleNodeSet = new HashSet<>();
     singleNodeSet.add(singleNode);
 
@@ -292,7 +265,8 @@ public class RedisClusterClientMigrationIntegrationTest {
     assertEquals("1", legacyCluster.get(key2));
 
     // Clean up
-    newCluster.del(key1, key2);
+    newCluster.del(key1);
+    newCluster.del(key2);
   }
 
   /**

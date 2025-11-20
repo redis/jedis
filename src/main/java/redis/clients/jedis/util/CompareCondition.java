@@ -57,59 +57,43 @@ public final class CompareCondition {
 
   // Factory methods: value-based
   public static CompareCondition valueEq(String value) {
-    if (value == null) {
-      throw new IllegalArgumentException("value must not be null");
-    }
+    JedisAsserts.notNull(value, "value must not be null");
     return new CompareCondition(Condition.VALUE_EQUAL, value);
   }
 
   public static CompareCondition valueNe(String value) {
-    if (value == null) {
-      throw new IllegalArgumentException("value must not be null");
-    }
+    JedisAsserts.notNull(value, "value must not be null");
     return new CompareCondition(Condition.VALUE_NOT_EQUAL, value);
   }
 
   public static CompareCondition valueEq(byte[] value) {
-    if (value == null) {
-      throw new IllegalArgumentException("value must not be null");
-    }
+    JedisAsserts.notNull(value, "value must not be null");
     return new CompareCondition(Condition.VALUE_EQUAL, value);
   }
 
   public static CompareCondition valueNe(byte[] value) {
-    if (value == null) {
-      throw new IllegalArgumentException("value must not be null");
-    }
+    JedisAsserts.notNull(value, "value must not be null");
     return new CompareCondition(Condition.VALUE_NOT_EQUAL, value);
   }
 
   // Factory methods: digest-based
   public static CompareCondition digestEq(String hex16) {
-    if (hex16 == null) {
-      throw new IllegalArgumentException("digest must not be null");
-    }
+    JedisAsserts.notNull(hex16, "digest must not be null");
     return new CompareCondition(Condition.DIGEST_EQUAL, hex16);
   }
 
   public static CompareCondition digestNe(String hex16) {
-    if (hex16 == null) {
-      throw new IllegalArgumentException("digest must not be null");
-    }
+    JedisAsserts.notNull(hex16, "digest must not be null");
     return new CompareCondition(Condition.DIGEST_NOT_EQUAL, hex16);
   }
 
   public static CompareCondition digestEq(byte[] digest) {
-    if (digest == null) {
-      throw new IllegalArgumentException("digest must not be null");
-    }
+    JedisAsserts.notNull(digest, "digest must not be null");
     return new CompareCondition(Condition.DIGEST_EQUAL, digest);
   }
 
   public static CompareCondition digestNe(byte[] digest) {
-    if (digest == null) {
-      throw new IllegalArgumentException("digest must not be null");
-    }
+    JedisAsserts.notNull(digest, "digest must not be null");
     return new CompareCondition(Condition.DIGEST_NOT_EQUAL, digest);
   }
 

@@ -13,7 +13,7 @@ import java.util.Map;
  * Static implementation of CommandFlagsRegistry.
  */
 @Internal
-class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
+public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
 
   // Empty flags constant for commands with no flags
   public static final EnumSet<CommandFlag> EMPTY_FLAGS = EnumSet.noneOf(CommandFlag.class);

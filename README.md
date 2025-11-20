@@ -54,7 +54,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>7.0.0</version>
+    <version>7.1.0</version>
 </dependency>
 ```
 

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -219,6 +220,38 @@ public class JedisPooledTest {
 
       credentialsProvider.setCredentials(new DefaultRedisCredentials(null, endpointStandalone1.getPassword()));
       assertThat(pool.get("foo"), anything());
+    }
+  }
+
+  @Test
+  public void testWithJedisPoolDoWithConnection() {
+    try(JedisPooled pool = JedisPooled.builder()
+            .fromURI(endpointStandalone1.getURIBuilder()
+                    .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
+            .build();) {
+      pool.withResource(jedis -> {
+        jedis.auth(endpointStandalone1.getPassword());
+        jedis.set("foo", "bar");
+        assertEquals("bar", jedis.get("foo"));
+      });
+      pool.withResource(jedis -> assertNotNull(jedis.ping()));
+    }
+  }
+
+  @Test
+  public void testWithJedisPoolGetWithConnection() {
+    try (JedisPooled pool = JedisPooled.builder()
+            .fromURI(endpointStandalone1.getURIBuilder()
+                    .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
+            .build();) {
+        String result = pool.withResourceGet(jedis -> {
+          jedis.auth(endpointStandalone1.getPassword());
+          jedis.set("foo", "bar");
+          return jedis.get("foo");
+        });
+        String ping = pool.withResourceGet(Jedis::ping);
+        assertEquals("bar", result);
+        assertNotNull(ping);
     }
   }
 

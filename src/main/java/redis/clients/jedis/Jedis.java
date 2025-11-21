@@ -47,6 +47,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
   private Pool<Jedis> dataSource = null;
+  private Pool<Connection> connectionSource = null;
 
   public Jedis() {
     connection = new Connection();
@@ -300,6 +301,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     this.dataSource = jedisPool;
   }
 
+  protected void setConnectionSource(Pool<Connection> connectionPool) {
+    this.connectionSource = connectionPool;
+  }
+
+
   @Override
   public void close() {
     if (dataSource != null) {
@@ -310,6 +316,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       } else {
         pool.returnResource(this);
       }
+    } else if (connectionSource != null) {
+      Pool<Connection> pool = connectionSource;
+      this.connectionSource = null;
+        if (isBroken()) {
+            pool.returnBrokenResource(connection);
+        } else {
+            pool.returnResource(connection);
+        }
     } else {
       connection.close();
     }

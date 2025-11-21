@@ -18,7 +18,7 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
-public class JedisPooled extends UnifiedJedis {
+public class JedisPooled extends UnifiedJedis implements JedisWithResource {
 
   public JedisPooled() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -463,4 +463,13 @@ public class JedisPooled extends UnifiedJedis {
   public Pipeline pipelined() {
     return (Pipeline) super.pipelined();
   }
+
+  public Jedis getResource() {
+    Pool<Connection> pool = getPool();
+    Connection conn = pool.getResource();
+    Jedis jedis = new Jedis(conn);
+    jedis.setConnectionSource(pool);
+    return jedis;
+  }
+
 }

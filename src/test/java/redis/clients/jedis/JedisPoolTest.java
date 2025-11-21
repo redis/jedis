@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -466,11 +467,12 @@ public class JedisPoolTest {
   @Test
   public void testWithJedisPoolDoWithConnection() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000);
-    pool.withJedisPoolDo(jedis -> {
+    pool.withResource(jedis -> {
       jedis.auth(endpointStandalone0.getPassword());
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
     });
+    pool.withResource( jedis -> assertNotNull(jedis.ping()));
     pool.close();
     assertTrue(pool.isClosed());
   }
@@ -478,12 +480,14 @@ public class JedisPoolTest {
   @Test
   public void testWithJedisPoolGetWithConnection() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000);
-    String result = pool.withJedisPoolGet(jedis -> {
+    String result = pool.withResourceGet(jedis -> {
       jedis.auth(endpointStandalone0.getPassword());
       jedis.set("foo", "bar");
       return jedis.get("foo");
     });
+    String ping = pool.withResourceGet(Jedis::ping);
     assertEquals("bar", result);
+    assertNotNull(ping);
     pool.close();
     assertTrue(pool.isClosed());
   }

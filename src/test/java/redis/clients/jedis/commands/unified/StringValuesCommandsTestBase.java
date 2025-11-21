@@ -8,13 +8,20 @@ import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.params.MSetExParams;
+
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
@@ -82,11 +89,13 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 10 && ttl <= 20);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 20 && ttl <= 30);
 
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000L)));
+    assertEquals("bar",
+      jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000L)));
     ttl = jedis.ttl("foo");
     assertTrue(ttl > 30 && ttl <= 40);
 
@@ -167,7 +176,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.incr("foo"));
+    assertThrows(JedisDataException.class, () -> jedis.incr("foo"));
   }
 
   @Test
@@ -179,7 +188,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrByWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.incrBy("foo", 2));
+    assertThrows(JedisDataException.class, () -> jedis.incrBy("foo", 2));
   }
 
   @Test
@@ -191,13 +200,13 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrByFloatWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.incrByFloat("foo", 2d));
+    assertThrows(JedisDataException.class, () -> jedis.incrByFloat("foo", 2d));
   }
 
   @Test
   public void decrWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.decr("foo"));
+    assertThrows(JedisDataException.class, () -> jedis.decr("foo"));
   }
 
   @Test
@@ -215,7 +224,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void decrByWrongValue() {
     jedis.set("foo", "bar");
-    assertThrows(JedisDataException.class, ()->jedis.decrBy("foo", 2));
+    assertThrows(JedisDataException.class, () -> jedis.decrBy("foo", 2));
   }
 
   @Test
@@ -251,7 +260,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    assertThrows(JedisDataException.class, ()->jedis.incr("foo")); // Should throw an exception
+    assertThrows(JedisDataException.class, () -> jedis.incr("foo")); // Should throw an exception
   }
 
   @Test
@@ -263,22 +272,70 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
-  @SinceRedisVersion(value="7.0.0")
+  @SinceRedisVersion(value = "7.0.0")
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2",
-            LCSParams.LCSParams());
+    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams());
     assertEquals("mytext", stringMatchResult.getMatchString());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().withMatchLen());
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 
-    stringMatchResult = jedis.lcs( "key1", "key2",
-            LCSParams.LCSParams().idx().minMatchLen(10));
+    stringMatchResult = jedis.lcs("key1", "key2", LCSParams.LCSParams().idx().minMatchLen(10));
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 
+  // MSETEX NX + expiration matrix
+  static Stream<Arguments> msetexNxArgsProvider() {
+    return Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
+  }
+
+  @ParameterizedTest(name = "MSETEX NX + {0}")
+  @MethodSource("msetexNxArgsProvider")
+  @EnabledOnCommand("MSETEX")
+  public void msetexNx_parametrized(String optionLabel, MSetExParams params) {
+    String k1 = "{t}msetex:unified:k1";
+    String k2 = "{t}msetex:unified:k2";
+
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
+
+    long ttl = jedis.ttl(k1);
+    if ("KEEPTTL".equals(optionLabel)) {
+      assertEquals(-1L, ttl);
+    } else {
+      assertTrue(ttl > 0L);
+    }
+  }
+
+  @Test
+  @EnabledOnCommand("MSETEX")
+  public void msetexXxExAt() {
+    String k1 = "{t}msetex:unified:xx:k1";
+    String k2 = "{t}msetex:unified:xx:k2";
+
+    // First set the keys so they exist (XX requires existing keys)
+    jedis.set(k1, "initial1");
+    jedis.set(k2, "initial2");
+
+    // Now use MSETEX with XX and EXAT
+    long expiryTimestamp = System.currentTimeMillis() / 1000 + 5;
+    MSetExParams params = new MSetExParams().xx().exAt(expiryTimestamp);
+    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
+    assertTrue(result);
+
+    // Verify values were updated
+    assertEquals("v1", jedis.get(k1));
+    assertEquals("v2", jedis.get(k2));
+
+    // Verify TTL is set
+    long ttl = jedis.ttl(k1);
+    assertTrue(ttl > 0L);
+  }
 }

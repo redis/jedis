@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.JedisByteMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * Static implementation of CommandFlagsRegistry.
  */
+@Internal
 public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
 
   // Empty flags constant for commands with no flags

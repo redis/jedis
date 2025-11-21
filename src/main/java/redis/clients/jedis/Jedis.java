@@ -23,6 +23,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -506,6 +507,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] digestKey(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value));
@@ -573,6 +580,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.del(keys));
   }
+  @Override
+  public long delex(final byte[] key, final CompareCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
 
   @Override
   public long del(final byte[] key) {
@@ -982,6 +995,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long msetnx(final byte[]... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
+  }
+
+  @Override
+  public boolean msetex(final MSetExParams params, final byte[]... keysvalues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }
 
   /**
@@ -5147,6 +5166,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.getEx(key, params));
   }
 
+  @Override
+  public String digestKey(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public long delex(final String key, final CompareCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
   /**
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
@@ -5597,6 +5628,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
 
+  @Override
+  public boolean msetex(final MSetExParams params, final String... keysvalues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.msetex(params, keysvalues));
+  }
+
   /**
    * IDECRBY work just like {@link Jedis#decr(String) INCR} but instead to decrement by 1 the
    * decrement is integer.
@@ -5805,13 +5842,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetex(key, params, fields));
   }
 
   @Override
-  public List<String> hgetdel(String key, String... fields) {    
+  public List<String> hgetdel(String key, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }

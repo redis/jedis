@@ -462,4 +462,30 @@ public class JedisPoolTest {
       }
     }
   }
+
+  @Test
+  public void testWithJedisPoolDoWithConnection() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000);
+    pool.withJedisPoolDo(jedis -> {
+      jedis.auth(endpointStandalone0.getPassword());
+      jedis.set("foo", "bar");
+      assertEquals("bar", jedis.get("foo"));
+    });
+    pool.close();
+    assertTrue(pool.isClosed());
+  }
+
+  @Test
+  public void testWithJedisPoolGetWithConnection() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000);
+    String result = pool.withJedisPoolGet(jedis -> {
+      jedis.auth(endpointStandalone0.getPassword());
+      jedis.set("foo", "bar");
+      return jedis.get("foo");
+    });
+    assertEquals("bar", result);
+    pool.close();
+    assertTrue(pool.isClosed());
+  }
+
 }

@@ -110,4 +110,114 @@ public class ACLJedisTest extends JedisCommandsTestBase {
     }
   }
 
+  @Test
+  public void startWithHostPortStringAndSsl() {
+    try (Jedis j = new Jedis(endpoint.getHost(), endpoint.getPort(), false)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+      assertEquals("PONG", j1.ping());
+      assertEquals("bar", j1.get("foo"));
+    }
+  }
+
+  @Test
+  public void startWithHostPortStringAndTimeout() {
+    try (Jedis j = new Jedis(endpoint.getHost(), endpoint.getPort(), Protocol.DEFAULT_TIMEOUT)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+      assertEquals("PONG", j1.ping());
+      assertEquals("bar", j1.get("foo"));
+    }
+  }
+
+  @Test
+  public void startWithHostPortStringAndTimeoutAndSsl() {
+    try (Jedis j = new Jedis(endpoint.getHost(), endpoint.getPort(), Protocol.DEFAULT_TIMEOUT, false)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+      assertEquals("PONG", j1.ping());
+      assertEquals("bar", j1.get("foo"));
+    }
+  }
+
+  @Test
+  public void startWithHostPortStringAndTimeouts() {
+    try (Jedis j = new Jedis(endpoint.getHost(), endpoint.getPort(), Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+      assertEquals("PONG", j1.ping());
+      assertEquals("bar", j1.get("foo"));
+    }
+  }
+
+  @Test
+  public void startWithURI() throws URISyntaxException {
+    try (Jedis j = new Jedis(endpoint.getURIBuilder().defaultCredentials().build())) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+      assertEquals("PONG", j1.ping());
+      assertEquals("bar", j1.get("foo"));
+    }
+  }
+
+  @Test
+  public void startWithURIAndTimeout() throws URISyntaxException {
+    try (Jedis j = new Jedis(endpoint.getURIBuilder().defaultCredentials().build(), Protocol.DEFAULT_TIMEOUT)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
+      assertEquals("PONG", j1.ping());
+      assertEquals("bar", j1.get("foo"));
+    }
+  }
+
+  @Test
+  public void startWithFactory() {
+    JedisSocketFactory socketFactory = new DefaultJedisSocketFactory(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+
+    try(Jedis j = new Jedis(socketFactory)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+  }
+
+  @Test
+  public void startWithFactoryAndConfig() {
+    JedisSocketFactory socketFactory = new DefaultJedisSocketFactory(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+
+    try(Jedis j = new Jedis(socketFactory, DefaultJedisClientConfig.builder().build())) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+  }
+
+  @Test
+  public void startWithConnection() {
+    JedisSocketFactory socketFactory = new DefaultJedisSocketFactory(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+    Connection connection = new Connection(socketFactory);
+    try(Jedis j = new Jedis(connection)) {
+      assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
+      assertEquals("OK", j.select(2));
+      j.set("foo", "bar");
+    }
+  }
 }

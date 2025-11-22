@@ -284,6 +284,16 @@ public class ACLJedisPoolTest {
     }
   }
 
+  @Test
+  public void checkConnectionWithURIAndTimeout() {
+    try (JedisPool pool = new JedisPool(endpoint.getURIBuilder().defaultCredentials().build(), Protocol.DEFAULT_TIMEOUT);
+        Jedis jedis = pool.getResource()) {
+      jedis.auth(endpoint.getUsername(), endpoint.getPassword());
+      jedis.set("foo", "bar");
+      assertEquals("bar", jedis.get("foo"));
+    }
+  }
+
   private int getClientCount(final String clientList) {
     return clientList.split("\n").length;
   }

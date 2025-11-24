@@ -14,7 +14,7 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
 // Legacy
-public class JedisPool extends Pool<Jedis> implements JedisWithResource {
+public class JedisPool extends Pool<Jedis> implements JedisResourceProvider {
 
   private static final Logger log = LoggerFactory.getLogger(JedisPool.class);
 

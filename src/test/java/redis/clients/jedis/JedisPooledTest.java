@@ -171,6 +171,27 @@ public class JedisPooledTest {
   }
 
   @Test
+  public void getNumActiveReturnsTheCorrectNumberWithJedis() {
+    try (JedisPooled pool = JedisPooled.builder()
+            .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
+            .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
+            .poolConfig(new ConnectionPoolConfig()).build()) {
+
+      Connection jedis = pool.getPool().getResource();
+      assertEquals(1, pool.getPool().getNumActive());
+
+      Jedis jedis2 = pool.getResource();
+      assertEquals(2, pool.getPool().getNumActive());
+
+      jedis.close();
+      assertEquals(1, pool.getPool().getNumActive());
+
+      jedis2.close();
+      assertEquals(0, pool.getPool().getNumActive());
+    }
+  }
+
+  @Test
   public void closeResourceTwice() {
     try (JedisPooled pool = JedisPooled.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())

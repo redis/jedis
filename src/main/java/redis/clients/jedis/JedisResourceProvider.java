@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-public interface JedisWithResource {
+public interface JedisResourceProvider {
 
     Jedis getResource();
 

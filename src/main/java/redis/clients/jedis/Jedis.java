@@ -298,13 +298,23 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   protected void setDataSource(Pool<Jedis> jedisPool) {
+    assertNotPooled();
     this.dataSource = jedisPool;
   }
 
   protected void setConnectionSource(Pool<Connection> connectionPool) {
+    assertNotPooled();
     this.connectionSource = connectionPool;
   }
 
+  private void assertNotPooled() {
+    if (connectionSource != null) {
+      throw new IllegalStateException("Connection source is already set.");
+    }
+    if (dataSource != null) {
+      throw new IllegalStateException("Data source is already set.");
+    }
+  }
 
   @Override
   public void close() {

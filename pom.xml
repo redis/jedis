@@ -546,6 +546,7 @@
 						<include>**/*CommandFlags*.java</include>
 						<include>**/*CompareCondition*.java</include>
 						<include>**/*MSetExParams*.java</include>
+						<include>**/*UnitTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

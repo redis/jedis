@@ -9,8 +9,10 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -18,6 +20,8 @@ import redis.clients.jedis.exceptions.JedisException;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -32,6 +36,15 @@ public class JedisPoolTest {
   private static final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
 
   private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
+
+  private String testKey;
+  private String testValue;
+
+  @BeforeEach
+  public void setUpTestKey(TestInfo testInfo) {
+    testKey = testInfo.getDisplayName() + "-key";
+    testValue = testInfo.getDisplayName() + "-value";
+  }
 
   @Test
   public void checkConnections() {
@@ -462,4 +475,64 @@ public class JedisPoolTest {
       }
     }
   }
+
+  @Test
+  public void testWithResource() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
+        endpointStandalone0.getClientConfigBuilder().build())) {
+
+      pool.withResource(jedis -> {
+        jedis.set(testKey, testValue);
+      });
+
+      pool.withResource(jedis -> {
+        assertEquals(testValue, jedis.get(testKey));
+      });
+    }
+  }
+
+  @Test
+  public void testWithResourceReturnsConnectionToPool() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
+        endpointStandalone0.getClientConfigBuilder().build())) {
+
+      pool.withResource(jedis -> {
+        assertThat(pool.getNumActive(), equalTo(1));
+        jedis.set("foo", "bar");
+      });
+
+      assertThat(pool.getNumActive(), equalTo(0));
+    }
+  }
+
+  @Test
+  public void testWithResourceGet() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
+        endpointStandalone0.getClientConfigBuilder().build())) {
+
+      String result = pool.withResourceGet(jedis -> {
+        jedis.set(testKey, testValue);
+        return jedis.get(testKey);
+      });
+
+      assertEquals(testValue, result);
+    }
+  }
+
+  @Test
+  public void testWithResourceGetReturnsConnectionToPool() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
+        endpointStandalone0.getClientConfigBuilder().build())) {
+
+      String result = pool.withResourceGet(jedis -> {
+        assertThat(pool.getNumActive(), equalTo(1));
+        jedis.set("foo", "bar");
+        return jedis.get("foo");
+      });
+
+      assertThat(result, equalTo("bar"));
+      assertThat(pool.getNumActive(), equalTo(0));
+    }
+  }
+
 }

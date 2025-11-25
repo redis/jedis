@@ -22,8 +22,10 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.JedisSentineled;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.json.Path2;
@@ -119,5 +121,69 @@ class ClientBuilderTest {
         .masterName("mymaster").sentinels(Collections.emptySet()).build());
     assertThat(ex.getMessage(),
       containsString("At least one sentinel must be specified for Sentinel mode"));
+  }
+
+  @Test
+  void setWithValueCondition() {
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).build()) {
+
+      client.set("key", "value",
+        SetParams.setParams().xx().condition(CompareCondition.valueEq("oldValue")));
+    }
+    verify(exec).executeCommand(cap.capture());
+    assertThat(argsToStrings(cap.getValue()),
+      contains("SET", "key", "value", "IFEQ", "oldValue", "XX"));
+  }
+
+  @Test
+  void setWithDigestCondition() {
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).build()) {
+
+      client.set("key", "value", SetParams.setParams().nx().ex(100)
+          .condition(CompareCondition.digestEq("0123456789abcdef")));
+    }
+    verify(exec).executeCommand(cap.capture());
+    assertThat(argsToStrings(cap.getValue()),
+      contains("SET", "key", "value", "IFDEQ", "0123456789abcdef", "NX", "EX", "100"));
+  }
+
+  @Test
+  void delexWithValueCondition() {
+    when(exec.executeCommand(any())).thenReturn(1L);
+
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).build()) {
+
+      client.delex("key", CompareCondition.valueNe("value"));
+    }
+    verify(exec).executeCommand(cap.capture());
+    assertThat(argsToStrings(cap.getValue()), contains("DELEX", "key", "IFNE", "value"));
+  }
+
+  @Test
+  void delexWithDigestCondition() {
+    when(exec.executeCommand(any())).thenReturn(1L);
+
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).build()) {
+
+      client.delex("key", CompareCondition.digestNe("fedcba9876543210"));
+    }
+    verify(exec).executeCommand(cap.capture());
+    assertThat(argsToStrings(cap.getValue()),
+      contains("DELEX", "key", "IFDNE", "fedcba9876543210"));
+  }
+
+  @Test
+  void digestKey() {
+    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+        .connectionProvider(provider).build()) {
+
+      client.digestKey("key");
+    }
+    verify(exec).executeCommand(cap.capture());
+    assertThat(argsToStrings(cap.getValue()), contains("DIGEST", "key"));
   }
 }

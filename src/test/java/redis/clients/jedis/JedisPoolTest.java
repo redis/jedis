@@ -304,7 +304,7 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void returnResourceShouldResetState1() {
+  public void returnResourceShouldResetState() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
@@ -329,7 +329,7 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void returnResourceShouldResetState2() {
+  public void returnResourceShouldResetStateWithGetResource() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);

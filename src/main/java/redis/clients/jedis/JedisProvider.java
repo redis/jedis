@@ -4,9 +4,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-public interface JedisResourceProvider {
+public interface JedisProvider {
 
     Jedis getResource();
+
+    void returnResource(final Jedis resource);
 
     default void withResource(Consumer<Jedis> consumer) {
         try (Jedis jedis = this.getResource()) {

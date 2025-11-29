@@ -277,6 +277,23 @@ public class JedisPooledTest {
   }
 
   @Test
+  public void testWithJedisPoolGetWithReturnConnection() {
+    try (JedisPooled pool = JedisPooled.builder()
+            .fromURI(endpointStandalone1.getURIBuilder()
+                    .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
+            .build();) {
+      Jedis jedis = pool.getResource();
+      jedis.auth(endpointStandalone1.getPassword());
+      jedis.set("foo", "bar");
+      String result = jedis.get("foo");
+      String ping = pool.withResourceGet(Jedis::ping);
+      pool.returnResource(jedis);
+      assertEquals("bar", result);
+      assertNotNull(ping);
+    }
+  }
+
+  @Test
   public void testCredentialsProvider() {
     final AtomicInteger prepareCount = new AtomicInteger();
     final AtomicInteger cleanupCount = new AtomicInteger();

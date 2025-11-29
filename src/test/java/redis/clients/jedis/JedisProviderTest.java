@@ -13,9 +13,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JedisResourceProviderTest {
+public class JedisProviderTest {
 
-    private TestJedisResourceProvider provider = spy(new TestJedisResourceProvider());
+    private TestJedisProvider provider = spy(new TestJedisProvider());
 
 
     @Test
@@ -50,15 +50,28 @@ public class JedisResourceProviderTest {
         assertEquals(4, provider.getClosed());
     }
 
+    @Test
+    public void tesReturntWithSomeResources() {
+        provider.withResource(Jedis::ping);
+        String result = provider.withResourceGet(Jedis::ping);
+        provider.withResource(Jedis::ping);
+        Jedis jedis = provider.getResource();
+        assertEquals(4, provider.getBorrowed());
+        assertEquals(3, provider.getClosed());
+        assertNotNull(result);
+        provider.returnResource(jedis);
+        assertEquals(4, provider.getClosed());
+    }
 
 
-    static class TestJedisResourceProvider implements JedisResourceProvider {
+
+    static class TestJedisProvider implements JedisProvider {
 
         private Jedis jedis;
         private AtomicInteger borrowed = new AtomicInteger(0);
         private AtomicInteger closed = new AtomicInteger(0);
 
-        TestJedisResourceProvider() {
+        TestJedisProvider() {
             jedis = mock(Jedis.class);
             Mockito.doAnswer(ioc -> {
                 closed.incrementAndGet();
@@ -71,6 +84,11 @@ public class JedisResourceProviderTest {
         public Jedis getResource() {
             borrowed.incrementAndGet();
             return jedis;
+        }
+
+        @Override
+        public void returnResource(Jedis resource) {
+            jedis.close();
         }
 
         public int getBorrowed() {

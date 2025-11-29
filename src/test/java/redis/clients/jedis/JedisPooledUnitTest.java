@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.Pool;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,9 +28,16 @@ public class JedisPooledUnitTest {
   private PooledConnectionProvider mockProvider;
   private Connection mockConnection;
 
+  private AtomicInteger pings = new AtomicInteger(0);
+
   @BeforeEach
   public void setUp() throws Exception {
     mockConnection = mock(Connection.class);
+    Mockito.doAnswer( ioc -> {
+      pings.incrementAndGet();
+      return null;
+    }).when(mockConnection).sendCommand(eq(Protocol.Command.PING));
+    when(mockConnection.getStatusCodeReply()).thenAnswer( ioc -> "PONG" + System.currentTimeMillis());
     mockPool = mock(Pool.class);
     mockProvider = mock(PooledConnectionProvider.class);
     when(mockProvider.getPool()).thenReturn(mockPool);
@@ -54,10 +62,21 @@ public class JedisPooledUnitTest {
 
   @Test
   public void testWithResourceGetClosesConnection() {
-    String result = pooled.withResourceGet(jedis -> "test-result");
-
+    String result = pooled.withResourceGet(Jedis::ping);
     assertNotNull(result);
+    assertEquals(1, pings.get());
     verify(pooled, times(1)).getPool();
+    verify(mockPool, times(1)).returnResource(eq(mockConnection));
+  }
+
+  @Test
+  public void testWithResourceGetReturnsConnection() {
+    Jedis jedis = pooled.getResource();
+    String result = jedis.ping();
+    pooled.returnResource(jedis);
+    assertNotNull(result);
+    assertEquals(1, pings.get());
+    verify(pooled, times(2)).getPool();
     verify(mockPool, times(1)).returnResource(eq(mockConnection));
   }
 

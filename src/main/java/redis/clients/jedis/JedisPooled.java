@@ -464,6 +464,7 @@ public class JedisPooled extends UnifiedJedis implements JedisProvider {
     return (Pipeline) super.pipelined();
   }
 
+  @Override
   public Jedis getResource() {
     Pool<Connection> pool = getPool();
     Connection conn = pool.getResource();
@@ -472,10 +473,10 @@ public class JedisPooled extends UnifiedJedis implements JedisProvider {
     return jedis;
   }
 
+  @Override
   public void returnResource(final Jedis resource) {
     Pool<Connection> pool = getPool();
     pool.returnResource(resource.getConnection());
   }
-
 
 }

@@ -329,6 +329,31 @@ public class JedisPoolTest {
   }
 
   @Test
+  public void returnResourceShouldResetStateWithGetResource() {
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(false);
+    JedisPool pool = new JedisPool(config, endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000, endpointStandalone0.getPassword());
+
+    Jedis jedis = pool.getResource();
+    try {
+      jedis.set("hello", "jedis");
+      Transaction t = jedis.multi();
+      t.set("hello", "world");
+    } finally {
+      jedis.close();
+    }
+
+    pool.withResource(jedis2 -> {
+      assertSame(jedis, jedis2);
+      assertEquals("jedis", jedis2.get("hello"));
+    });
+
+    pool.close();
+    assertTrue(pool.isClosed());
+  }
+
+  @Test
   public void getNumActiveWhenPoolIsClosed() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHost(), endpointStandalone0.getPort(), 2000,
         endpointStandalone0.getPassword(), 0, "my_shiny_client_name");

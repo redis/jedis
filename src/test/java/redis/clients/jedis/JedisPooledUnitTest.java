@@ -33,11 +33,12 @@ public class JedisPooledUnitTest {
   @BeforeEach
   public void setUp() throws Exception {
     mockConnection = mock(Connection.class);
-    Mockito.doAnswer( ioc -> {
+    Mockito.doAnswer(ioc -> {
       pings.incrementAndGet();
       return null;
     }).when(mockConnection).sendCommand(eq(Protocol.Command.PING));
-    when(mockConnection.getStatusCodeReply()).thenAnswer( ioc -> "PONG" + System.currentTimeMillis());
+    when(mockConnection.getStatusCodeReply())
+        .thenAnswer(ioc -> "PONG" + System.currentTimeMillis());
     mockPool = mock(Pool.class);
     mockProvider = mock(PooledConnectionProvider.class);
     when(mockProvider.getPool()).thenReturn(mockPool);
@@ -83,13 +84,12 @@ public class JedisPooledUnitTest {
   @Test
   public void testWithResourceGetSetData() {
     AtomicReference<String> settedValue = new AtomicReference<>("");
-    try(MockedConstruction<Jedis> mockConstruction = Mockito.mockConstruction(Jedis.class,(mock, context)->
-            when(mock.set(eq("test-key"), anyString())).thenAnswer( ioc -> {
-              settedValue.set(ioc.getArgument(1));
-              return "OK";
-            })
-    )) {
-      pooled.withResource( jedis -> jedis.set("test-key","test-result"));
+    try (MockedConstruction<Jedis> mockConstruction = Mockito.mockConstruction(Jedis.class,
+      (mock, context) -> when(mock.set(eq("test-key"), anyString())).thenAnswer(ioc -> {
+        settedValue.set(ioc.getArgument(1));
+        return "OK";
+      }))) {
+      pooled.withResource(jedis -> jedis.set("test-key", "test-result"));
       assertEquals("test-result", settedValue.get());
       verify(pooled, times(1)).getPool();
       Jedis mockJedis = mockConstruction.constructed().get(0);
@@ -99,10 +99,9 @@ public class JedisPooledUnitTest {
 
   @Test
   public void testWithResourceGetReturnsResult() {
-    try(MockedConstruction<Jedis> mockConstruction = Mockito.mockConstruction(Jedis.class,(mock, context)->
-      when(mock.get(eq("test-key"))).thenReturn("test-result")
-    )) {
-      String result = pooled.withResourceGet( jedis -> jedis.get("test-key"));
+    try (MockedConstruction<Jedis> mockConstruction = Mockito.mockConstruction(Jedis.class,
+      (mock, context) -> when(mock.get(eq("test-key"))).thenReturn("test-result"))) {
+      String result = pooled.withResourceGet(jedis -> jedis.get("test-key"));
       assertEquals("test-result", result);
       verify(pooled, times(1)).getPool();
       Jedis mockJedis = mockConstruction.constructed().get(0);

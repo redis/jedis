@@ -542,15 +542,8 @@ public class Connection implements Closeable {
       }
 
       if (!setInfoConfig.isDisabled()) {
-        String libName = JedisMetaInfo.getArtifactId();
-        if (libName != null && validateClientInfo(libName)) {
-          String libNameSuffix = setInfoConfig.getLibNameSuffix();
-          if (libNameSuffix != null) { // validation is moved into ClientSetInfoConfig constructor
-            libName = libName + '(' + libNameSuffix + ')';
-          }
-          fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-              .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
-        }
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
+              .add(ClientAttributeOption.LIB_NAME.getRaw()).add(setInfoConfig.getDriverInfo().getFormattedName()));
 
         String libVersion = JedisMetaInfo.getVersion();
         if (libVersion != null && validateClientInfo(libVersion)) {

@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -89,6 +88,21 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
     String info = client.clientInfo();
     assertTrue(info.contains("lib-name=" + libName));
+    assertTrue(info.contains("lib-ver=" + libVersion));
+  }
+
+  @Test
+  @SinceRedisVersion("7.2.0")
+  public void clientSetInfoCommandExpandLibName() {
+    String baseLibName = "Jedis::A-Redis-Java-library";
+    String upstreamDriver = "spring-data-redis_v3.2.0";
+    String expandedLibName = baseLibName + "(" + upstreamDriver + ")";
+    String libVersion = "999.999.999";
+
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_NAME, expandedLibName));
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
+    String info = client.clientInfo();
+    assertTrue(info.contains("lib-name=" + expandedLibName));
     assertTrue(info.contains("lib-ver=" + libVersion));
   }
 

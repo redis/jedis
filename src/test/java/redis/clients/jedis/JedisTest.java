@@ -351,4 +351,39 @@ public class JedisTest extends JedisCommandsTestBase {
     }
   }
 
+  @Test
+  @SinceRedisVersion(value = "7.2.0", message = "@see https://redis.io/docs/latest/commands/client-setinfo/")
+  public void clientSetInfoWithUpstreamDriver() {
+    DriverInfo driverInfo = DriverInfo.builder()
+        .addUpstreamDriver("spring-data-redis", "3.2.0")
+        .build();
+    ClientSetInfoConfig setInfoConfig = new ClientSetInfoConfig(driverInfo);
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .clientSetInfoConfig(setInfoConfig).build())) {
+      assertEquals("PONG", jedis.ping());
+      String info = jedis.clientInfo();
+      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + "(spring-data-redis_v3.2.0)"));
+      assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion()));
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.2.0", message = "@see https://redis.io/docs/latest/commands/client-setinfo/")
+  public void clientSetInfoWithMultipleUpstreamDrivers() {
+    DriverInfo driverInfo = DriverInfo.builder()
+        .addUpstreamDriver("spring-data-redis", "3.2.0")
+        .addUpstreamDriver("lettuce-core", "6.4.1")
+        .addUpstreamDriver("redisson", "3.25.0")
+        .build();
+    ClientSetInfoConfig setInfoConfig = new ClientSetInfoConfig(driverInfo);
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .clientSetInfoConfig(setInfoConfig).build())) {
+      assertEquals("PONG", jedis.ping());
+      String info = jedis.clientInfo();
+      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()
+          + "(redisson_v3.25.0;lettuce-core_v6.4.1;spring-data-redis_v3.2.0)"));
+      assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion()));
+    }
+  }
+
 }

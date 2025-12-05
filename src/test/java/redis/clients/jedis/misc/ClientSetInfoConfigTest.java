@@ -35,8 +35,7 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void constructorWithNullDriverInfoThrows() {
-    assertThrows(JedisValidationException.class,
-        () -> new ClientSetInfoConfig((DriverInfo) null));
+    assertThrows(JedisValidationException.class, () -> new ClientSetInfoConfig((DriverInfo) null));
   }
 
   @Test
@@ -54,18 +53,17 @@ public class ClientSetInfoConfigTest {
 
     // Add upstream driver - should prepend to the suffix
     DriverInfo driverInfo = DriverInfo.builder(config.getDriverInfo())
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
-        .build();
+        .addUpstreamDriver("spring-data-redis", "3.2.0").build();
     config = new ClientSetInfoConfig(driverInfo);
     assertEquals("spring-data-redis_v3.2.0;my-suffix", config.getUpstreamDrivers());
-    assertEquals("jedis(spring-data-redis_v3.2.0;my-suffix)", config.getDriverInfo().getFormattedName());
+    assertEquals("jedis(spring-data-redis_v3.2.0;my-suffix)",
+      config.getDriverInfo().getFormattedName());
   }
 
   @Test
   public void defaultNameWithUpstreamDriversKeepsJedisName() {
     // When using default name, adding upstream drivers should keep "jedis" as the base name
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("spring-data-redis", "3.2.0")
         .build();
     assertEquals("jedis", driverInfo.getName());
     assertEquals("jedis(spring-data-redis_v3.2.0)", driverInfo.getFormattedName());
@@ -75,44 +73,40 @@ public class ClientSetInfoConfigTest {
   public void chainingDriverInfoFromExistingConfig() {
     // First library (e.g., spring-data-redis) creates its config
     DriverInfo firstDriverInfo = DriverInfo.builder()
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
-        .build();
+        .addUpstreamDriver("spring-data-redis", "3.2.0").build();
     ClientSetInfoConfig firstConfig = new ClientSetInfoConfig(firstDriverInfo);
     assertEquals("jedis(spring-data-redis_v3.2.0)", firstConfig.getDriverInfo().getFormattedName());
 
     // Second library builds on top of the first config
     DriverInfo secondDriverInfo = DriverInfo.builder(firstConfig.getDriverInfo())
-        .addUpstreamDriver("upstream-library", "1.0.0")
-        .build();
+        .addUpstreamDriver("upstream-library", "1.0.0").build();
     ClientSetInfoConfig secondConfig = new ClientSetInfoConfig(secondDriverInfo);
-    assertEquals("upstream-library_v1.0.0;spring-data-redis_v3.2.0", secondConfig.getUpstreamDrivers());
-    assertEquals("jedis(upstream-library_v1.0.0;spring-data-redis_v3.2.0)", secondConfig.getDriverInfo().getFormattedName());
+    assertEquals("upstream-library_v1.0.0;spring-data-redis_v3.2.0",
+      secondConfig.getUpstreamDrivers());
+    assertEquals("jedis(upstream-library_v1.0.0;spring-data-redis_v3.2.0)",
+      secondConfig.getDriverInfo().getFormattedName());
   }
 
   @Test
   public void withLibNameSuffixErrorForBraces() {
     Arrays.asList('(', ')', '[', ']', '{', '}')
         .forEach(brace -> assertThrows(JedisValidationException.class,
-            () -> ClientSetInfoConfig.withLibNameSuffix("" + brace)));
+          () -> ClientSetInfoConfig.withLibNameSuffix("" + brace)));
   }
 
   @Test
   public void builderWithNullDriverInfoThrows() {
-    assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder(null));
+    assertThrows(JedisValidationException.class, () -> DriverInfo.builder(null));
   }
 
   @Test
   public void builderNameNullThrows() {
-    assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().name(null));
+    assertThrows(JedisValidationException.class, () -> DriverInfo.builder().name(null));
   }
 
   @Test
   public void builderCustomName() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .name("my-custom-client")
-        .build();
+    DriverInfo driverInfo = DriverInfo.builder().name("my-custom-client").build();
     assertEquals("my-custom-client", driverInfo.getName());
     assertEquals("my-custom-client", driverInfo.getFormattedName());
     assertNull(driverInfo.getUpstreamDrivers());
@@ -120,10 +114,8 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void builderCustomNameWithUpstreamDrivers() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .name("my-custom-client")
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
-        .build();
+    DriverInfo driverInfo = DriverInfo.builder().name("my-custom-client")
+        .addUpstreamDriver("spring-data-redis", "3.2.0").build();
     assertEquals("my-custom-client", driverInfo.getName());
     assertEquals("my-custom-client(spring-data-redis_v3.2.0)", driverInfo.getFormattedName());
     assertEquals("spring-data-redis_v3.2.0", driverInfo.getUpstreamDrivers());
@@ -131,14 +123,10 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void builderCopiesExistingDriverInfo() {
-    DriverInfo original = DriverInfo.builder()
-        .name("custom-name")
-        .addUpstreamDriver("driver1", "1.0.0")
-        .build();
+    DriverInfo original = DriverInfo.builder().name("custom-name")
+        .addUpstreamDriver("driver1", "1.0.0").build();
 
-    DriverInfo copied = DriverInfo.builder(original)
-        .addUpstreamDriver("driver2", "2.0.0")
-        .build();
+    DriverInfo copied = DriverInfo.builder(original).addUpstreamDriver("driver2", "2.0.0").build();
 
     assertEquals("custom-name", copied.getName());
     assertEquals("driver2_v2.0.0;driver1_v1.0.0", copied.getUpstreamDrivers());
@@ -146,8 +134,7 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void addUpstreamDriverSingle() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("spring-data-redis", "3.2.0")
         .build();
     ClientSetInfoConfig config = new ClientSetInfoConfig(driverInfo);
     assertEquals("spring-data-redis_v3.2.0", config.getUpstreamDrivers());
@@ -155,31 +142,24 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void addUpstreamDriverMultiple() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("driver1", "1.0.0")
-        .addUpstreamDriver("driver2", "2.0.0")
-        .addUpstreamDriver("driver3", "3.0.0")
-        .build();
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("driver1", "1.0.0")
+        .addUpstreamDriver("driver2", "2.0.0").addUpstreamDriver("driver3", "3.0.0").build();
     ClientSetInfoConfig config = new ClientSetInfoConfig(driverInfo);
     assertEquals("driver3_v3.0.0;driver2_v2.0.0;driver1_v1.0.0", config.getUpstreamDrivers());
   }
 
   @Test
   public void addUpstreamDriverPrepends() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("first", "1.0.0")
-        .build();
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("first", "1.0.0").build();
     ClientSetInfoConfig config = new ClientSetInfoConfig(driverInfo);
     assertEquals("first_v1.0.0", config.getUpstreamDrivers());
 
-    driverInfo = DriverInfo.builder(config.getDriverInfo())
-        .addUpstreamDriver("second", "2.0.0")
+    driverInfo = DriverInfo.builder(config.getDriverInfo()).addUpstreamDriver("second", "2.0.0")
         .build();
     config = new ClientSetInfoConfig(driverInfo);
     assertEquals("second_v2.0.0;first_v1.0.0", config.getUpstreamDrivers());
 
-    driverInfo = DriverInfo.builder(config.getDriverInfo())
-        .addUpstreamDriver("third", "3.0.0")
+    driverInfo = DriverInfo.builder(config.getDriverInfo()).addUpstreamDriver("third", "3.0.0")
         .build();
     config = new ClientSetInfoConfig(driverInfo);
     assertEquals("third_v3.0.0;second_v2.0.0;first_v1.0.0", config.getUpstreamDrivers());
@@ -193,25 +173,21 @@ public class ClientSetInfoConfigTest {
 
   @Test
   public void formattedNameWithSingleUpstreamDriver() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("spring-data-redis", "3.2.0")
         .build();
     assertEquals("jedis(spring-data-redis_v3.2.0)", driverInfo.getFormattedName());
   }
 
   @Test
   public void formattedNameWithMultipleUpstreamDrivers() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("driver1", "1.0.0")
-        .addUpstreamDriver("driver2", "2.0.0")
-        .build();
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("driver1", "1.0.0")
+        .addUpstreamDriver("driver2", "2.0.0").build();
     assertEquals("jedis(driver2_v2.0.0;driver1_v1.0.0)", driverInfo.getFormattedName());
   }
 
   @Test
   public void toStringReturnsFormattedName() {
-    DriverInfo driverInfo = DriverInfo.builder()
-        .addUpstreamDriver("spring-data-redis", "3.2.0")
+    DriverInfo driverInfo = DriverInfo.builder().addUpstreamDriver("spring-data-redis", "3.2.0")
         .build();
     assertEquals(driverInfo.getFormattedName(), driverInfo.toString());
   }
@@ -229,30 +205,30 @@ public class ClientSetInfoConfigTest {
 
     // Invalid names
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("Spring-Data", "1.0.0")); // uppercase
+      () -> DriverInfo.builder().addUpstreamDriver("Spring-Data", "1.0.0")); // uppercase
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("123driver", "1.0.0")); // starts with digit
+      () -> DriverInfo.builder().addUpstreamDriver("123driver", "1.0.0")); // starts with digit
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("driver@name", "1.0.0")); // special char
+      () -> DriverInfo.builder().addUpstreamDriver("driver@name", "1.0.0")); // special char
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("driver.name", "1.0.0")); // dot
+      () -> DriverInfo.builder().addUpstreamDriver("driver.name", "1.0.0")); // dot
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("driver name", "1.0.0")); // space
+      () -> DriverInfo.builder().addUpstreamDriver("driver name", "1.0.0")); // space
   }
 
   @Test
   public void driverNameNullOrEmpty() {
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver(null, "3.2.0"));
+      () -> DriverInfo.builder().addUpstreamDriver(null, "3.2.0"));
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("", "3.2.0"));
+      () -> DriverInfo.builder().addUpstreamDriver("", "3.2.0"));
   }
 
   @Test
   public void driverVersionNullOrEmpty() {
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("spring-data-redis", null));
+      () -> DriverInfo.builder().addUpstreamDriver("spring-data-redis", null));
     assertThrows(JedisValidationException.class,
-        () -> DriverInfo.builder().addUpstreamDriver("spring-data-redis", ""));
+      () -> DriverInfo.builder().addUpstreamDriver("spring-data-redis", ""));
   }
 }

@@ -7,9 +7,11 @@ import redis.clients.jedis.exceptions.JedisValidationException;
  * <p>
  * This class supports two modes of operation:
  * <ul>
- * <li>Legacy mode: Using {@link #withLibNameSuffix(String)} for simple suffix customization</li>
- * <li>Driver info mode: Using {@link #ClientSetInfoConfig(DriverInfo)} for structured driver
- * information with upstream drivers</li>
+ * <li>Advanced mode: Using {@link #withLibNameSuffix(String)} for advanced suffix customization,
+ * where the provided string is already preformatted according to the rules of the `CLIENT SETINFO`
+ * command</li>
+ * <li>Simple mode: Using {@link #ClientSetInfoConfig(DriverInfo)} used when the command parameter
+ * will be built by the driver based on the {@link DriverInfo} provided</li>
  * </ul>
  * <p>
  * For backward compatibility, {@link #getUpstreamDrivers()} returns the upstream drivers string
@@ -76,7 +78,6 @@ public final class ClientSetInfoConfig {
   }
 
   /**
-   * Returns whether CLIENT SETINFO is disabled.
    * @return {@code true} if CLIENT SETINFO is disabled, {@code false} otherwise
    */
   public boolean isDisabled() {
@@ -84,7 +85,6 @@ public final class ClientSetInfoConfig {
   }
 
   /**
-   * Returns the driver information.
    * @return the driver information
    */
   public DriverInfo getDriverInfo() {

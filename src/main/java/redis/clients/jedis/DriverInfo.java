@@ -1,6 +1,9 @@
+/*
+ * Copyright 2025-Present, Redis Ltd. and Contributors All rights reserved. Licensed under the MIT
+ * License.
+ */
 package redis.clients.jedis;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,19 +23,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
  * @see ClientSetInfoConfig
  * @see <a href="https://redis.io/docs/latest/commands/client-setinfo/">CLIENT SETINFO</a>
  */
-public final class DriverInfo implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  /**
-   * Regex pattern for driver name validation. The name must start with a lowercase letter and
-   * contain only lowercase letters, digits, hyphens, and underscores. Dots are only allowed after
-   * digits (for Scala cross-version naming like akka-redis_2.13). Follows Maven artifactId naming
-   * conventions but also allows underscores and version-specific dots.
-   * @see <a href="https://maven.apache.org/guides/mini/guide-naming-conventions.html">Maven Naming
-   *      Conventions</a>
-   */
-  private static final String DRIVER_NAME_PATTERN = "^[a-z][a-z0-9_-]*(?:[0-9]\\.[0-9]+)?$";
+public final class DriverInfo {
 
   /**
    * Set of brace characters that are not allowed in driver names or versions. These characters are
@@ -120,7 +111,7 @@ public final class DriverInfo implements Serializable {
    */
   public String getUpstreamDrivers() {
     if (upstreamDrivers.isEmpty()) {
-      return null;
+      return "";
     }
     return String.join(";", upstreamDrivers);
   }
@@ -196,8 +187,8 @@ public final class DriverInfo implements Serializable {
       if (driverVersion == null) {
         throw new JedisValidationException("Driver version must not be null");
       }
-      validateDriverName(driverName);
-      validateDriverVersion(driverVersion);
+      validateDriverField(driverName, "Driver name");
+      validateDriverField(driverVersion, "Driver version");
       String formattedDriverInfo = formatDriverInfo(driverName, driverVersion);
       this.upstreamDrivers.add(0, formattedDriverInfo);
       return this;
@@ -207,7 +198,7 @@ public final class DriverInfo implements Serializable {
       if (driverName == null) {
         throw new JedisValidationException("Driver name must not be null");
       }
-      validateDriverName(driverName);
+      validateDriverField(driverName, "Driver name");
       this.upstreamDrivers.add(0, driverName);
       return this;
     }
@@ -222,48 +213,22 @@ public final class DriverInfo implements Serializable {
   }
 
   /**
-   * Validates that the driver name follows Maven artifactId naming conventions: lowercase letters,
-   * digits, hyphens, and underscores only, starting with a lowercase letter. Dots are only allowed
-   * after digits (for Scala cross-version naming like akka-redis_2.13).
+   * Validates that the value does not contain characters that would violate the format of the Redis
+   * CLIENT LIST reply.
    * <p>
-   * Additionally validates Redis CLIENT LIST constraints: no spaces, newlines, non-printable
-   * characters, or braces.
-   * @param driverName the driver name to validate
-   * @throws JedisValidationException if the driver name does not follow the expected naming
-   *           conventions
-   * @see <a href="https://maven.apache.org/guides/mini/guide-naming-conventions.html">Maven Naming
-   *      Conventions</a>
+   * Only printable ASCII characters (0x21-0x7E, i.e., '!' to '~') are allowed, excluding braces.
+   * @param value the value to validate
+   * @param fieldName the name of the field for error messages (e.g., "Driver name", "Driver
+   *          version")
+   * @throws JedisValidationException if the value is empty or contains invalid characters
    * @see <a href="https://redis.io/docs/latest/commands/client-setinfo/">CLIENT SETINFO</a>
    */
-  private static void validateDriverName(String driverName) {
-    if (driverName.trim().isEmpty()) {
-      throw new JedisValidationException("Driver name must not be empty");
+  private static void validateDriverField(String value, String fieldName) {
+    if (value.trim().isEmpty()) {
+      throw new JedisValidationException(fieldName + " must not be empty");
     }
 
-    validateNoInvalidCharacters(driverName, "Driver name");
-
-    if (!driverName.matches(DRIVER_NAME_PATTERN)) {
-      throw new JedisValidationException(
-          "Upstream driver name must follow Maven artifactId naming conventions: "
-              + "lowercase letters, digits, hyphens, and underscores only, starting with a lowercase letter "
-              + "(e.g., 'spring-data-redis', 'lettuce-core', 'akka-redis_2.13')");
-    }
-  }
-
-  /**
-   * Validates that the driver version does not contain characters that would violate the format of
-   * the Redis CLIENT LIST reply: no spaces, newlines, non-printable characters, or brace
-   * characters.
-   * @param driverVersion the driver version to validate
-   * @throws JedisValidationException if the driver version contains invalid characters
-   * @see <a href="https://redis.io/docs/latest/commands/client-setinfo/">CLIENT SETINFO</a>
-   */
-  private static void validateDriverVersion(String driverVersion) {
-    if (driverVersion.trim().isEmpty()) {
-      throw new JedisValidationException("Driver version must not be empty");
-    }
-
-    validateNoInvalidCharacters(driverVersion, "Driver version");
+    validateNoInvalidCharacters(value, fieldName);
   }
 
   /**

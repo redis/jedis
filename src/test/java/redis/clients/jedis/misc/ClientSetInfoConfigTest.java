@@ -10,7 +10,6 @@ import redis.clients.jedis.exceptions.JedisValidationException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +19,7 @@ public class ClientSetInfoConfigTest {
   public void defaultConfig() {
     ClientSetInfoConfig config = ClientSetInfoConfig.DEFAULT;
     assertFalse(config.isDisabled());
-    assertNull(config.getUpstreamDrivers());
+    assertEquals("", config.getUpstreamDrivers());
     assertNotNull(config.getDriverInfo());
     assertEquals("jedis", config.getDriverInfo().getName());
     assertEquals("jedis", config.getDriverInfo().getFormattedName());
@@ -30,7 +29,7 @@ public class ClientSetInfoConfigTest {
   public void disabledConfig() {
     ClientSetInfoConfig config = ClientSetInfoConfig.DISABLED;
     assertTrue(config.isDisabled());
-    assertNull(config.getUpstreamDrivers());
+    assertEquals("", config.getUpstreamDrivers());
   }
 
   @Test
@@ -109,7 +108,7 @@ public class ClientSetInfoConfigTest {
     DriverInfo driverInfo = DriverInfo.builder().name("my-custom-client").build();
     assertEquals("my-custom-client", driverInfo.getName());
     assertEquals("my-custom-client", driverInfo.getFormattedName());
-    assertNull(driverInfo.getUpstreamDrivers());
+    assertEquals("", driverInfo.getUpstreamDrivers());
   }
 
   @Test
@@ -202,16 +201,11 @@ public class ClientSetInfoConfigTest {
     DriverInfo.builder().addUpstreamDriver("redis-client", "1.0.0");
     DriverInfo.builder().addUpstreamDriver("my_driver", "1.0.0");
     DriverInfo.builder().addUpstreamDriver("driver123", "1.0.0");
+    DriverInfo.builder().addUpstreamDriver("Spring-Data", "1.0.0");
+    DriverInfo.builder().addUpstreamDriver("123driver", "1.0.0");
+    DriverInfo.builder().addUpstreamDriver("driver@name", "1.0.0");
+    DriverInfo.builder().addUpstreamDriver("driver.name", "1.0.0");
 
-    // Invalid names
-    assertThrows(JedisValidationException.class,
-      () -> DriverInfo.builder().addUpstreamDriver("Spring-Data", "1.0.0")); // uppercase
-    assertThrows(JedisValidationException.class,
-      () -> DriverInfo.builder().addUpstreamDriver("123driver", "1.0.0")); // starts with digit
-    assertThrows(JedisValidationException.class,
-      () -> DriverInfo.builder().addUpstreamDriver("driver@name", "1.0.0")); // special char
-    assertThrows(JedisValidationException.class,
-      () -> DriverInfo.builder().addUpstreamDriver("driver.name", "1.0.0")); // dot
     assertThrows(JedisValidationException.class,
       () -> DriverInfo.builder().addUpstreamDriver("driver name", "1.0.0")); // space
   }

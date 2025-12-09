@@ -1,7 +1,3 @@
-/*
- * Copyright 2025-Present, Redis Ltd. and Contributors All rights reserved. Licensed under the MIT
- * License.
- */
 package redis.clients.jedis;
 
 import java.util.ArrayList;

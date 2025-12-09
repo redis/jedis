@@ -542,13 +542,15 @@ public class Connection implements Closeable {
       }
 
       if (!setInfoConfig.isDisabled()) {
-        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-              .add(ClientAttributeOption.LIB_NAME.getRaw()).add(setInfoConfig.getDriverInfo().getFormattedName()));
+        fireAndForgetMsg.add(
+                new CommandArguments(Command.CLIENT).add(Keyword.SETINFO).add(ClientAttributeOption.LIB_NAME.getRaw())
+                        .add(setInfoConfig.getDriverInfo().getFormattedName()));
 
         String libVersion = JedisMetaInfo.getVersion();
         if (libVersion != null && validateClientInfo(libVersion)) {
-          fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-              .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
+          fireAndForgetMsg.add(
+                  new CommandArguments(Command.CLIENT).add(Keyword.SETINFO).add(ClientAttributeOption.LIB_VER.getRaw())
+                          .add(libVersion));
         }
       }
 

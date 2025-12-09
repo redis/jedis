@@ -547,6 +547,9 @@
 						<include>**/*CompareCondition*.java</include>
 						<include>**/*MSetExParams*.java</include>
 						<include>**/*UnitTest.java</include>
+						<include>**/DriverInfo.java</include>
+						<include>**/ClientSetInfo*.java</include>
+						<include>**/ClientCommandsTest*.java</include>
 					</includes>
 				</configuration>
 				<executions>

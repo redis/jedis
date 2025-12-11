@@ -1,13 +1,5 @@
 package redis.clients.jedis.builders;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.lang.reflect.Constructor;
-import java.util.Set;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -15,12 +7,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.*;
+import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisSentineled;
+import redis.clients.jedis.ReadFrom;
+import redis.clients.jedis.ReadOnlyPredicate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+import java.lang.reflect.Constructor;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Reflection-based coverage test for JedisSentineled constructors against builder API.
@@ -85,6 +91,12 @@ public class JedisSentineledConstructorReflectionTest {
         } else if (t == CacheConfig.class) {
           paramCovered[i] = true;
           paramCoverageBy[i] = "JedisSentineled.builder().cacheConfig(...)";
+        } else if (t == ReadFrom.class) {
+          paramCovered[i] = true;
+          paramCoverageBy[i] = "JedisSentineled.builder().readForm(...)";
+        } else if (t == ReadOnlyPredicate.class) {
+          paramCovered[i] = true;
+          paramCoverageBy[i] = "DefaultJedisClientConfig.builder().readOnlyPredicate(...)";
         } else if (t == int.class || t == Integer.class) {
           String lname = name.toLowerCase();
           if (lname.contains("db") || lname.contains("database")) {

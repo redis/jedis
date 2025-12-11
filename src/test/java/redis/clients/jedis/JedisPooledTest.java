@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -24,10 +25,10 @@ import redis.clients.jedis.exceptions.JedisException;
 @Tag("integration")
 public class JedisPooledTest {
 
-  private static final EndpointConfig endpointStandalone7 = HostAndPorts.getRedisEndpoint(
-      "standalone7-with-lfu-policy");
-  private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint(
-      "standalone1"); // password protected
+  private static final EndpointConfig endpointStandalone7 = HostAndPorts
+      .getRedisEndpoint("standalone7-with-lfu-policy");
+  private static final EndpointConfig endpointStandalone1 = HostAndPorts
+      .getRedisEndpoint("standalone1"); // password protected
 
   @Test
   public void checkCloseableConnections() {
@@ -170,6 +171,27 @@ public class JedisPooledTest {
   }
 
   @Test
+  public void getNumActiveReturnsTheCorrectNumberWithJedis() {
+    try (JedisPooled pool = JedisPooled.builder()
+        .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
+        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
+        .poolConfig(new ConnectionPoolConfig()).build()) {
+
+      Connection jedis = pool.getPool().getResource();
+      assertEquals(1, pool.getPool().getNumActive());
+
+      Jedis jedis2 = pool.getResource();
+      assertEquals(2, pool.getPool().getNumActive());
+
+      jedis.close();
+      assertEquals(1, pool.getPool().getNumActive());
+
+      jedis2.close();
+      assertEquals(0, pool.getPool().getNumActive());
+    }
+  }
+
+  @Test
   public void closeResourceTwice() {
     try (JedisPooled pool = JedisPooled.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
@@ -204,8 +226,8 @@ public class JedisPooledTest {
 
   @Test
   public void testResetValidCredentials() {
-    DefaultRedisCredentialsProvider credentialsProvider = 
-        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
+    DefaultRedisCredentialsProvider credentialsProvider = new DefaultRedisCredentialsProvider(
+        new DefaultRedisCredentials(null, "bad password"));
 
     try (JedisPooled pool = JedisPooled.builder().hostAndPort(endpointStandalone1.getHostAndPort())
         .clientConfig(
@@ -214,11 +236,62 @@ public class JedisPooledTest {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
-      } catch (JedisException e) { }
+      } catch (JedisException e) {
+      }
       assertEquals(0, pool.getPool().getNumActive());
 
-      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, endpointStandalone1.getPassword()));
+      credentialsProvider
+          .setCredentials(new DefaultRedisCredentials(null, endpointStandalone1.getPassword()));
       assertThat(pool.get("foo"), anything());
+    }
+  }
+
+  @Test
+  public void testWithJedisPoolDoWithConnection() {
+    try (JedisPooled pool = JedisPooled.builder()
+        .fromURI(endpointStandalone1.getURIBuilder()
+            .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
+        .build();) {
+      pool.withResource(jedis -> {
+        jedis.auth(endpointStandalone1.getPassword());
+        jedis.set("foo", "bar");
+        assertEquals("bar", jedis.get("foo"));
+      });
+      pool.withResource(jedis -> assertNotNull(jedis.ping()));
+    }
+  }
+
+  @Test
+  public void testWithJedisPoolGetWithConnection() {
+    try (JedisPooled pool = JedisPooled.builder()
+        .fromURI(endpointStandalone1.getURIBuilder()
+            .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
+        .build();) {
+      String result = pool.withResourceGet(jedis -> {
+        jedis.auth(endpointStandalone1.getPassword());
+        jedis.set("foo", "bar");
+        return jedis.get("foo");
+      });
+      String ping = pool.withResourceGet(Jedis::ping);
+      assertEquals("bar", result);
+      assertNotNull(ping);
+    }
+  }
+
+  @Test
+  public void testWithJedisPoolGetWithReturnConnection() {
+    try (JedisPooled pool = JedisPooled.builder()
+        .fromURI(endpointStandalone1.getURIBuilder()
+            .credentials("", endpointStandalone1.getPassword()).path("/2").build().toString())
+        .build();) {
+      Jedis jedis = pool.getResource();
+      jedis.auth(endpointStandalone1.getPassword());
+      jedis.set("foo", "bar");
+      String result = jedis.get("foo");
+      String ping = pool.withResourceGet(Jedis::ping);
+      pool.returnResource(jedis);
+      assertEquals("bar", result);
+      assertNotNull(ping);
     }
   }
 
@@ -265,7 +338,8 @@ public class JedisPooledTest {
       }
     };
 
-    // TODO: do it without the help of pool config; from Connection constructor? (configurable) force ping?
+    // TODO: do it without the help of pool config; from Connection constructor? (configurable)
+    // force ping?
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(1);
     poolConfig.setTestOnBorrow(true);
@@ -277,9 +351,10 @@ public class JedisPooledTest {
         pool.get("foo");
         fail("Should not get resource from pool");
       } catch (JedisException e) {
-        //ignore
+        // ignore
       }
-      assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle() + pool.getPool().getNumWaiters());
+      assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle()
+          + pool.getPool().getNumWaiters());
       assertThat(prepareCount.getAndSet(0), greaterThanOrEqualTo(1));
       assertThat(cleanupCount.getAndSet(0), greaterThanOrEqualTo(1));
 

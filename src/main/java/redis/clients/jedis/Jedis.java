@@ -47,6 +47,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
   private Pool<Jedis> dataSource = null;
+  private Pool<Connection> connectionSource = null;
 
   public Jedis() {
     connection = new Connection();
@@ -297,7 +298,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   protected void setDataSource(Pool<Jedis> jedisPool) {
+    assertNotPooled();
     this.dataSource = jedisPool;
+  }
+
+  protected void setConnectionSource(Pool<Connection> connectionPool) {
+    assertNotPooled();
+    this.connectionSource = connectionPool;
+  }
+
+  private void assertNotPooled() {
+    if (connectionSource != null) {
+      throw new IllegalStateException("Connection source is already set.");
+    }
+    if (dataSource != null) {
+      throw new IllegalStateException("Data source is already set.");
+    }
   }
 
   @Override
@@ -310,6 +326,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       } else {
         pool.returnResource(this);
       }
+    } else if (connectionSource != null) {
+      Pool<Connection> pool = connectionSource;
+      this.connectionSource = null;
+        if (isBroken()) {
+            pool.returnBrokenResource(connection);
+        } else {
+            pool.returnResource(connection);
+        }
     } else {
       connection.close();
     }

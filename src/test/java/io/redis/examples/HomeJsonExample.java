@@ -20,22 +20,10 @@ import java.util.List;
 import java.util.Map;
 // STEP_END
 
-// HIDE_START
 public class HomeJsonExample {
 
     @Test
     public void run() {
-// HIDE_END
-        // STEP_START connect
-        RedisClient jedis = new RedisClient("redis://localhost:6379");
-        // STEP_END
-
-        //REMOVE_START
-        // Clear the indexes and keys here before using them in tests.
-        try {jedis.ftDropIndex("idx:users");} catch (JedisDataException j){}
-        try {jedis.ftDropIndex("hash-idx:users");} catch (JedisDataException j){}
-        jedis.del("user:1", "user:2", "user:3", "huser:1", "huser:2", "huser:3");
-        //REMOVE_END
 
         // STEP_START create_data
         JSONObject user1 = new JSONObject()
@@ -55,6 +43,15 @@ public class HomeJsonExample {
                 .put("email", "paul.zamir@example.com")
                 .put("age", 35)
                 .put("city", "Tel Aviv");
+        // STEP_END
+
+        // STEP_START connect
+        RedisClient jedis = new RedisClient("redis://localhost:6379");
+        // STEP_END
+
+        // STEP_START cleanup_json
+        try {jedis.ftDropIndex("idx:users");} catch (JedisDataException j){}
+        jedis.del("user:1", "user:2", "user:3");
         // STEP_END
 
         // STEP_START make_index
@@ -151,6 +148,11 @@ public class HomeJsonExample {
                     .sorted().toArray());
         // REMOVE_END
 
+        // STEP_START cleanup_hash
+        try {jedis.ftDropIndex("hash-idx:users");} catch (JedisDataException j){}
+        jedis.del("huser:1", "huser:2", "huser:3");
+        // STEP_END
+
         // STEP_START make_hash_index
         SchemaField[] hashSchema = {
             TextField.of("name"),
@@ -223,9 +225,9 @@ public class HomeJsonExample {
         assertEquals("huser:3", paulHashDocs.get(0).getId());
         // REMOVE_END
 
-// HIDE_START
+        // STEP_START close
         jedis.close();
+        // STEP_END
     }
 }
-// HIDE_END
 

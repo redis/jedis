@@ -469,7 +469,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.11.3</version>
+				<version>3.12.0</version>
 				<configuration>
 					<source>8</source><!-- Until JDK 11+ -->
 					<detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->

@@ -1,8 +1,6 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
@@ -16,7 +14,7 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
 // Legacy
-public class JedisPool extends Pool<Jedis> {
+public class JedisPool extends Pool<Jedis> implements JedisProvider {
 
   private static final Logger log = LoggerFactory.getLogger(JedisPool.class);
 
@@ -395,16 +393,5 @@ public class JedisPool extends Pool<Jedis> {
     }
   }
 
-  public void withResource(Consumer<Jedis> consumer) {
-    try (Jedis jedis = this.getResource()) {
-      consumer.accept(jedis);
-    }
-  }
-
-  public <K> K withResourceGet(Function<Jedis, K> function) {
-    try (Jedis jedis = this.getResource()) {
-      return function.apply(jedis);
-    }
-  }
 
 }

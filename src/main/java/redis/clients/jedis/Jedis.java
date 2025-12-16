@@ -23,6 +23,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -562,6 +563,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] digestKey(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value));
@@ -629,6 +636,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.del(keys));
   }
+  @Override
+  public long delex(final byte[] key, final CompareCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
 
   @Override
   public long del(final byte[] key) {
@@ -5207,6 +5220,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String getEx(String key, GetExParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.getEx(key, params));
+  }
+
+  @Override
+  public String digestKey(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public long delex(final String key, final CompareCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
   }
 
   /**

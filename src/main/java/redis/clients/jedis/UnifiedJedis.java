@@ -17,6 +17,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheConnection;
@@ -635,6 +636,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long delex(String key, CompareCondition condition) {
+    return executeCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
   public long del(String... keys) {
     return executeCommand(commandObjects.del(keys));
   }
@@ -642,6 +648,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long unlink(String key) {
     return executeCommand(commandObjects.unlink(key));
+  }
+
+  @Override
+  public long delex(byte[] key, CompareCondition condition) {
+    return executeCommand(commandObjects.delex(key, condition));
   }
 
   @Override
@@ -810,6 +821,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String digestKey(String key) {
+    return executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public String setGet(String key, String value) {
     return executeCommand(commandObjects.setGet(key, value));
   }
@@ -842,6 +858,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] get(byte[] key) {
     return executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public byte[] digestKey(byte[] key) {
+    return executeCommand(commandObjects.digestKey(key));
   }
 
   @Override

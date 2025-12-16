@@ -1,4 +1,5 @@
 // EXAMPLE: java_home_json
+// BINDER_ID jedis-java_home_json
 // REMOVE_START
 package io.redis.examples;
 

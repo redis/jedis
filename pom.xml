@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>7.1.0-SNAPSHOT</version>
+	<version>7.2.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -57,7 +57,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.20.0</jackson.version>
+		<jackson.version>2.20.1</jackson.version>
 		<maven.surefire.version>3.5.4</maven.surefire.version>
 		<junit.version>5.13.4</junit.version>
 		<!-- Default JVM options for tests -->
@@ -487,12 +487,12 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.3.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.central</groupId>
 				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>0.8.0</version>
+				<version>0.9.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<publishingServerId>central</publishingServerId>
@@ -544,7 +544,12 @@
 						<include>**/ClientTestUtil.java</include>
 						<include>**/ReflectionTestUtil.java</include>
 						<include>**/*CommandFlags*.java</include>
+						<include>**/*CompareCondition*.java</include>
 						<include>**/*MSetExParams*.java</include>
+						<include>**/*UnitTest.java</include>
+						<include>**/DriverInfo.java</include>
+						<include>**/ClientSetInfo*.java</include>
+						<include>**/ClientCommandsTest*.java</include>
 					</includes>
 				</configuration>
 				<executions>

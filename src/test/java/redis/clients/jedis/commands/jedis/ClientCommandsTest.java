@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +43,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   private final Pattern pattern = Pattern.compile("\\bname=" + clientName + "\\b");
 
   private Jedis client;
-
 
   public ClientCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -93,6 +91,21 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("7.2.0")
+  public void clientSetInfoCommandExpandLibName() {
+    String baseLibName = "Jedis::A-Redis-Java-library";
+    String upstreamDriver = "spring-data-redis_v3.2.0";
+    String expandedLibName = baseLibName + "(" + upstreamDriver + ")";
+    String libVersion = "999.999.999";
+
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_NAME, expandedLibName));
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
+    String info = client.clientInfo();
+    assertTrue(info.contains("lib-name=" + expandedLibName));
+    assertTrue(info.contains("lib-ver=" + libVersion));
+  }
+
+  @Test
   public void clientId() {
     long clientId = client.clientId();
 
@@ -129,7 +142,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void clientUnblock() throws InterruptedException, TimeoutException {
     long clientId = client.clientId();
     assertEquals(0, jedis.clientUnblock(clientId, UnblockType.ERROR));
-    Future<?> future = Executors.newSingleThreadExecutor().submit(() -> client.brpop(100000, "foo"));
+    Future<?> future = Executors.newSingleThreadExecutor()
+        .submit(() -> client.brpop(100000, "foo"));
 
     try {
       // to make true command already executed
@@ -137,7 +151,9 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
       assertEquals(1, jedis.clientUnblock(clientId, UnblockType.ERROR));
       future.get(1, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
-      assertEquals("redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK", e.getMessage());
+      assertEquals(
+        "redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK",
+        e.getMessage());
     }
   }
 
@@ -233,7 +249,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     matcher.find();
     String addr = matcher.group(1);
     int lastColon = addr.lastIndexOf(":");
-    String[] hp = new String[]{addr.substring(0, lastColon), addr.substring(lastColon + 1)};
+    String[] hp = new String[] { addr.substring(0, lastColon), addr.substring(lastColon + 1) };
 
     assertEquals(1, jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1]))));
 
@@ -311,8 +327,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void trackingInfoResp3() {
-    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-            .protocol(RedisProtocol.RESP3).build());
+    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
     TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
 
     assertEquals(1, trackingInfo.getFlags().size());

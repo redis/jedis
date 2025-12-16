@@ -41,7 +41,7 @@ public class RedisClient extends UnifiedJedis {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
- /**
+  /**
    * Creates a RedisClient from a Redis URI.
    * <p>
    * The URI must be in the format: {@code redis[s]://[[user][:password]@]host[:port][/database]}

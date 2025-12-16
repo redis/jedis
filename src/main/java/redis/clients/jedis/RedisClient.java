@@ -41,13 +41,23 @@ public class RedisClient extends UnifiedJedis {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
-  /**
-   * WARNING: This constructor only accepts a uri string as {@code url}.
-   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+ /**
+   * Creates a RedisClient from a Redis URI.
    * <p>
-   * To use a host string, {@link #RedisClient(java.lang.String, int)} can be used with
-   * {@link Protocol#DEFAULT_PORT}.
-   * @param url redis url
+   * The URI must be in the format: {@code redis[s]://[[user][:password]@]host[:port][/database]}
+   * <p>
+   * Examples:
+   * <ul>
+   * <li>{@code redis://localhost:6379}</li>
+   * <li>{@code redis://user:password@localhost:6379/0}</li>
+   * <li>{@code rediss://localhost:6380} (SSL)</li>
+   * </ul>
+   * <p>
+   * <b>Note:</b> To connect using just a hostname and port without a URI, use
+   * {@link #RedisClient(String, int)} instead.
+   * @param url Redis URI string (not just a hostname)
+   * @throws IllegalArgumentException if the URI format is invalid
+   * @see JedisURIHelper#isValid(java.net.URI)
    */
   public RedisClient(final String url) {
     super(url);

@@ -37,8 +37,19 @@ import redis.clients.jedis.util.Pool;
  */
 public class RedisClient extends UnifiedJedis {
 
-  public RedisClient() {
-    this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+  private RedisClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  }
+
+  /**
+   * Creates a RedisClient with default host and port (localhost:6379).
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @return a new {@link RedisClient} instance
+   */
+  public static RedisClient create() {
+    return builder().build();
   }
 
   /**
@@ -54,35 +65,67 @@ public class RedisClient extends UnifiedJedis {
    * </ul>
    * <p>
    * <b>Note:</b> To connect using just a hostname and port without a URI, use
-   * {@link #RedisClient(String, int)} instead.
+   * {@link #create(String, int)} instead.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
    * @param url Redis URI string (not just a hostname)
+   * @return a new {@link RedisClient} instance
    * @throws IllegalArgumentException if the URI format is invalid
    * @see JedisURIHelper#isValid(java.net.URI)
    */
-  public RedisClient(final String url) {
-    super(url);
+  public static RedisClient create(final String url) {
+    return builder().fromURI(url).build();
   }
 
-  public RedisClient(final String host, final int port) {
-    this(new HostAndPort(host, port));
+  /**
+   * Creates a RedisClient with the specified host and port.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @param host the Redis server hostname
+   * @param port the Redis server port
+   * @return a new {@link RedisClient} instance
+   */
+  public static RedisClient create(final String host, final int port) {
+    return builder().hostAndPort(host, port).build();
   }
 
-  public RedisClient(final HostAndPort hostAndPort) {
-    super(hostAndPort);
+  /**
+   * Creates a RedisClient with the specified host and port.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @param hostAndPort the Redis server host and port
+   * @return a new {@link RedisClient} instance
+   */
+  public static RedisClient create(final HostAndPort hostAndPort) {
+    return builder().hostAndPort(hostAndPort).build();
   }
 
-  public RedisClient(final String host, final int port, final String user, final String password) {
-    super(new HostAndPort(host, port),
-        DefaultJedisClientConfig.builder().user(user).password(password).build());
+  /**
+   * Creates a RedisClient with the specified host, port, user, and password.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @param host the Redis server hostname
+   * @param port the Redis server port
+   * @param user the username for authentication
+   * @param password the password for authentication
+   * @return a new {@link RedisClient} instance
+   */
+  public static RedisClient create(final String host, final int port, final String user,
+      final String password) {
+    return builder().hostAndPort(host, port)
+        .clientConfig(DefaultJedisClientConfig.builder().user(user).password(password).build())
+        .build();
   }
 
-  public RedisClient(final URI uri) {
-    super(uri);
-  }
-
-  private RedisClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  /**
+   * Creates a RedisClient from a Redis URI.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @param uri the Redis server URI
+   * @return a new {@link RedisClient} instance
+   */
+  public static RedisClient create(final URI uri) {
+    return builder().fromURI(uri).build();
   }
 
   /**

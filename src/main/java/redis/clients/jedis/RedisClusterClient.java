@@ -22,11 +22,11 @@ import redis.clients.jedis.util.JedisClusterCRC16;
  * API, allowing for consistent usage patterns across standalone, sentinel, and cluster deployments.
  * <p>
  * <b>Usage:</b>
- * 
+ *
  * <pre>{@code
  *   Set<HostAndPort> clusterNodes = new HashSet<>();
  *   clusterNodes.add(new HostAndPort("127.0.0.1", 7000));
- *   RedisClusterClient client = new RedisClusterClient(clusterNodes);
+ *   RedisClusterClient client = RedisClusterClient.create(clusterNodes);
  *   client.set("key", "value");
  *   String value = client.get("key");
  * }</pre>
@@ -37,8 +37,8 @@ import redis.clients.jedis.util.JedisClusterCRC16;
  * <p>
  * <b>Thread-safety:</b> This client is thread-safe and can be shared across multiple threads.
  * <p>
- * <b>Configuration:</b> Various constructors allow for flexible configuration, including
- * authentication and custom timeouts.
+ * <b>Configuration:</b> Use the {@link #builder()} method for advanced configuration, or the
+ * {@link #create(HostAndPort)} and {@link #create(Set)} factory methods for simple use cases.
  */
 // @formatter:on
 public class RedisClusterClient extends UnifiedJedis {
@@ -55,6 +55,11 @@ public class RedisClusterClient extends UnifiedJedis {
    */
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
+  private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  }
+
   /**
    * Creates a RedisClusterClient instance. The provided node is used to make the first contact with
    * the cluster.
@@ -62,13 +67,17 @@ public class RedisClusterClient extends UnifiedJedis {
    * Here, the default timeout of {@value redis.clients.jedis.RedisClusterClient#DEFAULT_TIMEOUT} ms
    * is being used with {@value redis.clients.jedis.RedisClusterClient#DEFAULT_MAX_ATTEMPTS} maximum
    * attempts.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
    * @param node Node to first connect to.
+   * @return a new {@link RedisClusterClient} instance
    */
-  public RedisClusterClient(HostAndPort node) {
-    super(
-        new ClusterConnectionProvider(Collections.singleton(node),
-            DefaultJedisClientConfig.builder().timeoutMillis(DEFAULT_TIMEOUT).build()),
-        DEFAULT_MAX_ATTEMPTS, Duration.ofMillis((long) DEFAULT_TIMEOUT * DEFAULT_MAX_ATTEMPTS));
+  public static RedisClusterClient create(HostAndPort node) {
+    return builder().nodes(Collections.singleton(node))
+        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(DEFAULT_TIMEOUT).build())
+        .maxAttempts(DEFAULT_MAX_ATTEMPTS)
+        .maxTotalRetriesDuration(Duration.ofMillis((long) DEFAULT_TIMEOUT * DEFAULT_MAX_ATTEMPTS))
+        .build();
   }
 
   /**
@@ -77,26 +86,38 @@ public class RedisClusterClient extends UnifiedJedis {
    * Here, the default timeout of {@value redis.clients.jedis.RedisClusterClient#DEFAULT_TIMEOUT} ms
    * is being used with {@value redis.clients.jedis.RedisClusterClient#DEFAULT_MAX_ATTEMPTS} maximum
    * attempts.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
    * @param nodes Nodes to connect to.
+   * @return a new {@link RedisClusterClient} instance
    */
-  public RedisClusterClient(Set<HostAndPort> nodes) {
-    super(
-        new ClusterConnectionProvider(nodes,
-            DefaultJedisClientConfig.builder().timeoutMillis(DEFAULT_TIMEOUT).build()),
-        DEFAULT_MAX_ATTEMPTS, Duration.ofMillis((long) DEFAULT_TIMEOUT * DEFAULT_MAX_ATTEMPTS));
+  public static RedisClusterClient create(Set<HostAndPort> nodes) {
+    return builder().nodes(nodes)
+        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(DEFAULT_TIMEOUT).build())
+        .maxAttempts(DEFAULT_MAX_ATTEMPTS)
+        .maxTotalRetriesDuration(Duration.ofMillis((long) DEFAULT_TIMEOUT * DEFAULT_MAX_ATTEMPTS))
+        .build();
   }
 
-  public RedisClusterClient(Set<HostAndPort> nodes, String user, String password) {
-    super(
-        new ClusterConnectionProvider(nodes,
-            DefaultJedisClientConfig.builder().user(user).password(password).build()),
-        DEFAULT_MAX_ATTEMPTS,
-        Duration.ofMillis((long) Protocol.DEFAULT_TIMEOUT * DEFAULT_MAX_ATTEMPTS));
-  }
-
-  private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+  /**
+   * Creates a RedisClusterClient with multiple entry points and authentication.
+   * <p>
+   * Here, the default timeout of {@value redis.clients.jedis.Protocol#DEFAULT_TIMEOUT} ms is being
+   * used with {@value redis.clients.jedis.RedisClusterClient#DEFAULT_MAX_ATTEMPTS} maximum
+   * attempts.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @param nodes Nodes to connect to.
+   * @param user Username for authentication.
+   * @param password Password for authentication.
+   * @return a new {@link RedisClusterClient} instance
+   */
+  public static RedisClusterClient create(Set<HostAndPort> nodes, String user, String password) {
+    return builder().nodes(nodes)
+        .clientConfig(DefaultJedisClientConfig.builder().user(user).password(password).build())
+        .maxAttempts(DEFAULT_MAX_ATTEMPTS).maxTotalRetriesDuration(
+          Duration.ofMillis((long) Protocol.DEFAULT_TIMEOUT * DEFAULT_MAX_ATTEMPTS))
+        .build();
   }
 
   /**

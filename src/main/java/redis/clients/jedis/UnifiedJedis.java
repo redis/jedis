@@ -60,7 +60,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   private final Cache cache;
 
   /**
-   * @deprecated Use {@link RedisClient#RedisClient()} instead.
+   * @deprecated Use {@link RedisClient#create()} instead.
    */
   @Deprecated
   public UnifiedJedis() {
@@ -68,7 +68,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link RedisClient#RedisClient(HostAndPort)} instead.
+   * @deprecated Use {@link RedisClient#create(HostAndPort)} instead.
    */
   @Deprecated
   public UnifiedJedis(HostAndPort hostAndPort) {
@@ -76,7 +76,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link RedisClient#RedisClient(String)} instead.
+   * @deprecated Use {@link RedisClient#create(String)} instead.
    */
   @Deprecated
   public UnifiedJedis(final String url) {
@@ -84,7 +84,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link RedisClient#RedisClient(URI)} instead.
+   * @deprecated Use {@link RedisClient#create(URI)} instead.
    */
   @Deprecated
   public UnifiedJedis(final URI uri) {

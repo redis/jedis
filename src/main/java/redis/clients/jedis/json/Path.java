@@ -23,6 +23,10 @@ public class Path {
   public static Path of(final String strPath) {
     return new Path(strPath);
   }
+  
+  public static Path ofJsonPointer(final String strPath) {
+    return new Path(JsonPointer.parse(strPath, ROOT_PATH.strPath));
+  }
 
   @Override
   public boolean equals(Object obj) {

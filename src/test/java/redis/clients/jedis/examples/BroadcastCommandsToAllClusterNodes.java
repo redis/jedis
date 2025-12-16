@@ -16,7 +16,7 @@ public class BroadcastCommandsToAllClusterNodes {
   public static void main(String[] args) {
 
     HostAndPort clusterNode = new HostAndPort("127.0.0.1", 7000);
-    RedisClusterClient client = new RedisClusterClient(clusterNode);
+    RedisClusterClient client = RedisClusterClient.create(clusterNode);
 
     String reply = client.configSet("maxmemory", "100mb"); // reply is "OK"
   }

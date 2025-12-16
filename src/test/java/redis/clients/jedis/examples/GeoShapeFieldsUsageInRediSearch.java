@@ -50,7 +50,7 @@ public class GeoShapeFieldsUsageInRediSearch {
     final int port = 6379;
     final HostAndPort address = new HostAndPort(host, port);
 
-    RedisClient client = new RedisClient(address);
+    RedisClient client = RedisClient.create(address);
     // client.setDefaultSearchDialect(3); // we can set default search dialect for the client (UnifiedJedis) object
                                           // to avoid setting dialect in every query.
 

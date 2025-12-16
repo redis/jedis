@@ -22,7 +22,7 @@ public class StreamsExample {
   @Test
   public void run() {
     //HIDE_START
-    RedisClient jedis = new RedisClient("redis://localhost:6379");
+    RedisClient jedis = RedisClient.create("redis://localhost:6379");
     //HIDE_END
 
     //REMOVE_START

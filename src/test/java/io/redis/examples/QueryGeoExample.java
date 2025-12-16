@@ -25,7 +25,7 @@ public class QueryGeoExample {
 
     @Test
     public void run() {
-        RedisClient jedis = new RedisClient("redis://localhost:6379");
+        RedisClient jedis = RedisClient.create("redis://localhost:6379");
 
         //REMOVE_START
         // Clear any keys here before using them in tests.

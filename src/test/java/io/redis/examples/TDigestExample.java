@@ -16,7 +16,7 @@ public class TDigestExample {
     @Test
     public void run(){
         //HIDE_START
-        RedisClient jedis = new RedisClient("redis://127.0.0.1:6379");
+        RedisClient jedis = RedisClient.create("redis://127.0.0.1:6379");
         //HIDE_END
 
         //REMOVE_START

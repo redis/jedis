@@ -14,7 +14,7 @@ public class SetGetExample {
   @Test
   public void run() {
 
-    RedisClient jedis = new RedisClient("redis://localhost:6379");
+    RedisClient jedis = RedisClient.create("redis://localhost:6379");
     // HIDE_END
 
     String status = jedis.set("bike:1", "Process 134");

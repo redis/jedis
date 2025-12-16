@@ -18,7 +18,7 @@ public class StringExample {
 
   @Test
   public void run() {
-    try (RedisClient jedis = new RedisClient("redis://localhost:6379")) {
+    try (RedisClient jedis = RedisClient.create("redis://localhost:6379")) {
 
       // STEP_START set_get
       String res1 = jedis.set("bike:1", "Deimos");

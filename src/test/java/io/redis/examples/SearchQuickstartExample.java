@@ -36,7 +36,7 @@ public class SearchQuickstartExample {
   @Test
   public void run() {
     // STEP_START connect
-    RedisClient jedis = new RedisClient("localhost", 6379);
+    RedisClient jedis = RedisClient.create("localhost", 6379);
     // STEP_END
     // REMOVE_START
     try {

@@ -15,7 +15,7 @@ public class HomeProbDtsExample {
 
     @Test
     public void run() {
-        RedisClient jedis = new RedisClient("redis://localhost:6379");
+        RedisClient jedis = RedisClient.create("redis://localhost:6379");
 
         // REMOVE_START
         jedis.del(

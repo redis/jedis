@@ -18,7 +18,7 @@ public class GeoExample {
 
   @Test
   public void run() {
-    try (RedisClient jedis = new RedisClient("redis://localhost:6379")) {
+    try (RedisClient jedis = RedisClient.create("redis://localhost:6379")) {
       // REMOVE_START
       jedis.del("bikes:rentable");
       // REMOVE_END

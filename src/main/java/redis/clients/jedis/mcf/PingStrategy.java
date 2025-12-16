@@ -7,13 +7,12 @@ import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.RedisClient;
-import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
 
 public class PingStrategy implements HealthCheckStrategy {
   private static final int MAX_HEALTH_CHECK_POOL_SIZE = 2;
 
-  private final UnifiedJedis jedis;
+  private final RedisClient jedis;
   private final HealthCheckStrategy.Config config;
 
   public PingStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {

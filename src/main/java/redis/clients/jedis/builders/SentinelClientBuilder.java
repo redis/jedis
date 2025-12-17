@@ -77,7 +77,7 @@ public abstract class SentinelClientBuilder<C>
    * @return
    */
   public SentinelClientBuilder<C> sentinelReconnectDelay(Delay reconnectDelay) {
-    this.sentinellReconnectDelay = DEFAULT_RESUBSCRIBE_DELAY;
+    this.sentinellReconnectDelay = reconnectDelay;
     return this;
   }
 

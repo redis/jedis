@@ -6,6 +6,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 import redis.clients.jedis.util.Delay;
+import redis.clients.jedis.util.JedisAsserts;
 
 /**
  * Builder for creating JedisSentineled instances (Redis Sentinel connections).
@@ -77,6 +78,7 @@ public abstract class SentinelClientBuilder<C>
    * @return
    */
   public SentinelClientBuilder<C> sentinelReconnectDelay(Delay reconnectDelay) {
+    JedisAsserts.notNull(reconnectDelay, "reconnectDelay must not be null");
     this.sentinellReconnectDelay = reconnectDelay;
     return this;
   }

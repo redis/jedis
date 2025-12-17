@@ -543,7 +543,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      jedis.lpush("foo", "bar");
+      client.lpush("foo", "bar");
     }).start();
 
     result = pipe.blpop(1.2, "foo");
@@ -655,7 +655,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      jedis.lpush("foo", "bar");
+      client.lpush("foo", "bar");
     }).start();
 
     result = pipe.brpop(1.2, "foo");
@@ -759,7 +759,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      jedis.lpush("foo", "a");
+      client.lpush("foo", "a");
     }).start();
 
     Response<String> element = pipe.brpoplpush("foo", "bar", 0);
@@ -780,7 +780,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      jedis.lpush(bfoo, bA);
+      client.lpush(bfoo, bA);
     }).start();
 
     Response<byte[]> belement = pipe.brpoplpush(bfoo, bbar, 0);
@@ -920,7 +920,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      jedis.rpush("foo", "bar1", "bar2", "bar3");
+      client.rpush("foo", "bar1", "bar2", "bar3");
     }).start();
 
     Response<String> response = pipe.blmove("foo", "bar", ListDirection.RIGHT, ListDirection.LEFT, 0);
@@ -940,7 +940,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      jedis.rpush(bfoo, b1, b2, b3);
+      client.rpush(bfoo, b1, b2, b3);
     }).start();
 
     Response<byte[]> bresponse = pipe.blmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT, 0);

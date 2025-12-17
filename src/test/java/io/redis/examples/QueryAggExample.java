@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.ArrayList;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.FTCreateParams;
 import redis.clients.jedis.search.IndexDataType;
@@ -27,7 +27,7 @@ public class QueryAggExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = RedisClient.create("redis://localhost:6379");
 
         //REMOVE_START
         // Clear any keys here before using them in tests.

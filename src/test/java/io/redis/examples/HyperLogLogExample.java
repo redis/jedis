@@ -2,7 +2,7 @@
 package io.redis.examples;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -11,7 +11,7 @@ public class HyperLogLogExample {
     @Test
     public void run() {
         // HIDE_START
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = RedisClient.create("redis://localhost:6379");
         // HIDE_END
 
         // REMOVE_START

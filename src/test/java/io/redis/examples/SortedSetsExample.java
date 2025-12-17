@@ -2,7 +2,7 @@
 //HIDE_START
 package io.redis.examples;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.resps.Tuple;
 //HIDE_END
 
@@ -19,7 +19,7 @@ public class SortedSetsExample {
   @Test
   public void run() {
     //HIDE_START
-    UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+    RedisClient jedis = RedisClient.create("redis://localhost:6379");
     //HIDE_END
 
     //REMOVE_START

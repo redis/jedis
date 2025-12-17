@@ -4,7 +4,7 @@ package io.redis.examples;
 //HIDE_END
 
 //REMOVE_START
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class CMSExample {
   @Test
   public void run() {
     //HIDE_START
-    UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+    RedisClient jedis = RedisClient.create("redis://localhost:6379");
     //HIDE_END
 
     //REMOVE_START

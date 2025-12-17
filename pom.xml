@@ -550,6 +550,7 @@
 						<include>**/DriverInfo.java</include>
 						<include>**/ClientSetInfo*.java</include>
 						<include>**/ClientCommandsTest*.java</include>
+						<include>**/Delay*.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -1,5 +1,6 @@
 package redis.clients.jedis.providers;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.Delay;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.Pool;
 
@@ -33,6 +35,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   private static final Logger LOG = LoggerFactory.getLogger(SentineledConnectionProvider.class);
 
   protected static final long DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS = 5000;
+
+  static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay.constant(Duration.ofMillis(DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS));
 
   private volatile HostAndPort currentMaster;
 
@@ -50,7 +54,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final JedisClientConfig sentinelClientConfig;
 
-  private final long subscribeRetryWaitTimeMillis;
+  private final Delay resubscribeDelay;
 
   private final Lock initPoolLock = new ReentrantLock(true);
 
@@ -77,35 +81,51 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
-        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
+        DEFAULT_RESUBSCRIBE_DELAY);
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-      final GenericObjectPoolConfig<Connection> poolConfig,
-      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
-      final long subscribeRetryWaitTimeMillis) {
-    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis);
+          final GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels,
+          final JedisClientConfig sentinelClientConfig, final long subscribeRetryWaitTimeMillis) {
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig,
+            Delay.constant(Duration.ofMillis(subscribeRetryWaitTimeMillis)));
+  }
+
+  /**
+   * @deprecated use
+   * {@link #SentineledConnectionProvider(String, JedisClientConfig, Cache, GenericObjectPoolConfig, Set, JedisClientConfig,
+   * Delay)}
+   */
+  @Experimental
+  @Deprecated
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
+          final GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels,
+          final JedisClientConfig sentinelClientConfig, final long subscribeRetryWaitTimeMillis) {
+
+    this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
+            Delay.constant(Duration.ofMillis(subscribeRetryWaitTimeMillis)));
   }
 
   @Experimental
-  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-      Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
-      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
-      final long subscribeRetryWaitTimeMillis) {
-
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
+          final GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels,
+          final JedisClientConfig sentinelClientConfig, final Delay resubscribeDelay) {
     this.masterName = masterName;
     this.masterClientConfig = masterClientConfig;
     this.clientSideCache = clientSideCache;
     this.masterPoolConfig = poolConfig;
 
     this.sentinelClientConfig = sentinelClientConfig;
-    this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
+    this.resubscribeDelay = resubscribeDelay;
 
     HostAndPort master = initSentinels(sentinels);
     initMaster(master);
   }
 
-  @Override
+
+
+
+    @Override
   public Connection getConnection() {
     return pool.getResource();
   }
@@ -254,6 +274,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     protected final HostAndPort node;
     protected volatile Jedis sentinelJedis;
     protected AtomicBoolean running = new AtomicBoolean(false);
+    protected long subscribeAttempt = 0;
 
     public SentinelListener(HostAndPort node) {
       super(String.format("%s-SentinelListener-[%s]", masterName, node.toString()));
@@ -264,9 +285,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     public void run() {
 
       running.set(true);
-
+      
       while (running.get()) {
-
         try {
           // double check that it is not being shutdown
           if (!running.get()) {
@@ -284,6 +304,13 @@ public class SentineledConnectionProvider implements ConnectionProvider {
           }
 
           sentinelJedis.subscribe(new JedisPubSub() {
+            @Override
+            public void onSubscribe(String channel, int subscribedChannels) {
+              // Successfully subscribed - reset attempt counter
+              subscribeAttempt = 0;
+              LOG.debug("Successfully subscribed to {} on Sentinel {}. Reset attempt counter.", channel, node);
+            }
+
             @Override
             public void onMessage(String channel, String message) {
               LOG.debug("Sentinel {} published: {}.", node, message);
@@ -310,6 +337,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         } catch (JedisException e) {
 
           if (running.get()) {
+            long subscribeRetryWaitTimeMillis = resubscribeDelay.delay(subscribeAttempt).toMillis();
+            subscribeAttempt++;
             LOG.error("Lost connection to Sentinel {}. Sleeping {}ms and retrying.", node,
                 subscribeRetryWaitTimeMillis, e);
             try {

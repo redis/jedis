@@ -2,7 +2,7 @@
 // HIDE_START
 package io.redis.examples;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 
 // REMOVE_START
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ public class SetGetExample {
   @Test
   public void run() {
 
-    UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+    RedisClient jedis = RedisClient.create("redis://localhost:6379");
     // HIDE_END
 
     String status = jedis.set("bike:1", "Process 134");

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.SentinelClientBuilder;
@@ -12,6 +13,14 @@ import redis.clients.jedis.providers.SentineledConnectionProvider;
 
 import java.util.Set;
 
+/**
+ * JedisSentineled is a client for Redis Sentinel deployments.
+ *
+ * @deprecated Use {@link RedisSentinelClient} instead. RedisSentinelClient provides the same functionality
+ *             with a cleaner API. Use {@link RedisSentinelClient#builder()} to configure the client
+ *             with sentinel settings, master configuration, and connection pooling options.
+ */
+@Deprecated
 public class JedisSentineled extends UnifiedJedis {
 
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,

@@ -36,8 +36,7 @@ public class SearchQuickstartExample {
   @Test
   public void run() {
     // STEP_START connect
-    // UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
-    JedisPooled jedis = new JedisPooled("localhost", 6379);
+    RedisClient jedis = RedisClient.create("localhost", 6379);
     // STEP_END
     // REMOVE_START
     try {

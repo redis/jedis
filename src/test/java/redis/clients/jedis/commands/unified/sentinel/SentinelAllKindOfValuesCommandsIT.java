@@ -3,14 +3,7 @@ package redis.clients.jedis.commands.unified.sentinel;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisSentineled;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
@@ -48,7 +41,7 @@ public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTe
   @Override
   protected UnifiedJedis createTestClient() {
 
-    return JedisSentineled.builder()
+    return RedisSentinelClient.builder()
         .clientConfig(primary.getClientConfigBuilder().protocol(protocol).build())
         .sentinels(sentinels).sentinelClientConfig(sentinelClientConfig).masterName("mymaster")
         .build();

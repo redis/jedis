@@ -5,7 +5,7 @@ package io.redis.examples;
 import org.junit.jupiter.api.Test;
 // REMOVE_END
 import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
@@ -18,7 +18,7 @@ public class GeoExample {
 
   @Test
   public void run() {
-    try (UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379")) {
+    try (RedisClient jedis = RedisClient.create("redis://localhost:6379")) {
       // REMOVE_START
       jedis.del("bikes:rentable");
       // REMOVE_END

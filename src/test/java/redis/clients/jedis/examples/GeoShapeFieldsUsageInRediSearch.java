@@ -8,8 +8,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.schemafields.GeoShapeField;
@@ -51,7 +50,7 @@ public class GeoShapeFieldsUsageInRediSearch {
     final int port = 6379;
     final HostAndPort address = new HostAndPort(host, port);
 
-    UnifiedJedis client = new JedisPooled(address);
+    RedisClient client = RedisClient.create(address);
     // client.setDefaultSearchDialect(3); // we can set default search dialect for the client (UnifiedJedis) object
                                           // to avoid setting dialect in every query.
 

@@ -359,7 +359,7 @@ public class Schema {
     @Override
     public String toString() {
       return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
-          + ", separator='" + separator + ", caseSensitive='" + caseSensitive + "'}";
+          + ", separator='" + separator + "', caseSensitive='" + caseSensitive + "'}";
     }
   }
 

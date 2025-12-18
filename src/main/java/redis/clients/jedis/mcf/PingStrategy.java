@@ -6,14 +6,13 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
 
 public class PingStrategy implements HealthCheckStrategy {
   private static final int MAX_HEALTH_CHECK_POOL_SIZE = 2;
 
-  private final UnifiedJedis jedis;
+  private final RedisClient jedis;
   private final HealthCheckStrategy.Config config;
 
   public PingStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
@@ -24,7 +23,8 @@ public class PingStrategy implements HealthCheckStrategy {
       HealthCheckStrategy.Config config) {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(MAX_HEALTH_CHECK_POOL_SIZE);
-    this.jedis = new JedisPooled(hostAndPort, jedisClientConfig, poolConfig);
+    this.jedis = RedisClient.builder().hostAndPort(hostAndPort).clientConfig(jedisClientConfig)
+        .poolConfig(poolConfig).build();
     this.config = config;
   }
 

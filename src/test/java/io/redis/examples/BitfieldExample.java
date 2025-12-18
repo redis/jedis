@@ -7,7 +7,7 @@ import java.util.List;
 // REMOVE_END
 
 // HIDE_START
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 // HIDE_END
@@ -17,7 +17,7 @@ public class BitfieldExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = RedisClient.create("redis://localhost:6379");
 // HIDE_END
 
         //REMOVE_START

@@ -158,7 +158,7 @@ public class SentineledConnectionProviderTest {
   public void checkCloseableConnections() throws Exception {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
 
-    try (JedisSentineled jedis = JedisSentineled
+    try (RedisSentinelClient jedis = RedisSentinelClient
         .builder().masterName(MASTER_NAME).clientConfig(DefaultJedisClientConfig.builder()
             .timeoutMillis(1000).password("foobared").database(2).build())
         .poolConfig(config).sentinels(sentinels).build()) {
@@ -174,7 +174,7 @@ public class SentineledConnectionProviderTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
-    try (JedisSentineled jedis = JedisSentineled
+    try (RedisSentinelClient jedis = RedisSentinelClient
         .builder().masterName(MASTER_NAME).clientConfig(DefaultJedisClientConfig.builder()
             .timeoutMillis(1000).password("foobared").database(2).build())
         .poolConfig(config).sentinels(sentinels).build()) {
@@ -200,7 +200,7 @@ public class SentineledConnectionProviderTest {
     DefaultRedisCredentialsProvider credentialsProvider
         = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "foobared"));
 
-    try (JedisSentineled jedis = JedisSentineled.builder().masterName(MASTER_NAME)
+    try (RedisSentinelClient jedis = RedisSentinelClient.builder().masterName(MASTER_NAME)
         .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000)
             .credentialsProvider(credentialsProvider).database(2).clientName("my_shiny_client_name")
             .build())
@@ -231,7 +231,7 @@ public class SentineledConnectionProviderTest {
     DefaultRedisCredentialsProvider credentialsProvider
         = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "wrong password"));
 
-    try (JedisSentineled jedis = JedisSentineled.builder().masterName(MASTER_NAME)
+    try (RedisSentinelClient jedis = RedisSentinelClient.builder().masterName(MASTER_NAME)
         .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000)
             .credentialsProvider(credentialsProvider).database(2).clientName("my_shiny_client_name")
             .build())

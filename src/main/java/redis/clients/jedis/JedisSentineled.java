@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.SentinelClientBuilder;

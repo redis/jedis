@@ -1,4 +1,28 @@
 {
+  "sentinel-standalone0": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:26379"
+    ]
+  },
+  "sentinel-standalone2-1": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:26380"
+    ]
+  },
+  "sentinel-failover": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:26381"
+    ]
+  },
+  "sentinel-standalone2-3": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:26382"
+    ]
+  },
   "redis-failover-1": {
     "tls": false,
     "endpoints": [

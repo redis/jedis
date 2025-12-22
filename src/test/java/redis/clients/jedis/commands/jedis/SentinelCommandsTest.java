@@ -30,8 +30,8 @@ public class SentinelCommandsTest {
   protected static final Set<String> nodesPorts = nodes.stream()
       .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
 
-  protected static final List<HostAndPort> sentinels2 = 
-      Arrays.asList(HostAndPorts.getSentinelServers().get(1), HostAndPorts.getSentinelServers().get(3));
+  protected static final List<HostAndPort> sentinels2 =
+      Arrays.asList(HostAndPorts.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(), HostAndPorts.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
 
   @Test
   public void myIdAndSentinels() {

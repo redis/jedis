@@ -8,7 +8,6 @@ public final class HostAndPorts {
 
   private static HashMap<String, EndpointConfig> endpointConfigs;
 
-  private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> stableClusterHostAndPortList = new ArrayList<>();
 
@@ -19,12 +18,6 @@ public final class HostAndPorts {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
-    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
-    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
-    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2));
-    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 3));
-    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 4));
 
     clusterHostAndPortList.add(new HostAndPort("localhost", 7379));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7380));
@@ -44,10 +37,6 @@ public final class HostAndPorts {
     }
 
     return endpointConfigs.get(endpointName);
-  }
-
-  public static List<HostAndPort> getSentinelServers() {
-    return sentinelHostAndPortList;
   }
 
   public static List<HostAndPort> getClusterServers() {

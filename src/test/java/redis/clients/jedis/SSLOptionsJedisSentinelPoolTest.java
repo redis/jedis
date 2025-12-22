@@ -29,10 +29,10 @@ public class SSLOptionsJedisSentinelPoolTest {
 
   @BeforeAll
   public static void prepare() {
-    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis9-sentinel/work/tls"));
+    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
 
-    sentinels.add(HostAndPorts.getSentinelServers().get(4));
+    sentinels.add(HostAndPorts.getRedisEndpoint("sentinel-standalone0").getHostAndPort());
   }
 
   @Test

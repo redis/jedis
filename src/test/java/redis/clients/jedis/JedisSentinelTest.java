@@ -26,10 +26,10 @@ public class JedisSentinelTest {
   private static final String FAILOVER_MASTER_NAME = "mymasterfailover";
   private static final String MASTER_IP = "127.0.0.1";
 
-  protected static EndpointConfig master = HostAndPorts.getRedisEndpoint("standalone0");
-  protected static HostAndPort sentinel = HostAndPorts.getSentinelServers().get(0);
+  protected static EndpointConfig master = HostAndPorts.getRedisEndpoint("standalone2");
+  protected static HostAndPort sentinel = HostAndPorts.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
 
-  protected static HostAndPort sentinelForFailover = HostAndPorts.getSentinelServers().get(2);
+  protected static HostAndPort sentinelForFailover = HostAndPorts.getRedisEndpoint("sentinel-failover").getHostAndPort();
 
   @BeforeEach
   public void setup() throws InterruptedException {

@@ -174,7 +174,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleSentinel() {
-    try (Jedis sentinel = new Jedis(HostAndPorts.getSentinelServers().get(0))) {
+    try (Jedis sentinel = new Jedis(HostAndPorts.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort())) {
 
       List<Object> role = sentinel.role();
       assertEquals("sentinel", role.get(0));

@@ -31,12 +31,12 @@ public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
 
-  protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(4);
+  protected static HostAndPort sentinel1 = HostAndPorts.getRedisEndpoint("sentinel-standalone0").getHostAndPort();
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone2-primary"));
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone0"));
 
   @BeforeEach
   public void setUp() throws Exception {

@@ -65,23 +65,23 @@ services:
       -  ${REDIS_ENV_CONF_DIR}/redis3-4-sentinel/config:/redis/config:r
       -  ${REDIS_ENV_WORK_DIR}/redis3-4-sentinel/work:/redis/work:rw
 
-  redis6-7-sentinel:
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
-    container_name: redis6-7-sentinel
-    #network_mode: host
-    environment:
-      - REDIS_CLUSTER=no
-      - REDIS_PASSWORD=foobared
-    ports:
-      - "6384:6384"
-      - "6385:6385"
-      - "26381:26381" # sentinel
-      - "36381:36381" # sentinel tls
-    volumes:
-      -  ${REDIS_ENV_CONF_DIR}/redis6-7-sentinel/config:/redis/config:r
-      -  ${REDIS_ENV_WORK_DIR}/redis6-7-sentinel/work:/redis/work:rw
+#  redis5-6-sentinel:
+#    sysctls:
+#      - net.ipv6.conf.all.disable_ipv6=1
+#    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
+#    container_name: redis5-6-sentinel
+#    #network_mode: host
+#    environment:
+#      - REDIS_CLUSTER=no
+#      - REDIS_PASSWORD=foobared
+#    ports:
+#      - "6384:6384"
+#      - "6385:6385"
+#      - "26381:26381" # sentinel
+#      - "36381:36381" # sentinel tls
+#    volumes:
+#      -  ${REDIS_ENV_CONF_DIR}/redis6-7-sentinel/config:/redis/config:r
+#      -  ${REDIS_ENV_WORK_DIR}/redis6-7-sentinel/work:/redis/work:rw
   redis9-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
@@ -102,11 +102,11 @@ services:
       -  ${REDIS_ENV_CONF_DIR}/redis9-sentinel/config:/redis/config:r
       -  ${REDIS_ENV_WORK_DIR}/redis9-sentinel/work:/redis/work:rw
 
-  redis10-11:
+  redis9-10:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
-    container_name: redis10-11
+    container_name: redis9-10
     #network_mode: host
     environment:
       - REDIS_CLUSTER=no
@@ -114,8 +114,8 @@ services:
       - "6388:6388"
       - "6389:6389"
     volumes:
-      - ${REDIS_ENV_CONF_DIR}/redis10-11/config:/redis/config:r
-      - ${REDIS_ENV_WORK_DIR}/redis10-11/work:/redis/work:rw
+      - ${REDIS_ENV_CONF_DIR}/redis9-10/config:/redis/config:r
+      - ${REDIS_ENV_WORK_DIR}/redis9-10/work:/redis/work:rw
   redis-unavailable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1

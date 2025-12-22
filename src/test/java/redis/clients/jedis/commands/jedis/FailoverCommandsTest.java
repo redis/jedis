@@ -19,7 +19,7 @@ public class FailoverCommandsTest {
 
   private static final int INVALID_PORT = 6000;
 
-  private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9");
+  private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9-failover");
   private static final EndpointConfig node2 = HostAndPorts.getRedisEndpoint("standalone10-replica-of-standalone9");
 
   private HostAndPort masterAddress;

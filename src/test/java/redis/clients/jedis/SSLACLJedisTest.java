@@ -15,6 +15,8 @@ import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 /**
  * This test class is a copy of {@link SSLJedisTest}.
  * <p>
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @SinceRedisVersion(value = "6.0.0", message = "Not running ACL test on this version of Redis")
 @Tag("integration")
+@ResourceLock("standalone0")
 public class SSLACLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");

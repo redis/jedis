@@ -8,11 +8,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 @Tag("integration")
+@ResourceLock(value = "standalone1", target = ResourceLockTarget.CHILDREN)
 public abstract class ClientSideCacheTestBase {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");

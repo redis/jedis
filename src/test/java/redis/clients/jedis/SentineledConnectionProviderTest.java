@@ -24,10 +24,17 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 /**
  * @see JedisSentinelPoolTest
  */
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone2-primary"),
+    @ResourceLock("sentinel")
+})
 public class SentineledConnectionProviderTest {
 
   private static final String MASTER_NAME = "mymaster";

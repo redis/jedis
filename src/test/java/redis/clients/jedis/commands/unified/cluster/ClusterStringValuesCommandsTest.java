@@ -29,9 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
+
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLock(value = "stable-cluster", target = ResourceLockTarget.CHILDREN)
 public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBase {
 
   public ClusterStringValuesCommandsTest(RedisProtocol protocol) {

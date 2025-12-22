@@ -35,8 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 @Tag("integration")
+@ResourceLock("cluster")
 public class ClusterCommandsTest {
 
   private static Jedis node1;

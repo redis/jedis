@@ -26,10 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 /**
  * Basic tests for MultiDbClient functionality.
  */
 @Tag("integration")
+@ResourceLocks({ @ResourceLock("redis-failover-1"), @ResourceLock("redis-failover-2") })
 public class MultiDbClientTest {
 
   private MultiDbClient client;

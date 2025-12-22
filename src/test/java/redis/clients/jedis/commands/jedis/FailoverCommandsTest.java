@@ -14,7 +14,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone9-failover"),
+    @ResourceLock("standalone10-replica")
+})
 public class FailoverCommandsTest {
 
   private static final int INVALID_PORT = 6000;

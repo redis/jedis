@@ -18,10 +18,16 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone1"),
+    @ResourceLock("standalone7")
+})
 public class RedisClientTest {
 
   private static final EndpointConfig endpointStandalone7 = HostAndPorts.getRedisEndpoint(

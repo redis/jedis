@@ -10,6 +10,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -20,6 +22,7 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @Tag("integration")
+@ResourceLock(value = "cluster", target = ResourceLockTarget.CHILDREN)
 public abstract class ClusterJedisCommandsTestBase {
 
   private Jedis node1;

@@ -31,7 +31,10 @@ import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 @Tag("integration")
+@ResourceLock("cluster")
 public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";

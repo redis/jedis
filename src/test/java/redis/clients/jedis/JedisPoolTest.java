@@ -30,7 +30,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone0"),
+    @ResourceLock("standalone1"),
+    @ResourceLock("standalone7")
+})
 public class JedisPoolTest {
 
   private static final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");

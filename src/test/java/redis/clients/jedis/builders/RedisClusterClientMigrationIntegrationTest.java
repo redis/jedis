@@ -21,21 +21,24 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.RedisClusterClient;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 /**
  * Integration test that verifies migration compatibility from the legacy JedisCluster constructor
  * to the new RedisClusterClient.Builder pattern.
  * <p>
  * This test demonstrates that the following legacy JedisCluster constructor:
- * 
+ *
  * <pre>
- * public JedisCluster(Set&lt;HostAndPort&gt; clusterNodes, JedisClientConfig clientConfig, 
+ * public JedisCluster(Set&lt;HostAndPort&gt; clusterNodes, JedisClientConfig clientConfig,
  *                     int maxAttempts, GenericObjectPoolConfig&lt;Connection&gt; poolConfig)
  * </pre>
- * 
+ *
  * can be replaced with the RedisClusterClient.Builder pattern while maintaining the same
  * functionality.
  */
 @Tag("integration")
+@ResourceLock("stable-cluster")
 public class RedisClusterClientMigrationIntegrationTest {
 
   private static final Set<HostAndPort> CLUSTER_NODES = new HashSet<>(

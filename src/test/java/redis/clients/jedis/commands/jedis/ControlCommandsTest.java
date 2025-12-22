@@ -45,9 +45,19 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = "standalone0", target = ResourceLockTarget.CHILDREN),
+    @ResourceLock(value = "standalone1", target = ResourceLockTarget.CHILDREN),
+    @ResourceLock(value = "standalone4-replica", target = ResourceLockTarget.CHILDREN),
+    @ResourceLock(value = "sentinel", target = ResourceLockTarget.CHILDREN)
+})
 public class ControlCommandsTest extends JedisCommandsTestBase {
 
   public ControlCommandsTest(RedisProtocol redisProtocol) {

@@ -17,7 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone0"),
+    @ResourceLock("sentinel")
+})
 public class JedisSentinelTest {
 
   private static final String MASTER_NAME = "mymaster";

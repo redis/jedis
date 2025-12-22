@@ -25,8 +25,15 @@ import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after tests are fixed.")
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("cluster"),
+    @ResourceLock("ssl-cluster")
+})
 public class SSLACLRedisClusterClientTest extends RedisClusterClientTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;

@@ -47,9 +47,17 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = "standalone0", target = ResourceLockTarget.CHILDREN),
+    @ResourceLock(value = "standalone7", target = ResourceLockTarget.CHILDREN)
+})
 public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   private static final long TIME_SKEW = Duration.ofMillis(5).toMillis();

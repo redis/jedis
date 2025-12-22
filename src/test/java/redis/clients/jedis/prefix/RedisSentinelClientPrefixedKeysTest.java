@@ -10,8 +10,10 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.RedisSentinelClient;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 @Tag("integration")
+@ResourceLock("sentinel")
 public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisSentinelClient> {
 
   private static final String MASTER_NAME = "mymaster";

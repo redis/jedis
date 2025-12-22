@@ -11,7 +11,10 @@ import redis.clients.jedis.util.IOUtils;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 @Tag("integration")
+@ResourceLock("standalone0")
 public class ManagedConnectionProviderTest {
 
   private Connection connection;

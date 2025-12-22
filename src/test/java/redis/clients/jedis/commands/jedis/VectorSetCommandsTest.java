@@ -4,6 +4,8 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
@@ -32,6 +34,7 @@ import static redis.clients.jedis.util.VectorTestUtils.floatArrayToFP32Bytes;
  * {@link redis.clients.jedis.commands.unified.VectorSetCommandsTestBase} against Jedis client.s
  * </p>
  */
+@ResourceLock(value = "standalone0", target = ResourceLockTarget.CHILDREN)
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")

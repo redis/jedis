@@ -22,10 +22,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 /**
  * @see MultiDbConnectionProvider
  */
 @Tag("integration")
+@ResourceLocks({ @ResourceLock("standalone0"), @ResourceLock("standalone1") })
 public class MultiDbConnectionProviderTest {
 
   private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");

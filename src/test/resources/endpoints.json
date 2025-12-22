@@ -76,22 +76,6 @@
       "redis://localhost:6383"
     ]
   },
-  "standalone5-primary": {
-    "username": "default",
-    "password": "foobared",
-    "tls": false,
-    "endpoints": [
-      "redis://localhost:6384"
-    ]
-  },
-  "standalone6-replica-of-standalone5": {
-    "username": "default",
-    "password": "foobared",
-    "tls": false,
-    "endpoints": [
-      "redis://localhost:6385"
-    ]
-  },
   "standalone7-with-lfu-policy": {
     "username": "default",
     "password": "foobared",
@@ -100,7 +84,7 @@
       "redis://localhost:6386"
     ]
   },
-  "standalone9": {
+  "standalone9-failover": {
     "tls": false,
     "endpoints": [
       "redis://localhost:6388"

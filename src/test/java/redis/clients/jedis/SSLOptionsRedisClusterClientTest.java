@@ -22,8 +22,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("cluster"),
+    @ResourceLock("ssl-cluster")
+})
 public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;

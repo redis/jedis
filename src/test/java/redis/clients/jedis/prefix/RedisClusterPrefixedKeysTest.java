@@ -13,7 +13,10 @@ import redis.clients.jedis.RedisClusterClient;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 @Tag("integration")
+@ResourceLock("stable-cluster")
 public class RedisClusterPrefixedKeysTest extends PrefixedKeysTest<RedisClusterClient> {
 
   private static final JedisClientConfig CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("cluster").build();

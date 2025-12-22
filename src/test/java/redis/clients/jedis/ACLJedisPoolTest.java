@@ -24,6 +24,8 @@ import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 /**
  * This test class is a copy of {@link JedisPoolTest}.
  * <p>
@@ -31,6 +33,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
  */
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
+@ResourceLock("standalone0")
 public class ACLJedisPoolTest {
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 

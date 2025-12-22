@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.RedisVersionUtil;
@@ -16,6 +17,7 @@ import redis.clients.jedis.util.TlsUtil;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Tag("integration")
+@ResourceLock("standalone0")
 public class SSLRedisClientSideCacheTest extends RedisClientSideCacheTestBase {
 
   private static final String trustStoreName = SSLRedisClientSideCacheTest.class.getSimpleName();

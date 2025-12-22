@@ -7,12 +7,14 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.RedisVersionUtil;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Tag("integration")
+@ResourceLock("sentinel")
 public class RedisSentinelClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
   private static final String MASTER_NAME = "mymaster";

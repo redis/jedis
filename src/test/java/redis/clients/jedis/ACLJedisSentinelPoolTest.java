@@ -20,6 +20,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisVersionCondition;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 /**
  * This test class is mostly a copy of {@link JedisSentinelPoolTest}.
  * <p>
@@ -27,6 +30,10 @@ import redis.clients.jedis.util.RedisVersionCondition;
  */
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone2-primary"),
+    @ResourceLock("sentinel")
+})
 public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";

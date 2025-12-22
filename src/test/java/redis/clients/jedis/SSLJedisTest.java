@@ -12,7 +12,10 @@ import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 @Tag("integration")
+@ResourceLock("standalone0")
 public class SSLJedisTest {
 
   protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");

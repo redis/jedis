@@ -42,9 +42,17 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * @deprecated This method is deprecated in favor of {@link #getPasswordAsChars()} due to security concerns.
+   * Storing passwords as Strings can lead to security risks since Strings are immutable and stay in memory
+   * until garbage collected. Use {@link #getPasswordAsChars()} instead to handle passwords more securely.
+   */
+  @Deprecated
   default String getPassword() {
     return null;
   }
+
+  default char[] getPasswordAsChars() { return null; }
 
   // TODO: return null
   default Supplier<RedisCredentials> getCredentialsProvider() {

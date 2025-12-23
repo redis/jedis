@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.HashesCommandsTestBase;
@@ -13,7 +13,7 @@ import redis.clients.jedis.commands.unified.HashesCommandsTestBase;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterHashesCommandsTest extends HashesCommandsTestBase {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   public ClusterHashesCommandsTest(RedisProtocol protocol) {
     super(protocol);

@@ -31,7 +31,7 @@ import redis.clients.jedis.*;
 @Tag("integration")
 public class RedisClusterClientMigrationIntegrationTest {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   private static final Set<HostAndPort> CLUSTER_NODES = new HashSet<>(endpoint.getHostsAndPorts());
   private static final String PASSWORD = endpoint.getPassword();

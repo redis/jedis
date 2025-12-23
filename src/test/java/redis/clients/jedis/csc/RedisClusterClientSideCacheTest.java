@@ -15,7 +15,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   private static final Set<HostAndPort> hnp = new HashSet<>(endpoint.getHostsAndPorts());
 

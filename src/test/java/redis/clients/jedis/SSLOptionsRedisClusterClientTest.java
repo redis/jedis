@@ -28,7 +28,7 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
-  protected static final EndpointConfig tlsEndpoint = HostAndPorts.getRedisEndpoint("cluster-unbound-tls");
+  protected static final EndpointConfig tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
 
   private final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
     String host = hostAndPort.getHost();

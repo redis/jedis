@@ -15,14 +15,14 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public abstract class ClientSideCacheTestBase {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
 
   protected static final HostAndPort hnp = endpoint.getHostAndPort();
 
   protected Jedis control;
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone1"));
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(Endpoints.getRedisEndpoint("standalone1"));
 
   @BeforeEach
   public void setUp() throws Exception {

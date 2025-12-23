@@ -25,10 +25,10 @@ public class JedisSentinelTest {
   private static final String REMOVE_MASTER_NAME = "mymasterremove";
   private static final String FAILOVER_MASTER_NAME = "mymasterfailover";
 
-  protected static EndpointConfig master = HostAndPorts.getRedisEndpoint("standalone2-primary");
-  protected static HostAndPort sentinel = HostAndPorts.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+  protected static EndpointConfig master = Endpoints.getRedisEndpoint("standalone2-primary");
+  protected static HostAndPort sentinel = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
 
-  protected static HostAndPort sentinelForFailover = HostAndPorts.getRedisEndpoint("sentinel-failover").getHostAndPort();
+  protected static HostAndPort sentinelForFailover = Endpoints.getRedisEndpoint("sentinel-failover").getHostAndPort();
 
   @BeforeEach
   public void setup() throws InterruptedException {

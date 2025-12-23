@@ -4,7 +4,7 @@ import redis.clients.jedis.*;
 
 public class RedisClientCommandsTestHelper {
 
-  public static final EndpointConfig nodeInfo = HostAndPorts.getRedisEndpoint("standalone0");
+  public static final EndpointConfig nodeInfo = Endpoints.getRedisEndpoint("standalone0");
 
   public static RedisClient getClient(RedisProtocol redisProtocol) {
     return RedisClient.builder().hostAndPort(nodeInfo.getHostAndPort()).clientConfig(nodeInfo.getClientConfigBuilder()

@@ -71,7 +71,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private static final EndpointConfig lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);

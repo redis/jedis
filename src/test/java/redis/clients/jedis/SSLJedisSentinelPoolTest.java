@@ -17,7 +17,7 @@ import redis.clients.jedis.util.TlsUtil;
 @Tag("integration")
 public class SSLJedisSentinelPoolTest {
 
-  private static final EndpointConfig sentinel = HostAndPorts.getRedisEndpoint("sentinel-standalone0");
+  private static final EndpointConfig sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
 
   private static final String MASTER_NAME = "aclmaster";
 
@@ -49,7 +49,7 @@ public class SSLJedisSentinelPoolTest {
   @Test
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
 
-    DefaultJedisClientConfig masterConfig = HostAndPorts.getRedisEndpoint("standalone0-acl-tls")
+    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
         .getClientConfigBuilder().clientName("master-client").hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY)
         .build();
 
@@ -70,10 +70,10 @@ public class SSLJedisSentinelPoolTest {
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
 
-    DefaultJedisClientConfig masterConfig = HostAndPorts.getRedisEndpoint("standalone0-acl")
+    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl")
         .getClientConfigBuilder().clientName("master-client").build();
 
-    DefaultJedisClientConfig sentinelConfig = HostAndPorts.getRedisEndpoint(
+    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint(
             "sentinel-standalone0-tls").getClientConfigBuilder().clientName("sentinel-client")
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
 
@@ -90,11 +90,11 @@ public class SSLJedisSentinelPoolTest {
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
-    DefaultJedisClientConfig masterConfig = HostAndPorts.getRedisEndpoint("standalone0-acl-tls")
+    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
         .getClientConfigBuilder().clientName("master-client").hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY)
         .build();
 
-    DefaultJedisClientConfig sentinelConfig = HostAndPorts.getRedisEndpoint(
+    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint(
             "sentinel-standalone0-tls").getClientConfigBuilder().clientName("sentinel-client")
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
 

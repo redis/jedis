@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 
 @Tag("integration")
 public class SentinelCommandsTest {
@@ -25,13 +25,14 @@ public class SentinelCommandsTest {
 
   protected static final List<HostAndPort> nodes =
       Arrays.asList(
-          HostAndPorts.getRedisEndpoint("standalone2-primary").getHostAndPort(),
-          HostAndPorts.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
+          Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
+          Endpoints.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
   protected static final Set<String> nodesPorts = nodes.stream()
       .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
 
   protected static final List<HostAndPort> sentinels2 =
-      Arrays.asList(HostAndPorts.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(), HostAndPorts.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
+      Arrays.asList(
+          Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(), Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
 
   @Test
   public void myIdAndSentinels() {

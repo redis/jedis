@@ -14,7 +14,7 @@ import redis.clients.jedis.util.JedisClusterTestUtil;
 @Tag("integration")
 public abstract class RedisClusterClientTestBase {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-unbound");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
 
   protected static Jedis node1;
   protected static Jedis node2;

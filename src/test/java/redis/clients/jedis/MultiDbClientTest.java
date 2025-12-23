@@ -33,8 +33,8 @@ import java.util.function.Consumer;
 public class MultiDbClientTest {
 
   private MultiDbClient client;
-  private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
-  private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
+  private static final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
+  private static final EndpointConfig endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
 
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   private static Proxy redisProxy1;

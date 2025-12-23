@@ -24,9 +24,9 @@ import redis.clients.jedis.exceptions.JedisException;
 @Tag("integration")
 public class RedisClientTest {
 
-  private static final EndpointConfig endpointStandalone7 = HostAndPorts.getRedisEndpoint(
+  private static final EndpointConfig endpointStandalone7 = Endpoints.getRedisEndpoint(
       "standalone7-with-lfu-policy");
-  private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint(
+  private static final EndpointConfig endpointStandalone1 = Endpoints.getRedisEndpoint(
       "standalone1"); // password protected
 
   @Test

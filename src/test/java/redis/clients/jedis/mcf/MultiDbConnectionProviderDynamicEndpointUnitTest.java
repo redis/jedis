@@ -8,7 +8,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
@@ -24,8 +24,8 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
   private MultiDbConnectionProvider provider;
   private JedisClientConfig clientConfig;
-  private final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
-  private final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone1");
+  private final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("standalone0");
+  private final EndpointConfig endpoint2 = Endpoints.getRedisEndpoint("standalone1");
 
   @BeforeEach
   void setUp() {

@@ -34,7 +34,7 @@ import redis.clients.jedis.util.SafeEncoder;
 @Tag("integration")
 public class ClusterPipeliningTest {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-unbound");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
 
   private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
       = endpoint.getClientConfigBuilder().build();

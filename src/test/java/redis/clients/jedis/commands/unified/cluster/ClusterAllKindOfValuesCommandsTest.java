@@ -24,7 +24,7 @@ import redis.clients.jedis.resps.ScanResult;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   public ClusterAllKindOfValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);

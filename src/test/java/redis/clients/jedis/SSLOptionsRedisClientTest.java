@@ -14,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class SSLOptionsRedisClientTest {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
 
-  protected static final EndpointConfig aclEndpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
+  protected static final EndpointConfig aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
 
   private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
   private static Path trustStorePath;

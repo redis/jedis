@@ -37,7 +37,7 @@ public class TransactionV2Test {
 
   final byte[] bmykey = { 0x42, 0x02, 0x03, 0x04 };
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
   private Connection conn;
   private Jedis nj;

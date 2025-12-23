@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 import java.util.HashMap;
 
-public final class HostAndPorts {
+public final class Endpoints {
 
   private static final HashMap<String, EndpointConfig> endpointConfigs;
 
@@ -23,7 +23,7 @@ public final class HostAndPorts {
     return endpointConfigs.get(endpointName);
   }
 
-  private HostAndPorts() {
+  private Endpoints() {
     throw new InstantiationError("Must not instantiate this class");
   }
 }

@@ -20,7 +20,7 @@ import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.ClusterShardInfo;
 import redis.clients.jedis.resps.ClusterShardNodeInfo;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class ClusterCommandsTest {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-unbound");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
 
   private static Jedis node1;
   private static Jedis node2;

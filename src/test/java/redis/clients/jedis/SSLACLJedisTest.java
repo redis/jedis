@@ -24,9 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class SSLACLJedisTest {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
 
-  protected static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0-tls");
+  protected static final EndpointConfig endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0-tls");
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);

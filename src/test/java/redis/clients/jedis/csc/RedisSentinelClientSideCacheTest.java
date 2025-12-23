@@ -17,8 +17,8 @@ public class RedisSentinelClientSideCacheTest extends UnifiedJedisClientSideCach
 
   private static final String MASTER_NAME = "mymaster";
 
-  protected static final HostAndPort sentinel1 = HostAndPorts.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-  protected static final HostAndPort sentinel2 = HostAndPorts.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+  protected static final HostAndPort sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+  protected static final HostAndPort sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
 
   private static final Set<HostAndPort> sentinels = new HashSet<>(
       Arrays.asList(sentinel1, sentinel2));

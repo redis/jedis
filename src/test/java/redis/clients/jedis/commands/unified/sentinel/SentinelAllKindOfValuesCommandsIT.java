@@ -16,17 +16,17 @@ import java.util.Set;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTestBase {
 
-  static final HostAndPort sentinel1 = HostAndPorts.getRedisEndpoint("sentinel-standalone2-1")
+  static final HostAndPort sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1")
       .getHostAndPort();
 
-  static final HostAndPort sentinel2 = HostAndPorts.getRedisEndpoint("sentinel-standalone2-3")
+  static final HostAndPort sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3")
       .getHostAndPort();
 
   static final Set<HostAndPort> sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
 
   static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder().build();
 
-  static final EndpointConfig primary = HostAndPorts.getRedisEndpoint("standalone2-primary");
+  static final EndpointConfig primary = Endpoints.getRedisEndpoint("standalone2-primary");
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(

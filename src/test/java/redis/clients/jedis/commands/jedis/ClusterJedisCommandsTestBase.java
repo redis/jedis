@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.JedisClusterCRC16;
@@ -22,7 +22,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public abstract class ClusterJedisCommandsTestBase {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-unbound");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
 
   private Jedis node1;
   private static Jedis node2;

@@ -175,7 +175,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUrl() {
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
       j.select(2);
@@ -191,7 +191,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUri() throws URISyntaxException {
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
       j.select(2);
@@ -207,7 +207,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUrlOnResp3() {
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -224,7 +224,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUriOnResp3() throws URISyntaxException {
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -254,7 +254,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
+    EndpointConfig endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
 
     try (Jedis j1 = new Jedis(endpointStandalone1.getURI().toString())) {
       j1.auth(endpointStandalone1.getPassword());

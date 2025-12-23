@@ -35,12 +35,12 @@ public class MigrateTest extends JedisCommandsTestBase {
   private Jedis dest;
   private Jedis destAuth;
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
 
-  private static final EndpointConfig destEndpoint = HostAndPorts.getRedisEndpoint(
+  private static final EndpointConfig destEndpoint = Endpoints.getRedisEndpoint(
       "standalone7-with-lfu-policy");
 
-  private static final EndpointConfig destEndpointWithAuth = HostAndPorts.getRedisEndpoint(
+  private static final EndpointConfig destEndpointWithAuth = Endpoints.getRedisEndpoint(
       "standalone1");
 
   private static final String host = destEndpoint.getHost();

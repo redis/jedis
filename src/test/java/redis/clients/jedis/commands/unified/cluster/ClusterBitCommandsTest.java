@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
-import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitOP;
@@ -23,14 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterBitCommandsTest extends BitCommandsTestBase {
 
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-            HostAndPorts.getStableClusterServers().get(0),
-            DefaultJedisClientConfig.builder().password("cluster").build());
+            endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
 
   public ClusterBitCommandsTest(RedisProtocol protocol) {
     super(protocol);

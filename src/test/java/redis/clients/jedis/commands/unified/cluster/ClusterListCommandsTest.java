@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
@@ -37,14 +37,14 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
 
   public ClusterListCommandsTest(RedisProtocol protocol) {
     super(protocol);

@@ -14,45 +14,47 @@ import redis.clients.jedis.util.JedisClusterTestUtil;
 @Tag("integration")
 public abstract class RedisClusterClientTestBase {
 
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-unbound");
+
   protected static Jedis node1;
   protected static Jedis node2;
   protected static Jedis node3;
   protected static Jedis node4;
   protected static Jedis nodeSlave2;
 
-  protected static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  protected static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
-  protected static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
-  protected static HostAndPort nodeInfo4 = HostAndPorts.getClusterServers().get(3);
-  protected static HostAndPort nodeInfoSlave2 = HostAndPorts.getClusterServers().get(4);
+  protected static HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+  protected static HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+  protected static HostAndPort nodeInfo3 = endpoint.getHostsAndPorts().get(2);
+  protected static HostAndPort nodeInfo4 = endpoint.getHostsAndPorts().get(3);
+  protected static HostAndPort nodeInfoSlave2 = endpoint.getHostsAndPorts().get(4);
 
   protected static final String LOCAL_IP = "127.0.0.1";
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1,DefaultJedisClientConfig.builder().password("cluster").build());
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1, endpoint.getClientConfigBuilder().build());
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, endpoint.getClientConfigBuilder().build());
 
   @BeforeEach
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
-    node1.auth("cluster");
+    node1.auth(endpoint.getPassword());
     node1.flushAll();
 
     node2 = new Jedis(nodeInfo2);
-    node2.auth("cluster");
+    node2.auth(endpoint.getPassword());
     node2.flushAll();
 
     node3 = new Jedis(nodeInfo3);
-    node3.auth("cluster");
+    node3.auth(endpoint.getPassword());
     node3.flushAll();
 
     node4 = new Jedis(nodeInfo4);
-    node4.auth("cluster");
+    node4.auth(endpoint.getPassword());
     node4.flushAll();
 
     nodeSlave2 = new Jedis(nodeInfoSlave2);
-    nodeSlave2.auth("cluster");
+    nodeSlave2.auth(endpoint.getPassword());
     nodeSlave2.flushAll();
     // ---- configure cluster
 

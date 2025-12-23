@@ -1,15 +1,10 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public final class HostAndPorts {
 
-  private static HashMap<String, EndpointConfig> endpointConfigs;
-
-  private static List<HostAndPort> clusterHostAndPortList = new ArrayList<>();
-  private static List<HostAndPort> stableClusterHostAndPortList = new ArrayList<>();
+  private static final HashMap<String, EndpointConfig> endpointConfigs;
 
   static {
     String endpointsPath = System.getenv().getOrDefault("REDIS_ENDPOINTS_CONFIG_PATH", "src/test/resources/endpoints.json");
@@ -18,17 +13,6 @@ public final class HostAndPorts {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
-    clusterHostAndPortList.add(new HostAndPort("localhost", 7379));
-    clusterHostAndPortList.add(new HostAndPort("localhost", 7380));
-    clusterHostAndPortList.add(new HostAndPort("localhost", 7381));
-    clusterHostAndPortList.add(new HostAndPort("localhost", 7382));
-    clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
-    clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
-
-    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7479));
-    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7480));
-    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7481));
   }
 
   public static EndpointConfig getRedisEndpoint(String endpointName) {
@@ -37,14 +21,6 @@ public final class HostAndPorts {
     }
 
     return endpointConfigs.get(endpointName);
-  }
-
-  public static List<HostAndPort> getClusterServers() {
-    return clusterHostAndPortList;
-  }
-
-  public static List<HostAndPort> getStableClusterServers() {
-    return stableClusterHostAndPortList;
   }
 
   private HostAndPorts() {

@@ -8,23 +8,19 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPoolConfig;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.RedisClusterClient;
+import redis.clients.jedis.*;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 @Tag("integration")
 public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
-  private static final Set<HostAndPort> hnp = new HashSet<>(HostAndPorts.getStableClusterServers());
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+
+  private static final Set<HostAndPort> hnp = new HashSet<>(endpoint.getHostsAndPorts());
 
   private static final Supplier<JedisClientConfig> clientConfig
-      = () -> DefaultJedisClientConfig.builder().resp3().password("cluster").build();
+      = () -> endpoint.getClientConfigBuilder().resp3().build();
 
   private static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig
       = () -> {

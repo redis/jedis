@@ -42,6 +42,14 @@ public class EndpointConfig {
         return JedisURIHelper.getHostAndPort(endpoints.get(index));
     }
 
+    public List<HostAndPort> getHostsAndPorts() {
+        List<HostAndPort> result = new ArrayList<>();
+        for (URI endpoint : endpoints) {
+            result.add(JedisURIHelper.getHostAndPort(endpoint));
+        }
+        return result;
+    }
+
     public String getPassword() {
         return password;
     }

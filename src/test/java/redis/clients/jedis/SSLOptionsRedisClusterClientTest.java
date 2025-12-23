@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
+  protected static final EndpointConfig tlsEndpoint = HostAndPorts.getRedisEndpoint("cluster-unbound-tls");
+
   private final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
     String host = hostAndPort.getHost();
     int port = hostAndPort.getPort();
@@ -51,15 +52,15 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
 
   @BeforeAll
   public static void prepare() {
-    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("cluster-unbound/work/tls"));
+    List<Path> trustedCertLocation = Collections.singletonList(tlsEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
   }
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     try (RedisClusterClient jc2 = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster")
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
             .sslOptions(SslOptions.builder()
                 .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
@@ -74,13 +75,13 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
        * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
        */
       if (RedisVersionUtil.getRedisVersion(jc2.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo1.getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo2.getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo3.getPort()));
       } else {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:8380"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:8381"));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
       }
       jc2.get("foo");
     }
@@ -89,8 +90,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
   @Test
   public void testSSLWithoutPortMap() {
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster")
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
             .sslOptions(SslOptions.builder()
                 .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks")
@@ -106,13 +107,13 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
        * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
        */
       if (RedisVersionUtil.getRedisVersion(jc.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo1.getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo2.getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo3.getPort()));
       } else {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:8380"));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:8381"));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
       }
     }
   }
@@ -120,8 +121,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
   @Test
   public void connectByIpAddress() {
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster")
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", tlsEndpoint.getPort())))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
             .sslOptions(SslOptions.builder()
                 .truststore(trustStorePath.toFile())
                 .trustStoreType("jceks").build())
@@ -139,8 +140,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster")
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
                 .truststore(trustStorePath.toFile())
@@ -164,8 +165,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster")
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
                 .truststore(trustStorePath.toFile())
@@ -184,8 +185,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster")
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", tlsEndpoint.getPort())))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
             .sslOptions(SslOptions.builder()
                 .sslParameters(sslParameters)
                 .truststore(trustStorePath.toFile())
@@ -210,8 +211,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
                 .sslVerifyMode(SslVerifyMode.CA).build();
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").sslOptions(sslOptions)
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).sslOptions(sslOptions)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -225,8 +226,8 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
     }
 
     try (RedisClusterClient jc2 = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").sslOptions(sslOptions)
+        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", tlsEndpoint.getPort())))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).sslOptions(sslOptions)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -234,10 +235,10 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
     } catch (JedisClusterOperationException e) {
       assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
-    
+
     try (RedisClusterClient jc3 = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("localhost", 8379)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").sslOptions(sslOptions)
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).sslOptions(sslOptions)
             .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)

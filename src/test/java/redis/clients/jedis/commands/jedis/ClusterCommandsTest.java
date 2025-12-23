@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
@@ -39,24 +39,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class ClusterCommandsTest {
 
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-unbound");
+
   private static Jedis node1;
   private static Jedis node2;
 
-  private static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  private static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
+  private static HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+  private static HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1,
-      DefaultJedisClientConfig.builder().password("cluster").build());
+      endpoint.getClientConfigBuilder().build());
 
   @BeforeEach
   public void setUp() throws Exception {
     node1 = new Jedis(nodeInfo1);
-    node1.auth("cluster");
+    node1.auth(endpoint.getPassword());
     node1.flushAll();
 
     node2 = new Jedis(nodeInfo2);
-    node2.auth("cluster");
+    node2.auth(endpoint.getPassword());
     node2.flushAll();
   }
 
@@ -78,11 +80,11 @@ public class ClusterCommandsTest {
 
   public static void removeSlots() {
     try (Jedis node = new Jedis(nodeInfo1)) {
-      node.auth("cluster");
+      node.auth(endpoint.getPassword());
       node.clusterReset(ClusterResetType.SOFT);
     }
     try (Jedis node = new Jedis(nodeInfo2)) {
-      node.auth("cluster");
+      node.auth(endpoint.getPassword());
       node.clusterReset(ClusterResetType.SOFT);
     }
   }

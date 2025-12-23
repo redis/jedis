@@ -16,10 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -30,14 +27,15 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
+  EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
+
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
+      endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
 
   public ClusterAllKindOfValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);

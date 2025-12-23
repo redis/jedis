@@ -46,7 +46,7 @@ public class ActiveActiveFailoverIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ActiveActiveFailoverIT.endpoint = HostAndPorts.getRedisEndpoint("re-active-active");
+      ActiveActiveFailoverIT.endpoint = Endpoints.getRedisEndpoint("re-active-active");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

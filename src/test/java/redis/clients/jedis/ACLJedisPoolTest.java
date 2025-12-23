@@ -32,9 +32,9 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
 public class ACLJedisPoolTest {
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
 
-  private static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0");
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);

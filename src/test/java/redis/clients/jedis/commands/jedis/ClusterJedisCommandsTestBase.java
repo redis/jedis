@@ -10,10 +10,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.JedisClusterCRC16;
@@ -22,40 +22,42 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public abstract class ClusterJedisCommandsTestBase {
 
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+
   private Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
 
-  private HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  private HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
-  private HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
+  private HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+  private HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+  private HostAndPort nodeInfo3 = endpoint.getHostsAndPorts().get(2);
   private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
   RedisClusterClient cluster;
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1, endpoint.getClientConfigBuilder().build());
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, endpoint.getClientConfigBuilder().build());
 
   @BeforeEach
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
-    node1.auth("cluster");
+    node1.auth(endpoint.getPassword());
     node1.flushAll();
 
     node2 = new Jedis(nodeInfo2);
-    node2.auth("cluster");
+    node2.auth(endpoint.getPassword());
     node2.flushAll();
 
     node3 = new Jedis(nodeInfo3);
-    node3.auth("cluster");
+    node3.auth(endpoint.getPassword());
     node3.flushAll();
 
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node1.clusterMeet(nodeInfo3.getHost(), nodeInfo3.getPort());
 
     // split available slots across the three nodes
 //    int slotsPerNode = JedisCluster.HASHSLOTS / 3;
@@ -79,10 +81,10 @@ public abstract class ClusterJedisCommandsTestBase {
 
     waitForClusterReady();
 
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     cluster = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").build())
+        .clientConfig(endpoint.getClientConfigBuilder().build())
         .build();
   }
 

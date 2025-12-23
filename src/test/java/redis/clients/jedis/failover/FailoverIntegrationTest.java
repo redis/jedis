@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
@@ -46,8 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Tag("failover")
 public class FailoverIntegrationTest {
 
-  private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
-  private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
+  private static final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
+  private static final EndpointConfig endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
 
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   public static ExecutorService executor = Executors.newCachedThreadPool();

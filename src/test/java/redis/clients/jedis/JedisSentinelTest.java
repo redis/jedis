@@ -24,12 +24,11 @@ public class JedisSentinelTest {
   private static final String MONITOR_MASTER_NAME = "mymastermonitor";
   private static final String REMOVE_MASTER_NAME = "mymasterremove";
   private static final String FAILOVER_MASTER_NAME = "mymasterfailover";
-  private static final String MASTER_IP = "127.0.0.1";
 
-  protected static EndpointConfig master = HostAndPorts.getRedisEndpoint("standalone0");
-  protected static HostAndPort sentinel = HostAndPorts.getSentinelServers().get(0);
+  protected static EndpointConfig master = Endpoints.getRedisEndpoint("standalone2-primary");
+  protected static HostAndPort sentinel = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
 
-  protected static HostAndPort sentinelForFailover = HostAndPorts.getSentinelServers().get(2);
+  protected static HostAndPort sentinelForFailover = Endpoints.getRedisEndpoint("sentinel-failover").getHostAndPort();
 
   @BeforeEach
   public void setup() throws InterruptedException {
@@ -105,12 +104,12 @@ public class JedisSentinelTest {
 
     try {
       // monitor new master
-      String result = j.sentinelMonitor(MONITOR_MASTER_NAME, MASTER_IP, master.getPort(), 1);
+      String result = j.sentinelMonitor(MONITOR_MASTER_NAME, master.getHost(), master.getPort(), 1);
       assertEquals("OK", result);
 
       // already monitored
       try {
-        j.sentinelMonitor(MONITOR_MASTER_NAME, MASTER_IP, master.getPort(), 1);
+        j.sentinelMonitor(MONITOR_MASTER_NAME, master.getHost(), master.getPort(), 1);
         fail();
       } catch (JedisDataException e) {
         // pass
@@ -125,7 +124,7 @@ public class JedisSentinelTest {
     Jedis j = new Jedis(sentinel);
 
     try {
-      ensureMonitored(sentinel, REMOVE_MASTER_NAME, MASTER_IP, master.getPort(), 1);
+      ensureMonitored(sentinel, REMOVE_MASTER_NAME, master.getHost(), master.getPort(), 1);
 
       String result = j.sentinelRemove(REMOVE_MASTER_NAME);
       assertEquals("OK", result);

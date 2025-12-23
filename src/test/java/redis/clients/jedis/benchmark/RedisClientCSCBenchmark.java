@@ -10,7 +10,7 @@ import redis.clients.jedis.csc.TestCache;
 
 public class RedisClientCSCBenchmark {
 
-    private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    private static EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
     private static final int TOTAL_OPERATIONS = 1000000;
     private static final int NUMBER_OF_THREADS = 50;
 

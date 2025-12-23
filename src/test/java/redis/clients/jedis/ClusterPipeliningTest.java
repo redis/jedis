@@ -34,37 +34,37 @@ import redis.clients.jedis.util.SafeEncoder;
 @Tag("integration")
 public class ClusterPipeliningTest {
 
-  private static final String LOCAL_IP = "127.0.0.1";
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
 
   private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
-      = DefaultJedisClientConfig.builder().password("cluster").build();
+      = endpoint.getClientConfigBuilder().build();
 
   private static Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
 
-  private static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  private static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
-  private static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
+  private static HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+  private static HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+  private static HostAndPort nodeInfo3 = endpoint.getHostsAndPorts().get(2);
   private Set<HostAndPort> nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
 
   @BeforeAll
   public static void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
-    node1.auth("cluster");
+    node1.auth(endpoint.getPassword());
     node1.flushAll();
 
     node2 = new Jedis(nodeInfo2);
-    node2.auth("cluster");
+    node2.auth(endpoint.getPassword());
     node2.flushAll();
 
     node3 = new Jedis(nodeInfo3);
-    node3.auth("cluster");
+    node3.auth(endpoint.getPassword());
     node3.flushAll();
 
     // add nodes to cluster
-    node1.clusterMeet(LOCAL_IP, nodeInfo2.getPort());
-    node1.clusterMeet(LOCAL_IP, nodeInfo3.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo3.getPort());
 
     // split available slots across the three nodes
     int slotsPerNode = CLUSTER_HASHSLOTS / 3;

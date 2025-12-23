@@ -27,7 +27,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
   private final byte[] binaryKey = SafeEncoder.encode(key);
-  private final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private final EndpointConfig lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
   private Jedis lfuJedis;
 
   public ObjectCommandsTest(RedisProtocol protocol) {

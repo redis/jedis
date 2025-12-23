@@ -45,8 +45,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ActiveActiveLocalFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveLocalFailoverTest.class);
 
-  private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("redis-failover-1");
-  private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("redis-failover-2");
+  private static final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
+  private static final EndpointConfig endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   public static final int ENDPOINT_PAUSE_TIME_MS = 10000;
   private static Proxy redisProxy1;

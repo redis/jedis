@@ -37,10 +37,10 @@ public class AutomaticFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 
   private final HostAndPort hostPortWithFailure = new HostAndPort(
-      HostAndPorts.getRedisEndpoint("standalone0").getHost(), 6378);
-  private final EndpointConfig endpointForAuthFailure = HostAndPorts
+      Endpoints.getRedisEndpoint("standalone0").getHost(), 6378);
+  private final EndpointConfig endpointForAuthFailure = Endpoints
       .getRedisEndpoint("standalone0");
-  private final EndpointConfig workingEndpoint = HostAndPorts
+  private final EndpointConfig workingEndpoint = Endpoints
       .getRedisEndpoint("standalone7-with-lfu-policy");
 
   private final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();

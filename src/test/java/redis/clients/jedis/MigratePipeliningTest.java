@@ -34,12 +34,12 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   private static final byte[] bfoo3 = { 0x07, 0x08, 0x03 };
   private static final byte[] bbar3 = { 0x09, 0x00, 0x03 };
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
 
-  private static final EndpointConfig destEndpoint = HostAndPorts.getRedisEndpoint(
+  private static final EndpointConfig destEndpoint = Endpoints.getRedisEndpoint(
       "standalone7-with-lfu-policy");
 
-  private static final EndpointConfig destEndpointWithAuth = HostAndPorts.getRedisEndpoint(
+  private static final EndpointConfig destEndpointWithAuth = Endpoints.getRedisEndpoint(
       "standalone1");
 
   private static final String host = destEndpoint.getHost();

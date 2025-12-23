@@ -17,7 +17,7 @@ public abstract class JedisCommandsTestBase {
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(endpoint);
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
   protected final RedisProtocol protocol;
 

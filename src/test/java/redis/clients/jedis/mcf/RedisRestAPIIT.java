@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.DefaultRedisCredentials;
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.scenario.RestEndpointUtil;
 
@@ -86,8 +86,8 @@ public class RedisRestAPIIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      crdb = HostAndPorts.getRedisEndpoint("re-active-active");
-      db1 = HostAndPorts.getRedisEndpoint("re-standalone");
+      crdb = Endpoints.getRedisEndpoint("re-active-active");
+      db1 = Endpoints.getRedisEndpoint("re-standalone");
       restAPIEndpoint = RestEndpointUtil.getRestAPIEndpoint(crdb);
       credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
       SSLBypass.disableSSLVerification();

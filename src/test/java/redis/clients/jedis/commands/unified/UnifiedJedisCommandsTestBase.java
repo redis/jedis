@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
@@ -26,7 +26,7 @@ public abstract class UnifiedJedisCommandsTestBase {
 
   protected UnifiedJedis jedis;
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);

@@ -91,7 +91,7 @@ public class ClusterCommandsTest {
 
   @Test
   public void testClusterSoftReset() {
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo2.getPort());
     assertTrue(node1.clusterNodes().split("\n").length > 1);
     node1.clusterReset(ClusterResetType.SOFT);
     assertEquals(1, node1.clusterNodes().split("\n").length);

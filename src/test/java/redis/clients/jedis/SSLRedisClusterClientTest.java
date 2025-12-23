@@ -81,13 +81,13 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
        * the regular (non-TLS) port rather than the TLS port.
        */
       if (RedisVersionUtil.getRedisVersion(jc.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo1.getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo2.getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo3.getPort()));
+        assertTrue(clusterNodes.containsKey(nodeInfo1.toString()));
+        assertTrue(clusterNodes.containsKey(nodeInfo2.toString()));
+        assertTrue(clusterNodes.containsKey(nodeInfo3.toString()));
       } else {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(0).getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(1).getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(2).getPort()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
       }
 
       jc.get("foo");
@@ -102,9 +102,9 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
         .build()) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(0).getPort()));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(1).getPort()));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(2).getPort()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
       jc2.get("foo");
     }
   }
@@ -125,13 +125,13 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
        * the regular (non-TLS) port rather than the TLS port.
        */
       if (RedisVersionUtil.getRedisVersion(jc.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo1.getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo2.getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo3.getPort()));
+        assertTrue(clusterNodes.containsKey(nodeInfo1.toString()));
+        assertTrue(clusterNodes.containsKey(nodeInfo2.toString()));
+        assertTrue(clusterNodes.containsKey(nodeInfo3.toString()));
       } else {
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(0).getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(1).getPort()));
-        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(2).getPort()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
       }
     }
   }
@@ -139,7 +139,7 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void connectByIpAddress() {
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", tlsEndpoint.getPort())))
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
             .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
@@ -194,7 +194,7 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", tlsEndpoint.getPort())))
+        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
             .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)

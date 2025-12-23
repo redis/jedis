@@ -1,8 +1,18 @@
 {
   "sentinel-standalone0": {
     "tls": false,
+    "username": "sentinel",
+    "password": "foobared",
     "endpoints": [
       "redis://localhost:26379"
+    ]
+  },
+  "sentinel-standalone0-tls": {
+    "tls": true,
+    "username": "sentinel",
+    "password": "foobared",
+    "endpoints": [
+      "redis://localhost:36379"
     ]
   },
   "sentinel-standalone2-1": {
@@ -130,21 +140,21 @@
     "password": "cluster",
     "tls": false,
     "endpoints": [
-      "redis://localhost:7379",
-      "redis://localhost:7380",
-      "redis://localhost:7381",
-      "redis://localhost:7382",
-      "redis://localhost:7383",
-      "redis://localhost:7384"
+      "redis://127.0.0.1:7379",
+      "redis://127.0.0.1:7380",
+      "redis://127.0.0.1:7381",
+      "redis://127.0.0.1:7382",
+      "redis://127.0.0.1:7383",
+      "redis://127.0.0.1:7384"
     ]
   },
   "cluster-stable": {
     "password": "cluster",
     "tls": false,
     "endpoints": [
-      "redis://localhost:7479",
-      "redis://localhost:7480",
-      "redis://localhost:7481"
+      "redis://127.0.0.1:7479",
+      "redis://127.0.0.1:7480",
+      "redis://127.0.0.1:7481"
     ]
   },
   "cluster-unbound-tls": {
@@ -152,9 +162,9 @@
     "tls": true,
     "certificates_location": "cluster-unbound/work/tls",
     "endpoints": [
-      "rediss://localhost:8379",
-      "rediss://localhost:8380",
-      "rediss://localhost:8381"
+      "rediss://127.0.0.1:8379",
+      "rediss://127.0.0.1:8380",
+      "rediss://127.0.0.1:8381"
     ]
   },
   "cluster-stable-tls": {
@@ -162,9 +172,9 @@
     "tls": true,
     "certificates_location": "cluster-stable/work/tls",
     "endpoints": [
-      "rediss://localhost:8479",
-      "rediss://localhost:8480",
-      "rediss://localhost:8481"
+      "rediss://127.0.0.1:8479",
+      "rediss://127.0.0.1:8480",
+      "rediss://127.0.0.1:8481"
     ]
   }
 }

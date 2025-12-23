@@ -56,8 +56,8 @@ public abstract class ClusterJedisCommandsTestBase {
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node1.clusterMeet(nodeInfo3.getHost(), nodeInfo3.getPort());
 
     // split available slots across the three nodes
 //    int slotsPerNode = JedisCluster.HASHSLOTS / 3;

@@ -512,9 +512,9 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testClusterForgetNode() {
     // at first, join node4 to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
-    node2.clusterMeet("127.0.0.1", nodeInfo4.getPort());
-    node3.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+    node1.clusterMeet(nodeInfo4.getHost(), nodeInfo4.getPort());
+    node2.clusterMeet(nodeInfo4.getHost(), nodeInfo4.getPort());
+    node3.clusterMeet(nodeInfo4.getHost(), nodeInfo4.getPort());
 
     String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
 

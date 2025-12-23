@@ -7,7 +7,8 @@ public final class Endpoints {
   private static final HashMap<String, EndpointConfig> endpointConfigs;
 
   static {
-    String endpointsPath = System.getenv().getOrDefault("REDIS_ENDPOINTS_CONFIG_PATH", "src/test/resources/endpoints.json");
+    String endpointsPath = System.getenv().getOrDefault("REDIS_ENDPOINTS_CONFIG_PATH",
+      "src/test/resources/endpoints.json");
     try {
       endpointConfigs = EndpointConfig.loadFromJSON(endpointsPath);
     } catch (Exception e) {

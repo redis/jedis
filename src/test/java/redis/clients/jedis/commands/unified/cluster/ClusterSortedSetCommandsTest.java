@@ -14,7 +14,6 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -27,9 +26,7 @@ import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -42,14 +39,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   final byte[] bb = { 0x0B };
   final byte[] bc = { 0x0C };
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
-
-  @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
-  @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
 
   public ClusterSortedSetCommandsTest(RedisProtocol protocol) {
     super(protocol);

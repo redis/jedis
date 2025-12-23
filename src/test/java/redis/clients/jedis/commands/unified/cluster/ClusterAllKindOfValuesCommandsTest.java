@@ -13,29 +13,18 @@ import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
-import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
-  EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
-
-  @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
-
-  @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
 
   public ClusterAllKindOfValuesCommandsTest(RedisProtocol protocol) {
     super(protocol);

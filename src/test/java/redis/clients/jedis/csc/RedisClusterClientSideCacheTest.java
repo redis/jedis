@@ -15,7 +15,7 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
 
   private static final Set<HostAndPort> hnp = new HashSet<>(endpoint.getHostsAndPorts());
 
@@ -30,7 +30,7 @@ public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
       };
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(hnp.iterator().next(), clientConfig.get());
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
 
   @Override
   protected RedisClusterClient createRegularJedis() {

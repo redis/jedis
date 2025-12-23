@@ -79,9 +79,9 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
         assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo2.getPort()));
         assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo3.getPort()));
       } else {
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(0).getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(1).getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(2).getPort()));
       }
       jc2.get("foo");
     }
@@ -111,9 +111,9 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
         assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo2.getPort()));
         assertTrue(clusterNodes.containsKey("127.0.0.1:" + nodeInfo3.getPort()));
       } else {
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(0).getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(1).getPort()));
+        assertTrue(clusterNodes.containsKey("127.0.0.1:" + tlsEndpoint.getHostAndPort(2).getPort()));
       }
     }
   }

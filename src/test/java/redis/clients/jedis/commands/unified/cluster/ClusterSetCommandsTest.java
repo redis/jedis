@@ -7,7 +7,6 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -16,8 +15,6 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.SetCommandsTestBase;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
-import redis.clients.jedis.util.RedisVersionCondition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,7 +29,7 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
   final byte[] bb = { 0x0B };
   final byte[] bc = { 0x0C };
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
 
   public ClusterSetCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -42,13 +39,6 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
   protected UnifiedJedis createTestClient() {
     return ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
-
-  @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-            endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
-  @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
 
   @AfterEach
   public void tearDown() {

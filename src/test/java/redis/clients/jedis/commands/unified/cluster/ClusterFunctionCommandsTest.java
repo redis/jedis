@@ -4,7 +4,6 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.EndpointConfig;
@@ -14,8 +13,6 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.FunctionCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
-import redis.clients.jedis.util.RedisVersionCondition;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,18 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Tag("integration")
 public class ClusterFunctionCommandsTest extends FunctionCommandsTestBase {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("cluster-stable");
 
   public ClusterFunctionCommandsTest(RedisProtocol protocol) {
     super(protocol);
   }
-
-  @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
-  @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      endpoint.getHostsAndPorts().get(0), endpoint.getClientConfigBuilder().build());
 
   @Override
   protected UnifiedJedis createTestClient() {

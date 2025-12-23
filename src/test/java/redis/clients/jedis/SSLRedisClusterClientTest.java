@@ -155,7 +155,7 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .nodes(Collections.singleton(new HostAndPort("localhost", tlsEndpoint.getPort())))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
             .sslParameters(sslParameters).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
@@ -215,7 +215,7 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
     HostnameVerifier localhostVerifier = new TlsUtil.LocalhostVerifier();
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
+        .nodes(Collections.singleton(new HostAndPort("localhost", tlsEndpoint.getPort())))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)

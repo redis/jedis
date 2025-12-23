@@ -4,7 +4,7 @@
     "username": "sentinel",
     "password": "foobared",
     "endpoints": [
-      "redis://localhost:26379"
+      "redis://127.0.0.1:26379"
     ]
   },
   "sentinel-standalone0-tls": {
@@ -12,37 +12,37 @@
     "username": "sentinel",
     "password": "foobared",
     "endpoints": [
-      "redis://localhost:36379"
+      "redis://127.0.0.1:36379"
     ]
   },
   "sentinel-standalone2-1": {
     "tls": false,
     "endpoints": [
-      "redis://localhost:26380"
+      "redis://127.0.0.1:26380"
     ]
   },
   "sentinel-failover": {
     "tls": false,
     "endpoints": [
-      "redis://localhost:26381"
+      "redis://127.0.0.1:26381"
     ]
   },
   "sentinel-standalone2-3": {
     "tls": false,
     "endpoints": [
-      "redis://localhost:26382"
+      "redis://127.0.0.1:26382"
     ]
   },
   "redis-failover-1": {
     "tls": false,
     "endpoints": [
-      "redis://localhost:29379"
+      "redis://127.0.0.1:29379"
     ]
   },
   "redis-failover-2": {
     "tls": false,
     "endpoints": [
-      "redis://localhost:29380"
+      "redis://127.0.0.1:29380"
     ]
   },
   "standalone0": {
@@ -91,7 +91,7 @@
     "password": "foobared",
     "tls": false,
     "endpoints": [
-      "redis://localhost:6381"
+      "redis://127.0.0.1:6381"
     ]
   },
   "standalone3-replica-of-standalone2": {

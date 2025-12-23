@@ -93,7 +93,7 @@ public class ACLJedisSentinelPoolTest {
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("default")
-        .password("foobared").build();
+        .password("wrongpassword").build();
     assertThrows(JedisConnectionException.class, () -> {
       try (JedisSentinelPool ignored = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig,
           masterConfig, sentinelConfig)) {

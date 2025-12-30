@@ -27,7 +27,7 @@ public class FailoverCommandsTest {
   private HostAndPort replicaAddress;
 
   @BeforeAll
-  public static void prepareEndpoints() {
+  public static void setUp() {
     node1 = Endpoints.getRedisEndpoint("standalone9-failover");
     node2 = Endpoints.getRedisEndpoint("standalone10-replica-of-standalone9");
   }

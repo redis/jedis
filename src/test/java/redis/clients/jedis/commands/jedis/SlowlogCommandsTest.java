@@ -10,6 +10,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.*;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.resps.Slowlog;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -50,6 +52,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void slowlog() {
     jedis.configSet(SLOWLOG_TIME_PARAM, ZERO_STRING);
     jedis.slowlogReset();
@@ -82,6 +85,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void slowlogObjectDetails() {
     final String clientName = "slowlog-object-client-" + UUID.randomUUID();
     jedis.clientSetname(clientName);
@@ -91,7 +95,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     List<Slowlog> logs = jedis.slowlogGet(); // Get only 'CONFIG SET', or including 'SLOWLOG RESET'
     //assertEquals(1, logs.size());
     assertThat(logs.size(), Matchers.allOf(Matchers.greaterThanOrEqualTo(1), Matchers.lessThanOrEqualTo(2)));
-    Slowlog log = logs.get(0);
+    Slowlog log = logs.get(logs.size() - 1);
     assertEquals(clientName, log.getClientName());
     assertThat(log.getId(), Matchers.greaterThan(0L));
     assertThat(log.getTimeStamp(), Matchers.greaterThan(0L));
@@ -106,6 +110,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void slowlogBinaryObjectDetails() {
     final byte[] clientName = SafeEncoder.encode("slowlog-binary-client");
     jedis.clientSetname(clientName);

@@ -22,7 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import org.hamcrest.Matchers;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -34,6 +34,7 @@ import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -559,6 +560,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @Timeout(5)
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void subscribeCacheInvalidateChannel() {
     assumeTrue(protocol != RedisProtocol.RESP3);
 
@@ -593,6 +595,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @Timeout(5)
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void subscribeCacheInvalidateChannelBinary() {
     assumeTrue(protocol != RedisProtocol.RESP3);
 

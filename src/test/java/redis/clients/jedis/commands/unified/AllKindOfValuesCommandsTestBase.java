@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
@@ -48,10 +49,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.util.AssertUtil;
-import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.util.CompareCondition;
+import redis.clients.jedis.util.*;
 
 @Tag("integration")
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -236,6 +234,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void rename() {
     jedis.set("foo", "bar");
     String status = jedis.rename("foo", "bar");
@@ -266,6 +265,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void renamenx() {
     jedis.set("foo", "bar");
     assertEquals(1, jedis.renamenx("foo", "bar"));
@@ -923,6 +923,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void copy() {
     assertFalse(jedis.copy("unknown", "foo", false));
 

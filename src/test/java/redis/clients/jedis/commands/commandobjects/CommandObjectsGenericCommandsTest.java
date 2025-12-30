@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.Jedis;
@@ -29,6 +30,7 @@ import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=generic">Generic</a> commands.
@@ -771,6 +773,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSortAndStore() {
     String listKey = "sortStoreList";
     String destinationKey = "sortedList";
@@ -785,6 +788,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSortAndStoreBinary() {
     byte[] listKey = "sortStoreList".getBytes();
     byte[] destinationKey = "sortedList".getBytes();
@@ -799,6 +803,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSortWithParamsAndStore() {
     String listKey = "sortParamsStoreList";
     String destinationKey = "sortedParamsList";
@@ -815,6 +820,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSortWithParamsAndStoreBinary() {
     byte[] listKey = "sortParamsStoreList".getBytes();
     byte[] destinationKey = "sortedParamsList".getBytes();
@@ -977,6 +983,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testCopyWithStringKeys() {
     String srcKey = "sourceKey";
     String dstKey = "destinationKey";
@@ -1013,6 +1020,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testCopyWithBinaryKeys() {
     byte[] srcKey = "sourceKey".getBytes();
     byte[] dstKey = "destinationKey".getBytes();
@@ -1049,6 +1057,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testCopyToDb() {
     String srcKey = "sourceKey";
     String dstKey = "destinationKey";
@@ -1075,6 +1084,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testCopyToDbBinary() {
     String srcKey = "sourceKey";
     String dstKey = "destinationKey";
@@ -1111,6 +1121,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testRenameWithStringKeys() {
     String oldKey = "oldKeyName";
     String newKey = "newKeyName";
@@ -1135,6 +1146,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testRenameWithBinaryKeys() {
     byte[] oldKey = "oldKeyName".getBytes();
     byte[] newKey = "newKeyName".getBytes();
@@ -1159,6 +1171,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testRenamenx() {
     String oldKey = "oldKeyToRenameNX";
     String newKey = "newKeyForRenameNX";
@@ -1185,6 +1198,7 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testRenamenxBinary() {
     byte[] oldKey = "oldKeyToRenameNX".getBytes();
     byte[] newKey = "newKeyForRenameNX".getBytes();

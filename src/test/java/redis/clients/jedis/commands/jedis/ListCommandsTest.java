@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
@@ -28,6 +29,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -355,6 +357,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void rpoplpush() {
     jedis.rpush("foo", "a");
     jedis.rpush("foo", "b");
@@ -406,6 +409,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blpop() throws InterruptedException {
     List<String> result = jedis.blpop(1, "foo");
     assertNull(result);
@@ -455,6 +459,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blpopDouble() throws InterruptedException {
     KeyValue<String, String> result = jedis.blpop(0.1, "foo");
     assertNull(result);
@@ -523,6 +528,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void brpop() throws InterruptedException {
     List<String> result = jedis.brpop(1, "foo");
     assertNull(result);
@@ -570,6 +576,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void brpopDouble() throws InterruptedException {
     KeyValue<String, String> result = jedis.brpop(0.1, "foo");
     assertNull(result);
@@ -697,6 +704,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void brpoplpush() {
 
     new Thread(new Runnable() {
@@ -824,6 +832,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lmove() {
     jedis.rpush("foo", "bar1", "bar2", "bar3");
     assertEquals("bar3", jedis.lmove("foo", "bar", ListDirection.RIGHT, ListDirection.LEFT));
@@ -838,6 +847,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blmove() {
     new Thread(() -> {
       try {
@@ -872,6 +882,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lmpop() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";
@@ -898,6 +909,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blmpopSimple() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";

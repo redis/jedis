@@ -7,12 +7,14 @@ import static org.hamcrest.Matchers.equalTo;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=bitmap">Bitmap</a> commands.
@@ -155,6 +157,7 @@ public class CommandObjectsBitmapCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBitop() {
     String srcKey1 = "srcKey1";
     String srcKey2 = "srcKey2";
@@ -177,6 +180,7 @@ public class CommandObjectsBitmapCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBitopBinary() {
     byte[] srcKey1 = "srcKey1".getBytes();
     byte[] srcKey2 = "srcKey2".getBytes();

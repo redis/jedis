@@ -10,32 +10,42 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.util.EnvCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class SentinelCommandsTest {
+
+  @RegisterExtension
+  public  EnvCondition envCondition = new EnvCondition();
 
   protected static final String MASTER_NAME = "mymaster";
 
   protected static List<HostAndPort> nodes;
+
   protected static Set<String> nodesPorts;
 
   protected static List<HostAndPort> sentinels2;
 
   @BeforeAll
-  public static void prepareEndpoints() {
-    nodes = Arrays.asList(
-        Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
+  public static void prepare() throws Exception {
+    nodes = Arrays.asList(Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
         Endpoints.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
-    nodesPorts = nodes.stream()
-        .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
+
+    nodesPorts = nodes.stream().map(HostAndPort::getPort).map(String::valueOf)
+        .collect(Collectors.toSet());
+
     sentinels2 = Arrays.asList(
         Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
         Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());

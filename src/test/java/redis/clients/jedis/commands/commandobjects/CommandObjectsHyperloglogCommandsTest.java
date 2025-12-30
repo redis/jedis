@@ -5,8 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=hyperloglog">HyperLogLog</a> commands.
@@ -46,6 +48,7 @@ public class CommandObjectsHyperloglogCommandsTest extends CommandObjectsStandal
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testPfmerge() {
     String key1 = "hyperloglog1";
     String key2 = "hyperloglog2";
@@ -71,6 +74,7 @@ public class CommandObjectsHyperloglogCommandsTest extends CommandObjectsStandal
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testPfcount() {
     String key1 = "hyperloglogCount1";
     String key2 = "hyperloglogCount2";

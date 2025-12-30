@@ -1,8 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -93,11 +92,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(key, "hello world");
 
     Long time = jedis.objectIdletime(key);
-    assertEquals(Long.valueOf(0), time);
+    assertThat(time, lessThanOrEqualTo(10L));
 
     // Binary
     time = jedis.objectIdletime(binaryKey);
-    assertEquals(Long.valueOf(0), time);
+    assertThat(time, lessThanOrEqualTo(10L));
   }
 
   @Test

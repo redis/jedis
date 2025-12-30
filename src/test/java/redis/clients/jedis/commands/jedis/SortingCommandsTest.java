@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.redis.test.annotations.EnabledOnCommand;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.SortingParams;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -68,6 +70,7 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sortBy() {
     jedis.lpush("foo", "2");
     jedis.lpush("foo", "3");
@@ -293,6 +296,7 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sortStore() {
     jedis.lpush("foo", "1");
     jedis.lpush("foo", "2");

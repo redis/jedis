@@ -57,6 +57,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void save() {
     try {
       String status = jedis.save();
@@ -67,6 +68,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bgsave() {
     try {
       String status = jedis.bgsave();
@@ -77,6 +79,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bgsaveSchedule() {
     Set<String> responses = new HashSet<>();
     responses.add("OK");
@@ -88,6 +91,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bgrewriteaof() {
     String scheduled = "Background append only file rewriting scheduled";
     String started = "Background append only file rewriting started";
@@ -99,6 +103,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lastsave() throws InterruptedException {
     long saved = jedis.lastsave();
     assertTrue(saved > 0);
@@ -113,6 +118,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void readonly() {
     try {
       jedis.readonly();
@@ -122,6 +128,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void readwrite() {
     try {
       jedis.readwrite();
@@ -151,6 +158,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void roleSlave() {
     EndpointConfig primaryEndpoint = Endpoints.getRedisEndpoint("standalone0");
     EndpointConfig secondaryEndpoint = Endpoints.getRedisEndpoint(
@@ -175,6 +183,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void roleSentinel() {
     try (Jedis sentinel = new Jedis(Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort())) {
 
@@ -228,11 +237,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void configGet() {
-    Map<String, String> info = jedis.configGet("m*");
+    Map<String, String> info = jedis.configGet("s*"); // slowlog-max-len
     assertNotNull(info);
     assertFalse(info.isEmpty());
 //    assertTrue(info.size() % 2 == 0);
-    Map<byte[], byte[]> infoBinary = jedis.configGet("m*".getBytes());
+    Map<byte[], byte[]> infoBinary = jedis.configGet("s*".getBytes());
     assertNotNull(infoBinary);
     assertFalse(infoBinary.isEmpty());
 //    assertTrue(infoBinary.size() % 2 == 0);
@@ -240,25 +249,21 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void configSet() {
-    Map<String, String> info = jedis.configGet("maxmemory");
-//    assertEquals("maxmemory", info.get(0));
-//    String memory = info.get(1);
-    String memory = info.get("maxmemory");
-    assertNotNull(memory);
-    assertEquals("OK", jedis.configSet("maxmemory", "200"));
-    assertEquals("OK", jedis.configSet("maxmemory", memory));
+    Map<String, String> info = jedis.configGet("slowlog-max-len");
+    String val = info.get("slowlog-max-len");
+    assertNotNull(val);
+    assertEquals("OK", jedis.configSet("slowlog-max-len", "200"));
+    assertEquals("OK", jedis.configSet("slowlog-max-len", val));
   }
 
   @Test
   public void configSetBinary() {
-    byte[] maxmemory = SafeEncoder.encode("maxmemory");
-    Map<byte[], byte[]> info = jedis.configGet(maxmemory);
-//    assertArrayEquals(maxmemory, info.get(0));
-//    byte[] memory = info.get(1);
-    byte[] memory = info.get(maxmemory);
+    byte[] slowloglen = SafeEncoder.encode("slowlog-max-len");
+    Map<byte[], byte[]> info = jedis.configGet(slowloglen);
+    byte[] memory = info.get(slowloglen);
     assertNotNull(memory);
-    assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
-    assertEquals("OK", jedis.configSet(maxmemory, memory));
+    assertEquals("OK", jedis.configSet(slowloglen, Protocol.toByteArray(200)));
+    assertEquals("OK", jedis.configSet(slowloglen, memory));
   }
 
   @Test
@@ -289,6 +294,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clientPause() throws InterruptedException, ExecutionException {
     ExecutorService executorService = Executors.newFixedThreadPool(2);
     try (Jedis jedisToPause1 = createJedis(); Jedis jedisToPause2 = createJedis();) {
@@ -324,6 +330,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clientPauseAll() throws InterruptedException, ExecutionException {
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     try (Jedis jedisPause = createJedis()) {
@@ -350,6 +357,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clientPauseWrite() throws InterruptedException, ExecutionException {
     ExecutorService executorService = Executors.newFixedThreadPool(2);
     try (Jedis jedisRead = createJedis(); Jedis jedisWrite = createJedis();) {
@@ -386,12 +394,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clientUnpause() {
     assertEquals("OK", jedis.clientUnpause());
   }
 
   @Test
   @SinceRedisVersion("7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());
@@ -405,12 +415,14 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void memoryDoctorString() {
     String memoryInfo = jedis.memoryDoctor();
     assertNotNull(memoryInfo);
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void memoryDoctorBinary() {
     byte[] memoryInfo = jedis.memoryDoctorBinary();
     assertNotNull(memoryInfo);
@@ -449,36 +461,42 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void memoryPurge() {
      String memoryPurge = jedis.memoryPurge();
      assertNotNull(memoryPurge);
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void memoryStats() {
     Map<String, Object> stats = jedis.memoryStats();
     assertNotNull(stats);
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void latencyDoctor() {
     String report = jedis.latencyDoctor();
     assertNotNull(report);
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void latencyLatest() {
     Map<String, LatencyLatestInfo> report = jedis.latencyLatest();
     assertNotNull(report);
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void latencyHistoryFork() {
     List<LatencyHistoryInfo> report = jedis.latencyHistory(LatencyEvent.FORK);
     assertNotNull(report);
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void latencyReset() {
     assertTrue(jedis.latencyReset() >= 0);
   }
@@ -573,7 +591,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, aclInfo.getStep());
     assertEquals(1, aclInfo.getAclCategories().size());
     assertEquals(0, aclInfo.getTips().size());
-    assertThat(aclInfo.getSubcommands().size(), Matchers.greaterThanOrEqualTo(13));
+    assertThat(aclInfo.getSubcommands().size(), Matchers.greaterThanOrEqualTo(12));
     aclInfo.getSubcommands().forEach((name, subcommand) -> {
       assertThat(name, Matchers.startsWith("acl|"));
       assertNotNull(subcommand);

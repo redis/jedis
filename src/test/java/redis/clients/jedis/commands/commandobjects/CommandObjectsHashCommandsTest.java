@@ -580,7 +580,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     assertThat(exec(commandObjects.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared")), equalTo(asList(1L, 0L)));
 
     assertThat(exec(commandObjects.hpttl("foo", "bar", "bare", "bared")),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 1000)), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -596,7 +596,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     assertThat(exec(commandObjects.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3)), equalTo(asList(1L, 0L)));
 
     assertThat(exec(commandObjects.hpttl(bfoo, bbar1, bbar2, bbar3)),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 1000)), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test

@@ -13,12 +13,14 @@ import static org.hamcrest.Matchers.not;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.SkipOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=set">Set</a> commands.
@@ -184,6 +186,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSdiff() {
     String key1 = "testSet1";
     String key2 = "testSet2";
@@ -199,6 +202,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSdiffstore() {
     String key1 = "testSet1";
     String key2 = "testSet2";
@@ -215,6 +219,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSdiffstoreBinary() {
     byte[] key1 = "testSet1".getBytes();
     byte[] key2 = "testSet2".getBytes();
@@ -232,6 +237,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSinterAndSinterCard() {
     String key1 = "testSetInter1";
     String key2 = "testSetInter2";
@@ -259,6 +265,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSinterstore() {
     String key1 = "testSetInter1";
     String key2 = "testSetInter2";
@@ -275,6 +282,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSinterstoreBinary() {
     byte[] key1 = "testSetInter1B".getBytes();
     byte[] key2 = "testSetInter2B".getBytes();
@@ -291,6 +299,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSunion() {
     String key1 = "testSetUnion1";
     String key2 = "testSetUnion2";
@@ -310,6 +319,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSunionstore() {
     String key1 = "testSetUnion1";
     String key2 = "testSetUnion2";
@@ -329,6 +339,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSunionstoreBinary() {
     byte[] key1 = "testSetUnion1".getBytes();
     byte[] key2 = "testSetUnion2".getBytes();
@@ -346,6 +357,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSmove() {
     String srcKey = "testSetSrc";
     String dstKey = "testSetDst";
@@ -361,6 +373,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void testSmoveBinary() {
     byte[] srcKey = "testSetSrc".getBytes();
     byte[] dstKey = "testSetDst".getBytes();

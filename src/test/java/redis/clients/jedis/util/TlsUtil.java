@@ -94,30 +94,15 @@ public class TlsUtil {
     }
 
     private static Path envCa(Path certLocation) {
-        if (TestEnvUtil.isContainerEnv()) {
-            return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_CA_CERT);
-        } else {
-            // Legacy test env uses same certificate & truststore for all tests
-            return Paths.get("src/test/resources/private.crt");
-        }
+        return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_CA_CERT);
     }
 
     private static Path envServerCert(Path certLocation) {
-        if (TestEnvUtil.isContainerEnv()) {
-            return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_SERVER_CERT);
-        } else {
-            // Legacy test env uses same certificate & truststore for all tests
-            return Paths.get("src/test/resources/private.crt");
-        }
+        return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_SERVER_CERT);
     }
 
     public static Path testTruststorePath(String name) {
-        if (TestEnvUtil.isContainerEnv()) {
-            return Paths.get(TEST_WORK_FOLDER, name  + '-' + TEST_TRUSTSTORE);
-        } else {
-            // Legacy test env uses same certificate & truststore for all tests
-            return Paths.get("src/test/resources/truststore.jceks");
-        }
+        return Paths.get(TEST_WORK_FOLDER, name  + '-' + TEST_TRUSTSTORE);
     }
 
     public static Path createAndSaveTestTruststore(String trustStoreName, List<Path> certificateLocations, String truststorePassword) {

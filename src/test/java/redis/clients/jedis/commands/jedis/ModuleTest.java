@@ -2,8 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeEach;
+import io.redis.test.annotations.EnabledOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,12 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@EnabledOnEnv(TestEnvUtil.ENV_LEGACY)
 public class ModuleTest extends JedisCommandsTestBase {
-
-  @BeforeEach
-  public void isDockerEnv() {
-    Assumptions.assumeFalse(TestEnvUtil.isContainerEnv(), "Module tests not supported against dockerized test env yet!");
-  }
 
   enum ModuleCommand implements ProtocolCommand {
 

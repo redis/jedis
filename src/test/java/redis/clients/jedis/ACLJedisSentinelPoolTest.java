@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -31,12 +32,18 @@ public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
 
-  protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(4);
+  protected static HostAndPort sentinel1;
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone2-primary"));
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("standalone0"));
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone0").getHostAndPort();
+  }
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -93,7 +100,7 @@ public class ACLJedisSentinelPoolTest {
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("default")
-        .password("foobared").build();
+        .password("wrongpassword").build();
     assertThrows(JedisConnectionException.class, () -> {
       try (JedisSentinelPool ignored = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig,
           masterConfig, sentinelConfig)) {

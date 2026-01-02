@@ -16,10 +16,10 @@ public class RedisClientExtendedVectorSetCommandsTest extends ExtendedVectorSetC
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
 
   public RedisClientExtendedVectorSetCommandsTest(RedisProtocol protocol) {
     super(protocol);

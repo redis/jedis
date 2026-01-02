@@ -17,10 +17,10 @@ public class RedisClientSortedSetCommandsTest extends SortedSetCommandsTestBase 
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
 
   public RedisClientSortedSetCommandsTest(RedisProtocol protocol) {
     super(protocol);

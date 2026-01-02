@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -8,7 +9,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.FailoverParams;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,11 +20,17 @@ public class FailoverCommandsTest {
 
   private static final int INVALID_PORT = 6000;
 
-  private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9");
-  private static final EndpointConfig node2 = HostAndPorts.getRedisEndpoint("standalone10-replica-of-standalone9");
+  private static EndpointConfig node1;
+  private static EndpointConfig node2;
 
   private HostAndPort masterAddress;
   private HostAndPort replicaAddress;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    node1 = Endpoints.getRedisEndpoint("standalone9-failover");
+    node2 = Endpoints.getRedisEndpoint("standalone10-replica-of-standalone9");
+  }
 
   @BeforeEach
   public void prepare() {

@@ -1,0 +1,9 @@
+{
+  "standalone0": {
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:6379"
+    ]
+  }
+}

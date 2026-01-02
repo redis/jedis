@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @Tag("integration")

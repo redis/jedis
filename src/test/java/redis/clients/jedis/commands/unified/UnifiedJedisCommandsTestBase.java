@@ -12,6 +12,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @Tag("integration")

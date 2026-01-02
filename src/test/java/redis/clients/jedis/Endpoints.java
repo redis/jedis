@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import org.opentest4j.TestAbortedException;
+
 import java.util.HashMap;
 
 public final class Endpoints {
@@ -18,7 +20,7 @@ public final class Endpoints {
 
   public static EndpointConfig getRedisEndpoint(String endpointName) {
     if (!endpointConfigs.containsKey(endpointName)) {
-      throw new IllegalArgumentException("Unknown Redis endpoint: " + endpointName);
+      throw new TestAbortedException("Unavailable Redis endpoint: " + endpointName);
     }
 
     return endpointConfigs.get(endpointName);

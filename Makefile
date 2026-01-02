@@ -35,8 +35,20 @@ save ""
 appendonly no
 endef
 
+# UNAVAILABLE REDIS NODES
+define REDIS_UNAVAILABLE_CONF
+daemonize yes
+protected-mode no
+port 6400
+pidfile /tmp/redis_unavailable.pid
+logfile /tmp/redis_unavailable.log
+save ""
+appendonly no
+endef
+
 export REDIS1_CONF
 export REDIS_UDS
+export REDIS_UNAVAILABLE_CONF
 
 
 start: cleanup compile-module
@@ -45,6 +57,7 @@ start: cleanup compile-module
 	export REDIS_ENDPOINTS_CONFIG_PATH=src/test/resources/endpoints_local.json
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS_UDS" | redis-server -
+	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis*.log 2>/dev/null
@@ -68,6 +81,7 @@ stop:
 			rm -f $$pidfile; \
 		fi; \
 	done
+	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
 
 test: | start mvn-test-local stop
 

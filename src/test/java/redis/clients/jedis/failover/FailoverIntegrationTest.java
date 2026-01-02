@@ -78,6 +78,8 @@ public class FailoverIntegrationTest {
 
   @AfterAll
   public static void cleanupAdminClients() throws IOException {
+    if (endpoint1 == null && endpoint2 == null) return;
+
     if (redisProxy1 != null) redisProxy1.delete();
     if (redisProxy2 != null) redisProxy2.delete();
 

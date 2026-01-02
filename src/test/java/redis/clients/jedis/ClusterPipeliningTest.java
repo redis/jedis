@@ -110,12 +110,9 @@ public class ClusterPipeliningTest {
 
   @AfterAll
   public static void tearDown() throws InterruptedException {
-    node1.flushDB();
-    node2.flushDB();
-    node3.flushDB();
-    node1.clusterReset(ClusterResetType.SOFT);
-    node2.clusterReset(ClusterResetType.SOFT);
-    node3.clusterReset(ClusterResetType.SOFT);
+    if (node1 != null) node1.clusterReset(ClusterResetType.SOFT);
+    if (node2 != null) node2.clusterReset(ClusterResetType.SOFT);
+    if (node3 != null) node3.clusterReset(ClusterResetType.SOFT);
   }
 
   @Test

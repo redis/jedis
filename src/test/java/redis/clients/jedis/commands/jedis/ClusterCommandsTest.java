@@ -39,17 +39,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class ClusterCommandsTest {
 
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+  private static EndpointConfig endpoint;
 
   private static Jedis node1;
   private static Jedis node2;
 
-  private static HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
-  private static HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+  private static HostAndPort nodeInfo1;
+  private static HostAndPort nodeInfo2;
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1,
-      endpoint.getClientConfigBuilder().build());
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("cluster-unbound"));
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+    nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+    nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+  }
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -79,6 +86,9 @@ public class ClusterCommandsTest {
   }
 
   public static void removeSlots() {
+    if (endpoint == null)
+      return;
+
     try (Jedis node = new Jedis(nodeInfo1)) {
       node.auth(endpoint.getPassword());
       node.clusterReset(ClusterResetType.SOFT);

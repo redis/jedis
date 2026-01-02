@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.EnabledOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -44,6 +45,7 @@ import redis.clients.jedis.resps.LatencyLatestInfo;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -275,6 +277,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @EnabledOnEnv(TestEnvUtil.ENV_DOCKER)
   public void waitReplicas() {
     assertEquals(1, jedis.waitReplicas(1, 100));
   }

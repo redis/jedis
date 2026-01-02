@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import redis.clients.jedis.DefaultRedisCredentials;
 import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.SslOptions;
 import redis.clients.jedis.SslVerifyMode;
@@ -62,7 +62,7 @@ public class LagAwareStrategySslIT {
   @BeforeAll
   public static void beforeClass() {
 
-    crdb = HostAndPorts.getRedisEndpoint("re-active-active");
+    crdb = Endpoints.getRedisEndpoint("re-active-active");
     restEndpoint = RestEndpointUtil.getRestAPIEndpoint(crdb);
     credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
     try {

@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -21,10 +22,16 @@ public class JedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "mymaster";
 
-  protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
-  protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
+  protected static HostAndPort sentinel1;
+  protected static HostAndPort sentinel2;
 
   protected final Set<String> sentinels = new HashSet<>();
+
+  @BeforeAll
+  public static void prepare() {
+    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+  }
 
   @BeforeEach
   public void setUp() throws Exception {

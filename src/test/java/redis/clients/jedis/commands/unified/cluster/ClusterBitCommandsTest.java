@@ -3,14 +3,9 @@ package redis.clients.jedis.commands.unified.cluster;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
-import redis.clients.jedis.util.RedisVersionCondition;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.commands.unified.BitCommandsTestBase;
@@ -22,15 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterBitCommandsTest extends BitCommandsTestBase {
-
-  @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-            HostAndPorts.getStableClusterServers().get(0),
-            DefaultJedisClientConfig.builder().password("cluster").build());
-  @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-          HostAndPorts.getStableClusterServers().get(0),
-          DefaultJedisClientConfig.builder().password("cluster").build());
 
   public ClusterBitCommandsTest(RedisProtocol protocol) {
     super(protocol);

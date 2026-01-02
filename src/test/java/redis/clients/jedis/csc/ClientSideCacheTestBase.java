@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.RedisVersionCondition;
 
@@ -15,14 +16,21 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public abstract class ClientSideCacheTestBase {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+  protected static EndpointConfig endpoint;
 
-  protected static final HostAndPort hnp = endpoint.getHostAndPort();
+  protected static HostAndPort hnp;
 
   protected Jedis control;
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(HostAndPorts.getRedisEndpoint("standalone1"));
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("standalone1"));
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("standalone1");
+    hnp = endpoint.getHostAndPort();
+  }
 
   @BeforeEach
   public void setUp() throws Exception {

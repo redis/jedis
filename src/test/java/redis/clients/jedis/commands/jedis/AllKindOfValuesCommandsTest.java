@@ -26,26 +26,25 @@ import java.util.*;
 
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.SkipOnEnv;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
-import redis.clients.jedis.util.CompareCondition;
+import redis.clients.jedis.util.*;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.util.AssertUtil;
-import redis.clients.jedis.util.KeyValue;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -71,7 +70,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private static EndpointConfig lfuEndpoint;
+
+  @BeforeAll
+  public static void prepareLfuEndpoint() {
+    lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+  }
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
@@ -265,6 +269,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void rename() {
     jedis.set("foo", "bar");
     String status = jedis.rename("foo", "bar");
@@ -295,6 +300,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void renamenx() {
     jedis.set("foo", "bar");
     assertEquals(1, jedis.renamenx("foo", "bar"));
@@ -442,6 +448,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void select() {
     jedis.set("foo", "bar");
     String status = jedis.select(1);
@@ -461,6 +468,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void getDB() {
     assertEquals(0, jedis.getDB());
     jedis.select(1);
@@ -468,6 +476,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void move() {
     assertEquals(0, jedis.move("foo", 1));
 
@@ -492,6 +501,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void swapDB() {
     jedis.set("foo1", "bar1");
     jedis.select(1);
@@ -520,6 +530,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void flushDB() {
     jedis.set("foo", "bar");
     assertEquals(1, jedis.dbSize());
@@ -549,6 +560,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void flushAll() {
     jedis.set("foo", "bar");
     assertEquals(1, jedis.dbSize());
@@ -1116,6 +1128,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void copy() {
     assertFalse(jedis.copy("unknown", "foo", false));
 
@@ -1154,6 +1167,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
   public void reset() {
     // response test
     String status = jedis.reset();

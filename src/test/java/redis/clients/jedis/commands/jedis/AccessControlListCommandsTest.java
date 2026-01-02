@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.SkipOnEnv;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -38,6 +39,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * TODO: properly define and test exceptions
@@ -45,6 +47,7 @@ import redis.clients.jedis.util.SafeEncoder;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static final String USER_NAME = "newuser";

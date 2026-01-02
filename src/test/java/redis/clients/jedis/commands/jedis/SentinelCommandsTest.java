@@ -10,28 +10,46 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.SkipOnEnv;
 import org.hamcrest.Matchers;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.util.EnvCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @Tag("integration")
+@SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
 public class SentinelCommandsTest {
+
+  @RegisterExtension
+  public  EnvCondition envCondition = new EnvCondition();
 
   protected static final String MASTER_NAME = "mymaster";
 
-  protected static final List<HostAndPort> nodes =
-      Arrays.asList(
-          HostAndPorts.getRedisEndpoint("standalone2-primary").getHostAndPort(),
-          HostAndPorts.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
-  protected static final Set<String> nodesPorts = nodes.stream()
-      .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
+  protected static List<HostAndPort> nodes;
 
-  protected static final List<HostAndPort> sentinels2 = 
-      Arrays.asList(HostAndPorts.getSentinelServers().get(1), HostAndPorts.getSentinelServers().get(3));
+  protected static Set<String> nodesPorts;
+
+  protected static List<HostAndPort> sentinels2;
+
+  @BeforeAll
+  public static void prepare() throws Exception {
+    nodes = Arrays.asList(Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
+        Endpoints.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
+
+    nodesPorts = nodes.stream().map(HostAndPort::getPort).map(String::valueOf)
+        .collect(Collectors.toSet());
+
+    sentinels2 = Arrays.asList(
+        Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
+        Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
+  }
 
   @Test
   public void myIdAndSentinels() {

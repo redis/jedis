@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
@@ -23,7 +23,7 @@ public class SSLRedisClientSideCacheTest extends RedisClientSideCacheTestBase {
   @BeforeAll
   public static void prepare() {
 
-    endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
+    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
 
     List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");

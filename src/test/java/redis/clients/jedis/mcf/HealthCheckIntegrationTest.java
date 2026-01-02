@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
@@ -25,7 +25,7 @@ import redis.clients.jedis.scenario.RecommendedSettings;
 
 public class HealthCheckIntegrationTest {
 
-  private final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
+  private final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("standalone0");
   private final JedisClientConfig clientConfig = endpoint1.getClientConfigBuilder()
       .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
       .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();

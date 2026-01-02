@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.args.ClusterResetType;
@@ -14,7 +15,7 @@ import redis.clients.jedis.util.JedisClusterTestUtil;
 @Tag("integration")
 public abstract class RedisClusterClientTestBase {
 
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+  protected static EndpointConfig endpoint;
 
   protected static Jedis node1;
   protected static Jedis node2;
@@ -22,18 +23,30 @@ public abstract class RedisClusterClientTestBase {
   protected static Jedis node4;
   protected static Jedis nodeSlave2;
 
-  protected static HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
-  protected static HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
-  protected static HostAndPort nodeInfo3 = endpoint.getHostsAndPorts().get(2);
-  protected static HostAndPort nodeInfo4 = endpoint.getHostsAndPorts().get(3);
-  protected static HostAndPort nodeInfoSlave2 = endpoint.getHostsAndPorts().get(4);
+  protected static HostAndPort nodeInfo1;
+  protected static HostAndPort nodeInfo2;
+  protected static HostAndPort nodeInfo3;
+  protected static HostAndPort nodeInfo4;
+  protected static HostAndPort nodeInfoSlave2;
 
   protected static final String LOCAL_IP = "127.0.0.1";
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(nodeInfo1, endpoint.getClientConfigBuilder().build());
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("cluster-unbound"));
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(nodeInfo1, endpoint.getClientConfigBuilder().build());
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
+      () -> Endpoints.getRedisEndpoint("cluster-unbound"));
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+    nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+    nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+    nodeInfo3 = endpoint.getHostsAndPorts().get(2);
+    nodeInfo4 = endpoint.getHostsAndPorts().get(3);
+    nodeInfoSlave2 = endpoint.getHostsAndPorts().get(4);
+  }
 
   @BeforeEach
   public void setUp() throws InterruptedException {

@@ -31,7 +31,7 @@ public class SSLACLRedisClusterClientTest extends RedisClusterClientTestBase {
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
-  protected static final EndpointConfig tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
+  protected static EndpointConfig tlsEndpoint;
 
   // legacy test env bootstrap uses stunnel causing redis server to report non-tls port instead tls one containerised
   // test env enables tls directly on Redis nodes and in this case tls_port is correctly reported
@@ -59,6 +59,7 @@ public class SSLACLRedisClusterClientTest extends RedisClusterClientTestBase {
 
   @BeforeAll
   public static void prepare() {
+    tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
     List<Path> trustedCertLocation = Collections.singletonList(tlsEndpoint.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
 

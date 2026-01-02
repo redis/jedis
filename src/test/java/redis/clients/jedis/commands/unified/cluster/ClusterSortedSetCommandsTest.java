@@ -17,8 +17,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
@@ -38,8 +36,6 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   final byte[] ba = { 0x0A };
   final byte[] bb = { 0x0B };
   final byte[] bc = { 0x0C };
-
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   public ClusterSortedSetCommandsTest(RedisProtocol protocol) {
     super(protocol);

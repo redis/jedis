@@ -15,11 +15,11 @@ public class RedisClientStreamsCommandsTest extends StreamsCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
 
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
 
   public RedisClientStreamsCommandsTest(RedisProtocol protocol) {
     super(protocol);

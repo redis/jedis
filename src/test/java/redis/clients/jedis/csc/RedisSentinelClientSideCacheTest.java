@@ -17,17 +17,23 @@ public class RedisSentinelClientSideCacheTest extends UnifiedJedisClientSideCach
 
   private static final String MASTER_NAME = "mymaster";
 
-  protected static final HostAndPort sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-  protected static final HostAndPort sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+  protected static HostAndPort sentinel1;
+  protected static HostAndPort sentinel2;
 
-  private static final Set<HostAndPort> sentinels = new HashSet<>(
-      Arrays.asList(sentinel1, sentinel2));
+  private static Set<HostAndPort> sentinels;
 
   private static final JedisClientConfig masterClientConfig = DefaultJedisClientConfig.builder()
       .resp3().password("foobared").build();
 
   private static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder()
       .resp3().build();
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+    sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
+  }
 
   @Override
   protected RedisSentinelClient createRegularJedis() {

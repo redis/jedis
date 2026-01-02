@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -71,7 +72,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static final EndpointConfig lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+  private static EndpointConfig lfuEndpoint;
+
+  @BeforeAll
+  public static void prepareLfuEndpoint() {
+    lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+  }
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);

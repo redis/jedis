@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.commands.unified.BitCommandsTestBase;
@@ -19,8 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterBitCommandsTest extends BitCommandsTestBase {
-
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   public ClusterBitCommandsTest(RedisProtocol protocol) {
     super(protocol);

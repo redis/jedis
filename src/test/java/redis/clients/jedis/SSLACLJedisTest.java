@@ -24,17 +24,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class SSLACLJedisTest {
 
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
+  protected static EndpointConfig endpoint;
 
-  protected static final EndpointConfig endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0-tls");
+  protected static EndpointConfig endpointWithDefaultUser;
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("standalone0-acl-tls"));
 
   private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
+    endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0-tls");
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
         endpointWithDefaultUser.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,

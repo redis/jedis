@@ -16,6 +16,7 @@ import java.time.Duration;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -32,12 +33,19 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
 public class ACLJedisPoolTest {
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
+  private static EndpointConfig endpoint;
 
-  private static final EndpointConfig endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpointWithDefaultUser;
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("standalone0-acl"));
+
+  @BeforeAll
+  public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
+    endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0");
+  }
 
   @Test
   public void checkConnections() {

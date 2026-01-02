@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,12 @@ public class TransactionV2Test {
 
   final byte[] bmykey = { 0x42, 0x02, 0x03, 0x04 };
 
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpoint;
+
+  @BeforeAll
+  public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0");
+  }
 
   private Connection conn;
   private Jedis nj;

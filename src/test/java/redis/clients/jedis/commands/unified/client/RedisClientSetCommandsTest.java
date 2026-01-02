@@ -17,10 +17,10 @@ public class RedisClientSetCommandsTest extends SetCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
 
   public RedisClientSetCommandsTest(RedisProtocol protocol) {
     super(protocol);

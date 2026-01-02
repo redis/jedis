@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -34,23 +35,28 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   private static final byte[] bfoo3 = { 0x07, 0x08, 0x03 };
   private static final byte[] bbar3 = { 0x09, 0x00, 0x03 };
 
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
+  private static EndpointConfig destEndpoint;
 
-  private static final EndpointConfig destEndpoint = Endpoints.getRedisEndpoint(
-      "standalone7-with-lfu-policy");
+  private static EndpointConfig destEndpointWithAuth;
 
-  private static final EndpointConfig destEndpointWithAuth = Endpoints.getRedisEndpoint(
-      "standalone1");
-
-  private static final String host = destEndpoint.getHost();
-  private static final int port = destEndpoint.getPort();
-  private static final int portAuth = destEndpointWithAuth.getPort();
+  private static String host;
+  private static int port;
+  private static int portAuth;
   private static final int db = 2;
   private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
 
   private Jedis dest;
   private Jedis destAuth;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    destEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    destEndpointWithAuth = Endpoints.getRedisEndpoint("standalone1");
+    host = destEndpoint.getHost();
+    port = destEndpoint.getPort();
+    portAuth = destEndpointWithAuth.getPort();
+  }
 
   public MigratePipeliningTest(RedisProtocol protocol) {
     super(protocol);

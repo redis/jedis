@@ -30,7 +30,7 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
-  protected static final EndpointConfig tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
+  protected static EndpointConfig tlsEndpoint;
 
   private final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
     String host = hostAndPort.getHost();
@@ -53,6 +53,7 @@ public class SSLRedisClusterClientTest extends RedisClusterClientTestBase {
 
   @BeforeAll
   public static void prepare() {
+    tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
     List<Path> trustedCertLocation = Collections.singletonList(tlsEndpoint.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
 

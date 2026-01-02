@@ -18,16 +18,21 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 @Tag("integration")
 public class RedisClientTest {
 
-  private static final EndpointConfig endpointStandalone7 = Endpoints.getRedisEndpoint(
-      "standalone7-with-lfu-policy");
-  private static final EndpointConfig endpointStandalone1 = Endpoints.getRedisEndpoint(
-      "standalone1"); // password protected
+  private static EndpointConfig endpointStandalone7;
+  private static EndpointConfig endpointStandalone1; // password protected
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    endpointStandalone7 = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+  }
 
   @Test
   public void checkCloseableConnections() {

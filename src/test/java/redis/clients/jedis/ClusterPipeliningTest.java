@@ -34,22 +34,28 @@ import redis.clients.jedis.util.SafeEncoder;
 @Tag("integration")
 public class ClusterPipeliningTest {
 
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+  private static EndpointConfig endpoint;
 
-  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
-      = endpoint.getClientConfigBuilder().build();
+  private static DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG;
 
   private static Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
 
-  private static HostAndPort nodeInfo1 = endpoint.getHostsAndPorts().get(0);
-  private static HostAndPort nodeInfo2 = endpoint.getHostsAndPorts().get(1);
-  private static HostAndPort nodeInfo3 = endpoint.getHostsAndPorts().get(2);
-  private Set<HostAndPort> nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
+  private static HostAndPort nodeInfo1;
+  private static HostAndPort nodeInfo2;
+  private static HostAndPort nodeInfo3;
+  private static Set<HostAndPort> nodes;
 
   @BeforeAll
   public static void setUp() throws InterruptedException {
+    endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+    DEFAULT_CLIENT_CONFIG = endpoint.getClientConfigBuilder().build();
+    nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+    nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+    nodeInfo3 = endpoint.getHostsAndPorts().get(2);
+    nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
+
     node1 = new Jedis(nodeInfo1);
     node1.auth(endpoint.getPassword());
     node1.flushAll();

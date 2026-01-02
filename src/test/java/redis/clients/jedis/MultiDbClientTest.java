@@ -33,8 +33,8 @@ import java.util.function.Consumer;
 public class MultiDbClientTest {
 
   private MultiDbClient client;
-  private static final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
-  private static final EndpointConfig endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
+  private static EndpointConfig endpoint1;
+  private static EndpointConfig endpoint2;
 
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   private static Proxy redisProxy1;
@@ -42,6 +42,8 @@ public class MultiDbClientTest {
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
+    endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
+    endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
     if (tp.getProxyOrNull("redis-1") != null) {
       tp.getProxy("redis-1").delete();
     }

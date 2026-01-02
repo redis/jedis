@@ -17,7 +17,7 @@ import redis.clients.jedis.util.TlsUtil;
 @Tag("integration")
 public class SSLJedisSentinelPoolTest {
 
-  private static final EndpointConfig sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
+  private static EndpointConfig sentinel;
 
   private static final String MASTER_NAME = "aclmaster";
 
@@ -34,6 +34,7 @@ public class SSLJedisSentinelPoolTest {
 
   @BeforeAll
   public static void prepare() {
+    sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
     List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");

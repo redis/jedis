@@ -8,6 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.RedisVersionCondition;
 
@@ -15,9 +16,9 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @Tag("integration")
 public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+  protected static EndpointConfig endpoint;
 
-  private static final Set<HostAndPort> hnp = new HashSet<>(endpoint.getHostsAndPorts());
+  private static Set<HostAndPort> hnp;
 
   private static final Supplier<JedisClientConfig> clientConfig
       = () -> endpoint.getClientConfigBuilder().resp3().build();
@@ -30,7 +31,14 @@ public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
       };
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("cluster-stable"));
+
+  @BeforeAll
+  public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    hnp = new HashSet<>(endpoint.getHostsAndPorts());
+  }
 
   @Override
   protected RedisClusterClient createRegularJedis() {

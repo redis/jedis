@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,17 @@ public class JedisSentinelTest {
   private static final String REMOVE_MASTER_NAME = "mymasterremove";
   private static final String FAILOVER_MASTER_NAME = "mymasterfailover";
 
-  protected static EndpointConfig master = Endpoints.getRedisEndpoint("standalone2-primary");
-  protected static HostAndPort sentinel = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+  protected static EndpointConfig master;
+  protected static HostAndPort sentinel;
 
-  protected static HostAndPort sentinelForFailover = Endpoints.getRedisEndpoint("sentinel-failover").getHostAndPort();
+  protected static HostAndPort sentinelForFailover;
+
+  @BeforeAll
+  public static void prepare() {
+    master = Endpoints.getRedisEndpoint("standalone2-primary");
+    sentinel = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+    sentinelForFailover = Endpoints.getRedisEndpoint("sentinel-failover").getHostAndPort();
+  }
 
   @BeforeEach
   public void setup() throws InterruptedException {

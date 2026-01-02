@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 import redis.clients.jedis.*;
 
@@ -31,14 +32,21 @@ import redis.clients.jedis.*;
 @Tag("integration")
 public class RedisClusterClientMigrationIntegrationTest {
 
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+  private static EndpointConfig endpoint;
 
-  private static final Set<HostAndPort> CLUSTER_NODES = new HashSet<>(endpoint.getHostsAndPorts());
-  private static final String PASSWORD = endpoint.getPassword();
+  private static Set<HostAndPort> CLUSTER_NODES;
+  private static String PASSWORD;
   private static final int MAX_ATTEMPTS = 3;
 
   private JedisCluster legacyCluster;
   private RedisClusterClient newCluster;
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    CLUSTER_NODES = new HashSet<>(endpoint.getHostsAndPorts());
+    PASSWORD = endpoint.getPassword();
+  }
 
   @BeforeEach
   public void setUp() {

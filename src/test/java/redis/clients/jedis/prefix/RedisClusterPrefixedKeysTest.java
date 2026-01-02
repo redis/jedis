@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.BeforeAll;
 
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
@@ -16,9 +17,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Tag("integration")
 public class RedisClusterPrefixedKeysTest extends PrefixedKeysTest<RedisClusterClient> {
 
-  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
-  private static final JedisClientConfig CLIENT_CONFIG = endpoint.getClientConfigBuilder().build();
-  private static final Set<HostAndPort> NODES = new HashSet<>(endpoint.getHostsAndPorts());
+  private static EndpointConfig endpoint;
+  private static JedisClientConfig CLIENT_CONFIG;
+  private static Set<HostAndPort> NODES;
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    CLIENT_CONFIG = endpoint.getClientConfigBuilder().build();
+    NODES = new HashSet<>(endpoint.getHostsAndPorts());
+  }
 
   @Override
   RedisClusterClient nonPrefixingJedis() {

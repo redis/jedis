@@ -14,8 +14,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ListDirection;
@@ -33,8 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
-
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   public ClusterListCommandsTest(RedisProtocol protocol) {
     super(protocol);

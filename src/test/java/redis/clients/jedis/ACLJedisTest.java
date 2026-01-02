@@ -23,13 +23,14 @@ import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ACLJedisTest extends JedisCommandsTestBase {
 
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
+  protected static EndpointConfig endpoint;
 
   /**
    * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
    */
   @BeforeAll
   public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
     assumeTrue(getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.of("6.0.0")),
         "Not running ACL test on this version of Redis");
   }

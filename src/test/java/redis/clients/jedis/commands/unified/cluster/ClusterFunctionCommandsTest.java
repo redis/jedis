@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.FunctionCommandsTestBase;
@@ -28,8 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
 public class ClusterFunctionCommandsTest extends FunctionCommandsTestBase {
-
-  protected static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
   public ClusterFunctionCommandsTest(RedisProtocol protocol) {
     super(protocol);

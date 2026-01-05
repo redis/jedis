@@ -84,18 +84,42 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   @Experimental
-  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig, Cache clientSideCache,
-          final GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels,
-          final JedisClientConfig sentinelClientConfig) {
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+          Cache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
+          Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
             DEFAULT_RESUBSCRIBE_DELAY);
   }
 
+  /**
+   *
+   * @deprecated use
+   *             {@link #SentineledConnectionProvider(String, JedisClientConfig, GenericObjectPoolConfig, Set, JedisClientConfig, Delay)}
+   */
+  @Deprecated
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
           final GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels,
           final JedisClientConfig sentinelClientConfig, final long subscribeRetryWaitTimeMillis) {
     this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig,
         Delay.constant(Duration.ofMillis(subscribeRetryWaitTimeMillis)));
+  }
+
+  /**
+   * Creates a new SentineledConnectionProvider.
+   *
+   * @param masterName name of the master
+   * @param masterClientConfig client configuration for the master
+   * @param poolConfig pool configuration for the master
+   * @param sentinels set of sentinel addresses
+   * @param sentinelClientConfig client configuration for the sentinel
+   * @param resubscribeDelay delay before resubscribing to sentinel after a connection loss
+   *
+   * @since 7.3.0
+   */
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+          final GenericObjectPoolConfig<Connection> poolConfig, Set<HostAndPort> sentinels,
+          final JedisClientConfig sentinelClientConfig, final Delay subscribeRetryWaitTimeMillis) {
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis);
   }
 
   /**

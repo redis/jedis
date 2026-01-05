@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.EndpointConfig;
@@ -25,10 +26,16 @@ import redis.clients.jedis.scenario.RecommendedSettings;
 
 public class HealthCheckIntegrationTest {
 
-  private final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("standalone0");
-  private final JedisClientConfig clientConfig = endpoint1.getClientConfigBuilder()
-      .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
-      .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
+  private static EndpointConfig endpoint1;
+  private static JedisClientConfig clientConfig;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    endpoint1 = Endpoints.getRedisEndpoint("standalone0");
+    clientConfig = endpoint1.getClientConfigBuilder()
+        .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
+        .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
+  }
 
   @Test
   public void testDisableHealthCheck() {

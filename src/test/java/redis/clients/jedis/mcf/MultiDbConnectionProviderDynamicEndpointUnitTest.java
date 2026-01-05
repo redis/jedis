@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
@@ -24,8 +25,14 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
   private MultiDbConnectionProvider provider;
   private JedisClientConfig clientConfig;
-  private final EndpointConfig endpoint1 = Endpoints.getRedisEndpoint("standalone0");
-  private final EndpointConfig endpoint2 = Endpoints.getRedisEndpoint("standalone1");
+  private static EndpointConfig endpoint1;
+  private static EndpointConfig endpoint2;
+
+  @BeforeAll
+  static void prepareEndpoints() {
+    endpoint1 = Endpoints.getRedisEndpoint("standalone0");
+    endpoint2 = Endpoints.getRedisEndpoint("standalone1");
+  }
 
   @BeforeEach
   void setUp() {

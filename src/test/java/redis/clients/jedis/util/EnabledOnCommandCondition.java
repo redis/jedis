@@ -24,12 +24,6 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
     this.config = config;
   }
 
-  public EnabledOnCommandCondition(EndpointConfig endpointConfig) {
-    this.endpointSupplier = null;
-    this.hostPort = endpointConfig.getHostAndPort();
-    this.config = endpointConfig.getClientConfigBuilder().build();
-  }
-
   public EnabledOnCommandCondition(Supplier<EndpointConfig> endpointSupplier) {
     this.endpointSupplier = endpointSupplier;
     this.hostPort = null;

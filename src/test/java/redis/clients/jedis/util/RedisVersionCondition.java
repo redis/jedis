@@ -27,12 +27,6 @@ public class RedisVersionCondition implements ExecutionCondition {
   private HostAndPort hostPort;
   private JedisClientConfig config;
 
-  public RedisVersionCondition(EndpointConfig endpoint) {
-    this.endpointSupplier = null;
-    this.hostPort = endpoint.getHostAndPort();
-    this.config = endpoint.getClientConfigBuilder().build();
-  }
-
   public RedisVersionCondition(Supplier<EndpointConfig> endpointSupplier) {
     this.endpointSupplier = endpointSupplier;
     this.hostPort = null;

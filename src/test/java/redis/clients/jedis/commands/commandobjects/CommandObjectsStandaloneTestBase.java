@@ -14,9 +14,9 @@ import redis.clients.jedis.RedisProtocol;
 public abstract class CommandObjectsStandaloneTestBase extends CommandObjectsTestBase {
 
   @RegisterExtension
-  RedisVersionCondition redisVersionCondition = new RedisVersionCondition(endpoint);
+  RedisVersionCondition redisVersionCondition = new RedisVersionCondition(() -> endpoint);
   @RegisterExtension
-  EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(endpoint);
+  EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(() -> endpoint);
 
   public CommandObjectsStandaloneTestBase(RedisProtocol protocol) {
     super(protocol, Endpoints.getRedisEndpoint("standalone0"));

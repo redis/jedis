@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HostAndPort;
@@ -23,16 +24,22 @@ public class SentinelCommandsTest {
 
   protected static final String MASTER_NAME = "mymaster";
 
-  protected static final List<HostAndPort> nodes =
-      Arrays.asList(
-          Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
-          Endpoints.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
-  protected static final Set<String> nodesPorts = nodes.stream()
-      .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
+  protected static List<HostAndPort> nodes;
+  protected static Set<String> nodesPorts;
 
-  protected static final List<HostAndPort> sentinels2 =
-      Arrays.asList(
-          Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(), Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
+  protected static List<HostAndPort> sentinels2;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    nodes = Arrays.asList(
+        Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
+        Endpoints.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
+    nodesPorts = nodes.stream()
+        .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
+    sentinels2 = Arrays.asList(
+        Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
+        Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
+  }
 
   @Test
   public void myIdAndSentinels() {

@@ -1,6 +1,6 @@
 ---
 
-name: Integration
+name: Build and Test using local environment
 
 on:
   push:

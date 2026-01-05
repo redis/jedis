@@ -34,7 +34,7 @@ jobs:
       - name: System setup
         run: |
           sudo apt update
-          sudo apt install -y stunnel make
+          sudo apt install -y make
           make system-setup
       - name: Cache dependencies
         uses: actions/cache@v4

@@ -19,15 +19,13 @@ import redis.clients.jedis.util.JedisAsserts;
 public abstract class SentinelClientBuilder<C>
     extends AbstractClientBuilder<SentinelClientBuilder<C>, C> {
 
-  private static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay.constant(Duration.ofMillis(5000));
-
   // Sentinel-specific configuration fields
   private String masterName = null;
   private Set<HostAndPort> sentinels = null;
   private JedisClientConfig sentinelClientConfig = null;
 
   // delay between re-subscribing to sentinel nodes after a disconnection
-  private Delay sentinelReconnectDelay = DEFAULT_RESUBSCRIBE_DELAY;
+  private Delay sentinelReconnectDelay = SentineledConnectionProvider.DEFAULT_RESUBSCRIBE_DELAY;
 
   /**
    * Sets the master name for the Redis Sentinel configuration.

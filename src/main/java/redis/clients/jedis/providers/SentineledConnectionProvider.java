@@ -34,7 +34,10 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(SentineledConnectionProvider.class);
 
-  static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay.constant(Duration.ofMillis(5000));
+  protected static final long DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS = 5000;
+
+  public static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay
+          .constant(Duration.ofMillis(DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS));
 
   private static final Sleeper DEFAULT_SLEEPER = Thread::sleep;
 

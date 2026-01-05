@@ -34,10 +34,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(SentineledConnectionProvider.class);
 
-  protected static final long DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS = 5000;
-
-  static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay
-      .constant(Duration.ofMillis(DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS));
+  static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay.constant(Duration.ofMillis(5000));
 
   private static final Sleeper DEFAULT_SLEEPER = Thread::sleep;
 
@@ -79,8 +76,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    this(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig,
-        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
+    this(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, DEFAULT_RESUBSCRIBE_DELAY);
   }
 
   @Experimental
@@ -112,7 +108,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
    * @param poolConfig pool configuration for the master
    * @param sentinels set of sentinel addresses
    * @param sentinelClientConfig client configuration for the sentinel
-   * @param resubscribeDelay delay before resubscribing to sentinel after a connection loss
+   * @param subscribeRetryWaitTimeMillis delay before resubscribing to sentinel after a connection loss
    *
    * @since 7.3.0
    */

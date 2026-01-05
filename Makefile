@@ -54,7 +54,6 @@ export REDIS_UNAVAILABLE_CONF
 start: cleanup compile-module
 	# Simple local test env that provides only "standalone-0" endpoint and an instance listening on Unix socket
 	export TEST_ENV_PROVIDER=local
-	export REDIS_ENDPOINTS_CONFIG_PATH=src/test/resources/endpoints_local.json
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
@@ -86,9 +85,7 @@ stop:
 test: | start mvn-test-local stop
 
 mvn-test-local:
-	export TEST_ENV_PROVIDER=local
-	export REDIS_ENDPOINTS_CONFIG_PATH=src/test/resources/endpoints_local.json
-	mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
+	@TEST_ENV_PROVIDER=local mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
 
 mvn-test:
 	mvn -Dwith-param-names=true -Dtest=${TEST} clean verify

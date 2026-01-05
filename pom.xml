@@ -553,6 +553,7 @@
 						<include>**/*CompareCondition*.java</include>
 						<include>**/*MSetExParams*.java</include>
 						<include>src/main/java/redis/clients/jedis/util/ReadOnlyCommands.java</include>
+						<include>src/main/java/redis/clients/jedis/StaticReadOnlyPredicate.java</include>
 						<include>**/*UnitTest.java</include>
 						<include>**/DriverInfo.java</include>
 						<include>**/ClientSetInfo*.java</include>

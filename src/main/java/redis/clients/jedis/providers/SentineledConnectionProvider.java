@@ -39,6 +39,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   static final Delay DEFAULT_RESUBSCRIBE_DELAY = Delay
       .constant(Duration.ofMillis(DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS));
 
+  private static final Sleeper DEFAULT_SLEEPER = Thread::sleep;
+
   private volatile HostAndPort currentMaster;
 
   private volatile ConnectionPool pool;
@@ -137,7 +139,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     this.sentinelConnectionFactory = sentinelConnectionFactory != null ? sentinelConnectionFactory
         : defaultSentinelConnectionFactory();
 
-    this.sleeper = sleeper != null ? sleeper : Thread::sleep;
+    this.sleeper = sleeper != null ? sleeper : DEFAULT_SLEEPER;
 
     HostAndPort master = initSentinels(sentinels);
     initMaster(master);
@@ -394,7 +396,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   @FunctionalInterface
-  protected interface Sleeper {
+  interface Sleeper {
 
     void sleep(long millis) throws InterruptedException;
 

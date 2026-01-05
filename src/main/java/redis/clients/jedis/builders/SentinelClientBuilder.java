@@ -27,7 +27,7 @@ public abstract class SentinelClientBuilder<C>
   private JedisClientConfig sentinelClientConfig = null;
 
   // delay between re-subscribing to sentinel nodes after a disconnection
-  private Delay sentinellReconnectDelay = DEFAULT_RESUBSCRIBE_DELAY;
+  private Delay sentinelReconnectDelay = DEFAULT_RESUBSCRIBE_DELAY;
 
   /**
    * Sets the master name for the Redis Sentinel configuration.
@@ -69,17 +69,17 @@ public abstract class SentinelClientBuilder<C>
   }
 
   /**
-   * Sets the delay between re-subscribing to sentinel node after a disconnection.*
+   * Sets the delay between re-subscribing to sentinel node after a disconnection.
    * <p>
    * In case connection to sentinel nodes is lost, the client will try to reconnect to them. This
    * method sets the delay between re-subscribing to sentinel nodes after a disconnection.
    * </p>
-   * @param reconnectDelay
-   * @return
+   * @param reconnectDelay the delay between re-subscribing to sentinel nodes after a disconnection
+   * @return this builder
    */
   public SentinelClientBuilder<C> sentinelReconnectDelay(Delay reconnectDelay) {
     JedisAsserts.notNull(reconnectDelay, "reconnectDelay must not be null");
-    this.sentinellReconnectDelay = reconnectDelay;
+    this.sentinelReconnectDelay = reconnectDelay;
     return this;
   }
 
@@ -91,7 +91,7 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig, sentinellReconnectDelay);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, sentinelReconnectDelay);
   }
 
   @Override

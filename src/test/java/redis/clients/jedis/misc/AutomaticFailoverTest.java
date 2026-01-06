@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -36,16 +37,20 @@ public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 
-  private final HostAndPort hostPortWithFailure = new HostAndPort(
-      HostAndPorts.getRedisEndpoint("standalone0").getHost(), 6378);
-  private final EndpointConfig endpointForAuthFailure = HostAndPorts
-      .getRedisEndpoint("standalone0");
-  private final EndpointConfig workingEndpoint = HostAndPorts
-      .getRedisEndpoint("standalone7-with-lfu-policy");
+  private static HostAndPort hostPortWithFailure;
+  private static EndpointConfig endpointForAuthFailure;
+  private static EndpointConfig workingEndpoint;
 
   private final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
 
   private Jedis jedis2;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    endpointForAuthFailure = Endpoints.getRedisEndpoint("standalone0");
+    workingEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    hostPortWithFailure = new HostAndPort(endpointForAuthFailure.getHost(), 6378);
+  }
 
   private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
       JedisClientConfig clientConfig, HostAndPort... hostPorts) {

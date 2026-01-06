@@ -14,14 +14,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 public class SSLOptionsJedisTest {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
+  protected static EndpointConfig endpoint;
 
-  protected static final EndpointConfig aclEndpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
+  protected static EndpointConfig aclEndpoint;
 
   private static final String trustStoreName = SSLOptionsJedisTest.class.getSimpleName();
   private static Path trustStorePath;
   @BeforeAll
   public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
+    aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),aclEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
   }

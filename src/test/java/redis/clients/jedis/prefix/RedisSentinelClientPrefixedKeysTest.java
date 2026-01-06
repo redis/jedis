@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.RedisSentinelClient;
 import org.junit.jupiter.api.Tag;
@@ -16,9 +17,16 @@ public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisS
 
   private static final String MASTER_NAME = "mymaster";
   private static final JedisClientConfig MASTER_CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("foobared").build();
-  private static final Set<HostAndPort> SENTINEL_NODES = new HashSet<>(
-      Arrays.asList(HostAndPorts.getSentinelServers().get(1), HostAndPorts.getSentinelServers().get(3)));
+  private static Set<HostAndPort> SENTINEL_NODES;
   private static final JedisClientConfig SENTINEL_CLIENT_CONFIG = DefaultJedisClientConfig.builder().build();
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    SENTINEL_NODES = new HashSet<>(
+        Arrays.asList(
+            Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
+            Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort()));
+  }
 
   @Override
   RedisSentinelClient nonPrefixingJedis() {

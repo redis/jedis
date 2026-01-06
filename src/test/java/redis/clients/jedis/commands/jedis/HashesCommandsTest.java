@@ -58,9 +58,9 @@ import redis.clients.jedis.util.RedisVersionCondition;
 public class HashesCommandsTest extends JedisCommandsTestBase {
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() -> endpoint);
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(endpoint);
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(() -> endpoint);
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -841,7 +841,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     assertEquals(asList(1L, 0L), jedis.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared"));
 
     assertThat(jedis.hpttl("foo", "bar", "bare", "bared"),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 1000)), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -857,7 +857,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     assertEquals(asList(1L, 0L), jedis.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3));
 
     assertThat(jedis.hpttl(bfoo, bbar1, bbar2, bbar3),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 1000)), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test

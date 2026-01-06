@@ -8,7 +8,7 @@ import redis.clients.jedis.*;
 
 public class RedisClientBenchmark {
 
-  private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws Exception {

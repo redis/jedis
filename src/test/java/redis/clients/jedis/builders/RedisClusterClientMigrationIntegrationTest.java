@@ -11,15 +11,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPoolConfig;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.RedisClusterClient;
+import redis.clients.jedis.*;
 
 /**
  * Integration test that verifies migration compatibility from the legacy JedisCluster constructor
@@ -38,13 +32,21 @@ import redis.clients.jedis.RedisClusterClient;
 @Tag("integration")
 public class RedisClusterClientMigrationIntegrationTest {
 
-  private static final Set<HostAndPort> CLUSTER_NODES = new HashSet<>(
-      HostAndPorts.getStableClusterServers());
-  private static final String PASSWORD = "cluster";
+  private static EndpointConfig endpoint;
+
+  private static Set<HostAndPort> CLUSTER_NODES;
+  private static String PASSWORD;
   private static final int MAX_ATTEMPTS = 3;
 
   private JedisCluster legacyCluster;
   private RedisClusterClient newCluster;
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    CLUSTER_NODES = new HashSet<>(endpoint.getHostsAndPorts());
+    PASSWORD = endpoint.getPassword();
+  }
 
   @BeforeEach
   public void setUp() {
@@ -226,7 +228,7 @@ public class RedisClusterClientMigrationIntegrationTest {
   @Test
   public void testConstructorWithSingleNodeAndPoolConfig() {
     int timeout = 2000;
-    HostAndPort singleNode = HostAndPorts.getStableClusterServers().get(0);
+    HostAndPort singleNode = endpoint.getHostsAndPorts().get(0);
     GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password(PASSWORD).build();
 
@@ -274,7 +276,7 @@ public class RedisClusterClientMigrationIntegrationTest {
    */
   private void cleanClusterData() {
     // Connect to each stable cluster node and flush data
-    for (HostAndPort node : HostAndPorts.getStableClusterServers()) {
+    for (HostAndPort node : endpoint.getHostsAndPorts()) {
       try (redis.clients.jedis.Jedis jedis = new redis.clients.jedis.Jedis(node)) {
         jedis.auth(PASSWORD);
         jedis.flushDB();

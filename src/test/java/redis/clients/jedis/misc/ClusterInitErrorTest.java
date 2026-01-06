@@ -5,7 +5,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
@@ -24,7 +24,7 @@ public class ClusterInitErrorTest {
   @Test
   public void initError() {
     assertNull(System.getProperty(INIT_NO_ERROR_PROPERTY));
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
     assertThrows(JedisClusterOperationException.class, () -> {
       try (RedisClusterClient cluster = RedisClusterClient.builder()
           .nodes(Collections.singleton(endpoint.getHostAndPort()))
@@ -38,7 +38,7 @@ public class ClusterInitErrorTest {
   @Test
   public void initNoError() {
     System.setProperty(INIT_NO_ERROR_PROPERTY, "");
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
     try (RedisClusterClient cluster = RedisClusterClient.builder()
         .nodes(Collections.singleton(endpoint.getHostAndPort()))
         .clientConfig(endpoint.getClientConfigBuilder().build())

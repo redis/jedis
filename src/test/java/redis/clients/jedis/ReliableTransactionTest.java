@@ -19,6 +19,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -32,10 +33,15 @@ public class ReliableTransactionTest {
 
   final byte[] bmykey = { 0x42, 0x02, 0x03, 0x04 };
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpoint;
 
   private Connection conn;
   private Jedis nj;
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0");
+  }
 
   @BeforeEach
   public void setUp() throws Exception {

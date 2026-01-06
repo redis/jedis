@@ -10,24 +10,37 @@ import redis.clients.jedis.resps.CommandInfo;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class EnabledOnCommandCondition implements ExecutionCondition {
 
-  private final HostAndPort hostPort;
-  private final JedisClientConfig config;
+  private final Supplier<EndpointConfig> endpointSupplier;
+  private HostAndPort hostPort;
+  private JedisClientConfig config;
 
   public EnabledOnCommandCondition(HostAndPort hostPort, JedisClientConfig config) {
+    this.endpointSupplier = null;
     this.hostPort = hostPort;
     this.config = config;
   }
 
-  public EnabledOnCommandCondition(EndpointConfig endpointConfig) {
-    this.hostPort = endpointConfig.getHostAndPort();
-    this.config = endpointConfig.getClientConfigBuilder().build();
+  public EnabledOnCommandCondition(Supplier<EndpointConfig> endpointSupplier) {
+    this.endpointSupplier = endpointSupplier;
+    this.hostPort = null;
+    this.config = null;
+  }
+
+  private void ensureInitialized() {
+    if (hostPort == null && endpointSupplier != null) {
+      EndpointConfig endpoint = endpointSupplier.get();
+      this.hostPort = endpoint.getHostAndPort();
+      this.config = endpoint.getClientConfigBuilder().build();
+    }
   }
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
       String[] command = getCommandFromAnnotations(context);
 

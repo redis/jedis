@@ -48,7 +48,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
   private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
-      = DefaultJedisClientConfig.builder().password("cluster").build();
+      = endpoint.getClientConfigBuilder().build();
 
   @Test
   public void testThrowMovedException() {
@@ -61,7 +61,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
       node1.set("foo", "bar");
     } catch (JedisMovedDataException jme) {
       assertEquals(12182, jme.getSlot());
-      assertEquals(new HostAndPort("127.0.0.1", 7381), jme.getTargetNode());
+      assertEquals(nodeInfo3, jme.getTargetNode());
       return;
     }
     fail();
@@ -78,14 +78,14 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testDiscoverNodesAutomatically() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -94,11 +94,11 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
     }
 
     try (RedisClusterClient jc2 = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 7379)))
+        .nodes(Collections.singleton(nodeInfo1))
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -109,7 +109,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
 
   @Test
   public void testDiscoverNodesAutomaticallyWithSocketConfig() {
-    HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
+    HostAndPort hp = nodeInfo1;
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(hp))
@@ -133,7 +133,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testSetClientName() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     String clientName = "myAppName";
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
@@ -141,7 +141,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .clientName(clientName)
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
@@ -157,11 +157,11 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
 
   @Test
   public void testSetClientNameWithConfig() {
-    HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
+    HostAndPort hp = nodeInfo1;
     String clientName = "config-pattern-app";
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(hp))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").clientName(clientName).build())
+        .clientConfig(DefaultJedisClientConfig.builder().password(endpoint.getPassword()).clientName(clientName).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
@@ -176,14 +176,14 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testCalculateConnectionPerSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -195,11 +195,11 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
     }
 
     try (RedisClusterClient jc2 = RedisClusterClient.builder()
-        .nodes(Collections.singleton(new HostAndPort("127.0.0.1", 7379)))
+        .nodes(Collections.singleton(nodeInfo1))
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -255,7 +255,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
     }
 
     DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
-        .password("cluster").readOnlyForRedisClusterReplicas().build();
+        .password(endpoint.getPassword()).readOnlyForRedisClusterReplicas().build();
     ClusterCommandObjects commandObjects = new ClusterCommandObjects();
     try (RedisClusterClient jedisCluster = RedisClusterClient.builder()
         .nodes(Collections.singleton(nodeInfo1))
@@ -285,7 +285,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -343,7 +343,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -405,14 +405,14 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testRecalculateSlotsWhenMoved() throws InterruptedException {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -431,14 +431,14 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testAskResponse() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
 
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -453,7 +453,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
 
   @Test
   public void testAskResponseWithConfig() {
-    HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
+    HostAndPort hp = nodeInfo1;
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(hp))
         .clientConfig(DEFAULT_CLIENT_CONFIG)
@@ -472,14 +472,14 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     assertThrows(JedisClusterOperationException.class,()-> {
       try (RedisClusterClient jc = RedisClusterClient.builder()
           .nodes(jedisClusterNode)
           .clientConfig(DefaultJedisClientConfig.builder()
               .connectionTimeoutMillis(DEFAULT_TIMEOUT)
               .socketTimeoutMillis(DEFAULT_TIMEOUT)
-              .password("cluster")
+              .password(endpoint.getPassword())
               .build())
           .maxAttempts(DEFAULT_REDIRECTIONS)
           .poolConfig(DEFAULT_POOL_CONFIG)
@@ -495,7 +495,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
 //  @Test(expected = JedisClusterMaxAttemptsException.class)
   @Test
   public void testRedisClusterMaxRedirectionsWithConfig() {
-    HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
+    HostAndPort hp = nodeInfo1;
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(hp))
         .clientConfig(DEFAULT_CLIENT_CONFIG)
@@ -512,9 +512,9 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Test
   public void testClusterForgetNode() {
     // at first, join node4 to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
-    node2.clusterMeet("127.0.0.1", nodeInfo4.getPort());
-    node3.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+    node1.clusterMeet(nodeInfo4.getHost(), nodeInfo4.getPort());
+    node2.clusterMeet(nodeInfo4.getHost(), nodeInfo4.getPort());
+    node3.clusterMeet(nodeInfo4.getHost(), nodeInfo4.getPort());
 
     String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
 
@@ -576,7 +576,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -603,7 +603,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -631,13 +631,13 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
     config.setMaxTotal(0);
     config.setMaxWait(Duration.ofMillis(DEFAULT_TIMEOUT));
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(config)
@@ -656,7 +656,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -693,7 +693,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(4000)
             .socketTimeoutMillis(4000)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -713,7 +713,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(hp))
         .clientConfig(DefaultJedisClientConfig.builder()
-            .connectionTimeoutMillis(4000).socketTimeoutMillis(4000).password("cluster").build())
+            .connectionTimeoutMillis(4000).socketTimeoutMillis(4000).password(endpoint.getPassword()).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
@@ -730,13 +730,13 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   public void testJedisClusterRunsWithMultithreaded() throws InterruptedException,
       ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     final RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(jedisClusterNode)
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -769,7 +769,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Timeout(value = DEFAULT_TIMEOUT * 2, unit = TimeUnit.MILLISECONDS)
   public void testReturnConnectionOnJedisConnectionException() throws InterruptedException {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
     try (RedisClusterClient jc = RedisClusterClient.builder()
@@ -777,13 +777,13 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(config)
         .build()) {
 
-      try (Connection c = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
+      try (Connection c = jc.getClusterNodes().get(nodeInfo2.toString()).getResource()) {
         Jedis j = new Jedis(c);
         ClientKillerUtil.tagClient(j, "DEAD");
         ClientKillerUtil.killClient(j, "DEAD");
@@ -797,7 +797,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
   @Timeout(value = DEFAULT_TIMEOUT, unit = TimeUnit.MILLISECONDS)
   public void testReturnConnectionOnRedirection() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
     try (RedisClusterClient jc = RedisClusterClient.builder()
@@ -805,7 +805,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(config)
@@ -819,7 +819,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
 
   @Test
   public void testLocalhostNodeNotAddedWhen127Present() {
-    HostAndPort localhost = new HostAndPort("localhost", 7379);
+    HostAndPort localhost = new HostAndPort("localhost", nodeInfo1.getPort());
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     // cluster node is defined as 127.0.0.1; adding localhost should work,
     // but shouldn't show up.
@@ -832,7 +832,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(config)
@@ -845,10 +845,10 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
 
   @Test
   public void testInvalidStartNodeNotAdded() {
-    HostAndPort invalidHost = new HostAndPort("not-a-real-host", 7379);
+    HostAndPort invalidHost = new HostAndPort("not-a-real-host", nodeInfo1.getPort());
     Set<HostAndPort> jedisClusterNode = new LinkedHashSet<HostAndPort>();
     jedisClusterNode.add(invalidHost);
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(nodeInfo1);
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
     try (RedisClusterClient jc = RedisClusterClient.builder()
@@ -856,7 +856,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(config)
@@ -894,7 +894,7 @@ public class RedisClusterClientTest extends RedisClusterClientTestBase {
         .clientConfig(DefaultJedisClientConfig.builder()
             .connectionTimeoutMillis(DEFAULT_TIMEOUT)
             .socketTimeoutMillis(DEFAULT_TIMEOUT)
-            .password("cluster")
+            .password(endpoint.getPassword())
             .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)

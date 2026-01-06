@@ -2,9 +2,11 @@ package redis.clients.jedis.commands.jedis;
 
 
 
+import io.redis.test.annotations.SkipOnEnv;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -12,6 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
+import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@SkipOnEnv(TestEnvUtil.ENV_REDIS_ENTERPRISE)
 public class MigrateTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
@@ -35,20 +39,25 @@ public class MigrateTest extends JedisCommandsTestBase {
   private Jedis dest;
   private Jedis destAuth;
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
+  private static EndpointConfig destEndpoint;
 
-  private static final EndpointConfig destEndpoint = HostAndPorts.getRedisEndpoint(
-      "standalone7-with-lfu-policy");
+  private static EndpointConfig destEndpointWithAuth;
 
-  private static final EndpointConfig destEndpointWithAuth = HostAndPorts.getRedisEndpoint(
-      "standalone1");
-
-  private static final String host = destEndpoint.getHost();
-  private static final int port = destEndpoint.getPort();
-  private static final int portAuth = destEndpointWithAuth.getPort();
+  private static String host;
+  private static int port;
+  private static int portAuth;
   private static final int db = 2;
   private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    destEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    destEndpointWithAuth = Endpoints.getRedisEndpoint("standalone1");
+    host = destEndpoint.getHost();
+    port = destEndpoint.getPort();
+    portAuth = destEndpointWithAuth.getPort();
+  }
 
   public MigrateTest(RedisProtocol protocol) {
     super(protocol);

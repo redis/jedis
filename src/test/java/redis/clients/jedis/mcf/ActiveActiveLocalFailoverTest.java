@@ -41,7 +41,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tags({ @Tag("failover"), @Tag("integration") })
+@ResourceLocks({ @ResourceLock(value = "redis-failover-1", target = ResourceLockTarget.CHILDREN),
+    @ResourceLock(value = "redis-failover-2", target = ResourceLockTarget.CHILDREN) })
 public class ActiveActiveLocalFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveLocalFailoverTest.class);
 

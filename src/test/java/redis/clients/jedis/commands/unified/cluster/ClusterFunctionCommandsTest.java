@@ -27,9 +27,13 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLockTarget;
+
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLock(value = "stable-cluster", target = ResourceLockTarget.CHILDREN)
 public class ClusterFunctionCommandsTest extends FunctionCommandsTestBase {
 
   public ClusterFunctionCommandsTest(RedisProtocol protocol) {

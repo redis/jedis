@@ -14,11 +14,18 @@ import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone2-primary"),
+    @ResourceLock("standalone3-replica"),
+    @ResourceLock("sentinel")
+})
 public class SentinelCommandsTest {
 
   protected static final String MASTER_NAME = "mymaster";

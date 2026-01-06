@@ -14,12 +14,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock("standalone9-failover"),
+    @ResourceLock("standalone10-replica")
+})
 public class FailoverCommandsTest {
 
   private static final int INVALID_PORT = 6000;
 
-  private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9");
+  private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9-failover");
   private static final EndpointConfig node2 = HostAndPorts.getRedisEndpoint("standalone10-replica-of-standalone9");
 
   private HostAndPort masterAddress;

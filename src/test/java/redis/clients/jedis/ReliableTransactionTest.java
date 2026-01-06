@@ -19,10 +19,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
 @Tag("integration")
+@ResourceLock("standalone0")
 public class ReliableTransactionTest {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

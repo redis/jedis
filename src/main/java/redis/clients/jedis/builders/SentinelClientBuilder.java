@@ -125,7 +125,8 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom, this.readOnlyPredicate, sentinelReconnectDelay);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom,
+        this.readOnlyPredicate, sentinelReconnectDelay);
   }
 
   @Override

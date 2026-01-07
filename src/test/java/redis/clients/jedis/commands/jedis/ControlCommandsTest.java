@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import io.redis.test.annotations.EnabledOnEnv;
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -277,7 +277,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @EnabledOnEnv(TestEnvUtil.ENV_OSS_DOCKER)
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_DOCKER, enabled = true)
   public void waitReplicas() {
     assertEquals(1, jedis.waitReplicas(1, 100));
   }

@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import io.redis.test.annotations.EnabledOnEnv;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("integration")
-@EnabledOnEnv(TestEnvUtil.ENV_OSS_SOURCE)
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = true)
 public class UnavailableConnectionTest {
 
   private static final HostAndPort unavailableNode = new HostAndPort("localhost", 6400);

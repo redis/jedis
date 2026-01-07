@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
-import io.redis.test.annotations.EnabledOnEnv;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.newsclub.net.unix.AFUNIXSocket;
@@ -15,7 +15,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@EnabledOnEnv(TestEnvUtil.ENV_OSS_SOURCE)
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = true)
 public class UdsTest {
 
   @RegisterExtension

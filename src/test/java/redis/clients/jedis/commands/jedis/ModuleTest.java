@@ -2,7 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import java.util.List;
 
-import io.redis.test.annotations.EnabledOnEnv;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-@EnabledOnEnv(TestEnvUtil.ENV_OSS_SOURCE)
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = true)
 public class ModuleTest extends JedisCommandsTestBase {
 
   enum ModuleCommand implements ProtocolCommand {

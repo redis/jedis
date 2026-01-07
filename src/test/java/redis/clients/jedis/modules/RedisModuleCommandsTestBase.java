@@ -8,9 +8,6 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
-import redis.clients.jedis.util.TestEnvUtil;
-
-
 
 @Tag("integration")
 public abstract class RedisModuleCommandsTestBase {

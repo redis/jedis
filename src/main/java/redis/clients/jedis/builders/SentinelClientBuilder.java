@@ -1,9 +1,12 @@
 package redis.clients.jedis.builders;
 
+import java.time.Duration;
 import java.util.Set;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.Delay;
+import redis.clients.jedis.util.JedisAsserts;
 
 /**
  * Builder for creating JedisSentineled instances (Redis Sentinel connections).
@@ -20,6 +23,9 @@ public abstract class SentinelClientBuilder<C>
   private String masterName = null;
   private Set<HostAndPort> sentinels = null;
   private JedisClientConfig sentinelClientConfig = null;
+
+  // delay between re-subscribing to sentinel nodes after a disconnection
+  private Delay sentinelReconnectDelay = SentineledConnectionProvider.DEFAULT_RESUBSCRIBE_DELAY;
 
   /**
    * Sets the master name for the Redis Sentinel configuration.
@@ -60,6 +66,21 @@ public abstract class SentinelClientBuilder<C>
     return this;
   }
 
+  /**
+   * Sets the delay between re-subscribing to sentinel node after a disconnection.
+   * <p>
+   * In case connection to sentinel nodes is lost, the client will try to reconnect to them. This
+   * method sets the delay between re-subscribing to sentinel nodes after a disconnection.
+   * </p>
+   * @param reconnectDelay the delay between re-subscribing to sentinel nodes after a disconnection
+   * @return this builder
+   */
+  public SentinelClientBuilder<C> sentinelReconnectDelay(Delay reconnectDelay) {
+    JedisAsserts.notNull(reconnectDelay, "reconnectDelay must not be null");
+    this.sentinelReconnectDelay = reconnectDelay;
+    return this;
+  }
+
   @Override
   protected SentinelClientBuilder<C> self() {
     return this;
@@ -68,7 +89,7 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, sentinelReconnectDelay);
   }
 
   @Override

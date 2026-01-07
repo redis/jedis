@@ -3753,6 +3753,11 @@ public class CommandObjects {
         .add(fieldName), BuilderFactory.STRING_SET);
   }
 
+  public final CommandObject<HybridReply> ftHybrid(String indexName, HybridArgs hybridArgs) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.HYBRID, indexName)
+        .addParams(hybridArgs), HybridReply.HYBRID_REPLY_BUILDER);
+  }
+
   @Deprecated
   public final CommandObject<Map<String, Object>> ftConfigGet(String option) {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option),

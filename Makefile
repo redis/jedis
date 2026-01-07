@@ -51,7 +51,7 @@ export REDIS_UDS
 export REDIS_UNAVAILABLE_CONF
 
 
-start: cleanup compile-module
+start-local: cleanup compile-module
 	# Simple local test env that provides only "standalone-0" endpoint and an instance listening on Unix socket
 	export TEST_ENV_PROVIDER=local
 	echo "$$REDIS1_CONF" | redis-server -
@@ -62,7 +62,7 @@ cleanup:
 	- rm -vf /tmp/redis*.log 2>/dev/null
 	- rm dump.rdb appendonly.aof - 2>/dev/null
 
-stop:
+stop-local:
 	@for pidfile in \
 		/tmp/redis1.pid \
 		/tmp/redis_uds.pid; do \
@@ -82,7 +82,7 @@ stop:
 	done
 	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
 
-test: | start mvn-test-local stop
+test-local: | start-local mvn-test-local stop-local
 
 mvn-test-local:
 	@TEST_ENV_PROVIDER=local mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
@@ -90,12 +90,12 @@ mvn-test-local:
 mvn-test:
 	mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
 
-package: | start mvn-package stop
+package: | start-local mvn-package stop-local
 
 mvn-package:
 	mvn clean package
 
-deploy: | start mvn-deploy stop
+deploy: | start-local mvn-deploy stop-local
 
 mvn-deploy:
 	mvn clean deploy
@@ -103,7 +103,7 @@ mvn-deploy:
 format:
 	mvn java-formatter:format
 
-release: | start mvn-release stop
+release: | start-local mvn-release stop-local
 
 mvn-release:
 	mvn release:clean
@@ -126,7 +126,7 @@ compile-module:
 
 # Start test environment with specific version using predefined docker compose setup
 
-start-test-env:
+start:
 	@if [ -z "$(version)" ]; then \
 		version=$(arg); \
 		if [ -z "$$version" ]; then \
@@ -149,11 +149,11 @@ start-test-env:
 	echo "Started test environment with Redis version $$version. "
 
 # Stop the test environment
-stop-test-env:
+stop:
 	docker compose -f src/test/resources/env/docker-compose.yml down; \
 	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
 	echo "Stopped test environment and performed cleanup."
 
-test-on-docker: | start-test-env mvn-test stop-test-env
+test: | start mvn-test stop
 
-.PHONY: test
+.PHONY: test test-local start start-local stop stop-local

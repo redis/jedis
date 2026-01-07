@@ -67,7 +67,7 @@ jobs:
       - name: Set up Docker Compose environment
         run: |
           mkdir -m 777 $REDIS_ENV_WORK_DIR
-          make start-test-env version=${{ matrix.redis_version }}
+          make start version=${{ matrix.redis_version }}
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline

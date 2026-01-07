@@ -52,7 +52,7 @@ jobs:
       - name: Run tests
         run: |
           export TEST_ENV_PROVIDER=local
-          make test
+          make test-local
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb

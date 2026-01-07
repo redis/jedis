@@ -277,7 +277,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @EnabledOnEnv(TestEnvUtil.ENV_DOCKER)
+  @EnabledOnEnv(TestEnvUtil.ENV_OSS_DOCKER)
   public void waitReplicas() {
     assertEquals(1, jedis.waitReplicas(1, 100));
   }

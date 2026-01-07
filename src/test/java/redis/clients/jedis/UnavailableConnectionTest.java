@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("integration")
-@EnabledOnEnv(TestEnvUtil.ENV_LEGACY)
+@EnabledOnEnv(TestEnvUtil.ENV_OSS_SOURCE)
 public class UnavailableConnectionTest {
 
   private static final HostAndPort unavailableNode = new HostAndPort("localhost", 6400);

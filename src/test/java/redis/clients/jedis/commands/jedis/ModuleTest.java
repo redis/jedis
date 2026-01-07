@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-@EnabledOnEnv(TestEnvUtil.ENV_LEGACY)
+@EnabledOnEnv(TestEnvUtil.ENV_OSS_SOURCE)
 public class ModuleTest extends JedisCommandsTestBase {
 
   enum ModuleCommand implements ProtocolCommand {

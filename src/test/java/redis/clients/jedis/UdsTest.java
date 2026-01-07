@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.Socket;
 
 import io.redis.test.annotations.EnabledOnEnv;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.newsclub.net.unix.AFUNIXSocket;
@@ -16,7 +15,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@EnabledOnEnv(TestEnvUtil.ENV_LEGACY)
+@EnabledOnEnv(TestEnvUtil.ENV_OSS_SOURCE)
 public class UdsTest {
 
   @RegisterExtension

@@ -27,7 +27,8 @@ import java.lang.annotation.*;
  * }
  *
  * // Enable test in multiple environments
- * &#64;ConditionalOnEnv(value = {TestEnvUtil.ENV_OSS_DOCKER, TestEnvUtil.ENV_OSS_SOURCE}, enabled = true)
+ * &#64;ConditionalOnEnv(value = { TestEnvUtil.ENV_OSS_DOCKER,
+ *     TestEnvUtil.ENV_OSS_SOURCE }, enabled = true)
  * public void testInDockerOrSource() {
  *   // This test runs in Docker or Source environments
  * }
@@ -38,22 +39,21 @@ import java.lang.annotation.*;
 @Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface ConditionalOnEnv {
   /**
-   * The environment(s) to match against. Valid values are defined in
-   * {@code TestEnvUtil} (e.g., "oss-docker", "oss-source", "re").
+   * The environment(s) to match against. Valid values are defined in {@code TestEnvUtil} (e.g.,
+   * "oss-docker", "oss-source", "re").
    * @return array of environment identifiers
    */
   String[] value();
 
   /**
-   * Whether the test should be enabled or disabled when the current environment
-   * matches one of the specified values.
+   * Whether the test should be enabled or disabled when the current environment matches one of the
+   * specified values.
    * <p>
-   * When {@code enabled = true}: the test runs ONLY when the current environment
-   * matches one of the specified values.
+   * When {@code enabled = true}: the test runs ONLY when the current environment matches one of the
+   * specified values.
    * <p>
-   * When {@code enabled = false}: the test is SKIPPED when the current environment
-   * matches one of the specified values.
-   * 
+   * When {@code enabled = false}: the test is SKIPPED when the current environment matches one of
+   * the specified values.
    * @return true to enable the test in matching environments, false to disable
    */
   boolean enabled();
@@ -64,4 +64,3 @@ public @interface ConditionalOnEnv {
    */
   String message() default "";
 }
-

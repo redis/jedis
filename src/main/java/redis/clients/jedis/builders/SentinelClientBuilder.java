@@ -6,9 +6,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.ReadFrom;
 import redis.clients.jedis.ReadOnlyPredicate;
 import redis.clients.jedis.StaticReadOnlyPredicate;
-import java.time.Duration;
-import java.util.Set;
-import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 import redis.clients.jedis.util.Delay;
@@ -128,8 +125,7 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom,
-        this.readOnlyPredicate, sentinelReconnectDelay);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom, this.readOnlyPredicate, sentinelReconnectDelay);
   }
 
   @Override

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
@@ -122,4 +123,14 @@ public interface RediSearchPipelineCommands {
   Response<Boolean> ftSugDel(String key, String string);
 
   Response<Long> ftSugLen(String key);
+
+  /**
+   * Execute a hybrid search combining text and vector search.
+   *
+   * @param indexName the index name
+   * @param hybridArgs the hybrid search arguments
+   * @return the hybrid search results
+   */
+  @Experimental
+  Response<HybridReply> ftHybrid(String indexName, HybridArgs hybridArgs);
 }

@@ -77,7 +77,7 @@ jobs:
       # Run Tests
       - name: Run Maven tests
         run: |
-          export TEST_ENV_PROVIDER=docker
+          export TEST_ENV_PROVIDER=oss-docker
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
           if [ -z "$TESTS" ]; then

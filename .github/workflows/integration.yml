@@ -51,7 +51,7 @@ jobs:
           mvn javadoc:jar
       - name: Run tests
         run: |
-          export TEST_ENV_PROVIDER=local
+          export TEST_ENV_PROVIDER=oss-local
           make test-local
         env:
           JVM_OPTS: -Xmx3200m

@@ -13,10 +13,10 @@ public class RedisClientSideCacheTest extends RedisClientSideCacheTestBase {
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("standalone1"));
+      () -> Endpoints.getRedisEndpoint("standalone0"));
 
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone1");
+    endpoint = Endpoints.getRedisEndpoint("standalone0");
   }
 }

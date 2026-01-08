@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -10,7 +11,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,11 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @SinceRedisVersion(value = "6.0.0", message = "Not running ACL test on this version of Redis")
 @Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
 public class SSLACLJedisTest {
 
   protected static EndpointConfig endpoint;
 
   protected static EndpointConfig endpointWithDefaultUser;
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(

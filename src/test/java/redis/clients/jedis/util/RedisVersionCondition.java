@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.util.AnnotationUtils;
-import org.opentest4j.TestAbortedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.EndpointConfig;
@@ -49,12 +48,7 @@ public class RedisVersionCondition implements ExecutionCondition {
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-    try {
-      ensureInitialized();
-    } catch (TestAbortedException e) {
-      return ConditionEvaluationResult.disabled(e.getMessage());
-    }
-
+    ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
       SinceRedisVersion versionAnnotation = getAnnotation(context);
       if (versionAnnotation != null) {

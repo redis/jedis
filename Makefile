@@ -90,25 +90,8 @@ mvn-test-local:
 mvn-test:
 	mvn -Dwith-param-names=true -Dtest=${TEST} clean verify
 
-package: | start-local mvn-package stop-local
-
-mvn-package:
-	mvn clean package
-
-deploy: | start-local mvn-deploy stop-local
-
-mvn-deploy:
-	mvn clean deploy
-
 format:
 	mvn java-formatter:format
-
-release: | start-local mvn-release stop-local
-
-mvn-release:
-	mvn release:clean
-	mvn release:prepare
-	mvn release:perform -DskipTests
 
 system-setup:
 	# Install gcc with Homebrew (macOS) or apt (Linux)
@@ -156,4 +139,4 @@ stop:
 
 test: | start mvn-test stop
 
-.PHONY: test test-local start start-local stop stop-local
+.PHONY: test test-local start start-local stop stop-local cleanup mvn-test-local mvn-test format system-setup compile-module

@@ -124,7 +124,7 @@ jobs:
       - name: Tear down Docker Compose environment
         if: always()
         run: |
-          docker compose $COMPOSE_ENV_FILES -f src/test/resources/env/docker-compose.yml down
+          make stop
         continue-on-error: true
       # Upload code coverage
       - name: Upload merged coverage to Codecov

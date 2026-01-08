@@ -98,7 +98,7 @@ public class SentineledConnectionProviderReconnectionTest {
 
     Jedis failingJedis = mock(Jedis.class);
     doThrow(new JedisConnectionException("Connection lost")).when(failingJedis)
-        .subscribe(any(JedisPubSub.class), anyString());
+        .subscribe(any(JedisPubSub.class), anyString(), anyString(), anyString(), anyString());
     when(sentinelConnectionFactory.createConnection(any(), any()))
         .thenAnswer(invocation -> mockJedis).thenAnswer(invocation -> failingJedis);
     when(reconnectDelay.delay(anyLong())).thenReturn(Duration.ofMillis(expectedDelay));

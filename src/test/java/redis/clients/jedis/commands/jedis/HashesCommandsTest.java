@@ -58,9 +58,9 @@ import redis.clients.jedis.util.RedisVersionCondition;
 public class HashesCommandsTest extends JedisCommandsTestBase {
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() -> endpoint);
   @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(endpoint);
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(() -> endpoint);
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };

@@ -67,7 +67,7 @@ jobs:
       - name: Set up Docker Compose environment
         run: |
           mkdir -m 777 $REDIS_ENV_WORK_DIR
-          make start-test-env version=${{ matrix.redis_version }}
+          make start version=${{ matrix.redis_version }}
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
@@ -77,7 +77,7 @@ jobs:
       # Run Tests
       - name: Run Maven tests
         run: |
-          export TEST_ENV_PROVIDER=docker
+          export TEST_ENV_PROVIDER=oss-docker
           export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
           echo $TEST_WORK_FOLDER
           if [ -z "$TESTS" ]; then
@@ -124,7 +124,7 @@ jobs:
       - name: Tear down Docker Compose environment
         if: always()
         run: |
-          docker compose $COMPOSE_ENV_FILES -f src/test/resources/env/docker-compose.yml down
+          make stop
         continue-on-error: true
       # Upload code coverage
       - name: Upload merged coverage to Codecov

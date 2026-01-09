@@ -27,7 +27,8 @@ services:
     #network_mode: host
     environment:
       - REDIS_CLUSTER=no
-      - REDIS_PASSWORD=foobared
+      - REDIS_CLIENT_USER=deploy
+      - REDIS_CLIENT_PASSWORD=verify
       - TLS_ENABLED=yes
     ports:
       - "6379:6379"
@@ -42,11 +43,11 @@ services:
     volumes:
       -  ${REDIS_ENV_CONF_DIR}/redis1-2-5-8-sentinel/config:/redis/config:r
       -  ${REDIS_ENV_WORK_DIR}/redis1-2-5-8-sentinel/work:/redis/work:rw
-  redis3-4-sentinel:
+  standalone2-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
-    container_name: redis3-4-sentinel
+    container_name: standalone2-sentinel
     #network_mode: host
     environment:
       - REDIS_CLUSTER=no
@@ -57,19 +58,19 @@ services:
       - "16381:16381"
       - "6382:6382"
       - "16382:16382"
-      - "26380:26380" # sentinel
+      - "26380:26380" # sentinel-standalone2-1
       - "36380:36380" # sentinel tls
-      - "26382:26382" # sentinel
+      - "26382:26382" # sentinel-standalone2-3
       - "36382:36382" # sentinel tls
     volumes:
-      -  ${REDIS_ENV_CONF_DIR}/redis3-4-sentinel/config:/redis/config:r
-      -  ${REDIS_ENV_WORK_DIR}/redis3-4-sentinel/work:/redis/work:rw
+      -  ${REDIS_ENV_CONF_DIR}/standalone2-sentinel/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/standalone2-sentinel/work:/redis/work:rw
 
-  redis6-7-sentinel:
+  sentinel-failover:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
-    container_name: redis6-7-sentinel
+    container_name: sentinel-standalone2-failover
     #network_mode: host
     environment:
       - REDIS_CLUSTER=no
@@ -80,33 +81,14 @@ services:
       - "26381:26381" # sentinel
       - "36381:36381" # sentinel tls
     volumes:
-      -  ${REDIS_ENV_CONF_DIR}/redis6-7-sentinel/config:/redis/config:r
-      -  ${REDIS_ENV_WORK_DIR}/redis6-7-sentinel/work:/redis/work:rw
-  redis9-sentinel:
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
-    container_name: redis9-sentinel
-    #network_mode: host
-    environment:
-      - REDIS_CLUSTER=no
-      - REDIS_CLIENT_USER=deploy
-      - REDIS_CLIENT_PASSWORD=verify
-      - TLS_ENABLED=yes
-    ports:
-      - "6387:6387"
-      - "16387:16387"
-      - "26383:26383"    # sentinel
-      - "36383:36383"    # sentinel tls
-    volumes:
-      -  ${REDIS_ENV_CONF_DIR}/redis9-sentinel/config:/redis/config:r
-      -  ${REDIS_ENV_WORK_DIR}/redis9-sentinel/work:/redis/work:rw
+      -  ${REDIS_ENV_CONF_DIR}/sentinel-standalone2-failover/config:/redis/config:r
+      -  ${REDIS_ENV_WORK_DIR}/sentinel-standalone2-failover/work:/redis/work:rw
 
-  redis10-11:
+  redis9-10:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
-    container_name: redis10-11
+    container_name: redis9-10
     #network_mode: host
     environment:
       - REDIS_CLUSTER=no
@@ -114,8 +96,8 @@ services:
       - "6388:6388"
       - "6389:6389"
     volumes:
-      - ${REDIS_ENV_CONF_DIR}/redis10-11/config:/redis/config:r
-      - ${REDIS_ENV_WORK_DIR}/redis10-11/work:/redis/work:rw
+      - ${REDIS_ENV_CONF_DIR}/redis9-10/config:/redis/config:r
+      - ${REDIS_ENV_WORK_DIR}/redis9-10/work:/redis/work:rw
   redis-unavailable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
@@ -151,7 +133,7 @@ services:
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_VERSION}"
     container_name: cluster-stable-1
     #network_mode: host
-    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150
+    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150 --save ""
     environment:
       - REDIS_CLUSTER=yes
       - REDIS_PASSWORD=cluster
@@ -169,6 +151,7 @@ services:
       - net.ipv6.conf.all.disable_ipv6=1
     image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_STACK_VERSION:-${REDIS_VERSION}}"
     container_name: jedis-stack
+    command: --save ""
     environment:
       - REDIS_CLUSTER=no
       - PORT=6479

@@ -37,8 +37,7 @@ public class ClusterTopologyRefreshIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ClusterTopologyRefreshIT.endpoint = HostAndPorts
-          .getRedisEndpoint("re-single-shard-oss-cluster");
+      ClusterTopologyRefreshIT.endpoint = Endpoints.getRedisEndpoint("re-single-shard-oss-cluster");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

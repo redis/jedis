@@ -4,16 +4,33 @@ import redis.clients.jedis.*;
 
 public class RedisClientCommandsTestHelper {
 
-  public static final EndpointConfig nodeInfo = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpoint;
+
+  private static EndpointConfig getEndpointImpl() {
+    if (endpoint == null) {
+      endpoint = Endpoints.getRedisEndpoint("standalone0");
+    }
+    return endpoint;
+  }
+
+  /**
+   * Returns the endpoint configuration for standalone0.
+   * This method lazily initializes the endpoint to avoid class loading issues.
+   */
+  public static EndpointConfig getEndpointConfig() {
+    return getEndpointImpl();
+  }
 
   public static RedisClient getClient(RedisProtocol redisProtocol) {
-    return RedisClient.builder().hostAndPort(nodeInfo.getHostAndPort()).clientConfig(nodeInfo.getClientConfigBuilder()
+    EndpointConfig info = getEndpointImpl();
+    return RedisClient.builder().hostAndPort(info.getHostAndPort()).clientConfig(info.getClientConfigBuilder()
         .protocol(redisProtocol).build()).build();
   }
 
   public static void clearData() {
-    try (Jedis node = new Jedis(nodeInfo.getHostAndPort())) {
-      node.auth(nodeInfo.getPassword());
+    EndpointConfig info = getEndpointImpl();
+    try (Jedis node = new Jedis(info.getHostAndPort())) {
+      node.auth(info.getPassword());
       node.flushAll();
     }
   }

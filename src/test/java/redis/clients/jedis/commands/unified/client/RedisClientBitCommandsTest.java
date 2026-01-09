@@ -17,10 +17,10 @@ public class RedisClientBitCommandsTest extends BitCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      RedisClientCommandsTestHelper.nodeInfo);
+      RedisClientCommandsTestHelper::getEndpointConfig);
 
   public RedisClientBitCommandsTest(RedisProtocol protocol) {
     super(protocol);

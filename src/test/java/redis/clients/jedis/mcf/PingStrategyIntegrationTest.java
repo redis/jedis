@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.exceptions.JedisException;
 
@@ -22,13 +22,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("failover")
 public class PingStrategyIntegrationTest {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("redis-failover-1");
-  private static final HostAndPort proxyHostAndPort = endpoint.getHostAndPort();
+  private static EndpointConfig endpoint;
+  private static HostAndPort proxyHostAndPort;
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   private static Proxy redisProxy;
 
   @BeforeAll
   public static void setupProxy() throws IOException {
+    endpoint = Endpoints.getRedisEndpoint("redis-failover-1");
+    proxyHostAndPort = endpoint.getHostAndPort();
     if (tp.getProxyOrNull("redis-health-test") != null) {
       tp.getProxy("redis-health-test").delete();
     }

@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.TlsUtil;
@@ -21,7 +20,6 @@ public class EndpointConfig {
     private final String password;
     private final int bdbId;
     private final List<URI> endpoints;
-    @SerializedName("certificatesLocation")
     private final String certificatesLocation;
 
     public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String certificatesLocation) {
@@ -40,6 +38,14 @@ public class EndpointConfig {
 
     public HostAndPort getHostAndPort(int index) {
         return JedisURIHelper.getHostAndPort(endpoints.get(index));
+    }
+
+    public List<HostAndPort> getHostsAndPorts() {
+        List<HostAndPort> result = new ArrayList<>();
+        for (URI endpoint : endpoints) {
+            result.add(JedisURIHelper.getHostAndPort(endpoint));
+        }
+        return result;
     }
 
     public String getPassword() {

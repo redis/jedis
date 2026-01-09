@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -44,6 +45,7 @@ import redis.clients.jedis.resps.LatencyLatestInfo;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -130,7 +132,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleMaster() {
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
     try (Jedis master = new Jedis(endpoint.getHostAndPort(),
         endpoint.getClientConfigBuilder().build())) {
@@ -150,8 +152,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleSlave() {
-    EndpointConfig primaryEndpoint = HostAndPorts.getRedisEndpoint("standalone0");
-    EndpointConfig secondaryEndpoint = HostAndPorts.getRedisEndpoint(
+    EndpointConfig primaryEndpoint = Endpoints.getRedisEndpoint("standalone0");
+    EndpointConfig secondaryEndpoint = Endpoints.getRedisEndpoint(
         "standalone4-replica-of-standalone1");
 
     try (Jedis slave = new Jedis(secondaryEndpoint.getHostAndPort(),
@@ -174,7 +176,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleSentinel() {
-    try (Jedis sentinel = new Jedis(HostAndPorts.getSentinelServers().get(0))) {
+    try (Jedis sentinel = new Jedis(Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort())) {
 
       List<Object> role = sentinel.role();
       assertEquals("sentinel", role.get(0));
@@ -275,6 +277,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_DOCKER, enabled = true)
   public void waitReplicas() {
     assertEquals(1, jedis.waitReplicas(1, 100));
   }

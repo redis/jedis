@@ -28,10 +28,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("integration")
 public class MultiDbConnectionProviderTest {
 
-  private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
-  private final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
+  private static EndpointConfig endpointStandalone0;
+  private static EndpointConfig endpointStandalone1;
 
   private MultiDbConnectionProvider provider;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    endpointStandalone0 = Endpoints.getRedisEndpoint("standalone0");
+    endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+  }
 
   @BeforeEach
   public void setUp() {

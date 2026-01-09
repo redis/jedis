@@ -58,8 +58,7 @@ public class ClusterTopologyRefreshIT {
         .clientConfig(config).maxAttempts(RecommendedSettings.MAX_RETRIES)
         .maxTotalRetriesDuration(RecommendedSettings.MAX_TOTAL_RETRIES_DURATION).build()) {
       Set<String> initialNodes = client.getClusterNodes().keySet();
-      // assertEquals(1, initialNodes.size(),
-      // "Was this BDB used to run this test before?");
+      assertEquals(1, initialNodes.size(), "Was this BDB used to run this test before?");
 
       AtomicLong commandsExecuted = new AtomicLong();
 

@@ -11,34 +11,34 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * Configures text search with optional scorer and score aliasing.
  */
 @Experimental
-public class HybridSearchArgs implements IParams {
+public class HybridSearchParams implements IParams {
 
   private String query;
   private Scorer scorer;
   private String scoreAlias;
 
-  private HybridSearchArgs() {
+  private HybridSearchParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link HybridSearchArgs}.
+   * @return a new {@link Builder} for {@link HybridSearchParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link HybridSearchArgs}.
+   * Builder for {@link HybridSearchParams}.
    */
   public static class Builder {
-    private final HybridSearchArgs instance = new HybridSearchArgs();
+    private final HybridSearchParams instance = new HybridSearchParams();
 
     /**
-     * Build the {@link HybridSearchArgs} instance.
+     * Build the {@link HybridSearchParams} instance.
      * 
      * @return the configured arguments
      */
-    public HybridSearchArgs build() {
+    public HybridSearchParams build() {
       if (instance.query == null) {
         throw new IllegalArgumentException("Query is required for SEARCH clause");
       }

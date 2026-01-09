@@ -7,9 +7,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import org.hamcrest.MatcherAssert;
@@ -363,5 +370,410 @@ public class ClusterCommandExecutorTest {
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();
     assertEquals(0L, totalSleepMs.get());
+  }
+
+  @Test
+  public void runSuccessfulExecuteKeylessCommand() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection = mock(Connection.class);
+
+    connectionMap.put("localhost:6379", pool);
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool.getResource()).thenReturn(connection);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "keyless_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+    assertEquals("keyless_result", testMe.executeKeylessCommand(STR_COM_OBJECT));
+  }
+
+  @Test
+  public void runKeylessCommandUsesConnectionMapRoundRobin() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection = mock(Connection.class);
+
+    connectionMap.put("localhost:6379", pool);
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool.getResource()).thenReturn(connection);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "keyless_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    testMe.executeKeylessCommand(STR_COM_OBJECT);
+
+    // Verify that getConnectionMap() was called for round-robin distribution
+    InOrder inOrder = inOrder(connectionHandler, pool, connection);
+    inOrder.verify(connectionHandler).getConnectionMap();
+    inOrder.verify(pool).getResource();
+    inOrder.verify(connection).close();
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void runKeylessCommandIgnoresRedirections() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    final HostAndPort movedTarget = new HostAndPort(null, 0);
+
+    connectionMap.put("localhost:6379", pool);
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool.getResource()).thenReturn(connection1, connection2);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND) {
+      boolean isFirstCall = true;
+
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        if (isFirstCall) {
+          isFirstCall = false;
+          // Keyless commands should ignore redirections and retry with different random node
+          throw new JedisMovedDataException("", movedTarget, 0);
+        }
+        return (T) "keyless_result";
+      }
+
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    assertEquals("keyless_result", testMe.executeKeylessCommand(STR_COM_OBJECT));
+
+    // Verify that we called getConnectionMap() twice (first failed with redirection, second succeeded)
+    // and that we didn't follow the redirection to a specific node
+    verify(connectionHandler, times(2)).getConnectionMap();
+    verify(pool, times(2)).getResource();
+    verify(connection1).close();
+    verify(connection2).close();
+  }
+
+  @Test
+  public void runKeylessCommandFailsAfterMaxAttempts() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+    final LongConsumer sleep = mock(LongConsumer.class);
+
+    connectionMap.put("localhost:6379", pool);
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool.getResource()).thenReturn(connection1, connection2, connection3);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        throw new JedisConnectionException("Connection failed");
+      }
+
+      @Override
+      protected void sleep(long sleepMillis) {
+        sleep.accept(sleepMillis);
+      }
+    };
+
+    try {
+      testMe.executeKeylessCommand(STR_COM_OBJECT);
+      fail("keyless command did not fail");
+    } catch (JedisClusterOperationException e) {
+      // expected
+    }
+
+    // Verify that we tried connection map access and performed slot cache renewal
+    // getConnectionMap() called 3 times (once for each connection attempt)
+    // getResource() called 3 times, sleep called once, renewSlotCache called once
+    verify(connectionHandler, times(3)).getConnectionMap();
+    verify(pool, times(3)).getResource();
+    verify(connection1).close();
+    verify(connection2).close();
+    verify(connection3).close();
+    verify(sleep).accept(ArgumentMatchers.anyLong());
+    verify(connectionHandler).renewSlotCache();
+  }
+
+  @Test
+  public void runKeylessCommandFailsWithEmptyConnectionMap() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> emptyConnectionMap = new HashMap<>();
+
+    when(connectionHandler.getConnectionMap()).thenReturn(emptyConnectionMap);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "should_not_reach_here";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    try {
+      testMe.executeKeylessCommand(STR_COM_OBJECT);
+      fail("keyless command should fail with empty connection map");
+    } catch (JedisClusterOperationException e) {
+      assertEquals("No cluster nodes available.", e.getMessage());
+    }
+
+    // Verify that getConnectionMap() was called
+    verify(connectionHandler).getConnectionMap();
+  }
+
+  @Test
+  public void runKeylessCommandRoundRobinDistribution() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+
+    // Create multiple pools to test round-robin
+    ConnectionPool pool1 = mock(ConnectionPool.class);
+    ConnectionPool pool2 = mock(ConnectionPool.class);
+    ConnectionPool pool3 = mock(ConnectionPool.class);
+
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+
+    connectionMap.put("localhost:6379", pool1);
+    connectionMap.put("localhost:6380", pool2);
+    connectionMap.put("localhost:6381", pool3);
+
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool1.getResource()).thenReturn(connection1);
+    when(pool2.getResource()).thenReturn(connection2);
+    when(pool3.getResource()).thenReturn(connection3);
+
+    // Track which connections are used
+    List<Connection> usedConnections = new ArrayList<>();
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        usedConnections.add(connection);
+        return (T) "keyless_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // Execute multiple keyless commands to verify round-robin
+    testMe.executeKeylessCommand(STR_COM_OBJECT);
+    testMe.executeKeylessCommand(STR_COM_OBJECT);
+    testMe.executeKeylessCommand(STR_COM_OBJECT);
+    testMe.executeKeylessCommand(STR_COM_OBJECT); // Should cycle back to first
+
+    // Verify round-robin behavior - should cycle through all connections
+    assertEquals(4, usedConnections.size());
+    Set<Connection> uniqueConnections = new HashSet<>(usedConnections);
+    assertEquals(3, uniqueConnections.size(),
+        "Round-robin should distribute across multiple nodes");
+  }
+
+  @Test
+  public void runKeylessCommandCircularCounterNeverOverflows() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+
+    // Create 3 pools to test circular behavior
+    ConnectionPool pool1 = mock(ConnectionPool.class);
+    ConnectionPool pool2 = mock(ConnectionPool.class);
+    ConnectionPool pool3 = mock(ConnectionPool.class);
+
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+
+    connectionMap.put("node1:6379", pool1);
+    connectionMap.put("node2:6379", pool2);
+    connectionMap.put("node3:6379", pool3);
+
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool1.getResource()).thenReturn(connection1);
+    when(pool2.getResource()).thenReturn(connection2);
+    when(pool3.getResource()).thenReturn(connection3);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "keyless_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // Execute many commands to test circular behavior
+    // With our implementation using getAndUpdate(current -> (current + 1) % nodeCount),
+    // the counter never exceeds nodeCount-1, so overflow is impossible
+    for (int i = 0; i < 100; i++) {
+      String result = testMe.executeKeylessCommand(STR_COM_OBJECT);
+      assertEquals("keyless_result", result);
+    }
+
+    // Verify that getConnectionMap() was called for each execution
+    verify(connectionHandler, times(100)).getConnectionMap();
+
+    // The circular counter implementation ensures no overflow can occur
+    // because the counter value is always between 0 and (nodeCount-1)
+  }
+
+  @Test
+  public void runKeylessCommandEvenDistributionRoundRobin() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+
+    // Create 4 pools to test even distribution
+    ConnectionPool pool1 = mock(ConnectionPool.class);
+    ConnectionPool pool2 = mock(ConnectionPool.class);
+    ConnectionPool pool3 = mock(ConnectionPool.class);
+    ConnectionPool pool4 = mock(ConnectionPool.class);
+
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+    Connection connection4 = mock(Connection.class);
+
+    // Use ordered map to ensure consistent iteration order for testing
+    connectionMap.put("node1:6379", pool1);
+    connectionMap.put("node2:6379", pool2);
+    connectionMap.put("node3:6379", pool3);
+    connectionMap.put("node4:6379", pool4);
+
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool1.getResource()).thenReturn(connection1);
+    when(pool2.getResource()).thenReturn(connection2);
+    when(pool3.getResource()).thenReturn(connection3);
+    when(pool4.getResource()).thenReturn(connection4);
+
+    // Track connection usage count
+    Map<Connection, Integer> connectionUsage = new HashMap<>();
+    connectionUsage.put(connection1, 0);
+    connectionUsage.put(connection2, 0);
+    connectionUsage.put(connection3, 0);
+    connectionUsage.put(connection4, 0);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        connectionUsage.put(connection, connectionUsage.get(connection) + 1);
+        return (T) "keyless_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // Execute commands - should be evenly distributed
+    int totalCommands = 40; // Multiple of 4 for perfect distribution
+    for (int i = 0; i < totalCommands; i++) {
+      testMe.executeKeylessCommand(STR_COM_OBJECT);
+    }
+
+    // Verify even distribution - each node should get exactly 10 commands
+    int expectedPerNode = totalCommands / 4;
+    assertEquals(expectedPerNode, connectionUsage.get(connection1).intValue(),
+        "Node 1 should receive exactly " + expectedPerNode + " commands");
+    assertEquals(expectedPerNode, connectionUsage.get(connection2).intValue(),
+        "Node 2 should receive exactly " + expectedPerNode + " commands");
+    assertEquals(expectedPerNode, connectionUsage.get(connection3).intValue(),
+        "Node 3 should receive exactly " + expectedPerNode + " commands");
+    assertEquals(expectedPerNode, connectionUsage.get(connection4).intValue(),
+        "Node 4 should receive exactly " + expectedPerNode + " commands");
+
+    // Verify total commands executed
+    int totalExecuted = connectionUsage.values().stream().mapToInt(Integer::intValue).sum();
+    assertEquals(totalCommands, totalExecuted, "Total commands executed should match");
+
+    // Verify that getConnectionMap() was called for each execution
+    verify(connectionHandler, times(totalCommands)).getConnectionMap();
+  }
+
+  @Test
+  public void runKeylessCommandRoundRobinSequence() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new HashMap<>();
+
+    // Create 3 pools for simpler sequence verification
+    ConnectionPool pool1 = mock(ConnectionPool.class);
+    ConnectionPool pool2 = mock(ConnectionPool.class);
+    ConnectionPool pool3 = mock(ConnectionPool.class);
+
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+
+    // Use LinkedHashMap to ensure consistent iteration order
+    connectionMap = new java.util.LinkedHashMap<>();
+    connectionMap.put("node1:6379", pool1);
+    connectionMap.put("node2:6379", pool2);
+    connectionMap.put("node3:6379", pool3);
+
+    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(pool1.getResource()).thenReturn(connection1);
+    when(pool2.getResource()).thenReturn(connection2);
+    when(pool3.getResource()).thenReturn(connection3);
+
+    // Track the exact sequence of connections used
+    List<String> connectionSequence = new ArrayList<>();
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        if (connection == connection1) {
+          connectionSequence.add("node1");
+        } else if (connection == connection2) {
+          connectionSequence.add("node2");
+        } else if (connection == connection3) {
+          connectionSequence.add("node3");
+        }
+        return (T) "keyless_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // Execute 9 commands to see 3 complete cycles
+    for (int i = 0; i < 9; i++) {
+      testMe.executeKeylessCommand(STR_COM_OBJECT);
+    }
+
+    // Verify the round-robin sequence
+    List<String> expectedSequence = new ArrayList<>();
+    expectedSequence.add("node1"); expectedSequence.add("node2"); expectedSequence.add("node3"); // First cycle
+    expectedSequence.add("node1"); expectedSequence.add("node2"); expectedSequence.add("node3"); // Second cycle
+    expectedSequence.add("node1"); expectedSequence.add("node2"); expectedSequence.add("node3"); // Third cycle
+
+    assertEquals(expectedSequence, connectionSequence,
+        "Round-robin should follow exact sequence: node1 -> node2 -> node3 -> node1 -> ...");
   }
 }

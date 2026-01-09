@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.search.CombineArgs;
-import redis.clients.jedis.search.HybridArgs;
-import redis.clients.jedis.search.HybridSearchArgs;
-import redis.clients.jedis.search.HybridVectorArgs;
-import redis.clients.jedis.search.PostProcessingArgs;
+import redis.clients.jedis.search.CombineParams;
+import redis.clients.jedis.search.HybridParams;
+import redis.clients.jedis.search.HybridSearchParams;
+import redis.clients.jedis.search.HybridVectorParams;
+import redis.clients.jedis.search.PostProcessingParams;
 import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.FragmentedByteArrayInputStream;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -155,39 +155,39 @@ public class ProtocolTest {
     PipedOutputStream pos = new PipedOutputStream(pis);
     RedisOutputStream ros = new RedisOutputStream(pos);
 
-    // Build the same comprehensive HybridArgs as in the integration test
+    // Build the same comprehensive HybridParams as in the integration test
     String indexName = "myIndex";
     byte[] queryVector = floatArrayToByteArray(new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f});
 
     // Test @ prefix auto-addition: use fields without @ prefix
-    PostProcessingArgs postProcessing = PostProcessingArgs.builder()
+    PostProcessingParams postProcessing = PostProcessingParams.builder()
         .load("price", "brand", "@category") // Mix with and without @
-        .addOperation(PostProcessingArgs.GroupBy.of("brand") // No @ prefix
-            .reduce(PostProcessingArgs.Reducer.of(PostProcessingArgs.ReduceFunction.SUM, "@price").as("sum"))
-            .reduce(PostProcessingArgs.Reducer.of(PostProcessingArgs.ReduceFunction.COUNT).as("count")))
-        .addOperation(PostProcessingArgs.SortBy.of(
-            new PostProcessingArgs.SortProperty("sum", PostProcessingArgs.SortDirection.ASC), // No @ prefix
-            new PostProcessingArgs.SortProperty("count", PostProcessingArgs.SortDirection.DESC))) // No @ prefix
-        .addOperation(PostProcessingArgs.Apply.of("@sum * 0.9", "discounted_price"))
-        .addOperation(PostProcessingArgs.Filter.of("@sum > 700"))
-        .addOperation(PostProcessingArgs.Limit.of(0, 20))
+        .addOperation(PostProcessingParams.GroupBy.of("brand") // No @ prefix
+            .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
+            .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.COUNT).as("count")))
+        .addOperation(PostProcessingParams.SortBy.of(
+            new PostProcessingParams.SortProperty("sum", PostProcessingParams.SortDirection.ASC), // No @ prefix
+            new PostProcessingParams.SortProperty("count", PostProcessingParams.SortDirection.DESC))) // No @ prefix
+        .addOperation(PostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
+        .addOperation(PostProcessingParams.Filter.of("@sum > 700"))
+        .addOperation(PostProcessingParams.Limit.of(0, 20))
         .build();
 
-    HybridArgs hybridArgs = HybridArgs.builder()
-        .search(HybridSearchArgs.builder()
+    HybridParams hybridArgs = HybridParams.builder()
+        .search(HybridSearchParams.builder()
             .query("@category:{electronics} smartphone camera")
-            .scorer(HybridSearchArgs.Scorer.of(HybridSearchArgs.ScoringFunction.BM25))
+            .scorer(HybridSearchParams.Scorer.of(HybridSearchParams.ScoringFunction.BM25))
             .scoreAlias("text_score")
             .build())
-        .vectorSearch(HybridVectorArgs.builder()
+        .vectorSearch(HybridVectorParams.builder()
             .field("@image_embedding")
             .vector(queryVector)
-            .method(HybridVectorArgs.Knn.of(20).efRuntime(150))
+            .method(HybridVectorParams.Knn.of(20).efRuntime(150))
             // Single combined filter
             .filter("@brand:{apple|samsung|google}")
             .scoreAlias("vector_score")
             .build())
-        .combine(CombineArgs.of(new CombineArgs.Linear().alpha(0.7).beta(0.3)))
+        .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3)))
         .postProcessing(postProcessing)
         .param("discount_rate", "0.9")
         .build();
@@ -202,7 +202,7 @@ public class ProtocolTest {
 
     // Expected RESP output with:
     // - Single FILTER clause
-    // - @ prefix auto-added to fields in PostProcessingArgs
+    // - @ prefix auto-added to fields in PostProcessingParams
     String expectedCommand = "*66\r\n" +
         "$9\r\nFT.HYBRID\r\n" +
         "$7\r\nmyIndex\r\n" +
@@ -286,20 +286,20 @@ public class ProtocolTest {
   }
 
   @Test
-  public void testHybridArgsValidation() {
+  public void testHybridParamsValidation() {
     // Test that both SEARCH and VSIM are required
     assertThrows(IllegalArgumentException.class, () -> {
-      HybridArgs.builder()
-          .search(HybridSearchArgs.builder().query("test").build())
+      HybridParams.builder()
+          .search(HybridSearchParams.builder().query("test").build())
           .build(); // Missing VSIM
     });
 
     assertThrows(IllegalArgumentException.class, () -> {
-      HybridArgs.builder()
-          .vectorSearch(HybridVectorArgs.builder()
+      HybridParams.builder()
+          .vectorSearch(HybridVectorParams.builder()
               .field("@vec")
               .vector(new byte[]{1, 2, 3})
-              .method(HybridVectorArgs.Knn.of(10))
+              .method(HybridVectorParams.Knn.of(10))
               .build())
           .build(); // Missing SEARCH
     });

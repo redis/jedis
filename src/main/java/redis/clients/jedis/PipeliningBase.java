@@ -3821,8 +3821,8 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<HybridReply> ftHybrid(String indexName, HybridArgs hybridArgs) {
-    return appendCommand(commandObjects.ftHybrid(indexName, hybridArgs));
+  public Response<HybridReply> ftHybrid(String indexName, HybridParams hybridParams) {
+    return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 
   @Override

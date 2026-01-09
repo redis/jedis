@@ -14,7 +14,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * Configures vector search with KNN or RANGE methods.
  */
 @Experimental
-public class HybridVectorArgs implements IParams {
+public class HybridVectorParams implements IParams {
 
   private String field;
   private byte[] vector;
@@ -22,28 +22,28 @@ public class HybridVectorArgs implements IParams {
   private final List<String> filters = new ArrayList<>();
   private String scoreAlias;
 
-  private HybridVectorArgs() {
+  private HybridVectorParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link HybridVectorArgs}.
+   * @return a new {@link Builder} for {@link HybridVectorParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link HybridVectorArgs}.
+   * Builder for {@link HybridVectorParams}.
    */
   public static class Builder {
-    private final HybridVectorArgs instance = new HybridVectorArgs();
+    private final HybridVectorParams instance = new HybridVectorParams();
 
     /**
-     * Build the {@link HybridVectorArgs} instance.
+     * Build the {@link HybridVectorParams} instance.
      * 
      * @return the configured arguments
      */
-    public HybridVectorArgs build() {
+    public HybridVectorParams build() {
       if (instance.field == null) {
         throw new IllegalArgumentException("Field is required for VSIM clause");
       }

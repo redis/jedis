@@ -3761,9 +3761,9 @@ public class CommandObjects {
         .add(fieldName), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<HybridReply> ftHybrid(String indexName, HybridArgs hybridArgs) {
+  public final CommandObject<HybridReply> ftHybrid(String indexName, HybridParams hybridParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.HYBRID, indexName)
-        .addParams(hybridArgs), HybridReply.HYBRID_REPLY_BUILDER);
+        .addParams(hybridParams), HybridReply.HYBRID_REPLY_BUILDER);
   }
 
   @Deprecated

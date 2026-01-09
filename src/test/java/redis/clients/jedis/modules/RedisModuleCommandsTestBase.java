@@ -4,27 +4,28 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 
 @Tag("integration")
 public abstract class RedisModuleCommandsTestBase {
 
-  @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(hnp, DefaultJedisClientConfig.builder().build());
+  protected static String preferredEndpointId = TestEnvUtil.getTestEnvProvider()
+      .equals(TestEnvUtil.ENV_OSS_SOURCE) ? "standalone0" : "modules-docker";
 
-  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
-  protected static final HostAndPort hnp = HostAndPort.from(address);
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint(preferredEndpointId));
+
+  @RegisterExtension
+  public EnvCondition envCondition = new EnvCondition();
+
+  protected static EndpointConfig endpoint;
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this
@@ -52,22 +53,26 @@ public abstract class RedisModuleCommandsTestBase {
 
   // BeforeClass
   public static void prepare() {
-    try (Connection connection = new Connection(hnp)) {
-      assumeTrue(connection.ping(), "No Redis running on " + hnp.getPort() + " port.");
-    } catch (JedisConnectionException jce) {
-      assumeTrue(false, "Could not connect to Redis running on " + hnp.getPort() + " port.");
-    }
+    endpoint = Endpoints.getRedisEndpoint(preferredEndpointId);
   }
 
   @BeforeEach
   public void setUp() {
-    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
+    if (endpoint == null) {
+      return;
+    }
+    jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(protocol).timeoutMillis(500).build());
     jedis.flushAll();
-    client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
+    client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build();
   }
 
   @AfterEach
   public void tearDown() throws Exception {
+    if (endpoint == null) {
+      return;
+    }
     client.close();
     jedis.close();
   }

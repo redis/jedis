@@ -149,11 +149,11 @@ public interface RediSearchCommands {
    * Execute a hybrid query combining text search and vector similarity.
    *
    * @param indexName the index name
-   * @param hybridArgs the hybrid query arguments
+   * @param hybridParams the hybrid query arguments
    * @return the hybrid search results
-   * @see HybridArgs
+   * @see HybridParams
    * @see HybridReply
    */
   @Experimental
-  HybridReply ftHybrid(String indexName, HybridArgs hybridArgs);
+  HybridReply ftHybrid(String indexName, HybridParams hybridParams);
 }

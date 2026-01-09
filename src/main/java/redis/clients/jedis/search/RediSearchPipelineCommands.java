@@ -132,5 +132,5 @@ public interface RediSearchPipelineCommands {
    * @return the hybrid search results
    */
   @Experimental
-  Response<HybridReply> ftHybrid(String indexName, HybridArgs hybridArgs);
+  Response<HybridReply> ftHybrid(String indexName, HybridParams hybridParams);
 }

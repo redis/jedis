@@ -15,33 +15,33 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * Supports LOAD, GROUPBY, APPLY, SORTBY, FILTER, and LIMIT operations.
  */
 @Experimental
-public class PostProcessingArgs implements IParams {
+public class PostProcessingParams implements IParams {
 
   private List<String> loadFields;
   private final List<Operation> operations = new ArrayList<>();
 
-  private PostProcessingArgs() {
+  private PostProcessingParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link PostProcessingArgs}.
+   * @return a new {@link Builder} for {@link PostProcessingParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link PostProcessingArgs}.
+   * Builder for {@link PostProcessingParams}.
    */
   public static class Builder {
-    private final PostProcessingArgs instance = new PostProcessingArgs();
+    private final PostProcessingParams instance = new PostProcessingParams();
 
     /**
-     * Build the {@link PostProcessingArgs} instance.
+     * Build the {@link PostProcessingParams} instance.
      * 
      * @return the configured arguments
      */
-    public PostProcessingArgs build() {
+    public PostProcessingParams build() {
       return instance;
     }
 

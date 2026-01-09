@@ -11,26 +11,26 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * Specifies how to combine text search and vector similarity scores.
  */
 @Experimental
-public class CombineArgs implements IParams {
+public class CombineParams implements IParams {
 
   private final CombineMethod method;
   private String scoreAlias;
 
-  private CombineArgs(CombineMethod method) {
+  private CombineParams(CombineMethod method) {
     this.method = method;
   }
 
   /**
-   * Create CombineArgs with the specified method.
+   * Create CombineParams with the specified method.
    *
    * @param method the combine method (RRF or Linear)
-   * @return a new CombineArgs instance
+   * @return a new CombineParams instance
    */
-  public static CombineArgs of(CombineMethod method) {
+  public static CombineParams of(CombineMethod method) {
     if (method == null) {
       throw new IllegalArgumentException("Combine method must not be null");
     }
-    return new CombineArgs(method);
+    return new CombineParams(method);
   }
 
   /**
@@ -39,7 +39,7 @@ public class CombineArgs implements IParams {
    * @param alias the field name to use for the combined score
    * @return this instance
    */
-  public CombineArgs as(String alias) {
+  public CombineParams as(String alias) {
     if (alias == null) {
       throw new IllegalArgumentException("Alias must not be null");
     }

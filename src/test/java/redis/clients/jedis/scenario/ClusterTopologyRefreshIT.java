@@ -15,6 +15,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -49,15 +53,11 @@ public class ClusterTopologyRefreshIT {
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(jedisClusterNode, config,
-        RecommendedSettings.poolConfig);
-    ClusterConnectionProvider spyProvider = spy(provider);
-
-    try (RedisClusterClient client = RedisClusterClient.builder().connectionProvider(spyProvider)
-        .maxAttempts(RecommendedSettings.MAX_RETRIES)
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(jedisClusterNode)
+        .clientConfig(config).maxAttempts(RecommendedSettings.MAX_RETRIES)
         .maxTotalRetriesDuration(RecommendedSettings.MAX_TOTAL_RETRIES_DURATION).build()) {
-      assertEquals(1, client.getClusterNodes().size(),
-        "Was this BDB used to run this test before?");
+      Set<String> initialNodes = client.getClusterNodes().keySet();
+      assertEquals(1, initialNodes.size(), "Was this BDB used to run this test before?");
 
       AtomicLong commandsExecuted = new AtomicLong();
 
@@ -100,7 +100,12 @@ public class ClusterTopologyRefreshIT {
         assertTrue(client.exists(String.valueOf(i)));
       }
 
-      verify(spyProvider, atLeast(2)).renewSlotCache(any(Connection.class));
+      Set<String> afterReshardNodes = client.getClusterNodes().keySet();
+      assertThat("After set should have more nodes than initial set", afterReshardNodes.size(),
+        greaterThan(initialNodes.size()));
+
+      boolean hasNewNode = afterReshardNodes.stream().anyMatch(n -> !initialNodes.contains(n));
+      assertThat("After set should have a node not in initial set", hasNewNode, is(true));
     }
   }
 

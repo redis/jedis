@@ -786,4 +786,86 @@ public class ClusterCommandExecutorTest {
     assertEquals(expectedSequence, connectionSequence,
         "Round-robin should follow exact sequence: node1 -> node2 -> node3 -> node1 -> ...");
   }
+
+  @Test
+  public void runKeylessCommandWithReadOnlyCommandUsesAllNodesConnectionMap() {
+    // Create a read-only command object using GET command (which has READONLY flag)
+    CommandObject<String> readOnlyCommandObject = new CommandObject<>(
+        new ClusterCommandArguments(Protocol.Command.GET).key("testkey"), BuilderFactory.STRING);
+
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> allNodesConnectionMap = new HashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection = mock(Connection.class);
+
+    // Setup connection map with all nodes (including replicas)
+    allNodesConnectionMap.put("primary:6379", pool);
+    allNodesConnectionMap.put("replica:6380", pool);
+
+    // For read-only commands, getConnectionMap() should be called (all nodes including replicas)
+    when(connectionHandler.getConnectionMap()).thenReturn(allNodesConnectionMap);
+    when(pool.getResource()).thenReturn(connection);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "readonly_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    assertEquals("readonly_result", testMe.executeKeylessCommand(readOnlyCommandObject));
+
+    // Verify that getConnectionMap() was called (for read-only commands, uses all nodes)
+    // and NOT getPrimaryNodesConnectionMap()
+    verify(connectionHandler).getConnectionMap();
+    verify(connectionHandler, times(0)).getPrimaryNodesConnectionMap();
+    verify(pool).getResource();
+    verify(connection).close();
+  }
+
+  @Test
+  public void runKeylessCommandWithWriteCommandUsesPrimaryNodesConnectionMap() {
+    // Create a write command object using SET command (which has WRITE flag, not READONLY)
+    CommandObject<String> writeCommandObject = new CommandObject<>(
+        new ClusterCommandArguments(Protocol.Command.SET).key("testkey").add("value"),
+        BuilderFactory.STRING);
+
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> primaryNodesConnectionMap = new HashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection = mock(Connection.class);
+
+    // Setup connection map with only primary nodes
+    primaryNodesConnectionMap.put("primary:6379", pool);
+
+    // For write commands, getPrimaryNodesConnectionMap() should be called
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(primaryNodesConnectionMap);
+    when(pool.getResource()).thenReturn(connection);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "write_result";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    assertEquals("write_result", testMe.executeKeylessCommand(writeCommandObject));
+
+    // Verify that getPrimaryNodesConnectionMap() was called (for write commands, uses only primaries)
+    // and NOT getConnectionMap()
+    verify(connectionHandler).getPrimaryNodesConnectionMap();
+    verify(connectionHandler, times(0)).getConnectionMap();
+    verify(pool).getResource();
+    verify(connection).close();
+  }
 }

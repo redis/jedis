@@ -52,10 +52,8 @@ public class ClusterAggregateIteratorTest {
 
   @BeforeEach
   public void setUp() {
-    cluster = RedisClusterClient.builder()
-        .nodes(new HashSet<>(endpoint.getHostsAndPorts()))
-        .clientConfig(endpoint.getClientConfigBuilder().build())
-        .build();
+    cluster = RedisClusterClient.builder().nodes(new HashSet<>(endpoint.getHostsAndPorts()))
+        .clientConfig(endpoint.getClientConfigBuilder().build()).build();
 
     // Clean up any existing index
     try {

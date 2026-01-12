@@ -59,7 +59,7 @@
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.20.1</jackson.version>
 		<maven.surefire.version>3.5.4</maven.surefire.version>
-		<junit.version>5.13.4</junit.version>
+		<junit.version>5.14.2</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
@@ -95,7 +95,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20250517</version>
+			<version>20251224</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -492,7 +492,7 @@
 			<plugin>
 				<groupId>org.sonatype.central</groupId>
 				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>0.9.0</version>
+				<version>0.10.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<publishingServerId>central</publishingServerId>

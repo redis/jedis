@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -33,12 +34,18 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Tag("integration")
 public class JedisPoolTest {
 
-  private static final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpointStandalone0;
 
-  private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
+  private static EndpointConfig endpointStandalone1;
 
   private String testKey;
   private String testValue;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    endpointStandalone0 = Endpoints.getRedisEndpoint("standalone0");
+    endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+  }
 
   @BeforeEach
   public void setUpTestKey(TestInfo testInfo) {
@@ -60,7 +67,7 @@ public class JedisPoolTest {
 
   @Test
   public void checkResourceWithConfig() {
-    try (JedisPool pool = new JedisPool(HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy").getHostAndPort(),
+    try (JedisPool pool = new JedisPool(Endpoints.getRedisEndpoint("standalone7-with-lfu-policy").getHostAndPort(),
         DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())) {
 
       try (Jedis jedis = pool.getResource()) {

@@ -48,6 +48,9 @@ public abstract class FunctionCommandsTestBase extends UnifiedJedisCommandsTestB
 
   @AfterEach
   public void cleanUpFunctions() {
+    if (jedis == null) {
+      return;
+    }
 
     try {
       jedis.functionDelete(libraryName);

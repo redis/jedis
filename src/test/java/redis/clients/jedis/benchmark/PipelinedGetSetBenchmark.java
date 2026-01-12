@@ -8,7 +8,7 @@ import redis.clients.jedis.*;
 
 public class PipelinedGetSetBenchmark {
 
-  private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
   private static final int TOTAL_OPERATIONS = 200000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {

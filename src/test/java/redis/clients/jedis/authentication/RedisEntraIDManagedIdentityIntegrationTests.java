@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ import redis.clients.authentication.entraid.ManagedIdentityInfo.UserManagedIdent
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +34,7 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
   public static void before() {
     try {
       testCtx = EntraIDTestContext.DEFAULT;
-      endpointConfig = HostAndPorts.getRedisEndpoint("standalone-entraid-acl");
+      endpointConfig = Endpoints.getRedisEndpoint("standalone-entraid-acl");
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");

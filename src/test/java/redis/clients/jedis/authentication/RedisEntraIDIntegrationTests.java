@@ -41,7 +41,6 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.MockedConstruction;
 import org.slf4j.Logger;
@@ -64,7 +63,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -85,7 +84,7 @@ public class RedisEntraIDIntegrationTests {
   public static void before() {
     try {
       testCtx = EntraIDTestContext.DEFAULT;
-      endpointConfig = HostAndPorts.getRedisEndpoint("standalone-entraid-acl");
+      endpointConfig = Endpoints.getRedisEndpoint("standalone-entraid-acl");
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");

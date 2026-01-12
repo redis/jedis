@@ -4,22 +4,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.junit.jupiter.api.BeforeAll;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = true)
 public class UdsTest {
 
-  @BeforeAll
-  public static void checkDockerEnvironment() {
-    assumeFalse(TestEnvUtil.isContainerEnv(),"Unix sockets tests not supported against dockerised test env yet!");
-  }
+  @RegisterExtension
+  public EnvCondition envCondition = new EnvCondition();
 
   @Test
   public void jedisConnectsToUds() {

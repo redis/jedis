@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -27,8 +28,13 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
   private final byte[] binaryKey = SafeEncoder.encode(key);
-  private final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private static EndpointConfig lfuEndpoint;
   private Jedis lfuJedis;
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+  }
 
   public ObjectCommandsTest(RedisProtocol protocol) {
     super(protocol);

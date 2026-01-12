@@ -37,7 +37,7 @@ import redis.clients.jedis.Connection;
 /*  */
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.RedisClient;
@@ -54,7 +54,7 @@ public class TokenBasedAuthenticationIntegrationTests {
   @BeforeAll
   public static void before() {
     try {
-      endpointConfig = HostAndPorts.getRedisEndpoint("standalone0");
+      endpointConfig = Endpoints.getRedisEndpoint("standalone0");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

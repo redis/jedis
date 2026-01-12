@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -10,7 +11,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,19 +25,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @SinceRedisVersion(value = "6.0.0", message = "Not running ACL test on this version of Redis")
 @Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
 public class SSLACLJedisTest {
 
-  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl-tls");
+  protected static EndpointConfig endpoint;
 
-  protected static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0-tls");
+  protected static EndpointConfig endpointWithDefaultUser;
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public static EnvCondition envCondition = new EnvCondition();
+
+  @RegisterExtension
+  public static RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("standalone0-acl-tls"));
 
   private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
+    endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0-tls");
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
         endpointWithDefaultUser.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,

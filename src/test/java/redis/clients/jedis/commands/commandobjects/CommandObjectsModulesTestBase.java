@@ -1,6 +1,6 @@
 package redis.clients.jedis.commands.commandobjects;
 
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 
 /**
@@ -9,7 +9,7 @@ import redis.clients.jedis.RedisProtocol;
 public abstract class CommandObjectsModulesTestBase extends CommandObjectsTestBase {
 
   public CommandObjectsModulesTestBase(RedisProtocol protocol) {
-    super(protocol, HostAndPorts.getRedisEndpoint("modules-docker"));
+    super(protocol, Endpoints.getRedisEndpoint("modules-docker"));
   }
 
 }

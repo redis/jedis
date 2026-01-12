@@ -6,22 +6,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.EndpointConfig;
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 import redis.clients.jedis.search.Document;
@@ -37,19 +37,25 @@ public class ClusterAggregateIteratorTest {
 
   private static final String index = "cluster_aggiteratorindex";
 
-  // Use stable cluster endpoints that don't change during tests
-  private static final List<HostAndPort> clusterNodes = HostAndPorts.getStableClusterServers();
+  protected static EndpointConfig endpoint;
 
-  private JedisCluster cluster;
+  private RedisClusterClient cluster;
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(clusterNodes.get(0),
-      DefaultJedisClientConfig.builder().password("cluster").build());
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> Endpoints.getRedisEndpoint("cluster-stable"));
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+  }
 
   @BeforeEach
   public void setUp() {
-    cluster = new JedisCluster(Collections.singleton(clusterNodes.get(0)),
-        DefaultJedisClientConfig.builder().password("cluster").build());
+    cluster = RedisClusterClient.builder()
+        .nodes(new HashSet<>(endpoint.getHostsAndPorts()))
+        .clientConfig(endpoint.getClientConfigBuilder().build())
+        .build();
 
     // Clean up any existing index
     try {

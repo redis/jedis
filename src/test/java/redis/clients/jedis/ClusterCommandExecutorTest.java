@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static redis.clients.jedis.Protocol.Command.PING;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class ClusterCommandExecutorTest {
   private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
   private static final CommandObject<String> STR_COM_OBJECT
-      = new CommandObject<>(new ClusterCommandArguments(null).key(""), null);
+      = new CommandObject<>(new ClusterCommandArguments(PING).key(""), BuilderFactory.STRING);
 
   @Test
   public void runSuccessfulExecute() {
@@ -380,10 +381,11 @@ public class ClusterCommandExecutorTest {
     Connection connection = mock(Connection.class);
 
     connectionMap.put("localhost:6379", pool);
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool.getResource()).thenReturn(connection);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "keyless_result";
@@ -404,10 +406,11 @@ public class ClusterCommandExecutorTest {
     Connection connection = mock(Connection.class);
 
     connectionMap.put("localhost:6379", pool);
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool.getResource()).thenReturn(connection);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "keyless_result";
@@ -420,9 +423,9 @@ public class ClusterCommandExecutorTest {
 
     testMe.executeKeylessCommand(STR_COM_OBJECT);
 
-    // Verify that getConnectionMap() was called for round-robin distribution
+    // Verify that getPrimaryNodesConnectionMap() was called for round-robin distribution
     InOrder inOrder = inOrder(connectionHandler, pool, connection);
-    inOrder.verify(connectionHandler).getConnectionMap();
+    inOrder.verify(connectionHandler).getPrimaryNodesConnectionMap();
     inOrder.verify(pool).getResource();
     inOrder.verify(connection).close();
     inOrder.verifyNoMoreInteractions();
@@ -438,10 +441,11 @@ public class ClusterCommandExecutorTest {
     final HostAndPort movedTarget = new HostAndPort(null, 0);
 
     connectionMap.put("localhost:6379", pool);
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool.getResource()).thenReturn(connection1, connection2);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
+        StaticCommandFlagsRegistry.registry()) {
       boolean isFirstCall = true;
 
       @Override
@@ -462,9 +466,9 @@ public class ClusterCommandExecutorTest {
 
     assertEquals("keyless_result", testMe.executeKeylessCommand(STR_COM_OBJECT));
 
-    // Verify that we called getConnectionMap() twice (first failed with redirection, second succeeded)
+    // Verify that we called getPrimaryNodesConnectionMap() twice (first failed with redirection, second succeeded)
     // and that we didn't follow the redirection to a specific node
-    verify(connectionHandler, times(2)).getConnectionMap();
+    verify(connectionHandler, times(2)).getPrimaryNodesConnectionMap();
     verify(pool, times(2)).getResource();
     verify(connection1).close();
     verify(connection2).close();
@@ -481,10 +485,11 @@ public class ClusterCommandExecutorTest {
     final LongConsumer sleep = mock(LongConsumer.class);
 
     connectionMap.put("localhost:6379", pool);
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool.getResource()).thenReturn(connection1, connection2, connection3);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         throw new JedisConnectionException("Connection failed");
@@ -504,9 +509,9 @@ public class ClusterCommandExecutorTest {
     }
 
     // Verify that we tried connection map access and performed slot cache renewal
-    // getConnectionMap() called 3 times (once for each connection attempt)
+    // getPrimaryNodesConnectionMap() called 3 times (once for each connection attempt)
     // getResource() called 3 times, sleep called once, renewSlotCache called once
-    verify(connectionHandler, times(3)).getConnectionMap();
+    verify(connectionHandler, times(3)).getPrimaryNodesConnectionMap();
     verify(pool, times(3)).getResource();
     verify(connection1).close();
     verify(connection2).close();
@@ -520,9 +525,10 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Map<String, ConnectionPool> emptyConnectionMap = new HashMap<>();
 
-    when(connectionHandler.getConnectionMap()).thenReturn(emptyConnectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(emptyConnectionMap);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "should_not_reach_here";
@@ -540,8 +546,8 @@ public class ClusterCommandExecutorTest {
       assertEquals("No cluster nodes available.", e.getMessage());
     }
 
-    // Verify that getConnectionMap() was called
-    verify(connectionHandler).getConnectionMap();
+    // Verify that getPrimaryNodesConnectionMap() was called
+    verify(connectionHandler).getPrimaryNodesConnectionMap();
   }
 
   @Test
@@ -562,7 +568,7 @@ public class ClusterCommandExecutorTest {
     connectionMap.put("localhost:6380", pool2);
     connectionMap.put("localhost:6381", pool3);
 
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool1.getResource()).thenReturn(connection1);
     when(pool2.getResource()).thenReturn(connection2);
     when(pool3.getResource()).thenReturn(connection3);
@@ -570,7 +576,8 @@ public class ClusterCommandExecutorTest {
     // Track which connections are used
     List<Connection> usedConnections = new ArrayList<>();
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         usedConnections.add(connection);
@@ -613,12 +620,13 @@ public class ClusterCommandExecutorTest {
     connectionMap.put("node2:6379", pool2);
     connectionMap.put("node3:6379", pool3);
 
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool1.getResource()).thenReturn(connection1);
     when(pool2.getResource()).thenReturn(connection2);
     when(pool3.getResource()).thenReturn(connection3);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "keyless_result";
@@ -637,8 +645,8 @@ public class ClusterCommandExecutorTest {
       assertEquals("keyless_result", result);
     }
 
-    // Verify that getConnectionMap() was called for each execution
-    verify(connectionHandler, times(100)).getConnectionMap();
+    // Verify that getPrimaryNodesConnectionMap() was called for each execution
+    verify(connectionHandler, times(100)).getPrimaryNodesConnectionMap();
 
     // The circular counter implementation ensures no overflow can occur
     // because the counter value is always between 0 and (nodeCount-1)
@@ -666,7 +674,7 @@ public class ClusterCommandExecutorTest {
     connectionMap.put("node3:6379", pool3);
     connectionMap.put("node4:6379", pool4);
 
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool1.getResource()).thenReturn(connection1);
     when(pool2.getResource()).thenReturn(connection2);
     when(pool3.getResource()).thenReturn(connection3);
@@ -679,7 +687,8 @@ public class ClusterCommandExecutorTest {
     connectionUsage.put(connection3, 0);
     connectionUsage.put(connection4, 0);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         connectionUsage.put(connection, connectionUsage.get(connection) + 1);
@@ -712,8 +721,8 @@ public class ClusterCommandExecutorTest {
     int totalExecuted = connectionUsage.values().stream().mapToInt(Integer::intValue).sum();
     assertEquals(totalCommands, totalExecuted, "Total commands executed should match");
 
-    // Verify that getConnectionMap() was called for each execution
-    verify(connectionHandler, times(totalCommands)).getConnectionMap();
+    // Verify that getPrimaryNodesConnectionMap() was called for each execution
+    verify(connectionHandler, times(totalCommands)).getPrimaryNodesConnectionMap();
   }
 
   @Test
@@ -736,7 +745,7 @@ public class ClusterCommandExecutorTest {
     connectionMap.put("node2:6379", pool2);
     connectionMap.put("node3:6379", pool3);
 
-    when(connectionHandler.getConnectionMap()).thenReturn(connectionMap);
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
     when(pool1.getResource()).thenReturn(connection1);
     when(pool2.getResource()).thenReturn(connection2);
     when(pool3.getResource()).thenReturn(connection3);
@@ -744,7 +753,8 @@ public class ClusterCommandExecutorTest {
     // Track the exact sequence of connections used
     List<String> connectionSequence = new ArrayList<>();
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         if (connection == connection1) {

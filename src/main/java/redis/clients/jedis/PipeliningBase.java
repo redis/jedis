@@ -319,16 +319,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated since Redis 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<Long> setnx(String key, String value) {
     return appendCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated since Redis 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> setex(String key, long seconds, String value) {
     return appendCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated since Redis 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> psetex(String key, long milliseconds, String value) {
     return appendCommand(commandObjects.psetex(key, milliseconds, value));
@@ -384,6 +399,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#getrange(String, long, long)} instead.
+   * Deprecated since Redis 2.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> substr(String key, int start, int end) {
     return appendCommand(commandObjects.substr(key, start, end));
@@ -580,11 +600,23 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#lmove(String, String, ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<String> rpoplpush(String srcKey, String dstKey) {
     return appendCommand(commandObjects.rpoplpush(srcKey, dstKey));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#blmove(String, String, ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<String> brpoplpush(String source, String destination, int timeout) {
     return appendCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -706,6 +738,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#hset(String, Map)} instead.
+   * Deprecated since Redis 4.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> hmset(String key, Map<String, String> hash) {
     return appendCommand(commandObjects.hmset(key, hash));
@@ -2138,6 +2175,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#hset(byte[], Map)} instead.
+   * Deprecated since Redis 4.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
     return appendCommand(commandObjects.hmset(key, hash));
@@ -2643,11 +2685,23 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#lmove(byte[], byte[], ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey) {
     return appendCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> brpoplpush(byte[] source, byte[] destination, int timeout) {
     return appendCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -3518,16 +3572,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated since Redis 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<Long> setnx(byte[] key, byte[] value) {
     return appendCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated since Redis 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> setex(byte[] key, long seconds, byte[] value) {
     return appendCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated since Redis 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> psetex(byte[] key, long milliseconds, byte[] value) {
     return appendCommand(commandObjects.psetex(key, milliseconds, value));
@@ -3583,6 +3652,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#getrange(byte[], long, long)} instead.
+   * Deprecated since Redis 2.0.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> substr(byte[] key, int start, int end) {
     return appendCommand(commandObjects.substr(key, start, end));

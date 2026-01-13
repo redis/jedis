@@ -113,12 +113,12 @@ public abstract class ClusterClientBuilder<C>
       this.commandFlags = createDefaultCommandFlagsRegistry();
     }
 
-    Duration maxTotalRetriesDuration = (this.maxTotalRetriesDuration == null)
+    Duration effectiveMaxTotalRetriesDuration = (this.maxTotalRetriesDuration == null)
         ? Duration.ofMillis((long) this.clientConfig.getSocketTimeoutMillis() * this.maxAttempts)
         : this.maxTotalRetriesDuration;
 
     return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
-        this.maxAttempts, maxTotalRetriesDuration, this.commandFlags);
+        this.maxAttempts, effectiveMaxTotalRetriesDuration, this.commandFlags);
   }
 
   @Override

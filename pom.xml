@@ -579,6 +579,19 @@
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>5.1.9</version>
+				<configuration>
+					<instructions>
+						<!-- 
+							Ensure JSON dependencies are not required at run-time in OSGi environments and also
+							allow usage of newer org.json versions.
+						-->
+						<Import-Package>
+							com.google.gson;resolution:=optional,
+							org.json;resolution:=optional;version="20240303.0",
+							*
+						</Import-Package>
+					</instructions>
+				</configuration>
 				<executions>
 					<execution>
 						<id>bundle-manifest</id>

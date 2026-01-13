@@ -2441,7 +2441,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2451,7 +2451,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2461,7 +2461,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2471,7 +2471,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2481,7 +2481,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2491,7 +2491,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2501,7 +2501,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2511,7 +2511,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2521,7 +2521,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2531,7 +2531,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2541,7 +2541,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2551,7 +2551,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2561,7 +2561,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2571,7 +2571,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2581,7 +2581,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2591,7 +2591,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2646,7 +2646,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2656,7 +2656,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2666,7 +2666,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2676,7 +2676,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2686,7 +2686,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2696,7 +2696,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2706,7 +2706,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2716,7 +2716,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2726,7 +2726,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2736,7 +2736,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2746,7 +2746,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2756,7 +2756,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2766,7 +2766,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2776,7 +2776,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2786,7 +2786,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2796,7 +2796,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#byScore()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2841,7 +2841,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byLex()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2851,7 +2851,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byLex()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2861,7 +2861,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byLex()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2871,7 +2871,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#byLex()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2891,7 +2891,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byLex()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2901,7 +2901,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byLex()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2911,7 +2911,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byLex()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated
@@ -2921,7 +2921,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#byLex()} and {@link ZRangeParams#rev()}.
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
    * Deprecated since Redis 6.2.0.
    */
   @Deprecated

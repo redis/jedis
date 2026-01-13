@@ -15,8 +15,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 @Tag("integration")
 public abstract class RedisModuleCommandsTestBase {
 
-  protected static String preferredEndpointId = TestEnvUtil.getTestEnvProvider()
-      .equals(TestEnvUtil.ENV_OSS_SOURCE) ? "standalone0" : "modules-docker";
+  protected static String preferredEndpointId = "modules-docker";
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(

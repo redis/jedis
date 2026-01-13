@@ -12,8 +12,8 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.KeyValue;
 
 /**
- * Represents the results of an {@code FT.HYBRID} command. Contains total result count, execution time,
- * warnings, and a list of per-document results with document key and field values.
+ * Represents the results of an {@code FT.HYBRID} command. Contains total result count, execution
+ * time, warnings, and a list of per-document results with document key and field values.
  */
 @Experimental
 public class HybridReply {
@@ -35,7 +35,6 @@ public class HybridReply {
 
   /**
    * Creates a HybridReply with the given parameters.
-   * 
    * @param totalResults the total number of matching documents
    * @param results the list of results
    */
@@ -48,7 +47,6 @@ public class HybridReply {
 
   /**
    * Creates a HybridReply with all parameters.
-   * 
    * @param totalResults the total number of matching documents
    * @param results the list of results
    * @param warnings the list of warnings
@@ -69,7 +67,6 @@ public class HybridReply {
 
   /**
    * Set the total number of matching documents.
-   * 
    * @param totalResults the total number of results
    */
   public void setTotalResults(long totalResults) {
@@ -85,7 +82,6 @@ public class HybridReply {
 
   /**
    * Set the execution time reported by the server.
-   * 
    * @param executionTime execution time in seconds
    */
   public void setExecutionTime(double executionTime) {
@@ -101,7 +97,6 @@ public class HybridReply {
 
   /**
    * Add a new result entry.
-   * 
    * @param result the result to add
    */
   public void addResult(Result result) {
@@ -117,7 +112,6 @@ public class HybridReply {
 
   /**
    * Add a warning message.
-   * 
    * @param warning the warning to add
    */
   public void addWarning(String warning) {
@@ -141,10 +135,10 @@ public class HybridReply {
   /**
    * Represents a single result entry in an {@code FT.HYBRID} response.
    * <p>
-   * Each result contains field values returned by the query. The document key is available in the fields map
-   * under the reserved field name {@code __key} when returning individual documents. Score information (text
-   * score, vector distance, combined score) is included in the fields map when using {@code YIELD_SCORE_AS} in
-   * the query.
+   * Each result contains field values returned by the query. The document key is available in the
+   * fields map under the reserved field name {@code __key} when returning individual documents.
+   * Score information (text score, vector distance, combined score) is included in the fields map
+   * when using {@code YIELD_SCORE_AS} in the query.
    * </p>
    */
   public static class Result {
@@ -162,7 +156,6 @@ public class HybridReply {
 
     /**
      * Add a single field to this result.
-     *
      * @param key field name
      * @param value field value
      */
@@ -276,4 +269,3 @@ public class HybridReply {
     }
   };
 }
-

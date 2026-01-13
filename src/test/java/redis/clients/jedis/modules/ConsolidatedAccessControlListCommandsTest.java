@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
@@ -37,6 +39,11 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
 
   public ConsolidatedAccessControlListCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @BeforeAll
+  public static void prepare() {
+    RedisModuleCommandsTestBase.prepare();
   }
 
   @AfterEach
@@ -142,8 +149,10 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
     jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD, "on", "~*");
 
     // client object with new user
-    try (UnifiedJedis client = new UnifiedJedis(hnp,
-        DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())) {
+    try (UnifiedJedis client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(
+            DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())
+        .build()) {
 
       // user can't execute commands
       JedisAccessControlException noperm = assertThrows(JedisAccessControlException.class,
@@ -165,8 +174,10 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
     jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD, "on", "~*");
 
     // client object with new user
-    try (UnifiedJedis client = new UnifiedJedis(hnp,
-        DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())) {
+    try (UnifiedJedis client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(
+            DefaultJedisClientConfig.builder().user(USER_NAME).password(USER_PASSWORD).build())
+        .build()) {
 
       // user can't execute category commands
       JedisAccessControlException noperm = assertThrows(JedisAccessControlException.class,

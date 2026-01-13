@@ -21,8 +21,7 @@ public abstract class ClusterClientBuilder<C>
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
   private int maxAttempts = JedisCluster.DEFAULT_MAX_ATTEMPTS;
-  private Duration maxTotalRetriesDuration = Duration
-      .ofMillis(JedisCluster.DEFAULT_TIMEOUT * JedisCluster.DEFAULT_MAX_ATTEMPTS);
+  private Duration maxTotalRetriesDuration;
   private Duration topologyRefreshPeriod = null;
   private CommandFlagsRegistry commandFlags = null;
 
@@ -114,8 +113,12 @@ public abstract class ClusterClientBuilder<C>
       this.commandFlags = createDefaultCommandFlagsRegistry();
     }
 
+    Duration maxTotalRetriesDuration = (this.maxTotalRetriesDuration == null)
+        ? Duration.ofMillis((long) this.clientConfig.getSocketTimeoutMillis() * this.maxAttempts)
+        : this.maxTotalRetriesDuration;
+
     return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
-        this.maxAttempts, this.maxTotalRetriesDuration, this.commandFlags);
+        this.maxAttempts, maxTotalRetriesDuration, this.commandFlags);
   }
 
   @Override

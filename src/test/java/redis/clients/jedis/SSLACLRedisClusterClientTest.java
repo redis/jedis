@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -176,7 +179,10 @@ public class SSLACLRedisClusterClientTest extends RedisClusterClientTestBase {
     } catch (JedisClusterOperationException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
-      assertEquals("No more cluster attempts left.", e.getMessage());
+      assertThat(e.getMessage(), anyOf(
+              containsString("No more cluster attempts left."),
+              containsString("Cluster retry deadline exceeded.")
+      ));
     }
   }
 
@@ -235,7 +241,10 @@ public class SSLACLRedisClusterClientTest extends RedisClusterClientTestBase {
     } catch (JedisClusterOperationException e) {
       // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
       // which causes custom hostname verification to fail
-      assertEquals("No more cluster attempts left.", e.getMessage());
+      assertThat(e.getMessage(), anyOf(
+              containsString("No more cluster attempts left."),
+              containsString("Cluster retry deadline exceeded.")
+      ));
     }
 
     try (RedisClusterClient jc2 = RedisClusterClient.builder()

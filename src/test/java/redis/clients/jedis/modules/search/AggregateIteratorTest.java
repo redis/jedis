@@ -11,19 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
-
+import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
@@ -31,32 +25,17 @@ import redis.clients.jedis.search.aggr.*;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class AggregateIteratorTest {
+public class AggregateIteratorTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "aggiteratorindex";
-  private static final String address = System.getProperty("modulesDocker",
-    Protocol.DEFAULT_HOST + ':' + 6479);
-  private static final HostAndPort hnp = HostAndPort.from(address);
 
-  private final RedisProtocol protocol;
-  private Jedis jedis;
-  private UnifiedJedis client;
+  @BeforeAll
+  public static void prepare() {
+    RedisModuleCommandsTestBase.prepare();
+  }
 
   public AggregateIteratorTest(RedisProtocol redisProtocol) {
-    this.protocol = redisProtocol;
-  }
-
-  @BeforeEach
-  public void setUp() {
-    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
-    jedis.flushAll();
-    client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
-  }
-
-  @AfterEach
-  public void tearDown() throws Exception {
-    client.close();
-    jedis.close();
+    super(redisProtocol);
   }
 
   private void addDocument(Document doc) {

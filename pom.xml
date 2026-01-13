@@ -552,6 +552,7 @@
 						<include>**/ClientCommandsTest*.java</include>
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
+						<include>**/ACLTestUtil.java</include>
 					</includes>
 				</configuration>
 				<executions>

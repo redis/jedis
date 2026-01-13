@@ -10,8 +10,8 @@ import java.util.List;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 /**
- * Arguments for the VSIM (Vector Similarity) clause in FT.HYBRID command.
- * Configures vector search with KNN or RANGE methods.
+ * Arguments for the VSIM (Vector Similarity) clause in FT.HYBRID command. Configures vector search
+ * with KNN or RANGE methods.
  */
 @Experimental
 public class HybridVectorParams implements IParams {
@@ -40,7 +40,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Build the {@link HybridVectorParams} instance.
-     * 
      * @return the configured arguments
      */
     public HybridVectorParams build() {
@@ -58,7 +57,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Set the vector field name.
-     * 
      * @param field the field name (e.g., "@embedding")
      * @return this builder
      */
@@ -69,7 +67,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Set the query vector as a byte array.
-     * 
      * @param vector the query vector bytes
      * @return this builder
      */
@@ -80,7 +77,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Set the vector search method (KNN or RANGE).
-     * 
      * @param method the vector search method
      * @return this builder
      */
@@ -90,9 +86,8 @@ public class HybridVectorParams implements IParams {
     }
 
     /**
-     * Add a FILTER expression for pre-filtering documents before vector scoring.
-     * Can be called multiple times to add multiple filters.
-     *
+     * Add a FILTER expression for pre-filtering documents before vector scoring. Can be called
+     * multiple times to add multiple filters.
      * @param filter the filter expression
      * @return this builder
      */
@@ -106,7 +101,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Set an alias for the vector distance score in the results.
-     * 
      * @param scoreAlias the score alias name
      * @return this builder
      */
@@ -155,7 +149,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Create a KNN method with the specified K value.
-     *
      * @param k the number of nearest neighbors to return
      * @return a new Knn instance
      */
@@ -165,7 +158,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Set the EF_RUNTIME parameter for HNSW algorithm.
-     *
      * @param efRuntime the EF_RUNTIME value
      * @return this Knn instance
      */
@@ -201,7 +193,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Create a RANGE method with the specified radius.
-     *
      * @param radius the search radius
      * @return a new Range instance
      */
@@ -211,7 +202,6 @@ public class HybridVectorParams implements IParams {
 
     /**
      * Set the epsilon parameter for range search.
-     *
      * @param epsilon the epsilon value
      * @return this Range instance
      */
@@ -234,4 +224,3 @@ public class HybridVectorParams implements IParams {
     }
   }
 }
-

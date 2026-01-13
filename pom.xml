@@ -555,6 +555,18 @@
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
 						<include>**/ACLTestUtil.java</include>
+						<include>src/main/java/redis/clients/jedis/search/CombineParams.java</include>
+						<include>src/main/java/redis/clients/jedis/search/HybridParams.java</include>
+						<include>src/main/java/redis/clients/jedis/search/HybridReply.java</include>
+						<include>src/main/java/redis/clients/jedis/search/HybridSearchParams.java</include>
+						<include>src/main/java/redis/clients/jedis/search/HybridVectorParams.java</include>
+						<include>src/main/java/redis/clients/jedis/search/PostProcessingParams.java</include>
+						<include>src/main/java/redis/clients/jedis/search/aggr/AggregateIterator.java</include>
+						<include>src/test/java/redis/clients/jedis/commands/unified/client/search/FTHybridRedisClientCommandsTest.java</include>
+						<include>src/test/java/redis/clients/jedis/commands/unified/cluster/search/FTHybridCommandsClusterTest.java</include>
+						<include>src/test/java/redis/clients/jedis/commands/unified/search/FTHybridCommandsTestBase.java</include>
+						<include>src/test/java/redis/clients/jedis/modules/search/AggregateIteratorTest.java</include>
+						<include>src/test/java/redis/clients/jedis/modules/search/cluster/ClusterAggregateIteratorTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

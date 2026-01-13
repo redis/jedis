@@ -7,8 +7,8 @@ import redis.clients.jedis.params.IParams;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 /**
- * Arguments for the SEARCH clause in FT.HYBRID command.
- * Configures text search with optional scorer and score aliasing.
+ * Arguments for the SEARCH clause in FT.HYBRID command. Configures text search with optional scorer
+ * and score aliasing.
  */
 @Experimental
 public class HybridSearchParams implements IParams {
@@ -35,7 +35,6 @@ public class HybridSearchParams implements IParams {
 
     /**
      * Build the {@link HybridSearchParams} instance.
-     * 
      * @return the configured arguments
      */
     public HybridSearchParams build() {
@@ -47,7 +46,6 @@ public class HybridSearchParams implements IParams {
 
     /**
      * Set the search query string.
-     * 
      * @param query the query string
      * @return this builder
      */
@@ -58,7 +56,6 @@ public class HybridSearchParams implements IParams {
 
     /**
      * Set the scorer for text search.
-     * 
      * @param scorer the scorer configuration
      * @return this builder
      */
@@ -69,7 +66,6 @@ public class HybridSearchParams implements IParams {
 
     /**
      * Set an alias for the text search score in the results.
-     * 
      * @param scoreAlias the score alias name
      * @return this builder
      */
@@ -114,7 +110,6 @@ public class HybridSearchParams implements IParams {
 
     /**
      * Create a scorer with the given function and optional parameters.
-     * 
      * @param function the scoring function
      * @param params optional parameters for the scoring function
      * @return a new Scorer instance
@@ -152,4 +147,3 @@ public class HybridSearchParams implements IParams {
     }
   }
 }
-

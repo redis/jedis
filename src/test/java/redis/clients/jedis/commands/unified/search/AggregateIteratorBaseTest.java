@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("aggregation")
 public abstract class AggregateIteratorBaseTest extends UnifiedJedisCommandsTestBase {
 
-  private static final String index = "aggiteratorindex";
+  protected static final String index = "aggiteratorindex";
 
   public AggregateIteratorBaseTest(RedisProtocol redisProtocol) {
     super(redisProtocol);

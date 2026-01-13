@@ -128,7 +128,7 @@ public interface RediSearchPipelineCommands {
    * Execute a hybrid search combining text and vector search.
    *
    * @param indexName the index name
-   * @param hybridArgs the hybrid search arguments
+   * @param hybridParams the hybrid search arguments
    * @return the hybrid search results
    */
   @Experimental

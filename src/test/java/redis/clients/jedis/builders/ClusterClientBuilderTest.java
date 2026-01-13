@@ -2,9 +2,9 @@ package redis.clients.jedis.builders;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,16 +22,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.FTSearchParams;
 
@@ -167,6 +171,118 @@ class ClusterClientBuilderTest {
       assertEquals("q", args.get(2));
       assertEquals("DIALECT", args.get(3));
       assertEquals("3", args.get(4));
+    }
+  }
+
+  @Test
+  void maxTotalRetriesDurationUsesDefaultValues() {
+    // Test that when nothing is explicitly set, it uses default values
+    // Default socketTimeout = 2000ms (Protocol.DEFAULT_TIMEOUT)
+    // Default maxAttempts = 5 (JedisCluster.DEFAULT_MAX_ATTEMPTS)
+    // Expected maxTotalRetriesDuration = 2000 * 5 = 10000ms
+    int defaultSocketTimeout = 2000; // Protocol.DEFAULT_TIMEOUT
+    int defaultMaxAttempts = 5; // JedisCluster.DEFAULT_MAX_ATTEMPTS
+    Duration expectedMaxTotalRetriesDuration = Duration
+        .ofMillis((long) defaultSocketTimeout * defaultMaxAttempts); // 10000ms
+
+    ClusterConnectionProvider mockProvider = Mockito.mock(ClusterConnectionProvider.class);
+
+    // Use MockedConstruction to capture ClusterCommandExecutor constructor arguments
+    try (MockedConstruction<ClusterCommandExecutor> mockedExecutor = Mockito
+        .mockConstruction(ClusterCommandExecutor.class, (mock, context) -> {
+          // Verify constructor was called with default values
+          assertEquals(4, context.arguments().size(),
+            "ClusterCommandExecutor should have 4 constructor arguments");
+          assertEquals(mockProvider, context.arguments().get(0),
+            "First argument should be the connection provider");
+          assertEquals(defaultMaxAttempts, context.arguments().get(1),
+            "Second argument should be default maxAttempts (5)");
+          assertEquals(expectedMaxTotalRetriesDuration, context.arguments().get(2),
+            "Third argument should be calculated from default values (2000ms * 5 = 10000ms)");
+        })) {
+
+      try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+          .connectionProvider(mockProvider).build()) {
+        // Verify that ClusterCommandExecutor was constructed
+        assertEquals(1, mockedExecutor.constructed().size(),
+          "ClusterCommandExecutor should have been constructed once");
+      }
+    }
+  }
+
+  @Test
+  void maxTotalRetriesDurationCalculatedFromSocketTimeoutAndMaxAttempts() {
+    // Test that when maxTotalRetriesDuration is not explicitly set,
+    // it is calculated as socketTimeout * maxAttempts
+    int socketTimeout = 5000; // 5 seconds
+    int maxAttempts = 10;
+    Duration expectedMaxTotalRetriesDuration = Duration
+        .ofMillis((long) socketTimeout * maxAttempts); // 50000ms
+
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .socketTimeoutMillis(socketTimeout).build();
+
+    ClusterConnectionProvider mockProvider = Mockito.mock(ClusterConnectionProvider.class);
+
+    // Use MockedConstruction to capture ClusterCommandExecutor constructor arguments
+    try (MockedConstruction<ClusterCommandExecutor> mockedExecutor = Mockito
+        .mockConstruction(ClusterCommandExecutor.class, (mock, context) -> {
+          // Verify constructor was called with correct arguments
+          assertEquals(4, context.arguments().size(),
+            "ClusterCommandExecutor should have 4 constructor arguments");
+          assertEquals(mockProvider, context.arguments().get(0),
+            "First argument should be the connection provider");
+          assertEquals(maxAttempts, context.arguments().get(1),
+            "Second argument should be maxAttempts");
+          assertEquals(expectedMaxTotalRetriesDuration, context.arguments().get(2),
+            "Third argument should be calculated maxTotalRetriesDuration (socketTimeout * maxAttempts)");
+        })) {
+
+      try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+          .clientConfig(clientConfig).maxAttempts(maxAttempts).connectionProvider(mockProvider)
+          .build()) {
+        // Verify that ClusterCommandExecutor was constructed
+        assertEquals(1, mockedExecutor.constructed().size(),
+          "ClusterCommandExecutor should have been constructed once");
+      }
+    }
+  }
+
+  @Test
+  void maxTotalRetriesDurationUsesExplicitValueWhenSet() {
+    // Test that when maxTotalRetriesDuration is explicitly set,
+    // it uses that value instead of calculating from socketTimeout * maxAttempts
+    int socketTimeout = 5000; // 5 seconds
+    int maxAttempts = 10;
+    Duration explicitMaxTotalRetriesDuration = Duration.ofSeconds(100); // 100 seconds
+
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .socketTimeoutMillis(socketTimeout).build();
+
+    ClusterConnectionProvider mockProvider = Mockito.mock(ClusterConnectionProvider.class);
+
+    // Use MockedConstruction to capture ClusterCommandExecutor constructor arguments
+    try (MockedConstruction<ClusterCommandExecutor> mockedExecutor = Mockito
+        .mockConstruction(ClusterCommandExecutor.class, (mock, context) -> {
+          // Verify constructor was called with the explicitly set maxTotalRetriesDuration
+          assertEquals(4, context.arguments().size(),
+            "ClusterCommandExecutor should have 4 constructor arguments");
+          assertEquals(mockProvider, context.arguments().get(0),
+            "First argument should be the connection provider");
+          assertEquals(maxAttempts, context.arguments().get(1),
+            "Second argument should be maxAttempts");
+          assertEquals(explicitMaxTotalRetriesDuration, context.arguments().get(2),
+            "Third argument should be the explicitly set maxTotalRetriesDuration");
+        })) {
+
+      try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+          .clientConfig(clientConfig).maxAttempts(maxAttempts)
+          .maxTotalRetriesDuration(explicitMaxTotalRetriesDuration).connectionProvider(mockProvider)
+          .build()) {
+        // Verify that ClusterCommandExecutor was constructed
+        assertEquals(1, mockedExecutor.constructed().size(),
+          "ClusterCommandExecutor should have been constructed once");
+      }
     }
   }
 }

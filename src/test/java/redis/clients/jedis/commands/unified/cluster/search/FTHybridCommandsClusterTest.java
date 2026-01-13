@@ -12,9 +12,9 @@ import redis.clients.jedis.commands.unified.cluster.ClusterCommandsTestHelper;
 import redis.clients.jedis.commands.unified.search.FTHybridCommandsTestBase;
 
 /**
- * Cluster (RedisClusterClient) implementation of FT.HYBRID tests.
- * Uses cluster-stable endpoint which has RediSearch modules built-in for Redis 8.0+.
- * Requires Redis 8.0+ because earlier versions don't have modules in cluster mode.
+ * Cluster (RedisClusterClient) implementation of FT.HYBRID tests. Uses cluster-stable endpoint
+ * which has RediSearch modules built-in for Redis 8.0+. Requires Redis 8.0+ because earlier
+ * versions don't have modules in cluster mode.
  */
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -39,4 +39,3 @@ public class FTHybridCommandsClusterTest extends FTHybridCommandsTestBase {
     ClusterCommandsTestHelper.clearClusterData();
   }
 }
-

@@ -7,8 +7,8 @@ import redis.clients.jedis.params.IParams;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 /**
- * Arguments for the COMBINE clause in FT.HYBRID command.
- * Specifies how to combine text search and vector similarity scores.
+ * Arguments for the COMBINE clause in FT.HYBRID command. Specifies how to combine text search and
+ * vector similarity scores.
  */
 @Experimental
 public class CombineParams implements IParams {
@@ -22,7 +22,6 @@ public class CombineParams implements IParams {
 
   /**
    * Create CombineParams with the specified method.
-   *
    * @param method the combine method (RRF or Linear)
    * @return a new CombineParams instance
    */
@@ -35,7 +34,6 @@ public class CombineParams implements IParams {
 
   /**
    * Set an alias for the combined score field using YIELD_SCORE_AS.
-   *
    * @param alias the field name to use for the combined score
    * @return this instance
    */
@@ -76,7 +74,6 @@ public class CombineParams implements IParams {
 
     /**
      * Set the WINDOW parameter for RRF.
-     * 
      * @param window the window size
      * @return this RRF instance
      */
@@ -87,7 +84,6 @@ public class CombineParams implements IParams {
 
     /**
      * Set the CONSTANT parameter for RRF.
-     * 
      * @param constant the constant value (typically 60)
      * @return this RRF instance
      */
@@ -99,14 +95,14 @@ public class CombineParams implements IParams {
     @Override
     public void addParams(CommandArguments args) {
       args.add(SearchProtocol.SearchKeyword.RRF);
-      
+
       // Count parameters
       int paramCount = 0;
       if (window != null) paramCount += 2;
       if (constant != null) paramCount += 2;
-      
+
       args.add(paramCount);
-      
+
       if (window != null) {
         args.add(WINDOW);
         args.add(window);
@@ -130,7 +126,6 @@ public class CombineParams implements IParams {
 
     /**
      * Set the ALPHA parameter (weight for text search score).
-     * 
      * @param alpha the alpha value (0.0 to 1.0)
      * @return this Linear instance
      */
@@ -141,7 +136,6 @@ public class CombineParams implements IParams {
 
     /**
      * Set the BETA parameter (weight for vector similarity score).
-     * 
      * @param beta the beta value (0.0 to 1.0)
      * @return this Linear instance
      */
@@ -153,14 +147,14 @@ public class CombineParams implements IParams {
     @Override
     public void addParams(CommandArguments args) {
       args.add(LINEAR);
-      
+
       // Count parameters
       int paramCount = 0;
       if (alpha != null) paramCount += 2;
       if (beta != null) paramCount += 2;
-      
+
       args.add(paramCount);
-      
+
       if (alpha != null) {
         args.add(ALPHA);
         args.add(alpha);
@@ -172,4 +166,3 @@ public class CombineParams implements IParams {
     }
   }
 }
-

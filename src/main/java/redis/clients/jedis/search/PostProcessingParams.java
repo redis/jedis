@@ -11,8 +11,8 @@ import java.util.List;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 /**
- * Arguments for post-processing operations in FT.HYBRID command.
- * Supports LOAD, GROUPBY, APPLY, SORTBY, FILTER, and LIMIT operations.
+ * Arguments for post-processing operations in FT.HYBRID command. Supports LOAD, GROUPBY, APPLY,
+ * SORTBY, FILTER, and LIMIT operations.
  */
 @Experimental
 public class PostProcessingParams implements IParams {
@@ -38,7 +38,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Build the {@link PostProcessingParams} instance.
-     * 
      * @return the configured arguments
      */
     public PostProcessingParams build() {
@@ -47,7 +46,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Set the fields to load in the results.
-     * 
      * @param fields the field names to load
      * @return this builder
      */
@@ -58,7 +56,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Add a post-processing operation.
-     * 
      * @param operation the operation to add
      * @return this builder
      */
@@ -109,7 +106,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Create a GROUPBY operation.
-     * 
      * @param fields the fields to group by
      * @return a new GroupBy instance
      */
@@ -119,7 +115,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Add a reducer to this GROUPBY operation.
-     * 
      * @param reducer the reducer to add
      * @return this GroupBy instance
      */
@@ -161,7 +156,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Create a reducer with the specified function and arguments.
-     *
      * @param function the reduce function
      * @param args the function arguments
      * @return a new Reducer instance
@@ -172,7 +166,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Set an alias for the reducer result.
-     *
      * @param alias the alias name
      * @return this Reducer instance
      */
@@ -200,18 +193,8 @@ public class PostProcessingParams implements IParams {
    * Enumeration of REDUCE functions for GROUPBY operations.
    */
   public enum ReduceFunction {
-    COUNT,
-    COUNT_DISTINCT,
-    COUNT_DISTINCTISH,
-    SUM,
-    AVG,
-    MIN,
-    MAX,
-    STDDEV,
-    QUANTILE,
-    TOLIST,
-    FIRST_VALUE,
-    RANDOM_SAMPLE
+    COUNT, COUNT_DISTINCT, COUNT_DISTINCTISH, SUM, AVG, MIN, MAX, STDDEV, QUANTILE, TOLIST,
+    FIRST_VALUE, RANDOM_SAMPLE
   }
 
   /**
@@ -226,7 +209,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Create a SORTBY operation.
-     *
      * @param properties the sort properties
      * @return a new SortBy instance
      */
@@ -268,8 +250,7 @@ public class PostProcessingParams implements IParams {
    * Sort direction enumeration.
    */
   public enum SortDirection {
-    ASC,
-    DESC
+    ASC, DESC
   }
 
   /**
@@ -286,7 +267,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Create an APPLY operation.
-     *
      * @param expression the expression to apply
      * @param alias the alias for the result
      * @return a new Apply instance
@@ -316,7 +296,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Create a FILTER operation.
-     *
      * @param expression the filter expression
      * @return a new Filter instance
      */
@@ -345,7 +324,6 @@ public class PostProcessingParams implements IParams {
 
     /**
      * Create a LIMIT operation.
-     *
      * @param offset the offset
      * @param count the count
      * @return a new Limit instance
@@ -362,4 +340,3 @@ public class PostProcessingParams implements IParams {
     }
   }
 }
-

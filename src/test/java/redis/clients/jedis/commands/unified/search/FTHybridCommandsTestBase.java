@@ -36,8 +36,8 @@ import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.search.schemafields.VectorField;
 
 /**
- * Base test class for FT.HYBRID command using the UnifiedJedis pattern.
- * Tests hybrid search functionality combining text search and vector similarity.
+ * Base test class for FT.HYBRID command using the UnifiedJedis pattern. Tests hybrid search
+ * functionality combining text search and vector similarity.
  */
 @Tag("integration")
 @Tag("search")
@@ -70,65 +70,70 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     vectorAttrs.put("DISTANCE_METRIC", "COSINE");
 
     assertOK(jedis.ftCreate(INDEX_NAME,
-        FTCreateParams.createParams().on(IndexDataType.HASH).prefix(PREFIX),
-        TextField.of("title"),
-        TagField.of("category"),
-        TagField.of("brand"),
-        NumericField.of("price"),
-        NumericField.of("rating"),
-        VectorField.builder().fieldName("image_embedding")
-            .algorithm(VectorField.VectorAlgorithm.HNSW)
-            .attributes(vectorAttrs)
-            .build()));
+      FTCreateParams.createParams().on(IndexDataType.HASH).prefix(PREFIX), TextField.of("title"),
+      TagField.of("category"), TagField.of("brand"), NumericField.of("price"),
+      NumericField.of("rating"), VectorField.builder().fieldName("image_embedding")
+          .algorithm(VectorField.VectorAlgorithm.HNSW).attributes(vectorAttrs).build()));
 
     // Add sample products - matching Lettuce test data
-    createProductWithBrand("1", "Apple iPhone 15 Pro smartphone with advanced camera", "electronics", "apple", "999", "4.8", new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f});
-    createProductWithBrand("2", "Samsung Galaxy S24 smartphone camera", "electronics", "samsung", "799", "4.6", new float[]{0.15f, 0.25f, 0.35f, 0.45f, 0.55f, 0.65f, 0.75f, 0.85f, 0.95f, 0.9f});
-    createProductWithBrand("3", "Google Pixel 8 Pro camera smartphone", "electronics", "google", "699", "4.5", new float[]{0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 0.8f});
-    createProductWithBrand("4", "Apple iPhone 15 Pro smartphone camera", "electronics", "apple", "999", "4.8", new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f});
-    createProductWithBrand("5", "Samsung Galaxy S24", "electronics", "samsung", "799", "4.6", new float[]{0.15f, 0.25f, 0.35f, 0.45f, 0.55f, 0.65f, 0.75f, 0.85f, 0.95f, 0.9f});
-    createProductWithBrand("6", "Google Pixel 8 Pro", "electronics", "google", "699", "4.5", new float[]{0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 0.8f});
-    createProductWithBrand("7", "Best T-shirt", "apparel", "denim", "255", "4.2", new float[]{0.12f, 0.22f, 0.32f, 0.42f, 0.52f, 0.62f, 0.72f, 0.82f, 0.92f, 0.85f});
-    createProductWithBrand("8", "Best makeup", "beauty", "loreal", "155", "4.4", new float[]{0.18f, 0.28f, 0.38f, 0.48f, 0.58f, 0.68f, 0.78f, 0.88f, 0.98f, 0.75f});
-    createProductWithBrand("9", "Best punching bag", "sports", "lonsdale", "733", "4.6", new float[]{0.11f, 0.21f, 0.31f, 0.41f, 0.51f, 0.61f, 0.71f, 0.81f, 0.91f, 0.95f});
-    createProductWithBrand("10", "Apple iPhone 15 Pro smartphone camera", "electronics", "apple", "999", "4.8", new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f});
+    createProductWithBrand("1", "Apple iPhone 15 Pro smartphone with advanced camera",
+      "electronics", "apple", "999", "4.8",
+      new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
+    createProductWithBrand("2", "Samsung Galaxy S24 smartphone camera", "electronics", "samsung",
+      "799", "4.6",
+      new float[] { 0.15f, 0.25f, 0.35f, 0.45f, 0.55f, 0.65f, 0.75f, 0.85f, 0.95f, 0.9f });
+    createProductWithBrand("3", "Google Pixel 8 Pro camera smartphone", "electronics", "google",
+      "699", "4.5", new float[] { 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 0.8f });
+    createProductWithBrand("4", "Apple iPhone 15 Pro smartphone camera", "electronics", "apple",
+      "999", "4.8", new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
+    createProductWithBrand("5", "Samsung Galaxy S24", "electronics", "samsung", "799", "4.6",
+      new float[] { 0.15f, 0.25f, 0.35f, 0.45f, 0.55f, 0.65f, 0.75f, 0.85f, 0.95f, 0.9f });
+    createProductWithBrand("6", "Google Pixel 8 Pro", "electronics", "google", "699", "4.5",
+      new float[] { 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 0.8f });
+    createProductWithBrand("7", "Best T-shirt", "apparel", "denim", "255", "4.2",
+      new float[] { 0.12f, 0.22f, 0.32f, 0.42f, 0.52f, 0.62f, 0.72f, 0.82f, 0.92f, 0.85f });
+    createProductWithBrand("8", "Best makeup", "beauty", "loreal", "155", "4.4",
+      new float[] { 0.18f, 0.28f, 0.38f, 0.48f, 0.58f, 0.68f, 0.78f, 0.88f, 0.98f, 0.75f });
+    createProductWithBrand("9", "Best punching bag", "sports", "lonsdale", "733", "4.6",
+      new float[] { 0.11f, 0.21f, 0.31f, 0.41f, 0.51f, 0.61f, 0.71f, 0.81f, 0.91f, 0.95f });
+    createProductWithBrand("10", "Apple iPhone 15 Pro smartphone camera", "electronics", "apple",
+      "999", "4.8", new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
 
     // Execute comprehensive hybrid search with all features
-    byte[] queryVector = floatArrayToByteArray(new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f});
+    byte[] queryVector = floatArrayToByteArray(
+      new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
 
     // Test @ prefix auto-addition: use fields without @ prefix
     PostProcessingParams postProcessing = PostProcessingParams.builder()
         .load("price", "brand", "@category") // Mix with and without @
         .addOperation(PostProcessingParams.GroupBy.of("brand") // No @ prefix
-            .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
-            .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.COUNT).as("count")))
+            .reduce(PostProcessingParams.Reducer
+                .of(PostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
+            .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.COUNT)
+                .as("count")))
         .addOperation(PostProcessingParams.SortBy.of(
-            new PostProcessingParams.SortProperty("sum", PostProcessingParams.SortDirection.ASC), // No @ prefix
-            new PostProcessingParams.SortProperty("count", PostProcessingParams.SortDirection.DESC))) // No @ prefix
+          new PostProcessingParams.SortProperty("sum", PostProcessingParams.SortDirection.ASC), // No
+                                                                                                // @
+                                                                                                // prefix
+          new PostProcessingParams.SortProperty("count", PostProcessingParams.SortDirection.DESC))) // No
+                                                                                                    // @
+                                                                                                    // prefix
         .addOperation(PostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
         .addOperation(PostProcessingParams.Filter.of("@sum > 700"))
-        .addOperation(PostProcessingParams.Limit.of(0, 20))
-        .build();
+        .addOperation(PostProcessingParams.Limit.of(0, 20)).build();
 
     HybridParams hybridArgs = HybridParams.builder()
-        .search(HybridSearchParams.builder()
-            .query("@category:{electronics} smartphone camera")
+        .search(HybridSearchParams.builder().query("@category:{electronics} smartphone camera")
             .scorer(HybridSearchParams.Scorer.of(HybridSearchParams.ScoringFunction.BM25))
-            .scoreAlias("text_score")
-            .build())
-        .vectorSearch(HybridVectorParams.builder()
-            .field("@image_embedding")
-            .vector(queryVector)
+            .scoreAlias("text_score").build())
+        .vectorSearch(HybridVectorParams.builder().field("@image_embedding").vector(queryVector)
             .method(HybridVectorParams.Knn.of(20).efRuntime(150))
             // Single combined filter expression
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
-            .scoreAlias("vector_score")
-            .build())
+            .scoreAlias("vector_score").build())
         .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3)))
-        .postProcessing(postProcessing)
-        .param("discount_rate", "0.9")
-        .param("$vector", new String(queryVector))
-        .build();
+        .postProcessing(postProcessing).param("discount_rate", "0.9")
+        .param("$vector", new String(queryVector)).build();
 
     HybridReply reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -167,8 +172,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
 
   // Helper methods
 
-  private void createProductWithBrand(String id, String title, String category,
-                                      String brand, String price, String rating, float[] embedding) {
+  private void createProductWithBrand(String id, String title, String category, String brand,
+      String price, String rating, float[] embedding) {
     Map<byte[], byte[]> fields = new HashMap<>();
     fields.put("title".getBytes(), title.getBytes());
     fields.put("category".getBytes(), category.getBytes());
@@ -188,4 +193,3 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     return buffer.array();
   }
 }
-

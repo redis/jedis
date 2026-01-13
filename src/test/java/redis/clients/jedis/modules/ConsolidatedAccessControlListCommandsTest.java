@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -38,6 +39,11 @@ public class ConsolidatedAccessControlListCommandsTest extends RedisModuleComman
 
   public ConsolidatedAccessControlListCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @BeforeAll
+  public static void prepare() {
+    RedisModuleCommandsTestBase.prepare();
   }
 
   @AfterEach

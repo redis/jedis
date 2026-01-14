@@ -567,7 +567,12 @@
 						<include>src/test/java/redis/clients/jedis/commands/unified/search/FTHybridCommandsTestBase.java</include>
 						<include>src/test/java/redis/clients/jedis/commands/unified/search/AggregateIteratorBaseTest.java</include>
 						<include>src/test/java/redis/clients/jedis/modules/search/AggregateIteratorTest.java</include>
-					</includes>
+                        <include>src/test/java/redis/clients/jedis/commands/unified/search/JsonSearchTestBase.java</include>
+                        <include>src/test/java/redis/clients/jedis/commands/unified/cluster/search/JsonSearchClusterTest.java</include>
+                        <include>src/test/java/redis/clients/jedis/commands/unified/client/search/JsonSearchRedisClientCommandsTest.java</include>
+
+
+                    </includes>
 				</configuration>
 				<executions>
 					<execution>

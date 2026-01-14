@@ -37,7 +37,8 @@ public class JsonSearchClusterTest extends JsonSearchTestBase {
   @Override
   protected void setJson(String key, JSONObject json) {
     CommandObject command = new CommandObject<>(
-        new ClusterCommandArguments(JsonProtocol.JsonCommand.SET).key(key).add(Path2.ROOT_PATH).add(json),
+        new ClusterCommandArguments(JsonProtocol.JsonCommand.SET).key(key).add(Path2.ROOT_PATH)
+            .add(json),
         BuilderFactory.STRING);
     jedis.executeCommand(command);
   }

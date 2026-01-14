@@ -4226,7 +4226,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public HybridReply ftHybrid(String indexName, HybridParams hybridParams) {
-    return executeKeylessCommand(commandObjects.ftHybrid(indexName, hybridParams));
+    return executeCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 
   @Override

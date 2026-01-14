@@ -21,6 +21,12 @@ public class ClusterCommandsTestHelper {
     RedisClusterClient client = RedisClusterClient.builder()
         .nodes(new HashSet<>(endpoint.getHostsAndPorts()))
         .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build();
+    client.setBroadcastAndRoundRobinConfig(new JedisBroadcastAndRoundRobinConfig() {
+      @Override
+      public RediSearchMode getRediSearchModeInCluster() {
+        return RediSearchMode.LIGHT;
+      }
+    });
     client.flushAll();
     return client;
   }

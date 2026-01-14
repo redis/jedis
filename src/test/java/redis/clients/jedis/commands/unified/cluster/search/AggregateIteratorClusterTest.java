@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands.unified.cluster.search;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -49,12 +48,7 @@ public class AggregateIteratorClusterTest extends AggregateIteratorBaseTest {
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return ClusterCommandsTestHelper.getCleanCluster(protocol);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    ClusterCommandsTestHelper.clearClusterData();
+    return ClusterCommandsTestHelper.getCleanCluster(protocol, endpoint);
   }
 
   private void addDocument(Document doc) {

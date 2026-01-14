@@ -21,6 +21,6 @@ public class AggregateIteratorRedisClientTest extends AggregateIteratorBaseTest 
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return RedisClientCommandsTestHelper.getClient(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol, endpoint);
   }
 }

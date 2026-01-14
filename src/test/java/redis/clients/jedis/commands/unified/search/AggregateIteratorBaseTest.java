@@ -1,10 +1,9 @@
 package redis.clients.jedis.commands.unified.search;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedClass;
-import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
@@ -31,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("integration")
 @Tag("aggregation")
+@SinceRedisVersion("8.4.0")
 public abstract class AggregateIteratorBaseTest extends UnifiedJedisCommandsTestBase {
 
   protected static final String index = "aggiteratorindex";

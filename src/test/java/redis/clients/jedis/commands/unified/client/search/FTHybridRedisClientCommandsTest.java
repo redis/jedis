@@ -21,6 +21,6 @@ public class FTHybridRedisClientCommandsTest extends FTHybridCommandsTestBase {
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return RedisClientCommandsTestHelper.getClient(protocol);
+    return RedisClientCommandsTestHelper.getClient(protocol, endpoint);
   }
 }

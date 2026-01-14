@@ -31,11 +31,6 @@ public class FTHybridCommandsClusterTest extends FTHybridCommandsTestBase {
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return ClusterCommandsTestHelper.getCleanCluster(protocol);
-  }
-
-  @AfterEach
-  public void tearDown() {
-    ClusterCommandsTestHelper.clearClusterData();
+    return ClusterCommandsTestHelper.getCleanCluster(protocol, endpoint);
   }
 }

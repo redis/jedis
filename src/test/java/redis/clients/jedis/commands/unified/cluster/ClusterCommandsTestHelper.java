@@ -16,6 +16,15 @@ public class ClusterCommandsTestHelper {
     return client;
   }
 
+  public static RedisClusterClient getCleanCluster(RedisProtocol protocol, EndpointConfig endpoint) {
+
+    RedisClusterClient client = RedisClusterClient.builder()
+        .nodes(new HashSet<>(endpoint.getHostsAndPorts()))
+        .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build();
+    client.flushAll();
+    return client;
+  }
+
   public static void clearClusterData() {
     getCleanCluster(RedisProtocol.RESP2);
   }

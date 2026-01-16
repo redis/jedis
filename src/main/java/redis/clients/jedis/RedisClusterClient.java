@@ -2,12 +2,14 @@ package redis.clients.jedis;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.builders.ClusterClientBuilder;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.providers.ConnectionProvider;
@@ -206,5 +208,216 @@ public class RedisClusterClient extends UnifiedJedis {
           "Support only execute to replica in ClusterCommandExecutor");
     }
     return ((ClusterCommandExecutor) executor).executeCommandToReplica(commandObject);
+  }
+
+  /**
+   * Broadcast a command to all primary nodes in the cluster.
+   * <p>
+   * This method is useful for administrative commands that need to be executed on all primary nodes,
+   * such as {@code PING}, {@code CONFIG SET}, {@code FLUSHALL}, etc.
+   * </p>
+   * @param commandObject the command to broadcast
+   * @param <T> the return type of the command
+   * @return the aggregated reply from all primary nodes
+   * @throws UnsupportedOperationException if the executor is not a ClusterCommandExecutor
+   */
+  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
+    if (!(executor instanceof ClusterCommandExecutor)) {
+      throw new UnsupportedOperationException(
+          "Broadcast command is only supported in ClusterCommandExecutor");
+    }
+    return ((ClusterCommandExecutor) executor).broadcastCommand(commandObject, true);
+  }
+
+  // ==================== Multi-Shard Command Methods ====================
+  // These methods execute commands across multiple Redis cluster shards when keys
+  // hash to different slots, aggregating the results appropriately.
+
+  private <T> T executeMultiShardCommand(List<CommandObject<T>> commandObjects) {
+    if (!(executor instanceof ClusterCommandExecutor)) {
+      throw new UnsupportedOperationException(
+          "Multi-shard command is only supported in ClusterCommandExecutor");
+    }
+    return ((ClusterCommandExecutor) executor).executeMultiShardCommand(commandObjects);
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes DEL on each shard,
+   * aggregating the results (sum of deleted keys).
+   * </p>
+   */
+  @Override
+  public long del(String... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().delMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes DEL on each shard,
+   * aggregating the results (sum of deleted keys).
+   * </p>
+   */
+  @Override
+  public long del(byte[]... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().delMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes EXISTS on each shard,
+   * aggregating the results (sum of existing keys).
+   * </p>
+   */
+  @Override
+  public long exists(String... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().existsMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes EXISTS on each shard,
+   * aggregating the results (sum of existing keys).
+   * </p>
+   */
+  @Override
+  public long exists(byte[]... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().existsMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes MGET on each shard,
+   * concatenating the results.
+   * </p>
+   * <p>
+   * <b>Note:</b> The order of values in the result may not match the order of input keys
+   * when keys are distributed across multiple slots.
+   * </p>
+   */
+  @Override
+  public List<String> mget(String... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().mgetMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes MGET on each shard,
+   * concatenating the results.
+   * </p>
+   * <p>
+   * <b>Note:</b> The order of values in the result may not match the order of input keys
+   * when keys are distributed across multiple slots.
+   * </p>
+   */
+  @Override
+  public List<byte[]> mget(byte[]... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().mgetMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the key-value pairs by hash slot and executes MSET
+   * on each shard.
+   * </p>
+   */
+  @Override
+  public String mset(String... keysvalues) {
+    return executeMultiShardCommand(getClusterCommandObjects().msetMultiShard(keysvalues));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the key-value pairs by hash slot and executes MSET
+   * on each shard.
+   * </p>
+   */
+  @Override
+  public String mset(byte[]... keysvalues) {
+    return executeMultiShardCommand(getClusterCommandObjects().msetMultiShard(keysvalues));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes TOUCH on each shard,
+   * aggregating the results (sum of touched keys).
+   * </p>
+   */
+  @Override
+  public long touch(String... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().touchMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes TOUCH on each shard,
+   * aggregating the results (sum of touched keys).
+   * </p>
+   */
+  @Override
+  public long touch(byte[]... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().touchMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes UNLINK on each shard,
+   * aggregating the results (sum of unlinked keys).
+   * </p>
+   */
+  @Override
+  public long unlink(String... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().unlinkMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the keys by hash slot and executes UNLINK on each shard,
+   * aggregating the results (sum of unlinked keys).
+   * </p>
+   */
+  @Override
+  public long unlink(byte[]... keys) {
+    return executeMultiShardCommand(getClusterCommandObjects().unlinkMultiShard(keys));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the key-value pairs by hash slot and executes MSETEX
+   * on each shard with the provided parameters.
+   * </p>
+   */
+  @Override
+  public boolean msetex(MSetExParams params, String... keysvalues) {
+    return executeMultiShardCommand(getClusterCommandObjects().msetexMultiShard(params, keysvalues));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This override automatically splits the key-value pairs by hash slot and executes MSETEX
+   * on each shard with the provided parameters.
+   * </p>
+   */
+  @Override
+  public boolean msetex(MSetExParams params, byte[]... keysvalues) {
+    return executeMultiShardCommand(getClusterCommandObjects().msetexMultiShard(params, keysvalues));
+  }
+
+  private ClusterCommandObjects getClusterCommandObjects() {
+    return (ClusterCommandObjects) commandObjects;
   }
 }

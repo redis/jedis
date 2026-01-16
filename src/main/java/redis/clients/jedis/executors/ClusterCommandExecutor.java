@@ -58,8 +58,21 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.provider.close();
   }
 
-  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    Map<String, ConnectionPool> connectionMap = provider.getPrimaryNodesConnectionMap();
+  /**
+   * Broadcast a command to cluster nodes.
+   * @param commandObject the command to broadcast
+   * @param primaryOnly if true, broadcast only to primary nodes; if false, broadcast to all nodes
+   *        including replicas
+   * @return the reply from the command (if all nodes return the same reply)
+   * @throws JedisBroadcastException if any node returns an error or different replies
+   */
+  public final <T> T broadcastCommand(CommandObject<T> commandObject, boolean primaryOnly) {
+    Map<String, ConnectionPool> connectionMap = primaryOnly ? provider.getPrimaryNodesConnectionMap()
+        : provider.getConnectionMap();
+
+    // Get the response policy for aggregation
+    CommandFlagsRegistry.ResponsePolicy responsePolicy = flags.getResponsePolicy(commandObject
+        .getArguments());
 
     boolean isErrored = false;
     T reply = null;
@@ -70,14 +83,13 @@ public class ClusterCommandExecutor implements CommandExecutor {
       try (Connection connection = pool.getResource()) {
         T aReply = execute(connection, commandObject);
         bcastError.addReply(node, aReply);
-        if (isErrored) { // already errored
+        if (isErrored) {
+          // Already errored, just continue collecting results
         } else if (reply == null) {
-          reply = aReply; // ok
-        } else if (reply.equals(aReply)) {
-          // ok
+          reply = aReply;
         } else {
-          isErrored = true;
-          reply = null;
+          // Aggregate the reply based on response policy
+          reply = ClusterReplyAggregator.aggregate(reply, aReply, responsePolicy);
         }
       } catch (Exception anError) {
         bcastError.addReply(node, anError);
@@ -90,9 +102,86 @@ public class ClusterCommandExecutor implements CommandExecutor {
     return reply;
   }
 
+  /**
+   * Execute multiple command objects across different cluster shards and aggregate the results.
+   * <p>
+   * This method is designed for commands that need to operate on keys distributed across multiple
+   * hash slots (e.g., DEL, EXISTS, MGET with keys from different slots). Each CommandObject in the
+   * list is executed on its appropriate shard based on the key's hash slot, and the results are
+   * aggregated using the command's response policy.
+   * </p>
+   * @param commandObjects list of CommandObject instances, each targeting keys in the same hash slot
+   * @param <T> the return type of the command
+   * @return the aggregated reply from all shards
+   * @throws JedisBroadcastException if any shard returns an error
+   */
+  public final <T> T executeMultiShardCommand(List<CommandObject<T>> commandObjects) {
+    if (commandObjects == null || commandObjects.isEmpty()) {
+      throw new IllegalArgumentException("commandObjects must not be null or empty");
+    }
+
+    // Get the response policy from the first command (all commands should have the same policy)
+    CommandFlagsRegistry.ResponsePolicy responsePolicy = flags.getResponsePolicy(
+        commandObjects.get(0).getArguments());
+
+    boolean isErrored = false;
+    T reply = null;
+    JedisBroadcastException bcastError = new JedisBroadcastException();
+
+    for (CommandObject<T> commandObject : commandObjects) {
+      try {
+        // Execute each command on its appropriate shard using the existing retry logic
+        T aReply = doExecuteCommand(commandObject, false);
+
+        if (isErrored) {
+          // Already errored, just continue collecting results for error reporting
+        } else if (reply == null) {
+          reply = aReply;
+        } else {
+          // Aggregate the reply based on response policy
+          reply = ClusterReplyAggregator.aggregate(reply, aReply, responsePolicy);
+        }
+      } catch (Exception anError) {
+        // For multi-shard commands, we don't have a specific node to report
+        // Use a placeholder to indicate which command failed
+        bcastError.addReply(HostAndPort.from("multi-shard:0"), anError);
+        isErrored = true;
+      }
+    }
+
+    if (isErrored) {
+      throw bcastError;
+    }
+    return reply;
+  }
+
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
-    return doExecuteCommand(commandObject, false);
+    CommandArguments args = commandObject.getArguments();
+    CommandFlagsRegistry.RequestPolicy requestPolicy = flags.getRequestPolicy(args);
+
+    switch (requestPolicy) {
+      case ALL_SHARDS:
+        // Execute on all primary nodes (shards)
+        return broadcastCommand(commandObject, true);
+
+      case ALL_NODES:
+        // Execute on all nodes including replicas
+        return broadcastCommand(commandObject, false);
+
+      // NOTE(imalinovskyi): Handling of special commands (SCAN, FT.CURSOR, etc.) should happen
+      // in the custom abstractions and dedicated executor methods.
+      case MULTI_SHARD:
+      case SPECIAL:
+      case DEFAULT:
+      default:
+        // Default behavior: check if keyless, otherwise use single-shard routing
+        if (args.isKeyless()) {
+          return executeKeylessCommand(commandObject);
+        } else {
+          return doExecuteCommand(commandObject, false);
+        }
+    }
   }
 
   public final <T> T executeKeylessCommand(CommandObject<T> commandObject) {

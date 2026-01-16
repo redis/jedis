@@ -1,11 +1,10 @@
 package redis.clients.jedis.commands.unified.cluster.search;
 
-import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.JedisBroadcastAndRoundRobinConfig;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.cluster.ClusterCommandsTestHelper;
@@ -31,6 +30,9 @@ public class FTHybridCommandsClusterTest extends FTHybridCommandsTestBase {
 
   @Override
   protected UnifiedJedis createTestClient() {
-    return ClusterCommandsTestHelper.getCleanCluster(protocol, endpoint);
+    UnifiedJedis cluster = ClusterCommandsTestHelper.getCleanCluster(protocol, endpoint);
+    cluster.setBroadcastAndRoundRobinConfig(
+        () -> JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT);
+    return cluster;
   }
 }

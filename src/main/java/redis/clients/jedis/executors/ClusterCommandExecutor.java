@@ -58,7 +58,6 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.provider.close();
   }
 
-  @Override
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
     Map<String, ConnectionPool> connectionMap = provider.getPrimaryNodesConnectionMap();
 
@@ -96,7 +95,6 @@ public class ClusterCommandExecutor implements CommandExecutor {
     return doExecuteCommand(commandObject, false);
   }
 
-  @Override
   public final <T> T executeKeylessCommand(CommandObject<T> commandObject) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
     int consecutiveConnectionFailures = 0;

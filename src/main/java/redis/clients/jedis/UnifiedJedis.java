@@ -317,20 +317,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executor.executeCommand(commandObject);
   }
 
-  public final <T> T executeKeylessCommand(CommandObject<T> commandObject) {
-    return executor.executeKeylessCommand(commandObject);
-  }
-
-  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    return executor.broadcastCommand(commandObject);
-  }
-
   public Cache getCache() {
     return cache;
   }
 
   public String ping() {
-    return broadcastCommand(commandObjects.ping());
+    return executeCommand(commandObjects.ping());
   }
 
   public String echo(String string) {
@@ -338,15 +330,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String flushDB() {
-    return broadcastCommand(commandObjects.flushDB());
+    return executeCommand(commandObjects.flushDB());
   }
 
   public String flushAll() {
-    return broadcastCommand(commandObjects.flushAll());
+    return executeCommand(commandObjects.flushAll());
   }
 
   public String configSet(String parameter, String value) {
-    return broadcastCommand(commandObjects.configSet(parameter, value));
+    return executeCommand(commandObjects.configSet(parameter, value));
   }
 
   public String info() {
@@ -4082,22 +4074,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionDelete(String libraryName) {
-    return broadcastCommand(commandObjects.functionDelete(libraryName));
+    return executeCommand(commandObjects.functionDelete(libraryName));
   }
 
   @Override
   public String functionFlush() {
-    return broadcastCommand(commandObjects.functionFlush());
+    return executeCommand(commandObjects.functionFlush());
   }
 
   @Override
   public String functionFlush(FlushMode mode) {
-    return broadcastCommand(commandObjects.functionFlush(mode));
+    return executeCommand(commandObjects.functionFlush(mode));
   }
 
   @Override
   public String functionKill() {
-    return broadcastCommand(commandObjects.functionKill());
+    return executeCommand(commandObjects.functionKill());
   }
 
   @Override
@@ -4122,12 +4114,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(String functionCode) {
-    return broadcastCommand(commandObjects.functionLoad(functionCode));
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(String functionCode) {
-    return broadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -4147,7 +4139,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionDelete(byte[] libraryName) {
-    return broadcastCommand(commandObjects.functionDelete(libraryName));
+    return executeCommand(commandObjects.functionDelete(libraryName));
   }
 
   @Override
@@ -4177,22 +4169,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(byte[] functionCode) {
-    return broadcastCommand(commandObjects.functionLoad(functionCode));
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(byte[] functionCode) {
-    return broadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
   public String functionRestore(byte[] serializedValue) {
-    return broadcastCommand(commandObjects.functionRestore(serializedValue));
+    return executeCommand(commandObjects.functionRestore(serializedValue));
   }
 
   @Override
   public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
-    return broadcastCommand(commandObjects.functionRestore(serializedValue, policy));
+    return executeCommand(commandObjects.functionRestore(serializedValue, policy));
   }
 
   @Override
@@ -4305,7 +4297,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public List<Boolean> scriptExists(List<String> sha1s) {
-    return broadcastCommand(commandObjects.scriptExists(sha1s));
+    return executeCommand(commandObjects.scriptExists(sha1s));
   }
 
   @Override
@@ -4329,7 +4321,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptLoad(String script) {
-    return broadcastCommand(commandObjects.scriptLoad(script));
+    return executeCommand(commandObjects.scriptLoad(script));
   }
 
   @Override
@@ -4338,7 +4330,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptFlush() {
-    return broadcastCommand(commandObjects.scriptFlush());
+    return executeCommand(commandObjects.scriptFlush());
   }
 
   @Override
@@ -4352,7 +4344,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptKill() {
-    return broadcastCommand(commandObjects.scriptKill());
+    return executeCommand(commandObjects.scriptKill());
   }
 
   @Override
@@ -4381,7 +4373,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String slowlogReset() {
-    return broadcastCommand(commandObjects.slowlogReset());
+    return executeCommand(commandObjects.slowlogReset());
   }
   // Sample key commands
 
@@ -4430,57 +4422,57 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
-    return executeKeylessCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+    return executeCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
   }
 
   @Override
   public String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
-    return executeKeylessCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
+    return executeCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
   public String ftAlter(String indexName, Schema schema) {
-    return executeKeylessCommand(commandObjects.ftAlter(indexName, schema));
+    return executeCommand(commandObjects.ftAlter(indexName, schema));
   }
 
   @Override
   public String ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
-    return executeKeylessCommand(commandObjects.ftAlter(indexName, schemaFields));
+    return executeCommand(commandObjects.ftAlter(indexName, schemaFields));
   }
 
   @Override
   public String ftAliasAdd(String aliasName, String indexName) {
-    return executeKeylessCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+    return executeCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
   public String ftAliasUpdate(String aliasName, String indexName) {
-    return executeKeylessCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+    return executeCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
   public String ftAliasDel(String aliasName) {
-    return executeKeylessCommand(commandObjects.ftAliasDel(aliasName));
+    return executeCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override
   public String ftDropIndex(String indexName) {
-    return executeKeylessCommand(commandObjects.ftDropIndex(indexName));
+    return executeCommand(commandObjects.ftDropIndex(indexName));
   }
 
   @Override
   public String ftDropIndexDD(String indexName) {
-    return executeKeylessCommand(commandObjects.ftDropIndexDD(indexName));
+    return executeCommand(commandObjects.ftDropIndexDD(indexName));
   }
 
   @Override
   public SearchResult ftSearch(String indexName, String query) {
-    return executeKeylessCommand(commandObjects.ftSearch(indexName, query));
+    return executeCommand(commandObjects.ftSearch(indexName, query));
   }
 
   @Override
   public SearchResult ftSearch(String indexName, String query, FTSearchParams params) {
-    return executeKeylessCommand(commandObjects.ftSearch(indexName, query, params));
+    return executeCommand(commandObjects.ftSearch(indexName, query, params));
   }
 
   /**
@@ -4499,7 +4491,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public SearchResult ftSearch(String indexName, Query query) {
-    return executeKeylessCommand(commandObjects.ftSearch(indexName, query));
+    return executeCommand(commandObjects.ftSearch(indexName, query));
   }
 
   /**
@@ -4517,17 +4509,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   @Deprecated
   public SearchResult ftSearch(byte[] indexName, Query query) {
-    return executeKeylessCommand(commandObjects.ftSearch(indexName, query));
+    return executeCommand(commandObjects.ftSearch(indexName, query));
   }
 
   @Override
   public String ftExplain(String indexName, Query query) {
-    return executeKeylessCommand(commandObjects.ftExplain(indexName, query));
+    return executeCommand(commandObjects.ftExplain(indexName, query));
   }
 
   @Override
   public List<String> ftExplainCLI(String indexName, Query query) {
-    return executeKeylessCommand(commandObjects.ftExplainCLI(indexName, query));
+    return executeCommand(commandObjects.ftExplainCLI(indexName, query));
   }
 
   @Override
@@ -4588,80 +4580,80 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Map.Entry<AggregationResult, ProfilingInfo> ftProfileAggregate(String indexName,
       FTProfileParams profileParams, AggregationBuilder aggr) {
-    return executeKeylessCommand(commandObjects.ftProfileAggregate(indexName, profileParams, aggr));
+    return executeCommand(commandObjects.ftProfileAggregate(indexName, profileParams, aggr));
   }
 
   @Override
   public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, Query query) {
-    return executeKeylessCommand(commandObjects.ftProfileSearch(indexName, profileParams, query));
+    return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query));
   }
 
   @Override
   public Map.Entry<SearchResult, ProfilingInfo> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams) {
-    return executeKeylessCommand(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams));
+    return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams));
   }
 
   @Override
   public String ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
-    return executeKeylessCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+    return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }
 
   @Override
   public Map<String, List<String>> ftSynDump(String indexName) {
-    return executeKeylessCommand(commandObjects.ftSynDump(indexName));
+    return executeCommand(commandObjects.ftSynDump(indexName));
   }
 
   @Override
   public long ftDictAdd(String dictionary, String... terms) {
-    return executeKeylessCommand(commandObjects.ftDictAdd(dictionary, terms));
+    return executeCommand(commandObjects.ftDictAdd(dictionary, terms));
   }
 
   @Override
   public long ftDictDel(String dictionary, String... terms) {
-    return executeKeylessCommand(commandObjects.ftDictDel(dictionary, terms));
+    return executeCommand(commandObjects.ftDictDel(dictionary, terms));
   }
 
   @Override
   public Set<String> ftDictDump(String dictionary) {
-    return executeKeylessCommand(commandObjects.ftDictDump(dictionary));
+    return executeCommand(commandObjects.ftDictDump(dictionary));
   }
 
   @Override
   public long ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
-    return executeKeylessCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
+    return executeCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
   }
 
   @Override
   public long ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
-    return executeKeylessCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
+    return executeCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
   }
 
   @Override
   public Set<String> ftDictDumpBySampleKey(String indexName, String dictionary) {
-    return executeKeylessCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
+    return executeCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
   }
 
   @Override
   public Map<String, Map<String, Double>> ftSpellCheck(String index, String query) {
-    return executeKeylessCommand(commandObjects.ftSpellCheck(index, query));
+    return executeCommand(commandObjects.ftSpellCheck(index, query));
   }
 
   @Override
   public Map<String, Map<String, Double>> ftSpellCheck(String index, String query,
       FTSpellCheckParams spellCheckParams) {
-    return executeKeylessCommand(commandObjects.ftSpellCheck(index, query, spellCheckParams));
+    return executeCommand(commandObjects.ftSpellCheck(index, query, spellCheckParams));
   }
 
   @Override
   public Map<String, Object> ftInfo(String indexName) {
-    return executeKeylessCommand(commandObjects.ftInfo(indexName));
+    return executeCommand(commandObjects.ftInfo(indexName));
   }
 
   @Override
   public Set<String> ftTagVals(String indexName, String fieldName) {
-    return executeKeylessCommand(commandObjects.ftTagVals(indexName, fieldName));
+    return executeCommand(commandObjects.ftTagVals(indexName, fieldName));
   }
 
   @Override

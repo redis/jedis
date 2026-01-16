@@ -41,6 +41,7 @@ import redis.clients.jedis.search.schemafields.VectorField;
  */
 @Tag("integration")
 @Tag("search")
+@SinceRedisVersion("8.4.0")
 public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   @BeforeAll
@@ -56,7 +57,6 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
   }
 
   @Test
-  @SinceRedisVersion("8.4.0")
   public void testComprehensiveFtHybridWithAllFeatures() {
     // Clean up any existing index
     if (jedis.ftList().contains(INDEX_NAME)) {

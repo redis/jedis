@@ -37,10 +37,20 @@ public interface SortedSetBinaryCommands {
 
   List<byte[]> zrange(byte[] key, long start, long stop);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrange(byte[] key, long start, long stop);
 
   List<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
   List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams);
@@ -73,36 +83,116 @@ public interface SortedSetBinaryCommands {
 
   long zcount(byte[] key, byte[] min, byte[] max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrangeByScore(byte[] key, double min, double max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrangeByScore(byte[] key, double max, double min);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   long zremrangeByRank(byte[] key, long start, long stop);
@@ -113,12 +203,32 @@ public interface SortedSetBinaryCommands {
 
   long zlexcount(byte[] key, byte[] min, byte[] max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(byte[], byte[])}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(byte[], byte[])}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(byte[], byte[])} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
+  /**
+   * @deprecated Use {@link SortedSetBinaryCommands#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(byte[], byte[])} and {@link ZRangeParams#rev()}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   long zremrangeByLex(byte[] key, byte[] min, byte[] max);

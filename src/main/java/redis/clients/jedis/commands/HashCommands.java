@@ -74,6 +74,11 @@ public interface HashCommands {
   
   long hsetnx(String key, String field, String value);
 
+  /**
+   * @deprecated Use {@link HashCommands#hset(String, Map)}.
+   * Deprecated since Redis 4.0.0.
+   */
+  @Deprecated
   String hmset(String key, Map<String, String> hash);
 
   List<String> hmget(String key, String... fields);

@@ -354,7 +354,11 @@ public interface ListCommands {
    * @param srckey
    * @param dstkey
    * @return Bulk reply
+   * @deprecated Use {@link ListCommands#lmove(String, String, ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
    */
+  @Deprecated
   String rpoplpush(String srckey, String dstkey);
 
   /**
@@ -368,7 +372,11 @@ public interface ListCommands {
    * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
    *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @return The element being popped from source and pushed to destination
+   * @deprecated Use {@link ListCommands#blmove(String, String, ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
    */
+  @Deprecated
   String brpoplpush(String source, String destination, int timeout);
 
   /**

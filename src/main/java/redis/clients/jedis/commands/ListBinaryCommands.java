@@ -53,8 +53,20 @@ public interface ListBinaryCommands {
 
   KeyValue<byte[], byte[]> brpop(double timeout, byte[]... keys);
 
+  /**
+   * @deprecated Use {@link ListBinaryCommands#lmove(byte[], byte[], ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   byte[] rpoplpush(byte[] srckey, byte[] dstkey);
 
+  /**
+   * @deprecated Use {@link ListBinaryCommands#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   byte[] brpoplpush(byte[] source, byte[] destination, int timeout);
 
   byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);

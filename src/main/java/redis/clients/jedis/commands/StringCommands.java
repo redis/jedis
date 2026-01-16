@@ -124,7 +124,7 @@ public interface StringCommands extends BitCommands {
   String getSet(String key, String value);
 
   /**
-   * <b><a href="http://redis.io/commands/setnx">SetNE Command</a></b>
+   * <b><a href="http://redis.io/commands/setnx">SetNX Command</a></b>
    * SETNX works exactly like {@link StringCommands#set(String, String) SET} with the only difference that if
    * the key already exists no operation is performed. SETNX actually means "SET if Not Exists".
    * <p>
@@ -132,7 +132,10 @@ public interface StringCommands extends BitCommands {
    * @param key
    * @param value
    * @return 1 if the key was set, 0 otherwise
+   * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#nx()}.
+   * Deprecated since Redis 2.6.12.
    */
+  @Deprecated
   long setnx(String key, String value);
 
   /**
@@ -146,7 +149,10 @@ public interface StringCommands extends BitCommands {
    * @param seconds
    * @param value
    * @return OK
+   * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#ex(long)}.
+   * Deprecated since Redis 2.6.12.
    */
+  @Deprecated
   String setex(String key, long seconds, String value);
 
   /**
@@ -159,7 +165,10 @@ public interface StringCommands extends BitCommands {
    * @param milliseconds
    * @param value
    * @return OK
+   * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#px(long)}.
+   * Deprecated since Redis 2.6.12.
    */
+  @Deprecated
   String psetex(String key, long milliseconds, String value);
 
   /**
@@ -354,7 +363,10 @@ public interface StringCommands extends BitCommands {
    * @param start
    * @param end
    * @return The substring
+   * @deprecated Use {@link StringCommands#getrange(String, long, long)}.
+   * Deprecated since Redis 2.0.0.
    */
+  @Deprecated
   String substr(String key, int start, int end);
 
   /**

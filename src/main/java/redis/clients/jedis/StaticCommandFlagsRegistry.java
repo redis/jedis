@@ -18,6 +18,12 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
   // Empty flags constant for commands with no flags
   public static final EnumSet<CommandFlag> EMPTY_FLAGS = EnumSet.noneOf(CommandFlag.class);
 
+  // Default request policy for commands without a specific policy
+  public static final RequestPolicy DEFAULT_REQUEST_POLICY = RequestPolicy.DEFAULT;
+
+  // Default response policy for commands without a specific policy
+  public static final ResponsePolicy DEFAULT_RESPONSE_POLICY = ResponsePolicy.DEFAULT;
+
   // Singleton instance
   private static final StaticCommandFlagsRegistry REGISTRY = createRegistry();
 
@@ -53,61 +59,77 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
    * command arguments. This approach significantly reduces memory usage by sharing flag instances
    * across all CommandObject instances.
    * <p>
-   * For commands with subcommands (e.g., FUNCTION LOAD, ACL SETUSER), this method implements a
-   * hierarchical lookup strategy:
-   * <ol>
-   * <li>First, retrieve the parent command using CommandArguments.getCommand()</li>
-   * <li>Check if this is a parent command (has subcommands in the registry)</li>
-   * <li>If it is a parent command, attempt to get the child/subcommand by:
-   * <ul>
-   * <li>Extracting the second argument from the CommandArguments object</li>
-   * <li>Matching this second argument against the child items of the parent command</li>
-   * </ul>
-   * </li>
-   * <li>Return the appropriate flags based on whether a child command was found or just use the
-   * parent command's flags</li>
-   * </ol>
+   * Uses the same hierarchical lookup strategy as {@link #lookupCommandMeta(CommandArguments)}.
    * @param commandArguments the command arguments containing the command and its parameters
    * @return EnumSet of CommandFlag for this command, or empty set if command has no flags
    */
   @Override
   public EnumSet<CommandFlag> getFlags(CommandArguments commandArguments) {
-    // Get the parent command
-    ProtocolCommand cmd = commandArguments.getCommand();
-    byte[] raw = cmd.getRaw();
-
-    // Convert to uppercase using SafeEncoder utility (faster than String.toUpperCase())
-    byte[] uppercaseBytes = SafeEncoder.toUpperCase(raw);
-
-    // Look up the parent command in the registry using byte array key
-    // Object registryEntry = COMMAND_FLAGS_REGISTRY.get(uppercaseBytes);
-    CommandMeta commandMeta = commands.getCommand(uppercaseBytes);
-
+    CommandMeta commandMeta = lookupCommandMeta(commandArguments);
     if (commandMeta == null) {
-      // Command not found in registry
       return EMPTY_FLAGS;
     }
+    return commandMeta.getFlags();
+  }
 
-    if (!commandMeta.hasSubcommands()) {
-      // Check if this is a simple command without subcommands
-      return commandMeta.getFlags();
-    } else {
-      // Parent command with subcommands
-      // Try to extract the subcommand from the second argument
+  /**
+   * Get the request policy for a given command. The request policy helps clients determine which
+   * shards to send the command to in a clustered deployment.
+   * <p>
+   * Uses the same hierarchical lookup strategy as {@link #getFlags(CommandArguments)}.
+   * @param commandArguments the command arguments containing the command and its parameters
+   * @return RequestPolicy for this command, or DEFAULT if no specific policy is defined
+   */
+  @Override
+  public RequestPolicy getRequestPolicy(CommandArguments commandArguments) {
+    CommandMeta commandMeta = lookupCommandMeta(commandArguments);
+    if (commandMeta == null) {
+      return DEFAULT_REQUEST_POLICY;
+    }
+    return commandMeta.getRequestPolicy();
+  }
+
+  /**
+   * Get the response policy for a given command. The response policy helps clients determine how to
+   * aggregate replies from multiple shards in a cluster.
+   * <p>
+   * Uses the same hierarchical lookup strategy as {@link #getFlags(CommandArguments)}.
+   * @param commandArguments the command arguments containing the command and its parameters
+   * @return ResponsePolicy for this command, or DEFAULT if no specific policy is defined
+   */
+  @Override
+  public ResponsePolicy getResponsePolicy(CommandArguments commandArguments) {
+    CommandMeta commandMeta = lookupCommandMeta(commandArguments);
+    if (commandMeta == null) {
+      return DEFAULT_RESPONSE_POLICY;
+    }
+    return commandMeta.getResponsePolicy();
+  }
+
+  /**
+   * Common lookup logic for finding the CommandMeta for a given command. Handles both simple
+   * commands and commands with subcommands.
+   */
+  private CommandMeta lookupCommandMeta(CommandArguments commandArguments) {
+    ProtocolCommand cmd = commandArguments.getCommand();
+    byte[] raw = cmd.getRaw();
+    byte[] uppercaseBytes = SafeEncoder.toUpperCase(raw);
+
+    CommandMeta commandMeta = commands.getCommand(uppercaseBytes);
+    if (commandMeta == null) {
+      return null;
+    }
+
+    if (commandMeta.hasSubcommands()) {
       byte[] subCommand = getSubCommand(commandArguments);
       if (subCommand != null) {
         CommandMeta subCommandMeta = commandMeta.getSubcommand(subCommand);
         if (subCommandMeta != null) {
-          return subCommandMeta.getFlags();
-        } else {
-          // (second argument exists but not a recognized subcommand , return parent flags
-          return commandMeta.getFlags();
+          return subCommandMeta;
         }
-      } else {
-        // no second argument (no subcommand), return parent flags
-        return commandMeta.getFlags();
       }
     }
+    return commandMeta;
   }
 
   private byte[] getSubCommand(CommandArguments commandArguments) {
@@ -149,15 +171,25 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
     }
   }
 
-  //
+  /**
+   * Internal class to hold command metadata including flags and policies.
+   */
   static class CommandMeta {
 
     final EnumSet<CommandFlag> flags;
-
+    final RequestPolicy requestPolicy;
+    final ResponsePolicy responsePolicy;
     final Commands subcommands = new Commands();
 
     CommandMeta(EnumSet<CommandFlag> flags) {
+      this(flags, DEFAULT_REQUEST_POLICY, DEFAULT_RESPONSE_POLICY);
+    }
+
+    CommandMeta(EnumSet<CommandFlag> flags, RequestPolicy requestPolicy,
+        ResponsePolicy responsePolicy) {
       this.flags = flags;
+      this.requestPolicy = requestPolicy != null ? requestPolicy : DEFAULT_REQUEST_POLICY;
+      this.responsePolicy = responsePolicy != null ? responsePolicy : DEFAULT_RESPONSE_POLICY;
     }
 
     void putSubCommand(byte[] subCommand, CommandMeta subCommandMeta) {
@@ -172,8 +204,15 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
       if (flags == null) {
         return EMPTY_FLAGS;
       }
-
       return flags;
+    }
+
+    RequestPolicy getRequestPolicy() {
+      return requestPolicy;
+    }
+
+    ResponsePolicy getResponsePolicy() {
+      return responsePolicy;
     }
 
     CommandMeta getSubcommand(byte[] subcommand) {
@@ -181,12 +220,22 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
     }
   }
 
+  /**
+   * Builder for constructing StaticCommandFlagsRegistry instances.
+   */
   static public class Builder {
 
     private final Commands commands = new Commands();
 
     public Builder register(String name, EnumSet<CommandFlag> flags) {
       commands.register(SafeEncoder.encode(name), new CommandMeta(flags));
+      return this;
+    }
+
+    public Builder register(String name, EnumSet<CommandFlag> flags, RequestPolicy requestPolicy,
+        ResponsePolicy responsePolicy) {
+      commands.register(SafeEncoder.encode(name),
+        new CommandMeta(flags, requestPolicy, responsePolicy));
       return this;
     }
 
@@ -199,6 +248,20 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
 
       byte[] subCmdName = SafeEncoder.encode(subcommand);
       commands.getCommand(cmdName).putSubCommand(subCmdName, new CommandMeta(flags));
+      return this;
+    }
+
+    public Builder register(String name, String subcommand, EnumSet<CommandFlag> flags,
+        RequestPolicy requestPolicy, ResponsePolicy responsePolicy) {
+      byte[] cmdName = SafeEncoder.encode(name);
+
+      if (!commands.containsKey(cmdName)) {
+        commands.register(SafeEncoder.encode(name), new CommandMeta(EMPTY_FLAGS));
+      }
+
+      byte[] subCmdName = SafeEncoder.encode(subcommand);
+      commands.getCommand(cmdName).putSubCommand(subCmdName,
+        new CommandMeta(flags, requestPolicy, responsePolicy));
       return this;
     }
 

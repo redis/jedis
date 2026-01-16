@@ -215,6 +215,13 @@ public class CommandArguments implements Iterable<Rawable> {
     return keys;
   }
 
+  /**
+   * @return true if this command has no keys, false otherwise
+   */
+  public boolean isKeyless() {
+    return keys.isEmpty();
+  }
+
   public boolean isBlocking() {
     return blocking;
   }

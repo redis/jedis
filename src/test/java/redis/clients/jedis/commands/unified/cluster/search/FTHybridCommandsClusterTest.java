@@ -32,7 +32,7 @@ public class FTHybridCommandsClusterTest extends FTHybridCommandsTestBase {
   protected UnifiedJedis createTestClient() {
     UnifiedJedis cluster = ClusterCommandsTestHelper.getCleanCluster(protocol, endpoint);
     cluster.setBroadcastAndRoundRobinConfig(
-        () -> JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT);
+      () -> JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT);
     return cluster;
   }
 }

@@ -3716,6 +3716,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<HybridReply> ftHybrid(String indexName, HybridParams hybridParams) {
+    return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
+  }
+
+  @Override
   public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }

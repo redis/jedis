@@ -4225,6 +4225,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public HybridReply ftHybrid(String indexName, HybridParams hybridParams) {
+    return executeCommand(commandObjects.ftHybrid(indexName, hybridParams));
+  }
+
+  @Override
   @Deprecated
   public Map<String, Object> ftConfigGet(String option) {
     return executeCommand(commandObjects.ftConfigGet(option));

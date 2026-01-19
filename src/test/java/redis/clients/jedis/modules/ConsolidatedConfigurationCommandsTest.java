@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.redis.test.annotations.SinceRedisVersion;
 import java.util.Collections;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -23,6 +24,11 @@ public class ConsolidatedConfigurationCommandsTest extends RedisModuleCommandsTe
 
   public ConsolidatedConfigurationCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
+  }
+
+  @BeforeAll
+  public static void prepare() {
+    RedisModuleCommandsTestBase.prepare();
   }
 
   @Test

@@ -94,6 +94,24 @@ public class CommandFlagsRegistryGenerator {
     RESPONSE_POLICY_MAPPING.put("special", "SPECIAL");
   }
 
+  /**
+   * Manual command flag overrides that take precedence over Redis server metadata. These overrides
+   * allow defining custom flag combinations, request policies, and response policies for specific
+   * commands when the server-provided metadata is incorrect or needs customization.
+   * <p>
+   * Key: Command name (uppercase, e.g., "KEYS" or "ACL CAT" for subcommands) Value: CommandMetadata
+   * with the override values
+   * <p>
+   * To add a new override, add an entry to this map in the static initializer block.
+   */
+  private static final Map<String, CommandMetadata> MANUAL_OVERRIDES = new LinkedHashMap<>();
+  static {
+    // KEYS command: Override request_policy from ALL_SHARDS to SPECIAL
+    // The KEYS command requires special handling in cluster mode as it needs to be
+    // executed on all nodes and results aggregated in a specific way
+    MANUAL_OVERRIDES.put("KEYS", new CommandMetadata(Arrays.asList("readonly"), "special", null));
+  }
+
   public CommandFlagsRegistryGenerator(String host, int port) {
     this.redisHost = host;
     this.redisPort = port;
@@ -174,6 +192,7 @@ public class CommandFlagsRegistryGenerator {
     Map<String, CommandMetadata> result = new LinkedHashMap<>();
 
     try (Jedis jedis = new Jedis(redisHost, redisPort)) {
+      jedis.auth("foobared");
       jedis.connect();
 
       // Collect server metadata
@@ -339,7 +358,16 @@ public class CommandFlagsRegistryGenerator {
 
     for (Map.Entry<String, CommandMetadata> entry : commandsMetadata.entrySet()) {
       String command = entry.getKey();
-      CommandMetadata metadata = entry.getValue();
+      String commandUpper = command.toUpperCase();
+
+      // Check for manual override first - overrides take precedence over server metadata
+      CommandMetadata metadata;
+      if (MANUAL_OVERRIDES.containsKey(commandUpper)) {
+        metadata = MANUAL_OVERRIDES.get(commandUpper);
+        System.out.println("  Applying manual override for command: " + commandUpper);
+      } else {
+        metadata = entry.getValue();
+      }
 
       // Convert JSON flags to Java enum names and sort
       List<String> javaFlags = metadata.flags.stream().map(f -> FLAG_MAPPING.get(f.toLowerCase()))
@@ -354,7 +382,7 @@ public class CommandFlagsRegistryGenerator {
           : null;
 
       MetadataKey key = new MetadataKey(javaFlags, requestPolicy, responsePolicy);
-      result.computeIfAbsent(key, k -> new ArrayList<>()).add(command.toUpperCase());
+      result.computeIfAbsent(key, k -> new ArrayList<>()).add(commandUpper);
     }
 
     return result;

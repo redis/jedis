@@ -35,16 +35,15 @@ public class ClusterReplyAggregatorTest {
     byte[] first = new byte[] { 1, 2, 3 };
     byte[] second = new byte[] { 4, 5, 6 };
 
-    ClusterAggregationException exception = assertThrows(
-        ClusterAggregationException.class,
-        () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw ClusterAggregationException when byte arrays differ"
-    );
+    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
+      "Should throw ClusterAggregationException when byte arrays differ");
 
-    assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-        "Exception message should contain policy information");
+    assertTrue(
+      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
+      "Exception message should contain policy information");
     assertTrue(exception.getMessage().contains("vs"),
-        "Exception message should contain 'vs' to show comparison");
+      "Exception message should contain 'vs' to show comparison");
   }
 
   // ==================== aggregateAllSucceeded - Long Tests ====================
@@ -64,18 +63,17 @@ public class ClusterReplyAggregatorTest {
     Long first = 42L;
     Long second = 100L;
 
-    ClusterAggregationException exception = assertThrows(
-        ClusterAggregationException.class,
-        () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw ClusterAggregationException when Long values differ"
-    );
+    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
+      "Should throw ClusterAggregationException when Long values differ");
 
-    assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-        "Exception message should contain policy information");
+    assertTrue(
+      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
+      "Exception message should contain policy information");
     assertTrue(exception.getMessage().contains("42"),
-        "Exception message should contain the first value");
+      "Exception message should contain the first value");
     assertTrue(exception.getMessage().contains("100"),
-        "Exception message should contain the second value");
+      "Exception message should contain the second value");
   }
 
   // ==================== aggregateAllSucceeded - Integer Tests ====================
@@ -95,18 +93,17 @@ public class ClusterReplyAggregatorTest {
     Integer first = 123;
     Integer second = 456;
 
-    ClusterAggregationException exception = assertThrows(
-        ClusterAggregationException.class,
-        () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw ClusterAggregationException when Integer values differ"
-    );
+    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
+      "Should throw ClusterAggregationException when Integer values differ");
 
-    assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-        "Exception message should contain policy information");
+    assertTrue(
+      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
+      "Exception message should contain policy information");
     assertTrue(exception.getMessage().contains("123"),
-        "Exception message should contain the first value");
+      "Exception message should contain the first value");
     assertTrue(exception.getMessage().contains("456"),
-        "Exception message should contain the second value");
+      "Exception message should contain the second value");
   }
 
   // ==================== aggregateAllSucceeded - Double Tests ====================
@@ -126,18 +123,17 @@ public class ClusterReplyAggregatorTest {
     Double first = 3.14159;
     Double second = 2.71828;
 
-    ClusterAggregationException exception = assertThrows(
-        ClusterAggregationException.class,
-        () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw ClusterAggregationException when Double values differ"
-    );
+    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
+      "Should throw ClusterAggregationException when Double values differ");
 
-    assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-        "Exception message should contain policy information");
+    assertTrue(
+      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
+      "Exception message should contain policy information");
     assertTrue(exception.getMessage().contains("3.14159"),
-        "Exception message should contain the first value");
+      "Exception message should contain the first value");
     assertTrue(exception.getMessage().contains("2.71828"),
-        "Exception message should contain the second value");
+      "Exception message should contain the second value");
   }
 
   // ==================== aggregateAllSucceeded - String Tests ====================
@@ -157,18 +153,16 @@ public class ClusterReplyAggregatorTest {
     String first = "OK";
     String second = "ERROR";
 
-    ClusterAggregationException exception = assertThrows(
-        ClusterAggregationException.class,
-        () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw ClusterAggregationException when String values differ"
-    );
+    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
+      "Should throw ClusterAggregationException when String values differ");
 
-    assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-        "Exception message should contain policy information");
+    assertTrue(
+      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
+      "Exception message should contain policy information");
     assertTrue(exception.getMessage().contains("OK"),
-        "Exception message should contain the first value");
+      "Exception message should contain the first value");
     assertTrue(exception.getMessage().contains("ERROR"),
-        "Exception message should contain the second value");
+      "Exception message should contain the second value");
   }
 }
-

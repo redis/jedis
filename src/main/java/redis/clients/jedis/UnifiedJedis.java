@@ -38,7 +38,6 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
-import redis.clients.jedis.search.aggr.AggregateIterator;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.FtAggregateIteration;
@@ -4062,7 +4061,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param params limit will be ignored
    * @return search iteration
    */
-  @Deprecated
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query, FTSearchParams params) {
     return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query, params);
   }
@@ -4079,7 +4077,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param query limit will be ignored
    * @return search iteration
    */
-  @Deprecated
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
     return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query);
   }
@@ -4121,38 +4118,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param aggr cursor must be set
    * @return aggregate iteration
    */
-  @Deprecated
   public FtAggregateIteration ftAggregateIteration(String indexName, AggregationBuilder aggr) {
     return new FtAggregateIteration(provider, indexName, aggr);
-  }
-
-  /**
-   * Creates an iterator for aggregation results with cursor support.
-   * This method provides a clean, connection-aware iterator that ensures cursor operations
-   * are executed on the same Redis node.
-   *
-   * <p>Usage example:
-   * <pre>{@code
-   * AggregationBuilder aggr = new AggregationBuilder()
-   *     .groupBy("@category", Reducers.sum("@price").as("total"))
-   *     .cursor(50, 30000);
-   *
-   * try (AggregateIterator iterator = jedis.ftAggregateIterator("products", aggr)) {
-   *     while (iterator.hasNext()) {
-   *         AggregationResult batch = iterator.next();
-   *         // Process batch - access rows via batch.getRows()
-   *     }
-   * }
-   * }</pre>
-   *
-   * @param indexName the search index name
-   * @param aggr aggregation builder with cursor configuration
-   * @return aggregate iterator for cursor-based pagination
-   * @throws IllegalArgumentException if aggregation doesn't have cursor configured
-   * @since 6.1.0
-   */
-  public AggregateIterator ftAggregateIterator(String indexName, AggregationBuilder aggr) {
-    return new AggregateIterator(provider, indexName, aggr);
   }
 
   @Override

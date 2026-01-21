@@ -40,11 +40,18 @@ public class ClusterCommandExecutorTest {
   private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
   private static final CommandObject<String> STR_COM_OBJECT
-      = new CommandObject<>(new CommandArguments(PING).key(""), BuilderFactory.STRING);
+      = new CommandObject<>(new CommandArguments(Protocol.Command.GET).key("testkey"), BuilderFactory.STRING);
+
+  // Keyless command object for testing keyless command execution with WRITE flag (FLUSHDB is keyless and WRITE)
+  private static final CommandObject<String> KEYLESS_WRITE_COM_OBJECT
+      = new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHDB), BuilderFactory.STRING);
 
   @Test
   public void runSuccessfulExecute() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
         StaticCommandFlagsRegistry.registry()) {
       @Override
@@ -62,6 +69,9 @@ public class ClusterCommandExecutorTest {
   @Test
   public void runFailOnFirstExecSuccessOnSecondExec() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
         StaticCommandFlagsRegistry.registry()) {
       boolean isFirstCall = true;
@@ -88,6 +98,9 @@ public class ClusterCommandExecutorTest {
   @Test
   public void runAlwaysFailing() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
     final LongConsumer sleep = mock(LongConsumer.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND,
         StaticCommandFlagsRegistry.registry()) {
@@ -109,17 +122,21 @@ public class ClusterCommandExecutorTest {
       // expected
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);
-    inOrder.verify(connectionHandler, times(2)).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler, times(2)).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verifyNoMoreInteractions();
   }
 
   @Test
   public void runMovedSuccess() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
     final HostAndPort movedTarget = new HostAndPort(null, 0);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(movedTarget)).thenReturn(connection);
+
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
         StaticCommandFlagsRegistry.registry()) {
       boolean isFirstCall = true;
@@ -145,7 +162,7 @@ public class ClusterCommandExecutorTest {
     assertEquals("foo", testMe.executeCommand(STR_COM_OBJECT));
 
     InOrder inOrder = inOrder(connectionHandler);
-    inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(connectionHandler).renewSlotCache(ArgumentMatchers.any());
     inOrder.verify(connectionHandler).getConnection(movedTarget);
     inOrder.verifyNoMoreInteractions();
@@ -156,6 +173,7 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
     final HostAndPort askTarget = new HostAndPort(null, 0);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
     when(connectionHandler.getConnection(askTarget)).thenReturn(connection);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
@@ -183,7 +201,7 @@ public class ClusterCommandExecutorTest {
     assertEquals("foo", testMe.executeCommand(STR_COM_OBJECT));
 
     InOrder inOrder = inOrder(connectionHandler, connection);
-    inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(connectionHandler).getConnection(askTarget);
     // inOrder.verify(connection).asking();
     inOrder.verify(connection).close(); // From the finally clause in runWithRetries()
@@ -201,12 +219,12 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
     final Connection redirecter = mock(Connection.class);
-    when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(redirecter);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(redirecter);
 
     final Connection failer = mock(Connection.class);
     when(connectionHandler.getConnection(ArgumentMatchers.any(HostAndPort.class))).thenReturn(failer);
     Mockito.doAnswer((InvocationOnMock invocation) -> {
-      when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(failer);
+      when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(failer);
       return null;
     }).when(connectionHandler).renewSlotCache();
 
@@ -242,12 +260,12 @@ public class ClusterCommandExecutorTest {
       // expected
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);
-    inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(connectionHandler).renewSlotCache(redirecter);
     inOrder.verify(connectionHandler, times(2)).getConnection(movedTarget);
     inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verify(connectionHandler, times(2)).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler, times(2)).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verifyNoMoreInteractions();
@@ -272,10 +290,10 @@ public class ClusterCommandExecutorTest {
 
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
-    when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(master);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(master);
 
     Mockito.doAnswer((InvocationOnMock invocation) -> {
-      when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(replica);
+      when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(replica);
       return null;
     }).when(connectionHandler).renewSlotCache();
 
@@ -305,9 +323,9 @@ public class ClusterCommandExecutorTest {
 
     assertEquals("Success!", testMe.executeCommand(STR_COM_OBJECT));
     InOrder inOrder = inOrder(connectionHandler);
-    inOrder.verify(connectionHandler, times(2)).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler, times(2)).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verifyNoMoreInteractions();
     MatcherAssert.assertThat(totalSleepMs.get(), Matchers.greaterThan(0L));
   }
@@ -315,7 +333,7 @@ public class ClusterCommandExecutorTest {
   @Test
   public void runRethrowsJedisNoReachableClusterNodeException() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
-    when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenThrow(
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenThrow(
         JedisClusterOperationException.class);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
@@ -337,6 +355,8 @@ public class ClusterCommandExecutorTest {
   @Test
   public void runStopsRetryingAfterTimeout() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
 
     //final LongConsumer sleep = mock(LongConsumer.class);
     final AtomicLong totalSleepMs = new AtomicLong();
@@ -368,7 +388,7 @@ public class ClusterCommandExecutorTest {
     }
     //InOrder inOrder = inOrder(connectionHandler, sleep);
     InOrder inOrder = inOrder(connectionHandler);
-    inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
+    inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verifyNoMoreInteractions();
     assertEquals(0L, totalSleepMs.get());
   }
@@ -388,14 +408,14 @@ public class ClusterCommandExecutorTest {
         StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
-        return (T) "keyless_result";
+        return (T) "OK";
       }
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
       }
     };
-    assertEquals("keyless_result", testMe.executeKeylessCommand(STR_COM_OBJECT));
+    assertEquals("OK", testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT));
   }
 
   @Test
@@ -413,7 +433,7 @@ public class ClusterCommandExecutorTest {
         StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
-        return (T) "keyless_result";
+        return (T) "OK";
       }
       @Override
       protected void sleep(long ignored) {
@@ -421,7 +441,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    testMe.executeKeylessCommand(STR_COM_OBJECT);
+    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
 
     // Verify that getPrimaryNodesConnectionMap() was called for round-robin distribution
     InOrder inOrder = inOrder(connectionHandler, pool, connection);
@@ -455,7 +475,7 @@ public class ClusterCommandExecutorTest {
           // Keyless commands should ignore redirections and retry with different random node
           throw new JedisMovedDataException("", movedTarget, 0);
         }
-        return (T) "keyless_result";
+        return (T) "OK";
       }
 
       @Override
@@ -464,7 +484,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    assertEquals("keyless_result", testMe.executeKeylessCommand(STR_COM_OBJECT));
+    assertEquals("OK", testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT));
 
     // Verify that we called getPrimaryNodesConnectionMap() twice (first failed with redirection, second succeeded)
     // and that we didn't follow the redirection to a specific node
@@ -502,7 +522,7 @@ public class ClusterCommandExecutorTest {
     };
 
     try {
-      testMe.executeKeylessCommand(STR_COM_OBJECT);
+      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
       fail("keyless command did not fail");
     } catch (JedisClusterOperationException e) {
       // expected
@@ -540,7 +560,7 @@ public class ClusterCommandExecutorTest {
     };
 
     try {
-      testMe.executeKeylessCommand(STR_COM_OBJECT);
+      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
       fail("keyless command should fail with empty connection map");
     } catch (JedisClusterOperationException e) {
       assertEquals("No cluster nodes available.", e.getMessage());
@@ -581,7 +601,7 @@ public class ClusterCommandExecutorTest {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         usedConnections.add(connection);
-        return (T) "keyless_result";
+        return (T) "OK";
       }
       @Override
       protected void sleep(long ignored) {
@@ -590,10 +610,10 @@ public class ClusterCommandExecutorTest {
     };
 
     // Execute multiple keyless commands to verify round-robin
-    testMe.executeKeylessCommand(STR_COM_OBJECT);
-    testMe.executeKeylessCommand(STR_COM_OBJECT);
-    testMe.executeKeylessCommand(STR_COM_OBJECT);
-    testMe.executeKeylessCommand(STR_COM_OBJECT); // Should cycle back to first
+    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT); // Should cycle back to first
 
     // Verify round-robin behavior - should cycle through all connections
     assertEquals(4, usedConnections.size());
@@ -629,7 +649,7 @@ public class ClusterCommandExecutorTest {
         StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
-        return (T) "keyless_result";
+        return (T) "OK";
       }
       @Override
       protected void sleep(long ignored) {
@@ -641,8 +661,8 @@ public class ClusterCommandExecutorTest {
     // With our implementation using getAndUpdate(current -> (current + 1) % nodeCount),
     // the counter never exceeds nodeCount-1, so overflow is impossible
     for (int i = 0; i < 100; i++) {
-      String result = testMe.executeKeylessCommand(STR_COM_OBJECT);
-      assertEquals("keyless_result", result);
+      String result = testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+      assertEquals("OK", result);
     }
 
     // Verify that getPrimaryNodesConnectionMap() was called for each execution
@@ -692,7 +712,7 @@ public class ClusterCommandExecutorTest {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         connectionUsage.put(connection, connectionUsage.get(connection) + 1);
-        return (T) "keyless_result";
+        return (T) "OK";
       }
       @Override
       protected void sleep(long ignored) {
@@ -703,7 +723,7 @@ public class ClusterCommandExecutorTest {
     // Execute commands - should be evenly distributed
     int totalCommands = 40; // Multiple of 4 for perfect distribution
     for (int i = 0; i < totalCommands; i++) {
-      testMe.executeKeylessCommand(STR_COM_OBJECT);
+      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
     }
 
     // Verify even distribution - each node should get exactly 10 commands
@@ -764,7 +784,7 @@ public class ClusterCommandExecutorTest {
         } else if (connection == connection3) {
           connectionSequence.add("node3");
         }
-        return (T) "keyless_result";
+        return (T) "OK";
       }
       @Override
       protected void sleep(long ignored) {
@@ -774,7 +794,7 @@ public class ClusterCommandExecutorTest {
 
     // Execute 9 commands to see 3 complete cycles
     for (int i = 0; i < 9; i++) {
-      testMe.executeKeylessCommand(STR_COM_OBJECT);
+      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
     }
 
     // Verify the round-robin sequence

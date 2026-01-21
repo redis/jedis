@@ -1,10 +1,10 @@
 package redis.clients.jedis.executors;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import redis.clients.jedis.CommandFlagsRegistry;
-import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.exceptions.ClusterAggregationException;
+import redis.clients.jedis.exceptions.UnsupportedAggregationException;
 
 /**
  * Utility class for aggregating replies from multiple Redis cluster nodes.
@@ -69,15 +69,13 @@ public final class ClusterReplyAggregator {
       case ALL_SUCCEEDED:
         return aggregateAllSucceeded(existing, newReply);
 
-      case ONE_SUCCEEDED:
-        // Return first non-null reply (already handled above)
-        return existing;
-
       case SPECIAL:
+        // NOTE(imalinovskyi): Handling of special commands (SCAN, FT.CURSOR, etc.) should happen
+        // in the custom abstractions.
+      case ONE_SUCCEEDED:
       case DEFAULT:
       default:
-        // Use legacy hardcoded logic for backward compatibility
-        return aggregateLegacy(existing, newReply);
+        return existing;
     }
   }
 
@@ -95,8 +93,9 @@ public final class ClusterReplyAggregator {
     if (existing instanceof Double && newReply instanceof Double) {
       return (T) Double.valueOf((Double) existing + (Double) newReply);
     }
-    // Fallback to legacy behavior
-    return aggregateLegacy(existing, newReply);
+    throw new UnsupportedAggregationException(
+        "AGG_SUM policy requires numeric types (Long, Integer, Double), but got: "
+            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
@@ -108,8 +107,9 @@ public final class ClusterReplyAggregator {
       Comparable<Object> existingComp = (Comparable<Object>) existing;
       return existingComp.compareTo(newReply) <= 0 ? existing : newReply;
     }
-    // Fallback to legacy behavior
-    return aggregateLegacy(existing, newReply);
+    throw new UnsupportedAggregationException(
+        "AGG_MIN policy requires Comparable types, but got: "
+            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
@@ -121,8 +121,9 @@ public final class ClusterReplyAggregator {
       Comparable<Object> existingComp = (Comparable<Object>) existing;
       return existingComp.compareTo(newReply) >= 0 ? existing : newReply;
     }
-    // Fallback to legacy behavior
-    return aggregateLegacy(existing, newReply);
+    throw new UnsupportedAggregationException(
+        "AGG_MAX policy requires Comparable types, but got: "
+            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
@@ -139,8 +140,9 @@ public final class ClusterReplyAggregator {
       boolean newBool = (Long) newReply != 0;
       return (T) Long.valueOf((existingBool && newBool) ? 1L : 0L);
     }
-    // Fallback to legacy behavior
-    return aggregateLegacy(existing, newReply);
+    throw new UnsupportedAggregationException(
+        "AGG_LOGICAL_AND policy requires Boolean or Long types, but got: "
+            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
@@ -157,42 +159,31 @@ public final class ClusterReplyAggregator {
       boolean newBool = (Long) newReply != 0;
       return (T) Long.valueOf((existingBool || newBool) ? 1L : 0L);
     }
-    // Fallback to legacy behavior
-    return aggregateLegacy(existing, newReply);
+    throw new UnsupportedAggregationException(
+        "AGG_LOGICAL_OR policy requires Boolean or Long types, but got: "
+            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
    * Return first reply if all are equal, throw exception if different.
+   * Uses Arrays.equals() for byte array comparison.
    */
   public static <T> T aggregateAllSucceeded(T existing, T newReply) {
-    if (existing.equals(newReply)) {
+    if (areEqual(existing, newReply)) {
       return existing;
     }
-    throw new JedisClusterOperationException(
+    throw new ClusterAggregationException(
         "ALL_SUCCEEDED policy requires all replies to be equal, but got different values: "
             + existing + " vs " + newReply);
   }
 
   /**
-   * Legacy aggregation logic for backward compatibility. Handles List concatenation and other
-   * types.
+   * Compare two values for equality, with special handling for byte arrays.
    */
-  @SuppressWarnings("unchecked")
-  public static <T> T aggregateLegacy(T existing, T newReply) {
-    // Sum Long values (for DEL, UNLINK, etc.)
-    if (existing instanceof Long && newReply instanceof Long) {
-      return (T) Long.valueOf((Long) existing + (Long) newReply);
+  private static <T> boolean areEqual(T existing, T newReply) {
+    if (existing instanceof byte[] && newReply instanceof byte[]) {
+      return Arrays.equals((byte[]) existing, (byte[]) newReply);
     }
-
-    // Concatenate Lists (for MGET, etc.)
-    if (existing instanceof List && newReply instanceof List) {
-      List<Object> result = new ArrayList<>((List<Object>) existing);
-      result.addAll((List<Object>) newReply);
-      return (T) result;
-    }
-
-    // For other types, just return the existing value
-    // This handles cases like String "OK" responses
-    return existing;
+    return existing.equals(newReply);
   }
 }

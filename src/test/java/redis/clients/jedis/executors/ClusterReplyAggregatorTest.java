@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.exceptions.ClusterAggregationException;
 
 public class ClusterReplyAggregatorTest {
 
@@ -15,16 +15,10 @@ public class ClusterReplyAggregatorTest {
     byte[] first = new byte[] { 1, 2, 3, 4, 5 };
     byte[] second = new byte[] { 1, 2, 3, 4, 5 };
 
-    // Note: byte arrays use reference equality by default, so equals() returns false
-    // This test documents the current behavior - byte arrays with same content are treated as different
-    JedisClusterOperationException exception = assertThrows(
-        JedisClusterOperationException.class,
-        () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw exception because byte arrays use reference equality"
-    );
+    // Byte arrays with same content should be treated as equal using Arrays.equals()
+    byte[] result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-        "Exception message should contain policy information");
+    assertSame(first, result, "Should return the first byte array when contents are equal");
   }
 
   @Test
@@ -41,10 +35,10 @@ public class ClusterReplyAggregatorTest {
     byte[] first = new byte[] { 1, 2, 3 };
     byte[] second = new byte[] { 4, 5, 6 };
 
-    JedisClusterOperationException exception = assertThrows(
-        JedisClusterOperationException.class,
+    ClusterAggregationException exception = assertThrows(
+        ClusterAggregationException.class,
         () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw JedisClusterOperationException when byte arrays differ"
+        "Should throw ClusterAggregationException when byte arrays differ"
     );
 
     assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
@@ -70,10 +64,10 @@ public class ClusterReplyAggregatorTest {
     Long first = 42L;
     Long second = 100L;
 
-    JedisClusterOperationException exception = assertThrows(
-        JedisClusterOperationException.class,
+    ClusterAggregationException exception = assertThrows(
+        ClusterAggregationException.class,
         () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw JedisClusterOperationException when Long values differ"
+        "Should throw ClusterAggregationException when Long values differ"
     );
 
     assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
@@ -101,10 +95,10 @@ public class ClusterReplyAggregatorTest {
     Integer first = 123;
     Integer second = 456;
 
-    JedisClusterOperationException exception = assertThrows(
-        JedisClusterOperationException.class,
+    ClusterAggregationException exception = assertThrows(
+        ClusterAggregationException.class,
         () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw JedisClusterOperationException when Integer values differ"
+        "Should throw ClusterAggregationException when Integer values differ"
     );
 
     assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
@@ -132,10 +126,10 @@ public class ClusterReplyAggregatorTest {
     Double first = 3.14159;
     Double second = 2.71828;
 
-    JedisClusterOperationException exception = assertThrows(
-        JedisClusterOperationException.class,
+    ClusterAggregationException exception = assertThrows(
+        ClusterAggregationException.class,
         () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw JedisClusterOperationException when Double values differ"
+        "Should throw ClusterAggregationException when Double values differ"
     );
 
     assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
@@ -163,10 +157,10 @@ public class ClusterReplyAggregatorTest {
     String first = "OK";
     String second = "ERROR";
 
-    JedisClusterOperationException exception = assertThrows(
-        JedisClusterOperationException.class,
+    ClusterAggregationException exception = assertThrows(
+        ClusterAggregationException.class,
         () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-        "Should throw JedisClusterOperationException when String values differ"
+        "Should throw ClusterAggregationException when String values differ"
     );
 
     assertTrue(exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),

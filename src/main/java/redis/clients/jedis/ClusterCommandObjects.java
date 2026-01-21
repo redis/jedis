@@ -49,7 +49,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (!JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) {
       throw new IllegalArgumentException(KEYS_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(KEYS).key(pattern).processKey(pattern), BuilderFactory.STRING_SET);
+    return new CommandObject<>(commandArguments(KEYS).key(pattern), BuilderFactory.STRING_SET);
   }
 
   @Override
@@ -57,7 +57,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (!JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) {
       throw new IllegalArgumentException(KEYS_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(KEYS).key(pattern).processKey(pattern), BuilderFactory.BINARY_SET);
+    return new CommandObject<>(commandArguments(KEYS).key(pattern), BuilderFactory.BINARY_SET);
   }
 
   @Override
@@ -71,7 +71,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).processKey(match), BuilderFactory.SCAN_RESPONSE);
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match), BuilderFactory.SCAN_RESPONSE);
   }
 
   @Override
@@ -80,7 +80,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).processKey(match).add(TYPE).add(type), BuilderFactory.SCAN_RESPONSE);
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_RESPONSE);
   }
 
   @Override
@@ -94,7 +94,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).processKey(match), BuilderFactory.SCAN_BINARY_RESPONSE);
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   @Override
@@ -103,7 +103,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).processKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   @Override

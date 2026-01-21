@@ -130,12 +130,12 @@ public class CommandArguments implements Iterable<Rawable> {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
 
-    addKeyInKeys(key);
+    addHashSlotKey(key);
 
     return this;
   }
 
-  private void addKeyInKeys(Object key) {
+  protected final CommandArguments addHashSlotKey(Object key) {
     if (keys.isEmpty()) {
       keys = Collections.singletonList(key);
     } else if (keys.size() == 1) {
@@ -146,6 +146,8 @@ public class CommandArguments implements Iterable<Rawable> {
     } else {
       keys.add(key);
     }
+
+    return this;
   }
 
   public final CommandArguments keys(Object... keys) {

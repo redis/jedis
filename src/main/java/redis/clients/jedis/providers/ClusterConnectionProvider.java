@@ -10,7 +10,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.jedis.ClusterCommandArguments;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -126,12 +125,24 @@ public class ClusterConnectionProvider implements ConnectionProvider {
 
   @Override
   public Connection getConnection(CommandArguments args) {
-    final int slot = ((ClusterCommandArguments) args).getCommandHashSlot();
+    Set<Integer> slots = args.getKeyHashSlots();
+
+    if (slots.size() > 1) {
+      throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
+    }
+
+    int slot = slots.iterator().next();
     return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
   }
 
   public Connection getReplicaConnection(CommandArguments args) {
-    final int slot = ((ClusterCommandArguments) args).getCommandHashSlot();
+    Set<Integer> slots = args.getKeyHashSlots();
+
+    if (slots.size() > 1) {
+      throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
+    }
+
+    int slot = slots.iterator().next();
     return slot >= 0 ? getReplicaConnectionFromSlot(slot) : getConnection();
   }
 

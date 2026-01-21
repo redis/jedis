@@ -40,7 +40,7 @@ public class ClusterCommandExecutorTest {
   private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
   private static final CommandObject<String> STR_COM_OBJECT
-      = new CommandObject<>(new ClusterCommandArguments(PING).key(""), BuilderFactory.STRING);
+      = new CommandObject<>(new CommandArguments(PING).key(""), BuilderFactory.STRING);
 
   @Test
   public void runSuccessfulExecute() {
@@ -791,7 +791,7 @@ public class ClusterCommandExecutorTest {
   public void runKeylessCommandWithReadOnlyCommandUsesAllNodesConnectionMap() {
     // Create a read-only command object using GET command (which has READONLY flag)
     CommandObject<String> readOnlyCommandObject = new CommandObject<>(
-        new ClusterCommandArguments(Protocol.Command.GET).key("testkey"), BuilderFactory.STRING);
+        new CommandArguments(Protocol.Command.GET).key("testkey"), BuilderFactory.STRING);
 
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Map<String, ConnectionPool> allNodesConnectionMap = new HashMap<>();
@@ -832,7 +832,7 @@ public class ClusterCommandExecutorTest {
   public void runKeylessCommandWithWriteCommandUsesPrimaryNodesConnectionMap() {
     // Create a write command object using SET command (which has WRITE flag, not READONLY)
     CommandObject<String> writeCommandObject = new CommandObject<>(
-        new ClusterCommandArguments(Protocol.Command.SET).key("testkey").add("value"),
+        new CommandArguments(Protocol.Command.SET).key("testkey").add("value"),
         BuilderFactory.STRING);
 
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);

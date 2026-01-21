@@ -31,13 +31,6 @@ import redis.clients.jedis.util.KeyValue;
 
 public class ClusterCommandObjects extends CommandObjects {
 
-  @Override
-  protected ClusterCommandArguments commandArguments(ProtocolCommand command) {
-    ClusterCommandArguments comArgs = new ClusterCommandArguments(command);
-    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
-    return comArgs;
-  }
-
   private static final String CLUSTER_UNSUPPORTED_MESSAGE = "Not supported in cluster mode.";
 
   @Override

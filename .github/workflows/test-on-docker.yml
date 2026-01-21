@@ -38,6 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         redis_version:
+          - "8.6"
           - "8.4"
           - "8.2"
           - "8.0"

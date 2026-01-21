@@ -39,9 +39,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.ScanIteration;
-import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -825,7 +823,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     entries.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entries);
 
-    List encodeObj = (List) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    List encodeObj = (List) SafeEncoder.encodeObject(jedis.executeCommand(new CommandArguments(HGETALL).key("hash:test:encode")));
 
     assertEquals(4, encodeObj.size());
     entries.forEach((k, v) -> {
@@ -843,7 +841,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     entries.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entries);
 
-    List<KeyValue> encodeObj = (List<KeyValue>) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    List<KeyValue> encodeObj = (List<KeyValue>) SafeEncoder.encodeObject(jedis.executeCommand(new CommandArguments(HGETALL).key("hash:test:encode")));
 
     assertEquals(2, encodeObj.size());
     encodeObj.forEach(kv -> {
@@ -860,7 +858,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     StreamEntryID entryID = jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
     jedis.xgroupCreate("mystream", "mygroup", null, false);
 
-    Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
+    Object obj = jedis.executeCommand(new CommandArguments(Protocol.Command.XINFO).add("STREAM").key("mystream"));
 
     List encodeObj = (List) SafeEncoder.encodeObject(obj);
 
@@ -887,7 +885,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     StreamEntryID entryID = jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
     jedis.xgroupCreate("mystream", "mygroup", null, false);
 
-    Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
+    Object obj = jedis.executeCommand(new CommandArguments(XINFO).add("STREAM").key("mystream"));
 
     List<KeyValue> encodeObj = (List<KeyValue>) SafeEncoder.encodeObject(obj);
 

@@ -21,7 +21,8 @@ import redis.clients.jedis.exceptions.UnsupportedAggregationException;
  * <li>{@code AGG_MAX} - Return maximum value for comparable types</li>
  * <li>{@code AGG_LOGICAL_AND} - Perform logical AND on Boolean/Long values</li>
  * <li>{@code AGG_LOGICAL_OR} - Perform logical OR on Boolean/Long values</li>
- * <li>{@code ALL_SUCCEEDED} - Return first reply if all are equal, throw exception if different</li>
+ * <li>{@code ALL_SUCCEEDED} - Return first reply if all are equal, throw exception if
+ * different</li>
  * <li>{@code ONE_SUCCEEDED} - Return first non-null reply</li>
  * <li>{@code SPECIAL}/{@code DEFAULT} - Use legacy hardcoded logic for backward compatibility</li>
  * </ul>
@@ -107,9 +108,8 @@ public final class ClusterReplyAggregator {
       Comparable<Object> existingComp = (Comparable<Object>) existing;
       return existingComp.compareTo(newReply) <= 0 ? existing : newReply;
     }
-    throw new UnsupportedAggregationException(
-        "AGG_MIN policy requires Comparable types, but got: "
-            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
+    throw new UnsupportedAggregationException("AGG_MIN policy requires Comparable types, but got: "
+        + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
@@ -121,9 +121,8 @@ public final class ClusterReplyAggregator {
       Comparable<Object> existingComp = (Comparable<Object>) existing;
       return existingComp.compareTo(newReply) >= 0 ? existing : newReply;
     }
-    throw new UnsupportedAggregationException(
-        "AGG_MAX policy requires Comparable types, but got: "
-            + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
+    throw new UnsupportedAggregationException("AGG_MAX policy requires Comparable types, but got: "
+        + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
   /**
@@ -165,8 +164,8 @@ public final class ClusterReplyAggregator {
   }
 
   /**
-   * Return first reply if all are equal, throw exception if different.
-   * Uses Arrays.equals() for byte array comparison.
+   * Return first reply if all are equal, throw exception if different. Uses Arrays.equals() for
+   * byte array comparison.
    */
   public static <T> T aggregateAllSucceeded(T existing, T newReply) {
     if (areEqual(existing, newReply)) {

@@ -218,7 +218,8 @@ public class StaticCommandFlagsRegistryTest {
 
     assertNotNull(policy, "Request policy should not be null");
     // Currently all commands return DEFAULT since policies aren't populated
-    assertEquals(RequestPolicy.DEFAULT, policy, "FUNCTION LOAD should have DEFAULT request policy");
+    assertEquals(RequestPolicy.ALL_SHARDS, policy,
+      "FUNCTION LOAD should have DEFAULT request policy");
   }
 
   // ==================== Response Policy Tests ====================
@@ -263,7 +264,7 @@ public class StaticCommandFlagsRegistryTest {
 
     assertNotNull(policy, "Response policy should not be null");
     // Currently all commands return DEFAULT since policies aren't populated
-    assertEquals(ResponsePolicy.DEFAULT, policy,
+    assertEquals(ResponsePolicy.ALL_SUCCEEDED, policy,
       "FUNCTION LOAD should have DEFAULT response policy");
   }
 

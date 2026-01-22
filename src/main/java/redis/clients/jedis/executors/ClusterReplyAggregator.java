@@ -1,5 +1,6 @@
 package redis.clients.jedis.executors;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import redis.clients.jedis.CommandFlagsRegistry;
@@ -139,8 +140,47 @@ public final class ClusterReplyAggregator {
       boolean newBool = (Long) newReply != 0;
       return (T) Long.valueOf((existingBool && newBool) ? 1L : 0L);
     }
+    // Handle ArrayList<Boolean> - element-wise logical AND
+    if (existing instanceof ArrayList && newReply instanceof ArrayList) {
+      ArrayList<?> existingList = (ArrayList<?>) existing;
+      ArrayList<?> newList = (ArrayList<?>) newReply;
+      if (existingList.size() != newList.size()) {
+        throw new UnsupportedAggregationException(
+            "AGG_LOGICAL_AND policy requires ArrayLists of equal size, but got sizes: "
+                + existingList.size() + " and " + newList.size());
+      }
+      if (!existingList.isEmpty()) {
+        Object firstExisting = existingList.get(0);
+        Object firstNew = newList.get(0);
+        // Handle ArrayList<Boolean>
+        if (firstExisting instanceof Boolean && firstNew instanceof Boolean) {
+          ArrayList<Boolean> existingBoolList = (ArrayList<Boolean>) existing;
+          ArrayList<Boolean> newBoolList = (ArrayList<Boolean>) newReply;
+          ArrayList<Boolean> result = new ArrayList<>(existingBoolList.size());
+          for (int i = 0; i < existingBoolList.size(); i++) {
+            result.add(existingBoolList.get(i) && newBoolList.get(i));
+          }
+          return (T) result;
+        }
+        // Handle ArrayList<Long> - treat 0 as false, non-zero as true
+        if (firstExisting instanceof Long && firstNew instanceof Long) {
+          ArrayList<Long> existingLongList = (ArrayList<Long>) existing;
+          ArrayList<Long> newLongList = (ArrayList<Long>) newReply;
+          ArrayList<Long> result = new ArrayList<>(existingLongList.size());
+          for (int i = 0; i < existingLongList.size(); i++) {
+            boolean existingBool = existingLongList.get(i) != 0;
+            boolean newBool = newLongList.get(i) != 0;
+            result.add((existingBool && newBool) ? 1L : 0L);
+          }
+          return (T) result;
+        }
+      } else {
+        // Empty lists - return empty ArrayList
+        return (T) new ArrayList<>();
+      }
+    }
     throw new UnsupportedAggregationException(
-        "AGG_LOGICAL_AND policy requires Boolean or Long types, but got: "
+        "AGG_LOGICAL_AND policy requires Boolean, Long, ArrayList<Boolean>, or ArrayList<Long> types, but got: "
             + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 
@@ -158,8 +198,47 @@ public final class ClusterReplyAggregator {
       boolean newBool = (Long) newReply != 0;
       return (T) Long.valueOf((existingBool || newBool) ? 1L : 0L);
     }
+    // Handle ArrayList<Boolean> - element-wise logical OR
+    if (existing instanceof ArrayList && newReply instanceof ArrayList) {
+      ArrayList<?> existingList = (ArrayList<?>) existing;
+      ArrayList<?> newList = (ArrayList<?>) newReply;
+      if (existingList.size() != newList.size()) {
+        throw new UnsupportedAggregationException(
+            "AGG_LOGICAL_OR policy requires ArrayLists of equal size, but got sizes: "
+                + existingList.size() + " and " + newList.size());
+      }
+      if (!existingList.isEmpty()) {
+        Object firstExisting = existingList.get(0);
+        Object firstNew = newList.get(0);
+        // Handle ArrayList<Boolean>
+        if (firstExisting instanceof Boolean && firstNew instanceof Boolean) {
+          ArrayList<Boolean> existingBoolList = (ArrayList<Boolean>) existing;
+          ArrayList<Boolean> newBoolList = (ArrayList<Boolean>) newReply;
+          ArrayList<Boolean> result = new ArrayList<>(existingBoolList.size());
+          for (int i = 0; i < existingBoolList.size(); i++) {
+            result.add(existingBoolList.get(i) || newBoolList.get(i));
+          }
+          return (T) result;
+        }
+        // Handle ArrayList<Long> - treat 0 as false, non-zero as true
+        if (firstExisting instanceof Long && firstNew instanceof Long) {
+          ArrayList<Long> existingLongList = (ArrayList<Long>) existing;
+          ArrayList<Long> newLongList = (ArrayList<Long>) newReply;
+          ArrayList<Long> result = new ArrayList<>(existingLongList.size());
+          for (int i = 0; i < existingLongList.size(); i++) {
+            boolean existingBool = existingLongList.get(i) != 0;
+            boolean newBool = newLongList.get(i) != 0;
+            result.add((existingBool || newBool) ? 1L : 0L);
+          }
+          return (T) result;
+        }
+      } else {
+        // Empty lists - return empty ArrayList
+        return (T) new ArrayList<>();
+      }
+    }
     throw new UnsupportedAggregationException(
-        "AGG_LOGICAL_OR policy requires Boolean or Long types, but got: "
+        "AGG_LOGICAL_OR policy requires Boolean, Long, ArrayList<Boolean>, or ArrayList<Long> types, but got: "
             + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
   }
 

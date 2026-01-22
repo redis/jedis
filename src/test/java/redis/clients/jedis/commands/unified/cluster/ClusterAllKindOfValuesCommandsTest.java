@@ -140,7 +140,15 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
   @Test
   @Override
   public void dbSize() {
-    assertThrows(UnsupportedOperationException.class, super::dbSize);
+    // In cluster mode, dbSize returns the sum of keys across all nodes
+    assertEquals(0, jedis.dbSize());
+
+    jedis.set("foo", "bar");
+    assertEquals(1, jedis.dbSize());
+
+    // Binary
+    jedis.set(bfoo, bbar);
+    assertEquals(2, jedis.dbSize());
   }
 
   @Test

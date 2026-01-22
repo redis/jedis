@@ -39,6 +39,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
@@ -773,20 +774,29 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertNull(jedis.setGet("key", "value", SetParams.setParams()));
   }
 
+  /**
+   * Tests the executeCommand method with CommandArguments for proper cluster routing.
+   * This test uses explicit key marking through CommandArguments.key() for cluster compatibility.
+   */
   @Test
-  public void sendCommandTest() {
-    Object obj = jedis.sendCommand(SET, "x", "1");
+  public void executeCommandTest() {
+    // Test SET command with proper key marking
+    Object obj = jedis.executeCommand(new CommandArguments(SET).key("x").add("1"));
     String returnValue = encode((byte[]) obj);
     assertEquals("OK", returnValue);
-    obj = jedis.sendCommand(GET, "x");
+
+    // Test GET command with proper key marking
+    obj = jedis.executeCommand(new CommandArguments(GET).key("x"));
     returnValue = encode((byte[]) obj);
     assertEquals("1", returnValue);
 
-    jedis.sendCommand(RPUSH, "foo", "a");
-    jedis.sendCommand(RPUSH, "foo", "b");
-    jedis.sendCommand(RPUSH, "foo", "c");
+    // Test RPUSH commands with proper key marking
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("a"));
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("b"));
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("c"));
 
-    obj = jedis.sendCommand(LRANGE, "foo", "0", "2");
+    // Test LRANGE command with proper key marking
+    obj = jedis.executeCommand(new CommandArguments(LRANGE).key("foo").add("0").add("2"));
     List<byte[]> list = (List<byte[]>) obj;
     List<byte[]> expected = new ArrayList<>(3);
     expected.add("a".getBytes());
@@ -795,18 +805,32 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     for (int i = 0; i < 3; i++)
       assertArrayEquals(expected.get(i), list.get(i));
 
-    assertEquals("PONG", encode((byte[]) jedis.sendCommand(PING)));
+    // Test PING command (keyless command)
+    assertEquals("PONG", encode((byte[]) jedis.executeCommand(new CommandArguments(PING))));
   }
 
+  /**
+   * Tests the executeCommand method with blocking CommandArguments for proper cluster routing.
+   * This test uses explicit key marking through CommandArguments.key() and .blocking() for
+   * cluster compatibility with blocking operations.
+   */
   @Test
-  public void sendBlockingCommandTest() {
-    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+  public void executeBlockingCommandTest() {
+    // Test BLPOP on empty list - should return null after timeout
+    assertNull(jedis.executeCommand(
+        new CommandArguments(BLPOP).key("foo").add(Long.toString(1L)).blocking()));
 
-    jedis.sendCommand(RPUSH, "foo", "bar");
+    // Setup: push an element to the list using executeCommand with proper key marking
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("bar"));
+
+    // Test BLPOP with data - should return the key and value
     assertEquals(Arrays.asList("foo", "bar"),
-      encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
+        encodeObject(jedis.executeCommand(
+            new CommandArguments(BLPOP).key("foo").add(Long.toString(1L)).blocking())));
 
-    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+    // Test BLPOP on now-empty list - should return null after timeout
+    assertNull(jedis.executeCommand(
+        new CommandArguments(BLPOP).key("foo").add(Long.toString(1L)).blocking()));
   }
 
   @Test

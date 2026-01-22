@@ -166,7 +166,7 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(byte[] key) {
-    // do nothing
+    addHashSlotKey(key);
     return this;
   }
 
@@ -178,7 +178,7 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(String key) {
-    // do nothing
+    addHashSlotKey(key);
     return this;
   }
 

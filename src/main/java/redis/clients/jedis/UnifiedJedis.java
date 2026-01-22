@@ -5138,35 +5138,224 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.commandArguments(cmd));
   }
 
+  /**
+   * Sends a command with byte array arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand(Protocol.Command.GET, "mykey".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey".getBytes()));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * Sends a blocking command with byte array arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand(Protocol.Command.BLPOP, "mykey".getBytes(), "0".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey".getBytes())
+   *                 .add("0".getBytes())
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * Sends a command with String arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand(Protocol.Command.GET, "mykey");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey"));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * Sends a blocking command with String arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand(Protocol.Command.BLPOP, "mykey", "0");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey")
+   *                 .add("0")
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * Sends a command with a sample key for cluster routing and byte array arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand("mykey".getBytes(), Protocol.Command.GET, "mykey".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey".getBytes()));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
+  /**
+   * Sends a blocking command with a sample key for cluster routing and byte array arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand("mykey".getBytes(), Protocol.Command.BLPOP,
+   *                 "mykey".getBytes(), "0".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey".getBytes())
+   *                 .add("0".getBytes())
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(
         commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));
   }
 
+  /**
+   * Sends a command with a sample key for cluster routing and String arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand("mykey", Protocol.Command.GET, "mykey");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey"));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
+  /**
+   * Sends a blocking command with a sample key for cluster routing and String arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand("mykey", Protocol.Command.BLPOP, "mykey", "0");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey")
+   *                 .add("0")
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(
         commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));

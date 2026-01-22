@@ -64,6 +64,10 @@ public class ClusterPipeline extends MultiNodePipelineBase {
       throw new JedisClusterOperationException("Cannot get NodeKey for command with multiple hash slots");
     }
 
+    if (slots.isEmpty()) {
+      return null; // Let getConnection(null) handle it by using a random node
+    }
+
     return provider.getNode(slots.iterator().next());
   }
 

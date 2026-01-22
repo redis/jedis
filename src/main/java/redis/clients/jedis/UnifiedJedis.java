@@ -5583,21 +5583,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
-    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
   public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(
-        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
+        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));
   }
 
   public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
-    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
   public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(
-        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
+        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));
   }
 
   public Object executeCommand(CommandArguments args) {

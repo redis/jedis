@@ -1,26 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Command.DEL;
-import static redis.clients.jedis.Protocol.Command.EXISTS;
-import static redis.clients.jedis.Protocol.Command.KEYS;
-import static redis.clients.jedis.Protocol.Command.MGET;
-import static redis.clients.jedis.Protocol.Command.MSET;
-import static redis.clients.jedis.Protocol.Command.MSETEX;
-import static redis.clients.jedis.Protocol.Command.SCAN;
-import static redis.clients.jedis.Protocol.Command.TOUCH;
-import static redis.clients.jedis.Protocol.Command.UNLINK;
-import static redis.clients.jedis.Protocol.Keyword.TYPE;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.ScanParams;
@@ -29,14 +8,17 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterHashTag;
 import redis.clients.jedis.util.KeyValue;
 
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Keyword.TYPE;
+
 public class ClusterCommandObjects extends CommandObjects {
 
   private static final String CLUSTER_UNSUPPORTED_MESSAGE = "Not supported in cluster mode.";
-
-  @Override
-  public CommandObject<Long> dbSize() {
-    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
-  }
 
   private static final String KEYS_PATTERN_MESSAGE = "Cluster mode only supports KEYS command"
       + " with pattern containing hash-tag ( curly-brackets enclosed string )";

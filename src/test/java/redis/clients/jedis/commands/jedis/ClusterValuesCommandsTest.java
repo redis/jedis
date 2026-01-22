@@ -3,7 +3,9 @@ package redis.clients.jedis.commands.jedis;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
@@ -194,5 +196,48 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     }
 
     assertEquals(allIn, cluster.scanIteration(100, "*").collect(new HashSet<>(26 * 26)));
+  }
+
+  @Test
+  public void dbSizeAggregation() {
+    // Set some keys across the cluster (different hash slots)
+    cluster.set("key1", "value1");
+    cluster.set("key2", "value2");
+    cluster.set("key3", "value3");
+
+    // dbSize should return sum of keys across all shards
+    long dbSize = cluster.dbSize();
+    assertTrue(dbSize >= 3);
+  }
+
+  @Test
+  public void msetCrossShard() {
+    // MSET with keys on different shards (MULTI_SHARD policy)
+    // Using keys without hash tags to distribute across shards
+    assertEquals("OK", cluster.mset("mset_key_a", "value_a", "mset_key_b", "value_b", "mset_key_c", "value_c"));
+
+    // Verify all keys were set
+    assertEquals("value_a", cluster.get("mset_key_a"));
+    assertEquals("value_b", cluster.get("mset_key_b"));
+    assertEquals("value_c", cluster.get("mset_key_c"));
+  }
+
+  @Test
+  public void scriptExistsAggregation() {
+    String script = "return 1";
+    String sampleKey = "testKey";
+
+    // Load a script to get its SHA1
+    String sha1 = cluster.scriptLoad(script, sampleKey);
+
+    // Verify it exists (single SHA1 check - returns Boolean, aggregated via AGG_LOGICAL_AND)
+    assertTrue(cluster.scriptExists(sha1, sampleKey));
+
+    // Test with multiple SHA1s - one exists, one doesn't
+    String unknownSha1 = "0000000000000000000000000000000000000000";
+    List<Boolean> results = cluster.scriptExists(sampleKey, sha1, unknownSha1);
+    assertEquals(2, results.size());
+    assertTrue(results.get(0));  // Known script exists
+    assertFalse(results.get(1)); // Unknown script doesn't exist
   }
 }

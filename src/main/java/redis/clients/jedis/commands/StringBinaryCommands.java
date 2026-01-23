@@ -35,10 +35,25 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   @Deprecated
   byte[] getSet(byte[] key, byte[] value);
 
+  /**
+   * @deprecated Use {@link StringBinaryCommands#set(byte[], byte[], SetParams)} with {@link SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   long setnx(byte[] key, byte[] value);
 
+  /**
+   * @deprecated Use {@link StringBinaryCommands#set(byte[], byte[], SetParams)} with {@link SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   String setex(byte[] key, long seconds, byte[] value);
 
+  /**
+   * @deprecated Use {@link StringBinaryCommands#set(byte[], byte[], SetParams)} with {@link SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   String psetex(byte[] key, long milliseconds, byte[] value);
 
   List<byte[]> mget(byte[]... keys);
@@ -81,6 +96,11 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   long append(byte[] key, byte[] value);
 
+  /**
+   * @deprecated Use {@link StringBinaryCommands#getrange(byte[], long, long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   byte[] substr(byte[] key, int start, int end);
 
   long strlen(byte[] key);

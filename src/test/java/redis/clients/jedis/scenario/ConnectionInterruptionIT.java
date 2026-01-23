@@ -3,6 +3,7 @@ package redis.clients.jedis.scenario;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Tags({ @Tag("scenario") })
+@ResourceLock(value = Endpoints.RE_STANDALONE)
 public class ConnectionInterruptionIT {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectionInterruptionIT.class);
@@ -32,7 +34,7 @@ public class ConnectionInterruptionIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ConnectionInterruptionIT.endpoint = Endpoints.getRedisEndpoint("re-standalone");
+      ConnectionInterruptionIT.endpoint = Endpoints.getRedisEndpoint(Endpoints.RE_STANDALONE);
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

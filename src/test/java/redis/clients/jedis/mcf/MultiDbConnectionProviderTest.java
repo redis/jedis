@@ -25,7 +25,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @see MultiDbConnectionProvider
  */
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("integration")
+@ResourceLocks({ @ResourceLock(value = Endpoints.STANDALONE0),
+    @ResourceLock(value = Endpoints.STANDALONE1) })
 public class MultiDbConnectionProviderTest {
 
   private static EndpointConfig endpointStandalone0;
@@ -35,8 +40,8 @@ public class MultiDbConnectionProviderTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    endpointStandalone0 = Endpoints.getRedisEndpoint("standalone0");
-    endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+    endpointStandalone0 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
+    endpointStandalone1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
   }
 
   @BeforeEach

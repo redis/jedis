@@ -7,7 +7,7 @@ import redis.clients.jedis.*;
 public class ClusterCommandsTestHelper {
 
   static RedisClusterClient getCleanCluster(RedisProtocol protocol) {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE);
 
     RedisClusterClient client = RedisClusterClient.builder()
         .nodes(new HashSet<>(endpoint.getHostsAndPorts()))

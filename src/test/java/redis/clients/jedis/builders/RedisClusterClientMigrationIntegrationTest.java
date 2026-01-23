@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import redis.clients.jedis.*;
 
@@ -20,16 +21,17 @@ import redis.clients.jedis.*;
  * to the new RedisClusterClient.Builder pattern.
  * <p>
  * This test demonstrates that the following legacy JedisCluster constructor:
- * 
+ *
  * <pre>
- * public JedisCluster(Set&lt;HostAndPort&gt; clusterNodes, JedisClientConfig clientConfig, 
+ * public JedisCluster(Set&lt;HostAndPort&gt; clusterNodes, JedisClientConfig clientConfig,
  *                     int maxAttempts, GenericObjectPoolConfig&lt;Connection&gt; poolConfig)
  * </pre>
- * 
+ *
  * can be replaced with the RedisClusterClient.Builder pattern while maintaining the same
  * functionality.
  */
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_STABLE)
 public class RedisClusterClientMigrationIntegrationTest {
 
   private static EndpointConfig endpoint;
@@ -43,7 +45,7 @@ public class RedisClusterClientMigrationIntegrationTest {
 
   @BeforeAll
   public static void prepareEndpoint() {
-    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE);
     CLUSTER_NODES = new HashSet<>(endpoint.getHostsAndPorts());
     PASSWORD = endpoint.getPassword();
   }

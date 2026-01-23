@@ -15,8 +15,11 @@ import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.util.TestEnvUtil;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_STABLE)
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
 public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
@@ -39,11 +42,11 @@ public class RedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("cluster-stable"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE));
 
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE);
     hnp = new HashSet<>(endpoint.getHostsAndPorts());
   }
 

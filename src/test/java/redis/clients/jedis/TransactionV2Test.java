@@ -24,10 +24,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0)
 public class TransactionV2Test {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -42,7 +44,7 @@ public class TransactionV2Test {
 
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
   }
 
   private Connection conn;

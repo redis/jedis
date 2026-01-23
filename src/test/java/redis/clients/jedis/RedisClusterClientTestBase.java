@@ -7,12 +7,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_UNBOUND)
 public abstract class RedisClusterClientTestBase {
 
   protected static EndpointConfig endpoint;
@@ -33,14 +35,14 @@ public abstract class RedisClusterClientTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("cluster-unbound"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.CLUSTER_UNBOUND));
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      () -> Endpoints.getRedisEndpoint("cluster-unbound"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.CLUSTER_UNBOUND));
 
   @BeforeAll
   public static void prepareEndpoint() {
-    endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_UNBOUND);
     nodeInfo1 = endpoint.getHostsAndPorts().get(0);
     nodeInfo2 = endpoint.getHostsAndPorts().get(1);
     nodeInfo3 = endpoint.getHostsAndPorts().get(2);

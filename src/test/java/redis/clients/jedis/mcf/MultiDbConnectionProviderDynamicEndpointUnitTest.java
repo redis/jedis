@@ -30,8 +30,8 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
   @BeforeAll
   static void prepareEndpoints() {
-    endpoint1 = Endpoints.getRedisEndpoint("standalone0");
-    endpoint2 = Endpoints.getRedisEndpoint("standalone1");
+    endpoint1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
+    endpoint2 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
   }
 
   @BeforeEach

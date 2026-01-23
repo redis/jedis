@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
@@ -14,6 +15,7 @@ import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_STABLE)
 public abstract class ClusterJedisCommandsTestBase {
 
   protected static EndpointConfig endpoint;
@@ -22,14 +24,14 @@ public abstract class ClusterJedisCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("cluster-stable"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE));
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      () -> Endpoints.getRedisEndpoint("cluster-stable"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE));
 
   @BeforeAll
   public static void prepareEndpoint() {
-    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_STABLE);
   }
 
   @BeforeEach

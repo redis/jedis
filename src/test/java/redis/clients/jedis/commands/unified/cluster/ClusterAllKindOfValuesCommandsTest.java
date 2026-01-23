@@ -13,8 +13,10 @@ import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
@@ -23,6 +25,7 @@ import redis.clients.jedis.resps.ScanResult;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@ResourceLock(value = Endpoints.CLUSTER_STABLE)
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
   public ClusterAllKindOfValuesCommandsTest(RedisProtocol protocol) {

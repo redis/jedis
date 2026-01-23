@@ -76,7 +76,7 @@ public interface HashCommands {
 
   /**
    * @deprecated Use {@link HashCommands#hset(String, Map)}.
-   * Deprecated since Redis 4.0.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   String hmset(String key, Map<String, String> hash);

@@ -56,7 +56,7 @@ public interface ListBinaryCommands {
   /**
    * @deprecated Use {@link ListBinaryCommands#lmove(byte[], byte[], ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   byte[] rpoplpush(byte[] srckey, byte[] dstkey);
@@ -64,7 +64,7 @@ public interface ListBinaryCommands {
   /**
    * @deprecated Use {@link ListBinaryCommands#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   byte[] brpoplpush(byte[] source, byte[] destination, int timeout);

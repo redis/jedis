@@ -133,7 +133,7 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return 1 if the key was set, 0 otherwise
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#nx()}.
-   * Deprecated since Redis 2.6.12.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   long setnx(String key, String value);
@@ -150,7 +150,7 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return OK
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#ex(long)}.
-   * Deprecated since Redis 2.6.12.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String setex(String key, long seconds, String value);
@@ -166,7 +166,7 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return OK
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#px(long)}.
-   * Deprecated since Redis 2.6.12.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String psetex(String key, long milliseconds, String value);
@@ -364,7 +364,7 @@ public interface StringCommands extends BitCommands {
    * @param end
    * @return The substring
    * @deprecated Use {@link StringCommands#getrange(String, long, long)}.
-   * Deprecated since Redis 2.0.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   String substr(String key, int start, int end);

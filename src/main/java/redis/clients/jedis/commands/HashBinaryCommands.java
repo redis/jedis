@@ -76,7 +76,7 @@ public interface HashBinaryCommands {
 
   /**
    * @deprecated Use {@link HashBinaryCommands#hset(byte[], Map)}.
-   * Deprecated since Redis 4.0.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   String hmset(byte[] key, Map<byte[], byte[]> hash);

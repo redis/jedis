@@ -356,7 +356,7 @@ public interface ListCommands {
    * @return Bulk reply
    * @deprecated Use {@link ListCommands#lmove(String, String, ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   String rpoplpush(String srckey, String dstkey);
@@ -374,7 +374,7 @@ public interface ListCommands {
    * @return The element being popped from source and pushed to destination
    * @deprecated Use {@link ListCommands#blmove(String, String, ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   String brpoplpush(String source, String destination, int timeout);

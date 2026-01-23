@@ -194,7 +194,7 @@ public interface SortedSetCommands {
    * @param stop the maximum index
    * @return A List of Strings in the specified range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrange(String key, long start, long stop);
@@ -217,7 +217,7 @@ public interface SortedSetCommands {
    * @param stop the maximum index
    * @return A List of Tuple in the specified range (elements names and their scores)
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrevrangeWithScores(String key, long start, long stop);
@@ -382,7 +382,7 @@ public interface SortedSetCommands {
    * @param max maximum score
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrangeByScore(String key, double min, double max);
@@ -391,7 +391,7 @@ public interface SortedSetCommands {
    * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>exclusive</i> range.
    * @see SortedSetCommands#zrangeByScore(String, double, double)
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrangeByScore(String key, String min, String max);
@@ -411,7 +411,7 @@ public interface SortedSetCommands {
    * @param min minimum score
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrangeByScore(String key, double max, double min);
@@ -426,7 +426,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrangeByScore(String key, double min, double max, int offset, int count);
@@ -435,7 +435,7 @@ public interface SortedSetCommands {
    * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but with <i>exclusive</i> range.
    * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrangeByScore(String key, String max, String min);
@@ -451,7 +451,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrangeByScore(String key, String min, String max, int offset, int count);
@@ -466,7 +466,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrangeByScore(String key, double max, double min, int offset, int count);
@@ -480,7 +480,7 @@ public interface SortedSetCommands {
    * @param max maximum score
    * @return A List of elements with scores in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrangeByScoreWithScores(String key, double min, double max);
@@ -494,7 +494,7 @@ public interface SortedSetCommands {
    * @param min minimum score
    * @return A List of elements with scores in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
@@ -510,7 +510,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
@@ -526,7 +526,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrangeByScore(String key, String max, String min, int offset, int count);
@@ -536,7 +536,7 @@ public interface SortedSetCommands {
    * and return with scores.
    * @see SortedSetCommands#zrangeByScore(String, double, double)
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrangeByScoreWithScores(String key, String min, String max);
@@ -546,7 +546,7 @@ public interface SortedSetCommands {
    * and return with scores.
    * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
@@ -562,7 +562,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
@@ -578,7 +578,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
@@ -594,7 +594,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
@@ -657,7 +657,7 @@ public interface SortedSetCommands {
    * @param max maximum value
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrangeByLex(String key, String min, String max);
@@ -672,7 +672,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrangeByLex(String key, String min, String max, int offset, int count);
@@ -688,7 +688,7 @@ public interface SortedSetCommands {
    * @param min minimum value
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrangeByLex(String key, String max, String min);
@@ -703,7 +703,7 @@ public interface SortedSetCommands {
    * @param count count of the sub-range. A negative count returns all elements from the offset
    * @return A List of elements in the specified score range
    * @deprecated Use {@link SortedSetCommands#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
-   * Deprecated since Redis 6.2.0.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   List<String> zrevrangeByLex(String key, String max, String min, int offset, int count);

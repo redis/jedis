@@ -7,6 +7,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.Objects;
 
@@ -27,6 +28,12 @@ public class XAddParams implements IParams {
   private Long limit;
 
   private StreamDeletionPolicy trimMode;
+
+  private byte[] producerId;
+
+  private byte[] idempotentId;
+
+  private boolean idmpAuto;
 
   public static XAddParams xAddParams() {
     return new XAddParams();
@@ -95,11 +102,75 @@ public class XAddParams implements IParams {
     return this;
   }
 
+  /**
+   * Enable idempotent producer mode with automatic idempotent ID generation.
+   * Redis will calculate an idempotent ID based on the message content.
+   *
+   * @param producerId unique producer identifier (binary)
+   * @return XAddParams
+   */
+  public XAddParams idmpAuto(byte[] producerId) {
+    this.producerId = producerId;
+    this.idmpAuto = true;
+    this.idempotentId = null;
+    return this;
+  }
+
+  /**
+   * Enable idempotent producer mode with automatic idempotent ID generation.
+   * Redis will calculate an idempotent ID based on the message content.
+   *
+   * @param producerId unique producer identifier (string)
+   * @return XAddParams
+   */
+  public XAddParams idmpAuto(String producerId) {
+    return idmpAuto(SafeEncoder.encode(producerId));
+  }
+
+  /**
+   * Enable idempotent producer mode with explicit idempotent ID.
+   * The caller provides both producer ID and idempotent ID.
+   *
+   * @param producerId unique producer identifier (binary)
+   * @param idempotentId unique idempotent identifier for this message (binary)
+   * @return XAddParams
+   */
+  public XAddParams idmp(byte[] producerId, byte[] idempotentId) {
+    this.producerId = producerId;
+    this.idempotentId = idempotentId;
+    this.idmpAuto = false;
+    return this;
+  }
+
+  /**
+   * Enable idempotent producer mode with explicit idempotent ID.
+   * The caller provides both producer ID and idempotent ID.
+   *
+   * @param producerId unique producer identifier (string)
+   * @param idempotentId unique idempotent identifier for this message (string)
+   * @return XAddParams
+   */
+  public XAddParams idmp(String producerId, String idempotentId) {
+    return idmp(SafeEncoder.encode(producerId), SafeEncoder.encode(idempotentId));
+  }
+
   @Override
   public void addParams(CommandArguments args) {
 
     if (nomkstream) {
       args.add(Keyword.NOMKSTREAM);
+    }
+
+    if (trimMode != null) {
+      args.add(trimMode);
+    }
+
+    if (producerId != null) {
+      if (idmpAuto) {
+        args.add(Keyword.IDMPAUTO).add(producerId);
+      } else if (idempotentId != null) {
+        args.add(Keyword.IDMP).add(producerId).add(idempotentId);
+      }
     }
 
     if (maxLen != null) {
@@ -128,10 +199,6 @@ public class XAddParams implements IParams {
       args.add(Keyword.LIMIT).add(limit);
     }
 
-    if (trimMode != null) {
-      args.add(trimMode);
-    }
-
     args.add(id != null ? id : StreamEntryID.NEW_ENTRY);
   }
 
@@ -140,12 +207,17 @@ public class XAddParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     XAddParams that = (XAddParams) o;
-    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming && nomkstream == that.nomkstream && Objects.equals(id, that.id) && Objects.equals(maxLen, that.maxLen) && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit) && trimMode == that.trimMode;
+    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming
+        && nomkstream == that.nomkstream && idmpAuto == that.idmpAuto
+        && Objects.equals(id, that.id) && Objects.equals(maxLen, that.maxLen)
+        && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit)
+        && trimMode == that.trimMode && Objects.deepEquals(producerId, that.producerId)
+        && Objects.deepEquals(idempotentId, that.idempotentId);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(id, maxLen, approximateTrimming, exactTrimming, nomkstream, minId, limit,
-        trimMode);
+        trimMode, Objects.hashCode(producerId), Objects.hashCode(idempotentId), idmpAuto);
   }
 }

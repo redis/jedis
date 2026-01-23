@@ -3082,6 +3082,14 @@ public class CommandObjects {
         entrySet.forEach(entry -> args.add(entry.getValue()));
         return new CommandObject<>(args, BuilderFactory.STREAM_READ_BINARY_MAP_RESPONSE);
     }
+
+  public final CommandObject<String> xcfgset(String key, XCfgSetParams params) {
+    return new CommandObject<>(commandArguments(XCFGSET).key(key).addParams(params), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> xcfgset(byte[] key, XCfgSetParams params) {
+    return new CommandObject<>(commandArguments(XCFGSET).key(key).addParams(params), BuilderFactory.BINARY);
+  }
   // Stream commands
 
   // Scripting commands

@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
@@ -60,6 +61,7 @@ import redis.clients.jedis.resps.StreamGroupInfo;
 import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -404,6 +406,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadWithParams() {
 
     final String stream1 = "xread-stream1";
@@ -650,6 +653,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadGroupWithParams() {
     // Simple xreadGroup with NOACK
     Map<String, String> map1 = singletonMap("f1", "v1");

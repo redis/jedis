@@ -9,6 +9,7 @@ import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.util.SafeEncoder;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class XAddParams implements IParams {
@@ -218,6 +219,6 @@ public class XAddParams implements IParams {
   @Override
   public int hashCode() {
     return Objects.hash(id, maxLen, approximateTrimming, exactTrimming, nomkstream, minId, limit,
-        trimMode, Objects.hashCode(producerId), Objects.hashCode(idempotentId), idmpAuto);
+        trimMode, Arrays.hashCode(producerId), Arrays.hashCode(idempotentId), idmpAuto);
   }
 }

@@ -1,16 +1,10 @@
 package redis.clients.jedis.commands.unified.sentinel;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisSentineled;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
@@ -23,23 +17,31 @@ import java.util.Set;
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTestBase {
 
-  static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
+  static HostAndPort sentinel1;
 
-  static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
+  static HostAndPort sentinel2;
 
-  static final Set<HostAndPort> sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
+  static Set<HostAndPort> sentinels;
 
   static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder().build();
 
-  static final EndpointConfig primary = HostAndPorts.getRedisEndpoint("standalone2-primary");
+  static EndpointConfig primary;
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      primary.getHostAndPort(), primary.getClientConfigBuilder().build());
+      () -> Endpoints.getRedisEndpoint("standalone2-primary"));
 
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      primary.getHostAndPort(), primary.getClientConfigBuilder().build());
+      () -> Endpoints.getRedisEndpoint("standalone2-primary"));
+
+  @BeforeAll
+  public static void prepareEndpoints() {
+    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+    sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
+    primary = Endpoints.getRedisEndpoint("standalone2-primary");
+  }
 
   public SentinelAllKindOfValuesCommandsIT(RedisProtocol protocol) {
     super(protocol);
@@ -48,7 +50,7 @@ public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTe
   @Override
   protected UnifiedJedis createTestClient() {
 
-    return JedisSentineled.builder()
+    return RedisSentinelClient.builder()
         .clientConfig(primary.getClientConfigBuilder().protocol(protocol).build())
         .sentinels(sentinels).sentinelClientConfig(sentinelClientConfig).masterName("mymaster")
         .build();

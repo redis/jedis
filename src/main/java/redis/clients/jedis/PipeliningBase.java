@@ -319,16 +319,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<Long> setnx(String key, String value) {
     return appendCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> setex(String key, long seconds, String value) {
     return appendCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> psetex(String key, long milliseconds, String value) {
     return appendCommand(commandObjects.psetex(key, milliseconds, value));
@@ -347,6 +362,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> msetnx(String... keysvalues) {
     return appendCommand(commandObjects.msetnx(keysvalues));
+  }
+
+  @Override
+  public Response<Boolean> msetex(MSetExParams params, String... keysvalues) {
+    return appendCommand(commandObjects.msetex(params, keysvalues));
   }
 
   @Override
@@ -379,6 +399,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#getrange(String, long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> substr(String key, int start, int end) {
     return appendCommand(commandObjects.substr(key, start, end));
@@ -575,11 +600,23 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#lmove(String, String, ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<String> rpoplpush(String srcKey, String dstKey) {
     return appendCommand(commandObjects.rpoplpush(srcKey, dstKey));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#blmove(String, String, ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<String> brpoplpush(String source, String destination, int timeout) {
     return appendCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -630,13 +667,13 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params additional parameters for the HSETEX command
    * @param field the field in the hash to set
    * @param value the value to set in the specified field
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -649,12 +686,12 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params the parameters for the HSetEx command
    * @param hash the map containing field-value pairs to set in the hash
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -668,14 +705,14 @@ public abstract class PipeliningBase
   }
 
   /**
-   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * Retrieves the values associated with the specified fields in a hash stored at the given key
    * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
    *
    * @param key the key of the hash
    * @param params additional parameters for the HGETEX command
    * @param fields the fields whose values are to be retrieved
    * @return a list of the value associated with each field or nil if the field doesn’t exist.
-   * 
+   *
    * @see HGetExParams
    */
   @Override
@@ -701,6 +738,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#hset(String, Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> hmset(String key, Map<String, String> hash) {
     return appendCommand(commandObjects.hmset(key, hash));
@@ -2062,13 +2104,13 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params the parameters for the HSetEx command
    * @param field the field in the hash to set
    * @param value the value to set in the specified field
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -2081,12 +2123,12 @@ public abstract class PipeliningBase
    * and optionally set their expiration. Use `HSetExParams` object to specify expiration parameters.
    * This command can overwrite any existing fields in the hash.
    * If key does not exist, a new key holding a hash is created.
-   * 
+   *
    * @param key the key of the hash
    * @param params the parameters for the HSetEx command
    * @param hash the map containing field-value pairs to set in the hash
-   * @return 0 if no fields were set, 1 if all the fields were set 
-   * 
+   * @return 0 if no fields were set, 1 if all the fields were set
+   *
    * @see HSetExParams
    */
   @Override
@@ -2098,16 +2140,16 @@ public abstract class PipeliningBase
   public Response<byte[]> hget(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hget(key, field));
   }
-  
+
   /**
-   * Retrieves the values associated with the specified fields in a hash stored at the given key 
+   * Retrieves the values associated with the specified fields in a hash stored at the given key
    * and optionally sets their expiration. Use `HGetExParams` object to specify expiration parameters.
    *
    * @param key the key of the hash
    * @param params additional parameters for the HGETEX command
    * @param fields the fields whose values are to be retrieved
    * @return a list of the value associated with each field or nil if the field doesn’t exist.
-   * 
+   *
    * @see HGetExParams
    */
   @Override
@@ -2133,6 +2175,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#hset(byte[], Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
     return appendCommand(commandObjects.hmset(key, hash));
@@ -2638,11 +2685,23 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#lmove(byte[], byte[], ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey) {
     return appendCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> brpoplpush(byte[] source, byte[] destination, int timeout) {
     return appendCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -3513,16 +3572,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<Long> setnx(byte[] key, byte[] value) {
     return appendCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> setex(byte[] key, long seconds, byte[] value) {
     return appendCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> psetex(byte[] key, long milliseconds, byte[] value) {
     return appendCommand(commandObjects.psetex(key, milliseconds, value));
@@ -3536,6 +3610,11 @@ public abstract class PipeliningBase
   @Override
   public Response<String> mset(byte[]... keysvalues) {
     return appendCommand(commandObjects.mset(keysvalues));
+  }
+
+  @Override
+  public Response<Boolean> msetex(MSetExParams params, byte[]... keysvalues) {
+    return appendCommand(commandObjects.msetex(params, keysvalues));
   }
 
   @Override
@@ -3573,6 +3652,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#getrange(byte[], long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> substr(byte[] key, int start, int end) {
     return appendCommand(commandObjects.substr(key, start, end));

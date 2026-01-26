@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +15,8 @@ import redis.clients.authentication.entraid.ManagedIdentityInfo.UserManagedIdent
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.RedisClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -35,7 +34,7 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
   public static void before() {
     try {
       testCtx = EntraIDTestContext.DEFAULT;
-      endpointConfig = HostAndPorts.getRedisEndpoint("standalone-entraid-acl");
+      endpointConfig = Endpoints.getRedisEndpoint("standalone-entraid-acl");
       hnp = endpointConfig.getHostAndPort();
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
@@ -55,7 +54,10 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));
@@ -73,7 +75,10 @@ public class RedisEntraIDManagedIdentityIntegrationTests {
     DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, jedisConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(jedisConfig)
+        .build()) {
       String key = UUID.randomUUID().toString();
       jedis.set(key, "value");
       assertEquals("value", jedis.get(key));

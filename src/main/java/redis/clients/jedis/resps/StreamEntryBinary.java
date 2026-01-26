@@ -11,10 +11,49 @@ public class StreamEntryBinary implements Serializable {
 
   private StreamEntryID id;
   private Map<byte[], byte[]> fields;
+  private Long millisElapsedFromDelivery;
+  private Long deliveredCount;
 
   public StreamEntryBinary(StreamEntryID id, Map<byte[], byte[]> fields) {
     this.id = id;
     this.fields = fields;
+  }
+
+  public StreamEntryBinary(StreamEntryID id, Map<byte[], byte[]> fields, Long millisElapsedFromDelivery, Long deliveredCount) {
+    this.id = id;
+    this.fields = fields;
+    this.millisElapsedFromDelivery = millisElapsedFromDelivery;
+    this.deliveredCount = deliveredCount;
+  }
+
+  /**
+   * @return the milliseconds since the last delivery of this message when CLAIM was used.
+   *         <ul>
+   *         <li>{@code null} when not applicable</li>
+   *         <li>{@code 0} means not claimed from the pending entries list (PEL)</li>
+   *         <li>{@code > 0} means claimed from the PEL</li>
+   *         </ul>
+   * @since 7.1
+   */
+  public Long getMillisElapsedFromDelivery() {
+    return millisElapsedFromDelivery;
+  }
+
+  /**
+   * @return the number of prior deliveries of this message when CLAIM was used:
+   *         <ul>
+   *         <li>{@code null} when not applicable</li>
+   *         <li>{@code 0} means not claimed from the pending entries list (PEL)</li>
+   *         <li>{@code > 0} means claimed from the PEL</li>
+   *         </ul>
+   * @since 7.1
+   */
+  public Long getDeliveredCount() {
+    return deliveredCount;
+  }
+
+  public boolean isClaimed() {
+    return this.deliveredCount != null && this.deliveredCount > 0;
   }
 
   public StreamEntryID getID() {

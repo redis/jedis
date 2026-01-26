@@ -54,7 +54,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>7.0.0</version>
+    <version>7.1.0</version>
 </dependency>
 ```
 
@@ -66,10 +66,10 @@ Next, you'll need to connect to Redis. Consider installing a redis server with d
 docker run -p 6379:6379 -it redis:latest
 ```
 
-For many applications, it's best to use a connection pool. You can instantiate a JedisPooled like so:
+You can instantiate a RedisClient like so:
 
 ```java
-JedisPooled jedis = new JedisPooled("localhost", 6379);
+RedisClient jedis = RedisClient.builder().hostAndPort("localhost", 6379).build();
 ```
 
 Now you can send commands:
@@ -81,16 +81,16 @@ jedis.sadd("planets", "Venus");
 ## Connecting to a Redis cluster
 
 Jedis lets you connect to Redis Clusters, supporting the [Redis Cluster Specification](https://redis.io/topics/cluster-spec).
-To do this, you'll need to connect using `JedisCluster`. See the example below:
+To do this, you'll need to connect using `RedisClusterClient`. See the example below:
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7380));
-JedisCluster jedis = new JedisCluster(jedisClusterNodes);
+RedisClusterClient jedis = RedisClusterClient.builder().nodes(jedisClusterNodes).build();
 ```
 
-Now you can use the `JedisCluster` instance and send commands like you would with a standard pooled connection:
+Now you can use the `RedisClusterClient` instance and send commands like you would with a standard pooled connection:
 
 ```java
 jedis.sadd("planets", "Mars");

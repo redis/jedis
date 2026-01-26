@@ -17,59 +17,73 @@ Please add unit tests to validate your changes work, then ensure your changes pa
 
 # Jedis Test Environment
 
-Jedis unit tests run with the latest [Redis unstable branch](https://github.com/redis/redis/tree/unstable).
-Please let them prepared and installed.
+Jedis uses a Docker-based test environment as the primary method for running tests. A simplified local environment is also available for basic testing.
 
-Jedis unit tests use many Redis instances, so we use a ```Makefile``` to prepare environment. 
+Jedis integration tests use many Redis instances, so we use a `Makefile` to prepare the environment.
 
-Start unit tests with ```make test```.
-Set up test environments with ```make start```, tear down those environments with ```make stop``` and clean up the environment files with ```make cleanup```.
+## Quick Start (Docker - Recommended)
 
+Start tests with `make test`. This will:
+1. Start the Docker-based test environment
+2. Run all tests
+3. Stop and clean up the environment
+
+Set up test environments with `make start`, tear down those environments with `make stop`.
 
 # Jedis Test Environment Using Docker
 
 This guide explains how to bootstrap and manage a test environment for Jedis using Docker Compose.
 
 ## Workflow Steps
-1. **Start the test environment** by running the following command (examples below).
-   - For instance, to start the environment with Redis 8.0-M02, use `make start-test-env`.
+1. **Start the test environment** by running `make start` (examples below).
 2. **Run tests** through your IDE, Maven, or other testing tools as needed.
-3. **Stop the test environment** by running the following command:
-   - `make stop-test-env`
-   - This will stop and tear down the Docker containers running the Redis service
+3. **Stop the test environment** by running `make stop`.
+   - This will stop and tear down the Docker containers running the Redis service.
 
 # Start the Test Environment Using Docker
 
 You can bootstrap the test environment for supported versions of Redis using the provided `make` targets.
 
 ## Option 1: Using `make` Targets
-To bring up the test environment for a specific Redis version (8.0-M05-pre, 8.0-M04-pre, 8.0-M02, 7.4, 7.2, or 6.2), use the following command:
+To bring up the test environment for a specific Redis version use the following command:
 ```bash
-make start-test-env version=8.0-M02  # Replace with desired version
+make start version=8.0  # Replace with desired version
 ```
 To stop test environment:
 ```bash
-make stop-test-env
+make stop
 ```
-To run tests using dockerized environment:
+To run tests using the Docker environment:
 ```bash
-make test-on-docker
+make test
 ```
 
 ## Option 2: Using docker compose commands directly
 Docker compose file can be found in `src/test/resources/env` folder.
-- **Redis  8.0-M02**
+- **Redis 8.4 (or other versions without custom env file)**
 ```bash
 rm -rf /tmp/redis-env-work
-export REDIS_VERSION=8.0-M02
-docker compose up
+export REDIS_VERSION=8.4
+docker compose --env-file .env -f src/test/resources/env/docker-compose.yml up
 ```
-- **Redis 7.4, 7.2, 6.2,**
+- **Redis 7.4, 7.2, 6.2 (versions with custom env files)**
 ```bash
 rm -rf /tmp/redis-env-work
 export REDIS_VERSION=6.2
-docker compose --env-file .env --env-file .env.v6.2 up
+docker compose --env-file .env --env-file .env.v6.2 -f src/test/resources/env/docker-compose.yml up
 ```
+
+# Local Test Environment (Simplified)
+
+For basic testing with a minimal local Redis setup (requires Redis to be installed locally):
+
+```bash
+make start-local   # Start local Redis instances (standalone + Unix socket)
+make test-local    # Run tests against local environment
+make stop-local    # Stop local Redis instances
+```
+
+**Note:** The local environment provides only the `standalone-0` endpoint and a Unix socket instance. For full test coverage, use the Docker-based environment.
 
 
 # Some rules of Jedis source code

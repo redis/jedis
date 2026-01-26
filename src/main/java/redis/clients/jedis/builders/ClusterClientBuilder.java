@@ -15,14 +15,13 @@ import redis.clients.jedis.providers.ConnectionProvider;
  * configuration, retry settings, and topology refresh configuration.
  * </p>
  */
-public abstract class ClusterClientBuilder<C extends JedisCluster>
+public abstract class ClusterClientBuilder<C>
     extends AbstractClientBuilder<ClusterClientBuilder<C>, C> {
 
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
   private int maxAttempts = JedisCluster.DEFAULT_MAX_ATTEMPTS;
-  private Duration maxTotalRetriesDuration = Duration
-      .ofMillis(JedisCluster.DEFAULT_TIMEOUT * JedisCluster.DEFAULT_MAX_ATTEMPTS);
+  private Duration maxTotalRetriesDuration;
   private Duration topologyRefreshPeriod = null;
   private CommandFlagsRegistry commandFlags = null;
 
@@ -114,8 +113,12 @@ public abstract class ClusterClientBuilder<C extends JedisCluster>
       this.commandFlags = createDefaultCommandFlagsRegistry();
     }
 
+    Duration effectiveMaxTotalRetriesDuration = (this.maxTotalRetriesDuration == null)
+        ? Duration.ofMillis((long) this.clientConfig.getSocketTimeoutMillis() * this.maxAttempts)
+        : this.maxTotalRetriesDuration;
+
     return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
-        this.maxAttempts, this.maxTotalRetriesDuration, this.commandFlags);
+        this.maxAttempts, effectiveMaxTotalRetriesDuration, this.commandFlags);
   }
 
   @Override

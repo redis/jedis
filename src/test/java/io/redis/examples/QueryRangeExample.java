@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Stream;
 // REMOVE_END
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -27,7 +27,7 @@ public class QueryRangeExample {
 
     @Test
     public void run() {
-        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+        RedisClient jedis = RedisClient.create("redis://localhost:6379");
 
         //REMOVE_START
         // Clear any keys here before using them in tests.

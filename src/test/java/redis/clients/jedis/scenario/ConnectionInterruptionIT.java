@@ -32,7 +32,7 @@ public class ConnectionInterruptionIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ConnectionInterruptionIT.endpoint = HostAndPorts.getRedisEndpoint("re-standalone");
+      ConnectionInterruptionIT.endpoint = Endpoints.getRedisEndpoint("re-standalone");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

@@ -299,6 +299,7 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("LSET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("MSET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("MSETNX", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
+    builder.register("MSETEX", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("PFMERGE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("PSETEX", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("RESTORE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));

@@ -1,28 +1,23 @@
 package redis.clients.jedis.commands.unified.cluster;
 
-import java.util.Collections;
+import java.util.HashSet;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.*;
 
 public class ClusterCommandsTestHelper {
 
-  static JedisCluster getCleanCluster(RedisProtocol protocol) {
-    clearClusterData();
+  static RedisClusterClient getCleanCluster(RedisProtocol protocol) {
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("cluster-stable");
 
-    return JedisCluster.builder().nodes(Collections.singleton(HostAndPorts.getStableClusterServers().get(0)))
-        .clientConfig(DefaultJedisClientConfig.builder().password("cluster").protocol(protocol).build()).build();
+    RedisClusterClient client = RedisClusterClient.builder()
+        .nodes(new HashSet<>(endpoint.getHostsAndPorts()))
+        .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build();
+    client.flushAll();
+    return client;
   }
 
   static void clearClusterData() {
-    for (int i = 0; i < 3; i++) {
-      try (Jedis jedis = new Jedis(HostAndPorts.getStableClusterServers().get(i))) {
-        jedis.auth("cluster");
-        jedis.flushAll();
-      }
-    }
+    getCleanCluster(RedisProtocol.RESP2);
   }
+
 }

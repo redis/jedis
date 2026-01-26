@@ -5,7 +5,7 @@ package io.redis.examples;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 // REMOVE_END
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 
@@ -15,7 +15,7 @@ public class VectorSetExample {
 
   @Test
   public void run() {
-    try (UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379")) {
+    try (RedisClient jedis = RedisClient.create("redis://localhost:6379")) {
       // REMOVE_START
       jedis.del("points", "quantSetQ8", "quantSetNoQ", "quantSetBin", "setNotReduced",
         "setReduced");

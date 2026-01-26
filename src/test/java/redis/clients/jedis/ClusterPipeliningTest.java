@@ -34,37 +34,43 @@ import redis.clients.jedis.util.SafeEncoder;
 @Tag("integration")
 public class ClusterPipeliningTest {
 
-  private static final String LOCAL_IP = "127.0.0.1";
+  private static EndpointConfig endpoint;
 
-  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
-      = DefaultJedisClientConfig.builder().password("cluster").build();
+  private static DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG;
 
   private static Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
 
-  private static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  private static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
-  private static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
-  private Set<HostAndPort> nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
+  private static HostAndPort nodeInfo1;
+  private static HostAndPort nodeInfo2;
+  private static HostAndPort nodeInfo3;
+  private static Set<HostAndPort> nodes;
 
   @BeforeAll
   public static void setUp() throws InterruptedException {
+    endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+    DEFAULT_CLIENT_CONFIG = endpoint.getClientConfigBuilder().build();
+    nodeInfo1 = endpoint.getHostsAndPorts().get(0);
+    nodeInfo2 = endpoint.getHostsAndPorts().get(1);
+    nodeInfo3 = endpoint.getHostsAndPorts().get(2);
+    nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
+
     node1 = new Jedis(nodeInfo1);
-    node1.auth("cluster");
+    node1.auth(endpoint.getPassword());
     node1.flushAll();
 
     node2 = new Jedis(nodeInfo2);
-    node2.auth("cluster");
+    node2.auth(endpoint.getPassword());
     node2.flushAll();
 
     node3 = new Jedis(nodeInfo3);
-    node3.auth("cluster");
+    node3.auth(endpoint.getPassword());
     node3.flushAll();
 
     // add nodes to cluster
-    node1.clusterMeet(LOCAL_IP, nodeInfo2.getPort());
-    node1.clusterMeet(LOCAL_IP, nodeInfo3.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node1.clusterMeet(nodeInfo2.getHost(), nodeInfo3.getPort());
 
     // split available slots across the three nodes
     int slotsPerNode = CLUSTER_HASHSLOTS / 3;
@@ -104,12 +110,9 @@ public class ClusterPipeliningTest {
 
   @AfterAll
   public static void tearDown() throws InterruptedException {
-    node1.flushDB();
-    node2.flushDB();
-    node3.flushDB();
-    node1.clusterReset(ClusterResetType.SOFT);
-    node2.clusterReset(ClusterResetType.SOFT);
-    node3.clusterReset(ClusterResetType.SOFT);
+    if (node1 != null) node1.clusterReset(ClusterResetType.SOFT);
+    if (node2 != null) node2.clusterReset(ClusterResetType.SOFT);
+    if (node3 != null) node3.clusterReset(ClusterResetType.SOFT);
   }
 
   @Test
@@ -176,7 +179,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void clusterPipelined() {
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build();
         ClusterPipeline pipeline = cluster.pipelined()) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
@@ -199,7 +202,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void intermediateSync() {
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build();
         ClusterPipeline pipeline = cluster.pipelined()) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
@@ -226,7 +229,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void intermediateSyncs() {
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build();
         ClusterPipeline pipeline = cluster.pipelined()) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
@@ -253,7 +256,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineResponse() {
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       jc.set("string", "foo");
       jc.lpush("list", "foo");
       jc.hset("hash", "foo", "bar");
@@ -305,7 +308,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineBinarySafeHashCommands() {
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       jc.hset("key".getBytes(), "f1".getBytes(), "v111".getBytes());
       jc.hset("key".getBytes(), "f22".getBytes(), "v2222".getBytes());
     }
@@ -970,7 +973,7 @@ public class ClusterPipeliningTest {
   public void testEvalsha() {
     String script = "return 'success!'";
     String sha1;
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       sha1 = jc.scriptLoad(script, "sampleKey");
       assertTrue(jc.scriptExists(sha1, "sampleKey"));
     }
@@ -990,7 +993,7 @@ public class ClusterPipeliningTest {
     String arg = "3";
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
     String sha1;
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       sha1 = jc.scriptLoad(script, key);
       assertTrue(jc.scriptExists(sha1, key));
     }
@@ -1017,7 +1020,7 @@ public class ClusterPipeliningTest {
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
     byte[] bScript = SafeEncoder.encode(script);
     byte[] bSha1;
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       bSha1 = jc.scriptLoad(bScript, bKey);
       assertTrue(jc.scriptExists(bSha1, bKey));
     }
@@ -1039,7 +1042,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void spublishInPipeline() {
-    try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jedis = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       ClusterPipeline pipelined = jedis.pipelined();
       Response<Long> p1 = pipelined.publish("foo", "bar");
       Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
@@ -1051,7 +1054,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void simple() { // TODO: move into 'redis.clients.jedis.commands.unified.cluster' package
-    try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient jedis = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       final int count = 10;
       int totalCount = 0;
       for (int i = 0; i < count; i++) {
@@ -1084,7 +1087,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void transaction() {
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
       assertThrows(UnsupportedOperationException.class, () -> cluster.multi());
     }
   }
@@ -1095,7 +1098,7 @@ public class ClusterPipeliningTest {
     final int maxTotal = 100;
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(maxTotal);
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig)) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).maxAttempts(5).poolConfig(poolConfig).build()) {
       for (int i = 0; i < maxTotal; i++) {
         assertThreadsCount();
         String s = Integer.toString(i);
@@ -1110,7 +1113,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void testPipelineKeysAtSameNode() {
-    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
 
       // test simple key
       cluster.set("foo", "bar");

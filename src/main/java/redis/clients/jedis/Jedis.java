@@ -23,6 +23,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -32,6 +33,62 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
 
+/**
+ * Jedis is a lightweight Redis client that uses a single, non-pooled connection to Redis.
+ * <p>
+ * <b>Important:</b> For most production use cases, {@link RedisClient} is the recommended and
+ * preferred option. {@code RedisClient} provides connection pooling, better resource management,
+ * and improved performance for typical applications.
+ * </p>
+ * <p>
+ * <b>When to use Jedis:</b>
+ * </p>
+ * <ul>
+ * <li><b>Short-lived scripts or utilities:</b> When you need a simple, lightweight client for
+ * one-off operations or command-line tools.</li>
+ * <li><b>Testing and development:</b> For unit tests or local development where connection pooling
+ * overhead is unnecessary.</li>
+ * <li><b>Fine-grained connection control:</b> Advanced scenarios requiring explicit control over
+ * individual connections, such as managing connection lifecycle manually or implementing custom
+ * connection strategies.</li>
+ * <li><b>Single-threaded applications:</b> Applications that execute Redis commands sequentially
+ * from a single thread and don't benefit from connection pooling.</li>
+ * </ul>
+ * <p>
+ * <b>When to use RedisClient instead:</b>
+ * </p>
+ * <ul>
+ * <li><b>Production applications:</b> Any multi-threaded or high-throughput application should use
+ * {@link RedisClient} for its connection pooling capabilities.</li>
+ * <li><b>Web applications:</b> Server applications handling concurrent requests benefit from
+ * connection pooling to avoid connection overhead.</li>
+ * <li><b>Long-running services:</b> Applications that maintain persistent connections to Redis
+ * should use {@link RedisClient} for better resource management.</li>
+ * <li><b>Default choice:</b> If you're unsure which to use, choose {@link RedisClient}.</li>
+ * </ul>
+ * <p>
+ * <b>Usage example:</b>
+ * </p>
+ *
+ * <pre>
+ * {
+ *   &#64;code
+ *   // Simple usage for a short-lived operation
+ *   try (Jedis jedis = new Jedis("localhost", 6379)) {
+ *     jedis.set("key", "value");
+ *     String value = jedis.get("key");
+ *   }
+ * }
+ * </pre>
+ * <p>
+ * <b>Note:</b> Each {@code Jedis} instance maintains a single connection. For concurrent access
+ * from multiple threads, either use {@link RedisClient} with connection pooling, or create
+ * separate {@code Jedis} instances per thread (not recommended for production).
+ * </p>
+ *
+ * @see RedisClient for the recommended pooled client for production use
+ * @see JedisPool for legacy pooled connections (deprecated, use RedisClient instead)
+ */
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
     SentinelCommands, CommandCommands,  Closeable {
@@ -506,6 +563,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] digestKey(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value));
@@ -573,6 +636,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.del(keys));
   }
+  @Override
+  public long delex(final byte[] key, final CompareCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
 
   @Override
   public long del(final byte[] key) {
@@ -915,7 +984,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @return 1 if the key was set 0 if the key was not set
+   * @deprecated Use {@link Jedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
+  @Deprecated
   @Override
   public long setnx(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
@@ -932,7 +1004,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param seconds
    * @param value
    * @return OK
+   * @deprecated Use {@link Jedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
+  @Deprecated
   @Override
   public String setex(final byte[] key, final long seconds, final byte[] value) {
     checkIsInMultiOrPipeline();
@@ -982,6 +1057,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long msetnx(final byte[]... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
+  }
+
+  @Override
+  public boolean msetex(final MSetExParams params, final byte[]... keysvalues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }
 
   /**
@@ -1136,7 +1217,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param start
    * @param end
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#getrange(byte[], long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
    */
+  @Deprecated
   @Override
   public byte[] substr(final byte[] key, final int start, final int end) {
     checkIsInMultiOrPipeline();
@@ -1231,7 +1315,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param hash
    * @return OK
+   * @deprecated Use {@link Jedis#hset(byte[], Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
    */
+  @Deprecated
   @Override
   public String hmset(final byte[] key, final Map<byte[], byte[]> hash) {
     checkIsInMultiOrPipeline();
@@ -1726,7 +1813,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param srckey
    * @param dstkey
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#lmove(byte[], byte[], ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public byte[] rpoplpush(final byte[] srckey, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
@@ -3772,7 +3863,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Pop a value from a list, push it to another list and return it; or block until one is available
+   * @deprecated Use {@link Jedis#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public byte[] brpoplpush(final byte[] source, final byte[] destination, final int timeout) {
     checkIsInMultiOrPipeline();
@@ -4047,7 +4142,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param milliseconds
    * @param value
    * @return OK
+   * @deprecated Use {@link Jedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
+  @Deprecated
   @Override
   public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMultiOrPipeline();
@@ -5147,6 +5245,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.getEx(key, params));
   }
 
+  @Override
+  public String digestKey(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public long delex(final String key, final CompareCondition condition) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.delex(key, condition));
+  }
+
   /**
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
@@ -5529,7 +5639,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @return 1 if the key was set, 0 if the key was not set
+   * @deprecated Use {@link Jedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
+  @Deprecated
   @Override
   public long setnx(final String key, final String value) {
     checkIsInMultiOrPipeline();
@@ -5546,7 +5659,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param seconds
    * @param value
    * @return OK
+   * @deprecated Use {@link Jedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
+  @Deprecated
   @Override
   public String setex(final String key, final long seconds, final String value) {
     checkIsInMultiOrPipeline();
@@ -5595,6 +5711,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long msetnx(final String... keysvalues) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.msetnx(keysvalues));
+  }
+
+  @Override
+  public boolean msetex(final MSetExParams params, final String... keysvalues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.msetex(params, keysvalues));
   }
 
   /**
@@ -5745,7 +5867,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param start
    * @param end
    * @return The substring
+   * @deprecated Use {@link Jedis#getrange(String, long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
    */
+  @Deprecated
   @Override
   public String substr(final String key, final int start, final int end) {
     checkIsInMultiOrPipeline();
@@ -5805,13 +5930,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> hgetex(String key, HGetExParams params, String... fields) {    
+  public List<String> hgetex(String key, HGetExParams params, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetex(key, params, fields));
   }
 
   @Override
-  public List<String> hgetdel(String key, String... fields) {    
+  public List<String> hgetdel(String key, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetdel(key, fields));
   }
@@ -5840,7 +5965,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param hash
    * @return Return OK or Exception if hash is empty
+   * @deprecated Use {@link Jedis#hset(String, Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
    */
+  @Deprecated
   @Override
   public String hmset(final String key, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
@@ -6295,7 +6423,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param srckey
    * @param dstkey
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#lmove(String, String, ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public String rpoplpush(final String srckey, final String dstkey) {
     checkIsInMultiOrPipeline();
@@ -6803,6 +6935,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
@@ -6815,6 +6952,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
@@ -7356,13 +7498,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param min a double or Double.NEGATIVE_INFINITY for "-inf"
    * @param max a double or Double.POSITIVE_INFINITY for "+inf"
    * @return A list of elements in the specified score range
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
@@ -7417,7 +7567,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param offset
    * @param count
    * @return A list of elements in the specified score range
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(final String key, final double min, final double max,
       final int offset, final int count) {
@@ -7425,6 +7578,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(final String key, final String min, final String max,
       final int offset, final int count) {
@@ -7478,13 +7636,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param min
    * @param max
    * @return A list of elements in the specified score range
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
@@ -7539,7 +7705,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param offset
    * @param count
    * @return A list of elements in the specified score range
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max,
       final int offset, final int count) {
@@ -7547,6 +7716,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
@@ -7554,18 +7728,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(final String key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(final String key, final double max, final double min,
       final int offset, final int count) {
@@ -7573,12 +7762,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
       final double min, final int offset, final int count) {
@@ -7586,6 +7785,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
       final String min, final int offset, final int count) {
@@ -7593,6 +7797,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(final String key, final String max, final String min,
       final int offset, final int count) {
@@ -7600,6 +7809,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
@@ -7866,12 +8080,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zlexcount(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByLex(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByLex(final String key, final String min, final String max,
       final int offset, final int count) {
@@ -7879,12 +8103,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByLex(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByLex(final String key, final String max, final String min,
       final int offset, final int count) {
@@ -7986,7 +8220,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param destination
    * @param timeout
    * @return The element
+   * @deprecated Use {@link Jedis#blmove(String, String, ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
    */
+  @Deprecated
   @Override
   public String brpoplpush(final String source, final String destination, final int timeout) {
     checkIsInMultiOrPipeline();
@@ -8586,7 +8824,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param milliseconds
    * @param value
    * @return OK
+   * @deprecated Use {@link Jedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
    */
+  @Deprecated
   @Override
   public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMultiOrPipeline();
@@ -9264,6 +9505,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.geopos(key, members));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
@@ -9271,6 +9517,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
@@ -9278,6 +9529,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
@@ -9285,6 +9541,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearchStore(String, String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public long georadiusStore(final String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
@@ -9292,6 +9553,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
@@ -9299,6 +9565,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member,
       final double radius, final GeoUnit unit) {
@@ -9306,6 +9577,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member,
       final double radius, final GeoUnit unit) {
@@ -9313,6 +9589,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
@@ -9320,6 +9601,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearchStore(String, String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public long georadiusByMemberStore(final String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
@@ -9327,6 +9613,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {

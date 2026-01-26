@@ -17,6 +17,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheConnection;
@@ -26,7 +27,6 @@ import redis.clients.jedis.executors.*;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
@@ -59,18 +59,34 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
+  /**
+   * @deprecated Use {@link RedisClient#create()} instead.
+   */
+  @Deprecated
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#create(HostAndPort)} instead.
+   */
+  @Deprecated
   public UnifiedJedis(HostAndPort hostAndPort) {
     this(new PooledConnectionProvider(hostAndPort), (RedisProtocol) null);
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#create(String)} instead.
+   */
+  @Deprecated
   public UnifiedJedis(final String url) {
     this(URI.create(url));
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#create(URI)} instead.
+   */
+  @Deprecated
   public UnifiedJedis(final URI uri) {
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
@@ -89,7 +105,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    *
    * @param uri The URI to connect to
    * @param config The JedisClientConfig object to use
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
    */
+  @Deprecated
   public UnifiedJedis(final URI uri, JedisClientConfig config) {
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
@@ -102,20 +120,33 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier()).build());
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
+   */
+  @Deprecated
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with client-side caching.
+   */
   @Experimental
+  @Deprecated
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
     this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig));
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with client-side caching.
+   */
   @Experimental
+  @Deprecated
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(), cache);
   }
 
+  @Deprecated
   public UnifiedJedis(ConnectionProvider provider) {
     this(new DefaultCommandExecutor(provider), provider);
   }
@@ -134,7 +165,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
    */
+  @Deprecated
   public UnifiedJedis(JedisSocketFactory socketFactory) {
     this(new Connection(socketFactory));
   }
@@ -144,7 +177,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
    */
+  @Deprecated
   public UnifiedJedis(JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this(new Connection(socketFactory, clientConfig));
   }
@@ -154,7 +189,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
+   * @deprecated
    */
+  @Deprecated
   public UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
@@ -170,6 +207,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  /**
+   * @deprecated Use {@link RedisClusterClient#builder()} to configure the cluster client.
+   */
   @Deprecated
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
@@ -190,6 +230,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         new ClusterCommandObjects(), protocol, cache);
   }
 
+  /**
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with retry settings.
+   */
+  @Deprecated
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
   }
@@ -199,7 +243,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
+   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
    */
+  @Deprecated
   public UnifiedJedis(CommandExecutor executor) {
     this(executor, (ConnectionProvider) null);
   }
@@ -208,8 +254,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(executor, provider, new CommandObjects());
   }
 
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
+  /**
+   * Uses a fetched connection to process protocol. Should be avoided if possible.
+   * @deprecated
+   */
   @VisibleForTesting
+  @Deprecated
   public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null, null);
     if (this.provider != null) {
@@ -586,6 +636,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long delex(String key, CompareCondition condition) {
+    return executeCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
   public long del(String... keys) {
     return executeCommand(commandObjects.del(keys));
   }
@@ -593,6 +648,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long unlink(String key) {
     return executeCommand(commandObjects.unlink(key));
+  }
+
+  @Override
+  public long delex(byte[] key, CompareCondition condition) {
+    return executeCommand(commandObjects.delex(key, condition));
   }
 
   @Override
@@ -761,6 +821,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String digestKey(String key) {
+    return executeCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public String setGet(String key, String value) {
     return executeCommand(commandObjects.setGet(key, value));
   }
@@ -793,6 +858,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] get(byte[] key) {
     return executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public byte[] digestKey(byte[] key) {
+    return executeCommand(commandObjects.digestKey(key));
   }
 
   @Override
@@ -864,16 +934,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public long setnx(String key, String value) {
     return executeCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public String setex(String key, long seconds, String value) {
     return executeCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public String psetex(String key, long milliseconds, String value) {
     return executeCommand(commandObjects.psetex(key, milliseconds, value));
@@ -888,16 +973,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public long setnx(byte[] key, byte[] value) {
     return executeCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public String setex(byte[] key, long seconds, byte[] value) {
     return executeCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public String psetex(byte[] key, long milliseconds, byte[] value) {
     return executeCommand(commandObjects.psetex(key, milliseconds, value));
@@ -969,6 +1069,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public boolean msetex(MSetExParams params, String... keysvalues) {
+    return executeCommand(commandObjects.msetex(params, keysvalues));
+  }
+
+  @Override
   public List<byte[]> mget(byte[]... keys) {
     return executeCommand(commandObjects.mget(keys));
   }
@@ -976,6 +1081,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String mset(byte[]... keysvalues) {
     return executeCommand(commandObjects.mset(keysvalues));
+  }
+
+  @Override
+  public boolean msetex(MSetExParams params, byte[]... keysvalues) {
+    return executeCommand(commandObjects.msetex(params, keysvalues));
   }
 
   @Override
@@ -988,6 +1098,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#getrange(String, long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   @Override
   public String substr(String key, int start, int end) {
     return executeCommand(commandObjects.substr(key, start, end));
@@ -1003,6 +1118,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#getrange(byte[], long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   @Override
   public byte[] substr(byte[] key, int start, int end) {
     return executeCommand(commandObjects.substr(key, start, end));
@@ -1345,21 +1465,45 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#lmove(String, String, ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public String rpoplpush(String srckey, String dstkey) {
     return executeCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#blmove(String, String, ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public String brpoplpush(String source, String destination, int timeout) {
     return executeCommand(commandObjects.brpoplpush(source, destination, timeout));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#lmove(byte[], byte[], ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public byte[] rpoplpush(byte[] srckey, byte[] dstkey) {
     return executeCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
     return executeCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -1446,12 +1590,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long hsetex(String key, HSetExParams params, Map<String, String> hash) {
     return executeCommand(commandObjects.hsetex(key, params, hash));
   }
-  
+
   @Override
   public String hget(String key, String field) {
     return executeCommand(commandObjects.hget(key, field));
   }
-    
+
   @Override
   public List<String> hgetex(String key, HGetExParams params, String... fields) {
     return executeCommand(commandObjects.hgetex(key, params, fields));
@@ -1467,6 +1611,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#hset(String, Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   @Override
   public String hmset(String key, Map<String, String> hash) {
     return executeCommand(commandObjects.hmset(key, hash));
@@ -1517,6 +1666,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#hset(byte[], Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   @Override
   public String hmset(byte[] key, Map<byte[], byte[]> hash) {
     return executeCommand(commandObjects.hmset(key, hash));
@@ -2246,6 +2400,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zrange(key, start, stop));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrange(String key, long start, long stop) {
     return executeCommand(commandObjects.zrevrange(key, start, stop));
@@ -2256,6 +2415,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeWithScores(String key, long start, long stop) {
     return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
@@ -2276,81 +2440,161 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(String key, String min, String max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(String key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(String key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(String key, String max, String min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByScore(String key, String min, String max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
@@ -2361,6 +2605,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zrange(key, start, stop));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrange(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrevrange(key, start, stop));
@@ -2371,6 +2620,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
@@ -2391,81 +2645,161 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrangeByScore(byte[] key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
@@ -2506,21 +2840,41 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zlexcount(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByLex(String key, String min, String max) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrangeByLex(String key, String min, String max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByLex(String key, String max, String min) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
@@ -2536,21 +2890,41 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.zlexcount(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
@@ -2845,51 +3219,101 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.geopos(key, members));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearchStore(String, String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearchStore(String, String, GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
@@ -2950,51 +3374,101 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearchStore(byte[], byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#geosearchStore(byte[], byte[], GeoSearchParam)} instead.
+   * Deprecated since Redis 6.2.0.
+   */
+  @Deprecated
   @Override
   public long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
@@ -3997,7 +4471,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link FTSearchParams#limit(int, int)} will be ignored.
-   * 
+   *
    * @param batchSize batch size
    * @param indexName index name
    * @param query query

@@ -5,8 +5,8 @@ import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -24,11 +24,12 @@ public class ClusterInitErrorTest {
   @Test
   public void initError() {
     assertNull(System.getProperty(INIT_NO_ERROR_PROPERTY));
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
     assertThrows(JedisClusterOperationException.class, () -> {
-      try (JedisCluster cluster = new JedisCluster(
-          Collections.singleton(endpoint.getHostAndPort()),
-          endpoint.getClientConfigBuilder().build())) {
+      try (RedisClusterClient cluster = RedisClusterClient.builder()
+          .nodes(Collections.singleton(endpoint.getHostAndPort()))
+          .clientConfig(endpoint.getClientConfigBuilder().build())
+          .build()) {
         // Intentionally left empty because the exception is expected
       }
     });
@@ -37,10 +38,11 @@ public class ClusterInitErrorTest {
   @Test
   public void initNoError() {
     System.setProperty(INIT_NO_ERROR_PROPERTY, "");
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
-    try (JedisCluster cluster = new JedisCluster(
-        Collections.singleton(endpoint.getHostAndPort()),
-        endpoint.getClientConfigBuilder().build())) {
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
+    try (RedisClusterClient cluster = RedisClusterClient.builder()
+        .nodes(Collections.singleton(endpoint.getHostAndPort()))
+        .clientConfig(endpoint.getClientConfigBuilder().build())
+        .build()) {
       assertThrows(JedisClusterOperationException.class, () -> cluster.get("foo"));
     }
   }

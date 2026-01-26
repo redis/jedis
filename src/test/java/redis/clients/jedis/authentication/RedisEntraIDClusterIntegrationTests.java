@@ -22,7 +22,6 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +32,9 @@ import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.RedisClusterClient;
 
 public class RedisEntraIDClusterIntegrationTests {
     private static final Logger log = LoggerFactory
@@ -49,7 +48,7 @@ public class RedisEntraIDClusterIntegrationTests {
     public static void before() {
         try {
             testCtx = EntraIDTestContext.DEFAULT;
-            endpointConfig = HostAndPorts.getRedisEndpoint("cluster-entraid-acl");
+            endpointConfig = Endpoints.getRedisEndpoint("cluster-entraid-acl");
             hnp = endpointConfig.getHostAndPort();
         } catch (IllegalArgumentException e) {
             log.warn("Skipping test because no Redis endpoint is configured");
@@ -70,8 +69,12 @@ public class RedisEntraIDClusterIntegrationTests {
 
         ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
-        try (JedisCluster jc = new JedisCluster(hnp, config, defaultDirections,
-                DEFAULT_POOL_CONFIG)) {
+        try (RedisClusterClient jc = RedisClusterClient.builder()
+                .nodes(Collections.singleton(hnp))
+                .clientConfig(config)
+                .maxAttempts(defaultDirections)
+                .poolConfig(DEFAULT_POOL_CONFIG)
+                .build()) {
 
             assertEquals("OK", jc.set("foo", "bar"));
             assertEquals("bar", jc.get("foo"));
@@ -108,7 +111,10 @@ public class RedisEntraIDClusterIntegrationTests {
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(1);
-        try (JedisCluster jc = new JedisCluster(Collections.singleton(hnp), config)) {
+        try (RedisClusterClient jc = RedisClusterClient.builder()
+                .nodes(Collections.singleton(hnp))
+                .clientConfig(config)
+                .build()) {
             Runnable task = () -> {
                 while (latch.getCount() > 0) {
                     assertEquals("OK", jc.set("foo", "bar"));

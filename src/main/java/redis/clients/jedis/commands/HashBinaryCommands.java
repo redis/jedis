@@ -74,6 +74,11 @@ public interface HashBinaryCommands {
 
   long hsetnx(byte[] key, byte[] field, byte[] value);
 
+  /**
+   * @deprecated Use {@link HashBinaryCommands#hset(byte[], Map)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   String hmset(byte[] key, Map<byte[], byte[]> hash);
 
   List<byte[]> hmget(byte[] key, byte[]... fields);

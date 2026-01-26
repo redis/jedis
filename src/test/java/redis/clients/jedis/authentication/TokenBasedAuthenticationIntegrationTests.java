@@ -37,10 +37,10 @@ import redis.clients.jedis.Connection;
 /*  */
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
@@ -54,7 +54,7 @@ public class TokenBasedAuthenticationIntegrationTests {
   @BeforeAll
   public static void before() {
     try {
-      endpointConfig = HostAndPorts.getRedisEndpoint("standalone0");
+      endpointConfig = Endpoints.getRedisEndpoint("standalone0");
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);
@@ -62,7 +62,7 @@ public class TokenBasedAuthenticationIntegrationTests {
   }
 
   @Test
-  public void testJedisPooledForInitialAuth() {
+  public void testClientForInitialAuth() {
     String user = "default";
     String password = endpointConfig.getPassword();
 
@@ -80,13 +80,16 @@ public class TokenBasedAuthenticationIntegrationTests {
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(endpointConfig.getHostAndPort(), clientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(endpointConfig.getHostAndPort())
+        .clientConfig(clientConfig)
+        .build()) {
       jedis.get("key1");
     }
   }
 
   @Test
-  public void testJedisPooledReauth() {
+  public void testClientReauth() {
     String user = "default";
     String password = endpointConfig.getPassword();
 
@@ -115,7 +118,10 @@ public class TokenBasedAuthenticationIntegrationTests {
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().authXManager(authXManager)
         .build();
 
-    try (JedisPooled jedis = new JedisPooled(endpointConfig.getHostAndPort(), clientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(endpointConfig.getHostAndPort())
+        .clientConfig(clientConfig)
+        .build()) {
       AtomicBoolean stop = new AtomicBoolean(false);
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.submit(() -> {
@@ -159,7 +165,10 @@ public class TokenBasedAuthenticationIntegrationTests {
       }
     };
 
-    try (JedisPooled jedis = new JedisPooled(endpointConfig.getHostAndPort(), clientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(endpointConfig.getHostAndPort())
+        .clientConfig(clientConfig)
+        .build()) {
       jedis.subscribe(pubSub, "channel1");
     }
   }
@@ -196,7 +205,10 @@ public class TokenBasedAuthenticationIntegrationTests {
 
     JedisPubSub pubSub = new JedisPubSub() {
     };
-    try (JedisPooled jedis = new JedisPooled(endpointConfig.getHostAndPort(), clientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(endpointConfig.getHostAndPort())
+        .clientConfig(clientConfig)
+        .build()) {
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executor.submit(() -> {
         jedis.subscribe(pubSub, "channel1");
@@ -241,7 +253,10 @@ public class TokenBasedAuthenticationIntegrationTests {
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .authXManager(new AuthXManager(tokenAuthConfig)).build();
 
-    try (JedisPooled jedis = new JedisPooled(endpointConfig.getHostAndPort(), clientConfig)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(endpointConfig.getHostAndPort())
+        .clientConfig(clientConfig)
+        .build()) {
       JedisPubSub pubSub = new JedisPubSub() {};
       JedisException e = assertThrows(JedisException.class,
           () -> jedis.subscribe(pubSub, "channel1"));

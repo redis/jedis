@@ -14,29 +14,41 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 
-import java.lang.reflect.Method;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static redis.clients.jedis.util.RedisVersionUtil.forcedVersion;
 
 public class RedisVersionCondition implements ExecutionCondition {
   private static final Logger logger = LoggerFactory.getLogger(RedisVersionCondition.class);
 
-  private final HostAndPort hostPort;
-  private final JedisClientConfig config;
+  private final Supplier<EndpointConfig> endpointSupplier;
+  private HostAndPort hostPort;
+  private JedisClientConfig config;
 
-  public RedisVersionCondition(EndpointConfig endpoint) {
-    this.hostPort = endpoint.getHostAndPort();
-    this.config = endpoint.getClientConfigBuilder().build();
+  public RedisVersionCondition(Supplier<EndpointConfig> endpointSupplier) {
+    this.endpointSupplier = endpointSupplier;
+    this.hostPort = null;
+    this.config = null;
   }
 
   public RedisVersionCondition(HostAndPort hostPort, JedisClientConfig config) {
+    this.endpointSupplier = null;
     this.hostPort = hostPort;
     this.config = config;
   }
 
+  private void ensureInitialized() {
+    if (hostPort == null && endpointSupplier != null) {
+      EndpointConfig endpoint = endpointSupplier.get();
+      this.hostPort = endpoint.getHostAndPort();
+      this.config = endpoint.getClientConfigBuilder().build();
+    }
+  }
+
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
       SinceRedisVersion versionAnnotation = getAnnotation(context);
       if (versionAnnotation != null) {

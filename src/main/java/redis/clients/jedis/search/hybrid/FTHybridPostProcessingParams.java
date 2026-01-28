@@ -28,11 +28,14 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 public class FTHybridPostProcessingParams implements IParams {
 
   private List<String> loadFields;
+  private boolean loadAll;
   private GroupBy groupBy;
   private final List<Apply> applies = new ArrayList<>();
   private SortBy sortBy;
   private Filter filter;
   private Limit limit;
+
+  private static final String LOAD_ALL = "*";
 
   private FTHybridPostProcessingParams() {
   }
@@ -64,7 +67,22 @@ public class FTHybridPostProcessingParams implements IParams {
      * @return this builder
      */
     public Builder load(String... fields) {
+      if (fields.length == 1 && fields[0].equals(LOAD_ALL)) {
+        instance.loadAll = true;
+        return this;
+      }
       instance.loadFields = Arrays.asList(fields);
+      return this;
+    }
+
+    /**
+     * Set to load all fields in the results using LOAD *.
+     * <p>
+     * Note: requires Redis version &gt;= 8.6.0
+     * @return this builder
+     */
+    public Builder loadAll() {
+      instance.loadAll = true;
       return this;
     }
 
@@ -122,15 +140,20 @@ public class FTHybridPostProcessingParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     // LOAD clause
-    if (loadFields != null && !loadFields.isEmpty()) {
+    if (loadAll || (loadFields != null && !loadFields.isEmpty())) {
       args.add(LOAD);
-      args.add(loadFields.size());
-      for (String field : loadFields) {
-        // Add @ prefix if not already present
-        if (!field.startsWith("@")) {
-          args.add("@" + field);
-        } else {
-          args.add(field);
+      if (loadAll) {
+        // Special case for LOAD *
+        args.add(LOAD_ALL);
+      } else {
+        args.add(loadFields.size());
+        for (String field : loadFields) {
+          // Add @ prefix if not already present
+          if (!field.startsWith("@")) {
+            args.add("@" + field);
+          } else {
+            args.add(field);
+          }
         }
       }
     }

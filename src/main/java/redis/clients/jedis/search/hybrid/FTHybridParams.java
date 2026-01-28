@@ -14,8 +14,9 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 /**
  * Argument list builder for the Redis {@code FT.HYBRID} command. Combines text search and vector
  * similarity search with configurable combination strategies and post-processing operations.
- * <h3>Basic Usage:</h3>
- * 
+ * <p>
+ * <strong>Basic Usage:</strong>
+ * </p>
  * <pre>
  * HybridParams params = HybridParams.builder()
  *     .search(HybridSearchParams.builder().query("comfortable shoes").build())

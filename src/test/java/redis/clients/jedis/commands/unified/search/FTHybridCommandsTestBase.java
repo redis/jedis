@@ -132,8 +132,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
             .scoreAlias("vector_score").build())
         .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3).window(25)))
-        .postProcessing(postProcessing).param("discount_rate", "0.9")
-        .param("vector", queryVector).build();
+        .postProcessing(postProcessing).param("discount_rate", "0.9").param("vector", queryVector)
+        .build();
 
     HybridReply reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -146,21 +146,21 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     assertThat(reply.getExecutionTime(), greaterThan(0.0));
 
     // Verify first result (google) - exact field values
-    Map<String, String> r1 = reply.getResults().get(0).getFields();
+    Map<String, Object> r1 = reply.getResults().get(0);
     assertThat(r1.get("brand"), equalTo("google"));
     assertThat(r1.get("count"), equalTo("2"));
     assertThat(r1.get("sum"), equalTo("1398"));
     assertThat(r1.get("discounted_price"), equalTo("1258.2"));
 
     // Verify second result (samsung) - exact field values
-    Map<String, String> r2 = reply.getResults().get(1).getFields();
+    Map<String, Object> r2 = reply.getResults().get(1);
     assertThat(r2.get("brand"), equalTo("samsung"));
     assertThat(r2.get("count"), equalTo("2"));
     assertThat(r2.get("sum"), equalTo("1598"));
     assertThat(r2.get("discounted_price"), equalTo("1438.2"));
 
     // Verify third result (apple) - exact field values
-    Map<String, String> r3 = reply.getResults().get(2).getFields();
+    Map<String, Object> r3 = reply.getResults().get(2);
     assertThat(r3.get("brand"), equalTo("apple"));
     assertThat(r3.get("count"), equalTo("3"));
     assertThat(r3.get("sum"), equalTo("2997"));

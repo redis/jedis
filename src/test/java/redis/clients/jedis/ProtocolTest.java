@@ -181,7 +181,7 @@ public class ProtocolTest {
             .build())
         .vectorSearch(HybridVectorParams.builder()
             .field("@image_embedding")
-            .vector(queryVector)
+            .vector("$vector")
             .method(HybridVectorParams.Knn.of(20).efRuntime(150))
             // Single combined filter
             .filter("@brand:{apple|samsung|google}")
@@ -190,6 +190,7 @@ public class ProtocolTest {
         .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3)))
         .postProcessing(postProcessing)
         .param("discount_rate", "0.9")
+        .param("vector", queryVector)
         .build();
 
     CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID)
@@ -298,7 +299,7 @@ public class ProtocolTest {
       HybridParams.builder()
           .vectorSearch(HybridVectorParams.builder()
               .field("@vec")
-              .vector(new byte[]{1, 2, 3})
+              .vector("$vector")
               .method(HybridVectorParams.Knn.of(10))
               .build())
           .build(); // Missing SEARCH

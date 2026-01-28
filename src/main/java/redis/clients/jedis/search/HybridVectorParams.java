@@ -17,7 +17,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 public class HybridVectorParams implements IParams {
 
   private String field;
-  private byte[] vector;
+  private String vector;
   private VectorMethod method;
   private final List<String> filters = new ArrayList<>();
   private String scoreAlias;
@@ -66,11 +66,11 @@ public class HybridVectorParams implements IParams {
     }
 
     /**
-     * Set the query vector as a byte array.
-     * @param vector the query vector bytes
+     * Set the param name to reference the query vector BLOB.
+     * @param vector the vector param name
      * @return this builder
      */
-    public Builder vector(byte[] vector) {
+    public Builder vector(String vector) {
       instance.vector = vector;
       return this;
     }
@@ -114,7 +114,11 @@ public class HybridVectorParams implements IParams {
   public void addParams(CommandArguments args) {
     args.add(VSIM);
     args.add(field);
-    args.add(vector);
+    if (vector.startsWith("$")) {
+      args.add(vector);
+    } else {
+      args.add(String.format("$%s", vector));
+    }
 
     method.addParams(args);
 

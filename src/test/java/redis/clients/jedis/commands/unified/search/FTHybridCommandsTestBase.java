@@ -126,14 +126,14 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
         .search(HybridSearchParams.builder().query("@category:{electronics} smartphone camera")
             .scorer(HybridSearchParams.Scorer.of(HybridSearchParams.ScoringFunction.BM25))
             .scoreAlias("text_score").build())
-        .vectorSearch(HybridVectorParams.builder().field("@image_embedding").vector(queryVector)
+        .vectorSearch(HybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(HybridVectorParams.Knn.of(20).efRuntime(150))
             // Single combined filter expression
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
             .scoreAlias("vector_score").build())
         .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3)))
         .postProcessing(postProcessing).param("discount_rate", "0.9")
-        .param("$vector", new String(queryVector)).build();
+        .param("vector", queryVector).build();
 
     HybridReply reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 

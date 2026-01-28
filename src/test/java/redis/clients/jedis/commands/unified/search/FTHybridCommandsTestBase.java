@@ -22,14 +22,14 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
-import redis.clients.jedis.search.CombineParams;
+import redis.clients.jedis.search.hybrid.FTHybridCombineParams;
 import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.HybridParams;
-import redis.clients.jedis.search.HybridReply;
-import redis.clients.jedis.search.HybridSearchParams;
-import redis.clients.jedis.search.HybridVectorParams;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
+import redis.clients.jedis.search.hybrid.FTHybridSearchParams;
+import redis.clients.jedis.search.hybrid.FTHybridVectorParams;
 import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.PostProcessingParams;
+import redis.clients.jedis.search.hybrid.FTHybridPostProcessingParams;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
@@ -104,37 +104,40 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
       new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
 
     // Test @ prefix auto-addition: use fields without @ prefix
-    PostProcessingParams postProcessing = PostProcessingParams.builder()
+    FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
         .load("price", "brand", "@category") // Mix with and without @
-        .groupBy(PostProcessingParams.GroupBy.of("brand") // No @ prefix
-            .reduce(PostProcessingParams.Reducer
-                .of(PostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
-            .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.COUNT)
-                .as("count")))
-        .apply(PostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
-        .sortBy(PostProcessingParams.SortBy.of(
-          new PostProcessingParams.SortProperty("sum", PostProcessingParams.SortDirection.ASC), // No
-                                                                                                // @
-                                                                                                // prefix
-          new PostProcessingParams.SortProperty("count", PostProcessingParams.SortDirection.DESC))) // No
-                                                                                                    // @
-                                                                                                    // prefix
-        .filter(PostProcessingParams.Filter.of("@sum > 700"))
-        .limit(PostProcessingParams.Limit.of(0, 20)).build();
+        .groupBy(FTHybridPostProcessingParams.GroupBy.of("brand") // No @ prefix
+            .reduce(FTHybridPostProcessingParams.Reducer
+                .of(FTHybridPostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
+            .reduce(FTHybridPostProcessingParams.Reducer
+                .of(FTHybridPostProcessingParams.ReduceFunction.COUNT).as("count")))
+        .apply(FTHybridPostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
+        .sortBy(FTHybridPostProcessingParams.SortBy.of(
+          new FTHybridPostProcessingParams.SortProperty("sum",
+              FTHybridPostProcessingParams.SortDirection.ASC), // No
+          // @
+          // prefix
+          new FTHybridPostProcessingParams.SortProperty("count",
+              FTHybridPostProcessingParams.SortDirection.DESC))) // No
+        // @
+        // prefix
+        .filter(FTHybridPostProcessingParams.Filter.of("@sum > 700"))
+        .limit(FTHybridPostProcessingParams.Limit.of(0, 20)).build();
 
-    HybridParams hybridArgs = HybridParams.builder()
-        .search(HybridSearchParams.builder().query("@category:{electronics} smartphone camera")
-            .scorer(HybridSearchParams.Scorer.of("BM25")).scoreAlias("text_score").build())
-        .vectorSearch(HybridVectorParams.builder().field("@image_embedding").vector("vector")
-            .method(HybridVectorParams.Knn.of(20).efRuntime(150))
+    FTHybridParams hybridArgs = FTHybridParams.builder()
+        .search(FTHybridSearchParams.builder().query("@category:{electronics} smartphone camera")
+            .scorer(FTHybridSearchParams.Scorer.of("BM25")).scoreAlias("text_score").build())
+        .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
+            .method(FTHybridVectorParams.Knn.of(20).efRuntime(150))
             // Single combined filter expression
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
             .scoreAlias("vector_score").build())
-        .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3).window(25)))
+        .combine(FTHybridCombineParams
+            .of(new FTHybridCombineParams.Linear().alpha(0.7).beta(0.3).window(25)))
         .postProcessing(postProcessing).param("discount_rate", "0.9").param("vector", queryVector)
         .build();
 
-    HybridReply reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+    HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     // Verify results - exact assertions like Lettuce
     assertThat(reply, notNullValue());

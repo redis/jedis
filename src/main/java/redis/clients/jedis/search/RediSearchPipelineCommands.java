@@ -10,6 +10,8 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 
 public interface RediSearchPipelineCommands {
@@ -132,5 +134,5 @@ public interface RediSearchPipelineCommands {
    * @return the hybrid search results
    */
   @Experimental
-  Response<HybridReply> ftHybrid(String indexName, HybridParams hybridParams);
+  Response<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams);
 }

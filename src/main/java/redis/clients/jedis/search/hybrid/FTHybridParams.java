@@ -1,4 +1,4 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.search.hybrid;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
@@ -24,42 +24,42 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  *     .combine(CombineParams.of(new CombineParams.RRF())).build();
  * </pre>
  *
- * @see HybridSearchParams
- * @see HybridVectorParams
- * @see CombineParams
- * @see PostProcessingParams
+ * @see FTHybridSearchParams
+ * @see FTHybridVectorParams
+ * @see FTHybridCombineParams
+ * @see FTHybridPostProcessingParams
  */
 @Experimental
-public class HybridParams implements IParams {
+public class FTHybridParams implements IParams {
 
-  private final List<HybridSearchParams> searchArgs = new ArrayList<>();
-  private final List<HybridVectorParams> vectorArgs = new ArrayList<>();
-  private CombineParams combineArgs;
-  private PostProcessingParams postProcessingArgs;
+  private final List<FTHybridSearchParams> searchArgs = new ArrayList<>();
+  private final List<FTHybridVectorParams> vectorArgs = new ArrayList<>();
+  private FTHybridCombineParams combineArgs;
+  private FTHybridPostProcessingParams postProcessingArgs;
   private final Map<String, Object> params = new HashMap<>();
   private Long timeout;
 
-  private HybridParams() {
+  private FTHybridParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link HybridParams}.
+   * @return a new {@link Builder} for {@link FTHybridParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link HybridParams}.
+   * Builder for {@link FTHybridParams}.
    */
   public static class Builder {
-    private final HybridParams instance = new HybridParams();
+    private final FTHybridParams instance = new FTHybridParams();
 
     /**
-     * Build the {@link HybridParams} instance.
+     * Build the {@link FTHybridParams} instance.
      * @return the configured arguments
      */
-    public HybridParams build() {
+    public FTHybridParams build() {
       // Validate that both SEARCH and VSIM are configured (per FT.HYBRID requirements)
       if (instance.searchArgs.isEmpty()) {
         throw new IllegalArgumentException("At least one SEARCH clause must be configured");
@@ -71,11 +71,11 @@ public class HybridParams implements IParams {
     }
 
     /**
-     * Configure the SEARCH clause using {@link HybridSearchParams}.
+     * Configure the SEARCH clause using {@link FTHybridSearchParams}.
      * @param searchArgs the search arguments
      * @return this builder
      */
-    public Builder search(HybridSearchParams searchArgs) {
+    public Builder search(FTHybridSearchParams searchArgs) {
       if (searchArgs == null) {
         throw new IllegalArgumentException("Search args must not be null");
       }
@@ -84,11 +84,11 @@ public class HybridParams implements IParams {
     }
 
     /**
-     * Configure the VSIM clause using {@link HybridVectorParams}.
+     * Configure the VSIM clause using {@link FTHybridVectorParams}.
      * @param vectorArgs the vector search arguments
      * @return this builder
      */
-    public Builder vectorSearch(HybridVectorParams vectorArgs) {
+    public Builder vectorSearch(FTHybridVectorParams vectorArgs) {
       if (vectorArgs == null) {
         throw new IllegalArgumentException("Vector args must not be null");
       }
@@ -97,11 +97,11 @@ public class HybridParams implements IParams {
     }
 
     /**
-     * Configure the COMBINE clause using {@link CombineParams}.
+     * Configure the COMBINE clause using {@link FTHybridCombineParams}.
      * @param combineArgs the combine arguments
      * @return this builder
      */
-    public Builder combine(CombineParams combineArgs) {
+    public Builder combine(FTHybridCombineParams combineArgs) {
       if (combineArgs == null) {
         throw new IllegalArgumentException("Combine args must not be null");
       }
@@ -114,7 +114,7 @@ public class HybridParams implements IParams {
      * @param postProcessingArgs the post-processing configuration
      * @return this builder
      */
-    public Builder postProcessing(PostProcessingParams postProcessingArgs) {
+    public Builder postProcessing(FTHybridPostProcessingParams postProcessingArgs) {
       if (postProcessingArgs == null) {
         throw new IllegalArgumentException("PostProcessingParams must not be null");
       }
@@ -156,12 +156,12 @@ public class HybridParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     // SEARCH clause(s)
-    for (HybridSearchParams searchArg : searchArgs) {
+    for (FTHybridSearchParams searchArg : searchArgs) {
       searchArg.addParams(args);
     }
 
     // VSIM clause(s)
-    for (HybridVectorParams vectorArg : vectorArgs) {
+    for (FTHybridVectorParams vectorArg : vectorArgs) {
       vectorArg.addParams(args);
     }
 

@@ -17,6 +17,8 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
@@ -4629,7 +4631,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public HybridReply ftHybrid(String indexName, HybridParams hybridParams) {
+  public HybridResult ftHybrid(String indexName, FTHybridParams hybridParams) {
     return executeCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 

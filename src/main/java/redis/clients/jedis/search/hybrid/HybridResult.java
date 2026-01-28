@@ -1,4 +1,4 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.search.hybrid;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +15,7 @@ import redis.clients.jedis.util.KeyValue;
  * time, warnings, and a list of per-document results with document key and field values.
  */
 @Experimental
-public class HybridReply {
+public class HybridResult {
 
   private long totalResults;
   private double executionTime;
@@ -25,7 +25,7 @@ public class HybridReply {
   /**
    * Creates a new empty HybridReply instance.
    */
-  public HybridReply() {
+  public HybridResult() {
     this.totalResults = 0;
     this.executionTime = 0;
     this.results = new ArrayList<>();
@@ -37,7 +37,7 @@ public class HybridReply {
    * @param totalResults the total number of matching documents
    * @param results the list of results
    */
-  public HybridReply(long totalResults, List<Map<String, Object>> results) {
+  public HybridResult(long totalResults, List<Map<String, Object>> results) {
     this.totalResults = totalResults;
     this.executionTime = 0;
     this.results = results != null ? results : new ArrayList<>();
@@ -50,7 +50,7 @@ public class HybridReply {
    * @param results the list of results
    * @param warnings the list of warnings
    */
-  public HybridReply(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
+  public HybridResult(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
     this.totalResults = totalResults;
     this.executionTime = 0;
     this.results = results != null ? results : new ArrayList<>();
@@ -132,14 +132,14 @@ public class HybridReply {
   }
 
   // RESP2/RESP3 Builder
-  public static final Builder<HybridReply> HYBRID_REPLY_BUILDER = new Builder<HybridReply>() {
+  public static final Builder<HybridResult> HYBRID_REPLY_BUILDER = new Builder<HybridResult>() {
     private static final String TOTAL_RESULTS_STR = "total_results";
     private static final String EXECUTION_TIME_STR = "execution_time";
     private static final String RESULTS_STR = "results";
     private static final String WARNINGS_STR = "warnings";
 
     @Override
-    public HybridReply build(Object data) {
+    public HybridResult build(Object data) {
       List list = (List) data;
 
       // Check if RESP3 (KeyValue) or RESP2 (flat list)
@@ -150,7 +150,7 @@ public class HybridReply {
       }
     }
 
-    private HybridReply buildResp3(List<KeyValue> list) {
+    private HybridResult buildResp3(List<KeyValue> list) {
       long totalResults = -1;
       double executionTime = 0;
       List<Map<String, Object>> results = null;
@@ -180,12 +180,12 @@ public class HybridReply {
         }
       }
 
-      HybridReply reply = new HybridReply(totalResults, results, warnings);
+      HybridResult reply = new HybridResult(totalResults, results, warnings);
       reply.setExecutionTime(executionTime);
       return reply;
     }
 
-    private HybridReply buildResp2(List list) {
+    private HybridResult buildResp2(List list) {
       // RESP2 format: ["key1", value1, "key2", value2, ...]
       long totalResults = -1;
       double executionTime = 0;
@@ -217,7 +217,7 @@ public class HybridReply {
         }
       }
 
-      HybridReply reply = new HybridReply(totalResults, results, warnings);
+      HybridResult reply = new HybridResult(totalResults, results, warnings);
       reply.setExecutionTime(executionTime);
       return reply;
     }

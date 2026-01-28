@@ -1,4 +1,4 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.search.hybrid;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
@@ -14,7 +14,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * with KNN or RANGE methods.
  */
 @Experimental
-public class HybridVectorParams implements IParams {
+public class FTHybridVectorParams implements IParams {
 
   private String field;
   private String vector;
@@ -22,27 +22,27 @@ public class HybridVectorParams implements IParams {
   private final List<String> filters = new ArrayList<>();
   private String scoreAlias;
 
-  private HybridVectorParams() {
+  private FTHybridVectorParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link HybridVectorParams}.
+   * @return a new {@link Builder} for {@link FTHybridVectorParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link HybridVectorParams}.
+   * Builder for {@link FTHybridVectorParams}.
    */
   public static class Builder {
-    private final HybridVectorParams instance = new HybridVectorParams();
+    private final FTHybridVectorParams instance = new FTHybridVectorParams();
 
     /**
-     * Build the {@link HybridVectorParams} instance.
+     * Build the {@link FTHybridVectorParams} instance.
      * @return the configured arguments
      */
-    public HybridVectorParams build() {
+    public FTHybridVectorParams build() {
       if (instance.field == null) {
         throw new IllegalArgumentException("Field is required for VSIM clause");
       }

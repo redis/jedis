@@ -1,8 +1,9 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.search.hybrid;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.search.SearchProtocol;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
@@ -11,12 +12,12 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * vector similarity scores.
  */
 @Experimental
-public class CombineParams implements IParams {
+public class FTHybridCombineParams implements IParams {
 
   private final CombineMethod method;
   private String scoreAlias;
 
-  private CombineParams(CombineMethod method) {
+  private FTHybridCombineParams(CombineMethod method) {
     this.method = method;
   }
 
@@ -25,11 +26,11 @@ public class CombineParams implements IParams {
    * @param method the combine method (RRF or Linear)
    * @return a new CombineParams instance
    */
-  public static CombineParams of(CombineMethod method) {
+  public static FTHybridCombineParams of(CombineMethod method) {
     if (method == null) {
       throw new IllegalArgumentException("Combine method must not be null");
     }
-    return new CombineParams(method);
+    return new FTHybridCombineParams(method);
   }
 
   /**
@@ -37,7 +38,7 @@ public class CombineParams implements IParams {
    * @param alias the field name to use for the combined score
    * @return this instance
    */
-  public CombineParams as(String alias) {
+  public FTHybridCombineParams as(String alias) {
     if (alias == null) {
       throw new IllegalArgumentException("Alias must not be null");
     }

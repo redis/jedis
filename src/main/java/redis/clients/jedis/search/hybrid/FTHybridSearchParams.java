@@ -1,4 +1,4 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.search.hybrid;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
@@ -11,33 +11,33 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * and score aliasing.
  */
 @Experimental
-public class HybridSearchParams implements IParams {
+public class FTHybridSearchParams implements IParams {
 
   private String query;
   private Scorer scorer;
   private String scoreAlias;
 
-  private HybridSearchParams() {
+  private FTHybridSearchParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link HybridSearchParams}.
+   * @return a new {@link Builder} for {@link FTHybridSearchParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link HybridSearchParams}.
+   * Builder for {@link FTHybridSearchParams}.
    */
   public static class Builder {
-    private final HybridSearchParams instance = new HybridSearchParams();
+    private final FTHybridSearchParams instance = new FTHybridSearchParams();
 
     /**
-     * Build the {@link HybridSearchParams} instance.
+     * Build the {@link FTHybridSearchParams} instance.
      * @return the configured arguments
      */
-    public HybridSearchParams build() {
+    public FTHybridSearchParams build() {
       if (instance.query == null) {
         throw new IllegalArgumentException("Query is required for SEARCH clause");
       }

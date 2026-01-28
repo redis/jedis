@@ -1,4 +1,4 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.search.hybrid;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
@@ -25,7 +25,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * </ol>
  */
 @Experimental
-public class PostProcessingParams implements IParams {
+public class FTHybridPostProcessingParams implements IParams {
 
   private List<String> loadFields;
   private GroupBy groupBy;
@@ -34,27 +34,27 @@ public class PostProcessingParams implements IParams {
   private Filter filter;
   private Limit limit;
 
-  private PostProcessingParams() {
+  private FTHybridPostProcessingParams() {
   }
 
   /**
-   * @return a new {@link Builder} for {@link PostProcessingParams}.
+   * @return a new {@link Builder} for {@link FTHybridPostProcessingParams}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder for {@link PostProcessingParams}.
+   * Builder for {@link FTHybridPostProcessingParams}.
    */
   public static class Builder {
-    private final PostProcessingParams instance = new PostProcessingParams();
+    private final FTHybridPostProcessingParams instance = new FTHybridPostProcessingParams();
 
     /**
-     * Build the {@link PostProcessingParams} instance.
+     * Build the {@link FTHybridPostProcessingParams} instance.
      * @return the configured arguments
      */
-    public PostProcessingParams build() {
+    public FTHybridPostProcessingParams build() {
       return instance;
     }
 

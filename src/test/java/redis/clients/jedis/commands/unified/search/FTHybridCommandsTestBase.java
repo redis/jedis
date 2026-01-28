@@ -124,8 +124,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
 
     HybridParams hybridArgs = HybridParams.builder()
         .search(HybridSearchParams.builder().query("@category:{electronics} smartphone camera")
-            .scorer(HybridSearchParams.Scorer.of(HybridSearchParams.ScoringFunction.BM25))
-            .scoreAlias("text_score").build())
+            .scorer(HybridSearchParams.Scorer.of("BM25")).scoreAlias("text_score").build())
         .vectorSearch(HybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(HybridVectorParams.Knn.of(20).efRuntime(150))
             // Single combined filter expression

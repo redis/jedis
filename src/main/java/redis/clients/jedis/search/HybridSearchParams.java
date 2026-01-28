@@ -82,12 +82,7 @@ public class HybridSearchParams implements IParams {
 
     if (scorer != null) {
       args.add(SCORER);
-      args.add(scorer.function.name());
-      if (scorer.params != null && scorer.params.length > 0) {
-        for (Object param : scorer.params) {
-          args.add(param);
-        }
-      }
+      args.add(scorer.function);
     }
 
     if (scoreAlias != null) {
@@ -96,54 +91,24 @@ public class HybridSearchParams implements IParams {
     }
   }
 
+  // We are using a wrapper, because in the future the server will allow params
   /**
    * Represents a scoring function configuration for text search.
    */
   public static class Scorer {
-    private final ScoringFunction function;
-    private final Object[] params;
+    private final String function;
 
-    private Scorer(ScoringFunction function, Object... params) {
+    private Scorer(String function) {
       this.function = function;
-      this.params = params;
     }
 
     /**
-     * Create a scorer with the given function and optional parameters.
+     * Create a scorer with the given function.
      * @param function the scoring function
-     * @param params optional parameters for the scoring function
      * @return a new Scorer instance
      */
-    public static Scorer of(ScoringFunction function, Object... params) {
-      return new Scorer(function, params);
-    }
-  }
-
-  /**
-   * Enumeration of available scoring functions for text search.
-   */
-  public enum ScoringFunction {
-    /** Term Frequency-Inverse Document Frequency */
-    TFIDF,
-    /** TF-IDF with document normalization */
-    TFIDF_DOCNORM("TFIDF.DOCNORM"),
-    /** Best Matching 25 */
-    BM25,
-    /** Disable scoring */
-    DISMAX,
-    /** Document only scoring */
-    DOCSCORE,
-    /** Hamming distance */
-    HAMMING;
-
-    private final String value;
-
-    ScoringFunction() {
-      this.value = name();
-    }
-
-    ScoringFunction(String value) {
-      this.value = value;
+    public static Scorer of(String function) {
+      return new Scorer(function);
     }
   }
 }

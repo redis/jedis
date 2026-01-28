@@ -176,7 +176,7 @@ public class ProtocolTest {
     HybridParams hybridArgs = HybridParams.builder()
         .search(HybridSearchParams.builder()
             .query("@category:{electronics} smartphone camera")
-            .scorer(HybridSearchParams.Scorer.of(HybridSearchParams.ScoringFunction.BM25))
+            .scorer(HybridSearchParams.Scorer.of("BM25"))
             .scoreAlias("text_score")
             .build())
         .vectorSearch(HybridVectorParams.builder()

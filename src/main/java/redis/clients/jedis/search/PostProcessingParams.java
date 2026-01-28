@@ -13,12 +13,26 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 /**
  * Arguments for post-processing operations in FT.HYBRID command. Supports LOAD, GROUPBY, APPLY,
  * SORTBY, FILTER, and LIMIT operations.
+ * <p>
+ * Operations are applied in a specific order:
+ * <ol>
+ * <li>LOAD - fields to load</li>
+ * <li>GROUPBY - grouping with reducers</li>
+ * <li>APPLY - computed fields</li>
+ * <li>SORTBY - sorting</li>
+ * <li>FILTER - filtering results</li>
+ * <li>LIMIT - pagination</li>
+ * </ol>
  */
 @Experimental
 public class PostProcessingParams implements IParams {
 
   private List<String> loadFields;
-  private final List<Operation> operations = new ArrayList<>();
+  private GroupBy groupBy;
+  private final List<Apply> applies = new ArrayList<>();
+  private SortBy sortBy;
+  private Filter filter;
+  private Limit limit;
 
   private PostProcessingParams() {
   }
@@ -55,12 +69,52 @@ public class PostProcessingParams implements IParams {
     }
 
     /**
-     * Add a post-processing operation.
-     * @param operation the operation to add
+     * Add a GROUPBY operation.
+     * @param groupBy the groupBy operation
      * @return this builder
      */
-    public Builder addOperation(Operation operation) {
-      instance.operations.add(operation);
+    public Builder groupBy(GroupBy groupBy) {
+      instance.groupBy = groupBy;
+      return this;
+    }
+
+    /**
+     * Add an APPLY operation.
+     * @param apply the apply operation
+     * @return this builder
+     */
+    public Builder apply(Apply apply) {
+      instance.applies.add(apply);
+      return this;
+    }
+
+    /**
+     * Add a SORTBY operation.
+     * @param sortBy the sortBy operation
+     * @return this builder
+     */
+    public Builder sortBy(SortBy sortBy) {
+      instance.sortBy = sortBy;
+      return this;
+    }
+
+    /**
+     * Add a FILTER operation.
+     * @param filter the filter operation
+     * @return this builder
+     */
+    public Builder filter(Filter filter) {
+      instance.filter = filter;
+      return this;
+    }
+
+    /**
+     * Add a LIMIT operation.
+     * @param limit the limit operation
+     * @return this builder
+     */
+    public Builder limit(Limit limit) {
+      instance.limit = limit;
       return this;
     }
   }
@@ -81,22 +135,32 @@ public class PostProcessingParams implements IParams {
       }
     }
 
-    // Other operations in order
-    for (Operation operation : operations) {
-      operation.addParams(args);
+    // Operations in specific order
+    if (groupBy != null) {
+      groupBy.addParams(args);
     }
-  }
 
-  /**
-   * Base interface for post-processing operations.
-   */
-  public interface Operation extends IParams {
+    for (Apply apply : applies) {
+      apply.addParams(args);
+    }
+
+    if (sortBy != null) {
+      sortBy.addParams(args);
+    }
+
+    if (filter != null) {
+      filter.addParams(args);
+    }
+
+    if (limit != null) {
+      limit.addParams(args);
+    }
   }
 
   /**
    * GROUPBY operation.
    */
-  public static class GroupBy implements Operation {
+  public static class GroupBy implements IParams {
     private final List<String> fields;
     private final List<Reducer> reducers = new ArrayList<>();
 
@@ -200,7 +264,7 @@ public class PostProcessingParams implements IParams {
   /**
    * SORTBY operation.
    */
-  public static class SortBy implements Operation {
+  public static class SortBy implements IParams {
     private final List<SortProperty> properties;
 
     private SortBy(SortProperty... properties) {
@@ -256,7 +320,7 @@ public class PostProcessingParams implements IParams {
   /**
    * APPLY operation.
    */
-  public static class Apply implements Operation {
+  public static class Apply implements IParams {
     private final String expression;
     private final String alias;
 
@@ -287,7 +351,7 @@ public class PostProcessingParams implements IParams {
   /**
    * FILTER operation.
    */
-  public static class Filter implements Operation {
+  public static class Filter implements IParams {
     private final String expression;
 
     private Filter(String expression) {
@@ -313,7 +377,7 @@ public class PostProcessingParams implements IParams {
   /**
    * LIMIT operation.
    */
-  public static class Limit implements Operation {
+  public static class Limit implements IParams {
     private final int offset;
     private final int count;
 

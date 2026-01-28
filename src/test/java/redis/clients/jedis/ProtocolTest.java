@@ -162,15 +162,15 @@ public class ProtocolTest {
     // Test @ prefix auto-addition: use fields without @ prefix
     PostProcessingParams postProcessing = PostProcessingParams.builder()
         .load("price", "brand", "@category") // Mix with and without @
-        .addOperation(PostProcessingParams.GroupBy.of("brand") // No @ prefix
+        .groupBy(PostProcessingParams.GroupBy.of("brand") // No @ prefix
             .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
             .reduce(PostProcessingParams.Reducer.of(PostProcessingParams.ReduceFunction.COUNT).as("count")))
-        .addOperation(PostProcessingParams.SortBy.of(
+        .apply(PostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
+        .sortBy(PostProcessingParams.SortBy.of(
             new PostProcessingParams.SortProperty("sum", PostProcessingParams.SortDirection.ASC), // No @ prefix
             new PostProcessingParams.SortProperty("count", PostProcessingParams.SortDirection.DESC))) // No @ prefix
-        .addOperation(PostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
-        .addOperation(PostProcessingParams.Filter.of("@sum > 700"))
-        .addOperation(PostProcessingParams.Limit.of(0, 20))
+        .filter(PostProcessingParams.Filter.of("@sum > 700"))
+        .limit(PostProcessingParams.Limit.of(0, 20))
         .build();
 
     HybridParams hybridArgs = HybridParams.builder()

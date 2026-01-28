@@ -131,7 +131,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             // Single combined filter expression
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
             .scoreAlias("vector_score").build())
-        .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3)))
+        .combine(CombineParams.of(new CombineParams.Linear().alpha(0.7).beta(0.3).window(25)))
         .postProcessing(postProcessing).param("discount_rate", "0.9")
         .param("vector", queryVector).build();
 

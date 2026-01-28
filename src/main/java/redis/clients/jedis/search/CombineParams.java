@@ -69,9 +69,6 @@ public class CombineParams implements IParams {
     private Integer window;
     private Double constant;
 
-    public RRF() {
-    }
-
     /**
      * Set the WINDOW parameter for RRF.
      * @param window the window size
@@ -120,9 +117,7 @@ public class CombineParams implements IParams {
   public static class Linear implements CombineMethod {
     private Double alpha;
     private Double beta;
-
-    public Linear() {
-    }
+    private Integer window;
 
     /**
      * Set the ALPHA parameter (weight for text search score).
@@ -144,6 +139,16 @@ public class CombineParams implements IParams {
       return this;
     }
 
+    /**
+     * Set the WINDOW parameter for LINEAR.
+     * @param window the window size
+     * @return this LINEAR instance
+     */
+    public Linear window(int window) {
+      this.window = window;
+      return this;
+    }
+
     @Override
     public void addParams(CommandArguments args) {
       args.add(LINEAR);
@@ -152,6 +157,7 @@ public class CombineParams implements IParams {
       int paramCount = 0;
       if (alpha != null) paramCount += 2;
       if (beta != null) paramCount += 2;
+      if (window != null) paramCount += 2;
 
       args.add(paramCount);
 
@@ -162,6 +168,10 @@ public class CombineParams implements IParams {
       if (beta != null) {
         args.add(BETA);
         args.add(beta);
+      }
+      if (window != null) {
+        args.add(WINDOW);
+        args.add(window);
       }
     }
   }

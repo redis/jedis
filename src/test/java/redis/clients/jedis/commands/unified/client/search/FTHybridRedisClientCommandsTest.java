@@ -7,10 +7,6 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.client.RedisClientCommandsTestHelper;
 import redis.clients.jedis.commands.unified.search.FTHybridCommandsTestBase;
 
-/**
- * Standalone (RedisClient) implementation of FT.HYBRID tests. Uses standalone0 endpoint which has
- * RediSearch modules built-in for Redis 8.0+.
- */
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class FTHybridRedisClientCommandsTest extends FTHybridCommandsTestBase {

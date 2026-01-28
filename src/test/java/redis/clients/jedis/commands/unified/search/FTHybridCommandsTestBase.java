@@ -35,10 +35,6 @@ import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.search.schemafields.VectorField;
 
-/**
- * Base test class for FT.HYBRID command using the UnifiedJedis pattern. Tests hybrid search
- * functionality combining text search and vector similarity.
- */
 @Tag("integration")
 @Tag("search")
 @SinceRedisVersion("8.4.0")
@@ -103,10 +99,9 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     byte[] queryVector = floatArrayToByteArray(
       new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
 
-    // Test @ prefix auto-addition: use fields without @ prefix
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
-        .load("price", "brand", "@category") // Mix with and without @
-        .groupBy(FTHybridPostProcessingParams.GroupBy.of("brand") // No @ prefix
+        .load("price", "brand", "@category")
+        .groupBy(FTHybridPostProcessingParams.GroupBy.of("brand")
             .reduce(FTHybridPostProcessingParams.Reducer
                 .of(FTHybridPostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
             .reduce(FTHybridPostProcessingParams.Reducer
@@ -114,13 +109,9 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
         .apply(FTHybridPostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
         .sortBy(FTHybridPostProcessingParams.SortBy.of(
           new FTHybridPostProcessingParams.SortProperty("sum",
-              FTHybridPostProcessingParams.SortDirection.ASC), // No
-          // @
-          // prefix
+              FTHybridPostProcessingParams.SortDirection.ASC),
           new FTHybridPostProcessingParams.SortProperty("count",
-              FTHybridPostProcessingParams.SortDirection.DESC))) // No
-        // @
-        // prefix
+              FTHybridPostProcessingParams.SortDirection.DESC)))
         .filter(FTHybridPostProcessingParams.Filter.of("@sum > 700"))
         .limit(FTHybridPostProcessingParams.Limit.of(0, 20)).build();
 
@@ -129,7 +120,6 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .scorer(FTHybridSearchParams.Scorer.of("BM25")).scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(20).efRuntime(150))
-            // Single combined filter expression
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
             .scoreAlias("vector_score").build())
         .combine(FTHybridCombineParams
@@ -139,7 +129,6 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
-    // Verify results - exact assertions like Lettuce
     assertThat(reply, notNullValue());
     assertThat(reply.getResults(), not(empty()));
     assertThat(reply.getTotalResults(), equalTo(3L));

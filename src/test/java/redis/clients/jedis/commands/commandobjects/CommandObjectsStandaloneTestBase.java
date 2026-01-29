@@ -19,7 +19,7 @@ public abstract class CommandObjectsStandaloneTestBase extends CommandObjectsTes
   @RegisterExtension
   EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(() -> endpoint);
   @RegisterExtension
-  EnvCondition envCondition = new EnvCondition();
+  static EnvCondition envCondition = new EnvCondition();
 
   public CommandObjectsStandaloneTestBase(RedisProtocol protocol) {
     super(protocol, Endpoints.getRedisEndpoint("standalone0"));

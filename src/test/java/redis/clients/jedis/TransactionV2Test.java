@@ -35,7 +35,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 public class TransactionV2Test {
 
   @RegisterExtension
-  public EnvCondition envCondition = new EnvCondition();
+  public static EnvCondition envCondition = new EnvCondition();
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };

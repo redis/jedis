@@ -37,7 +37,7 @@ public abstract class UnifiedJedisCommandsTestBase {
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       () -> Endpoints.getRedisEndpoint("standalone0"));
   @RegisterExtension
-  public EnvCondition envCondition = new EnvCondition();
+  public static EnvCondition envCondition = new EnvCondition();
 
   @BeforeAll
   public static void prepareEndpoint() {

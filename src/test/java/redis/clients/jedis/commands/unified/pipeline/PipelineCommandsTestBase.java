@@ -30,7 +30,7 @@ public abstract class PipelineCommandsTestBase {
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       RedisClientCommandsTestHelper::getEndpointConfig);
   @RegisterExtension
-  public EnvCondition conditionalOnEnvCondition = new EnvCondition();
+  public static EnvCondition conditionalOnEnvCondition = new EnvCondition();
 
   /**
    * The RESP protocol is to be injected by the subclasses, usually via JUnit

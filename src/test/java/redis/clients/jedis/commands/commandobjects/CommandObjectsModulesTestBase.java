@@ -11,7 +11,7 @@ import redis.clients.jedis.util.EnvCondition;
 public abstract class CommandObjectsModulesTestBase extends CommandObjectsTestBase {
 
   @RegisterExtension
-  EnvCondition envCondition = new EnvCondition();
+  static EnvCondition envCondition = new EnvCondition();
 
   public CommandObjectsModulesTestBase(RedisProtocol protocol) {
     super(protocol, Endpoints.getRedisEndpoint("modules-docker"));

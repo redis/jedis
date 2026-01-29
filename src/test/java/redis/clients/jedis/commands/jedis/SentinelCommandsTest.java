@@ -28,7 +28,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 public class SentinelCommandsTest {
 
   @RegisterExtension
-  public  EnvCondition envCondition = new EnvCondition();
+  public static EnvCondition envCondition = new EnvCondition();
 
   protected static final String MASTER_NAME = "mymaster";
 

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -38,6 +39,7 @@ import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -388,6 +390,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zrangestore() {
     pipe.zadd("foo", 1, "aa");
     pipe.zadd("foo", 2, "c");
@@ -1301,6 +1304,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zunion() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1341,6 +1345,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zunionstore() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1377,6 +1382,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zunionstoreParams() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1421,6 +1427,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zinter() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1457,6 +1464,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zinterstore() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1485,6 +1493,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zintertoreParams() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1522,6 +1531,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test
   @SinceRedisVersion(value="7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zintercard() {
     pipe.zadd("foo", 1, "a");
     pipe.zadd("foo", 2, "b");
@@ -1664,6 +1674,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bzpopmax() {
     pipe.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     pipe.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1690,6 +1701,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bzpopmin() {
     pipe.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     pipe.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1715,6 +1727,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zdiff() {
     pipe.zadd("foo", 1.0, "a");
     pipe.zadd("foo", 2.0, "b");
@@ -1747,6 +1760,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zdiffstore() {
     pipe.zadd("foo", 1.0, "a");
     pipe.zadd("foo", 2.0, "b");

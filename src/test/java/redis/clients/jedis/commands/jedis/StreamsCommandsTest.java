@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -592,6 +594,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadWithParams() {
 
     final String key1 = "xread-stream1";
@@ -628,6 +631,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadAsMap() {
 
     final String stream1 = "xread-stream1";
@@ -825,6 +829,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadGroupWithParams() {
 
     // Simple xreadGroup with NOACK

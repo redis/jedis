@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -26,10 +27,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
-import redis.clients.jedis.util.ClientKillerUtil;
-import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisVersionUtil;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,6 +69,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   @SuppressWarnings("unchecked")
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void evalMultiBulk() {
     String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
     List<String> keys = new ArrayList<String>();
@@ -94,6 +93,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   @SuppressWarnings("unchecked")
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void evalMultiBulkWithBinaryJedis() {
     String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
     List<byte[]> keys = new ArrayList<byte[]>();
@@ -280,6 +280,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void scriptEvalReturnNullValues() {
     jedis.del("key1");
     jedis.del("key2");
@@ -292,6 +293,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void scriptEvalShaReturnNullValues() {
     jedis.del("key1");
     jedis.del("key2");
@@ -305,6 +307,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void scriptEvalShaReturnValues() {
     jedis.hset("foo", "foo1", "bar1");
     jedis.hset("foobar", "foo2", "bar2");
@@ -318,6 +321,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void scriptEvalShaReturnValuesBinary() {
     jedis.hset(bfoo, bfoo1, bbar1);
     jedis.hset(bfoobar, bfoo2, bbar2);

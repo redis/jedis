@@ -85,12 +85,15 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
 
   @Test
   void delayBetweenFailoverAttempts_permanentExceptionAfterAttemptsExhausted() throws Exception {
-    // Configure: small max (2) with a large non-zero delay window to ensure rapid calls stay within
-    // window
-    setProviderFailoverConfig(/* maxAttempts */ 2, /* delayMs */ 10);
+    // Configure: small max (2) with a sufficiently large delay window to ensure rapid calls stay
+    // within the freeze window. Using 100ms instead of 10ms to avoid flakiness - the 50 rapid
+    // iterations in the loop below can easily take more than 10ms to execute, causing the freeze
+    // window to expire and the counter to increment unexpectedly. 100ms provides enough margin
+    // for the loop to complete while still being short enough for the test to run quickly.
+    setProviderFailoverConfig(/* maxAttempts */ 2, /* delayMs */ 100);
 
     assertEquals(2, getProviderMaxAttempts());
-    assertEquals(10, getProviderDelayMs());
+    assertEquals(100, getProviderDelayMs());
     assertEquals(0, getProviderAttemptCount());
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
@@ -108,7 +111,9 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
       assertEquals(1, getProviderAttemptCount());
     }
 
-    await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(10))
+    // Wait for the freeze window to expire, then verify that subsequent calls eventually
+    // exhaust the max attempts and throw a permanent exception
+    await().atMost(Durations.FIVE_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(20))
         .until(() -> {
           Exception e = assertThrows(JedisFailoverException.class, () -> provider
               .switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));

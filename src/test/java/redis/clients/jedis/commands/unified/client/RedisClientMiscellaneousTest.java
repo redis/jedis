@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -88,6 +90,7 @@ public class RedisClientMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void transaction() {
     final int count = 10;
     int totalCount = 0;
@@ -121,6 +124,7 @@ public class RedisClientMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void watch() {
     try (AbstractTransaction tx = jedis.transaction(false)) {
       assertEquals("OK", tx.watch("mykey", "somekey"));

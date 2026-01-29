@@ -22,6 +22,7 @@ import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
 
 public abstract class PipeliningBase
@@ -2473,6 +2474,26 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> del(byte[]... keys) {
     return appendCommand(commandObjects.del(keys));
+  }
+
+  @Override
+  public Response<Long> delex(byte[] key, CompareCondition condition) {
+    return appendCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
+  public Response<Long> delex(String key, CompareCondition condition) {
+    return appendCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
+  public Response<byte[]> digestKey(byte[] key) {
+    return appendCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public Response<String> digestKey(String key) {
+    return appendCommand(commandObjects.digestKey(key));
   }
 
   @Override

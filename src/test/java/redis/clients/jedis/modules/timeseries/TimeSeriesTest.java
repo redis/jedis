@@ -10,6 +10,7 @@ import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 
 import java.util.*;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -1060,6 +1061,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
    * COUNTALL counts all values in a bucket, including NaN values.
    */
   @Test
+  @SinceRedisVersion("8.5.0")
   public void countNanAndCountAll() {
     // Create a time series with some regular values
     client.tsCreate("ts-countnan", TSCreateParams.createParams().label("type", "test"));
@@ -1161,6 +1163,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
    * Test COUNTNAN and COUNTALL with bucket timestamp options.
    */
   @Test
+  @SinceRedisVersion("8.5.0")
   public void countNanAndCountAllWithBucketTimestamp() {
     client.tsCreate("ts-countnan-bucket", TSCreateParams.createParams().label("l", "v"));
     client.tsAdd("ts-countnan-bucket", 1, 1.0);
@@ -1196,6 +1199,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
    * Test that AggregationType.safeValueOf correctly parses COUNTNAN and COUNTALL.
    */
   @Test
+  @SinceRedisVersion("8.5.0")
   public void aggregationTypeSafeValueOf() {
     assertEquals(AggregationType.COUNTNAN, AggregationType.safeValueOf("COUNTNAN"));
     assertEquals(AggregationType.COUNTNAN, AggregationType.safeValueOf("countnan"));

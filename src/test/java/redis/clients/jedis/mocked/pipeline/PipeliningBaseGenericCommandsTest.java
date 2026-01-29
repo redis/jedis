@@ -16,6 +16,7 @@ import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
 
 public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestBase {
@@ -88,6 +89,56 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
     Response<Long> response = pipeliningBase.del(key1, key2);
 
     assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testDelexBinary() {
+    byte[] key = "key".getBytes();
+    CompareCondition condition = CompareCondition.valueEq("value");
+
+    when(commandObjects.delex(key, condition)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.delex(key, condition);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testDelex() {
+    String key = "key";
+    CompareCondition condition = CompareCondition.valueEq("value");
+
+    when(commandObjects.delex(key, condition)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.delex(key, condition);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testDigestKeyBinary() {
+    byte[] key = "key".getBytes();
+
+    when(commandObjects.digestKey(key)).thenReturn(bytesCommandObject);
+
+    Response<byte[]> response = pipeliningBase.digestKey(key);
+
+    assertThat(commands, contains(bytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testDigestKey() {
+    String key = "key";
+
+    when(commandObjects.digestKey(key)).thenReturn(stringCommandObject);
+
+    Response<String> response = pipeliningBase.digestKey(key);
+
+    assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

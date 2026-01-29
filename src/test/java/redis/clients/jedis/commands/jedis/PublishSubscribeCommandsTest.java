@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -37,6 +38,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
+@Timeout(value = 5, unit = TimeUnit.MINUTES)
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
@@ -492,6 +494,9 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  // NOTE(imalinovskyi): Pushing 100Mb over high latency network can take a lot of time,
+  // so skipping for RE for now
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void handleClientOutputBufferLimitForSubscribeTooSlow() throws InterruptedException {
     assertThrows(JedisException.class, () -> {
       final Jedis j = createJedis();

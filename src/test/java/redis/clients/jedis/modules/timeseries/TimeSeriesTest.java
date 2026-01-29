@@ -1053,4 +1053,158 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(2, client.tsRange("ts2", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10)).size());
     assertEquals(1, client.tsRange("ts3", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10)).size());
   }
+
+  /**
+   * Test for COUNTNAN and COUNTALL aggregation types introduced in RedisTimeSeries 8.6.0.
+   * COUNTNAN counts the number of NaN values in a bucket.
+   * COUNTALL counts all values in a bucket, including NaN values.
+   */
+  @Test
+  public void countNanAndCountAll() {
+    // Create a time series with some regular values
+    client.tsCreate("ts-countnan", TSCreateParams.createParams().label("type", "test"));
+    client.tsAdd("ts-countnan", 1, 1.0);
+    client.tsAdd("ts-countnan", 2, 2.0);
+    client.tsAdd("ts-countnan", 3, Double.NaN);
+    client.tsAdd("ts-countnan", 4, 4.0);
+    client.tsAdd("ts-countnan", 5, Double.NaN);
+    client.tsAdd("ts-countnan", 11, 11.0);
+    client.tsAdd("ts-countnan", 12, Double.NaN);
+
+    // Test COUNTNAN aggregation - counts NaN values in each bucket
+    List<TSElement> countNanValues = client.tsRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTNAN, 10));
+    assertEquals(2, countNanValues.size());
+    // First bucket (0-10): 2 NaN values (at timestamps 3 and 5)
+    assertEquals(0L, countNanValues.get(0).getTimestamp());
+    assertEquals(2.0, countNanValues.get(0).getValue(), 0.001);
+    // Second bucket (10-20): 1 NaN value (at timestamp 12)
+    assertEquals(10L, countNanValues.get(1).getTimestamp());
+    assertEquals(1.0, countNanValues.get(1).getValue(), 0.001);
+
+    // Test COUNTALL aggregation - counts all values including NaN
+    List<TSElement> countAllValues = client.tsRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTALL, 10));
+    assertEquals(2, countAllValues.size());
+    // First bucket (0-10): 5 total values
+    assertEquals(0L, countAllValues.get(0).getTimestamp());
+    assertEquals(5.0, countAllValues.get(0).getValue(), 0.001);
+    // Second bucket (10-20): 2 total values
+    assertEquals(10L, countAllValues.get(1).getTimestamp());
+    assertEquals(2.0, countAllValues.get(1).getValue(), 0.001);
+
+    // Compare with regular COUNT which excludes NaN values
+    List<TSElement> countValues = client.tsRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNT, 10));
+    assertEquals(2, countValues.size());
+    // First bucket (0-10): 3 non-NaN values
+    assertEquals(0L, countValues.get(0).getTimestamp());
+    assertEquals(3.0, countValues.get(0).getValue(), 0.001);
+    // Second bucket (10-20): 1 non-NaN value
+    assertEquals(10L, countValues.get(1).getTimestamp());
+    assertEquals(1.0, countValues.get(1).getValue(), 0.001);
+
+    // Test with MRANGE
+    Map<String, TSMRangeElements> mrangeCountNan = client.tsMRange(
+        TSMRangeParams.multiRangeParams(0L, 20L)
+            .aggregation(AggregationType.COUNTNAN, 10)
+            .filter("type=test"));
+    assertEquals(1, mrangeCountNan.size());
+    TSMRangeElements elements = mrangeCountNan.get("ts-countnan");
+    assertNotNull(elements);
+    assertEquals(2, elements.getValue().size());
+    assertEquals(2.0, elements.getValue().get(0).getValue(), 0.001);
+
+    Map<String, TSMRangeElements> mrangeCountAll = client.tsMRange(
+        TSMRangeParams.multiRangeParams(0L, 20L)
+            .aggregation(AggregationType.COUNTALL, 10)
+            .filter("type=test"));
+    assertEquals(1, mrangeCountAll.size());
+    elements = mrangeCountAll.get("ts-countnan");
+    assertNotNull(elements);
+    assertEquals(2, elements.getValue().size());
+    assertEquals(5.0, elements.getValue().get(0).getValue(), 0.001);
+
+    // Test with REVRANGE
+    List<TSElement> revRangeCountNan = client.tsRevRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTNAN, 10));
+    assertEquals(2, revRangeCountNan.size());
+    // Results should be in reverse order
+    assertEquals(10L, revRangeCountNan.get(0).getTimestamp());
+    assertEquals(1.0, revRangeCountNan.get(0).getValue(), 0.001);
+    assertEquals(0L, revRangeCountNan.get(1).getTimestamp());
+    assertEquals(2.0, revRangeCountNan.get(1).getValue(), 0.001);
+
+    List<TSElement> revRangeCountAll = client.tsRevRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTALL, 10));
+    assertEquals(2, revRangeCountAll.size());
+    assertEquals(10L, revRangeCountAll.get(0).getTimestamp());
+    assertEquals(2.0, revRangeCountAll.get(0).getValue(), 0.001);
+    assertEquals(0L, revRangeCountAll.get(1).getTimestamp());
+    assertEquals(5.0, revRangeCountAll.get(1).getValue(), 0.001);
+
+    // Test with MREVRANGE
+    Map<String, TSMRangeElements> mrevrangeCountNan = client.tsMRevRange(
+        TSMRangeParams.multiRangeParams(0L, 20L)
+            .aggregation(AggregationType.COUNTNAN, 10)
+            .filter("type=test"));
+    assertEquals(1, mrevrangeCountNan.size());
+    elements = mrevrangeCountNan.get("ts-countnan");
+    assertNotNull(elements);
+    assertEquals(2, elements.getValue().size());
+    // Results in reverse order
+    assertEquals(1.0, elements.getValue().get(0).getValue(), 0.001);
+    assertEquals(2.0, elements.getValue().get(1).getValue(), 0.001);
+  }
+
+  /**
+   * Test COUNTNAN and COUNTALL with bucket timestamp options.
+   */
+  @Test
+  public void countNanAndCountAllWithBucketTimestamp() {
+    client.tsCreate("ts-countnan-bucket", TSCreateParams.createParams().label("l", "v"));
+    client.tsAdd("ts-countnan-bucket", 1, 1.0);
+    client.tsAdd("ts-countnan-bucket", 2, Double.NaN);
+    client.tsAdd("ts-countnan-bucket", 3, 3.0);
+
+    // Test COUNTNAN with different bucket timestamp options
+    assertEquals(0, client.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampLow()).get(0).getTimestamp());
+    assertEquals(10, client.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampHigh()).get(0).getTimestamp());
+    assertEquals(5, client.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampMid()).get(0).getTimestamp());
+
+    // Test COUNTALL with different bucket timestamp options
+    assertEquals(0, client.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampLow()).get(0).getTimestamp());
+    assertEquals(10, client.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampHigh()).get(0).getTimestamp());
+    assertEquals(5, client.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampMid()).get(0).getTimestamp());
+
+    // Test with MRANGE
+    assertEquals(0, client.tsMRange(TSMRangeParams.multiRangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampLow().filter("l=v"))
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
+    assertEquals(10, client.tsMRange(TSMRangeParams.multiRangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampHigh().filter("l=v"))
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
+  }
+
+  /**
+   * Test that AggregationType.safeValueOf correctly parses COUNTNAN and COUNTALL.
+   */
+  @Test
+  public void aggregationTypeSafeValueOf() {
+    assertEquals(AggregationType.COUNTNAN, AggregationType.safeValueOf("COUNTNAN"));
+    assertEquals(AggregationType.COUNTNAN, AggregationType.safeValueOf("countnan"));
+    assertEquals(AggregationType.COUNTALL, AggregationType.safeValueOf("COUNTALL"));
+    assertEquals(AggregationType.COUNTALL, AggregationType.safeValueOf("countall"));
+    // Verify existing types still work
+    assertEquals(AggregationType.COUNT, AggregationType.safeValueOf("COUNT"));
+    assertEquals(AggregationType.AVG, AggregationType.safeValueOf("avg"));
+    assertEquals(AggregationType.STD_P, AggregationType.safeValueOf("STD.P"));
+    assertEquals(AggregationType.VAR_S, AggregationType.safeValueOf("var.s"));
+  }
 }

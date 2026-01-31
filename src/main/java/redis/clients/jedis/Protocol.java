@@ -19,7 +19,11 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class Protocol {
+  protected static Logger logger = LoggerFactory.getLogger(Protocol.class.getName());
 
   public static final String DEFAULT_HOST = "127.0.0.1";
   public static final int DEFAULT_PORT = 6379;
@@ -71,6 +75,15 @@ public final class Protocol {
   }
 
   public static void sendCommand(final RedisOutputStream os, CommandArguments args) {
+    if(logger.isDebugEnabled()) {
+      StringBuilder logMessage = new StringBuilder();
+      for (Rawable arg : args) {
+        logMessage.append(new String(arg.getRaw()));
+        logMessage.append(" ");
+      }
+      logger.debug(logMessage.toString());
+    }
+
     try {
       os.write(ASTERISK_BYTE);
       os.writeIntCrLf(args.size());

@@ -3258,6 +3258,26 @@ public class CommandObjects {
     return SLOWLOG_RESET_COMMAND_OBJECT;
   }
 
+  // Hotkeys commands
+  public final CommandObject<String> hotkeysStart(HotkeysParams params) {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.START).addParams(params),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> hotkeysStop() {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.STOP), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> hotkeysReset() {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.RESET), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<HotkeysInfo> hotkeysGet() {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.GET),
+        HotkeysInfo.HOTKEYS_INFO_BUILDER);
+  }
+  // End Hotkeys commands
+
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size())
         .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);

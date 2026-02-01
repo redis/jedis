@@ -1,16 +1,6 @@
 package redis.clients.jedis.commands.unified.client;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedClass;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.args.HotkeysMetric;
-import redis.clients.jedis.commands.unified.HotkeysCommandsTestBase;
-import redis.clients.jedis.params.HotkeysParams;
-import redis.clients.jedis.resps.HotkeysInfo;
-
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -21,6 +11,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.args.HotkeysMetric;
+import redis.clients.jedis.commands.unified.HotkeysCommandsTestBase;
+import redis.clients.jedis.params.HotkeysParams;
+import redis.clients.jedis.resps.HotkeysInfo;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -150,12 +153,15 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
   }
 
   @Test
-  public void hotkeysDurationOption() throws InterruptedException {
+  public void hotkeysDurationOption() {
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU).duration(1));
 
     jedis.set("durationkey", "testvalue");
 
-    Thread.sleep(1500);
+    await().atMost(Duration.ofSeconds(2)).until(() -> {
+      HotkeysInfo info = jedis.hotkeysGet();
+      return info != null && !info.isTrackingActive();
+    });
 
     HotkeysInfo reply = jedis.hotkeysGet();
     assertNotNull(reply);

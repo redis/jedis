@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -11,8 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
+
 import io.redis.test.annotations.EnabledOnCommand;
-import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -168,12 +170,15 @@ public class HotkeysCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void hotkeysDurationOption() throws InterruptedException {
+  public void hotkeysDurationOption() {
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU).duration(1));
 
     jedis.set("durationkey", "testvalue");
 
-    Thread.sleep(1500);
+    await().atMost(Duration.ofSeconds(2)).until(() -> {
+      HotkeysInfo info = jedis.hotkeysGet();
+      return info != null && !info.isTrackingActive();
+    });
 
     HotkeysInfo reply = jedis.hotkeysGet();
     assertNotNull(reply);

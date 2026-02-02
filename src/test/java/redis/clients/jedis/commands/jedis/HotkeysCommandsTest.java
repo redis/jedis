@@ -50,9 +50,11 @@ public class HotkeysCommandsTest extends JedisCommandsTestBase {
   }
 
   private void clearState() {
-    jedis.flushAll();
-    jedis.hotkeysStop();
-    jedis.hotkeysReset();
+    if (jedis != null) {
+      jedis.flushAll();
+      jedis.hotkeysStop();
+      jedis.hotkeysReset();
+    }
   }
 
   @Test

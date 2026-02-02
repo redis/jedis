@@ -26,8 +26,10 @@ public abstract class HotkeysCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   private void clearState() {
-    jedis.flushAll();
-    jedis.hotkeysStop();
-    jedis.hotkeysReset();
+    if (jedis != null) {
+      jedis.flushAll();
+      jedis.hotkeysStop();
+      jedis.hotkeysReset();
+    }
   }
 }

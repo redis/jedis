@@ -41,9 +41,11 @@ public class ClusterHotkeysCommandsTest extends ClusterJedisCommandsTestBase {
   }
 
   private void clearState() {
-    cluster.flushAll();
-    cluster.hotkeysStop();
-    cluster.hotkeysReset();
+    if (cluster != null) {
+      cluster.flushAll();
+      cluster.hotkeysStop();
+      cluster.hotkeysReset();
+    }
   }
 
   @Test

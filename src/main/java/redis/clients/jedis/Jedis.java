@@ -5106,6 +5106,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 
+  @Override
+  public byte[] xcfgset(byte[] key, XCfgSetParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xcfgset(key, params));
+  }
+
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(cmd, args);
@@ -10128,6 +10134,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public StreamFullInfo xinfoStreamFull(String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public String xcfgset(String key, redis.clients.jedis.params.XCfgSetParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xcfgset(key, params));
   }
 
   @Override

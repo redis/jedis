@@ -1588,6 +1588,12 @@ public final class BuilderFactory {
       tempMappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
       tempMappingFunctions.put(StreamInfo.LAST_ENTRY, STREAM_ENTRY);
       tempMappingFunctions.put(StreamInfo.GROUPS, LONG);
+      tempMappingFunctions.put(StreamInfo.IDMP_DURATION, LONG);
+      tempMappingFunctions.put(StreamInfo.IDMP_MAXSIZE, LONG);
+      tempMappingFunctions.put(StreamInfo.PIDS_TRACKED, LONG);
+      tempMappingFunctions.put(StreamInfo.IIDS_TRACKED, LONG);
+      tempMappingFunctions.put(StreamInfo.IIDS_ADDED, LONG);
+      tempMappingFunctions.put(StreamInfo.IIDS_DUPLICATES, LONG);
 
       return tempMappingFunctions;
     }

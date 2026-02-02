@@ -3973,6 +3973,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(
         commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
   }
+
+  @Override
+  public String xcfgset(String key, XCfgSetParams params) {
+    return executeCommand(commandObjects.xcfgset(key, params));
+  }
+
+  @Override
+  public byte[] xcfgset(byte[] key, XCfgSetParams params) {
+    return executeCommand(commandObjects.xcfgset(key, params));
+  }
   // Stream commands
 
   // Scripting commands

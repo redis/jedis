@@ -1736,6 +1736,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> xcfgset(String key, XCfgSetParams params) {
+    return appendCommand(commandObjects.xcfgset(key, params));
+  }
+
+  @Override
   public Response<Object> eval(String script) {
     return appendCommand(commandObjects.eval(script));
   }
@@ -3527,6 +3532,11 @@ public abstract class PipeliningBase
       byte[] consumer, XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams) {
     return appendCommand(
         commandObjects.xreadGroupBinaryAsMap(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<byte[]> xcfgset(byte[] key, XCfgSetParams params) {
+    return appendCommand(commandObjects.xcfgset(key, params));
   }
 
   @Override

@@ -18,6 +18,12 @@ public class StreamInfo implements Serializable {
   public static final String LAST_GENERATED_ID = "last-generated-id";
   public static final String FIRST_ENTRY = "first-entry";
   public static final String LAST_ENTRY = "last-entry";
+  public static final String IDMP_DURATION = "idmp-duration";
+  public static final String IDMP_MAXSIZE = "idmp-maxsize";
+  public static final String PIDS_TRACKED = "pids-tracked";
+  public static final String IIDS_TRACKED = "iids-tracked";
+  public static final String IIDS_ADDED = "iids-added";
+  public static final String IIDS_DUPLICATES = "iids-duplicates";
 
   private final long length;
   private final long radixTreeKeys;
@@ -26,6 +32,12 @@ public class StreamInfo implements Serializable {
   private final StreamEntryID lastGeneratedId;
   private final StreamEntry firstEntry;
   private final StreamEntry lastEntry;
+  private final Long idmpDuration;
+  private final Long idmpMaxsize;
+  private final Long pidsTracked;
+  private final Long iidsTracked;
+  private final Long iidsAdded;
+  private final Long iidsDuplicates;
   private final Map<String, Object> streamInfo;
 
   /**
@@ -41,6 +53,12 @@ public class StreamInfo implements Serializable {
     lastGeneratedId = (StreamEntryID) map.get(LAST_GENERATED_ID);
     firstEntry = (StreamEntry) map.get(FIRST_ENTRY);
     lastEntry = (StreamEntry) map.get(LAST_ENTRY);
+    idmpDuration = (Long) map.get(IDMP_DURATION);
+    idmpMaxsize = (Long) map.get(IDMP_MAXSIZE);
+    pidsTracked = (Long) map.get(PIDS_TRACKED);
+    iidsTracked = (Long) map.get(IIDS_TRACKED);
+    iidsAdded = (Long) map.get(IIDS_ADDED);
+    iidsDuplicates = (Long) map.get(IIDS_DUPLICATES);
 
   }
 
@@ -70,6 +88,48 @@ public class StreamInfo implements Serializable {
 
   public StreamEntry getLastEntry() {
     return lastEntry;
+  }
+
+  /**
+   * @return The duration (in seconds) that each idempotent ID is kept, or null if not configured
+   */
+  public Long getIdmpDuration() {
+    return idmpDuration;
+  }
+
+  /**
+   * @return The maximum number of most recent idempotent IDs kept for each producer ID, or null if not configured
+   */
+  public Long getIdmpMaxsize() {
+    return idmpMaxsize;
+  }
+
+  /**
+   * @return The number of producer IDs currently tracked in the stream, or null if not available
+   */
+  public Long getPidsTracked() {
+    return pidsTracked;
+  }
+
+  /**
+   * @return The number of idempotent IDs currently tracked in the stream (for all producers), or null if not available
+   */
+  public Long getIidsTracked() {
+    return iidsTracked;
+  }
+
+  /**
+   * @return The count of all entries with an idempotent ID added to the stream during its lifetime (not including duplicates), or null if not available
+   */
+  public Long getIidsAdded() {
+    return iidsAdded;
+  }
+
+  /**
+   * @return The count of duplicate idempotent IDs (for all producers) detected during the stream's lifetime, or null if not available
+   */
+  public Long getIidsDuplicates() {
+    return iidsDuplicates;
   }
 
   /**

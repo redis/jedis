@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XCfgSetParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -28,6 +30,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -612,5 +615,106 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(Long.valueOf(0), third.getMillisElapsedFromDelivery());
     assertEquals(Long.valueOf(0), fourth.getMillisElapsedFromDelivery());
     assertThat(fourth.getFields(), equalToByteArrayMap(HASH_1));
+  }
+
+  // ========== Idempotent Producer Tests ==========
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpAuto() {
+    // Add entry with IDMPAUTO
+    Map<byte[], byte[]> message = new HashMap<>();
+    message.put("order".getBytes(), "12345".getBytes());
+    message.put("amount".getBytes(), "100.00".getBytes());
+
+    byte[] id1 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-1".getBytes()),
+        message);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+
+    // Add same message again with same producer - should return same ID (duplicate detected)
+    byte[] id2 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-1".getBytes()),
+        message);
+    assertArrayEquals(id1, id2); // Duplicate returns same ID
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1)); // Stream length unchanged
+
+    // Add same message with different producer - should succeed
+    byte[] id3 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-2".getBytes()),
+        message);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY_1));
+
+    // Add different message with same producer - should succeed
+    Map<byte[], byte[]> message2 = new HashMap<>();
+    message2.put("order".getBytes(), "67890".getBytes());
+    message2.put("amount".getBytes(), "200.00".getBytes());
+
+    byte[] id4 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-1".getBytes()),
+        message2);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY_1));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmp() {
+    // Add entry with explicit idempotent ID
+    byte[] id1 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-1".getBytes(), "iid-001".getBytes()), HASH_1);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+
+    // Add with same producer and idempotent ID - should return same ID (duplicate detected)
+    byte[] id2 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-1".getBytes(), "iid-001".getBytes()), HASH_2);
+    assertArrayEquals(id1, id2); // Duplicate returns same ID
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+
+    // Add with same producer but different idempotent ID - should succeed
+    byte[] id3 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-1".getBytes(), "iid-002".getBytes()), HASH_1);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY_1));
+
+    // Add with different producer but same idempotent ID - should succeed
+    byte[] id4 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-2".getBytes(), "iid-001".getBytes()), HASH_1);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY_1));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXcfgset() {
+    // Add an entry to create the stream
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
+
+    // Configure idempotent producer settings
+    byte[] result = jedis.xcfgset(STREAM_KEY_1,
+        XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+    assertArrayEquals("OK".getBytes(), result);
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpWithTrimming() {
+    // Add first entry with IDMPAUTO and trimming
+    byte[] id1 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmpAuto("producer-1".getBytes()).maxLen(2), HASH_1);
+    assertNotNull(id1);
+    assertEquals(1, jedis.xlen(STREAM_KEY_1));
+
+    // Add duplicate - should return same ID and not add new entry
+    byte[] id2 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmpAuto("producer-1".getBytes()).maxLen(2), HASH_1);
+    assertArrayEquals(id1, id2); // Duplicate returns same ID
+    assertEquals(1, jedis.xlen(STREAM_KEY_1)); // Still 1 entry
+
+    // Add different message - should add new entry
+    byte[] id3 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmpAuto("producer-1".getBytes()).maxLen(2), HASH_2);
+    assertNotNull(id3);
+    assertNotEquals(new String(id1), new String(id3)); // Different IDs
+    assertEquals(2, jedis.xlen(STREAM_KEY_1)); // Now 2 entries
   }
 }

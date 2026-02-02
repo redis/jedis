@@ -45,6 +45,69 @@ public class XAddParamsTest {
         assertFalse(firstParam.equals(secondParam));
     }
 
+    @Test
+    public void checkEqualsIdmpAutoParams() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmpAuto("producer1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmpAuto("producer1");
+        assertTrue(firstParam.equals(secondParam));
+    }
+
+    @Test
+    public void checkHashCodeIdmpAutoParams() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmpAuto("producer1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmpAuto("producer1");
+        assertEquals(firstParam.hashCode(), secondParam.hashCode());
+    }
+
+    @Test
+    public void checkEqualsVariousIdmpAutoParams() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmpAuto("producer1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmpAuto("producer2");
+        assertFalse(firstParam.equals(secondParam));
+    }
+
+    @Test
+    public void checkEqualsIdmpParams() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmp("producer1", "iid1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmp("producer1", "iid1");
+        assertTrue(firstParam.equals(secondParam));
+    }
+
+    @Test
+    public void checkHashCodeIdmpParams() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmp("producer1", "iid1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmp("producer1", "iid1");
+        assertEquals(firstParam.hashCode(), secondParam.hashCode());
+    }
+
+    @Test
+    public void checkEqualsVariousIdmpParams() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmp("producer1", "iid1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmp("producer1", "iid2");
+        assertFalse(firstParam.equals(secondParam));
+    }
+
+    @Test
+    public void checkEqualsIdmpAutoVsIdmp() {
+        XAddParams firstParam = getDefaultValue();
+        firstParam.idmpAuto("producer1");
+        XAddParams secondParam = getDefaultValue();
+        secondParam.idmp("producer1", "iid1");
+        assertFalse(firstParam.equals(secondParam));
+    }
+
     private XAddParams getDefaultValue() {
         return new XAddParams();
     }

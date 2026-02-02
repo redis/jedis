@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
+import redis.clients.jedis.params.XCfgSetParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -1322,5 +1324,25 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void xcfgset() {
+    // Add an entry to create the stream
+    client.xadd("xcfgset-stream", StreamEntryID.NEW_ENTRY, singletonMap("field", "value"));
+
+    // Configure idempotent producer settings via pipeline
+    Response<String> response = pipe.xcfgset("xcfgset-stream",
+        XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+
+    pipe.sync();
+
+    assertEquals("OK", response.get());
+
+    // Verify settings via XINFO STREAM
+    StreamInfo info = client.xinfoStream("xcfgset-stream");
+    assertEquals(Long.valueOf(1000), info.getIdmpDuration());
+    assertEquals(Long.valueOf(500), info.getIdmpMaxsize());
   }
 }

@@ -6,6 +6,7 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
@@ -1589,4 +1591,167 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(0L, afterNoack.getConsumerMessageCount().getOrDefault(CONSUMER_1, 0L).longValue());
     assertEquals(2L, afterNoack.getConsumerMessageCount().getOrDefault(CONSUMER_2, 0L).longValue());
   }
+
+  // ========== Idempotent Producer Tests ==========
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpAuto() {
+    // Add entry with IDMPAUTO
+    Map<String, String> message = new HashMap<>();
+    message.put("order", "12345");
+    message.put("amount", "100.00");
+
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-1"),
+        message);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY));
+
+    // Add same message again with same producer - should return same ID (duplicate detected)
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-1"),
+        message);
+    assertEquals(id1, id2); // Duplicate returns same entry ID as before
+    assertEquals(1L, jedis.xlen(STREAM_KEY)); // Stream length unchanged
+
+    // Add same message with different producer - should succeed
+    StreamEntryID id3 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-2"),
+        message);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY));
+
+    // Add different message with same producer - should succeed
+    Map<String, String> message2 = new HashMap<>();
+    message2.put("order", "67890");
+    message2.put("amount", "200.00");
+
+    StreamEntryID id4 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-1"),
+        message2);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmp() {
+    Map<String, String> hash1 = singletonMap("field1", "value1");
+    Map<String, String> hash2 = singletonMap("field2", "value2");
+
+    // Add entry with explicit idempotent ID
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash1);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY));
+
+    // Add with same producer and idempotent ID - should return same ID (duplicate detected)
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash2);
+    assertEquals(id1, id2); // Duplicate returns same entry ID as before
+    assertEquals(1L, jedis.xlen(STREAM_KEY)); // Stream length unchanged
+
+    // Add with same producer but different idempotent ID - should succeed
+    StreamEntryID id3 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmp("producer-1", "iid-002"), hash1);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY));
+
+    // Add with different producer but same idempotent ID - should succeed
+    StreamEntryID id4 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmp("producer-2", "iid-001"), hash1);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXcfgset() {
+    // Add an entry to create the stream
+    jedis.xadd(STREAM_KEY, StreamEntryID.NEW_ENTRY, singletonMap("field", "value"));
+
+    // Configure idempotent producer settings
+    String result = jedis.xcfgset(STREAM_KEY,
+        XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+    assertEquals("OK", result);
+
+    // Verify settings via XINFO STREAM
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY);
+    assertEquals(Long.valueOf(1000), info.getIdmpDuration());
+    assertEquals(Long.valueOf(500), info.getIdmpMaxsize());
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXinfoStreamIdempotentFields() {
+    Map<String, String> hash1 = singletonMap("field1", "value1");
+    Map<String, String> hash2 = singletonMap("field2", "value2");
+
+    // Add an entry to create the stream
+    jedis.xadd(STREAM_KEY, StreamEntryID.NEW_ENTRY, hash1);
+
+    // Configure idempotent settings
+    jedis.xcfgset(STREAM_KEY,
+        XCfgSetParams.xCfgSetParams().idmpDuration(100).idmpMaxsize(100));
+
+    // Add some entries with idempotent IDs
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash1);
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-1", "iid-002"), hash2);
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-2", "iid-001"), hash1);
+
+    // Try to add a duplicate
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash2);
+
+    // Check XINFO STREAM response
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY);
+
+    // Verify idempotent configuration fields
+    assertEquals(Long.valueOf(100), info.getIdmpDuration());
+    assertEquals(Long.valueOf(100), info.getIdmpMaxsize());
+
+    // Verify idempotent statistics fields
+    assertEquals(Long.valueOf(2), info.getPidsTracked()); // 2 producers
+    assertEquals(Long.valueOf(3), info.getIidsTracked()); // 3 unique IDs
+    assertEquals(Long.valueOf(3), info.getIidsAdded()); // 3 entries added
+    assertEquals(Long.valueOf(1), info.getIidsDuplicates()); // 1 duplicate rejected
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpWithTrimming() {
+    // Add first entry with IDMPAUTO and trimming
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmpAuto("producer1").maxLen(2), singletonMap("field", "value1"));
+    assertNotNull(id1);
+    assertEquals(1, jedis.xlen(STREAM_KEY));
+
+    // Add duplicate - should return same ID
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmpAuto("producer1").maxLen(2), singletonMap("field", "value1"));
+    assertEquals(id1, id2);
+    assertEquals(1, jedis.xlen(STREAM_KEY)); // Still 1 entry
+
+    // Add different message - should add new entry and trim
+    StreamEntryID id3 = jedis.xadd(STREAM_KEY,
+        XAddParams.xAddParams().idmpAuto("producer1").maxLen(2), singletonMap("field", "value2"));
+    assertNotNull(id3);
+    assertNotEquals(id1, id3); // Different IDs
+    assertEquals(2, jedis.xlen(STREAM_KEY)); // Now 2 entries
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXcfgsetDefaults() {
+    jedis.xadd(STREAM_KEY, StreamEntryID.NEW_ENTRY, singletonMap("init", "value"));
+
+    // Verify default values
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY);
+    assertEquals(Long.valueOf(100), info.getIdmpDuration());
+    assertEquals(Long.valueOf(100), info.getIdmpMaxsize());
+
+    assertEquals("OK", jedis.xcfgset(STREAM_KEY,
+        XCfgSetParams.xCfgSetParams().idmpDuration(200).idmpMaxsize(200)));
+
+    StreamInfo infoAfter = jedis.xinfoStream(STREAM_KEY);
+    assertEquals(Long.valueOf(200), infoAfter.getIdmpDuration());
+    assertEquals(Long.valueOf(200), infoAfter.getIdmpMaxsize());
+  }
+
 }

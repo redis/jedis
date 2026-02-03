@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.awaitility.Awaitility;
@@ -39,6 +40,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@ResourceLock(value = Endpoints.STANDALONE4_REPLICA_OF_STANDALONE1)
 public class PipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -326,7 +328,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.waitReplicas(1, 10);
     p.sync();
 
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone4-replica-of-standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE4_REPLICA_OF_STANDALONE1);
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -341,7 +343,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.waitAOF(1L, 0L, 0L);
     p.sync();
 
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone4-replica-of-standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE4_REPLICA_OF_STANDALONE1);
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());

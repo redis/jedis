@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -16,6 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.STANDALONE9_FAILOVER),
+    @ResourceLock(value = Endpoints.STANDALONE10_REPLICA_OF_STANDALONE9)
+})
 public class FailoverCommandsTest {
 
   private static final int INVALID_PORT = 6000;
@@ -28,8 +34,8 @@ public class FailoverCommandsTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    node1 = Endpoints.getRedisEndpoint("standalone9-failover");
-    node2 = Endpoints.getRedisEndpoint("standalone10-replica-of-standalone9");
+    node1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE9_FAILOVER);
+    node2 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE10_REPLICA_OF_STANDALONE9);
   }
 
   @BeforeEach

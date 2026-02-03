@@ -54,7 +54,7 @@ public class TokenBasedAuthenticationIntegrationTests {
   @BeforeAll
   public static void before() {
     try {
-      endpointConfig = Endpoints.getRedisEndpoint("standalone0");
+      endpointConfig = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

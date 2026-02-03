@@ -14,9 +14,11 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
@@ -29,6 +31,7 @@ import redis.clients.jedis.util.KeyValue;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_STABLE)
 public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

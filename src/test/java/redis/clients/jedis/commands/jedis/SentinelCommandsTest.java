@@ -15,11 +15,19 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Endpoints;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.STANDALONE2_PRIMARY),
+    @ResourceLock(value = Endpoints.STANDALONE3_REPLICA_OF_STANDALONE2),
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1),
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_3)
+})
 public class SentinelCommandsTest {
 
   protected static final String MASTER_NAME = "mymaster";
@@ -32,13 +40,13 @@ public class SentinelCommandsTest {
   @BeforeAll
   public static void prepareEndpoints() {
     nodes = Arrays.asList(
-        Endpoints.getRedisEndpoint("standalone2-primary").getHostAndPort(),
-        Endpoints.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
+        Endpoints.getRedisEndpoint(Endpoints.STANDALONE2_PRIMARY).getHostAndPort(),
+        Endpoints.getRedisEndpoint(Endpoints.STANDALONE3_REPLICA_OF_STANDALONE2).getHostAndPort());
     nodesPorts = nodes.stream()
         .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
     sentinels2 = Arrays.asList(
-        Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
-        Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort());
+        Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort(),
+        Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_3).getHostAndPort());
   }
 
   @Test

@@ -43,7 +43,12 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("failover")
+@ResourceLocks({ @ResourceLock(value = Endpoints.REDIS_FAILOVER_1),
+    @ResourceLock(value = Endpoints.REDIS_FAILOVER_2) })
 public class FailoverIntegrationTest {
 
   private static EndpointConfig endpoint1;
@@ -63,8 +68,8 @@ public class FailoverIntegrationTest {
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
-    endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
-    endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
+    endpoint1 = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_1);
+    endpoint2 = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_2);
     if (tp.getProxyOrNull("redis-1") != null) {
       tp.getProxy("redis-1").delete();
     }

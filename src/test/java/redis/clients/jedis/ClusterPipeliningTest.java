@@ -18,6 +18,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
@@ -32,6 +33,7 @@ import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_UNBOUND)
 public class ClusterPipeliningTest {
 
   private static EndpointConfig endpoint;
@@ -49,7 +51,7 @@ public class ClusterPipeliningTest {
 
   @BeforeAll
   public static void setUp() throws InterruptedException {
-    endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_UNBOUND);
     DEFAULT_CLIENT_CONFIG = endpoint.getClientConfigBuilder().build();
     nodeInfo1 = endpoint.getHostsAndPorts().get(0);
     nodeInfo2 = endpoint.getHostsAndPorts().get(1);

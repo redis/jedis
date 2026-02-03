@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -36,6 +37,8 @@ import redis.clients.jedis.util.TestEnvUtil;
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
+@ResourceLock(value = Endpoints.STANDALONE0_ACL)
+@ResourceLock(value = Endpoints.STANDALONE0)
 public class ACLJedisPoolTest {
   private static EndpointConfig endpoint;
 
@@ -46,12 +49,12 @@ public class ACLJedisPoolTest {
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("standalone0-acl"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL));
 
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
-    endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL);
+    endpointWithDefaultUser = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
   }
 
   @Test

@@ -31,7 +31,7 @@ public class HealthCheckIntegrationTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    endpoint1 = Endpoints.getRedisEndpoint("standalone0");
+    endpoint1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
     clientConfig = endpoint1.getClientConfigBuilder()
         .socketTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS)
         .connectionTimeoutMillis(RecommendedSettings.DEFAULT_TIMEOUT_MS).build();

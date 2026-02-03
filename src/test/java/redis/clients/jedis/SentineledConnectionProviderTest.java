@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
@@ -29,6 +31,11 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @see JedisSentinelPoolTest
  */
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1),
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_3),
+    @ResourceLock(value = Endpoints.STANDALONE2_PRIMARY)
+})
 public class SentineledConnectionProviderTest {
 
   private static final String MASTER_NAME = "mymaster";
@@ -42,9 +49,9 @@ public class SentineledConnectionProviderTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
-    primary = Endpoints.getRedisEndpoint("standalone2-primary");
+    sentinel1 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_3).getHostAndPort();
+    primary = Endpoints.getRedisEndpoint(Endpoints.STANDALONE2_PRIMARY);
   }
 
   @BeforeEach

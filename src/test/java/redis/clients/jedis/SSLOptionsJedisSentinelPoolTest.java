@@ -11,9 +11,15 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.util.TlsUtil;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE0),
+    @ResourceLock(value = Endpoints.STANDALONE0_ACL_TLS)
+})
 public class SSLOptionsJedisSentinelPoolTest {
 
   private static EndpointConfig sentinel;
@@ -36,7 +42,7 @@ public class SSLOptionsJedisSentinelPoolTest {
 
   @BeforeAll
   public static void prepare() {
-    sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
+    sentinel = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE0);
     List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
     sslOptions = SslOptions.builder()
@@ -50,7 +56,7 @@ public class SSLOptionsJedisSentinelPoolTest {
   @Test
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
 
-    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
+    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL_TLS)
         .getClientConfigBuilder().clientName("master-client").sslOptions(sslOptions)
         .hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY).build();
 
@@ -70,7 +76,7 @@ public class SSLOptionsJedisSentinelPoolTest {
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
 
-    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl")
+    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL)
         .getClientConfigBuilder().clientName("master-client").build();
 
     DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint(
@@ -90,7 +96,7 @@ public class SSLOptionsJedisSentinelPoolTest {
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
-    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
+    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL_TLS)
         .getClientConfigBuilder().clientName("master-client").sslOptions(sslOptions)
         .hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY).build();
 

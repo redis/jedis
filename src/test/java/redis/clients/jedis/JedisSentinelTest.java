@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.JedisSentinelTestUtil;
 
@@ -19,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE2_PRIMARY)
+@ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1)
+@ResourceLock(value = Endpoints.SENTINEL_FAILOVER)
 public class JedisSentinelTest {
 
   private static final String MASTER_NAME = "mymaster";
@@ -33,9 +37,9 @@ public class JedisSentinelTest {
 
   @BeforeAll
   public static void prepare() {
-    master = Endpoints.getRedisEndpoint("standalone2-primary");
-    sentinel = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-    sentinelForFailover = Endpoints.getRedisEndpoint("sentinel-failover").getHostAndPort();
+    master = Endpoints.getRedisEndpoint(Endpoints.STANDALONE2_PRIMARY);
+    sentinel = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort();
+    sentinelForFailover = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_FAILOVER).getHostAndPort();
   }
 
   @BeforeEach

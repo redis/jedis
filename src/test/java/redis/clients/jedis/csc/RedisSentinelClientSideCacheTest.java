@@ -7,12 +7,15 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.RedisVersionUtil;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1)
+@ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_3)
 public class RedisSentinelClientSideCacheTest extends UnifiedJedisClientSideCacheTestBase {
 
   private static final String MASTER_NAME = "mymaster";
@@ -30,8 +33,8 @@ public class RedisSentinelClientSideCacheTest extends UnifiedJedisClientSideCach
 
   @BeforeAll
   public static void prepareEndpoints() {
-    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+    sentinel1 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_3).getHostAndPort();
     sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
   }
 

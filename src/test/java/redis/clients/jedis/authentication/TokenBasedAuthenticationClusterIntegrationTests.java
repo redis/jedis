@@ -49,7 +49,7 @@ public class TokenBasedAuthenticationClusterIntegrationTests {
     @BeforeAll
     public static void before() {
         try {
-            endpointConfig = Endpoints.getRedisEndpoint("cluster");
+            endpointConfig = Endpoints.getRedisEndpoint(Endpoints.CLUSTER);
             hnp = endpointConfig.getHostAndPort();
         } catch (IllegalArgumentException e) {
             log.warn("Skipping test because no Redis endpoint is configured");

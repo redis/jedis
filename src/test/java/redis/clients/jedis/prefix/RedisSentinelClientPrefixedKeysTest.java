@@ -11,8 +11,14 @@ import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.RedisSentinelClient;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1),
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_3)
+})
 public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisSentinelClient> {
 
   private static final String MASTER_NAME = "mymaster";
@@ -24,8 +30,8 @@ public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisS
   public static void prepareEndpoints() {
     SENTINEL_NODES = new HashSet<>(
         Arrays.asList(
-            Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
-            Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort()));
+            Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort(),
+            Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_3).getHostAndPort()));
   }
 
   @Override

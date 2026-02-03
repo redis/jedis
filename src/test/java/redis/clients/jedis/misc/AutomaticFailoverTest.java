@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("failover")
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0)
+@ResourceLock(value = Endpoints.STANDALONE7_WITH_LFU_POLICY)
 public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
@@ -47,8 +50,8 @@ public class AutomaticFailoverTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    endpointForAuthFailure = Endpoints.getRedisEndpoint("standalone0");
-    workingEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    endpointForAuthFailure = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
+    workingEndpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE7_WITH_LFU_POLICY);
     hostPortWithFailure = new HostAndPort(endpointForAuthFailure.getHost(), 6378);
   }
 

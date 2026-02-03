@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("failover")
+@ResourceLock(value = Endpoints.REDIS_FAILOVER_1)
 public class PingStrategyIntegrationTest {
 
   private static EndpointConfig endpoint;
@@ -29,7 +31,7 @@ public class PingStrategyIntegrationTest {
 
   @BeforeAll
   public static void setupProxy() throws IOException {
-    endpoint = Endpoints.getRedisEndpoint("redis-failover-1");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_1);
     proxyHostAndPort = endpoint.getHostAndPort();
     if (tp.getProxyOrNull("redis-health-test") != null) {
       tp.getProxy("redis-health-test").delete();

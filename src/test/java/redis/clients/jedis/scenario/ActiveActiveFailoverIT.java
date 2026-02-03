@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -32,6 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static redis.clients.jedis.Protocol.DEFAULT_TIMEOUT;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
+@ResourceLock(value = Endpoints.RE_ACTIVE_ACTIVE)
 public class ActiveActiveFailoverIT {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveFailoverIT.class);
   private static final int NUM_OF_THREADS = 18;
@@ -46,7 +48,7 @@ public class ActiveActiveFailoverIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ActiveActiveFailoverIT.endpoint = Endpoints.getRedisEndpoint("re-active-active");
+      ActiveActiveFailoverIT.endpoint = Endpoints.getRedisEndpoint(Endpoints.RE_ACTIVE_ACTIVE);
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

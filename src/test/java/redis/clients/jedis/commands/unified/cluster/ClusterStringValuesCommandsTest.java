@@ -8,9 +8,11 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
@@ -27,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_STABLE)
 public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBase {
 
   public ClusterStringValuesCommandsTest(RedisProtocol protocol) {

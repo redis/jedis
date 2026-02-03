@@ -8,7 +8,7 @@ public class RedisClientCommandsTestHelper {
 
   private static EndpointConfig getEndpointImpl() {
     if (endpoint == null) {
-      endpoint = Endpoints.getRedisEndpoint("standalone0");
+      endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
     }
     return endpoint;
   }

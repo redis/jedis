@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.*;
@@ -11,6 +12,7 @@ import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.commands.unified.client.RedisClientCommandsTestHelper;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0)
 public abstract class PipelineCommandsTestBase {
 
   protected RedisClient client;

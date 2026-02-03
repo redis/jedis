@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.*;
 
 @Tags({ @Tag("scenario") })
+@ResourceLock(value = Endpoints.RE_SINGLE_SHARD_OSS_CLUSTER)
 public class ClusterTopologyRefreshIT {
 
   private static final Logger log = LoggerFactory.getLogger(ClusterTopologyRefreshIT.class);
@@ -37,7 +39,8 @@ public class ClusterTopologyRefreshIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      ClusterTopologyRefreshIT.endpoint = Endpoints.getRedisEndpoint("re-single-shard-oss-cluster");
+      ClusterTopologyRefreshIT.endpoint = Endpoints
+          .getRedisEndpoint(Endpoints.RE_SINGLE_SHARD_OSS_CLUSTER);
     } catch (IllegalArgumentException e) {
       log.warn("Skipping test because no Redis endpoint is configured");
       assumeTrue(false);

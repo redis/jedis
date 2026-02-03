@@ -8,11 +8,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0_TLS)
 public class SSLJedisTest {
 
   protected static EndpointConfig endpoint;
@@ -21,7 +23,7 @@ public class SSLJedisTest {
 
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_TLS);
     List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
 

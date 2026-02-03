@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
@@ -16,6 +17,7 @@ import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0)
 public abstract class UnifiedJedisCommandsTestBase {
 
   /**
@@ -32,16 +34,16 @@ public abstract class UnifiedJedisCommandsTestBase {
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("standalone0"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.STANDALONE0));
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      () -> Endpoints.getRedisEndpoint("standalone0"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.STANDALONE0));
   @RegisterExtension
   public EnvCondition envCondition = new EnvCondition();
 
   @BeforeAll
   public static void prepareEndpoint() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
   }
 
   /**

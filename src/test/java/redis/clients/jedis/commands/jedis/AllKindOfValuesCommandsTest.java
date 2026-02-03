@@ -76,7 +76,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @BeforeAll
   public static void prepareLfuEndpoint() {
-    lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    lfuEndpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE7_WITH_LFU_POLICY);
   }
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {

@@ -2,6 +2,8 @@ package redis.clients.jedis.commands.unified.sentinel;
 
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.*;
@@ -15,6 +17,9 @@ import java.util.Set;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@ResourceLocks({ @ResourceLock(value = Endpoints.STANDALONE2_PRIMARY),
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1),
+    @ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_3) })
 public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTestBase {
 
   static HostAndPort sentinel1;
@@ -29,18 +34,18 @@ public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTe
 
   @RegisterExtension
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("standalone2-primary"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.STANDALONE2_PRIMARY));
 
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      () -> Endpoints.getRedisEndpoint("standalone2-primary"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.STANDALONE2_PRIMARY));
 
   @BeforeAll
   public static void prepareEndpoints() {
-    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+    sentinel1 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_3).getHostAndPort();
     sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
-    primary = Endpoints.getRedisEndpoint("standalone2-primary");
+    primary = Endpoints.getRedisEndpoint(Endpoints.STANDALONE2_PRIMARY);
   }
 
   public SentinelAllKindOfValuesCommandsIT(RedisProtocol protocol) {

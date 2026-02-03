@@ -48,7 +48,7 @@ public class RedisEntraIDClusterIntegrationTests {
     public static void before() {
         try {
             testCtx = EntraIDTestContext.DEFAULT;
-            endpointConfig = Endpoints.getRedisEndpoint("cluster-entraid-acl");
+            endpointConfig = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_ENTRAID_ACL);
             hnp = endpointConfig.getHostAndPort();
         } catch (IllegalArgumentException e) {
             log.warn("Skipping test because no Redis endpoint is configured");

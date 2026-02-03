@@ -51,8 +51,8 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    destEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
-    destEndpointWithAuth = Endpoints.getRedisEndpoint("standalone1");
+    destEndpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE7_WITH_LFU_POLICY);
+    destEndpointWithAuth = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
     host = destEndpoint.getHost();
     port = destEndpoint.getPort();
     portAuth = destEndpointWithAuth.getPort();

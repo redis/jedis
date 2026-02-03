@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +32,8 @@ import java.util.function.Consumer;
  * Basic tests for MultiDbClient functionality.
  */
 @Tag("integration")
+@ResourceLocks({ @ResourceLock(value = Endpoints.REDIS_FAILOVER_1),
+    @ResourceLock(value = Endpoints.REDIS_FAILOVER_2) })
 public class MultiDbClientTest {
 
   private MultiDbClient client;
@@ -42,8 +46,8 @@ public class MultiDbClientTest {
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
-    endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
-    endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
+    endpoint1 = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_1);
+    endpoint2 = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_2);
     if (tp.getProxyOrNull("redis-1") != null) {
       tp.getProxy("redis-1").delete();
     }

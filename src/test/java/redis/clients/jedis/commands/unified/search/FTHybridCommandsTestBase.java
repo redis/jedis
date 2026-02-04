@@ -1,13 +1,11 @@
 package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.notNullValue;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
@@ -17,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -26,14 +23,22 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
-import redis.clients.jedis.search.hybrid.FTHybridCombineParams;
+import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.FTCreateParams;
+import redis.clients.jedis.search.IndexDataType;
+import redis.clients.jedis.search.Scorers;
+import redis.clients.jedis.search.aggr.Group;
+import redis.clients.jedis.search.aggr.Reducers;
+import redis.clients.jedis.search.aggr.SortedField;
+import redis.clients.jedis.search.Apply;
+import redis.clients.jedis.search.Filter;
+import redis.clients.jedis.search.hybrid.FTHybridCombineParams;
 import redis.clients.jedis.search.hybrid.FTHybridParams;
-import redis.clients.jedis.search.hybrid.HybridResult;
+import redis.clients.jedis.search.hybrid.FTHybridPostProcessingParams;
 import redis.clients.jedis.search.hybrid.FTHybridSearchParams;
 import redis.clients.jedis.search.hybrid.FTHybridVectorParams;
-import redis.clients.jedis.search.IndexDataType;
-import redis.clients.jedis.search.hybrid.FTHybridPostProcessingParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
+import redis.clients.jedis.search.Limit;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
@@ -148,23 +153,15 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
   public void testComprehensiveFtHybridWithAllFeatures() {
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
         .load("price", "brand", "@category")
-        .groupBy(FTHybridPostProcessingParams.GroupBy.of("brand")
-            .reduce(FTHybridPostProcessingParams.Reducer
-                .of(FTHybridPostProcessingParams.ReduceFunction.SUM, "@price").as("sum"))
-            .reduce(FTHybridPostProcessingParams.Reducer
-                .of(FTHybridPostProcessingParams.ReduceFunction.COUNT).as("count")))
-        .apply(FTHybridPostProcessingParams.Apply.of("@sum * 0.9", "discounted_price"))
-        .sortBy(FTHybridPostProcessingParams.SortBy.of(
-          new FTHybridPostProcessingParams.SortProperty("sum",
-              FTHybridPostProcessingParams.SortDirection.ASC),
-          new FTHybridPostProcessingParams.SortProperty("count",
-              FTHybridPostProcessingParams.SortDirection.DESC)))
-        .filter(FTHybridPostProcessingParams.Filter.of("@sum > 700"))
-        .limit(FTHybridPostProcessingParams.Limit.of(0, 20)).build();
+        .groupBy(new Group("@brand").reduce(Reducers.sum("@price").as("sum"))
+            .reduce(Reducers.count().as("count")))
+        .apply(Apply.of("@sum * 0.9", "discounted_price"))
+        .sortBy(SortedField.asc("@sum"), SortedField.desc("@count")).filter(Filter.of("@sum > 700"))
+        .limit(Limit.of(0, 20)).build();
 
     FTHybridParams hybridArgs = FTHybridParams.builder()
         .search(FTHybridSearchParams.builder().query("@category:{electronics} smartphone camera")
-            .scorer(FTHybridSearchParams.Scorer.of("BM25")).scoreAlias("text_score").build())
+            .scorer(Scorers.bm25std()).scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(20).efRuntime(150))
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
@@ -177,28 +174,28 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
     assertThat(reply.getTotalResults(), equalTo(3L));
-    assertThat(reply.getResults().size(), equalTo(3));
+    assertThat(reply.getDocuments().size(), equalTo(3));
     assertThat(reply.getWarnings().size(), greaterThanOrEqualTo(0));
     assertThat(reply.getExecutionTime(), greaterThan(0.0));
 
     // Verify first result (google) - exact field values
-    Map<String, Object> r1 = reply.getResults().get(0);
+    Document r1 = reply.getDocuments().get(0);
     assertThat(r1.get("brand"), equalTo("google"));
     assertThat(r1.get("count"), equalTo("2"));
     assertThat(r1.get("sum"), equalTo("1398"));
     assertThat(r1.get("discounted_price"), equalTo("1258.2"));
 
     // Verify second result (samsung) - exact field values
-    Map<String, Object> r2 = reply.getResults().get(1);
+    Document r2 = reply.getDocuments().get(1);
     assertThat(r2.get("brand"), equalTo("samsung"));
     assertThat(r2.get("count"), equalTo("2"));
     assertThat(r2.get("sum"), equalTo("1598"));
     assertThat(r2.get("discounted_price"), equalTo("1438.2"));
 
     // Verify third result (apple) - exact field values
-    Map<String, Object> r3 = reply.getResults().get(2);
+    Document r3 = reply.getDocuments().get(2);
     assertThat(r3.get("brand"), equalTo("apple"));
     assertThat(r3.get("count"), equalTo("3"));
     assertThat(r3.get("sum"), equalTo("2997"));
@@ -222,32 +219,24 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
 
     // Result count assertions
     assertThat(reply.getTotalResults(), greaterThan(0L));
-    assertThat(reply.getResults().size(), greaterThan(0));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
 
     // Field count and content assertions
-    Map<String, Object> firstResult = reply.getResults().get(0);
-
-    // LOAD specific fields should return: 3 loaded fields + score fields (4-5 total)
-    assertThat(firstResult.size(), greaterThanOrEqualTo(4));
-    assertThat(firstResult.size(), lessThanOrEqualTo(5));
+    Document firstResult = reply.getDocuments().get(0);
 
     // Loaded fields should be present
-    assertThat(firstResult, hasKey("title"));
-    assertThat(firstResult, hasKey("price"));
-    assertThat(firstResult, hasKey("brand"));
+    assertThat(firstResult.hasProperty("title"), equalTo(true));
+    assertThat(firstResult.hasProperty("price"), equalTo(true));
+    assertThat(firstResult.hasProperty("brand"), equalTo(true));
 
     // Non-loaded document fields should NOT be present
-    assertThat(firstResult, not(hasKey("category")));
-    assertThat(firstResult, not(hasKey("rating")));
-    assertThat(firstResult, not(hasKey("image_embedding")));
-
-    // Score fields may be present (text_score, vector_score) - this is expected
-    // Document key (__key) should NOT be present when LOAD is used
-    assertThat(firstResult, not(hasKey("__key")));
+    assertThat(firstResult.hasProperty("category"), equalTo(false));
+    assertThat(firstResult.hasProperty("rating"), equalTo(false));
+    assertThat(firstResult.hasProperty("image_embedding"), equalTo(false));
   }
 
   @Test
@@ -269,47 +258,35 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
 
     // Result count assertions
     assertThat(reply.getTotalResults(), greaterThan(0L));
-    assertThat(reply.getResults().size(), greaterThan(0));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
 
     // Field count and content assertions
-    Map<String, Object> firstResult = reply.getResults().get(0);
-
-    // LOAD * should return: 5 document fields + 1 vector field + score fields (7-8 total)
-    // This is MORE than LOAD specific fields (4-5)
-    assertThat(firstResult.size(), greaterThanOrEqualTo(7));
-    assertThat(firstResult.size(), lessThanOrEqualTo(8));
+    Document firstResult = reply.getDocuments().get(0);
 
     // All document fields should be present
-    assertThat(firstResult, hasKey("title"));
-    assertThat(firstResult, hasKey("category"));
-    assertThat(firstResult, hasKey("brand"));
-    assertThat(firstResult, hasKey("price"));
-    assertThat(firstResult, hasKey("rating"));
+    assertThat(firstResult.hasProperty("title"), equalTo(true));
+    assertThat(firstResult.hasProperty("category"), equalTo(true));
+    assertThat(firstResult.hasProperty("brand"), equalTo(true));
+    assertThat(firstResult.hasProperty("price"), equalTo(true));
+    assertThat(firstResult.hasProperty("rating"), equalTo(true));
 
     // Vector field should also be present with LOAD *
-    assertThat(firstResult, hasKey("image_embedding"));
+    assertThat(firstResult.hasProperty("image_embedding"), equalTo(true));
 
     // Score fields should be present
-    assertThat(firstResult, hasKey("text_score"));
-
-    // Document key (__key) should NOT be present when LOAD is used
-    assertThat(firstResult, not(hasKey("__key")));
+    assertThat(firstResult.hasProperty("text_score"), equalTo(true));
   }
 
   @Test
   public void testLoadWithGroupBy() {
     // Test LOAD behavior with GROUPBY - loaded fields should be available for grouping
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
-        .load("brand", "price", "category")
-        .groupBy(FTHybridPostProcessingParams.GroupBy.of("brand")
-            .reduce(FTHybridPostProcessingParams.Reducer
-                .of(FTHybridPostProcessingParams.ReduceFunction.COUNT).as("count"))
-            .reduce(FTHybridPostProcessingParams.Reducer
-                .of(FTHybridPostProcessingParams.ReduceFunction.AVG, "@price").as("avg_price")))
+        .load("brand", "price", "category").groupBy(new Group("@brand")
+            .reduce(Reducers.count().as("count")).reduce(Reducers.avg("@price").as("avg_price")))
         .build();
 
     FTHybridParams hybridArgs = FTHybridParams.builder()
@@ -323,46 +300,36 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
 
     // Result count assertions
     assertThat(reply.getTotalResults(), greaterThan(0L));
-    assertThat(reply.getResults().size(), greaterThan(0));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
 
     // Field count and content assertions
-    Map<String, Object> firstResult = reply.getResults().get(0);
-
-    // After GROUPBY: only group key + reducers (3 fields total)
-    assertThat(firstResult.size(), equalTo(3));
+    Document firstResult = reply.getDocuments().get(0);
 
     // Grouping field should be present
-    assertThat(firstResult, hasKey("brand"));
+    assertThat(firstResult.hasProperty("brand"), equalTo(true));
 
     // Reducer results should be present
-    assertThat(firstResult, hasKey("count"));
-    assertThat(firstResult, hasKey("avg_price"));
+    assertThat(firstResult.hasProperty("count"), equalTo(true));
+    assertThat(firstResult.hasProperty("avg_price"), equalTo(true));
 
     // Original loaded fields (price, category) should NOT be present after GROUPBY
     // GROUPBY transforms the results, only group keys and reducers remain
-    assertThat(firstResult, not(hasKey("price")));
-    assertThat(firstResult, not(hasKey("category")));
-    assertThat(firstResult, not(hasKey("title")));
-
-    // Document key should NOT be present
-    assertThat(firstResult, not(hasKey("__key")));
+    assertThat(firstResult.hasProperty("price"), equalTo(false));
+    assertThat(firstResult.hasProperty("category"), equalTo(false));
+    assertThat(firstResult.hasProperty("title"), equalTo(false));
   }
 
   @Test
   public void testLoadWithApply() {
     // Test LOAD with APPLY - loaded fields should be available for expressions
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
-        .load("price", "rating", "title")
-        .apply(FTHybridPostProcessingParams.Apply.of("@price * @rating", "value_score"))
-        .apply(FTHybridPostProcessingParams.Apply.of("@price * 0.9", "discounted"))
-        .sortBy(
-          FTHybridPostProcessingParams.SortBy.of(new FTHybridPostProcessingParams.SortProperty(
-              "value_score", FTHybridPostProcessingParams.SortDirection.DESC)))
-        .limit(FTHybridPostProcessingParams.Limit.of(0, 5)).build();
+        .load("price", "rating", "title").apply(Apply.of("@price * @rating", "value_score"))
+        .apply(Apply.of("@price * 0.9", "discounted")).sortBy(SortedField.desc("@value_score"))
+        .limit(Limit.of(0, 5)).build();
 
     FTHybridParams hybridArgs = FTHybridParams.builder()
         .search(FTHybridSearchParams.builder().query("smartphone").scoreAlias("text_score").build())
@@ -374,47 +341,36 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
 
     // Result count assertions
     assertThat(reply.getTotalResults(), greaterThan(0L));
-    assertThat(reply.getResults().size(), greaterThan(0));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
 
     // Field count and content assertions
-    Map<String, Object> firstResult = reply.getResults().get(0);
-
-    // LOAD with APPLY: 3 loaded fields + 2 computed fields + score fields (6-7 total)
-    assertThat(firstResult.size(), greaterThanOrEqualTo(6));
-    assertThat(firstResult.size(), lessThanOrEqualTo(7));
+    Document firstResult = reply.getDocuments().get(0);
 
     // Loaded fields should be present
-    assertThat(firstResult, hasKey("price"));
-    assertThat(firstResult, hasKey("rating"));
-    assertThat(firstResult, hasKey("title"));
+    assertThat(firstResult.hasProperty("price"), equalTo(true));
+    assertThat(firstResult.hasProperty("rating"), equalTo(true));
+    assertThat(firstResult.hasProperty("title"), equalTo(true));
 
     // Computed fields (from APPLY) should be present
-    assertThat(firstResult, hasKey("value_score"));
-    assertThat(firstResult, hasKey("discounted"));
+    assertThat(firstResult.hasProperty("value_score"), equalTo(true));
+    assertThat(firstResult.hasProperty("discounted"), equalTo(true));
 
     // Non-loaded document fields should NOT be present
-    assertThat(firstResult, not(hasKey("category")));
-    assertThat(firstResult, not(hasKey("brand")));
-    assertThat(firstResult, not(hasKey("image_embedding")));
-
-    // Document key should NOT be present when LOAD is used
-    assertThat(firstResult, not(hasKey("__key")));
+    assertThat(firstResult.hasProperty("category"), equalTo(false));
+    assertThat(firstResult.hasProperty("brand"), equalTo(false));
+    assertThat(firstResult.hasProperty("image_embedding"), equalTo(false));
   }
 
   @Test
   public void testLoadWithFilter() {
     // Test LOAD with FILTER - loaded fields should be available for filtering
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
-        .load("price", "brand", "title")
-        .filter(FTHybridPostProcessingParams.Filter.of("@price > 700"))
-        .sortBy(
-          FTHybridPostProcessingParams.SortBy.of(new FTHybridPostProcessingParams.SortProperty(
-              "price", FTHybridPostProcessingParams.SortDirection.ASC)))
-        .build();
+        .load("price", "brand", "title").filter(Filter.of("@price > 700"))
+        .sortBy(SortedField.asc("@price")).build();
 
     FTHybridParams hybridArgs = FTHybridParams.builder()
         .search(FTHybridSearchParams.builder().query("@category:{electronics}")
@@ -427,34 +383,27 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
 
     // Result count assertions
     assertThat(reply.getTotalResults(), greaterThan(0L));
-    assertThat(reply.getResults().size(), greaterThan(0));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
 
     // Verify loaded fields are present and FILTER condition is applied
-    for (Map<String, Object> result : reply.getResults()) {
-      // Field count: 3 loaded fields + score fields (4-5 total)
-      assertThat(result.size(), greaterThanOrEqualTo(4));
-      assertThat(result.size(), lessThanOrEqualTo(5));
-
+    for (Document result : reply.getDocuments()) {
       // Loaded fields should be present
-      assertThat(result, hasKey("price"));
-      assertThat(result, hasKey("brand"));
-      assertThat(result, hasKey("title"));
+      assertThat(result.hasProperty("price"), equalTo(true));
+      assertThat(result.hasProperty("brand"), equalTo(true));
+      assertThat(result.hasProperty("title"), equalTo(true));
 
       // FILTER condition: all results should have price > 700
-      double price = Double.parseDouble((String) result.get("price"));
+      double price = Double.parseDouble(result.getString("price"));
       assertThat(price, greaterThan(700.0));
 
       // Non-loaded document fields should NOT be present
-      assertThat(result, not(hasKey("category")));
-      assertThat(result, not(hasKey("rating")));
-      assertThat(result, not(hasKey("image_embedding")));
-
-      // Document key should NOT be present when LOAD is used
-      assertThat(result, not(hasKey("__key")));
+      assertThat(result.hasProperty("category"), equalTo(false));
+      assertThat(result.hasProperty("rating"), equalTo(false));
+      assertThat(result.hasProperty("image_embedding"), equalTo(false));
     }
   }
 
@@ -462,7 +411,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
   public void testLoadNoFields() {
     // Test without LOAD - should return only document IDs and scores
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
-        .limit(FTHybridPostProcessingParams.Limit.of(0, 5)).build();
+        .limit(Limit.of(0, 5)).build();
 
     FTHybridParams hybridArgs = FTHybridParams.builder()
         .search(FTHybridSearchParams.builder().query("smartphone").scoreAlias("text_score").build())
@@ -474,32 +423,54 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
     assertThat(reply, notNullValue());
-    assertThat(reply.getResults(), not(empty()));
+    assertThat(reply.getDocuments(), not(empty()));
 
     // Result count assertions
     assertThat(reply.getTotalResults(), greaterThan(0L));
-    assertThat(reply.getResults().size(), greaterThan(0));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
 
     // Without LOAD, results should contain only keys and scores, NO document fields
-    Map<String, Object> firstResult = reply.getResults().get(0);
+    Document firstResult = reply.getDocuments().get(0);
 
-    // NO LOAD: only __key + __score + score fields (3-4 total)
-    // This is FEWER fields than LOAD specific (4-5) and LOAD * (7-8)
-    assertThat(firstResult.size(), greaterThanOrEqualTo(3));
-    assertThat(firstResult.size(), lessThanOrEqualTo(4));
-
-    // Document key should be present
-    assertThat(firstResult, hasKey("__key"));
-
-    // Score fields should be present
-    assertThat(firstResult, hasKey("__score"));
+    // Document id and score should be present (extracted from __key and __score)
+    assertThat(firstResult.getId(), notNullValue());
+    assertThat(firstResult.getScore(), notNullValue());
 
     // Document fields should NOT be present when no LOAD is specified
-    assertThat(firstResult, not(hasKey("title")));
-    assertThat(firstResult, not(hasKey("category")));
-    assertThat(firstResult, not(hasKey("brand")));
-    assertThat(firstResult, not(hasKey("price")));
-    assertThat(firstResult, not(hasKey("rating")));
-    assertThat(firstResult, not(hasKey("image_embedding")));
+    assertThat(firstResult.hasProperty("title"), equalTo(false));
+    assertThat(firstResult.hasProperty("category"), equalTo(false));
+    assertThat(firstResult.hasProperty("brand"), equalTo(false));
+    assertThat(firstResult.hasProperty("price"), equalTo(false));
+    assertThat(firstResult.hasProperty("rating"), equalTo(false));
+    assertThat(firstResult.hasProperty("image_embedding"), equalTo(false));
+  }
+
+  @Test
+  public void testNoSort() {
+    // Test NOSORT - disables default sorting by score
+    FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
+        .load("title", "price").noSort().limit(Limit.of(0, 10)).build();
+
+    FTHybridParams hybridArgs = FTHybridParams.builder()
+        .search(FTHybridSearchParams.builder().query("@category:{electronics}")
+            .scoreAlias("text_score").build())
+        .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
+            .method(FTHybridVectorParams.Knn.of(10)).scoreAlias("vector_score").build())
+        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
+        .postProcessing(postProcessing).param("vector", queryVector).build();
+
+    HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+
+    assertThat(reply, notNullValue());
+    assertThat(reply.getDocuments(), not(empty()));
+
+    // Result count assertions
+    assertThat(reply.getTotalResults(), greaterThan(0L));
+    assertThat(reply.getDocuments().size(), greaterThan(0));
+
+    // Loaded fields should be present
+    Document firstResult = reply.getDocuments().get(0);
+    assertThat(firstResult.hasProperty("title"), equalTo(true));
+    assertThat(firstResult.hasProperty("price"), equalTo(true));
   }
 }

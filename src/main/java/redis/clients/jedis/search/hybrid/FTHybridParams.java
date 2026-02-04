@@ -17,6 +17,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * <p>
  * <strong>Basic Usage:</strong>
  * </p>
+ * 
  * <pre>
  * HybridParams params = HybridParams.builder()
  *     .search(HybridSearchParams.builder().query("comfortable shoes").build())

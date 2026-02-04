@@ -3,6 +3,7 @@ package redis.clients.jedis.search.hybrid;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.search.Scorer;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
@@ -82,33 +83,12 @@ public class FTHybridSearchParams implements IParams {
 
     if (scorer != null) {
       args.add(SCORER);
-      args.add(scorer.function);
+      scorer.addParams(args);
     }
 
     if (scoreAlias != null) {
       args.add(YIELD_SCORE_AS);
       args.add(scoreAlias);
-    }
-  }
-
-  // We are using a wrapper, because in the future the server will allow params
-  /**
-   * Represents a scoring function configuration for text search.
-   */
-  public static class Scorer {
-    private final String function;
-
-    private Scorer(String function) {
-      this.function = function;
-    }
-
-    /**
-     * Create a scorer with the given function.
-     * @param function the scoring function
-     * @return a new Scorer instance
-     */
-    public static Scorer of(String function) {
-      return new Scorer(function);
     }
   }
 }

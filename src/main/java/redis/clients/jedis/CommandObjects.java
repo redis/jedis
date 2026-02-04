@@ -3765,7 +3765,7 @@ public class CommandObjects {
 
   public final CommandObject<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.HYBRID, indexName)
-        .addParams(hybridParams), HybridResult.HYBRID_REPLY_BUILDER);
+        .addParams(hybridParams), HybridResult.HYBRID_RESULT_BUILDER);
   }
 
   @Deprecated

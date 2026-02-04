@@ -1,6 +1,4 @@
-package redis.clients.jedis.search.hybrid;
-
-import redis.clients.jedis.annots.Experimental;
+package redis.clients.jedis.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,11 +7,11 @@ import java.util.List;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 /**
- * Factory class for creating {@link Combiner} instances for FT.HYBRID command.
+ * Factory class for creating {@link Combiner} instances.
  * <p>
  * Example usage:
  * </p>
- * 
+ *
  * <pre>
  * // RRF with default parameters
  * Combiners.rrf()
@@ -25,12 +23,11 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * Combiners.linear().alpha(0.7).beta(0.3)
  *
  * // With score alias
- * Combiners.rrf().scoreAlias("combined_score")
+ * Combiners.rrf().as("combined_score")
  * </pre>
  *
  * @see Combiner
  */
-@Experimental
 public final class Combiners {
 
   private Combiners() {

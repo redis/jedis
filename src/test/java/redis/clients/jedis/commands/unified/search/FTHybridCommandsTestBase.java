@@ -32,7 +32,7 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.search.Apply;
 import redis.clients.jedis.search.Filter;
-import redis.clients.jedis.search.hybrid.Combiners;
+import redis.clients.jedis.search.Combiners;
 import redis.clients.jedis.search.hybrid.FTHybridParams;
 import redis.clients.jedis.search.hybrid.FTHybridPostProcessingParams;
 import redis.clients.jedis.search.hybrid.FTHybridSearchParams;

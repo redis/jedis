@@ -1,7 +1,6 @@
-package redis.clients.jedis.search.hybrid;
+package redis.clients.jedis.search;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 
 import java.util.List;
@@ -9,11 +8,10 @@ import java.util.List;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.YIELD_SCORE_AS;
 
 /**
- * Abstract combiner for combining text search and vector similarity scores in FT.HYBRID command.
- * This class is normally received via {@link Combiners}.
+ * Abstract combiner for combining multiple search scores. Instances are created via
+ * {@link Combiners}.
  * @see Combiners
  */
-@Experimental
 public abstract class Combiner implements IParams {
 
   private final String name;

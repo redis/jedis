@@ -555,16 +555,15 @@
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
 						<include>**/ACLTestUtil.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/Combiner.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/Combiners.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridParams.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridPostProcessingParams.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridSearchParams.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridVectorParams.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/HybridResult.java</include>
-						<include>src/test/java/redis/clients/jedis/commands/unified/client/search/FTHybridRedisClientCommandsTest.java</include>
-						<include>src/test/java/redis/clients/jedis/commands/unified/cluster/search/FTHybridCommandsClusterTest.java</include>
-						<include>src/test/java/redis/clients/jedis/commands/unified/search/FTHybridCommandsTestBase.java</include>
+						<include>**/search/Apply.java</include>
+						<include>**/search/Combiner.java</include>
+						<include>**/search/Combiners.java</include>
+						<include>**/search/Filter.java</include>
+						<include>**/search/Limit.java</include>
+						<include>**/search/Scorer.java</include>
+						<include>**/search/Scorers.java</include>
+						<include>**/search/hybrid/*.java</include>
+						<include>**/search/FTHybrid*.java</include>
 					</includes>
 				</configuration>
 				<executions>

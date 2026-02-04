@@ -1,16 +1,14 @@
 package redis.clients.jedis.search;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.APPLY;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.AS;
 
 /**
- * APPLY operation for post-processing in FT.HYBRID command.
+ * APPLY operation for search commands. Computes a new field based on an expression.
  */
-@Experimental
 public class Apply implements IParams {
 
   private final String expression;
@@ -39,4 +37,3 @@ public class Apply implements IParams {
     args.add(alias);
   }
 }
-

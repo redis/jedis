@@ -3,6 +3,8 @@ package redis.clients.jedis.search.hybrid;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.search.Combiner;
+import redis.clients.jedis.search.Combiners;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1373,7 +1373,7 @@ public final class BuilderFactory {
       List<byte[]> hash = (List<byte[]>) objectList.get(1);
 
       Iterator<byte[]> hashIterator = hash.iterator();
-      Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
+      Map<String, String> map = new LinkedHashMap<>(hash.size() / 2, 1f);
       while (hashIterator.hasNext()) {
         map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
       }
@@ -1413,7 +1413,7 @@ public final class BuilderFactory {
 
         if (hash != null) {
           Iterator<byte[]> hashIterator = hash.iterator();
-          fieldsMap = new HashMap<>(hash.size() / 2, 1f);
+          fieldsMap = new LinkedHashMap<>(hash.size() / 2, 1f);
 
           while (hashIterator.hasNext()) {
             fieldsMap.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));

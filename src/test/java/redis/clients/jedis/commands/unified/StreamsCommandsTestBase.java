@@ -19,6 +19,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.*;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -970,6 +971,44 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     // Fresh entries were not added to PEL.
     assertEquals(0L, afterNoack.getConsumerMessageCount().getOrDefault(CONSUMER_1, 0L).longValue());
     assertEquals(2L, afterNoack.getConsumerMessageCount().getOrDefault(CONSUMER_2, 0L).longValue());
+  }
+
+  @Test
+  public void xreadGroupPreservesFieldOrder() {
+    String streamKey = "field-order-stream";
+    String groupName = "field-order-group";
+    String consumerName = "field-order-consumer";
+
+    // Use LinkedHashMap to ensure insertion order: a, z, m
+    Map<String, String> fields = new LinkedHashMap<>();
+    fields.put("a", "1");
+    fields.put("z", "4");
+    fields.put("m", "2");
+
+    jedis.xadd(streamKey, StreamEntryID.NEW_ENTRY, fields);
+    jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xreadGroup(groupName, consumerName,
+        XReadGroupParams.xReadGroupParams().count(1), streamQuery);
+
+    assertEquals(1, result.size());
+    assertEquals(1, result.get(0).getValue().size());
+
+    StreamEntry entry = result.get(0).getValue().get(0);
+    Map<String, String> returnedFields = entry.getFields();
+
+    // Verify field order is preserved - this will fail with HashMap, pass with LinkedHashMap
+    String[] expectedOrder = {"a", "z", "m"};
+    String[] actualOrder = returnedFields.keySet().toArray(new String[0]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Field count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertEquals(expectedOrder[i], actualOrder[i],
+          String.format("Field order mismatch at position %d: expected '%s' but got '%s'. " +
+              "Full order: expected [a, z, m], actual %s",
+              i, expectedOrder[i], actualOrder[i], java.util.Arrays.toString(actualOrder)));
+    }
   }
 
   // ========== Idempotent Producer Tests ==========

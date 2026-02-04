@@ -9,6 +9,8 @@ import java.util.EnumSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.CommandFlagsRegistry.CommandFlag;
+import redis.clients.jedis.CommandFlagsRegistry.RequestPolicy;
+import redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -172,5 +174,133 @@ public class StaticCommandFlagsRegistryTest {
     assertNotNull(flags, "Flags should not be null");
     assertTrue(flags.isEmpty(),
       "Unknown FUNCTION subcommand should return empty flags (parent flags)");
+  }
+
+  // ==================== Request Policy Tests ====================
+
+  /**
+   * Test that getRequestPolicy returns DEFAULT for commands without a specific policy. Since the
+   * current registry doesn't populate request policies, all commands should return DEFAULT.
+   */
+  @Test
+  public void testGetRequestPolicyReturnsDefault() {
+    CommandArguments getArgs = new CommandArguments(Protocol.Command.GET).add("key");
+
+    RequestPolicy policy = registry.getRequestPolicy(getArgs);
+
+    assertNotNull(policy, "Request policy should not be null");
+    assertEquals(RequestPolicy.DEFAULT, policy, "GET should have DEFAULT request policy");
+  }
+
+  /**
+   * Test that getRequestPolicy returns DEFAULT for unknown commands.
+   */
+  @Test
+  public void testGetRequestPolicyForUnknownCommand() {
+    ProtocolCommand unknownCommand = () -> SafeEncoder.encode("UNKNOWN_COMMAND_XYZ");
+    CommandArguments unknownArgs = new CommandArguments(unknownCommand);
+
+    RequestPolicy policy = registry.getRequestPolicy(unknownArgs);
+
+    assertNotNull(policy, "Request policy should not be null");
+    assertEquals(RequestPolicy.DEFAULT, policy,
+      "Unknown command should have DEFAULT request policy");
+  }
+
+  /**
+   * Test that getRequestPolicy works for commands with subcommands.
+   */
+  @Test
+  public void testGetRequestPolicyForSubcommand() {
+    CommandArguments functionLoadArgs = new CommandArguments(Protocol.Command.FUNCTION).add("LOAD");
+
+    RequestPolicy policy = registry.getRequestPolicy(functionLoadArgs);
+
+    assertNotNull(policy, "Request policy should not be null");
+    // Currently all commands return DEFAULT since policies aren't populated
+    assertEquals(RequestPolicy.ALL_SHARDS, policy,
+      "FUNCTION LOAD should have DEFAULT request policy");
+  }
+
+  // ==================== Response Policy Tests ====================
+
+  /**
+   * Test that getResponsePolicy returns DEFAULT for commands without a specific policy. Since the
+   * current registry doesn't populate response policies, all commands should return DEFAULT.
+   */
+  @Test
+  public void testGetResponsePolicyReturnsDefault() {
+    CommandArguments getArgs = new CommandArguments(Protocol.Command.GET).add("key");
+
+    ResponsePolicy policy = registry.getResponsePolicy(getArgs);
+
+    assertNotNull(policy, "Response policy should not be null");
+    assertEquals(ResponsePolicy.DEFAULT, policy, "GET should have DEFAULT response policy");
+  }
+
+  /**
+   * Test that getResponsePolicy returns DEFAULT for unknown commands.
+   */
+  @Test
+  public void testGetResponsePolicyForUnknownCommand() {
+    ProtocolCommand unknownCommand = () -> SafeEncoder.encode("UNKNOWN_COMMAND_XYZ");
+    CommandArguments unknownArgs = new CommandArguments(unknownCommand);
+
+    ResponsePolicy policy = registry.getResponsePolicy(unknownArgs);
+
+    assertNotNull(policy, "Response policy should not be null");
+    assertEquals(ResponsePolicy.DEFAULT, policy,
+      "Unknown command should have DEFAULT response policy");
+  }
+
+  /**
+   * Test that getResponsePolicy works for commands with subcommands.
+   */
+  @Test
+  public void testGetResponsePolicyForSubcommand() {
+    CommandArguments functionLoadArgs = new CommandArguments(Protocol.Command.FUNCTION).add("LOAD");
+
+    ResponsePolicy policy = registry.getResponsePolicy(functionLoadArgs);
+
+    assertNotNull(policy, "Response policy should not be null");
+    // Currently all commands return DEFAULT since policies aren't populated
+    assertEquals(ResponsePolicy.ALL_SUCCEEDED, policy,
+      "FUNCTION LOAD should have DEFAULT response policy");
+  }
+
+  /**
+   * Test that RequestPolicy enum contains all expected values.
+   */
+  @Test
+  public void testRequestPolicyEnumValues() {
+    RequestPolicy[] values = RequestPolicy.values();
+    assertEquals(5, values.length, "RequestPolicy should have 5 values");
+
+    // Verify all expected values exist
+    assertNotNull(RequestPolicy.valueOf("DEFAULT"));
+    assertNotNull(RequestPolicy.valueOf("ALL_NODES"));
+    assertNotNull(RequestPolicy.valueOf("ALL_SHARDS"));
+    assertNotNull(RequestPolicy.valueOf("MULTI_SHARD"));
+    assertNotNull(RequestPolicy.valueOf("SPECIAL"));
+  }
+
+  /**
+   * Test that ResponsePolicy enum contains all expected values.
+   */
+  @Test
+  public void testResponsePolicyEnumValues() {
+    ResponsePolicy[] values = ResponsePolicy.values();
+    assertEquals(9, values.length, "ResponsePolicy should have 9 values");
+
+    // Verify all expected values exist
+    assertNotNull(ResponsePolicy.valueOf("DEFAULT"));
+    assertNotNull(ResponsePolicy.valueOf("ONE_SUCCEEDED"));
+    assertNotNull(ResponsePolicy.valueOf("ALL_SUCCEEDED"));
+    assertNotNull(ResponsePolicy.valueOf("AGG_LOGICAL_AND"));
+    assertNotNull(ResponsePolicy.valueOf("AGG_LOGICAL_OR"));
+    assertNotNull(ResponsePolicy.valueOf("AGG_MIN"));
+    assertNotNull(ResponsePolicy.valueOf("AGG_MAX"));
+    assertNotNull(ResponsePolicy.valueOf("AGG_SUM"));
+    assertNotNull(ResponsePolicy.valueOf("SPECIAL"));
   }
 }

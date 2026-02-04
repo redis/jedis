@@ -56,7 +56,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
-  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
   /**
@@ -315,34 +314,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executor.executeCommand(commandObject);
   }
 
-  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    return executor.broadcastCommand(commandObject);
-  }
-
-  private <T> T checkAndBroadcastCommand(CommandObject<T> commandObject) {
-    boolean broadcast = true;
-
-    if (broadcastAndRoundRobinConfig == null) {
-    } else if (commandObject.getArguments().getCommand() instanceof SearchProtocol.SearchCommand
-        && broadcastAndRoundRobinConfig
-            .getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
-      broadcast = false;
-    }
-
-    return broadcast ? broadcastCommand(commandObject) : executeCommand(commandObject);
-  }
-
-  public void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
-    this.broadcastAndRoundRobinConfig = config;
-    this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
-  }
-
   public Cache getCache() {
     return cache;
   }
 
   public String ping() {
-    return checkAndBroadcastCommand(commandObjects.ping());
+    return executeCommand(commandObjects.ping());
   }
 
   public String echo(String string) {
@@ -350,15 +327,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String flushDB() {
-    return checkAndBroadcastCommand(commandObjects.flushDB());
+    return executeCommand(commandObjects.flushDB());
   }
 
   public String flushAll() {
-    return checkAndBroadcastCommand(commandObjects.flushAll());
+    return executeCommand(commandObjects.flushAll());
   }
 
   public String configSet(String parameter, String value) {
-    return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+    return executeCommand(commandObjects.configSet(parameter, value));
   }
 
   public String info() {
@@ -4078,22 +4055,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionDelete(String libraryName) {
-    return checkAndBroadcastCommand(commandObjects.functionDelete(libraryName));
+    return executeCommand(commandObjects.functionDelete(libraryName));
   }
 
   @Override
   public String functionFlush() {
-    return checkAndBroadcastCommand(commandObjects.functionFlush());
+    return executeCommand(commandObjects.functionFlush());
   }
 
   @Override
   public String functionFlush(FlushMode mode) {
-    return checkAndBroadcastCommand(commandObjects.functionFlush(mode));
+    return executeCommand(commandObjects.functionFlush(mode));
   }
 
   @Override
   public String functionKill() {
-    return checkAndBroadcastCommand(commandObjects.functionKill());
+    return executeCommand(commandObjects.functionKill());
   }
 
   @Override
@@ -4118,12 +4095,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(String functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(String functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -4143,7 +4120,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionDelete(byte[] libraryName) {
-    return checkAndBroadcastCommand(commandObjects.functionDelete(libraryName));
+    return executeCommand(commandObjects.functionDelete(libraryName));
   }
 
   @Override
@@ -4173,22 +4150,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(byte[] functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(byte[] functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
   public String functionRestore(byte[] serializedValue) {
-    return checkAndBroadcastCommand(commandObjects.functionRestore(serializedValue));
+    return executeCommand(commandObjects.functionRestore(serializedValue));
   }
 
   @Override
   public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
-    return checkAndBroadcastCommand(commandObjects.functionRestore(serializedValue, policy));
+    return executeCommand(commandObjects.functionRestore(serializedValue, policy));
   }
 
   @Override
@@ -4301,7 +4278,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public List<Boolean> scriptExists(List<String> sha1s) {
-    return checkAndBroadcastCommand(commandObjects.scriptExists(sha1s));
+    return executeCommand(commandObjects.scriptExists(sha1s));
   }
 
   @Override
@@ -4325,7 +4302,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptLoad(String script) {
-    return checkAndBroadcastCommand(commandObjects.scriptLoad(script));
+    return executeCommand(commandObjects.scriptLoad(script));
   }
 
   @Override
@@ -4334,7 +4311,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptFlush() {
-    return checkAndBroadcastCommand(commandObjects.scriptFlush());
+    return executeCommand(commandObjects.scriptFlush());
   }
 
   @Override
@@ -4348,7 +4325,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptKill() {
-    return checkAndBroadcastCommand(commandObjects.scriptKill());
+    return executeCommand(commandObjects.scriptKill());
   }
 
   @Override
@@ -4377,7 +4354,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String slowlogReset() {
-    return checkAndBroadcastCommand(commandObjects.slowlogReset());
+    return executeCommand(commandObjects.slowlogReset());
   }
   // Sample key commands
 
@@ -4426,47 +4403,47 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
-    return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+    return executeCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
   }
 
   @Override
   public String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
-    return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
+    return executeCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
   public String ftAlter(String indexName, Schema schema) {
-    return checkAndBroadcastCommand(commandObjects.ftAlter(indexName, schema));
+    return executeCommand(commandObjects.ftAlter(indexName, schema));
   }
 
   @Override
   public String ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
-    return checkAndBroadcastCommand(commandObjects.ftAlter(indexName, schemaFields));
+    return executeCommand(commandObjects.ftAlter(indexName, schemaFields));
   }
 
   @Override
   public String ftAliasAdd(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+    return executeCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
   public String ftAliasUpdate(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+    return executeCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
   public String ftAliasDel(String aliasName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasDel(aliasName));
+    return executeCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override
   public String ftDropIndex(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndex(indexName));
+    return executeCommand(commandObjects.ftDropIndex(indexName));
   }
 
   @Override
   public String ftDropIndexDD(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndexDD(indexName));
+    return executeCommand(commandObjects.ftDropIndexDD(indexName));
   }
 
   @Override
@@ -5565,38 +5542,227 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.commandArguments(cmd));
   }
 
+  /**
+   * Sends a command with byte array arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand(Protocol.Command.GET, "mykey".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey".getBytes()));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * Sends a blocking command with byte array arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand(Protocol.Command.BLPOP, "mykey".getBytes(), "0".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey".getBytes())
+   *                 .add("0".getBytes())
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * Sends a command with String arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand(Protocol.Command.GET, "mykey");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey"));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * Sends a blocking command with String arguments.
+   *
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it doesn't properly handle
+   *             hash slot calculation for key routing. It may not work correctly with multi-shard
+   *             operations or keyless commands in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand(Protocol.Command.BLPOP, "mykey", "0");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey")
+   *                 .add("0")
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * Sends a command with a sample key for cluster routing and byte array arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand("mykey".getBytes(), Protocol.Command.GET, "mykey".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey".getBytes()));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
-    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
+  /**
+   * Sends a blocking command with a sample key for cluster routing and byte array arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as byte arrays
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand("mykey".getBytes(), Protocol.Command.BLPOP,
+   *                 "mykey".getBytes(), "0".getBytes());
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey".getBytes())
+   *                 .add("0".getBytes())
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(
-        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
+        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));
   }
 
+  /**
+   * Sends a command with a sample key for cluster routing and String arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendCommand("mykey", Protocol.Command.GET, "mykey");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.GET)
+   *                 .key("mykey"));
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
-    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
+  /**
+   * Sends a blocking command with a sample key for cluster routing and String arguments.
+   *
+   * @param sampleKey a key used for hash slot calculation in cluster mode
+   * @param cmd the command to send
+   * @param args the command arguments as Strings
+   * @return the command result
+   * @deprecated This method has limitations in Redis Cluster mode because it uses a separate sample key
+   *             for routing rather than properly marking keys within the command arguments. It may not
+   *             work correctly with multi-shard operations in cluster deployments. Migrate to using
+   *             {@link #executeCommand(CommandArguments)} instead, which requires explicit key marking
+   *             through {@link CommandArguments#key(Object)}, {@link CommandArguments#keys(Object...)},
+   *             or {@link CommandArguments#addHashSlotKey(Object)} for proper cluster routing.
+   *             <p>Example migration:
+   *             <pre>{@code
+   *             // Before:
+   *             jedis.sendBlockingCommand("mykey", Protocol.Command.BLPOP, "mykey", "0");
+   *             // After:
+   *             jedis.executeCommand(commandObjects.commandArguments(Protocol.Command.BLPOP)
+   *                 .key("mykey")
+   *                 .add("0")
+   *                 .blocking());
+   *             }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(
-        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
+        commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));
   }
 
   public Object executeCommand(CommandArguments args) {

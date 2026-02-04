@@ -1527,9 +1527,11 @@ public final class BuilderFactory {
 
       if (list.get(0) instanceof KeyValue) {
         return ((List<KeyValue>) list).stream()
-            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()), kv -> STREAM_ENTRY_LIST.build(kv.getValue())));
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                kv -> STREAM_ENTRY_LIST.build(kv.getValue()),
+                (v1, v2) -> v1, LinkedHashMap::new));
       } else {
-        Map<String, List<StreamEntry>> result = new HashMap<>(list.size());
+        Map<String, List<StreamEntry>> result = new LinkedHashMap<>(list.size(), 1f);
         for (Object anObj : list) {
           List<Object> streamObj = (List<Object>) anObj;
           String streamKey = STRING.build(streamObj.get(0));

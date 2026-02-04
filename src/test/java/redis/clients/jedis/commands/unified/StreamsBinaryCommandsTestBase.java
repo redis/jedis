@@ -16,10 +16,10 @@ import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.resps.StreamEntryDeletionResult;
-import redis.clients.jedis.util.AssertUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -615,6 +615,87 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(Long.valueOf(0), third.getMillisElapsedFromDelivery());
     assertEquals(Long.valueOf(0), fourth.getMillisElapsedFromDelivery());
     assertThat(fourth.getFields(), equalToByteArrayMap(HASH_1));
+  }
+
+  @Test
+  public void xreadGroupPreservesFieldOrder() {
+    byte[] streamKey = "field-order-stream".getBytes();
+    byte[] groupName = "field-order-group".getBytes();
+    byte[] consumerName = "field-order-consumer".getBytes();
+
+    // Use LinkedHashMap to ensure insertion order: a, z, m
+    Map<byte[], byte[]> fields = new LinkedHashMap<>();
+    fields.put("a".getBytes(), "1".getBytes());
+    fields.put("z".getBytes(), "4".getBytes());
+    fields.put("m".getBytes(), "2".getBytes());
+
+    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+    jedis.xgroupCreate(streamKey, groupName, "0-0".getBytes(), false);
+
+    Map<byte[], StreamEntryID> streamQuery = singletonMap(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> result = jedis.xreadGroupBinary(groupName, consumerName,
+        XReadGroupParams.xReadGroupParams().count(1), streamQuery);
+
+    assertEquals(1, result.size());
+    assertEquals(1, result.get(0).getValue().size());
+
+    StreamEntryBinary entry = result.get(0).getValue().get(0);
+    Map<byte[], byte[]> returnedFields = entry.getFields();
+
+    // Verify field order is preserved - this will fail with HashMap, pass with LinkedHashMap
+    byte[][] expectedOrder = {"a".getBytes(), "z".getBytes(), "m".getBytes()};
+    byte[][] actualOrder = returnedFields.keySet().toArray(new byte[0][]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Field count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertArrayEquals(expectedOrder[i], actualOrder[i],
+          String.format("Field order mismatch at position %d: expected '%s' but got '%s'. " +
+              "Full order: expected [a, z, m], actual %s",
+              i, new String(expectedOrder[i]), new String(actualOrder[i]),
+              java.util.Arrays.toString(java.util.Arrays.stream(actualOrder).map(String::new).toArray())));
+    }
+  }
+
+  @Test
+  public void xreadBinaryAsMapPreservesStreamOrder() {
+    // Test that xreadBinaryAsMap preserves the order of streams when reading from multiple streams
+    byte[] streamKey1 = "{stream-order}-test-1".getBytes();
+    byte[] streamKey2 = "{stream-order}-test-2".getBytes();
+    byte[] streamKey3 = "{stream-order}-test-3".getBytes();
+
+    // Add entries to streams in specific order
+    Map<byte[], byte[]> fields = new LinkedHashMap<>();
+    fields.put("field".getBytes(), "value1".getBytes());
+    jedis.xadd(streamKey1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+
+    fields.put("field".getBytes(), "value2".getBytes());
+    jedis.xadd(streamKey2, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+
+    fields.put("field".getBytes(), "value3".getBytes());
+    jedis.xadd(streamKey3, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+
+    // Read from multiple streams in specific order
+    Map<byte[], StreamEntryID> streams = new LinkedHashMap<>();
+    streams.put(streamKey1, new StreamEntryID("0-0"));
+    streams.put(streamKey2, new StreamEntryID("0-0"));
+    streams.put(streamKey3, new StreamEntryID("0-0"));
+
+    Map<byte[], List<StreamEntryBinary>> result = jedis.xreadBinaryAsMap(
+        XReadParams.xReadParams().count(10), streams);
+
+    assertNotNull(result);
+    assertEquals(3, result.size());
+
+    // Verify that the order of streams in the result matches the order in the request
+    byte[][] expectedOrder = {streamKey1, streamKey2, streamKey3};
+    byte[][] actualOrder = result.keySet().toArray(new byte[0][]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Stream count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertArrayEquals(expectedOrder[i], actualOrder[i],
+          String.format("Stream order mismatch at position %d: expected '%s' but got '%s'",
+              i, new String(expectedOrder[i]), new String(actualOrder[i])));
+    }
   }
 
   // ========== Idempotent Producer Tests ==========

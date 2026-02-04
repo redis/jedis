@@ -17,18 +17,19 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  * <p>
  * <strong>Basic Usage:</strong>
  * </p>
- * 
+ *
  * <pre>
- * HybridParams params = HybridParams.builder()
- *     .search(HybridSearchParams.builder().query("comfortable shoes").build())
- *     .vectorSearch(HybridVectorParams.builder().field("@embedding").vector(vectorBlob)
- *         .method(HybridVectorParams.Knn.of(10)).build())
- *     .combine(CombineParams.of(new CombineParams.RRF())).build();
+ * FTHybridParams params = FTHybridParams.builder()
+ *     .search(FTHybridSearchParams.builder().query("comfortable shoes").build())
+ *     .vectorSearch(FTHybridVectorParams.builder().field("@embedding").vector("vec")
+ *         .method(FTHybridVectorParams.Knn.of(10)).build())
+ *     .combine(Combiners.rrf()).param("vec", vectorBlob).build();
  * </pre>
  *
  * @see FTHybridSearchParams
  * @see FTHybridVectorParams
- * @see FTHybridCombineParams
+ * @see Combiner
+ * @see Combiners
  * @see FTHybridPostProcessingParams
  */
 @Experimental
@@ -36,7 +37,7 @@ public class FTHybridParams implements IParams {
 
   private final List<FTHybridSearchParams> searchArgs = new ArrayList<>();
   private final List<FTHybridVectorParams> vectorArgs = new ArrayList<>();
-  private FTHybridCombineParams combineArgs;
+  private Combiner combiner;
   private FTHybridPostProcessingParams postProcessingArgs;
   private final Map<String, Object> params = new HashMap<>();
   private Long timeout;
@@ -99,15 +100,16 @@ public class FTHybridParams implements IParams {
     }
 
     /**
-     * Configure the COMBINE clause using {@link FTHybridCombineParams}.
-     * @param combineArgs the combine arguments
+     * Configure the COMBINE clause using a {@link Combiner}.
+     * @param combiner the combiner (e.g., {@code Combiners.rrf()} or {@code Combiners.linear()})
      * @return this builder
+     * @see Combiners
      */
-    public Builder combine(FTHybridCombineParams combineArgs) {
-      if (combineArgs == null) {
-        throw new IllegalArgumentException("Combine args must not be null");
+    public Builder combine(Combiner combiner) {
+      if (combiner == null) {
+        throw new IllegalArgumentException("Combiner must not be null");
       }
-      instance.combineArgs = combineArgs;
+      instance.combiner = combiner;
       return this;
     }
 
@@ -168,9 +170,9 @@ public class FTHybridParams implements IParams {
     }
 
     // COMBINE clause
-    if (combineArgs != null) {
+    if (combiner != null) {
       args.add(COMBINE);
-      combineArgs.addParams(args);
+      combiner.addParams(args);
     }
 
     // Post-processing operations (LOAD, GROUPBY, APPLY, SORTBY, FILTER, LIMIT)

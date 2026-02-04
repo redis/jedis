@@ -32,7 +32,7 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.search.Apply;
 import redis.clients.jedis.search.Filter;
-import redis.clients.jedis.search.hybrid.FTHybridCombineParams;
+import redis.clients.jedis.search.hybrid.Combiners;
 import redis.clients.jedis.search.hybrid.FTHybridParams;
 import redis.clients.jedis.search.hybrid.FTHybridPostProcessingParams;
 import redis.clients.jedis.search.hybrid.FTHybridSearchParams;
@@ -166,10 +166,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .method(FTHybridVectorParams.Knn.of(20).efRuntime(150))
             .filter("(@brand:{apple|samsung|google}) (@price:[500 1500]) (@category:{electronics})")
             .scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams
-            .of(new FTHybridCombineParams.Linear().alpha(0.7).beta(0.3).window(25)))
-        .postProcessing(postProcessing).param("discount_rate", "0.9").param("vector", queryVector)
-        .build();
+        .combine(Combiners.linear().alpha(0.7).beta(0.3).window(25)).postProcessing(postProcessing)
+        .param("discount_rate", "0.9").param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -213,8 +211,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(5)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -252,8 +250,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(3)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -294,8 +292,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(10)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -335,8 +333,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
         .search(FTHybridSearchParams.builder().query("smartphone").scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(10)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5).window(25)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -377,8 +375,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(10)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -417,8 +415,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
         .search(FTHybridSearchParams.builder().query("smartphone").scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(5)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 
@@ -456,8 +454,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
             .scoreAlias("text_score").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(10)).scoreAlias("vector_score").build())
-        .combine(FTHybridCombineParams.of(new FTHybridCombineParams.Linear().alpha(0.5).beta(0.5)))
-        .postProcessing(postProcessing).param("vector", queryVector).build();
+        .combine(Combiners.linear().alpha(0.5).beta(0.5)).postProcessing(postProcessing)
+        .param("vector", queryVector).build();
 
     HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
 

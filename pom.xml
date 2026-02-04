@@ -555,7 +555,8 @@
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
 						<include>**/ACLTestUtil.java</include>
-						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridCombineParams.java</include>
+						<include>src/main/java/redis/clients/jedis/search/hybrid/Combiner.java</include>
+						<include>src/main/java/redis/clients/jedis/search/hybrid/Combiners.java</include>
 						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridParams.java</include>
 						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridPostProcessingParams.java</include>
 						<include>src/main/java/redis/clients/jedis/search/hybrid/FTHybridSearchParams.java</include>

@@ -4188,7 +4188,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String failover(FailoverParams failoverParams) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new ClusterCommandArguments(Command.FAILOVER).addParams(failoverParams);
+    CommandArguments args = new CommandArguments(Command.FAILOVER).addParams(failoverParams);
     connection.sendCommand(args);
     connection.setTimeoutInfinite();
     try {

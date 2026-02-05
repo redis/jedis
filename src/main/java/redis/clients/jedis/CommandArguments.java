@@ -1,11 +1,6 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
@@ -14,6 +9,7 @@ import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.RediSearchUtil;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class CommandArguments implements Iterable<Rawable> {
 
@@ -134,12 +130,12 @@ public class CommandArguments implements Iterable<Rawable> {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
 
-    addKeyInKeys(key);
+    addHashSlotKey(key);
 
     return this;
   }
 
-  private void addKeyInKeys(Object key) {
+  protected final CommandArguments addHashSlotKey(Object key) {
     if (keys.isEmpty()) {
       keys = Collections.singletonList(key);
     } else if (keys.size() == 1) {
@@ -150,6 +146,8 @@ public class CommandArguments implements Iterable<Rawable> {
     } else {
       keys.add(key);
     }
+
+    return this;
   }
 
   public final CommandArguments keys(Object... keys) {
@@ -213,6 +211,26 @@ public class CommandArguments implements Iterable<Rawable> {
   @Internal
   public List<Object> getKeys() {
     return keys;
+  }
+
+  @Internal
+  public Set<Integer> getKeyHashSlots() {
+    Set<Integer> slots = new HashSet<>();
+    for (Object key : keys) {
+      if (key instanceof byte[]) {
+        slots.add(JedisClusterCRC16.getSlot((byte[]) key));
+      } else {
+        slots.add(JedisClusterCRC16.getSlot((String) key));
+      }
+    }
+    return slots;
+  }
+
+  /**
+   * @return true if this command has no keys, false otherwise
+   */
+  public boolean isKeyless() {
+    return keys.isEmpty();
   }
 
   public boolean isBlocking() {

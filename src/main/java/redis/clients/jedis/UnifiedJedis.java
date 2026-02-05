@@ -38,6 +38,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.aggr.AggregateIterator;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.FtAggregateIteration;
@@ -56,7 +57,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
-  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private final Cache cache;
 
   /**
@@ -315,34 +315,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executor.executeCommand(commandObject);
   }
 
-  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    return executor.broadcastCommand(commandObject);
-  }
-
-  private <T> T checkAndBroadcastCommand(CommandObject<T> commandObject) {
-    boolean broadcast = true;
-
-    if (broadcastAndRoundRobinConfig == null) {
-    } else if (commandObject.getArguments().getCommand() instanceof SearchProtocol.SearchCommand
-        && broadcastAndRoundRobinConfig
-            .getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
-      broadcast = false;
-    }
-
-    return broadcast ? broadcastCommand(commandObject) : executeCommand(commandObject);
-  }
-
-  public void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
-    this.broadcastAndRoundRobinConfig = config;
-    this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
-  }
-
   public Cache getCache() {
     return cache;
   }
 
   public String ping() {
-    return checkAndBroadcastCommand(commandObjects.ping());
+    return executeCommand(commandObjects.ping());
   }
 
   public String echo(String string) {
@@ -350,15 +328,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String flushDB() {
-    return checkAndBroadcastCommand(commandObjects.flushDB());
+    return executeCommand(commandObjects.flushDB());
   }
 
   public String flushAll() {
-    return checkAndBroadcastCommand(commandObjects.flushAll());
+    return executeCommand(commandObjects.flushAll());
   }
 
   public String configSet(String parameter, String value) {
-    return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+    return executeCommand(commandObjects.configSet(parameter, value));
   }
 
   public String info() {
@@ -4078,22 +4056,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionDelete(String libraryName) {
-    return checkAndBroadcastCommand(commandObjects.functionDelete(libraryName));
+    return executeCommand(commandObjects.functionDelete(libraryName));
   }
 
   @Override
   public String functionFlush() {
-    return checkAndBroadcastCommand(commandObjects.functionFlush());
+    return executeCommand(commandObjects.functionFlush());
   }
 
   @Override
   public String functionFlush(FlushMode mode) {
-    return checkAndBroadcastCommand(commandObjects.functionFlush(mode));
+    return executeCommand(commandObjects.functionFlush(mode));
   }
 
   @Override
   public String functionKill() {
-    return checkAndBroadcastCommand(commandObjects.functionKill());
+    return executeCommand(commandObjects.functionKill());
   }
 
   @Override
@@ -4118,12 +4096,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(String functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(String functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -4143,7 +4121,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionDelete(byte[] libraryName) {
-    return checkAndBroadcastCommand(commandObjects.functionDelete(libraryName));
+    return executeCommand(commandObjects.functionDelete(libraryName));
   }
 
   @Override
@@ -4173,22 +4151,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(byte[] functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(byte[] functionCode) {
-    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
   public String functionRestore(byte[] serializedValue) {
-    return checkAndBroadcastCommand(commandObjects.functionRestore(serializedValue));
+    return executeCommand(commandObjects.functionRestore(serializedValue));
   }
 
   @Override
   public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
-    return checkAndBroadcastCommand(commandObjects.functionRestore(serializedValue, policy));
+    return executeCommand(commandObjects.functionRestore(serializedValue, policy));
   }
 
   @Override
@@ -4301,7 +4279,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public List<Boolean> scriptExists(List<String> sha1s) {
-    return checkAndBroadcastCommand(commandObjects.scriptExists(sha1s));
+    return executeCommand(commandObjects.scriptExists(sha1s));
   }
 
   @Override
@@ -4325,7 +4303,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptLoad(String script) {
-    return checkAndBroadcastCommand(commandObjects.scriptLoad(script));
+    return executeCommand(commandObjects.scriptLoad(script));
   }
 
   @Override
@@ -4334,7 +4312,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptFlush() {
-    return checkAndBroadcastCommand(commandObjects.scriptFlush());
+    return executeCommand(commandObjects.scriptFlush());
   }
 
   @Override
@@ -4348,7 +4326,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String scriptKill() {
-    return checkAndBroadcastCommand(commandObjects.scriptKill());
+    return executeCommand(commandObjects.scriptKill());
   }
 
   @Override
@@ -4377,7 +4355,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String slowlogReset() {
-    return checkAndBroadcastCommand(commandObjects.slowlogReset());
+    return executeCommand(commandObjects.slowlogReset());
   }
   // Sample key commands
 
@@ -4426,47 +4404,47 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
-    return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+    return executeCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
   }
 
   @Override
   public String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
-    return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
+    return executeCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
   public String ftAlter(String indexName, Schema schema) {
-    return checkAndBroadcastCommand(commandObjects.ftAlter(indexName, schema));
+    return executeCommand(commandObjects.ftAlter(indexName, schema));
   }
 
   @Override
   public String ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
-    return checkAndBroadcastCommand(commandObjects.ftAlter(indexName, schemaFields));
+    return executeCommand(commandObjects.ftAlter(indexName, schemaFields));
   }
 
   @Override
   public String ftAliasAdd(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+    return executeCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
   public String ftAliasUpdate(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+    return executeCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
   public String ftAliasDel(String aliasName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasDel(aliasName));
+    return executeCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override
   public String ftDropIndex(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndex(indexName));
+    return executeCommand(commandObjects.ftDropIndex(indexName));
   }
 
   @Override
   public String ftDropIndexDD(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndexDD(indexName));
+    return executeCommand(commandObjects.ftDropIndexDD(indexName));
   }
 
   @Override
@@ -4488,6 +4466,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param params limit will be ignored
    * @return search iteration
    */
+  @Deprecated
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query, FTSearchParams params) {
     return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query, params);
   }
@@ -4504,6 +4483,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param query limit will be ignored
    * @return search iteration
    */
+  @Deprecated
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
     return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query);
   }
@@ -4545,8 +4525,38 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param aggr cursor must be set
    * @return aggregate iteration
    */
+  @Deprecated
   public FtAggregateIteration ftAggregateIteration(String indexName, AggregationBuilder aggr) {
     return new FtAggregateIteration(provider, indexName, aggr);
+  }
+
+  /**
+   * Creates an iterator for aggregation results with cursor support.
+   * This method provides a clean, connection-aware iterator that ensures cursor operations
+   * are executed on the same Redis node.
+   *
+   * <p>Usage example:
+   * <pre>{@code
+   * AggregationBuilder aggr = new AggregationBuilder()
+   *     .groupBy("@category", Reducers.sum("@price").as("total"))
+   *     .cursor(50, 30000);
+   *
+   * try (AggregateIterator iterator = jedis.ftAggregateIterator("products", aggr)) {
+   *     while (iterator.hasNext()) {
+   *         AggregationResult batch = iterator.next();
+   *         // Process batch - access rows via batch.getRows()
+   *     }
+   * }
+   * }</pre>
+   *
+   * @param indexName the search index name
+   * @param aggr aggregation builder with cursor configuration
+   * @return aggregate iterator for cursor-based pagination
+   * @throws IllegalArgumentException if aggregation doesn't have cursor configured
+   * @since 6.1.0
+   */
+  public AggregateIterator ftAggregateIterator(String indexName, AggregationBuilder aggr) {
+    return new AggregateIterator(provider, indexName, aggr);
   }
 
   @Override

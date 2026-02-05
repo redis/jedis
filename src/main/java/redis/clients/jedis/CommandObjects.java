@@ -49,7 +49,6 @@ public class CommandObjects {
   }
 
   protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
-  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private Lock mapperLock = new ReentrantLock(true);
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(SearchProtocol.DEFAULT_DIALECT);
@@ -57,10 +56,6 @@ public class CommandObjects {
   @Experimental
   public void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.keyPreProcessor = keyPreProcessor;
-  }
-
-  void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
-    this.broadcastAndRoundRobinConfig = config;
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
@@ -3524,18 +3519,16 @@ public class CommandObjects {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
-  private boolean isRoundRobinSearchCommand() {
-    if (broadcastAndRoundRobinConfig == null) {
-      return true;
-    } else if (broadcastAndRoundRobinConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
-      return false;
-    }
-    return true;
+  private boolean isRoundRobinSearchCommand(SearchCommand sc) {
+
+    return !(sc.equals(SearchCommand.SUGGET) || sc.equals(SearchCommand.SUGADD) || sc.equals(
+        SearchCommand.SUGLEN) || sc.equals(SearchCommand.SUGDEL) || sc.equals(
+        SearchCommand.CURSOR));
   }
 
   private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx) {
     CommandArguments ca = commandArguments(sc);
-    if (isRoundRobinSearchCommand()) {
+    if (isRoundRobinSearchCommand(sc)) {
       ca.add(idx);
     } else {
       ca.key(idx);
@@ -3543,9 +3536,10 @@ public class CommandObjects {
     return ca;
   }
 
-  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx1, String idx2) {
+  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx1,
+      String idx2) {
     CommandArguments ca = commandArguments(sc);
-    if (isRoundRobinSearchCommand()) {
+    if (isRoundRobinSearchCommand(sc)) {
       ca.add(idx1).add(idx2);
     } else {
       ca.key(idx1).key(idx2);
@@ -3553,8 +3547,14 @@ public class CommandObjects {
     return ca;
   }
 
-  private CommandArguments checkAndRoundRobinSearchCommand(CommandArguments commandArguments, byte[] indexName) {
-    return isRoundRobinSearchCommand() ? commandArguments.add(indexName) : commandArguments.key(indexName);
+  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, byte[] indexName) {
+    CommandArguments ca = commandArguments(sc);
+    if (isRoundRobinSearchCommand(sc)) {
+      ca.add(indexName);
+    } else {
+      ca.key(indexName);
+    }
+    return ca;
   }
 
   private <T> CommandObject<T> directSearchCommand(CommandObject<T> object, String indexName) {
@@ -3635,7 +3635,7 @@ public class CommandObjects {
     if (protocol == RedisProtocol.RESP3) {
       throw new UnsupportedOperationException("binary ft.search is not implemented with resp3.");
     }
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.SEARCH, indexName)
         .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(null,
         () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false)));
   }

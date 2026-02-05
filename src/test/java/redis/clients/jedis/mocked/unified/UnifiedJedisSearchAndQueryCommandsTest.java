@@ -49,13 +49,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftAliasAdd(aliasName, indexName)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftAliasAdd(aliasName, indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftAliasAdd(aliasName, indexName);
   }
 
@@ -65,13 +65,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftAliasDel(aliasName)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftAliasDel(aliasName);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftAliasDel(aliasName);
   }
 
@@ -82,13 +82,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftAliasUpdate(aliasName, indexName)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftAliasUpdate(aliasName, indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftAliasUpdate(aliasName, indexName);
   }
 
@@ -99,13 +99,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftAlter(indexName, schema)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftAlter(indexName, schema);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftAlter(indexName, schema);
   }
 
@@ -116,13 +116,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftAlter(indexName, schemaFields)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftAlter(indexName, schemaFields);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftAlter(indexName, schemaFields);
   }
 
@@ -202,13 +202,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftCreate(indexName, indexOptions, schema)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftCreate(indexName, indexOptions, schema);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftCreate(indexName, indexOptions, schema);
   }
 
@@ -220,13 +220,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftCreate(indexName, createParams, schemaFields)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftCreate(indexName, createParams, schemaFields);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftCreate(indexName, createParams, schemaFields);
   }
 
@@ -374,13 +374,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftDropIndex(indexName)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftDropIndex(indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftDropIndex(indexName);
   }
 
@@ -390,13 +390,13 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTe
     String expectedResponse = "OK";
 
     when(commandObjects.ftDropIndexDD(indexName)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.ftDropIndexDD(indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).ftDropIndexDD(indexName);
   }
 

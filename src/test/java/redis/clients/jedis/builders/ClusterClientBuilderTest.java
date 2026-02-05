@@ -101,7 +101,7 @@ class ClusterClientBuilderTest {
 
       client.ping();
     }
-    verify(exec, atLeastOnce()).broadcastCommand(cap.capture());
+    verify(exec, atLeastOnce()).executeCommand(cap.capture());
     assertThat(argsToStrings(cap.getValue()).get(0), containsString("PING"));
   }
 

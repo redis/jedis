@@ -15,13 +15,13 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
     String value = "value";
 
     when(commandObjects.configSet(parameter, value)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
 
     String result = jedis.configSet(parameter, value);
 
     assertThat(result, equalTo("OK"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).configSet(parameter, value);
   }
 
@@ -43,26 +43,26 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
   @Test
   public void testFlushAll() {
     when(commandObjects.flushAll()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
 
     String result = jedis.flushAll();
 
     assertThat(result, equalTo("OK"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).flushAll();
   }
 
   @Test
   public void testFlushDB() {
     when(commandObjects.flushDB()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
 
     String result = jedis.flushDB();
 
     assertThat(result, equalTo("OK"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).flushDB();
   }
 
@@ -137,12 +137,12 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
     String expectedResponse = "OK";
 
     when(commandObjects.slowlogReset()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.slowlogReset();
 
     assertThat(result, equalTo(expectedResponse));
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).slowlogReset();
   }
 

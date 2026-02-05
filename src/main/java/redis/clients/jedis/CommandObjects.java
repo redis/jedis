@@ -3259,20 +3259,20 @@ public class CommandObjects {
   }
 
   // Hotkeys commands
-  public final CommandObject<String> hotkeysStart(HotkeysParams params) {
+  public CommandObject<String> hotkeysStart(HotkeysParams params) {
     return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.START).addParams(params),
         BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> hotkeysStop() {
+  public CommandObject<String> hotkeysStop() {
     return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.STOP), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> hotkeysReset() {
+  public CommandObject<String> hotkeysReset() {
     return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.RESET), BuilderFactory.STRING);
   }
 
-  public final CommandObject<HotkeysInfo> hotkeysGet() {
+  public CommandObject<HotkeysInfo> hotkeysGet() {
     return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.GET),
         HotkeysInfo.HOTKEYS_INFO_BUILDER);
   }

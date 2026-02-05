@@ -63,14 +63,14 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     reply = jedis.hotkeysGet();
     assertNotNull(reply);
     assertFalse(reply.isTrackingActive());
-    assertTrue(reply.getByCpuTime().containsKey("key1"));
+    assertTrue(reply.getByCpuTimeUs().containsKey("key1"));
 
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU));
     jedis.set("key2", "val2");
     reply = jedis.hotkeysGet();
     assertTrue(reply.isTrackingActive());
-    assertTrue(reply.getByCpuTime().containsKey("key2"));
-    assertFalse(reply.getByCpuTime().containsKey("key1"));
+    assertTrue(reply.getByCpuTimeUs().containsKey("key2"));
+    assertFalse(reply.getByCpuTimeUs().containsKey("key1"));
 
     jedis.hotkeysStop();
     String resetResult = jedis.hotkeysReset();
@@ -98,8 +98,8 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     HotkeysInfo reply = jedis.hotkeysGet();
     assertNotNull(reply);
 
-    assertTrue(reply.getByCpuTime().containsKey(cpuHot));
-    assertThat(reply.getByCpuTime().get(cpuHot), greaterThan(0L));
+    assertTrue(reply.getByCpuTimeUs().containsKey(cpuHot));
+    assertThat(reply.getByCpuTimeUs().get(cpuHot), greaterThan(0L));
 
     assertTrue(reply.getByNetBytes().containsKey(netHot));
     assertThat(reply.getByNetBytes().get(netHot), greaterThan(6000L));
@@ -116,7 +116,7 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     HotkeysInfo reply = jedis.hotkeysGet();
     assertNotNull(reply);
     assertEquals(5, reply.getSampleRatio());
-    assertThat(reply.getByCpuTime().size(), lessThan(20));
+    assertThat(reply.getByCpuTimeUs().size(), lessThan(20));
 
     jedis.hotkeysStop();
     jedis.hotkeysReset();
@@ -129,7 +129,7 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
 
     reply = jedis.hotkeysGet();
     assertNotNull(reply);
-    assertThat(reply.getByCpuTime().size(), lessThanOrEqualTo(10));
+    assertThat(reply.getByCpuTimeUs().size(), lessThanOrEqualTo(10));
   }
 
   @Test
@@ -148,7 +148,7 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     assertTrue(reply.getSelectedSlots().isEmpty());
     assertThat(reply.getCollectionStartTimeUnixMs(), greaterThan(0L));
     assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(0L));
-    assertNotNull(reply.getByCpuTime());
+    assertNotNull(reply.getByCpuTimeUs());
     assertNotNull(reply.getByNetBytes());
   }
 
@@ -167,7 +167,7 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     assertNotNull(reply);
     assertFalse(reply.isTrackingActive());
     assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(1000L));
-    assertTrue(reply.getByCpuTime().containsKey("durationkey"));
+    assertTrue(reply.getByCpuTimeUs().containsKey("durationkey"));
   }
 
   @Test

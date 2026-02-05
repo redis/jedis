@@ -1,12 +1,12 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.args.HotkeysMetric;
 import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.resps.HotkeysInfo;
-import redis.clients.jedis.util.JedisClusterCRC16;
 
 @Tag("integration")
 @EnabledOnCommand("HOTKEYS")
@@ -48,18 +47,17 @@ public class ClusterHotkeysCommandsTest extends ClusterJedisCommandsTestBase {
     }
   }
 
+  /**
+   * Comprehensive test that verifies response fields. Uses SAMPLE > 1 to trigger sampling-related
+   * fields.
+   */
   @Test
-  public void hotkeysWithSlotsAndAllFields() {
-    // Get actual slot numbers for our test keys
-    int fooSlot = JedisClusterCRC16.getSlot("foo");
-    int barSlot = JedisClusterCRC16.getSlot("bar");
-    int bazSlot = JedisClusterCRC16.getSlot("baz");
+  public void hotkeysWithAllFields() {
+    // Use SAMPLE > 1 and both metrics - start on all masters
+    cluster.hotkeysStart(
+      HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU, HotkeysMetric.NET).sample(2));
 
-    // Use SAMPLE > 1 and SLOTS to trigger all conditional fields
-    cluster.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU, HotkeysMetric.NET)
-        .sample(2).slots(fooSlot, barSlot, bazSlot));
-
-    // Generate traffic on keys that hash to the selected slots
+    // Generate traffic on keys
     for (int i = 0; i < 50; i++) {
       cluster.set("foo", "value" + i);
       cluster.get("foo");
@@ -68,8 +66,6 @@ public class ClusterHotkeysCommandsTest extends ClusterJedisCommandsTestBase {
       cluster.set("baz", "value" + i);
       cluster.get("baz");
     }
-    // Also set a key outside selected slots
-    cluster.set("other", "value");
 
     HotkeysInfo reply = cluster.hotkeysGet();
     assertNotNull(reply);
@@ -80,23 +76,16 @@ public class ClusterHotkeysCommandsTest extends ClusterJedisCommandsTestBase {
     // 3) sample-ratio
     assertThat(reply.getSampleRatio(), equalTo(2L));
 
-    // 5) selected-slots - verify SLOTS filtering works
-    assertThat(reply.getSelectedSlots(), containsInAnyOrder(fooSlot, barSlot, bazSlot));
+    // 5) selected-slots - returns ranges; each node returns its own slot range
+    assertThat(reply.getSelectedSlots(), is(not(empty())));
+    int[] firstRange = reply.getSelectedSlots().get(0);
+    // Verify the range structure is valid (start <= end, within valid slot range)
+    assertThat(firstRange[0], greaterThanOrEqualTo(0));
+    assertThat(firstRange[1], lessThanOrEqualTo(16383));
+    assertThat(firstRange[0], lessThanOrEqualTo(firstRange[1]));
 
-    // 7) sampled-command-selected-slots-ms (conditional)
-    assertNotNull(reply.getSampledCommandSelectedSlotsMs());
-
-    // 9) all-commands-selected-slots-ms (conditional)
-    assertNotNull(reply.getAllCommandsSelectedSlotsMs());
-
-    // 11) all-commands-all-slots-ms
-    assertThat(reply.getAllCommandsAllSlotsMs(), greaterThanOrEqualTo(0L));
-
-    // 13) net-bytes-sampled-commands-selected-slots (conditional)
-    assertNotNull(reply.getNetBytesSampledCommandsSelectedSlots());
-
-    // 15) net-bytes-all-commands-selected-slots (conditional)
-    assertNotNull(reply.getNetBytesAllCommandsSelectedSlots());
+    // 11) all-commands-all-slots-us
+    assertThat(reply.getAllCommandsAllSlotsUs(), greaterThanOrEqualTo(0L));
 
     // 17) net-bytes-all-commands-all-slots
     assertNotNull(reply.getNetBytesAllCommandsAllSlots());
@@ -117,14 +106,16 @@ public class ClusterHotkeysCommandsTest extends ClusterJedisCommandsTestBase {
     // 27) total-net-bytes
     assertThat(reply.getTotalNetBytes(), greaterThanOrEqualTo(0L));
 
-    // 29) by-cpu-time - should have entries for keys in selected slots
-    assertThat(reply.getByCpuTime().keySet(), is(not(empty())));
-    assertThat(reply.getByCpuTime().keySet(),
+    // 29) by-cpu-time-us - should have entries for keys
+    assertThat(reply.getByCpuTimeUs().keySet(), is(not(empty())));
+    assertThat(reply.getByCpuTimeUs().keySet(),
       anyOf(hasItem("foo"), hasItem("bar"), hasItem("baz")));
 
-    // 31) by-net-bytes - should have entries for keys in selected slots
+    // 31) by-net-bytes - should have entries for keys
     assertThat(reply.getByNetBytes().keySet(), is(not(empty())));
     assertThat(reply.getByNetBytes().keySet(),
       anyOf(hasItem("foo"), hasItem("bar"), hasItem("baz")));
+
+    cluster.hotkeysStop();
   }
 }

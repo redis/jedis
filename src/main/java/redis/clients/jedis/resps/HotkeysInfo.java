@@ -23,9 +23,9 @@ public class HotkeysInfo implements Serializable {
   public static final String TRACKING_ACTIVE = "tracking-active";
   public static final String SAMPLE_RATIO = "sample-ratio";
   public static final String SELECTED_SLOTS = "selected-slots";
-  public static final String SAMPLED_COMMAND_SELECTED_SLOTS_MS = "sampled-command-selected-slots-ms";
-  public static final String ALL_COMMANDS_SELECTED_SLOTS_MS = "all-commands-selected-slots-ms";
-  public static final String ALL_COMMANDS_ALL_SLOTS_MS = "all-commands-all-slots-ms";
+  public static final String SAMPLED_COMMAND_SELECTED_SLOTS_US = "sampled-command-selected-slots-us";
+  public static final String ALL_COMMANDS_SELECTED_SLOTS_US = "all-commands-selected-slots-us";
+  public static final String ALL_COMMANDS_ALL_SLOTS_US = "all-commands-all-slots-us";
   public static final String NET_BYTES_SAMPLED_COMMANDS_SELECTED_SLOTS = "net-bytes-sampled-commands-selected-slots";
   public static final String NET_BYTES_ALL_COMMANDS_SELECTED_SLOTS = "net-bytes-all-commands-selected-slots";
   public static final String NET_BYTES_ALL_COMMANDS_ALL_SLOTS = "net-bytes-all-commands-all-slots";
@@ -34,15 +34,15 @@ public class HotkeysInfo implements Serializable {
   public static final String TOTAL_CPU_TIME_USER_MS = "total-cpu-time-user-ms";
   public static final String TOTAL_CPU_TIME_SYS_MS = "total-cpu-time-sys-ms";
   public static final String TOTAL_NET_BYTES = "total-net-bytes";
-  public static final String BY_CPU_TIME = "by-cpu-time";
+  public static final String BY_CPU_TIME_US = "by-cpu-time-us";
   public static final String BY_NET_BYTES = "by-net-bytes";
 
   private final boolean trackingActive;
   private final long sampleRatio;
-  private final List<Integer> selectedSlots;
-  private final Long sampledCommandSelectedSlotsMs;
-  private final Long allCommandsSelectedSlotsMs;
-  private final long allCommandsAllSlotsMs;
+  private final List<int[]> selectedSlots; // List of [start, end] slot ranges
+  private final Long sampledCommandSelectedSlotsUs;
+  private final Long allCommandsSelectedSlotsUs;
+  private final long allCommandsAllSlotsUs;
   private final Long netBytesSampledCommandsSelectedSlots;
   private final Long netBytesAllCommandsSelectedSlots;
   private final long netBytesAllCommandsAllSlots;
@@ -51,22 +51,22 @@ public class HotkeysInfo implements Serializable {
   private final long totalCpuTimeUserMs;
   private final long totalCpuTimeSysMs;
   private final long totalNetBytes;
-  private final Map<String, Long> byCpuTime;
+  private final Map<String, Long> byCpuTimeUs;
   private final Map<String, Long> byNetBytes;
 
-  public HotkeysInfo(boolean trackingActive, long sampleRatio, List<Integer> selectedSlots,
-      Long sampledCommandSelectedSlotsMs, Long allCommandsSelectedSlotsMs,
-      long allCommandsAllSlotsMs, Long netBytesSampledCommandsSelectedSlots,
+  public HotkeysInfo(boolean trackingActive, long sampleRatio, List<int[]> selectedSlots,
+      Long sampledCommandSelectedSlotsUs, Long allCommandsSelectedSlotsUs,
+      long allCommandsAllSlotsUs, Long netBytesSampledCommandsSelectedSlots,
       Long netBytesAllCommandsSelectedSlots, long netBytesAllCommandsAllSlots,
       long collectionStartTimeUnixMs, long collectionDurationMs, long totalCpuTimeUserMs,
-      long totalCpuTimeSysMs, long totalNetBytes, Map<String, Long> byCpuTime,
+      long totalCpuTimeSysMs, long totalNetBytes, Map<String, Long> byCpuTimeUs,
       Map<String, Long> byNetBytes) {
     this.trackingActive = trackingActive;
     this.sampleRatio = sampleRatio;
     this.selectedSlots = selectedSlots;
-    this.sampledCommandSelectedSlotsMs = sampledCommandSelectedSlotsMs;
-    this.allCommandsSelectedSlotsMs = allCommandsSelectedSlotsMs;
-    this.allCommandsAllSlotsMs = allCommandsAllSlotsMs;
+    this.sampledCommandSelectedSlotsUs = sampledCommandSelectedSlotsUs;
+    this.allCommandsSelectedSlotsUs = allCommandsSelectedSlotsUs;
+    this.allCommandsAllSlotsUs = allCommandsAllSlotsUs;
     this.netBytesSampledCommandsSelectedSlots = netBytesSampledCommandsSelectedSlots;
     this.netBytesAllCommandsSelectedSlots = netBytesAllCommandsSelectedSlots;
     this.netBytesAllCommandsAllSlots = netBytesAllCommandsAllSlots;
@@ -75,7 +75,7 @@ public class HotkeysInfo implements Serializable {
     this.totalCpuTimeUserMs = totalCpuTimeUserMs;
     this.totalCpuTimeSysMs = totalCpuTimeSysMs;
     this.totalNetBytes = totalNetBytes;
-    this.byCpuTime = byCpuTime;
+    this.byCpuTimeUs = byCpuTimeUs;
     this.byNetBytes = byNetBytes;
   }
 
@@ -87,20 +87,25 @@ public class HotkeysInfo implements Serializable {
     return sampleRatio;
   }
 
-  public List<Integer> getSelectedSlots() {
+  /**
+   * Returns the selected slot ranges. Each element is an int array of [start, end] representing a
+   * slot range (inclusive).
+   * @return list of slot ranges, empty if all slots are selected
+   */
+  public List<int[]> getSelectedSlots() {
     return selectedSlots;
   }
 
-  public Long getSampledCommandSelectedSlotsMs() {
-    return sampledCommandSelectedSlotsMs;
+  public Long getSampledCommandSelectedSlotsUs() {
+    return sampledCommandSelectedSlotsUs;
   }
 
-  public Long getAllCommandsSelectedSlotsMs() {
-    return allCommandsSelectedSlotsMs;
+  public Long getAllCommandsSelectedSlotsUs() {
+    return allCommandsSelectedSlotsUs;
   }
 
-  public long getAllCommandsAllSlotsMs() {
-    return allCommandsAllSlotsMs;
+  public long getAllCommandsAllSlotsUs() {
+    return allCommandsAllSlotsUs;
   }
 
   public Long getNetBytesSampledCommandsSelectedSlots() {
@@ -135,8 +140,8 @@ public class HotkeysInfo implements Serializable {
     return totalNetBytes;
   }
 
-  public Map<String, Long> getByCpuTime() {
-    return byCpuTime;
+  public Map<String, Long> getByCpuTimeUs() {
+    return byCpuTimeUs;
   }
 
   public Map<String, Long> getByNetBytes() {
@@ -166,8 +171,12 @@ public class HotkeysInfo implements Serializable {
     return result;
   }
 
+  /**
+   * Parse selected-slots which is an array of [start, end] ranges. Example: [[0, 16383]] means all
+   * slots.
+   */
   @SuppressWarnings("unchecked")
-  private static List<Integer> parseIntegerList(Object data) {
+  private static List<int[]> parseSlotRanges(Object data) {
     if (data == null) {
       return Collections.emptyList();
     }
@@ -175,9 +184,16 @@ public class HotkeysInfo implements Serializable {
     if (list.isEmpty()) {
       return Collections.emptyList();
     }
-    List<Integer> result = new java.util.ArrayList<>(list.size());
+    List<int[]> result = new java.util.ArrayList<>(list.size());
     for (Object item : list) {
-      result.add(LONG.build(item).intValue());
+      if (item instanceof List) {
+        List<?> range = (List<?>) item;
+        if (range.size() == 2) {
+          int start = LONG.build(range.get(0)).intValue();
+          int end = LONG.build(range.get(1)).intValue();
+          result.add(new int[] { start, end });
+        }
+      }
     }
     return result;
   }
@@ -195,12 +211,21 @@ public class HotkeysInfo implements Serializable {
         return null;
       }
 
+      // Check if the response is wrapped in an outer array (single element that is a List)
+      // This happens when Redis returns [[key1, val1, key2, val2, ...]]
+      if (list.size() == 1 && list.get(0) instanceof List) {
+        list = (List<?>) list.get(0);
+        if (list.isEmpty()) {
+          return null;
+        }
+      }
+
       boolean trackingActive = false;
       long sampleRatio = 1;
-      List<Integer> selectedSlots = Collections.emptyList();
-      Long sampledCommandSelectedSlotsMs = null;
-      Long allCommandsSelectedSlotsMs = null;
-      long allCommandsAllSlotsMs = 0;
+      List<int[]> selectedSlots = Collections.emptyList();
+      Long sampledCommandSelectedSlotsUs = null;
+      Long allCommandsSelectedSlotsUs = null;
+      long allCommandsAllSlotsUs = 0;
       Long netBytesSampledCommandsSelectedSlots = null;
       Long netBytesAllCommandsSelectedSlots = null;
       long netBytesAllCommandsAllSlots = 0;
@@ -209,7 +234,7 @@ public class HotkeysInfo implements Serializable {
       long totalCpuTimeUserMs = 0;
       long totalCpuTimeSysMs = 0;
       long totalNetBytes = 0;
-      Map<String, Long> byCpuTime = Collections.emptyMap();
+      Map<String, Long> byCpuTimeUs = Collections.emptyMap();
       Map<String, Long> byNetBytes = Collections.emptyMap();
 
       if (list.get(0) instanceof KeyValue) {
@@ -225,16 +250,16 @@ public class HotkeysInfo implements Serializable {
               sampleRatio = LONG.build(value);
               break;
             case SELECTED_SLOTS:
-              selectedSlots = parseIntegerList(value);
+              selectedSlots = parseSlotRanges(value);
               break;
-            case SAMPLED_COMMAND_SELECTED_SLOTS_MS:
-              sampledCommandSelectedSlotsMs = LONG.build(value);
+            case SAMPLED_COMMAND_SELECTED_SLOTS_US:
+              sampledCommandSelectedSlotsUs = LONG.build(value);
               break;
-            case ALL_COMMANDS_SELECTED_SLOTS_MS:
-              allCommandsSelectedSlotsMs = LONG.build(value);
+            case ALL_COMMANDS_SELECTED_SLOTS_US:
+              allCommandsSelectedSlotsUs = LONG.build(value);
               break;
-            case ALL_COMMANDS_ALL_SLOTS_MS:
-              allCommandsAllSlotsMs = LONG.build(value);
+            case ALL_COMMANDS_ALL_SLOTS_US:
+              allCommandsAllSlotsUs = LONG.build(value);
               break;
             case NET_BYTES_SAMPLED_COMMANDS_SELECTED_SLOTS:
               netBytesSampledCommandsSelectedSlots = LONG.build(value);
@@ -260,8 +285,8 @@ public class HotkeysInfo implements Serializable {
             case TOTAL_NET_BYTES:
               totalNetBytes = LONG.build(value);
               break;
-            case BY_CPU_TIME:
-              byCpuTime = parseKeyValueMap(value);
+            case BY_CPU_TIME_US:
+              byCpuTimeUs = parseKeyValueMap(value);
               break;
             case BY_NET_BYTES:
               byNetBytes = parseKeyValueMap(value);
@@ -281,16 +306,16 @@ public class HotkeysInfo implements Serializable {
               sampleRatio = LONG.build(value);
               break;
             case SELECTED_SLOTS:
-              selectedSlots = parseIntegerList(value);
+              selectedSlots = parseSlotRanges(value);
               break;
-            case SAMPLED_COMMAND_SELECTED_SLOTS_MS:
-              sampledCommandSelectedSlotsMs = LONG.build(value);
+            case SAMPLED_COMMAND_SELECTED_SLOTS_US:
+              sampledCommandSelectedSlotsUs = LONG.build(value);
               break;
-            case ALL_COMMANDS_SELECTED_SLOTS_MS:
-              allCommandsSelectedSlotsMs = LONG.build(value);
+            case ALL_COMMANDS_SELECTED_SLOTS_US:
+              allCommandsSelectedSlotsUs = LONG.build(value);
               break;
-            case ALL_COMMANDS_ALL_SLOTS_MS:
-              allCommandsAllSlotsMs = LONG.build(value);
+            case ALL_COMMANDS_ALL_SLOTS_US:
+              allCommandsAllSlotsUs = LONG.build(value);
               break;
             case NET_BYTES_SAMPLED_COMMANDS_SELECTED_SLOTS:
               netBytesSampledCommandsSelectedSlots = LONG.build(value);
@@ -316,8 +341,8 @@ public class HotkeysInfo implements Serializable {
             case TOTAL_NET_BYTES:
               totalNetBytes = LONG.build(value);
               break;
-            case BY_CPU_TIME:
-              byCpuTime = parseKeyValueMap(value);
+            case BY_CPU_TIME_US:
+              byCpuTimeUs = parseKeyValueMap(value);
               break;
             case BY_NET_BYTES:
               byNetBytes = parseKeyValueMap(value);
@@ -327,10 +352,10 @@ public class HotkeysInfo implements Serializable {
       }
 
       return new HotkeysInfo(trackingActive, sampleRatio, selectedSlots,
-          sampledCommandSelectedSlotsMs, allCommandsSelectedSlotsMs, allCommandsAllSlotsMs,
+          sampledCommandSelectedSlotsUs, allCommandsSelectedSlotsUs, allCommandsAllSlotsUs,
           netBytesSampledCommandsSelectedSlots, netBytesAllCommandsSelectedSlots,
           netBytesAllCommandsAllSlots, collectionStartTimeUnixMs, collectionDurationMs,
-          totalCpuTimeUserMs, totalCpuTimeSysMs, totalNetBytes, byCpuTime, byNetBytes);
+          totalCpuTimeUserMs, totalCpuTimeSysMs, totalNetBytes, byCpuTimeUs, byNetBytes);
     }
   };
 }

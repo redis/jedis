@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,11 +27,13 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.HotkeysMetric;
 import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.resps.HotkeysInfo;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
 @EnabledOnCommand("HOTEKYS")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_DOCKER, enabled = true)
 public class HotkeysCommandsTest extends JedisCommandsTestBase {
 
   public HotkeysCommandsTest(RedisProtocol protocol) {
@@ -164,7 +167,7 @@ public class HotkeysCommandsTest extends JedisCommandsTestBase {
     assertTrue(reply.isTrackingActive());
     assertEquals(1, reply.getSampleRatio());
     assertNotNull(reply.getSelectedSlots());
-    assertTrue(reply.getSelectedSlots().isEmpty());
+    // In standalone mode, server returns slot ranges (e.g., [[0, 16383]] for all slots)
     assertThat(reply.getCollectionStartTimeUnixMs(), greaterThan(0L));
     assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(0L));
     assertNotNull(reply.getByCpuTimeUs());

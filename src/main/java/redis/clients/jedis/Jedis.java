@@ -9912,6 +9912,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String hotkeysStart(HotkeysParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hotkeysStart(params));
+  }
+
+  @Override
+  public String hotkeysStop() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hotkeysStop());
+  }
+
+  @Override
+  public String hotkeysReset() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hotkeysReset());
+  }
+
+  @Override
+  public HotkeysInfo hotkeysGet() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hotkeysGet());
+  }
+
+  @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, id, hash));

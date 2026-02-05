@@ -555,6 +555,13 @@
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
 						<include>**/ACLTestUtil.java</include>
+						<include>**/HotkeysMetric.java</include>
+						<include>**/HotkeysParams.java</include>
+						<include>**/HotkeysInfo.java</include>
+						<include>**/ClusterHotkeysCommandsTest.java</include>
+						<include>**/HotkeysCommandsTest.java</include>
+						<include>**/RedisClientHotkeysCommandsTest.java</include>
+						<include>**/HotkeysCommandsTestBase.java</include>
 					</includes>
 				</configuration>
 				<executions>

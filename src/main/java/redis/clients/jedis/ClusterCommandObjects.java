@@ -7,7 +7,9 @@ import static redis.clients.jedis.Protocol.Keyword.TYPE;
 import java.util.Set;
 
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.HotkeysInfo;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.JedisClusterHashTag;
 import redis.clients.jedis.util.KeyValue;
@@ -103,6 +105,26 @@ public class ClusterCommandObjects extends CommandObjects {
 
   @Override
   public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
+    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public CommandObject<String> hotkeysStart(HotkeysParams params) {
+    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public CommandObject<String> hotkeysStop() {
+    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public CommandObject<String> hotkeysReset() {
+    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
+  }
+
+  @Override
+  public CommandObject<HotkeysInfo> hotkeysGet() {
     throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
   }
 

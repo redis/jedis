@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.SentinelClientBuilder;
@@ -10,6 +9,8 @@ import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+
+import java.util.Set;
 
 /**
  * JedisSentineled is a client for Redis Sentinel deployments.
@@ -46,6 +47,21 @@ public class JedisSentineled extends UnifiedJedis {
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig),
         masterClientConfig.getRedisProtocol());
+  }
+
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
+                         final GenericObjectPoolConfig<Connection> poolConfig,
+                         Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom) {
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, readFrom),
+            masterClientConfig.getRedisProtocol());
+  }
+
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
+                         final GenericObjectPoolConfig<Connection> poolConfig,
+                         Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig, ReadFrom readFrom,
+                         ReadOnlyPredicate readOnlyPredicate) {
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig, readFrom, readOnlyPredicate),
+            masterClientConfig.getRedisProtocol());
   }
 
   @Experimental

@@ -1,12 +1,17 @@
 package redis.clients.jedis.builders;
 
-import java.time.Duration;
-import java.util.Set;
-import redis.clients.jedis.*;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.ReadFrom;
+import redis.clients.jedis.ReadOnlyPredicate;
+import redis.clients.jedis.StaticReadOnlyPredicate;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 import redis.clients.jedis.util.Delay;
 import redis.clients.jedis.util.JedisAsserts;
+
+import java.util.Set;
 
 /**
  * Builder for creating JedisSentineled instances (Redis Sentinel connections).
@@ -23,6 +28,10 @@ public abstract class SentinelClientBuilder<C>
   private String masterName = null;
   private Set<HostAndPort> sentinels = null;
   private JedisClientConfig sentinelClientConfig = null;
+
+  private ReadFrom readFrom = ReadFrom.UPSTREAM;
+
+  private ReadOnlyPredicate readOnlyPredicate = StaticReadOnlyPredicate.registry();
 
   // delay between re-subscribing to sentinel nodes after a disconnection
   private Delay sentinelReconnectDelay = SentineledConnectionProvider.DEFAULT_RESUBSCRIBE_DELAY;
@@ -50,6 +59,33 @@ public abstract class SentinelClientBuilder<C>
    */
   public SentinelClientBuilder<C> sentinels(Set<HostAndPort> sentinels) {
     this.sentinels = sentinels;
+    return this;
+  }
+
+  /**
+   * Sets the readFrom.
+   * <p>
+   * It is used to specify the policy preference of which nodes the client should read data from. It
+   * defines which type of node the client should prioritize reading data from when there are
+   * multiple Redis instances (such as master nodes and slave nodes) available in the Redis Sentinel
+   * environment.
+   * @param readFrom the read preferences
+   * @return this builder
+   */
+  public SentinelClientBuilder<C> readForm(ReadFrom readFrom) {
+    this.readFrom = readFrom;
+    return this;
+  }
+
+  /**
+   * Sets the readOnlyPredicate.
+   * <p>
+   * Check a Redis command is a read request.
+   * @param readOnlyPredicate
+   * @return this builder
+   */
+  public SentinelClientBuilder<C> readOnlyPredicate(ReadOnlyPredicate readOnlyPredicate) {
+    this.readOnlyPredicate = readOnlyPredicate;
     return this;
   }
 
@@ -89,7 +125,8 @@ public abstract class SentinelClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new SentineledConnectionProvider(this.masterName, this.clientConfig, this.cache,
-        this.poolConfig, this.sentinels, this.sentinelClientConfig, sentinelReconnectDelay);
+        this.poolConfig, this.sentinels, this.sentinelClientConfig, this.readFrom,
+        this.readOnlyPredicate, sentinelReconnectDelay);
   }
 
   @Override

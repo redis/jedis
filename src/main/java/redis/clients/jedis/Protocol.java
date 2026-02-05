@@ -345,7 +345,7 @@ public final class Protocol {
     // Vector set keywords
     REDUCE, CAS, NOQUANT, Q8, BIN, EF, SETATTR, M, VALUES, FP32, ELE, FILTER, FILTER_EF, TRUTH, NOTHREAD, RAW, EPSILON, WITHATTRIBS,
     // Hotkeys keywords
-    METRICS, DURATION, SAMPLE, SLOTS, START, STOP, CPU, NET;
+    METRICS, SAMPLE, SLOTS, START, STOP, CPU, NET;
 
     private final byte[] raw;
 

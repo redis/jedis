@@ -3,6 +3,7 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.HotkeysMetric;
+import redis.clients.jedis.util.JedisAsserts;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -31,9 +32,9 @@ public class HotkeysParams implements IParams {
    * @return this
    */
   public HotkeysParams metrics(HotkeysMetric... metrics) {
-    if (metrics == null || metrics.length == 0) {
-      throw new IllegalArgumentException("at least one metric is required");
-    }
+    JedisAsserts.notNull(metrics, "metrics must not be null");
+    JedisAsserts.isTrue(metrics.length > 0, "at least one metric is required");
+
     this.metrics = metrics;
     return this;
   }
@@ -45,9 +46,8 @@ public class HotkeysParams implements IParams {
    * @throws IllegalArgumentException if count is not between 10 and 64
    */
   public HotkeysParams count(int count) {
-    if (count < 10 || count > 64) {
-      throw new IllegalArgumentException("count must be between 10 and 64");
-    }
+    JedisAsserts.isTrue(count >= 10 && count <= 64, "count must be between 1 and 64");
+
     this.count = count;
     return this;
   }
@@ -59,9 +59,8 @@ public class HotkeysParams implements IParams {
    * @throws IllegalArgumentException if duration is negative
    */
   public HotkeysParams duration(int duration) {
-    if (duration < 0) {
-      throw new IllegalArgumentException("duration must be >= 0");
-    }
+    JedisAsserts.isTrue(duration >= 0, "duration must be >= 0");
+
     this.duration = duration;
     return this;
   }
@@ -73,9 +72,8 @@ public class HotkeysParams implements IParams {
    * @throws IllegalArgumentException if sample is less than 1
    */
   public HotkeysParams sample(int sample) {
-    if (sample < 1) {
-      throw new IllegalArgumentException("sample must be >= 1");
-    }
+    JedisAsserts.isTrue(sample >= 1, "sample must be >= 1");
+
     this.sample = sample;
     return this;
   }
@@ -89,9 +87,7 @@ public class HotkeysParams implements IParams {
   public HotkeysParams slots(int... slots) {
     if (slots != null) {
       for (int slot : slots) {
-        if (slot < 0 || slot > 16383) {
-          throw new IllegalArgumentException("each slot must be between 0 and 16383");
-        }
+        JedisAsserts.isTrue(slot >= 0 && slot <= 16383, "each slot must be between 0 and 16383");
       }
     }
     this.slots = slots;

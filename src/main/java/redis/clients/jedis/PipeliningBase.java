@@ -4925,7 +4925,7 @@ public abstract class PipeliningBase
   // Vector Set pipeline commands end
 
   // Hotkeys pipeline commands
-  public Response<String> hotkeysStart(redis.clients.jedis.params.HotkeysParams params) {
+  public Response<String> hotkeysStart(HotkeysParams params) {
     return appendCommand(commandObjects.hotkeysStart(params));
   }
 
@@ -4937,7 +4937,7 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hotkeysReset());
   }
 
-  public Response<redis.clients.jedis.resps.HotkeysInfo> hotkeysGet() {
+  public Response<HotkeysInfo> hotkeysGet() {
     return appendCommand(commandObjects.hotkeysGet());
   }
   // Hotkeys pipeline commands end

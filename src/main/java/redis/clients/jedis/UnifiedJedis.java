@@ -369,6 +369,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.info(section));
   }
 
+  public String hotkeysStart(HotkeysParams params) {
+    return checkAndBroadcastCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public String hotkeysStop() {
+    return checkAndBroadcastCommand(commandObjects.hotkeysStop());
+  }
+
+  public String hotkeysReset() {
+    return checkAndBroadcastCommand(commandObjects.hotkeysReset());
+  }
+
+  public HotkeysInfo hotkeysGet() {
+    return executeCommand(commandObjects.hotkeysGet());
+  }
+
   // Key commands
   @Override
   public boolean exists(String key) {

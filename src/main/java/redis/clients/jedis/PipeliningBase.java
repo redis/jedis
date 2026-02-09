@@ -4924,6 +4924,24 @@ public abstract class PipeliningBase
   }
   // Vector Set pipeline commands end
 
+  // Hotkeys pipeline commands
+  public Response<String> hotkeysStart(HotkeysParams params) {
+    return appendCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public Response<String> hotkeysStop() {
+    return appendCommand(commandObjects.hotkeysStop());
+  }
+
+  public Response<String> hotkeysReset() {
+    return appendCommand(commandObjects.hotkeysReset());
+  }
+
+  public Response<HotkeysInfo> hotkeysGet() {
+    return appendCommand(commandObjects.hotkeysGet());
+  }
+  // Hotkeys pipeline commands end
+
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }

@@ -555,6 +555,8 @@
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
 						<include>**/ACLTestUtil.java</include>
+						<include>**/*Hotkeys*.java</include>
+						<include>**/TestDataUtil*.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -169,6 +169,15 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(0L));
     assertNotNull(reply.getByCpuTimeUs());
     assertNotNull(reply.getByNetBytes());
+    assertThat(reply.getTotalCpuTimeUserMs(), greaterThanOrEqualTo(0L));
+    assertThat(reply.getTotalCpuTimeSysMs(), greaterThanOrEqualTo(0L));
+    assertThat(reply.getTotalNetBytes(), greaterThanOrEqualTo(0L));
+    assertNull(reply.getSampledCommandSelectedSlotsUs());
+    assertNull(reply.getAllCommandsSelectedSlotsUs());
+    assertThat(reply.getAllCommandsAllSlotsUs(), greaterThanOrEqualTo(0L));
+    assertNull(reply.getNetBytesSampledCommandsSelectedSlots());
+    assertNull(reply.getNetBytesAllCommandsSelectedSlots());
+    assertThat(reply.getNetBytesAllCommandsAllSlots(), greaterThanOrEqualTo(0L));
   }
 
   @Test

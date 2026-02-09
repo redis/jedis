@@ -14,16 +14,24 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.EnvCondition;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @Tag("integration")
 public class RedisClientTest {
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   private static EndpointConfig endpointStandalone7;
   private static EndpointConfig endpointStandalone1; // password protected
@@ -38,7 +46,7 @@ public class RedisClientTest {
   public void checkCloseableConnections() {
     RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
-        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build()).build();
+        .clientConfig(endpointStandalone7.getClientConfigBuilder().timeoutMillis(2000).build()).build();
     pool.set("foo", "bar");
     assertEquals("bar", pool.get("foo"));
     pool.close();
@@ -48,7 +56,7 @@ public class RedisClientTest {
   @Test
   public void checkResourceWithConfig() {
     try (RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
-        .clientConfig(DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())
+        .clientConfig(endpointStandalone7.getClientConfigBuilder().socketTimeoutMillis(5000).build())
         .build()) {
 
       try (Connection jedis = pool.getPool().getResource()) {
@@ -72,6 +80,7 @@ public class RedisClientTest {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void startWithUrlString() {
     try (Jedis j = new Jedis(endpointStandalone1.getHostAndPort())) {
       j.auth(endpointStandalone1.getPassword());
@@ -88,6 +97,7 @@ public class RedisClientTest {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void startWithUrl() throws URISyntaxException {
     try (Jedis j = new Jedis(endpointStandalone1.getHostAndPort())) {
       j.auth(endpointStandalone1.getPassword());
@@ -118,7 +128,7 @@ public class RedisClientTest {
     try (
         RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
             .clientConfig(
-              DefaultJedisClientConfig.builder().clientName("my_shiny_client_name").build())
+                endpointStandalone7.getClientConfigBuilder().clientName("my_shiny_client_name").build())
             .build();
         Connection jedis = pool.getPool().getResource()) {
       assertEquals("my_shiny_client_name", new Jedis(jedis).clientGetname());
@@ -143,6 +153,7 @@ public class RedisClientTest {
   @Test
   public void getNumActiveWhenPoolIsClosed() {
     RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+        .clientConfig(endpointStandalone7.getClientConfigBuilder().timeoutMillis(2000).build())
         .build();
 
     try (Connection j = pool.getPool().getResource()) {
@@ -178,7 +189,7 @@ public class RedisClientTest {
   public void closeResourceTwice() {
     try (RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
-        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
+        .clientConfig(endpointStandalone7.getClientConfigBuilder().timeoutMillis(2000).build())
         .poolConfig(new ConnectionPoolConfig()).build()) {
       Connection j = pool.getPool().getResource();
       j.ping();
@@ -191,7 +202,7 @@ public class RedisClientTest {
   public void closeBrokenResourceTwice() {
     try (RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
-        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
+        .clientConfig(endpointStandalone7.getClientConfigBuilder().timeoutMillis(2000).build())
         .poolConfig(new ConnectionPoolConfig()).build()) {
       Connection j = pool.getPool().getResource();
       try {

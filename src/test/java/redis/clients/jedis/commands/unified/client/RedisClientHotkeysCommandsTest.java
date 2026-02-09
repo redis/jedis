@@ -24,6 +24,7 @@ import redis.clients.jedis.args.HotkeysMetric;
 import redis.clients.jedis.commands.unified.HotkeysCommandsTestBase;
 import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.resps.HotkeysInfo;
+import redis.clients.jedis.util.TestDataUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -91,8 +92,7 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     }
 
     String netHot = "blob:data";
-    String largeValue = new String(new char[6000]).replace('\0', 'x');
-    jedis.set(netHot, largeValue);
+    jedis.set(netHot, TestDataUtil.generateString(6000));
     jedis.get(netHot);
 
     HotkeysInfo reply = jedis.hotkeysGet();
@@ -106,7 +106,7 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
   }
 
   @Test
-  public void hotkeysStartOptions() {
+  public void hotkeysStartOptionsSample() {
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU).sample(5));
 
     for (int i = 0; i < 20; i++) {
@@ -117,9 +117,10 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     assertNotNull(reply);
     assertEquals(5, reply.getSampleRatio());
     assertThat(reply.getByCpuTimeUs().size(), lessThan(20));
+  }
 
-    jedis.hotkeysStop();
-    jedis.hotkeysReset();
+  @Test
+  public void hotkeysStartOptionsCount() {
 
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU).count(10));
 
@@ -127,9 +128,27 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
       jedis.set("countkey" + i, "value" + i);
     }
 
-    reply = jedis.hotkeysGet();
+    HotkeysInfo reply = jedis.hotkeysGet();
     assertNotNull(reply);
     assertThat(reply.getByCpuTimeUs().size(), lessThanOrEqualTo(10));
+  }
+
+  @Test
+  public void hotkeysDurationOption() {
+    jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU).duration(1));
+
+    jedis.set("durationkey", "testvalue");
+
+    await().atMost(Duration.ofSeconds(2)).until(() -> {
+      HotkeysInfo info = jedis.hotkeysGet();
+      return info != null && !info.isTrackingActive();
+    });
+
+    HotkeysInfo reply = jedis.hotkeysGet();
+    assertNotNull(reply);
+    assertFalse(reply.isTrackingActive());
+    assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(1000L));
+    assertTrue(reply.getByCpuTimeUs().containsKey("durationkey"));
   }
 
   @Test
@@ -150,24 +169,6 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(0L));
     assertNotNull(reply.getByCpuTimeUs());
     assertNotNull(reply.getByNetBytes());
-  }
-
-  @Test
-  public void hotkeysDurationOption() {
-    jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU).duration(1));
-
-    jedis.set("durationkey", "testvalue");
-
-    await().atMost(Duration.ofSeconds(2)).until(() -> {
-      HotkeysInfo info = jedis.hotkeysGet();
-      return info != null && !info.isTrackingActive();
-    });
-
-    HotkeysInfo reply = jedis.hotkeysGet();
-    assertNotNull(reply);
-    assertFalse(reply.isTrackingActive());
-    assertThat(reply.getCollectionDurationMs(), greaterThanOrEqualTo(1000L));
-    assertTrue(reply.getByCpuTimeUs().containsKey("durationkey"));
   }
 
   @Test

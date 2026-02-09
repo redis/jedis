@@ -96,6 +96,9 @@ public class HotkeysParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
+    JedisAsserts.notNull(metrics, "metrics must not be null");
+    JedisAsserts.isTrue(metrics.length > 0, "at least one metric is required");
+
     args.add(Keyword.METRICS);
     args.add(metrics.length);
     for (HotkeysMetric metric : metrics) {

@@ -3,6 +3,7 @@ package redis.clients.jedis.builders;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -10,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
+
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -183,5 +186,89 @@ class ClientBuilderTest {
     }
     verify(exec).executeCommand(cap.capture());
     assertThat(argsToStrings(cap.getValue()), contains("DIGEST", "key"));
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void clientConfigBeforeFromURI_credentialsPreserved() {
+    JedisClientConfig config = DefaultJedisClientConfig.builder().user("testuser")
+        .password("testpass").connectionTimeoutMillis(5000).build();
+
+    // URI without credentials - should preserve config credentials
+    StandaloneClientBuilder<RedisClient> builder = RedisClient.builder().clientConfig(config)
+        .fromURI("redis://localhost:6379");
+
+    JedisClientConfig resultConfig = getClientConfig(builder);
+    assertThat(resultConfig.getUser(), containsString("testuser"));
+    assertThat(resultConfig.getPassword(), containsString("testpass"));
+    assertThat(resultConfig.getConnectionTimeoutMillis(), equalTo(5000));
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void fromURIWithCredentials_overridesClientConfig() {
+    JedisClientConfig config = DefaultJedisClientConfig.builder().user("olduser")
+        .password("oldpass").build();
+
+    // URI with credentials should override config credentials
+    StandaloneClientBuilder<RedisClient> builder = RedisClient.builder().clientConfig(config)
+        .fromURI("redis://newuser:newpass@localhost:6379");
+
+    JedisClientConfig resultConfig = getClientConfig(builder);
+    assertThat(resultConfig.getUser(), containsString("newuser"));
+    assertThat(resultConfig.getPassword(), containsString("newpass"));
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void fromURIThenClientConfig_configWins() {
+    // URI with credentials
+    StandaloneClientBuilder<RedisClient> builder = RedisClient.builder()
+        .fromURI("redis://uriuser:uripass@localhost:6379").clientConfig(
+          DefaultJedisClientConfig.builder().user("configuser").password("configpass").build());
+
+    JedisClientConfig resultConfig = getClientConfig(builder);
+    assertThat(resultConfig.getUser(), containsString("configuser"));
+    assertThat(resultConfig.getPassword(), containsString("configpass"));
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void multipleFromURICalls_lastWins() {
+    StandaloneClientBuilder<RedisClient> builder = RedisClient.builder()
+        .fromURI("redis://user1:pass1@localhost:6379/1")
+        .fromURI("redis://user2:pass2@localhost:6380/2");
+
+    JedisClientConfig resultConfig = getClientConfig(builder);
+    assertThat(resultConfig.getUser(), containsString("user2"));
+    assertThat(resultConfig.getPassword(), containsString("pass2"));
+    assertThat(resultConfig.getDatabase(), equalTo(2));
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void partialURIOverride_preservesNonURIValues() {
+    // Real-world scenario from issue #4416
+    JedisClientConfig config = DefaultJedisClientConfig.builder().user("mark").password("secret")
+        .connectionTimeoutMillis(5000).socketTimeoutMillis(3000).build();
+
+    // URI without credentials, only host/port
+    StandaloneClientBuilder<RedisClient> builder = RedisClient.builder().clientConfig(config)
+        .fromURI("redis://localhost:6379");
+
+    JedisClientConfig resultConfig = getClientConfig(builder);
+    // Should preserve credentials and timeouts from config
+    assertThat(resultConfig.getUser(), containsString("mark"));
+    assertThat(resultConfig.getPassword(), containsString("secret"));
+    assertThat(resultConfig.getConnectionTimeoutMillis(), equalTo(5000));
+    assertThat(resultConfig.getSocketTimeoutMillis(), equalTo(3000));
+  }
+
+  /**
+   * Helper method to access the protected clientConfig field from the builder using reflection.
+   */
+  private JedisClientConfig getClientConfig(
+      redis.clients.jedis.builders.AbstractClientBuilder<?, ?> builder) {
+    return ReflectionTestUtil.getField(builder, "clientConfig");
   }
 }

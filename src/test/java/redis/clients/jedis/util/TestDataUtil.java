@@ -32,4 +32,3 @@ public class TestDataUtil {
     return generateString(size, 'x');
   }
 }
-

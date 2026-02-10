@@ -1,11 +1,13 @@
 package redis.clients.jedis;
 
+import java.net.URI;
 import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.util.JedisURIHelper;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -143,9 +145,70 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+
   public static Builder builder() {
     return new Builder();
   }
+
+  /**
+   * Creates a new Builder pre-initialized with settings from the provided Redis URI.
+   * <p>
+   * The URI format is: {@code redis[s]://[username:password@]host:port[/database][?protocol=version]}
+   * </p>
+   * <p>
+   * Settings extracted from URI:
+   * <ul>
+   *   <li>Credentials (username/password) if present in URI</li>
+   *   <li>Database index if specified in path</li>
+   *   <li>SSL enabled if scheme is "rediss"</li>
+   *   <li>Protocol version if specified in query parameters</li>
+   * </ul>
+   * </p>
+   *
+   * @param redisUri the Redis URI to extract settings from
+   * @return a new Builder pre-initialized from the URI
+   */
+  public static Builder builder(URI redisUri) {
+    Builder builder = new Builder();
+
+    // Extract and apply credentials if present
+    String uriUser = JedisURIHelper.getUser(redisUri);
+    String uriPassword = null;
+    try {
+      uriPassword = JedisURIHelper.getPassword(redisUri);
+    } catch (IllegalArgumentException e) {
+      // URI has userInfo but no password - ignore
+    }
+
+    if (uriUser != null) {
+      builder.user(uriUser);
+    }
+    if (uriPassword != null) {
+      builder.password(uriPassword);
+    }
+
+    // Apply database if non-default
+    int uriDatabase = JedisURIHelper.getDBIndex(redisUri);
+    if (uriDatabase != Protocol.DEFAULT_DATABASE) {
+      builder.database(uriDatabase);
+    }
+
+    // Apply protocol if specified
+    RedisProtocol uriProtocol = JedisURIHelper.getRedisProtocol(redisUri);
+    if (uriProtocol != null) {
+      builder.protocol(uriProtocol);
+    }
+
+    // Apply SSL if rediss:// scheme
+    if (JedisURIHelper.isRedisSSLScheme(redisUri)) {
+      builder.ssl(true);
+    }
+
+    return builder;
+  }
+
+
+
 
   public static class Builder {
 

@@ -4,6 +4,7 @@ import java.net.URI;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisURIHelper;
 
 /**
@@ -166,6 +167,9 @@ public abstract class StandaloneClientBuilder<C>
    */
   @Deprecated
   public StandaloneClientBuilder<C> fromURI(URI uri) {
+    JedisAsserts.notNull(uri, "Redis URI must not be null");
+    JedisAsserts.isTrue(JedisURIHelper.isValid(uri), "Invalid Redis URI");
+
     // Start with existing config if present, otherwise create new builder
     DefaultJedisClientConfig.Builder configBuilder = (this.clientConfig != null)
         ? DefaultJedisClientConfig.builder().from(this.clientConfig)
@@ -173,12 +177,7 @@ public abstract class StandaloneClientBuilder<C>
 
     // Override with URI values only if URI provides them (non-null)
     String uriUser = JedisURIHelper.getUser(uri);
-    String uriPassword = null;
-    try {
-      uriPassword = JedisURIHelper.getPassword(uri);
-    } catch (IllegalArgumentException e) {
-      // URI has userInfo but no password - ignore
-    }
+    String uriPassword = JedisURIHelper.getPassword(uri);
 
     // If URI provides credentials, we need to clear the credentialsProvider
     // so that the new user/password values are used instead
@@ -192,9 +191,8 @@ public abstract class StandaloneClientBuilder<C>
       }
     }
 
-    int uriDatabase = JedisURIHelper.getDBIndex(uri);
-    if (uriDatabase != Protocol.DEFAULT_DATABASE) {
-      configBuilder.database(uriDatabase);
+    if (JedisURIHelper.hasDbIndex(uri)) {
+      configBuilder.database(JedisURIHelper.getDBIndex(uri));
     }
 
     RedisProtocol uriProtocol = JedisURIHelper.getRedisProtocol(uri);
@@ -202,9 +200,10 @@ public abstract class StandaloneClientBuilder<C>
       configBuilder.protocol(uriProtocol);
     }
 
-    boolean uriSsl = JedisURIHelper.isRedisSSLScheme(uri);
-    if (uriSsl) {
+    if (JedisURIHelper.isRedisSSLScheme(uri)) {
       configBuilder.ssl(true);
+    } else if (JedisURIHelper.isRedisScheme(uri)) {
+      configBuilder.ssl(false);
     }
 
     this.clientConfig = configBuilder.build();

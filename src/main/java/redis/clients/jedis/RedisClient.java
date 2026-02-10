@@ -7,6 +7,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
@@ -126,9 +127,12 @@ public class RedisClient extends UnifiedJedis {
    * @return a new {@link RedisClient} instance
    */
   public static RedisClient create(final URI uri) {
-    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder(uri).build();
+    JedisAsserts.isTrue(JedisURIHelper.isValid(uri), "Invalid Redis URI");
 
-    return builder().clientConfig(clientConfig).build();
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder(uri).build();
+    HostAndPort hostAndPort = JedisURIHelper.getHostAndPort(uri);
+
+    return builder().hostAndPort(hostAndPort).clientConfig(clientConfig).build();
   }
 
   /**

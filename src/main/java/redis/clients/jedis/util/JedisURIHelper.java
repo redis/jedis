@@ -86,6 +86,28 @@ public final class JedisURIHelper {
     return null;
   }
 
+  /**
+   * Checks if the given URI has a database index component.
+   *
+   * @param uri the URI to check
+   * @return true if the URI has a database index component, false otherwise
+   */
+  public static boolean hasDbIndex(URI uri) {
+    if (uri.getPath() == null || uri.getPath().isEmpty()) {
+      return false;
+    }
+
+    String[] pathSplit = uri.getPath().split("/", 2);
+
+    return pathSplit.length > 1;
+  }
+
+  /**
+   * Returns the database index from the given URI.
+   * example: redis://localhost:6379/15 -> 15
+   * @param uri
+   * @return database index, or default database (0) if not specified
+   */
   public static int getDBIndex(URI uri) {
     String[] pathSplit = uri.getPath().split("/", 2);
     if (pathSplit.length > 1) {
@@ -99,6 +121,12 @@ public final class JedisURIHelper {
     }
   }
 
+  /**
+   * Returns the Redis protocol from the given URI.
+   * example: redis://localhost:6379?protocol=3 -> RedisProtocol.RESP3
+   * @param uri
+   * @return Redis protocol, or null if not specified
+   */
   public static RedisProtocol getRedisProtocol(URI uri) {
     if (uri.getQuery() == null) return null;
 

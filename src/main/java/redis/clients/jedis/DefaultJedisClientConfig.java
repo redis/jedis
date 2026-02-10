@@ -7,6 +7,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
@@ -167,16 +168,14 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
    * @return a new Builder pre-initialized from the URI
    */
   public static Builder builder(URI redisUri) {
+    JedisAsserts.notNull(redisUri, "Redis URI must not be null");
+    JedisAsserts.isTrue(JedisURIHelper.isValid(redisUri), "Invalid Redis URI");
+
     Builder builder = new Builder();
 
     // Extract and apply credentials if present
     String uriUser = JedisURIHelper.getUser(redisUri);
-    String uriPassword = null;
-    try {
-      uriPassword = JedisURIHelper.getPassword(redisUri);
-    } catch (IllegalArgumentException e) {
-      // URI has userInfo but no password - ignore
-    }
+    String uriPassword = JedisURIHelper.getPassword(redisUri);
 
     if (uriUser != null) {
       builder.user(uriUser);
@@ -185,10 +184,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       builder.password(uriPassword);
     }
 
-    // Apply database if non-default
-    int uriDatabase = JedisURIHelper.getDBIndex(redisUri);
-    if (uriDatabase != Protocol.DEFAULT_DATABASE) {
-      builder.database(uriDatabase);
+    if (JedisURIHelper.hasDbIndex(redisUri)) {
+      builder.database(JedisURIHelper.getDBIndex(redisUri));
     }
 
     // Apply protocol if specified
@@ -197,9 +194,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       builder.protocol(uriProtocol);
     }
 
-    // Apply SSL if rediss:// scheme
     if (JedisURIHelper.isRedisSSLScheme(redisUri)) {
       builder.ssl(true);
+    } else if (JedisURIHelper.isRedisScheme(redisUri)) {
+      builder.ssl(false);
     }
 
     return builder;

@@ -1,7 +1,12 @@
 package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 
@@ -39,7 +44,16 @@ class DefaultJedisClientConfigTest {
 
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder(uri).build();
 
-      assertThat(config.isSsl(), equalTo(true));
+      assertTrue(config.isSsl());
+    }
+
+    @Test
+    void builderFromUri_nossl() {
+      URI uri = URI.create("redis://localhost:6380");
+
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder(uri).build();
+
+      assertFalse(config.isSsl());
     }
 
     @Test
@@ -76,13 +90,29 @@ class DefaultJedisClientConfigTest {
     }
 
     @Test
-    void builderFromUri_onlyUsername() {
+    void builderFromUri_passwordOnly() {
+      URI uri = URI.create("redis://:password@localhost:6379");
+
+      assertThat(DefaultJedisClientConfig.builder(uri).build().getPassword(), equalTo("password"));
+      assertNull(DefaultJedisClientConfig.builder(uri).build().getUser());
+    }
+
+    @Test
+    void builderFromUri_usernameOnlyThrowsException() {
       URI uri = URI.create("redis://onlyuser@localhost:6379");
+      IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        () -> DefaultJedisClientConfig.builder(uri));
 
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder(uri).build();
+      assertThat(ex.getMessage(), containsString("Password not provided in uri"));
+    }
 
-      assertThat(config.getUser(), equalTo("onlyuser"));
-      // Password should be null when not provided
+    @Test
+    void builderFromUri_InvalidUri() {
+      URI uri = URI.create("localhost:6379/0");
+
+      Exception ex = assertThrows(IllegalArgumentException.class,
+        () -> DefaultJedisClientConfig.builder(uri).build());
+      assertThat(ex.getMessage(), containsString("Invalid Redis URI"));
     }
   }
 }

@@ -557,7 +557,7 @@
 						<include>**/ACLTestUtil.java</include>
 						<include>**/*Hotkeys*.java</include>
 						<include>**/TestDataUtil*.java</include>
-						<include>**/*JedisClientConfi*.java</include>
+						<include>**/*JedisClientConfig*.java</include>
 					</includes>
 				</configuration>
 				<executions>

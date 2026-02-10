@@ -127,6 +127,7 @@ public class RedisClient extends UnifiedJedis {
    * @return a new {@link RedisClient} instance
    */
   public static RedisClient create(final URI uri) {
+    JedisAsserts.notNull(uri, "Redis URI must not be null");
     JedisAsserts.isTrue(JedisURIHelper.isValid(uri), "Invalid Redis URI");
 
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder(uri).build();

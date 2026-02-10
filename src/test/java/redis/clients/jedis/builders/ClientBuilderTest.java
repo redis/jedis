@@ -217,7 +217,7 @@ class ClientBuilderTest {
 
   @Test
   @SuppressWarnings("deprecation")
-  void fromURI_WithCredentials_overridesClientConfigCredentials() {
+  void fromURI_withCredentials_overridesClientConfigCredentials() {
     JedisClientConfig config = DefaultJedisClientConfig.builder().user("olduser")
         .password("oldpass").build();
 

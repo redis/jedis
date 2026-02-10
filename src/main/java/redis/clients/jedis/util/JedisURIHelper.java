@@ -99,7 +99,7 @@ public final class JedisURIHelper {
 
     String[] pathSplit = uri.getPath().split("/", 2);
 
-    return pathSplit.length > 1;
+    return pathSplit.length > 1 && !pathSplit[1].isEmpty();
   }
 
   /**

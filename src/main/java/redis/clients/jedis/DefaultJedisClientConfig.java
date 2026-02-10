@@ -163,7 +163,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
    * <li>SSL enabled if scheme is "rediss"</li>
    * <li>Protocol version if specified in query parameters</li>
    * </ul>
-   * </p>
    * @param redisUri the Redis URI to extract settings from
    * @return a new Builder pre-initialized from the URI
    */

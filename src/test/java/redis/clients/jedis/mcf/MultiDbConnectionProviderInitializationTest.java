@@ -61,7 +61,8 @@ public class MultiDbConnectionProviderInitializationTest {
                                                              // check
           .build();
 
-      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 })
+          .initializationPolicy(InitializationPolicy.BuiltIn.ONE_AVAILABLE).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should initialize successfully

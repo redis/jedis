@@ -177,11 +177,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     String uriUser = JedisURIHelper.getUser(redisUri);
     String uriPassword = JedisURIHelper.getPassword(redisUri);
 
-    if (uriUser != null) {
-      builder.user(uriUser);
-    }
-    if (uriPassword != null) {
-      builder.password(uriPassword);
+    if (uriUser != null || uriPassword != null) {
+      builder.credentials(new DefaultRedisCredentials(uriUser, uriPassword));
     }
 
     if (JedisURIHelper.hasDbIndex(redisUri)) {

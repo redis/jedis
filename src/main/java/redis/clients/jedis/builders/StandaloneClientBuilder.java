@@ -182,13 +182,7 @@ public abstract class StandaloneClientBuilder<C>
     // If URI provides credentials, we need to clear the credentialsProvider
     // so that the new user/password values are used instead
     if (uriUser != null || uriPassword != null) {
-      configBuilder.credentialsProvider(null);
-      if (uriUser != null) {
-        configBuilder.user(uriUser);
-      }
-      if (uriPassword != null) {
-        configBuilder.password(uriPassword);
-      }
+      configBuilder.credentials(new DefaultRedisCredentials(uriUser, uriPassword));
     }
 
     if (JedisURIHelper.hasDbIndex(uri)) {

@@ -145,7 +145,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
-
   public static Builder builder() {
     return new Builder();
   }
@@ -153,18 +152,18 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   /**
    * Creates a new Builder pre-initialized with settings from the provided Redis URI.
    * <p>
-   * The URI format is: {@code redis[s]://[username:password@]host:port[/database][?protocol=version]}
+   * The URI format is:
+   * {@code redis[s]://[username:password@]host:port[/database][?protocol=version]}
    * </p>
    * <p>
    * Settings extracted from URI:
    * <ul>
-   *   <li>Credentials (username/password) if present in URI</li>
-   *   <li>Database index if specified in path</li>
-   *   <li>SSL enabled if scheme is "rediss"</li>
-   *   <li>Protocol version if specified in query parameters</li>
+   * <li>Credentials (username/password) if present in URI</li>
+   * <li>Database index if specified in path</li>
+   * <li>SSL enabled if scheme is "rediss"</li>
+   * <li>Protocol version if specified in query parameters</li>
    * </ul>
    * </p>
-   *
    * @param redisUri the Redis URI to extract settings from
    * @return a new Builder pre-initialized from the URI
    */
@@ -207,9 +206,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return builder;
   }
 
-
-
-
   public static class Builder {
 
     private RedisProtocol redisProtocol = null;
@@ -251,7 +247,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     /**
-     * Shortcut to {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * Shortcut to
+     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
      * {@link RedisProtocol#RESP3}.
      * @return this
      */
@@ -386,9 +383,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
    */
   @Deprecated
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
-      int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
+      int blockingSocketTimeoutMillis, String user, String password, int database,
+      String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
+      HostAndPortMapper hostAndPortMapper) {
     Builder builder = builder();
     builder.connectionTimeoutMillis(connectionTimeoutMillis).socketTimeoutMillis(soTimeoutMillis)
         .blockingSocketTimeoutMillis(blockingSocketTimeoutMillis);
@@ -397,14 +395,15 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       builder.credentials(new DefaultRedisCredentials(user, password));
     }
     builder.database(database).clientName(clientName);
-    builder.ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters).hostnameVerifier(hostnameVerifier);
+    builder.ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier);
     builder.hostAndPortMapper(hostAndPortMapper);
     return builder.build();
   }
 
   /**
    * @deprecated Use
-   * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#from(redis.clients.jedis.JedisClientConfig)}.
+   *             {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#from(redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {

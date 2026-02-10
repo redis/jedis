@@ -104,7 +104,7 @@ public final class JedisURIHelper {
 
   /**
    * Returns the database index from the given URI.
-   * example: redis://localhost:6379/15 -> 15
+   *
    * @param uri
    * @return database index, or default database (0) if not specified
    */
@@ -123,7 +123,7 @@ public final class JedisURIHelper {
 
   /**
    * Returns the Redis protocol from the given URI.
-   * example: redis://localhost:6379?protocol=3 -> RedisProtocol.RESP3
+   *
    * @param uri
    * @return Redis protocol, or null if not specified
    */

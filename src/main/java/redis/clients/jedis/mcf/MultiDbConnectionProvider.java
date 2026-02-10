@@ -39,6 +39,7 @@ import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
+import redis.clients.jedis.mcf.InitializationPolicy.Decision;
 import redis.clients.jedis.mcf.JedisFailoverException.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
@@ -389,25 +390,72 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     log.info("Waiting for initialization policy {} to complete for {} configured databases",
       policy.getClass().getSimpleName(), databaseMap.size());
 
-    // Wait for health checks to complete based on initialization policy
-    statusTracker.waitForPolicy(databaseMap, healthStatusManager, policy);
+    // Evaluate immediately with the current statuses
+    ConnectionInitializationContext ctx = new ConnectionInitializationContext(databaseMap,
+        healthStatusManager);
+    Decision decision = ctx.conformsTo(policy);
+    log.info("Initial policy evaluation: {} with context: {}", decision, ctx);
 
-    // Policy succeeded - now select the best available database by weight
-    return selectBestAvailableDatabase();
-  }
+    if (decision == Decision.FAIL) {
+      throw new JedisConnectionException(
+          "Initialization failed due to initialization policy: " + ctx);
+    }
 
-  /**
-   * Selects the best available (healthy) database based on weight priority.
-   * @return the highest-weighted healthy database
-   * @throws JedisConnectionException if no healthy database is available
-   */
-  private Database selectBestAvailableDatabase() {
     // Sort databases by weight in descending order
     List<Map.Entry<Endpoint, Database>> sortedDatabases = databaseMap.entrySet().stream()
         .sorted(Map.Entry.<Endpoint, Database> comparingByValue(
           Comparator.comparing(Database::getWeight).reversed()))
         .collect(Collectors.toList());
 
+    log.info("Selecting initial database from {} configured databases", sortedDatabases.size());
+
+    // Check databases in weight order
+    for (Map.Entry<Endpoint, Database> entry : sortedDatabases) {
+      Endpoint endpoint = entry.getKey();
+      Database database = entry.getValue();
+
+      log.info("Evaluating database {} (weight: {})", endpoint, database.getWeight());
+
+      HealthStatus status;
+
+      // Check if health checks are enabled for this endpoint
+      if (healthStatusManager.hasHealthCheck(endpoint)) {
+        log.info("Health checks enabled for {}, waiting for result", endpoint);
+        // Wait for this database's health status to be determined
+        status = statusTracker.waitForHealthStatus(endpoint);
+      } else {
+        // No health check configured - assume healthy
+        log.info("No health check configured for database {}, defaulting to HEALTHY", endpoint);
+        status = HealthStatus.HEALTHY;
+      }
+
+      ConnectionInitializationContext evalCtx = new ConnectionInitializationContext(databaseMap,
+          healthStatusManager);
+      Decision d = evalCtx.conformsTo(policy);
+      log.info("Policy evaluation after {}: {}", endpoint, d);
+      if (d == Decision.SUCCESS) {
+        return selectBestAvailableDatabase(sortedDatabases);
+      }
+      if (d == Decision.FAIL) {
+        throw new JedisConnectionException(
+            "Initialization failed due to initialization policy: " + evalCtx);
+      }
+      // else CONTINUE -> move to the next pending endpoint
+    }
+
+    // All databases are unhealthy
+    throw new JedisConnectionException(
+        "All configured databases are unhealthy. Cannot initialize MultiDbConnectionProvider.");
+  }
+
+  /**
+   * Selects the best available (healthy) database based on weight priority.
+   * @param sortedDatabases the list of databases sorted by weight in descending order
+   * @return the highest-weighted healthy database
+   * @throws JedisConnectionException if no healthy database is available
+   */
+  private Database selectBestAvailableDatabase(
+      List<Map.Entry<Endpoint, Database>> sortedDatabases) {
     log.info("Selecting initial database from {} configured databases", sortedDatabases.size());
 
     // Select first healthy database in weight order

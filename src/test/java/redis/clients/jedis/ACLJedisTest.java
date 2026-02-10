@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.utils.RedisVersion;
 import java.net.URISyntaxException;
 
@@ -14,6 +15,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
+import redis.clients.jedis.util.TestEnvUtil;
+
 /**
  * This test class is a copy of {@link JedisTest}.
  * <p>
@@ -41,7 +44,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void useWithoutConnecting() {
-    try (Jedis j = new Jedis()) {
+    try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
       j.dbSize();
     }
@@ -81,6 +84,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void startWithUrl() {
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
@@ -95,6 +99,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void startWithUri() throws URISyntaxException {
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));

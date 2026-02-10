@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UdsTest {
 
   @RegisterExtension
-  public EnvCondition envCondition = new EnvCondition();
+  public static EnvCondition envCondition = new EnvCondition();
 
   @Test
   public void jedisConnectsToUds() {

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
@@ -35,6 +36,7 @@ import redis.clients.jedis.resps.StreamGroupInfo;
 import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.resps.StreamPendingSummary;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=stream">Stream</a> commands.
@@ -1008,6 +1010,7 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testXRead() {
     String streamKey1 = "testStream1";
     String streamKey2 = "testStream2";
@@ -1044,6 +1047,7 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testXReadAsMap() {
     String streamKey1 = "testStreamMap1";
     String streamKey2 = "testStreamMap2";

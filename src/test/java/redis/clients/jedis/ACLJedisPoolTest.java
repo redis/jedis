@@ -35,7 +35,7 @@ import redis.clients.jedis.util.TestEnvUtil;
  */
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
-@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_DOCKER, enabled = true)
 public class ACLJedisPoolTest {
   private static EndpointConfig endpoint;
 

@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -29,6 +31,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -279,6 +282,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusStore() {
     // prepare data
     Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
@@ -421,6 +425,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusStoreBinary() {
     // prepare data
     Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
@@ -547,6 +552,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusByMemberStore() {
     client.geoadd("Sicily", 13.583333, 37.316667, "Agrigento");
     client.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
@@ -654,6 +660,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusByMemberStoreBinary() {
     client.geoadd(bfoo, 13.583333, 37.316667, bA);
     client.geoadd(bfoo, 13.361389, 38.115556, bB);
@@ -821,6 +828,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void geosearchstore() {
     client.geoadd("barcelona", 2.1909389952632d, 41.433791470673d, "place1");
     client.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");
@@ -857,6 +865,7 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void geosearchstoreWithdist() {
     client.geoadd("barcelona", 2.1909389952632d, 41.433791470673d, "place1");
     client.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -229,6 +231,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void pipelineSelect() {
     jedis.set("foo", "bar");
     jedis.swapDB(0, 1);
@@ -321,12 +324,12 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
   @Test
   public void waitReplicas() {
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone4-replica-of-standalone1");
+
     Pipeline p = jedis.pipelined();
     p.set("wait", "replicas");
     p.waitReplicas(1, 10);
     p.sync();
-
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone4-replica-of-standalone1");
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -336,12 +339,12 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
   @Test
   public void waitAof() {
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone4-replica-of-standalone1");
+
     Pipeline p = jedis.pipelined();
     p.set("wait", "aof");
     p.waitAOF(1L, 0L, 0L);
     p.sync();
-
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone4-replica-of-standalone1");
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -590,6 +593,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void move() {
     Pipeline p = jedis.pipelined();
 
@@ -605,6 +609,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void moveBinary() {
     Pipeline p = jedis.pipelined();
 
@@ -620,6 +625,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void swapDb() {
     Pipeline p = jedis.pipelined();
 
@@ -638,6 +644,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void copyToAnotherDb() {
     Pipeline p = jedis.pipelined();
 
@@ -659,6 +666,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void copyToAnotherDbBinary() {
     Pipeline p = jedis.pipelined();
 

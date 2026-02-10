@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.*;
 import redis.clients.jedis.commands.CommandsTestsParameters;
@@ -28,6 +29,9 @@ public abstract class PipelineCommandsTestBase {
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       RedisClientCommandsTestHelper::getEndpointConfig);
+  @RegisterExtension
+  public static EnvCondition conditionalOnEnvCondition = new EnvCondition();
+
   /**
    * The RESP protocol is to be injected by the subclasses, usually via JUnit
    * parameterized tests, because most of the subclassed tests are meant to be

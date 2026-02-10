@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.List;
 import java.util.stream.Stream;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=string">String</a> commands.
@@ -309,6 +311,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testLcs() {
     String keyA = "keyA";
     String keyB = "keyB";
@@ -350,6 +353,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   @SinceRedisVersion(value = "7.0.0")
   public void testLcsBinary() {
     byte[] keyA = "keyA".getBytes();
@@ -392,6 +396,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testMgetMsetAndMsetnx() {
     String key1 = "key1";
     String key2 = "key2";
@@ -422,6 +427,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testMgetMsetAndMsetnxBinary() {
     byte[] key1 = "key1Bytes".getBytes();
     byte[] key2 = "key2Bytes".getBytes();
@@ -583,6 +589,7 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSubstrAndStrlen() {
     String key = "testKey";
     String value = "HelloWorld";

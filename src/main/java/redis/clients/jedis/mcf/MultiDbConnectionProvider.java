@@ -385,7 +385,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * @return the first healthy database found, ordered by weight (highest first)
    * @throws JedisConnectionException if initialization fails according to the policy
    */
-  private Database waitForInitializationPolicy(StatusTracker statusTracker) {
+  @VisibleForTesting
+  Database waitForInitializationPolicy(StatusTracker statusTracker) {
     InitializationPolicy policy = multiDbConfig.getInitializationPolicy();
     log.info("Waiting for initialization policy {} to complete for {} configured databases",
       policy.getClass().getSimpleName(), databaseMap.size());
@@ -416,17 +417,14 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
       log.info("Evaluating database {} (weight: {})", endpoint, database.getWeight());
 
-      HealthStatus status;
-
       // Check if health checks are enabled for this endpoint
       if (healthStatusManager.hasHealthCheck(endpoint)) {
         log.info("Health checks enabled for {}, waiting for result", endpoint);
         // Wait for this database's health status to be determined
-        status = statusTracker.waitForHealthStatus(endpoint);
+        statusTracker.waitForHealthStatus(endpoint);
       } else {
         // No health check configured - assume healthy
         log.info("No health check configured for database {}, defaulting to HEALTHY", endpoint);
-        status = HealthStatus.HEALTHY;
       }
 
       ConnectionInitializationContext evalCtx = new ConnectionInitializationContext(databaseMap,

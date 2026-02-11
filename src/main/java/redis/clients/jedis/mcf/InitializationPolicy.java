@@ -82,6 +82,10 @@ public interface InitializationPolicy {
 
         // All connections completed successfully
         if (ctx.getPendingConnections() == 0) {
+          // No connections configured at all - fail
+          if (ctx.getAvailableConnections() == 0) {
+            return Decision.FAIL;
+          }
           return Decision.SUCCESS;
         }
 

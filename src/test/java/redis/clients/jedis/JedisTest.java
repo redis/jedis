@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -28,6 +29,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -39,6 +41,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void useWithoutConnecting() {
     try (Jedis j = new Jedis()) {
       j.auth(endpoint.getPassword());
@@ -112,6 +115,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void timeoutConnection() throws Exception {
     final String TIMEOUT_STR = "timeout";
 
@@ -174,6 +178,7 @@ public class JedisTest extends JedisCommandsTestBase {
   // }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void connectWithUrl() {
     EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
@@ -190,6 +195,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void connectWithUri() throws URISyntaxException {
     EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
@@ -206,6 +212,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void connectWithUrlOnResp3() {
     EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
 
@@ -223,6 +230,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void connectWithUriOnResp3() throws URISyntaxException {
     EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
 
@@ -302,6 +310,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void checkCloseableAfterCommand() {
     Jedis bj = new Jedis();
     bj.auth(endpoint.getPassword());

@@ -8,10 +8,12 @@ import redis.clients.jedis.search.Filter;
 import redis.clients.jedis.search.Limit;
 import redis.clients.jedis.search.aggr.Group;
 import redis.clients.jedis.search.aggr.SortedField;
+import redis.clients.jedis.util.JedisAsserts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.GROUPBY;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.LOAD;
@@ -72,14 +74,26 @@ public class FTHybridPostProcessingParams implements IParams {
 
     /**
      * Set the fields to load in the results.
-     * @param fields the field names to load
+     * <p>
+     * This method replaces any previous load configuration (including loadAll()). To load all
+     * fields, use {@link #loadAll()} instead.
+     * @param fields the field names to load (must not be empty)
      * @return this builder
+     * @throws IllegalArgumentException if fields is null, empty, or contains "*"
      */
     public Builder load(String... fields) {
-      if (fields.length == 1 && fields[0].equals(LOAD_ALL)) {
-        instance.loadAll = true;
-        return this;
+      JedisAsserts.notNull(fields, "Fields must not be null");
+      JedisAsserts.isTrue(fields.length > 0, "At least one field is required");
+
+      // Validate no wildcards in specific field list
+      for (String field : fields) {
+        JedisAsserts.notNull(field, "Field names cannot be null");
+        JedisAsserts.isFalse(LOAD_ALL.equals(field),
+          "Cannot use '*' in load(). Use loadAll() instead to load all fields.");
       }
+
+      // Clear previous state and set new values
+      instance.loadAll = false;
       instance.loadFields = Arrays.asList(fields);
       return this;
     }
@@ -87,11 +101,14 @@ public class FTHybridPostProcessingParams implements IParams {
     /**
      * Set to load all fields in the results using LOAD *.
      * <p>
+     * This method replaces any previous load configuration (including specific fields).
+     * <p>
      * Note: requires Redis version &gt;= 8.6.0
      * @return this builder
      */
     public Builder loadAll() {
       instance.loadAll = true;
+      instance.loadFields = null;
       return this;
     }
 
@@ -209,5 +226,23 @@ public class FTHybridPostProcessingParams implements IParams {
     if (limit != null) {
       limit.addParams(args);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    FTHybridPostProcessingParams that = (FTHybridPostProcessingParams) o;
+    return loadAll == that.loadAll && noSort == that.noSort
+        && Objects.equals(loadFields, that.loadFields) && Objects.equals(groupBy, that.groupBy)
+        && Objects.equals(applies, that.applies) && Arrays.equals(sortByFields, that.sortByFields)
+        && Objects.equals(filter, that.filter) && Objects.equals(limit, that.limit);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Objects.hash(loadFields, loadAll, groupBy, applies, noSort, filter, limit);
+    result = 31 * result + Arrays.hashCode(sortByFields);
+    return result;
   }
 }

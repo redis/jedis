@@ -249,8 +249,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
   }
 
   @Test
-  // Since Redis 8.6.0 RC
-  @SinceRedisVersion("8.5.0")
+  @SinceRedisVersion("8.6.0")
   public void testLoadAllFields() {
     // Test LOAD * to load all fields
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder().loadAll()

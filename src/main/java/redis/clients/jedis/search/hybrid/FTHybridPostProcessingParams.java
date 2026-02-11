@@ -134,22 +134,31 @@ public class FTHybridPostProcessingParams implements IParams {
 
     /**
      * Add a SORTBY operation using {@link SortedField} from the aggregation package.
+     * <p>
+     * Last call to {@link #sortBy(SortedField...)}/{@link #noSort()} wins.
      * @param fields the sorted fields
      * @return this builder
+     * @see Builder#noSort()
      */
     public Builder sortBy(SortedField... fields) {
+      JedisAsserts.notNull(fields, "Sort by fields must not be null");
+      JedisAsserts.isTrue(fields.length > 0, "At least one field is required");
+
       instance.sortByFields = fields;
+      instance.noSort = false;
       return this;
     }
 
     /**
      * Disable the default sorting by score. This adds the NOSORT keyword to the command.
      * <p>
-     * Note: Cannot be used together with {@link #sortBy(SortedField...)}.
+     * Last call to {@link #sortBy(SortedField...)}/{@link #noSort()} wins.
      * @return this builder
+     * @see Builder#sortBy(SortedField...)
      */
     public Builder noSort() {
       instance.noSort = true;
+      instance.sortByFields = null;
       return this;
     }
 

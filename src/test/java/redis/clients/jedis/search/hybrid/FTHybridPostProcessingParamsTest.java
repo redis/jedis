@@ -95,7 +95,7 @@ public class FTHybridPostProcessingParamsTest {
   }
 
   @Nested
-  class ValidationTests {
+  class LoadValidationTests {
 
     @Test
     public void loadNullThrowsException() {
@@ -207,6 +207,133 @@ public class FTHybridPostProcessingParamsTest {
       assertEquals(RawableFactory.from(2), iter.next());
       assertEquals(RawableFactory.from("@field1"), iter.next());
       assertEquals(RawableFactory.from("@field2"), iter.next());
+    }
+  }
+
+  @Nested
+  class SortByTests {
+
+    @Test
+    public void sortByWithSingleField() {
+      FTHybridPostProcessingParams params = builder.sortBy(SortedField.asc("@price")).build();
+
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID);
+      params.addParams(args);
+
+      // Expected: FT.HYBRID SORTBY 2 @price ASC
+      Iterator<Rawable> iter = args.iterator();
+      assertEquals(SearchProtocol.SearchCommand.HYBRID, iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.SORTBY, iter.next());
+      assertEquals(RawableFactory.from(2), iter.next()); // 1 field * 2 = 2
+      assertEquals(RawableFactory.from("@price"), iter.next());
+      assertEquals(RawableFactory.from("ASC"), iter.next());
+    }
+
+    @Test
+    public void sortByWithMultipleFields() {
+      FTHybridPostProcessingParams params = builder
+          .sortBy(SortedField.asc("@price"), SortedField.desc("@rating"), SortedField.asc("@brand"))
+          .build();
+
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID);
+      params.addParams(args);
+
+      // Expected: FT.HYBRID SORTBY 6 @price ASC @rating DESC @brand ASC
+      Iterator<Rawable> iter = args.iterator();
+      assertEquals(SearchProtocol.SearchCommand.HYBRID, iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.SORTBY, iter.next());
+      assertEquals(RawableFactory.from(6), iter.next()); // 3 fields * 2 = 6
+      assertEquals(RawableFactory.from("@price"), iter.next());
+      assertEquals(RawableFactory.from("ASC"), iter.next());
+      assertEquals(RawableFactory.from("@rating"), iter.next());
+      assertEquals(RawableFactory.from("DESC"), iter.next());
+      assertEquals(RawableFactory.from("@brand"), iter.next());
+      assertEquals(RawableFactory.from("ASC"), iter.next());
+    }
+
+    @Test
+    public void sortByWithLoadAndLimit() {
+      FTHybridPostProcessingParams params = builder.load("price", "rating")
+          .sortBy(SortedField.desc("@price")).limit(Limit.of(0, 10)).build();
+
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID);
+      params.addParams(args);
+
+      // Expected: FT.HYBRID LOAD 2 @price @rating SORTBY 2 @price DESC LIMIT 0 10
+      Iterator<Rawable> iter = args.iterator();
+      assertEquals(SearchProtocol.SearchCommand.HYBRID, iter.next());
+      assertEquals(LOAD, iter.next());
+      assertEquals(RawableFactory.from(2), iter.next());
+      assertEquals(RawableFactory.from("@price"), iter.next());
+      assertEquals(RawableFactory.from("@rating"), iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.SORTBY, iter.next());
+      assertEquals(RawableFactory.from(2), iter.next());
+      assertEquals(RawableFactory.from("@price"), iter.next());
+      assertEquals(RawableFactory.from("DESC"), iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.LIMIT, iter.next());
+      assertEquals(RawableFactory.from(0), iter.next());
+      assertEquals(RawableFactory.from(10), iter.next());
+    }
+
+    @Test
+    public void lastSortByCallWins() {
+      // When sortBy is called multiple times, the last call should win
+      FTHybridPostProcessingParams params = builder.sortBy(SortedField.asc("@price"))
+          .sortBy(SortedField.desc("@rating")).build();
+
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID);
+      params.addParams(args);
+
+      // Expected: FT.HYBRID SORTBY 2 @rating DESC (only the last sortBy)
+      Iterator<Rawable> iter = args.iterator();
+      assertEquals(SearchProtocol.SearchCommand.HYBRID, iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.SORTBY, iter.next());
+      assertEquals(RawableFactory.from(2), iter.next());
+      assertEquals(RawableFactory.from("@rating"), iter.next());
+      assertEquals(RawableFactory.from("DESC"), iter.next());
+    }
+
+    @Test
+    public void lastSortByNoSortCallWins() {
+      // When both sortBy and noSort are set, noSort should take precedence
+      FTHybridPostProcessingParams params = builder.sortBy(SortedField.asc("@price")).noSort()
+          .build();
+
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID);
+      params.addParams(args);
+
+      // Expected: FT.HYBRID NOSORT (sortBy should be ignored)
+      Iterator<Rawable> iter = args.iterator();
+      assertEquals(SearchProtocol.SearchCommand.HYBRID, iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.NOSORT, iter.next());
+      assertFalse(iter.hasNext());
+    }
+
+    @Test
+    public void lastNoSortSortByCallWins() {
+      // When both sortBy and noSort are set, noSort should take precedence
+      FTHybridPostProcessingParams params = builder.noSort().sortBy(SortedField.asc("@price"))
+          .build();
+
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.HYBRID);
+      params.addParams(args);
+
+      // Expected: FT.HYBRID NOSORT (sortBy should be ignored)
+      Iterator<Rawable> iter = args.iterator();
+      assertEquals(SearchProtocol.SearchCommand.HYBRID, iter.next());
+      assertEquals(SearchProtocol.SearchKeyword.SORTBY, iter.next());
+      assertEquals(RawableFactory.from(2), iter.next());
+      assertEquals(RawableFactory.from("@price"), iter.next());
+      assertEquals(RawableFactory.from("ASC"), iter.next());
+      assertFalse(iter.hasNext());
+    }
+
+    @Test
+    public void sortByWithEmptyArrayThrowsException() {
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        builder.sortBy((SortedField[]) null);
+      });
+      assertEquals("Sort by fields must not be null", exception.getMessage());
     }
   }
 

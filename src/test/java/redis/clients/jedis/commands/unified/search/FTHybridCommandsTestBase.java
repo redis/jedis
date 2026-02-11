@@ -490,7 +490,9 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
    * each scorer from {@link Scorers} to ensure proper integration.
    */
   @Nested
+  @Tag("integration")
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @SinceRedisVersion("8.4.0")
   class SupportedScorersTest {
 
     /**
@@ -543,6 +545,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
    */
   @Nested
   @Tag("integration")
+  @SinceRedisVersion("8.4.0")
   class HybridResultPopulationTest {
 
     /**

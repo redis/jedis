@@ -99,43 +99,38 @@ public class FTHybridPostProcessingParamsTest {
 
     @Test
     public void loadNullThrowsException() {
-      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-        builder.load((String[]) null);
-      });
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> builder.load((String[]) null));
       assertEquals("Fields must not be null", exception.getMessage());
     }
 
     @Test
     public void loadEmptyArrayThrowsException() {
-      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-        builder.load(new String[0]);
-      });
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> builder.load(new String[0]));
       assertEquals("At least one field is required", exception.getMessage());
     }
 
     @Test
     public void loadWithWildcardThrowsException() {
-      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-        builder.load("*");
-      });
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> builder.load("*"));
       assertEquals("Cannot use '*' in load(). Use loadAll() instead to load all fields.",
         exception.getMessage());
     }
 
     @Test
     public void loadWithWildcardMixedWithFieldsThrowsException() {
-      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-        builder.load("field1", "*", "field2");
-      });
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> builder.load("field1", "*", "field2"));
       assertEquals("Cannot use '*' in load(). Use loadAll() instead to load all fields.",
         exception.getMessage());
     }
 
     @Test
     public void loadWithNullFieldThrowsException() {
-      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-        builder.load("field1", null, "field2");
-      });
+      IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> builder.load("field1", null, "field2"));
       assertEquals("Field names cannot be null", exception.getMessage());
     }
 

@@ -32,8 +32,8 @@ public class HybridResult {
       List<String> warnings) {
     this.totalResults = totalResults;
     this.executionTime = executionTime;
-    this.documents = documents != null ? documents : new ArrayList<>();
-    this.warnings = warnings;
+    this.documents = documents != null ? documents : Collections.emptyList();
+    this.warnings = warnings != null ? warnings : Collections.emptyList();
   }
 
   /**
@@ -61,21 +61,7 @@ public class HybridResult {
    * @return a read-only view of all warnings reported by the server
    */
   public List<String> getWarnings() {
-    return warnings;
-  }
-
-  /**
-   * @return the number of documents
-   */
-  public int size() {
-    return documents.size();
-  }
-
-  /**
-   * @return {@code true} if no documents were returned
-   */
-  public boolean isEmpty() {
-    return documents.isEmpty();
+    return Collections.unmodifiableList(warnings);
   }
 
   @Override

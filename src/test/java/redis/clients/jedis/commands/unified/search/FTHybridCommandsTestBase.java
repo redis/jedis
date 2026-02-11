@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.nio.ByteBuffer;
@@ -531,6 +532,123 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
       // Verify score is valid and within expected range
       double scoreValue = Double.parseDouble(firstDoc.getString("text_score"));
       assertThat(scoreValue, closeTo(expectedScore, tolerance));
+    }
+  }
+
+  // ========== HybridResult Population Tests ==========
+
+  /**
+   * Verify that HybridResult is properly populated from FT.HYBRID command responses. Tests all
+   * HybridResult fields and Document structure in various scenarios.
+   */
+  @Nested
+  @Tag("integration")
+  class HybridResultPopulationTest {
+
+    /**
+     * Verify : This command will only return document IDs (keyid) and scores to which the user has
+     * read access. To retrieve entire documents, use projections with LOAD * or LOAD <count> field
+     */
+    @Test
+    public void verifyHybridResultBasicFieldsNoLoad() {
+      FTHybridParams hybridArgs = FTHybridParams.builder()
+          .search(FTHybridSearchParams.builder().query("@id:1").build())
+          .vectorSearch(FTHybridVectorParams.builder().filter("@id:1").field("@image_embedding")
+              .vector("vector").method(FTHybridVectorParams.Knn.of(5)).build())
+          .param("vector", queryVector).build();
+
+      HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+
+      // Verify HybridResult is not null
+      assertThat(reply, notNullValue());
+
+      // Verify totalResults is populated and > 0
+      assertThat(reply.getTotalResults(), equalTo(1L));
+
+      // Verify executionTime is populated and reasonable
+      assertThat(reply.getExecutionTime(), greaterThan(0.0));
+
+      // Verify documents list is populated
+      assertThat(reply.getDocuments(), notNullValue());
+      assertThat(reply.getDocuments(), not(empty()));
+
+      Document doc = reply.getDocuments().get(0);
+      assertThat(doc.getId(), equalTo("product:hybrid:1"));
+      assertThat(doc.hasProperty("title"), equalTo(false));
+      assertThat(doc.getScore(), closeTo(0.03, 0.01));
+
+      // Verify warnings list is not null (may be empty)
+      assertThat(reply.getWarnings(), notNullValue());
+      assertThat(reply.getWarnings(), empty());
+    }
+
+    /**
+     * Verify : This command will only return document IDs (keyid) and scores to which the user has
+     * read access. To retrieve entire documents, use projections with LOAD * or LOAD <count> field
+     */
+    @Test
+    public void verifyHybridResultBasicFieldsWithLoadAll() {
+      // Execute a simple hybrid search with known results
+      FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder().loadAll()
+          .build();
+
+      FTHybridParams hybridArgs = FTHybridParams.builder()
+          .search(FTHybridSearchParams.builder().query("@id:1").build())
+          .vectorSearch(FTHybridVectorParams.builder().filter("@id:1").field("@image_embedding")
+              .vector("vector").method(FTHybridVectorParams.Knn.of(5)).build())
+          .combine(Combiners.linear().alpha(1).beta(0)).postProcessing(postProcessing)
+          .param("vector", queryVector).build();
+
+      HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+
+      // Verify HybridResult is not null
+      assertThat(reply, notNullValue());
+
+      // Verify totalResults is populated and > 0
+      assertThat(reply.getTotalResults(), equalTo(1L));
+
+      // Verify executionTime is populated and reasonable
+      assertThat(reply.getExecutionTime(), greaterThan(0.0));
+
+      // Verify documents list is populated
+      assertThat(reply.getDocuments(), notNullValue());
+      assertThat(reply.getDocuments(), not(empty()));
+
+      Document doc = reply.getDocuments().get(0);
+      assertThat(doc.getId(), nullValue());
+      assertThat(doc.hasProperty("title"), equalTo(true));
+      assertThat(doc.get("title"), equalTo("Apple iPhone 15 Pro smartphone with advanced camera"));
+      assertThat(doc.getScore(), closeTo(0.5, 0.5));
+
+      // Verify warnings list is not null (may be empty)
+      assertThat(reply.getWarnings(), notNullValue());
+      assertThat(reply.getWarnings(), empty());
+    }
+
+    @Test
+    public void verifyHybridResultWithEmptyResults() {
+      // Execute hybrid search with filter that matches no documents
+      FTHybridParams hybridArgs = FTHybridParams.builder()
+          .search(FTHybridSearchParams.builder().query("@category:{nonexistent}").build())
+          .vectorSearch(
+            FTHybridVectorParams.builder().filter("@id:nonexistent").field("@image_embedding")
+                .vector("vector").method(FTHybridVectorParams.Knn.of(5)).build())
+          .param("vector", queryVector).build();
+
+      HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+
+      // Verify HybridResult is not null even with empty results
+      assertThat(reply, notNullValue());
+
+      // Verify totalResults is 0
+      assertThat(reply.getTotalResults(), equalTo(0L));
+
+      // Verify documents list is empty
+      assertThat(reply.getDocuments(), notNullValue());
+      assertThat(reply.getDocuments(), empty());
+
+      // Verify executionTime is still populated (>= 0.0)
+      assertThat(reply.getExecutionTime(), greaterThanOrEqualTo(0.0));
     }
   }
 }

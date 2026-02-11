@@ -67,8 +67,10 @@ public class FTHybridParams implements IParams {
      */
     public FTHybridParams build() {
       // Validate that both SEARCH and VSIM are configured (per FT.HYBRID requirements)
-      JedisAsserts.isTrue(!instance.searchArgs.isEmpty(), "At least one SEARCH clause must be configured");
-      JedisAsserts.isTrue(!instance.vectorArgs.isEmpty(), "At least one VSIM clause must be configured");
+      JedisAsserts.isTrue(!instance.searchArgs.isEmpty(),
+        "At least one SEARCH clause must be configured");
+      JedisAsserts.isTrue(!instance.vectorArgs.isEmpty(),
+        "At least one VSIM clause must be configured");
 
       return instance;
     }

@@ -1,6 +1,7 @@
 package redis.clients.jedis.search;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.LIMIT;
@@ -8,6 +9,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.LIMIT;
 /**
  * LIMIT operation for search commands. Limits the number of results returned.
  */
+@Experimental
 public class Limit implements IParams {
 
   private final int offset;

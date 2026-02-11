@@ -1,6 +1,7 @@
 package redis.clients.jedis.search;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.FILTER;
@@ -8,6 +9,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.FILTER;
 /**
  * FILTER operation for search commands. Filters results based on an expression.
  */
+@Experimental
 public class Filter implements IParams {
 
   private final String expression;

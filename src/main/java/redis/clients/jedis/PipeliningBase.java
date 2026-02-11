@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
@@ -3823,6 +3824,7 @@ public abstract class PipeliningBase
   }
 
   @Override
+  @Experimental
   public Response<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
     return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }

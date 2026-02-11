@@ -1,5 +1,7 @@
 package redis.clients.jedis.search;
 
+import redis.clients.jedis.annots.Experimental;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
  *
  * @see Combiner
  */
+@Experimental
 public final class Combiners {
 
   private Combiners() {

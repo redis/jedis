@@ -1,5 +1,7 @@
 package redis.clients.jedis.search;
 
+import redis.clients.jedis.annots.Experimental;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -7,6 +9,7 @@ import java.util.List;
  * Factory class for creating {@link Scorer} instances for text search.
  * @see Scorer
  */
+@Experimental
 public class Scorers {
 
   private static Scorer simpleScorer(String name) {

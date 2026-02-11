@@ -3783,6 +3783,7 @@ public class CommandObjects {
         .add(fieldName), BuilderFactory.STRING_SET);
   }
 
+  @Experimental
   public final CommandObject<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.HYBRID, indexName)
         .addParams(hybridParams), HybridResult.HYBRID_RESULT_BUILDER);

@@ -1,6 +1,7 @@
 package redis.clients.jedis.search;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.YIELD_SCOR
  * {@link Combiners}.
  * @see Combiners
  */
+@Experimental
 public abstract class Combiner implements IParams {
 
   private final String name;

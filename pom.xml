@@ -564,6 +564,9 @@
 						<include>**/search/Scorers.java</include>
 						<include>**/search/hybrid/*.java</include>
 						<include>**/search/FTHybrid*.java</include>
+						<include>**/*Hotkeys*.java</include>
+						<include>**/TestDataUtil*.java</include>
+						<include>**/*JedisClientConfig*.java</include>
 					</includes>
 				</configuration>
 				<executions>

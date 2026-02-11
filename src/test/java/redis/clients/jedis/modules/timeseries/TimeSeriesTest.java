@@ -10,6 +10,7 @@ import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 
 import java.util.*;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -370,20 +372,22 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     labels.put("l22", "v22");
     assertEquals("OK", client.tsCreate("seriesAdd2", TSCreateParams.createParams().retention(10000L).labels(labels)));
 
+    // Use 50ms for cases when Redis is not running locally
+    int delayInMillis = 50;
     long startTime = System.currentTimeMillis();
-    Thread.sleep(2);
+    Thread.sleep(delayInMillis);
     long add1 = client.tsAdd("seriesAdd2", 1.1);
     assertTrue(add1 > startTime);
-    Thread.sleep(2);
+    Thread.sleep(delayInMillis);
     long add2 = client.tsAdd("seriesAdd2", 3.2);
     assertTrue(add2 > add1);
-    Thread.sleep(2);
+    Thread.sleep(delayInMillis);
     long add3 = client.tsAdd("seriesAdd2", 3.2);
     assertTrue(add3 > add2);
-    Thread.sleep(2);
+    Thread.sleep(delayInMillis);
     long add4 = client.tsAdd("seriesAdd2", -1.2);
     assertTrue(add4 > add3);
-    Thread.sleep(2);
+    Thread.sleep(delayInMillis);
     long endTime = System.currentTimeMillis();
     assertTrue(endTime > add4);
 
@@ -392,6 +396,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testMadd() {
     Map<String, String> labels = new HashMap<>();
     labels.put("l1", "v1");

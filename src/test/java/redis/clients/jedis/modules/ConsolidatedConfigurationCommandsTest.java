@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import java.util.Collections;
 import org.hamcrest.Matchers;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @SinceRedisVersion(value = "7.9.0")
 @ParameterizedClass
@@ -55,6 +57,7 @@ public class ConsolidatedConfigurationCommandsTest extends RedisModuleCommandsTe
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void getSearchConfigSettingTest() {
     assertThat(jedis.configGet("search-timeout"), aMapWithSize(1));
   }

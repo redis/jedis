@@ -23,11 +23,13 @@ public abstract class Scorer implements IParams {
     return name;
   }
 
-  protected abstract List<Object> getOwnArgs();
-
   @Override
   public final void addParams(CommandArguments args) {
     args.add(name);
-    getOwnArgs().forEach(args::add);
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

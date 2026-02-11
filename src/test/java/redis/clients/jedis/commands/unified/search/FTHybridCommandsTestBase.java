@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -17,8 +18,15 @@ import java.util.Map;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
@@ -26,6 +34,7 @@ import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.FTCreateParams;
 import redis.clients.jedis.search.IndexDataType;
+import redis.clients.jedis.search.Scorer;
 import redis.clients.jedis.search.Scorers;
 import redis.clients.jedis.search.aggr.Group;
 import redis.clients.jedis.search.aggr.Reducers;
@@ -89,10 +98,11 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     vectorAttrs.put("DISTANCE_METRIC", "COSINE");
 
     assertOK(jedis.ftCreate(INDEX_NAME,
-      FTCreateParams.createParams().on(IndexDataType.HASH).prefix(PREFIX), TextField.of("title"),
-      TagField.of("category"), TagField.of("brand"), NumericField.of("price"),
-      NumericField.of("rating"), VectorField.builder().fieldName("image_embedding")
-          .algorithm(VectorField.VectorAlgorithm.HNSW).attributes(vectorAttrs).build()));
+      FTCreateParams.createParams().on(IndexDataType.HASH).prefix(PREFIX), TextField.of("id"),
+      TextField.of("title"), TagField.of("category"), TagField.of("brand"),
+      NumericField.of("price"), NumericField.of("rating"),
+      VectorField.builder().fieldName("image_embedding").algorithm(VectorField.VectorAlgorithm.HNSW)
+          .attributes(vectorAttrs).build()));
   }
 
   private void createSampleProducts() {
@@ -129,6 +139,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
   private void createProduct(String id, String title, String category, String brand, String price,
       String rating, float[] embedding) {
     Map<byte[], byte[]> fields = new HashMap<>();
+    fields.put("id".getBytes(), id.getBytes());
     fields.put("title".getBytes(), title.getBytes());
     fields.put("category".getBytes(), category.getBytes());
     fields.put("brand".getBytes(), brand.getBytes());
@@ -470,5 +481,57 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     Document firstResult = reply.getDocuments().get(0);
     assertThat(firstResult.hasProperty("title"), equalTo(true));
     assertThat(firstResult.hasProperty("price"), equalTo(true));
+  }
+
+  // ========== Scorer Tests ==========
+
+  /**
+   * Nested test class to verify all supported scorers work correctly with FT.HYBRID command. Tests
+   * each scorer from {@link Scorers} to ensure proper integration.
+   */
+  @Nested
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  class SupportedScorersTest {
+
+    /**
+     * Provides scorer instances and their expected scores for parameterized testing. Sccore values
+     * might differ between cluster and standalone modes. To perform basic verification use same
+     * values for both cluster/standalone with tolerance.
+     * @return Stream of Arguments containing (Scorer, expectedScore, tolerance)
+     */
+    Stream<Arguments> scorerProvider() {
+      return Stream.of(Arguments.of(Scorers.tfidf(), 2.5, 0.5),
+        Arguments.of(Scorers.tfidfDocnorm(), 0.2, 0.5), Arguments.of(Scorers.bm25stdNorm(), 1, 0.5),
+        Arguments.of(Scorers.bm25std(), 1.3, 0.5), Arguments.of(Scorers.dismax(), 1.0, 0.5),
+        Arguments.of(Scorers.docscore(), 1.0, 0.5), Arguments.of(Scorers.hamming(), 0.0, 0.5));
+    }
+
+    @ParameterizedTest(name = "{index}: {0}")
+    @MethodSource("scorerProvider")
+    public void testScorer(Scorer scorer, double expectedScore, double tolerance) {
+      // Create hybrid search with the provided scorer
+      FTHybridParams hybridArgs = FTHybridParams.builder()
+          .search(FTHybridSearchParams.builder().query("@id:1").scorer(scorer)
+              .scoreAlias("text_score").build())
+          .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
+              .filter("@id:1").method(FTHybridVectorParams.Knn.of(5)).scoreAlias("vector_score")
+              .build())
+          .param("vector", queryVector).build();
+
+      // Execute hybrid search
+      HybridResult result = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+
+      // Verify results are returned
+      assertThat(result, notNullValue());
+      assertThat(result.getTotalResults(), equalTo(1L));
+
+      // Verify scorer is working - text_score should be present
+      Document firstDoc = result.getDocuments().get(0);
+      assertThat(firstDoc.hasProperty("text_score"), equalTo(true));
+
+      // Verify score is valid and within expected range
+      double scoreValue = Double.parseDouble(firstDoc.getString("text_score"));
+      assertThat(scoreValue, closeTo(expectedScore, tolerance));
+    }
   }
 }

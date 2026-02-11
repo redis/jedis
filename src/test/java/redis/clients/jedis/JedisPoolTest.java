@@ -31,7 +31,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.STANDALONE0),
+    @ResourceLock(value = Endpoints.STANDALONE1),
+    @ResourceLock(value = Endpoints.STANDALONE7_WITH_LFU_POLICY)
+})
 public class JedisPoolTest {
 
   private static EndpointConfig endpointStandalone0;
@@ -43,8 +51,8 @@ public class JedisPoolTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    endpointStandalone0 = Endpoints.getRedisEndpoint("standalone0");
-    endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+    endpointStandalone0 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
+    endpointStandalone1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
   }
 
   @BeforeEach
@@ -67,7 +75,7 @@ public class JedisPoolTest {
 
   @Test
   public void checkResourceWithConfig() {
-    try (JedisPool pool = new JedisPool(Endpoints.getRedisEndpoint("standalone7-with-lfu-policy").getHostAndPort(),
+    try (JedisPool pool = new JedisPool(Endpoints.getRedisEndpoint(Endpoints.STANDALONE7_WITH_LFU_POLICY).getHostAndPort(),
         DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())) {
 
       try (Jedis jedis = pool.getResource()) {

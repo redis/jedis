@@ -19,10 +19,16 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 @Tag("integration")
+@ResourceLocks({
+    @ResourceLock(value = Endpoints.STANDALONE7_WITH_LFU_POLICY),
+    @ResourceLock(value = Endpoints.STANDALONE1)
+})
 public class RedisClientTest {
 
   private static EndpointConfig endpointStandalone7;
@@ -30,8 +36,8 @@ public class RedisClientTest {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    endpointStandalone7 = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
-    endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+    endpointStandalone7 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE7_WITH_LFU_POLICY);
+    endpointStandalone1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
   }
 
   @Test

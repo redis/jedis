@@ -19,6 +19,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,8 @@ import redis.clients.jedis.RedisCredentials;
 import redis.clients.jedis.scenario.RestEndpointUtil;
 
 @Tags({ @Tag("failover"), @Tag("scenario") })
+@ResourceLocks({ @ResourceLock(value = Endpoints.RE_ACTIVE_ACTIVE),
+    @ResourceLock(value = Endpoints.RE_STANDALONE) })
 public class RedisRestAPIIT {
   public static class SSLBypass {
     private static SSLSocketFactory originalSSLSocketFactory;
@@ -86,8 +90,8 @@ public class RedisRestAPIIT {
   @BeforeAll
   public static void beforeClass() {
     try {
-      crdb = Endpoints.getRedisEndpoint("re-active-active");
-      db1 = Endpoints.getRedisEndpoint("re-standalone");
+      crdb = Endpoints.getRedisEndpoint(Endpoints.RE_ACTIVE_ACTIVE);
+      db1 = Endpoints.getRedisEndpoint(Endpoints.RE_STANDALONE);
       restAPIEndpoint = RestEndpointUtil.getRestAPIEndpoint(crdb);
       credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
       SSLBypass.disableSSLVerification();

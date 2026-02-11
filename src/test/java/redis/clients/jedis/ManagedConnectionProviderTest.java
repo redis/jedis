@@ -11,14 +11,17 @@ import redis.clients.jedis.util.IOUtils;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0)
 public class ManagedConnectionProviderTest {
 
   private Connection connection;
 
   @BeforeEach
   public void setUp() {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
     connection = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
   }
 

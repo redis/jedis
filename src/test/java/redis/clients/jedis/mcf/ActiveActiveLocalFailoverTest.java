@@ -41,7 +41,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.ResourceLocks;
+
 @Tags({ @Tag("failover"), @Tag("integration") })
+@ResourceLocks({ @ResourceLock(value = Endpoints.REDIS_FAILOVER_1),
+    @ResourceLock(value = Endpoints.REDIS_FAILOVER_2) })
 public class ActiveActiveLocalFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(ActiveActiveLocalFailoverTest.class);
 
@@ -54,8 +59,8 @@ public class ActiveActiveLocalFailoverTest {
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
-    endpoint1 = Endpoints.getRedisEndpoint("redis-failover-1");
-    endpoint2 = Endpoints.getRedisEndpoint("redis-failover-2");
+    endpoint1 = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_1);
+    endpoint2 = Endpoints.getRedisEndpoint(Endpoints.REDIS_FAILOVER_2);
     if (tp.getProxyOrNull("redis-1") != null) {
       tp.getProxy("redis-1").delete();
     }

@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -21,6 +22,7 @@ import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
  */
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@ResourceLock(value = Endpoints.STANDALONE0_ACL)
 public class ACLJedisTest extends JedisCommandsTestBase {
 
   protected static EndpointConfig endpoint;
@@ -30,7 +32,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
    */
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-acl");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL);
     assumeTrue(getRedisVersion(endpoint).isGreaterThanOrEqualTo(RedisVersion.of("6.0.0")),
         "Not running ACL test on this version of Redis");
   }

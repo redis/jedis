@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.util.TlsUtil;
 
 import java.nio.file.Path;
@@ -12,6 +13,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE0_TLS)
+@ResourceLock(value = Endpoints.STANDALONE0_ACL_TLS)
 public class SSLOptionsRedisClientTest {
 
   protected static EndpointConfig endpoint;
@@ -23,8 +26,8 @@ public class SSLOptionsRedisClientTest {
 
   @BeforeAll
   public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
-    aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
+    endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_TLS);
+    aclEndpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0_ACL_TLS);
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
         aclEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,

@@ -10,7 +10,7 @@ import redis.clients.jedis.Endpoints;
 
 public class GetSetBenchmark {
 
-  private static EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE0);
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {

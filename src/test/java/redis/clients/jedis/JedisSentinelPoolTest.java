@@ -14,10 +14,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 @Tag("integration")
+@ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_1)
+@ResourceLock(value = Endpoints.SENTINEL_STANDALONE2_3)
 public class JedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "mymaster";
@@ -29,8 +32,8 @@ public class JedisSentinelPoolTest {
 
   @BeforeAll
   public static void prepare() {
-    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort();
-    sentinel2 = Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort();
+    sentinel1 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_1).getHostAndPort();
+    sentinel2 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE2_3).getHostAndPort();
   }
 
   @BeforeEach

@@ -20,6 +20,7 @@ import java.util.Map;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -32,6 +33,7 @@ import redis.clients.jedis.util.SafeEncoder;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ResourceLock(value = Endpoints.STANDALONE1)
 public class JedisTest extends JedisCommandsTestBase {
 
   public JedisTest(RedisProtocol protocol) {
@@ -175,7 +177,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUrl() {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
       j.select(2);
@@ -191,7 +193,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUri() throws URISyntaxException {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
       j.select(2);
@@ -207,7 +209,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUrlOnResp3() {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -224,7 +226,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithUriOnResp3() throws URISyntaxException {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone1");
+    EndpointConfig endpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -254,7 +256,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    EndpointConfig endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+    EndpointConfig endpointStandalone1 = Endpoints.getRedisEndpoint(Endpoints.STANDALONE1);
 
     try (Jedis j1 = new Jedis(endpointStandalone1.getURI().toString())) {
       j1.auth(endpointStandalone1.getPassword());

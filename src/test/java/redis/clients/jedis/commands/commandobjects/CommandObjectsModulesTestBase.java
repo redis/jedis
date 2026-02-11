@@ -9,7 +9,7 @@ import redis.clients.jedis.RedisProtocol;
 public abstract class CommandObjectsModulesTestBase extends CommandObjectsTestBase {
 
   public CommandObjectsModulesTestBase(RedisProtocol protocol) {
-    super(protocol, Endpoints.getRedisEndpoint("modules-docker"));
+    super(protocol, Endpoints.getRedisEndpoint(Endpoints.MODULES_DOCKER));
   }
 
 }

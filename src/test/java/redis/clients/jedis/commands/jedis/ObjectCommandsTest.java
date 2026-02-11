@@ -33,7 +33,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   @BeforeAll
   public static void prepareEndpoints() {
-    lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
+    lfuEndpoint = Endpoints.getRedisEndpoint(Endpoints.STANDALONE7_WITH_LFU_POLICY);
   }
 
   public ObjectCommandsTest(RedisProtocol protocol) {

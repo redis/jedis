@@ -13,6 +13,7 @@ import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TlsUtil;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 @Tag("integration")
+@ResourceLock(value = Endpoints.CLUSTER_UNBOUND_TLS)
 public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
@@ -55,7 +57,7 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
 
   @BeforeAll
   public static void prepare() {
-    tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
+    tlsEndpoint = Endpoints.getRedisEndpoint(Endpoints.CLUSTER_UNBOUND_TLS);
     List<Path> trustedCertLocation = Collections.singletonList(tlsEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
   }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -44,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Test class demonstrating SSL configuration for LagAwareStrategy
  */
 @Tags({ @Tag("scenario") })
+@ResourceLock(value = Endpoints.RE_ACTIVE_ACTIVE)
 public class LagAwareStrategySslIT {
   private static EndpointConfig crdb;
   private static Endpoint restEndpoint;
@@ -62,7 +64,7 @@ public class LagAwareStrategySslIT {
   @BeforeAll
   public static void beforeClass() {
 
-    crdb = Endpoints.getRedisEndpoint("re-active-active");
+    crdb = Endpoints.getRedisEndpoint(Endpoints.RE_ACTIVE_ACTIVE);
     restEndpoint = RestEndpointUtil.getRestAPIEndpoint(crdb);
     credentialsSupplier = () -> new DefaultRedisCredentials("test@redis.com", "test123");
     try {

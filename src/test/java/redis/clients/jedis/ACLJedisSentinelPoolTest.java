@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisVersionCondition;
@@ -28,6 +29,8 @@ import redis.clients.jedis.util.RedisVersionCondition;
  */
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
+@ResourceLock(value = Endpoints.SENTINEL_STANDALONE0)
+@ResourceLock(value = Endpoints.STANDALONE0)
 public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
@@ -38,11 +41,11 @@ public class ACLJedisSentinelPoolTest {
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint("standalone0"));
+      () -> Endpoints.getRedisEndpoint(Endpoints.STANDALONE0));
 
   @BeforeAll
   public static void prepareEndpoint() {
-    sentinel1 = Endpoints.getRedisEndpoint("sentinel-standalone0").getHostAndPort();
+    sentinel1 = Endpoints.getRedisEndpoint(Endpoints.SENTINEL_STANDALONE0).getHostAndPort();
   }
 
   @BeforeEach

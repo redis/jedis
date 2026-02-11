@@ -4,6 +4,7 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.Scorer;
+import redis.clients.jedis.util.JedisAsserts;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
@@ -39,9 +40,8 @@ public class FTHybridSearchParams implements IParams {
      * @return the configured arguments
      */
     public FTHybridSearchParams build() {
-      if (instance.query == null) {
-        throw new IllegalArgumentException("Query is required for SEARCH clause");
-      }
+      JedisAsserts.notNull(instance.query, "Query must not be null");
+
       return instance;
     }
 

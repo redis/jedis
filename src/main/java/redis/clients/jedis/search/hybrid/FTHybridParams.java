@@ -5,6 +5,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.Combiner;
 import redis.clients.jedis.search.Combiners;
+import redis.clients.jedis.util.JedisAsserts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,12 +67,9 @@ public class FTHybridParams implements IParams {
      */
     public FTHybridParams build() {
       // Validate that both SEARCH and VSIM are configured (per FT.HYBRID requirements)
-      if (instance.searchArgs.isEmpty()) {
-        throw new IllegalArgumentException("At least one SEARCH clause must be configured");
-      }
-      if (instance.vectorArgs.isEmpty()) {
-        throw new IllegalArgumentException("At least one VSIM clause must be configured");
-      }
+      JedisAsserts.isTrue(!instance.searchArgs.isEmpty(), "At least one SEARCH clause must be configured");
+      JedisAsserts.isTrue(!instance.vectorArgs.isEmpty(), "At least one VSIM clause must be configured");
+
       return instance;
     }
 
@@ -81,9 +79,8 @@ public class FTHybridParams implements IParams {
      * @return this builder
      */
     public Builder search(FTHybridSearchParams searchArgs) {
-      if (searchArgs == null) {
-        throw new IllegalArgumentException("Search args must not be null");
-      }
+      JedisAsserts.notNull(searchArgs, "Search args must not be null");
+
       instance.searchArgs.add(searchArgs);
       return this;
     }
@@ -94,9 +91,8 @@ public class FTHybridParams implements IParams {
      * @return this builder
      */
     public Builder vectorSearch(FTHybridVectorParams vectorArgs) {
-      if (vectorArgs == null) {
-        throw new IllegalArgumentException("Vector args must not be null");
-      }
+      JedisAsserts.notNull(vectorArgs, "Vector args must not be null");
+
       instance.vectorArgs.add(vectorArgs);
       return this;
     }
@@ -108,9 +104,8 @@ public class FTHybridParams implements IParams {
      * @see Combiners
      */
     public Builder combine(Combiner combiner) {
-      if (combiner == null) {
-        throw new IllegalArgumentException("Combiner must not be null");
-      }
+      JedisAsserts.notNull(combiner, "Combiner must not be null");
+
       instance.combiner = combiner;
       return this;
     }
@@ -121,9 +116,8 @@ public class FTHybridParams implements IParams {
      * @return this builder
      */
     public Builder postProcessing(FTHybridPostProcessingParams postProcessingArgs) {
-      if (postProcessingArgs == null) {
-        throw new IllegalArgumentException("PostProcessingParams must not be null");
-      }
+      JedisAsserts.notNull(postProcessingArgs, "PostProcessingParams must not be null");
+
       instance.postProcessingArgs = postProcessingArgs;
       return this;
     }
@@ -138,12 +132,9 @@ public class FTHybridParams implements IParams {
      * @return this builder
      */
     public Builder param(String name, Object value) {
-      if (name == null) {
-        throw new IllegalArgumentException("Parameter name must not be null");
-      }
-      if (value == null) {
-        throw new IllegalArgumentException("Parameter value must not be null");
-      }
+      JedisAsserts.notNull(name, "Parameter name must not be null");
+      JedisAsserts.notNull(value, "Parameter value must not be null");
+
       instance.params.put(name, value);
       return this;
     }

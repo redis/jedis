@@ -3,6 +3,7 @@ package redis.clients.jedis.search.hybrid;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.JedisAsserts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,15 +44,10 @@ public class FTHybridVectorParams implements IParams {
      * @return the configured arguments
      */
     public FTHybridVectorParams build() {
-      if (instance.field == null) {
-        throw new IllegalArgumentException("Field is required for VSIM clause");
-      }
-      if (instance.vector == null) {
-        throw new IllegalArgumentException("Vector is required for VSIM clause");
-      }
-      if (instance.method == null) {
-        throw new IllegalArgumentException("Method (KNN or RANGE) is required for VSIM clause");
-      }
+      JedisAsserts.notNull(instance.field, "Field is required for VSIM clause");
+      JedisAsserts.notNull(instance.vector, "Vector is required for VSIM clause");
+      JedisAsserts.notNull(instance.method, "Method (KNN or RANGE) is required for VSIM clause");
+
       return instance;
     }
 
@@ -92,9 +88,8 @@ public class FTHybridVectorParams implements IParams {
      * @return this builder
      */
     public Builder filter(String filter) {
-      if (filter == null) {
-        throw new IllegalArgumentException("Filter expression must not be null");
-      }
+      JedisAsserts.notNull(filter, "Filter expression must not be null");
+
       instance.filters.add(filter);
       return this;
     }

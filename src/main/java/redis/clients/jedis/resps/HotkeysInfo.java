@@ -23,7 +23,7 @@ public class HotkeysInfo implements Serializable {
   public static final String TRACKING_ACTIVE = "tracking-active";
   public static final String SAMPLE_RATIO = "sample-ratio";
   public static final String SELECTED_SLOTS = "selected-slots";
-  public static final String SAMPLED_COMMAND_SELECTED_SLOTS_US = "sampled-command-selected-slots-us";
+  public static final String SAMPLED_COMMANDS_SELECTED_SLOTS_US = "sampled-commands-selected-slots-us";
   public static final String ALL_COMMANDS_SELECTED_SLOTS_US = "all-commands-selected-slots-us";
   public static final String ALL_COMMANDS_ALL_SLOTS_US = "all-commands-all-slots-us";
   public static final String NET_BYTES_SAMPLED_COMMANDS_SELECTED_SLOTS = "net-bytes-sampled-commands-selected-slots";
@@ -88,9 +88,12 @@ public class HotkeysInfo implements Serializable {
   }
 
   /**
-   * Returns the selected slot ranges. Each element is an int array of [start, end] representing a
-   * slot range (inclusive).
-   * @return list of slot ranges, empty if all slots are selected
+   * Returns the selected slots. Each element is an int array that can be:
+   * <ul>
+   * <li>A single slot: {@code [slot]} (array with 1 element)</li>
+   * <li>A slot range: {@code [start, end]} (array with 2 elements, inclusive)</li>
+   * </ul>
+   * @return list of slot entries, empty if all slots are selected
    */
   public List<int[]> getSelectedSlots() {
     return selectedSlots;
@@ -172,8 +175,12 @@ public class HotkeysInfo implements Serializable {
   }
 
   /**
-   * Parse selected-slots which is an array of [start, end] ranges. Example: [[0, 16383]] means all
-   * slots.
+   * Parse selected-slots which is an array of slot entries. Each entry can be:
+   * <ul>
+   * <li>A single slot: [slot] (array with 1 element)</li>
+   * <li>A slot range: [start, end] (array with 2 elements)</li>
+   * </ul>
+   * Example: [[0, 2], [100]] means slots 0-2 (range) and slot 100 (single).
    */
   @SuppressWarnings("unchecked")
   private static List<int[]> parseSlotRanges(Object data) {
@@ -188,7 +195,12 @@ public class HotkeysInfo implements Serializable {
     for (Object item : list) {
       if (item instanceof List) {
         List<?> range = (List<?>) item;
-        if (range.size() == 2) {
+        if (range.size() == 1) {
+          // Single slot
+          int slot = LONG.build(range.get(0)).intValue();
+          result.add(new int[] { slot });
+        } else if (range.size() == 2) {
+          // Slot range
           int start = LONG.build(range.get(0)).intValue();
           int end = LONG.build(range.get(1)).intValue();
           result.add(new int[] { start, end });
@@ -252,7 +264,7 @@ public class HotkeysInfo implements Serializable {
             case SELECTED_SLOTS:
               selectedSlots = parseSlotRanges(value);
               break;
-            case SAMPLED_COMMAND_SELECTED_SLOTS_US:
+            case SAMPLED_COMMANDS_SELECTED_SLOTS_US:
               sampledCommandSelectedSlotsUs = LONG.build(value);
               break;
             case ALL_COMMANDS_SELECTED_SLOTS_US:
@@ -308,7 +320,7 @@ public class HotkeysInfo implements Serializable {
             case SELECTED_SLOTS:
               selectedSlots = parseSlotRanges(value);
               break;
-            case SAMPLED_COMMAND_SELECTED_SLOTS_US:
+            case SAMPLED_COMMANDS_SELECTED_SLOTS_US:
               sampledCommandSelectedSlotsUs = LONG.build(value);
               break;
             case ALL_COMMANDS_SELECTED_SLOTS_US:

@@ -7,7 +7,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Tag("integration")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = true)
 public class UnavailableConnectionTest {
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   private static final HostAndPort unavailableNode = new HostAndPort("localhost", 6400);
 

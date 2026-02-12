@@ -145,5 +145,5 @@ jobs:
           files: |
             ./target/surefire-reports/*.xml
             ./target/failsafe-reports/*.xml
-          flags: redis-version-${{ matrix.redis_version }}
+          flags: test-results-docker-${{ matrix.redis_version }}
           token: ${{ secrets.CODECOV_TOKEN }}

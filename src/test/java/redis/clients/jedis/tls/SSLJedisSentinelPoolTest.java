@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.tls;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
 
 @Tag("integration")

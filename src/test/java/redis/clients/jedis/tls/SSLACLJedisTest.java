@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.tls;
 
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
@@ -11,6 +11,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.util.TestEnvUtil;

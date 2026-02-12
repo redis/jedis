@@ -142,8 +142,6 @@ jobs:
         uses: codecov/test-results-action@v1
         with:
           fail_ci_if_error: false
-          files: |
-            ./target/surefire-reports/*.xml
-            ./target/failsafe-reports/*.xml
+          files: ./target/surefire-reports/TEST*,./target/failsafe-reports/TEST*
           flags: test-results-docker-${{ matrix.redis_version }}
           token: ${{ secrets.CODECOV_TOKEN }}

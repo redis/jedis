@@ -383,19 +383,20 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    * available.
    * @param statusTracker the status tracker to use for waiting on health check results
    * @return the first healthy database found, ordered by weight (highest first)
-   * @throws JedisConnectionException if initialization fails according to the policy
+   * @throws JedisConnectionException (or JedisValidationException in unlikely cases) if
+   *           initialization fails according to the policy
    */
   @VisibleForTesting
   Database waitForInitializationPolicy(StatusTracker statusTracker) {
     InitializationPolicy policy = multiDbConfig.getInitializationPolicy();
-    log.info("Waiting for initialization policy {} to complete for {} configured databases",
+    log.debug("Waiting for initialization policy {} to complete for {} configured databases",
       policy.getClass().getSimpleName(), databaseMap.size());
 
     // Evaluate immediately with the current statuses
     ConnectionInitializationContext ctx = new ConnectionInitializationContext(databaseMap,
         healthStatusManager);
     Decision decision = ctx.conformsTo(policy);
-    log.info("Initial policy evaluation: {} with context: {}", decision, ctx);
+    log.debug("Initial policy evaluation: {} with context: {}", decision, ctx);
 
     if (decision == Decision.FAIL) {
       throw new JedisConnectionException(
@@ -407,8 +408,6 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
         .sorted(Map.Entry.<Endpoint, Database> comparingByValue(
           Comparator.comparing(Database::getWeight).reversed()))
         .collect(Collectors.toList());
-
-    log.info("Selecting initial database from {} configured databases", sortedDatabases.size());
 
     // Check databases in weight order
     for (Map.Entry<Endpoint, Database> entry : sortedDatabases) {
@@ -424,13 +423,13 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
         statusTracker.waitForHealthStatus(endpoint);
       } else {
         // No health check configured - assume healthy
-        log.info("No health check configured for database {}, defaulting to HEALTHY", endpoint);
+        log.debug("No health check configured for database {}, defaulting to HEALTHY", endpoint);
       }
 
       ConnectionInitializationContext evalCtx = new ConnectionInitializationContext(databaseMap,
           healthStatusManager);
       Decision d = evalCtx.conformsTo(policy);
-      log.info("Policy evaluation after {}: {}", endpoint, d);
+      log.debug("Policy evaluation after {}: {}", endpoint, d);
       if (d == Decision.SUCCESS) {
         return selectBestAvailableDatabase(sortedDatabases);
       }

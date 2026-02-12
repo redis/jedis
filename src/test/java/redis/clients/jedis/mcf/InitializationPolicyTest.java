@@ -75,7 +75,7 @@ public class InitializationPolicyTest {
     }
 
     @Test
-    @DisplayName("Should return SUCCESS when no connections configured (0,0,0)")
+    @DisplayName("Should return FAIL when no connections configured (0,0,0)")
     void shouldFailWithEmptyContext() {
       TestContext ctx = new TestContext(0, 0, 0);
       assertEquals(Decision.FAIL, policy.evaluate(ctx));

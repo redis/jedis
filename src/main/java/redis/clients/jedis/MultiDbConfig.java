@@ -654,7 +654,7 @@ public final class MultiDbConfig {
    * and failed connections.
    * </p>
    * <p>
-   * <strong>Default:</strong> {@link InitializationPolicy.BuiltIn#ONE_AVAILABLE}
+   * <strong>Default:</strong> {@link InitializationPolicy.BuiltIn#MAJORITY_AVAILABLE}
    * </p>
    * @see InitializationPolicy
    * @see #getInitializationPolicy()

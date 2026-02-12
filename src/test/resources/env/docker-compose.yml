@@ -1,3 +1,8 @@
+x-client-libs-image: &client-libs-image
+  image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+x-client-libs-stack-image: &client-libs-stack-image
+  image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_STACK_VERSION:-${REDIS_VERSION:-}}}"
+
 services:
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy:2.8.0
@@ -6,14 +11,14 @@ services:
       - "29379:29379" # redis-failover-1 proxy
       - "29380:29380" # redis-failover-2 proxy
   redis-failover-1:
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: redis-failover-1
     environment:
       - PORT=9379
     ports:
       - 9379:9379
   redis-failover-2:
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: redis-failover-2
     environment:
       - PORT=9380
@@ -22,7 +27,7 @@ services:
   redis1-2-5-8-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: redis1-2-5-8-sentinel
     #network_mode: host
     environment:
@@ -46,7 +51,7 @@ services:
   standalone2-sentinel:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: standalone2-sentinel
     #network_mode: host
     environment:
@@ -69,7 +74,7 @@ services:
   sentinel-failover:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: sentinel-standalone2-failover
     #network_mode: host
     environment:
@@ -87,7 +92,7 @@ services:
   redis9-10:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: redis9-10
     #network_mode: host
     environment:
@@ -101,7 +106,7 @@ services:
   redis-unavailable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: redis-unavailable-1
     #network_mode: host
     environment:
@@ -115,7 +120,7 @@ services:
   cluster-unbound:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: cluster-unbound-1
     environment:
       - TLS_ENABLED=yes
@@ -130,7 +135,7 @@ services:
   cluster-stable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}"
+    <<: *client-libs-image
     container_name: cluster-stable-1
     #network_mode: host
     command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150 --save ""
@@ -149,7 +154,7 @@ services:
   jedis-stack:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_STACK_VERSION:-${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}}"
+    <<: *client-libs-stack-image
     container_name: jedis-stack
     command: --save ""
     environment:
@@ -161,7 +166,7 @@ services:
       -  ${REDIS_ENV_WORK_DIR}/jedis-stack/work:/redis/work:rw
 #todo find a way to connect from mac os host to exposed unix socket in container
 #  redis_uds:
-#    image: redis:${CLIENT_LIBS_TEST_IMAGE_TAG:-${REDIS_VERSION:-}}
+#    <<: *client-libs-image
 #    container_name: redis_uds
 #    #network_mode: host
 #    command: redis-server /etc/redis.conf

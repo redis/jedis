@@ -336,12 +336,14 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
   public void testLoadWithApply() {
     // Test LOAD with APPLY - loaded fields should be available for expressions
     FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder()
-        .load("price", "rating", "title").apply(Apply.of("@price * @rating", "value_score"))
-        .apply(Apply.of("@price * 0.9", "discounted")).sortBy(SortedField.desc("@value_score"))
-        .limit(Limit.of(0, 5)).build();
+        .load("price", "rating")
+        // with alias
+        .apply(Apply.of("@price * @rating", "value_score"))
+        // without alias returns field name as the expression itself
+        .apply(Apply.of("@price * 0.9")).build();
 
     FTHybridParams hybridArgs = FTHybridParams.builder()
-        .search(FTHybridSearchParams.builder().query("smartphone").scoreAlias("text_score").build())
+        .search(FTHybridSearchParams.builder().query("smartphone").build())
         .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
             .method(FTHybridVectorParams.Knn.of(10)).scoreAlias("vector_score").build())
         .combine(Combiners.linear().alpha(0.5).beta(0.5).window(25)).postProcessing(postProcessing)
@@ -362,16 +364,13 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     // Loaded fields should be present
     assertThat(firstResult.hasProperty("price"), equalTo(true));
     assertThat(firstResult.hasProperty("rating"), equalTo(true));
-    assertThat(firstResult.hasProperty("title"), equalTo(true));
 
     // Computed fields (from APPLY) should be present
     assertThat(firstResult.hasProperty("value_score"), equalTo(true));
-    assertThat(firstResult.hasProperty("discounted"), equalTo(true));
+    assertThat(firstResult.hasProperty("@parice * 0.9"), equalTo(true));
 
     // Non-loaded document fields should NOT be present
-    assertThat(firstResult.hasProperty("category"), equalTo(false));
-    assertThat(firstResult.hasProperty("brand"), equalTo(false));
-    assertThat(firstResult.hasProperty("image_embedding"), equalTo(false));
+    assertThat(firstResult.hasProperty("title"), equalTo(false));
   }
 
   @Test

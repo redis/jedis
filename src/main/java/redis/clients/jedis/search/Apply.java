@@ -24,6 +24,15 @@ public class Apply implements IParams {
   /**
    * Create an APPLY operation.
    * @param expression the expression to apply
+   * @return a new Apply instance
+   */
+  public static Apply of(String expression) {
+    return new Apply(expression, null);
+  }
+
+  /**
+   * Create an APPLY operation.
+   * @param expression the expression to apply
    * @param alias the alias for the result
    * @return a new Apply instance
    */
@@ -35,7 +44,9 @@ public class Apply implements IParams {
   public void addParams(CommandArguments args) {
     args.add(APPLY);
     args.add(expression);
-    args.add(AS);
-    args.add(alias);
+    if (alias != null) {
+      args.add(AS);
+      args.add(alias);
+    }
   }
 }

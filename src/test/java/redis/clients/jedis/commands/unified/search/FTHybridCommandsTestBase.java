@@ -589,6 +589,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
      * read access. To retrieve entire documents, use projections with LOAD * or LOAD <count> field
      */
     @Test
+    @SinceRedisVersion("8.6.0")
     public void verifyHybridResultBasicFieldsWithLoadAll() {
       // Execute a simple hybrid search with known results
       FTHybridPostProcessingParams postProcessing = FTHybridPostProcessingParams.builder().loadAll()

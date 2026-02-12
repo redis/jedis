@@ -3,6 +3,7 @@ package redis.clients.jedis.search;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.JedisAsserts;
 
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.FILTER;
 
@@ -24,6 +25,8 @@ public class Filter implements IParams {
    * @return a new Filter instance
    */
   public static Filter of(String expression) {
+    JedisAsserts.notNull(expression, "Filter expression must not be null");
+
     return new Filter(expression);
   }
 

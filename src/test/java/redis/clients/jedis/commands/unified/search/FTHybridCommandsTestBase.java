@@ -367,7 +367,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
 
     // Computed fields (from APPLY) should be present
     assertThat(firstResult.hasProperty("value_score"), equalTo(true));
-    assertThat(firstResult.hasProperty("@parice * 0.9"), equalTo(true));
+    assertThat(firstResult.hasProperty("@price * 0.9"), equalTo(true));
 
     // Non-loaded document fields should NOT be present
     assertThat(firstResult.hasProperty("title"), equalTo(false));

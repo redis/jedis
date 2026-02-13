@@ -555,8 +555,18 @@
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
 						<include>**/ACLTestUtil.java</include>
+						<include>**/search/Apply.java</include>
+						<include>**/search/Combiner.java</include>
+						<include>**/search/Combiners.java</include>
+						<include>**/search/Filter.java</include>
+						<include>**/search/Limit.java</include>
+						<include>**/search/Scorer.java</include>
+						<include>**/search/Scorers.java</include>
+						<include>**/search/hybrid/*.java</include>
+						<include>**/search/FTHybrid*.java</include>
 						<include>**/*Hotkeys*.java</include>
 						<include>**/TestDataUtil*.java</include>
+						<include>**/*JedisClientConfig*.java</include>
 					</includes>
 				</configuration>
 				<executions>

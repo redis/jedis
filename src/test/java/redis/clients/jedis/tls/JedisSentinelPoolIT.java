@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
 
-public class SSLJedisSentinelPoolIT {
+public class JedisSentinelPoolIT {
 
   private static EndpointConfig sentinel;
 
@@ -29,7 +29,7 @@ public class SSLJedisSentinelPoolIT {
       HostAndPort hap) -> new HostAndPort(hap.getHost(), hap.getPort() + 11);
 
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
-  private static final String trustStoreName = SSLJedisSentinelPoolIT.class.getSimpleName();
+  private static final String trustStoreName = JedisSentinelPoolIT.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {

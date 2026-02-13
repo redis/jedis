@@ -20,7 +20,7 @@ import redis.clients.jedis.util.TlsUtil;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
-public class SSLRedisClusterClientIT extends TLSRedisClusterTestBase {
+public class RedisClusterClientIT extends RedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();

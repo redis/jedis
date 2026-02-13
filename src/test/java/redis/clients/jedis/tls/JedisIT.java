@@ -12,11 +12,11 @@ import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SSLJedisIT {
+public class JedisIT {
 
   protected static EndpointConfig endpoint;
 
-  private static final String trustStoreName = SSLJedisIT.class.getSimpleName();
+  private static final String trustStoreName = JedisIT.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {

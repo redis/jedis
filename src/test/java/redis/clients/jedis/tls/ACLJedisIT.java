@@ -22,13 +22,13 @@ import redis.clients.jedis.util.TlsUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * This test class is a copy of {@link SSLJedisIT}.
+ * This test class is a copy of {@link JedisIT}.
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 @SinceRedisVersion(value = "6.0.0", message = "Not running ACL test on this version of Redis")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
-public class SSLACLJedisIT {
+public class ACLJedisIT {
 
   protected static EndpointConfig endpoint;
 
@@ -41,7 +41,7 @@ public class SSLACLJedisIT {
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
       () -> Endpoints.getRedisEndpoint("standalone0-acl-tls"));
 
-  private static final String trustStoreName = SSLACLJedisIT.class.getSimpleName();
+  private static final String trustStoreName = ACLJedisIT.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {

@@ -17,7 +17,7 @@ public class SSLOptionsRedisClientIT {
 
   protected static EndpointConfig aclEndpoint;
 
-  private static final String trustStoreName = SSLACLJedisIT.class.getSimpleName();
+  private static final String trustStoreName = ACLJedisIT.class.getSimpleName();
   private static Path trustStorePath;
 
   @BeforeAll

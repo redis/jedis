@@ -34,7 +34,7 @@ import redis.clients.jedis.util.*;
  * before {@code @BeforeAll} methods where the truststore is configured.
  */
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
-public abstract class TLSRedisClusterTestBase {
+public abstract class RedisClusterTestBase {
 
   private static final String ENDPOINT_NAME = "cluster-stable-tls";
   /**
@@ -89,7 +89,7 @@ public abstract class TLSRedisClusterTestBase {
     List<Path> trustedCertLocation = Collections
         .singletonList(tlsEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(
-      TLSRedisClusterTestBase.class.getSimpleName(), trustedCertLocation, TRUSTSTORE_PASSWORD);
+      RedisClusterTestBase.class.getSimpleName(), trustedCertLocation, TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);
   }
 

@@ -22,7 +22,7 @@ import redis.clients.jedis.util.TlsUtil;
  * SSL/TLS Redis Cluster tests using SslOptions builder pattern.
  */
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
-public class SSLOptionsRedisClusterClientIT extends TLSRedisClusterTestBase {
+public class SSLOptionsRedisClusterClientIT extends RedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();

@@ -1,43 +1,18 @@
 package redis.clients.jedis.tls;
 
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import redis.clients.jedis.*;
-import redis.clients.jedis.util.TlsUtil;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.RedisClient;
 
 /**
  * SSL/TLS tests for {@link RedisClient} with basic authentication (password-only, no ACL).
  * <p>
- * This test class follows the pattern of {@link SSLJedisIT} but adapted for {@link RedisClient}.
- * </p>
+ * Uses the system truststore (ssl=true flag) for SSL connections.
  */
-public class RedisClientIT {
-
-  protected static EndpointConfig endpoint;
-
-  private static final String trustStoreName = RedisClientIT.class.getSimpleName();
-
-  @BeforeAll
-  public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
-    List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
-    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
-      "changeit");
-
-    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
-  }
-
-  @AfterAll
-  public static void teardownTrustStore() {
-    TlsUtil.restoreOriginalTrustStore();
-  }
+public class RedisClientIT extends RedisClientTlsTestBase {
 
   @Test
   public void connectWithSsl() {
@@ -85,5 +60,4 @@ public class RedisClientIT {
       assertEquals("PONG", client.ping());
     }
   }
-
 }

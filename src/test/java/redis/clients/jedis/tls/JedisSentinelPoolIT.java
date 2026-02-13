@@ -1,62 +1,50 @@
 package redis.clients.jedis.tls;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.*;
-import redis.clients.jedis.util.TlsUtil;
 
-public class JedisSentinelPoolIT {
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisSentinelPool;
 
-  private static EndpointConfig sentinel;
-
-  private static final String MASTER_NAME = "aclmaster";
-
-  private static Set<HostAndPort> sentinels = new HashSet<>();
-
-  private static final HostAndPortMapper SSL_PORT_MAPPER = (HostAndPort hap) -> new HostAndPort(
-      hap.getHost(), hap.getPort() + 10000);
-
-  private static final HostAndPortMapper SSL_PORT_MAPPER_PRIMARY = (
-      HostAndPort hap) -> new HostAndPort(hap.getHost(), hap.getPort() + 11);
+/**
+ * SSL/TLS tests for {@link JedisSentinelPool} using system truststore (ssl=true flag).
+ * <p>
+ * Tests various combinations of SSL on master and sentinel connections:
+ * <ul>
+ * <li>Sentinel without SSL, Redis master with SSL</li>
+ * <li>Sentinel with SSL, Redis master without SSL</li>
+ * <li>Both sentinel and Redis master with SSL</li>
+ * </ul>
+ */
+public class JedisSentinelPoolIT extends RedisSentinelTlsTestBase {
 
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
-  private static final String trustStoreName = JedisSentinelPoolIT.class.getSimpleName();
+
+  // Endpoints for different SSL configurations
+  private static EndpointConfig aclTlsEndpoint;
+  private static EndpointConfig aclEndpoint;
+  private static EndpointConfig sentinelTlsEndpoint;
 
   @BeforeAll
-  public static void prepare() {
-    sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
-    List<Path> trustedCertLocation = Collections
-        .singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));
-    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
-      "changeit");
-    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
-
-    sentinels.add(sentinel.getHostAndPort());
+  public static void setUp() {
+    aclTlsEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
+    aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl");
+    sentinelTlsEndpoint = Endpoints.getRedisEndpoint("sentinel-standalone0-tls");
   }
 
-  @AfterAll
-  public static void teardownTrustStore() {
-    TlsUtil.restoreOriginalTrustStore();
-  }
-
+  /**
+   * Tests sentinel without SSL connecting to Redis master with SSL.
+   */
   @Test
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
+    DefaultJedisClientConfig masterConfig = aclTlsEndpoint.getClientConfigBuilder()
+        .clientName("master-client").hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
-    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
-        .getClientConfigBuilder().clientName("master-client")
-        .hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY).build();
-
-    DefaultJedisClientConfig sentinelConfig = sentinel.getClientConfigBuilder()
-        .clientName("sentinel-client").build();
+    DefaultJedisClientConfig sentinelConfig = createSentinelConfigWithoutSsl();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
         sentinelConfig)) {
@@ -69,15 +57,16 @@ public class JedisSentinelPoolIT {
     }
   }
 
+  /**
+   * Tests sentinel with SSL connecting to Redis master without SSL.
+   */
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
+    DefaultJedisClientConfig masterConfig = aclEndpoint.getClientConfigBuilder()
+        .clientName("master-client").build();
 
-    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl")
-        .getClientConfigBuilder().clientName("master-client").build();
-
-    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint("sentinel-standalone0-tls")
-        .getClientConfigBuilder().clientName("sentinel-client").hostAndPortMapper(SSL_PORT_MAPPER)
-        .build();
+    DefaultJedisClientConfig sentinelConfig = sentinelTlsEndpoint.getClientConfigBuilder()
+        .clientName("sentinel-client").hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
         sentinelConfig)) {
@@ -90,16 +79,16 @@ public class JedisSentinelPoolIT {
     }
   }
 
+  /**
+   * Tests both sentinel and Redis master with SSL.
+   */
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
+    DefaultJedisClientConfig masterConfig = aclTlsEndpoint.getClientConfigBuilder()
+        .clientName("master-client").hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
-    DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
-        .getClientConfigBuilder().clientName("master-client")
-        .hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY).build();
-
-    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint("sentinel-standalone0-tls")
-        .getClientConfigBuilder().clientName("sentinel-client").hostAndPortMapper(SSL_PORT_MAPPER)
-        .build();
+    DefaultJedisClientConfig sentinelConfig = sentinelTlsEndpoint.getClientConfigBuilder()
+        .clientName("sentinel-client").hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
         sentinelConfig)) {
@@ -111,5 +100,4 @@ public class JedisSentinelPoolIT {
       pool.getResource().close();
     }
   }
-
 }

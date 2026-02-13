@@ -12,7 +12,6 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
-import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -21,7 +20,6 @@ import redis.clients.jedis.util.TlsUtil;
 /**
  * SSL/TLS Redis Cluster tests using SslOptions builder pattern.
  */
-@SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 public class SSLOptionsRedisClusterClientIT extends RedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;

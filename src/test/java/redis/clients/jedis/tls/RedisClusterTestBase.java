@@ -45,10 +45,6 @@ public abstract class RedisClusterTestBase {
   private static final String TRUSTSTORE_PASSWORD = "changeit";
 
   @RegisterExtension
-  public static RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> Endpoints.getRedisEndpoint(VERSION_CHECK_ENDPOINT_NAME));
-
-  @RegisterExtension
   public static EnvCondition envCondition = new EnvCondition();
 
   @RegisterExtension
@@ -88,8 +84,8 @@ public abstract class RedisClusterTestBase {
     tlsEndpoint = Endpoints.getRedisEndpoint(ENDPOINT_NAME);
     List<Path> trustedCertLocation = Collections
         .singletonList(tlsEndpoint.getCertificatesLocation());
-    trustStorePath = TlsUtil.createAndSaveTestTruststore(
-      RedisClusterTestBase.class.getSimpleName(), trustedCertLocation, TRUSTSTORE_PASSWORD);
+    trustStorePath = TlsUtil.createAndSaveTestTruststore(RedisClusterTestBase.class.getSimpleName(),
+      trustedCertLocation, TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);
   }
 
@@ -118,11 +114,6 @@ public abstract class RedisClusterTestBase {
     }
   }
 
-  /**
-   * Creates SslOptions configured for mutual TLS with the cluster. Includes both truststore (to
-   * trust server) and keystore (for client cert).
-   * @return SslOptions configured for mTLS
-   */
   protected static SslOptions createSslOptions() {
     return SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks").build();
   }

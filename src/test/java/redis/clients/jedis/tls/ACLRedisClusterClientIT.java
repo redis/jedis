@@ -13,16 +13,14 @@ import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
-import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 /**
- * SSL/TLS Redis Cluster tests with ACL authentication (user="default").
+ * SSL/TLS Redis Cluster tests with ACL authentication
  */
-@SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after tests are fixed.")
 public class ACLRedisClusterClientIT extends RedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;

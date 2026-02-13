@@ -1,37 +1,19 @@
 package redis.clients.jedis.tls;
 
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import redis.clients.jedis.*;
-import redis.clients.jedis.util.TlsUtil;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class JedisIT {
+import org.junit.jupiter.api.Test;
 
-  protected static EndpointConfig endpoint;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 
-  private static final String trustStoreName = JedisIT.class.getSimpleName();
-
-  @BeforeAll
-  public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
-    List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
-    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
-      "changeit");
-
-    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
-  }
-
-  @AfterAll
-  public static void teardownTrustStore() {
-    TlsUtil.restoreOriginalTrustStore();
-  }
+/**
+ * SSL/TLS tests for {@link Jedis} with basic authentication (password-only, no ACL).
+ * <p>
+ * Uses the system truststore (ssl=true flag) for SSL connections.
+ */
+public class JedisIT extends JedisTlsTestBase {
 
   @Test
   public void connectWithSsl() {
@@ -86,5 +68,4 @@ public class JedisIT {
       assertEquals("PONG", jedis.ping());
     }
   }
-
 }

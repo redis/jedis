@@ -1,23 +1,5 @@
 package redis.clients.jedis.tls;
 
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-
-import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersion;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.*;
-import redis.clients.jedis.exceptions.JedisClusterOperationException;
-import redis.clients.jedis.util.RedisVersionUtil;
-import redis.clients.jedis.util.TlsUtil;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
@@ -25,41 +7,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.Collections;
+import java.util.Map;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import redis.clients.jedis.*;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.util.TlsUtil;
+
+/**
+ * SSL/TLS Redis Cluster tests using SslOptions builder pattern.
+ */
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
 @Tag("integration")
-public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase {
+public class SSLOptionsRedisClusterClientTest extends TLSRedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
-
-  protected static EndpointConfig tlsEndpoint;
-
-  private final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
-    String host = hostAndPort.getHost();
-    int port = hostAndPort.getPort();
-    if (host.equals("127.0.0.1")) {
-      host = "localhost";
-    }
-    return new HostAndPort(host, port);
-  };
-
-  // don't map IP addresses so that we try to connect with host 127.0.0.1
-  private final HostAndPortMapper portMap = (HostAndPort hostAndPort) -> {
-    if ("localhost".equals(hostAndPort.getHost())) {
-      return hostAndPort;
-    }
-    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort());
-  };
-
-  private static final String trustStoreName = SSLOptionsRedisClusterClientTest.class.getSimpleName();
-  private static Path trustStorePath;
-
-  @BeforeAll
-  public static void prepare() {
-    tlsEndpoint = Endpoints.getRedisEndpoint("cluster-unbound-tls");
-    List<Path> trustedCertLocation = Collections.singletonList(tlsEndpoint.getCertificatesLocation());
-    trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
-  }
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
@@ -74,20 +42,10 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
-      assertEquals(3, clusterNodes.size());
-      /*
-       * In versions prior to Redis 7.x, Redis does not natively support automatic port switching between TLS and non-TLS ports for CLUSTER SLOTS.
-       * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
-       */
-      if (RedisVersionUtil.getRedisVersion(jc2.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
-        assertTrue(clusterNodes.containsKey(nodeInfo1.toString()));
-        assertTrue(clusterNodes.containsKey(nodeInfo2.toString()));
-        assertTrue(clusterNodes.containsKey(nodeInfo3.toString()));
-      } else {
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
-      }
+      assertEquals(6, clusterNodes.size());
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
       jc2.get("foo");
     }
   }
@@ -106,20 +64,11 @@ public class SSLOptionsRedisClusterClientTest extends RedisClusterClientTestBase
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
-      assertEquals(3, clusterNodes.size());
-      /**
-       * In versions prior to Redis 7.x, Redis does not natively support automatic port switching between TLS and non-TLS ports for CLUSTER SLOTS.
-       * When using Redis 6.2.16 in a cluster mode with TLS, CLUSTER command returns the regular (non-TLS) port rather than the TLS port.
-       */
-      if (RedisVersionUtil.getRedisVersion(jc.getConnectionFromSlot(0)).isLessThanOrEqualTo(RedisVersion.V7_0_0)) {
-        assertTrue(clusterNodes.containsKey(nodeInfo1.toString()));
-        assertTrue(clusterNodes.containsKey(nodeInfo2.toString()));
-        assertTrue(clusterNodes.containsKey(nodeInfo3.toString()));
-      } else {
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
-        assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
-      }
+      assertEquals(6, clusterNodes.size());
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
+      assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
+      jc.get("foo");
     }
   }
 

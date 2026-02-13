@@ -87,10 +87,10 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
   void delayBetweenFailoverAttempts_permanentExceptionAfterAttemptsExhausted() throws Exception {
     // Configure: small max (2) with a large non-zero delay window to ensure rapid calls stay within
     // window
-    setProviderFailoverConfig(/* maxAttempts */ 2, /* delayMs */ 10);
+    setProviderFailoverConfig(/* maxAttempts */ 2, /* delayMs */ 20);
 
     assertEquals(2, getProviderMaxAttempts());
-    assertEquals(10, getProviderDelayMs());
+    assertEquals(20, getProviderDelayMs());
     assertEquals(0, getProviderAttemptCount());
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to

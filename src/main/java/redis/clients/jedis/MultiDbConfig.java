@@ -12,7 +12,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.ConnectionFailoverException;
 import redis.clients.jedis.mcf.PingStrategy;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.mcf.HealthCheckStrategy;
+import redis.clients.jedis.mcf.InitializationPolicy;
 
 /**
  * Configuration class for multi-database Redis deployments with automatic failover and failback
@@ -644,6 +646,22 @@ public final class MultiDbConfig {
   private int delayInBetweenFailoverAttempts;
 
   /**
+   * Initialization policy that determines when the multi-database connection is ready to be
+   * returned based on the availability of individual database connections.
+   * <p>
+   * The policy is evaluated based on the completion status of database health checks, and the
+   * decision to continue waiting, succeed, or fail is based on the number of available, pending,
+   * and failed connections.
+   * </p>
+   * <p>
+   * <strong>Default:</strong> {@link InitializationPolicy.BuiltIn#MAJORITY_AVAILABLE}
+   * </p>
+   * @see InitializationPolicy
+   * @see #getInitializationPolicy()
+   */
+  private InitializationPolicy initializationPolicy;
+
+  /**
    * Constructs a new MultiDbConfig with the specified database configurations.
    * <p>
    * This constructor validates that at least one database configuration is provided and that all
@@ -771,6 +789,22 @@ public final class MultiDbConfig {
    */
   public boolean isFastFailover() {
     return fastFailover;
+  }
+
+  /**
+   * Returns the initialization policy that determines when the multi-database connection is ready.
+   * <p>
+   * The policy is evaluated based on the completion status of database health checks, and the
+   * decision to continue waiting, succeed, or fail is based on the number of available, pending,
+   * and failed connections.
+   * </p>
+   * @return the initialization policy, defaults to
+   *         {@link InitializationPolicy.BuiltIn#MAJORITY_AVAILABLE}
+   * @see InitializationPolicy
+   * @see #initializationPolicy
+   */
+  public InitializationPolicy getInitializationPolicy() {
+    return initializationPolicy;
   }
 
   /**
@@ -1162,6 +1196,9 @@ public final class MultiDbConfig {
     /** Delay in milliseconds between failover attempts. */
     private int delayInBetweenFailoverAttempts = DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT;
 
+    /** Initialization policy for determining when the multi-database connection is ready. */
+    private InitializationPolicy initializationPolicy = InitializationPolicy.BuiltIn.MAJORITY_AVAILABLE;
+
     /**
      * Constructs a new Builder with the specified database configurations.
      */
@@ -1434,6 +1471,33 @@ public final class MultiDbConfig {
     }
 
     /**
+     * Sets the initialization policy that determines when the multi-database connection is ready.
+     * <p>
+     * The policy is evaluated based on the completion status of database health checks, and the
+     * decision to continue waiting, succeed, or fail is based on the number of available, pending,
+     * and failed connections.
+     * </p>
+     * <p>
+     * <strong>Built-in policies:</strong>
+     * </p>
+     * <ul>
+     * <li>{@link InitializationPolicy.BuiltIn#ALL_AVAILABLE} - All databases need to be
+     * available</li>
+     * <li>{@link InitializationPolicy.BuiltIn#MAJORITY_AVAILABLE} - Majority of databases need to
+     * be available (default)</li>
+     * <li>{@link InitializationPolicy.BuiltIn#ONE_AVAILABLE} - At least one database needs to be
+     * available</li>
+     * </ul>
+     * @param initializationPolicy the initialization policy to use
+     * @return this builder instance for method chaining
+     */
+    public Builder initializationPolicy(InitializationPolicy initializationPolicy) {
+      JedisAsserts.notNull(initializationPolicy, "initializationPolicy must not be null");
+      this.initializationPolicy = initializationPolicy;
+      return this;
+    }
+
+    /**
      * Builds and returns a new MultiDbConfig instance with all configured settings.
      * <p>
      * This method creates the final configuration object by copying all builder settings to the
@@ -1461,6 +1525,7 @@ public final class MultiDbConfig {
       config.fastFailover = this.fastFailover;
       config.maxNumFailoverAttempts = this.maxNumFailoverAttempts;
       config.delayInBetweenFailoverAttempts = this.delayInBetweenFailoverAttempts;
+      config.initializationPolicy = this.initializationPolicy;
 
       return config;
     }

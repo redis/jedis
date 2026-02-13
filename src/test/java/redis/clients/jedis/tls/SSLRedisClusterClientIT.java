@@ -30,7 +30,7 @@ public class SSLRedisClusterClientIT extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions()).hostAndPortMapper(hostAndPortMap).build())
+            .sslOptions(createSslOptions()).hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(6, clusterNodes.size());
@@ -62,7 +62,7 @@ public class SSLRedisClusterClientIT extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions()).hostAndPortMapper(hostAndPortMap).build())
+            .sslOptions(createSslOptions()).hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       jc.get("foo");
     }
@@ -76,8 +76,8 @@ public class SSLRedisClusterClientIT extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("localhost", tlsEndpoint.getPort())))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions()).sslParameters(sslParameters)
-            .hostAndPortMapper(portMap).build())
+            .sslOptions(createSslOptions()).sslParameters(sslParameters).hostAndPortMapper(portMap)
+            .build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       jc.get("foo");
       fail("It should fail after all cluster attempts.");
@@ -97,7 +97,7 @@ public class SSLRedisClusterClientIT extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions()).sslParameters(sslParameters)
+            .sslOptions(createSslOptions()).sslParameters(sslParameters)
             .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       jc.get("foo");
@@ -112,7 +112,7 @@ public class SSLRedisClusterClientIT extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions()).sslParameters(sslParameters)
+            .sslOptions(createSslOptions()).sslParameters(sslParameters)
             .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
     } catch (JedisClusterOperationException e) {

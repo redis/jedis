@@ -1,8 +1,6 @@
 package redis.clients.jedis.tls;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -45,14 +43,6 @@ public abstract class TLSRedisClusterTestBase {
    */
   private static final String VERSION_CHECK_ENDPOINT_NAME = "cluster-stable";
   private static final String TRUSTSTORE_PASSWORD = "changeit";
-  private static final String KEYSTORE_PASSWORD = "changeit";
-  private static final String CLIENT_KEYSTORE_FILENAME = "client.p12";
-
-  /**
-   * Environment variable for the test work folder where certificates are located.
-   */
-  private static final String TEST_WORK_FOLDER = System.getenv().getOrDefault("TEST_WORK_FOLDER",
-    "/home/imalinovskyi/playground/jedis_package_fixes/env-work");
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -67,7 +57,6 @@ public abstract class TLSRedisClusterTestBase {
 
   protected static EndpointConfig tlsEndpoint;
   protected static Path trustStorePath;
-  protected static File clientKeystoreFile;
 
   protected RedisClusterClient cluster;
 
@@ -102,11 +91,6 @@ public abstract class TLSRedisClusterTestBase {
     trustStorePath = TlsUtil.createAndSaveTestTruststore(
       TLSRedisClusterTestBase.class.getSimpleName(), trustedCertLocation, TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);
-
-    // Set up client keystore for mutual TLS (mTLS)
-    // The cluster-stable-tls endpoint requires client certificate authentication
-    clientKeystoreFile = Paths.get(TEST_WORK_FOLDER,
-      tlsEndpoint.getCertificatesLocation().toString(), CLIENT_KEYSTORE_FILENAME).toFile();
   }
 
   @AfterAll
@@ -116,11 +100,8 @@ public abstract class TLSRedisClusterTestBase {
 
   @BeforeEach
   public void setUp() {
-    // Build SslOptions with both truststore (to trust server) and keystore (for client cert)
-    // The cluster-stable-tls endpoint requires mutual TLS (mTLS)
     SslOptions sslOptions = SslOptions.builder().truststore(trustStorePath.toFile())
-        .trustStoreType("jceks").keystore(clientKeystoreFile, KEYSTORE_PASSWORD.toCharArray())
-        .build();
+        .trustStoreType("jceks").build();
 
     cluster = RedisClusterClient.builder().nodes(new HashSet<>(tlsEndpoint.getHostsAndPorts()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
@@ -138,52 +119,11 @@ public abstract class TLSRedisClusterTestBase {
   }
 
   /**
-   * Returns the TLS endpoint configuration.
-   * @return the TLS endpoint configuration
-   */
-  protected static EndpointConfig getTlsEndpoint() {
-    return tlsEndpoint;
-  }
-
-  /**
-   * Returns the path to the truststore.
-   * @return the truststore path
-   */
-  protected static Path getTrustStorePath() {
-    return trustStorePath;
-  }
-
-  /**
-   * Returns the truststore password.
-   * @return the truststore password
-   */
-  protected static String getTrustStorePassword() {
-    return TRUSTSTORE_PASSWORD;
-  }
-
-  /**
-   * Returns the client keystore file for mutual TLS.
-   * @return the client keystore file
-   */
-  protected static File getClientKeystoreFile() {
-    return clientKeystoreFile;
-  }
-
-  /**
-   * Returns the keystore password.
-   * @return the keystore password
-   */
-  protected static String getKeystorePassword() {
-    return KEYSTORE_PASSWORD;
-  }
-
-  /**
    * Creates SslOptions configured for mutual TLS with the cluster. Includes both truststore (to
    * trust server) and keystore (for client cert).
    * @return SslOptions configured for mTLS
    */
-  protected static SslOptions createMtlsSslOptions() {
-    return SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks")
-        .keystore(clientKeystoreFile, KEYSTORE_PASSWORD.toCharArray()).build();
+  protected static SslOptions createSslOptions() {
+    return SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks").build();
   }
 }

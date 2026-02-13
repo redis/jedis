@@ -25,33 +25,27 @@ public class SSLOptionsRedisClientIT {
     endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
     aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
-        aclEndpoint.getCertificatesLocation());
+      aclEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
-        "changeit");
+      "changeit");
   }
 
   @Test
   public void connectWithClientConfig() {
-    try (RedisClient jedis = RedisClient.builder()
-        .hostAndPort(endpoint.getHostAndPort())
-        .clientConfig(endpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())
-        .build()) {
+    try (
+        RedisClient jedis = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+            .clientConfig(endpoint.getClientConfigBuilder().sslOptions(SslOptions.builder()
+                .truststore(trustStorePath.toFile()).trustStoreType("jceks").build()).build())
+            .build()) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithSslInsecure() {
-    try (RedisClient jedis = RedisClient.builder()
-        .hostAndPort(endpoint.getHostAndPort())
+    try (RedisClient jedis = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
         .clientConfig(endpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .sslVerifyMode(SslVerifyMode.INSECURE)
-                .build()).build())
+            .sslOptions(SslOptions.builder().sslVerifyMode(SslVerifyMode.INSECURE).build()).build())
         .build()) {
       assertEquals("PONG", jedis.ping());
     }
@@ -59,29 +53,24 @@ public class SSLOptionsRedisClientIT {
 
   @Test
   public void connectWithSslContextProtocol() {
-    try (RedisClient jedis = RedisClient.builder()
-        .hostAndPort(endpoint.getHostAndPort())
-        .clientConfig(endpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .sslProtocol("SSL")
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())
-        .build()) {
+    try (
+        RedisClient jedis = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+            .clientConfig(endpoint.getClientConfigBuilder()
+                .sslOptions(SslOptions.builder().sslProtocol("SSL")
+                    .truststore(trustStorePath.toFile()).trustStoreType("jceks").build())
+                .build())
+            .build()) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithAcl() {
-    try (RedisClient jedis = RedisClient.builder()
-        .hostAndPort(aclEndpoint.getHostAndPort())
-        .clientConfig(aclEndpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())
-        .build()) {
+    try (
+        RedisClient jedis = RedisClient.builder().hostAndPort(aclEndpoint.getHostAndPort())
+            .clientConfig(aclEndpoint.getClientConfigBuilder().sslOptions(SslOptions.builder()
+                .truststore(trustStorePath.toFile()).trustStoreType("jceks").build()).build())
+            .build()) {
       assertEquals("PONG", jedis.ping());
     }
   }

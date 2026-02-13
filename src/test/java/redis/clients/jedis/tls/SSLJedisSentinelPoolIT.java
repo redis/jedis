@@ -22,11 +22,11 @@ public class SSLJedisSentinelPoolIT {
 
   private static Set<HostAndPort> sentinels = new HashSet<>();
 
-  private static final HostAndPortMapper SSL_PORT_MAPPER = (HostAndPort hap)
-      -> new HostAndPort(hap.getHost(), hap.getPort() + 10000);
+  private static final HostAndPortMapper SSL_PORT_MAPPER = (HostAndPort hap) -> new HostAndPort(
+      hap.getHost(), hap.getPort() + 10000);
 
-  private static final HostAndPortMapper SSL_PORT_MAPPER_PRIMARY = (HostAndPort hap)
-      -> new HostAndPort(hap.getHost(), hap.getPort() + 11);
+  private static final HostAndPortMapper SSL_PORT_MAPPER_PRIMARY = (
+      HostAndPort hap) -> new HostAndPort(hap.getHost(), hap.getPort() + 11);
 
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
   private static final String trustStoreName = SSLJedisSentinelPoolIT.class.getSimpleName();
@@ -34,8 +34,10 @@ public class SSLJedisSentinelPoolIT {
   @BeforeAll
   public static void prepare() {
     sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
-    List<Path> trustedCertLocation = Collections.singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));
-    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+    List<Path> trustedCertLocation = Collections
+        .singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
+      "changeit");
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
     sentinels.add(sentinel.getHostAndPort());
@@ -50,8 +52,8 @@ public class SSLJedisSentinelPoolIT {
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
 
     DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
-        .getClientConfigBuilder().clientName("master-client").hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY)
-        .build();
+        .getClientConfigBuilder().clientName("master-client")
+        .hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY).build();
 
     DefaultJedisClientConfig sentinelConfig = sentinel.getClientConfigBuilder()
         .clientName("sentinel-client").build();
@@ -73,11 +75,12 @@ public class SSLJedisSentinelPoolIT {
     DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl")
         .getClientConfigBuilder().clientName("master-client").build();
 
-    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint(
-            "sentinel-standalone0-tls").getClientConfigBuilder().clientName("sentinel-client")
-        .hostAndPortMapper(SSL_PORT_MAPPER).build();
+    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint("sentinel-standalone0-tls")
+        .getClientConfigBuilder().clientName("sentinel-client").hostAndPortMapper(SSL_PORT_MAPPER)
+        .build();
 
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
+        sentinelConfig)) {
       pool.getResource().close();
     }
 
@@ -91,14 +94,15 @@ public class SSLJedisSentinelPoolIT {
   public void sentinelWithSslConnectsToRedisWithSsl() {
 
     DefaultJedisClientConfig masterConfig = Endpoints.getRedisEndpoint("standalone0-acl-tls")
-        .getClientConfigBuilder().clientName("master-client").hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY)
+        .getClientConfigBuilder().clientName("master-client")
+        .hostAndPortMapper(SSL_PORT_MAPPER_PRIMARY).build();
+
+    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint("sentinel-standalone0-tls")
+        .getClientConfigBuilder().clientName("sentinel-client").hostAndPortMapper(SSL_PORT_MAPPER)
         .build();
 
-    DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint(
-            "sentinel-standalone0-tls").getClientConfigBuilder().clientName("sentinel-client")
-        .hostAndPortMapper(SSL_PORT_MAPPER).build();
-
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
+        sentinelConfig)) {
       pool.getResource().close();
     }
 

@@ -22,7 +22,8 @@ public class SSLJedisIT {
   public static void prepare() {
     endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
     List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
-    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
+      "changeit");
 
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
@@ -51,13 +52,12 @@ public class SSLJedisIT {
 
   @Test
   public void connectWithConfigInterface() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        new JedisClientConfig() {
-          @Override
-          public boolean isSsl() {
-            return true;
-          }
-        })) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), new JedisClientConfig() {
+      @Override
+      public boolean isSsl() {
+        return true;
+      }
+    })) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }

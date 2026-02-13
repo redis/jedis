@@ -48,9 +48,9 @@ public class SSLACLJedisIT {
     endpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
     endpointWithDefaultUser = Endpoints.getRedisEndpoint("standalone0-tls");
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
-        endpointWithDefaultUser.getCertificatesLocation());
+      endpointWithDefaultUser.getCertificatesLocation());
     Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
-        "changeit");
+      "changeit");
 
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
   }
@@ -84,8 +84,8 @@ public class SSLACLJedisIT {
         endpointWithDefaultUser.getURIBuilder().defaultCredentials().build().toString())) {
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(
-        endpoint.getURIBuilder().defaultCredentials().build().toString())) {
+    try (
+        Jedis jedis = new Jedis(endpoint.getURIBuilder().defaultCredentials().build().toString())) {
       assertEquals("PONG", jedis.ping());
     }
   }

@@ -19,22 +19,23 @@ public class SSLOptionsJedisIT {
 
   private static final String trustStoreName = SSLOptionsJedisIT.class.getSimpleName();
   private static Path trustStorePath;
+
   @BeforeAll
   public static void prepare() {
     endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
     aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
-    List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),aclEndpoint.getCertificatesLocation());
-    trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
+    List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
+      aclEndpoint.getCertificatesLocation());
+    trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,
+      "changeit");
   }
 
   @Test
   public void connectWithSsl() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder()
-            .sslOptions(SslOptions.builder()
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())) {
+        DefaultJedisClientConfig.builder().sslOptions(
+          SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks").build())
+            .build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -43,35 +44,29 @@ public class SSLOptionsJedisIT {
   @Test
   public void connectWithClientConfig() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())) {
+        endpoint.getClientConfigBuilder().sslOptions(
+          SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks").build())
+            .build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithSslInsecure() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .sslVerifyMode(SslVerifyMode.INSECURE)
-                .build()).build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .sslOptions(SslOptions.builder().sslVerifyMode(SslVerifyMode.INSECURE).build()).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithSslContextProtocol() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .sslProtocol("SSL")
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())) {
+    try (
+        Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+            endpoint.getClientConfigBuilder()
+                .sslOptions(SslOptions.builder().sslProtocol("SSL")
+                    .truststore(trustStorePath.toFile()).trustStoreType("jceks").build())
+                .build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -79,11 +74,9 @@ public class SSLOptionsJedisIT {
   @Test
   public void connectWithAcl() {
     try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(),
-        aclEndpoint.getClientConfigBuilder()
-            .sslOptions(SslOptions.builder()
-                .truststore(trustStorePath.toFile())
-                .trustStoreType("jceks")
-                .build()).build())) {
+        aclEndpoint.getClientConfigBuilder().sslOptions(
+          SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks").build())
+            .build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

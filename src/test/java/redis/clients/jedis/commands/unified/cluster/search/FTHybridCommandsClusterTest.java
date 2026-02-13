@@ -16,7 +16,7 @@ public class FTHybridCommandsClusterTest extends FTHybridCommandsTestBase {
 
   @BeforeAll
   public static void prepareEndpoint() {
-    endpoint = Endpoints.getRedisEndpoint("cluster-stack");
+    endpoint = Endpoints.getRedisEndpoint("cluster-stable");
   }
 
   public FTHybridCommandsClusterTest(RedisProtocol protocol) {

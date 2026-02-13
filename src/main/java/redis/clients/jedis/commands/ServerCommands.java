@@ -4,8 +4,10 @@ import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.LatencyEvent;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ShutdownParams;
+import redis.clients.jedis.resps.HotkeysInfo;
 import redis.clients.jedis.resps.LatencyHistoryInfo;
 import redis.clients.jedis.resps.LatencyLatestInfo;
 import redis.clients.jedis.util.KeyValue;
@@ -258,4 +260,56 @@ public interface ServerCommands {
   List<LatencyHistoryInfo> latencyHistory(LatencyEvent events);
 
   long latencyReset(LatencyEvent... events);
+
+  /**
+   * Start hotkey tracking with the specified parameters.
+   * <p>
+   * The HOTKEYS command is used to identify hot keys in your Redis instance by tracking
+   * keys by CPU time consumption and network bytes transferred.
+   * <p>
+   * <b>Note: This command is not supported in Redis Cluster mode.</b> HOTKEYS is a node-local
+   * operation and there is no built-in mechanism to aggregate hotkeys data across cluster nodes.
+   * Calling this method on a cluster client will throw {@link UnsupportedOperationException}.
+   * To use HOTKEYS in a cluster, connect directly to individual nodes.
+   *
+   * @param params the parameters for hotkey tracking (metrics, count, duration, sample)
+   * @return OK
+   * @throws UnsupportedOperationException if called on a cluster client
+   */
+  String hotkeysStart(HotkeysParams params);
+
+  /**
+   * Stop hotkey tracking. Data is preserved until RESET or next START.
+   * <p>
+   * <b>Note: This command is not supported in Redis Cluster mode.</b>
+   * See {@link #hotkeysStart(HotkeysParams)} for details.
+   *
+   * @return OK
+   * @throws UnsupportedOperationException if called on a cluster client
+   */
+  String hotkeysStop();
+
+  /**
+   * Clear all collected hotkey data and return to empty state.
+   * <p>
+   * <b>Note: This command is not supported in Redis Cluster mode.</b>
+   * See {@link #hotkeysStart(HotkeysParams)} for details.
+   *
+   * @return OK
+   * @throws UnsupportedOperationException if called on a cluster client
+   */
+  String hotkeysReset();
+
+  /**
+   * Retrieve collected hotkey statistics.
+   * <p>
+   * Returns null if hotkey tracking has never been started.
+   * <p>
+   * <b>Note: This command is not supported in Redis Cluster mode.</b>
+   * See {@link #hotkeysStart(HotkeysParams)} for details.
+   *
+   * @return HotkeysInfo containing tracking statistics, or null if never started
+   * @throws UnsupportedOperationException if called on a cluster client
+   */
+  HotkeysInfo hotkeysGet();
 }

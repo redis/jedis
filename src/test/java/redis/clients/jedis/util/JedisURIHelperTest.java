@@ -52,6 +52,18 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void hasDbIndex_shouldReturnFalseIfURIDoesNotHaveDbIndex() throws URISyntaxException {
+    URI uri = new URI("redis://host:9000");
+    assertFalse(JedisURIHelper.hasDbIndex(uri));
+  }
+
+  @Test
+  public void hasDbIndex_shouldReturnTrueIfURIDoesHaveDbIndex() throws URISyntaxException {
+    URI uri = new URI("redis://host:9000/3");
+    assertTrue(JedisURIHelper.hasDbIndex(uri));
+  }
+
+  @Test
   public void shouldValidateInvalidURIs() throws URISyntaxException {
     assertFalse(JedisURIHelper.isValid(new URI("host:9000")));
     assertFalse(JedisURIHelper.isValid(new URI("user:password@host:9000/0")));

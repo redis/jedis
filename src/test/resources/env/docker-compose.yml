@@ -167,25 +167,6 @@ services:
       - "6479:6479"
     volumes:
       -  ${REDIS_ENV_WORK_DIR}/jedis-stack/work:/redis/work:rw
-
-  cluster-stack:
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1
-    image: "${CLIENT_LIBS_TEST_IMAGE}:${REDIS_STACK_VERSION:-${REDIS_VERSION}}"
-    container_name: cluster-stack
-    #network_mode: host
-    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150 --save ""
-    environment:
-      - REDIS_CLUSTER=yes
-      - REDIS_PASSWORD=cluster
-      - PORT=16479
-      - NODES=6
-      - REPLICAS=1
-    ports:
-      - "16479-16484:16479-16484"
-    volumes:
-      - ${REDIS_ENV_CONF_DIR}/cluster-stack/config:/redis/config:r
-      - ${REDIS_ENV_WORK_DIR}/cluster-stack/work:/redis/work:rw
 #todo find a way to connect from mac os host to exposed unix socket in container
 #  redis_uds:
 #    <<: *client-libs-image

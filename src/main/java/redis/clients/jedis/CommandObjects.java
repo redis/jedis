@@ -28,6 +28,8 @@ import redis.clients.jedis.search.SearchProtocol.*;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.*;
@@ -3779,6 +3781,12 @@ public class CommandObjects {
   public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.TAGVALS, indexName)
         .add(fieldName), BuilderFactory.STRING_SET);
+  }
+
+  @Experimental
+  public final CommandObject<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.HYBRID, indexName)
+        .addParams(hybridParams), HybridResult.HYBRID_RESULT_BUILDER);
   }
 
   @Deprecated

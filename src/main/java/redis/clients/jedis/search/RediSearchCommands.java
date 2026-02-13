@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.commands.ConfigCommands;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 
 public interface RediSearchCommands {
@@ -143,4 +146,16 @@ public interface RediSearchCommands {
   long ftSugLen(String key);
 
   Set<String> ftList();
+
+  /**
+   * Execute a hybrid query combining text search and vector similarity.
+   *
+   * @param indexName the index name
+   * @param hybridParams the hybrid query arguments
+   * @return the hybrid search results
+   * @see FTHybridParams
+   * @see HybridResult
+   */
+  @Experimental
+  HybridResult ftHybrid(String indexName, FTHybridParams hybridParams);
 }

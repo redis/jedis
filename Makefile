@@ -4,7 +4,6 @@ PATH := ./redis-git/src:${PATH}
 SUPPORTED_TEST_ENV_VERSIONS := 8.6 8.4 8.2 8.0 7.4 7.2 6.2
 DEFAULT_TEST_ENV_VERSION := 8.6
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
-CLIENT_LIBS_TEST_IMAGE := redislabs/client-libs-test:8.2.2
 TOXIPROXY_IMAGE := ghcr.io/shopify/toxiproxy:2.8.0
 
 define REDIS1_CONF
@@ -116,7 +115,10 @@ start:
 			version="$(DEFAULT_TEST_ENV_VERSION)"; \
 		fi; \
 	fi; \
-	if ! echo "$(SUPPORTED_TEST_ENV_VERSIONS)" | grep -qw "$$version"; then \
+	if [ -n "$$CLIENT_LIBS_TEST_IMAGE_TAG" ]; then \
+		echo "Using custom image tag: $$CLIENT_LIBS_TEST_IMAGE_TAG"; \
+		version=""; \
+	elif ! echo "$(SUPPORTED_TEST_ENV_VERSIONS)" | grep -qw "$$version"; then \
 		echo "Error: Invalid version '$$version'. Supported versions are: $(SUPPORTED_TEST_ENV_VERSIONS)."; \
 		exit 1; \
 	fi; \
@@ -128,7 +130,7 @@ start:
 	fi; \
 	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
 	mkdir -p "$(REDIS_ENV_WORK_DIR)"; \
-	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d; \
+	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d --wait --quiet-pull; \
 	echo "Started test environment with Redis version $$version. "
 
 # Stop the test environment

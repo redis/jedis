@@ -1373,7 +1373,7 @@ public final class BuilderFactory {
       List<byte[]> hash = (List<byte[]>) objectList.get(1);
 
       Iterator<byte[]> hashIterator = hash.iterator();
-      Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
+      Map<String, String> map = new LinkedHashMap<>(hash.size() / 2, 1f);
       while (hashIterator.hasNext()) {
         map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
       }
@@ -1413,7 +1413,7 @@ public final class BuilderFactory {
 
         if (hash != null) {
           Iterator<byte[]> hashIterator = hash.iterator();
-          fieldsMap = new HashMap<>(hash.size() / 2, 1f);
+          fieldsMap = new LinkedHashMap<>(hash.size() / 2, 1f);
 
           while (hashIterator.hasNext()) {
             fieldsMap.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
@@ -1527,9 +1527,11 @@ public final class BuilderFactory {
 
       if (list.get(0) instanceof KeyValue) {
         return ((List<KeyValue>) list).stream()
-            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()), kv -> STREAM_ENTRY_LIST.build(kv.getValue())));
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                kv -> STREAM_ENTRY_LIST.build(kv.getValue()),
+                (v1, v2) -> v1, LinkedHashMap::new));
       } else {
-        Map<String, List<StreamEntry>> result = new HashMap<>(list.size());
+        Map<String, List<StreamEntry>> result = new LinkedHashMap<>(list.size(), 1f);
         for (Object anObj : list) {
           List<Object> streamObj = (List<Object>) anObj;
           String streamKey = STRING.build(streamObj.get(0));

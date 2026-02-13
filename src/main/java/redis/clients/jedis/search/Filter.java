@@ -1,0 +1,38 @@
+package redis.clients.jedis.search;
+
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.JedisAsserts;
+
+import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.FILTER;
+
+/**
+ * FILTER operation for search commands. Filters results based on an expression.
+ */
+@Experimental
+public class Filter implements IParams {
+
+  private final String expression;
+
+  private Filter(String expression) {
+    this.expression = expression;
+  }
+
+  /**
+   * Create a FILTER operation.
+   * @param expression the filter expression
+   * @return a new Filter instance
+   */
+  public static Filter of(String expression) {
+    JedisAsserts.notNull(expression, "Filter expression must not be null");
+
+    return new Filter(expression);
+  }
+
+  @Override
+  public void addParams(CommandArguments args) {
+    args.add(FILTER);
+    args.add(expression);
+  }
+}

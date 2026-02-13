@@ -31,9 +31,9 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @BeforeEach
   void setUp() {
-    endpoint1 = new HostAndPort("localhost", 6379);
-    endpoint2 = new HostAndPort("localhost", 6380);
-    endpoint3 = new HostAndPort("localhost", 6381);
+    endpoint1 = new HostAndPort("fake", 6379);
+    endpoint2 = new HostAndPort("fake", 6380);
+    endpoint3 = new HostAndPort("fake", 6381);
     clientConfig = DefaultJedisClientConfig.builder().build();
   }
 
@@ -61,7 +61,8 @@ public class MultiDbConnectionProviderInitializationTest {
                                                              // check
           .build();
 
-      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 }).build();
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 })
+          .initializationPolicy(InitializationPolicy.BuiltIn.ONE_AVAILABLE).build();
 
       try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
         // Should initialize successfully
@@ -149,5 +150,100 @@ public class MultiDbConnectionProviderInitializationTest {
         assertNotNull(provider.getDatabase());
       }
     }
+  }
+
+  @Test
+  void testInitializationWithOneAvailablePolicy() {
+    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+          .healthCheckEnabled(false).build();
+
+      DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(2.0f)
+          .healthCheckEnabled(false).build();
+
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 })
+          .initializationPolicy(InitializationPolicy.BuiltIn.ONE_AVAILABLE).build();
+
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
+        // Should initialize successfully with ONE_AVAILABLE policy
+        assertNotNull(provider.getDatabase());
+      }
+    }
+  }
+
+  @Test
+  void testInitializationWithAllAvailablePolicy() {
+    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+          .healthCheckEnabled(false).build();
+
+      DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(2.0f)
+          .healthCheckEnabled(false).build();
+
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 })
+          .initializationPolicy(InitializationPolicy.BuiltIn.ALL_AVAILABLE).build();
+
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
+        // Should initialize successfully with ALL_AVAILABLE policy when all health checks
+        // are disabled
+        assertNotNull(provider.getDatabase());
+      }
+    }
+  }
+
+  @Test
+  void testInitializationWithMajorityAvailablePolicy() {
+    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+          .healthCheckEnabled(false).build();
+
+      DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(2.0f)
+          .healthCheckEnabled(false).build();
+
+      DatabaseConfig db3 = DatabaseConfig.builder(endpoint3, clientConfig).weight(3.0f)
+          .healthCheckEnabled(false).build();
+
+      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2, db3 })
+          .initializationPolicy(InitializationPolicy.BuiltIn.MAJORITY_AVAILABLE).build();
+
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
+        // Should initialize successfully with MAJORITY_AVAILABLE policy
+        assertNotNull(provider.getDatabase());
+        // Should select db3 (highest weight)
+        assertEquals(provider.getDatabase(endpoint3), provider.getDatabase());
+      }
+    }
+  }
+
+  @Test
+  void testInitializationPolicyNullThrowsException() {
+    DatabaseConfig db = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+        .healthCheckEnabled(false).build();
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      new MultiDbConfig.Builder(new DatabaseConfig[] { db }).initializationPolicy(null).build();
+    });
+  }
+
+  @Test
+  void testInitializationPolicyIsConfigured() {
+    DatabaseConfig db = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+        .healthCheckEnabled(false).build();
+
+    MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db })
+        .initializationPolicy(InitializationPolicy.BuiltIn.ALL_AVAILABLE).build();
+
+    assertEquals(InitializationPolicy.BuiltIn.ALL_AVAILABLE, config.getInitializationPolicy());
+  }
+
+  @Test
+  void testInitializationPolicyDefaultValue() {
+    DatabaseConfig db = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
+        .healthCheckEnabled(false).build();
+
+    MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db }).build();
+
+    // Default should be MAJORITY_AVAILABLE
+    assertEquals(InitializationPolicy.BuiltIn.MAJORITY_AVAILABLE, config.getInitializationPolicy());
   }
 }

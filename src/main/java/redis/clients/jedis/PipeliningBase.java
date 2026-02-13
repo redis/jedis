@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
@@ -20,6 +21,8 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.CompareCondition;
@@ -3821,6 +3824,12 @@ public abstract class PipeliningBase
   }
 
   @Override
+  @Experimental
+  public Response<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
+  }
+
+  @Override
   public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }
@@ -4923,6 +4932,24 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.vsetattr(key, element, attributes));
   }
   // Vector Set pipeline commands end
+
+  // Hotkeys pipeline commands
+  public Response<String> hotkeysStart(HotkeysParams params) {
+    return appendCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public Response<String> hotkeysStop() {
+    return appendCommand(commandObjects.hotkeysStop());
+  }
+
+  public Response<String> hotkeysReset() {
+    return appendCommand(commandObjects.hotkeysReset());
+  }
+
+  public Response<HotkeysInfo> hotkeysGet() {
+    return appendCommand(commandObjects.hotkeysGet());
+  }
+  // Hotkeys pipeline commands end
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

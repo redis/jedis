@@ -17,6 +17,8 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
@@ -367,6 +369,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public String info(String section) {
     return executeCommand(commandObjects.info(section));
+  }
+
+  public String hotkeysStart(HotkeysParams params) {
+    return checkAndBroadcastCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public String hotkeysStop() {
+    return checkAndBroadcastCommand(commandObjects.hotkeysStop());
+  }
+
+  public String hotkeysReset() {
+    return checkAndBroadcastCommand(commandObjects.hotkeysReset());
+  }
+
+  public HotkeysInfo hotkeysGet() {
+    return executeCommand(commandObjects.hotkeysGet());
   }
 
   // Key commands
@@ -4626,6 +4644,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Set<String> ftTagVals(String indexName, String fieldName) {
     return executeCommand(commandObjects.ftTagVals(indexName, fieldName));
+  }
+
+  @Override
+  @Experimental
+  public HybridResult ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return executeCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 
   @Override

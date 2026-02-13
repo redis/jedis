@@ -50,12 +50,12 @@ public class FailoverIntegrationTest {
   private static EndpointConfig endpoint2;
 
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
-  public static ExecutorService executor = Executors.newCachedThreadPool();
+  public static ExecutorService executor;
   public static Pattern pattern = Pattern.compile("run_id:([a-f0-9]+)");
   private static Proxy redisProxy1;
   private static Proxy redisProxy2;
-  private static UnifiedJedis jedis1;
-  private static UnifiedJedis jedis2;
+  private UnifiedJedis jedis1;
+  private UnifiedJedis jedis2;
   private static String JEDIS1_ID = "";
   private static String JEDIS2_ID = "";
   private MultiDbConnectionProvider provider;
@@ -72,21 +72,19 @@ public class FailoverIntegrationTest {
       tp.getProxy("redis-2").delete();
     }
 
+    executor = Executors.newCachedThreadPool();
+
     redisProxy1 = tp.createProxy("redis-1", "0.0.0.0:29379", "redis-failover-1:9379");
     redisProxy2 = tp.createProxy("redis-2", "0.0.0.0:29380", "redis-failover-2:9380");
   }
 
   @AfterAll
   public static void cleanupAdminClients() throws IOException {
-    if (endpoint1 == null && endpoint2 == null) return;
 
     if (redisProxy1 != null) redisProxy1.delete();
     if (redisProxy2 != null) redisProxy2.delete();
 
-    jedis1.close();
-    jedis2.close();
-
-    executor.shutdown();
+    if (executor != null) executor.shutdown();
   }
 
   @BeforeEach
@@ -120,9 +118,9 @@ public class FailoverIntegrationTest {
 
   @AfterEach
   public void cleanup() throws IOException {
-    failoverClient.close();
-    jedis1.close();
-    jedis2.close();
+    if (failoverClient != null) failoverClient.close();
+    if (jedis1 != null) jedis1.close();
+    if (jedis2 != null) jedis2.close();
   }
 
   /**

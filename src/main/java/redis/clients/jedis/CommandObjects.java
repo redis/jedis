@@ -28,6 +28,8 @@ import redis.clients.jedis.search.SearchProtocol.*;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.*;
@@ -3258,6 +3260,26 @@ public class CommandObjects {
     return SLOWLOG_RESET_COMMAND_OBJECT;
   }
 
+  // Hotkeys commands
+  public CommandObject<String> hotkeysStart(HotkeysParams params) {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.START).addParams(params),
+        BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> hotkeysStop() {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.STOP), BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> hotkeysReset() {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.RESET), BuilderFactory.STRING);
+  }
+
+  public CommandObject<HotkeysInfo> hotkeysGet() {
+    return new CommandObject<>(commandArguments(HOTKEYS).add(Keyword.GET),
+        HotkeysInfo.HOTKEYS_INFO_BUILDER);
+  }
+  // End Hotkeys commands
+
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size())
         .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
@@ -3759,6 +3781,12 @@ public class CommandObjects {
   public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.TAGVALS, indexName)
         .add(fieldName), BuilderFactory.STRING_SET);
+  }
+
+  @Experimental
+  public final CommandObject<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.HYBRID, indexName)
+        .addParams(hybridParams), HybridResult.HYBRID_RESULT_BUILDER);
   }
 
   @Deprecated

@@ -1,11 +1,14 @@
 package redis.clients.jedis;
 
+import java.net.URI;
 import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.util.JedisAsserts;
+import redis.clients.jedis.util.JedisURIHelper;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -147,6 +150,56 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return new Builder();
   }
 
+  /**
+   * Creates a new Builder pre-initialized with settings from the provided Redis URI.
+   * <p>
+   * The URI format is:
+   * {@code redis[s]://[username:password@]host:port[/database][?protocol=version]}
+   * </p>
+   * <p>
+   * Settings extracted from URI:
+   * <ul>
+   * <li>Credentials (username/password) if present in URI</li>
+   * <li>Database index if specified in path</li>
+   * <li>SSL enabled if scheme is "rediss"</li>
+   * <li>Protocol version if specified in query parameters</li>
+   * </ul>
+   * @param redisUri the Redis URI to extract settings from
+   * @return a new Builder pre-initialized from the URI
+   */
+  public static Builder builder(URI redisUri) {
+    JedisAsserts.notNull(redisUri, "Redis URI must not be null");
+    JedisAsserts.isTrue(JedisURIHelper.isValid(redisUri), "Invalid Redis URI");
+
+    Builder builder = new Builder();
+
+    // Extract and apply credentials if present
+    String uriUser = JedisURIHelper.getUser(redisUri);
+    String uriPassword = JedisURIHelper.getPassword(redisUri);
+
+    if (uriUser != null || uriPassword != null) {
+      builder.credentials(new DefaultRedisCredentials(uriUser, uriPassword));
+    }
+
+    if (JedisURIHelper.hasDbIndex(redisUri)) {
+      builder.database(JedisURIHelper.getDBIndex(redisUri));
+    }
+
+    // Apply protocol if specified
+    RedisProtocol uriProtocol = JedisURIHelper.getRedisProtocol(redisUri);
+    if (uriProtocol != null) {
+      builder.protocol(uriProtocol);
+    }
+
+    if (JedisURIHelper.isRedisSSLScheme(redisUri)) {
+      builder.ssl(true);
+    } else if (JedisURIHelper.isRedisScheme(redisUri)) {
+      builder.ssl(false);
+    }
+
+    return builder;
+  }
+
   public static class Builder {
 
     private RedisProtocol redisProtocol = null;
@@ -188,7 +241,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     /**
-     * Shortcut to {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * Shortcut to
+     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
      * {@link RedisProtocol#RESP3}.
      * @return this
      */
@@ -323,9 +377,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
    */
   @Deprecated
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
-      int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
+      int blockingSocketTimeoutMillis, String user, String password, int database,
+      String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
+      HostAndPortMapper hostAndPortMapper) {
     Builder builder = builder();
     builder.connectionTimeoutMillis(connectionTimeoutMillis).socketTimeoutMillis(soTimeoutMillis)
         .blockingSocketTimeoutMillis(blockingSocketTimeoutMillis);
@@ -334,14 +389,15 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       builder.credentials(new DefaultRedisCredentials(user, password));
     }
     builder.database(database).clientName(clientName);
-    builder.ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters).hostnameVerifier(hostnameVerifier);
+    builder.ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier);
     builder.hostAndPortMapper(hostAndPortMapper);
     return builder.build();
   }
 
   /**
    * @deprecated Use
-   * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#from(redis.clients.jedis.JedisClientConfig)}.
+   *             {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#from(redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {

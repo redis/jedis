@@ -123,30 +123,33 @@ services:
     <<: *client-libs-image
     container_name: cluster-unbound-1
     environment:
-      - TLS_ENABLED=yes
       - REDIS_PASSWORD=cluster
     ports:
       - "7379-7383:7379-7383"
-      - "8379-8383:8379-8383"
     volumes:
       - ${REDIS_ENV_CONF_DIR}/cluster-unbound/config:/redis/config:r
       - ${REDIS_ENV_WORK_DIR}/cluster-unbound/work:/redis/work:rw
 
+  #TLS endpoints of Cluster stable are used for TLS tests that do not require client authentication
   cluster-stable:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     <<: *client-libs-image
     container_name: cluster-stable-1
     #network_mode: host
-    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150 --save ""
+    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150 --tls-auth-clients no --save ""
     environment:
       - REDIS_CLUSTER=yes
       - REDIS_PASSWORD=cluster
       - PORT=7479
+      - TLS_PORT=8479
       - NODES=6
       - REPLICAS=1
+      - TLS_ENABLED=yes
+      - TLS_AUTH_CLIENTS_USER=off
     ports:
       - "7479-7484:7479-7484"
+      - "8479-8484:8479-8484"
     volumes:
       - ${REDIS_ENV_CONF_DIR}/cluster-stable/config:/redis/config:r
       - ${REDIS_ENV_WORK_DIR}/cluster-stable/work:/redis/work:rw

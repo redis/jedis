@@ -13,7 +13,7 @@ import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
 @Tag("integration")
-public abstract class RedisClusterClientTestBase {
+public abstract class UnboundRedisClusterClientTestBase {
 
   protected static EndpointConfig endpoint;
 

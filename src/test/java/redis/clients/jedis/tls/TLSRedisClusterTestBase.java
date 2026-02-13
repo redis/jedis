@@ -29,23 +29,22 @@ import redis.clients.jedis.util.TlsUtil;
 /**
  * Abstract base class for SSL/TLS Redis cluster tests.
  * <p>
- * This class provides common setup and teardown for TLS-enabled Redis cluster tests,
- * including truststore initialization and cluster client configuration.
+ * This class provides common setup and teardown for TLS-enabled Redis cluster tests, including
+ * truststore initialization and cluster client configuration.
  * <p>
  * Uses the {@code cluster-stable-tls} endpoint for stable integration tests.
  * <p>
- * Note: The {@link RedisVersionCondition} and {@link EnabledOnCommandCondition} extensions
- * use the non-TLS {@code cluster-stable} endpoint for version/command checks because
- * JUnit 5 extensions run before {@code @BeforeAll} methods where the truststore is configured.
+ * Note: The {@link RedisVersionCondition} and {@link EnabledOnCommandCondition} extensions use the
+ * non-TLS {@code cluster-stable} endpoint for version/command checks because JUnit 5 extensions run
+ * before {@code @BeforeAll} methods where the truststore is configured.
  */
 @Tag("integration")
 public abstract class TLSRedisClusterTestBase {
 
   private static final String ENDPOINT_NAME = "cluster-stable-tls";
   /**
-   * Non-TLS endpoint used for version and command checks.
-   * Extensions run before @BeforeAll, so we can't use TLS endpoints for these checks
-   * since the truststore isn't configured yet.
+   * Non-TLS endpoint used for version and command checks. Extensions run before @BeforeAll, so we
+   * can't use TLS endpoints for these checks since the truststore isn't configured yet.
    */
   private static final String VERSION_CHECK_ENDPOINT_NAME = "cluster-stable";
   private static final String TRUSTSTORE_PASSWORD = "changeit";
@@ -55,8 +54,8 @@ public abstract class TLSRedisClusterTestBase {
   /**
    * Environment variable for the test work folder where certificates are located.
    */
-  private static final String TEST_WORK_FOLDER = System.getenv().getOrDefault(
-      "TEST_WORK_FOLDER", "/home/imalinovskyi/playground/jedis_package_fixes/env-work");
+  private static final String TEST_WORK_FOLDER = System.getenv().getOrDefault("TEST_WORK_FOLDER",
+    "/home/imalinovskyi/playground/jedis_package_fixes/env-work");
 
   @RegisterExtension
   public static RedisVersionCondition versionCondition = new RedisVersionCondition(
@@ -88,8 +87,8 @@ public abstract class TLSRedisClusterTestBase {
   };
 
   /**
-   * HostAndPortMapper that only maps localhost, leaving IP addresses unchanged.
-   * Useful for testing hostname verification failures.
+   * HostAndPortMapper that only maps localhost, leaving IP addresses unchanged. Useful for testing
+   * hostname verification failures.
    */
   protected final HostAndPortMapper portMap = (HostAndPort hostAndPort) -> {
     if ("localhost".equals(hostAndPort.getHost())) {
@@ -98,23 +97,19 @@ public abstract class TLSRedisClusterTestBase {
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort());
   };
 
-
   @BeforeAll
   public static void prepareEndpointAndTrustStore() {
     tlsEndpoint = Endpoints.getRedisEndpoint(ENDPOINT_NAME);
-    List<Path> trustedCertLocation = Collections.singletonList(tlsEndpoint.getCertificatesLocation());
+    List<Path> trustedCertLocation = Collections
+        .singletonList(tlsEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(
-        TLSRedisClusterTestBase.class.getSimpleName(),
-        trustedCertLocation,
-        TRUSTSTORE_PASSWORD
-    );
+      TLSRedisClusterTestBase.class.getSimpleName(), trustedCertLocation, TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);
 
     // Set up client keystore for mutual TLS (mTLS)
     // The cluster-stable-tls endpoint requires client certificate authentication
     clientKeystoreFile = Paths.get(TEST_WORK_FOLDER,
-        tlsEndpoint.getCertificatesLocation().toString(),
-        CLIENT_KEYSTORE_FILENAME).toFile();
+      tlsEndpoint.getCertificatesLocation().toString(), CLIENT_KEYSTORE_FILENAME).toFile();
   }
 
   @AfterAll
@@ -126,19 +121,13 @@ public abstract class TLSRedisClusterTestBase {
   public void setUp() {
     // Build SslOptions with both truststore (to trust server) and keystore (for client cert)
     // The cluster-stable-tls endpoint requires mutual TLS (mTLS)
-    SslOptions sslOptions = SslOptions.builder()
-        .truststore(trustStorePath.toFile())
-        .trustStoreType("jceks")
-        .keystore(clientKeystoreFile, KEYSTORE_PASSWORD.toCharArray())
+    SslOptions sslOptions = SslOptions.builder().truststore(trustStorePath.toFile())
+        .trustStoreType("jceks").keystore(clientKeystoreFile, KEYSTORE_PASSWORD.toCharArray())
         .build();
 
-    cluster = RedisClusterClient.builder()
-        .nodes(new HashSet<>(tlsEndpoint.getHostsAndPorts()))
-        .clientConfig(DefaultJedisClientConfig.builder()
-            .password(tlsEndpoint.getPassword())
-            .sslOptions(sslOptions)
-            .hostAndPortMapper(hostAndPortMap)
-            .build())
+    cluster = RedisClusterClient.builder().nodes(new HashSet<>(tlsEndpoint.getHostsAndPorts()))
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
+            .sslOptions(sslOptions).hostAndPortMapper(hostAndPortMap).build())
         .build();
     cluster.flushAll();
   }
@@ -153,7 +142,6 @@ public abstract class TLSRedisClusterTestBase {
 
   /**
    * Returns the TLS endpoint configuration.
-   *
    * @return the TLS endpoint configuration
    */
   protected static EndpointConfig getTlsEndpoint() {
@@ -162,7 +150,6 @@ public abstract class TLSRedisClusterTestBase {
 
   /**
    * Returns the path to the truststore.
-   *
    * @return the truststore path
    */
   protected static Path getTrustStorePath() {
@@ -171,7 +158,6 @@ public abstract class TLSRedisClusterTestBase {
 
   /**
    * Returns the truststore password.
-   *
    * @return the truststore password
    */
   protected static String getTrustStorePassword() {
@@ -180,7 +166,6 @@ public abstract class TLSRedisClusterTestBase {
 
   /**
    * Returns the client keystore file for mutual TLS.
-   *
    * @return the client keystore file
    */
   protected static File getClientKeystoreFile() {
@@ -189,7 +174,6 @@ public abstract class TLSRedisClusterTestBase {
 
   /**
    * Returns the keystore password.
-   *
    * @return the keystore password
    */
   protected static String getKeystorePassword() {
@@ -197,17 +181,12 @@ public abstract class TLSRedisClusterTestBase {
   }
 
   /**
-   * Creates SslOptions configured for mutual TLS with the cluster.
-   * Includes both truststore (to trust server) and keystore (for client cert).
-   *
+   * Creates SslOptions configured for mutual TLS with the cluster. Includes both truststore (to
+   * trust server) and keystore (for client cert).
    * @return SslOptions configured for mTLS
    */
   protected static SslOptions createMtlsSslOptions() {
-    return SslOptions.builder()
-        .truststore(trustStorePath.toFile())
-        .trustStoreType("jceks")
-        .keystore(clientKeystoreFile, KEYSTORE_PASSWORD.toCharArray())
-        .build();
+    return SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks")
+        .keystore(clientKeystoreFile, KEYSTORE_PASSWORD.toCharArray()).build();
   }
 }
-

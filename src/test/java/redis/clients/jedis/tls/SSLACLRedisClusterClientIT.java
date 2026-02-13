@@ -14,7 +14,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
@@ -24,8 +23,7 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
  * SSL/TLS Redis Cluster tests with ACL authentication (user="default").
  */
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after tests are fixed.")
-@Tag("integration")
-public class SSLACLRedisClusterClientTest extends TLSRedisClusterTestBase {
+public class SSLACLRedisClusterClientIT extends TLSRedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();

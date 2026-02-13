@@ -2,7 +2,6 @@ package redis.clients.jedis.tls;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
 
@@ -12,14 +11,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("integration")
-public class SSLOptionsRedisClientTest {
+public class SSLOptionsRedisClientIT {
 
   protected static EndpointConfig endpoint;
 
   protected static EndpointConfig aclEndpoint;
 
-  private static final String trustStoreName = SSLACLJedisTest.class.getSimpleName();
+  private static final String trustStoreName = SSLACLJedisIT.class.getSimpleName();
   private static Path trustStorePath;
 
   @BeforeAll

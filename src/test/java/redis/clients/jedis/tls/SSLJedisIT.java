@@ -7,18 +7,16 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("integration")
-public class SSLJedisTest {
+public class SSLJedisIT {
 
   protected static EndpointConfig endpoint;
 
-  private static final String trustStoreName = SSLJedisTest.class.getSimpleName();
+  private static final String trustStoreName = SSLJedisIT.class.getSimpleName();
 
   @BeforeAll
   public static void prepare() {

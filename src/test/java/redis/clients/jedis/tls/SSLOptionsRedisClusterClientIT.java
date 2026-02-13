@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static redis.clients.jedis.util.TlsUtil.*;
 
 import java.util.Collections;
 import java.util.Map;
@@ -14,35 +13,38 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
-import redis.clients.jedis.util.TlsUtil;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.util.TlsUtil;
 
+/**
+ * SSL/TLS Redis Cluster tests using SslOptions builder pattern.
+ */
 @SinceRedisVersion(value = "7.0.0", message = "Redis 6.2.x returns non-tls port in CLUSTER SLOTS command. Enable for  6.2.x after test is fixed.")
-@Tag("integration")
-public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
+public class SSLOptionsRedisClusterClientIT extends TLSRedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
-    try (RedisClusterClient jc = RedisClusterClient.builder()
+    try (RedisClusterClient jc2 = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions())
+            .sslOptions(SslOptions.builder()
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
-      Map<String, ?> clusterNodes = jc.getClusterNodes();
+      Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(6, clusterNodes.size());
       assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
       assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
       assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
-      jc.get("foo");
+      jc2.get("foo");
     }
   }
 
@@ -50,7 +52,12 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
   public void testSSLWithoutPortMap() {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
-        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true).build())
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
+            .sslOptions(SslOptions.builder()
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build())
+            .build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
@@ -68,7 +75,9 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions())
+            .sslOptions(SslOptions.builder()
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks").build())
             .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -85,8 +94,11 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("localhost", tlsEndpoint.getPort())))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions())
-            .sslParameters(sslParameters).hostAndPortMapper(portMap).build())
+            .sslOptions(SslOptions.builder()
+                .sslParameters(sslParameters)
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks").build())
+            .hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
@@ -110,8 +122,11 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions())
-            .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build())
+            .sslOptions(SslOptions.builder()
+                .sslParameters(sslParameters)
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks").build())
+            .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
@@ -127,8 +142,11 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(createMtlsSslOptions())
-            .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build())
+            .sslOptions(SslOptions.builder()
+                .sslParameters(sslParameters)
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks").build())
+            .hostAndPortMapper(hostAndPortMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
@@ -142,9 +160,14 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
     HostnameVerifier hostnameVerifier = new TlsUtil.BasicHostnameVerifier();
     HostnameVerifier localhostVerifier = new TlsUtil.LocalhostVerifier();
 
+    SslOptions sslOptions = SslOptions.builder()
+                .truststore(trustStorePath.toFile())
+                .trustStoreType("jceks")
+                .sslVerifyMode(SslVerifyMode.CA).build();
+
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("localhost", tlsEndpoint.getPort())))
-        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).sslOptions(sslOptions)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
@@ -162,54 +185,23 @@ public class SSLRedisClusterClientTest extends TLSRedisClusterTestBase {
 
     try (RedisClusterClient jc2 = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("127.0.0.1", tlsEndpoint.getPort())))
-        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).sslOptions(sslOptions)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
     } catch (JedisClusterOperationException e) {
-      // JedisNoReachableClusterNodeException exception occurs from not being able to connect
-      // since the socket factory fails the hostname verification
       assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
 
     try (RedisClusterClient jc3 = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
-        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
+        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).sslOptions(sslOptions)
             .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build())
         .maxAttempts(DEFAULT_REDIRECTIONS)
         .poolConfig(DEFAULT_POOL_CONFIG)
         .build()) {
       jc3.get("foo");
-    }
-  }
-
-  @Test
-  public void connectWithCustomSocketFactory() throws Exception {
-    try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
-        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
-            .sslSocketFactory(sslSocketFactoryForEnv(tlsEndpoint.getCertificatesLocation()))
-            .hostAndPortMapper(portMap).build())
-        .maxAttempts(DEFAULT_REDIRECTIONS)
-        .poolConfig(DEFAULT_POOL_CONFIG)
-        .build()) {
-      assertEquals(6, jc.getClusterNodes().size());
-      jc.get("foo");
-    }
-  }
-
-  @Test
-  public void connectWithEmptyTrustStore() throws Exception {
-    try (RedisClusterClient jc = RedisClusterClient.builder()
-        .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
-        .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword()).ssl(true)
-            .sslSocketFactory(createTrustNoOneSslSocketFactory()).build())
-        .maxAttempts(DEFAULT_REDIRECTIONS)
-        .poolConfig(DEFAULT_POOL_CONFIG)
-        .build()) {
-    } catch (JedisClusterOperationException e) {
-      assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
   }
 

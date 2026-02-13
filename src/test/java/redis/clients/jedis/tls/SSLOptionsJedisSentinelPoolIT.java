@@ -9,13 +9,11 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.TlsUtil;
 
-@Tag("integration")
-public class SSLOptionsJedisSentinelPoolTest {
+public class SSLOptionsJedisSentinelPoolIT {
 
   private static EndpointConfig sentinel;
 
@@ -31,7 +29,7 @@ public class SSLOptionsJedisSentinelPoolTest {
 
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
 
-  private static final String trustStoreName = SSLOptionsJedisSentinelPoolTest.class.getSimpleName();
+  private static final String trustStoreName = SSLOptionsJedisSentinelPoolIT.class.getSimpleName();
   private static Path trustStorePath;
   private static SslOptions sslOptions;
 

@@ -166,5 +166,14 @@
       "rediss://127.0.0.1:8480",
       "rediss://127.0.0.1:8481"
     ]
+  },
+  "cluster-stack": {
+    "password": "cluster",
+    "tls": false,
+    "endpoints": [
+      "redis://127.0.0.1:16479",
+      "redis://127.0.0.1:16480",
+      "redis://127.0.0.1:16481"
+    ]
   }
 }

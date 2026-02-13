@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -21,10 +21,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPortMapper;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.SslOptions;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
-import redis.clients.jedis.util.EnvCondition;
-import redis.clients.jedis.util.RedisVersionCondition;
-import redis.clients.jedis.util.TlsUtil;
+import redis.clients.jedis.util.*;
 
 /**
  * Abstract base class for SSL/TLS Redis cluster tests.
@@ -38,7 +35,7 @@ import redis.clients.jedis.util.TlsUtil;
  * non-TLS {@code cluster-stable} endpoint for version/command checks because JUnit 5 extensions run
  * before {@code @BeforeAll} methods where the truststore is configured.
  */
-@Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
 public abstract class TLSRedisClusterTestBase {
 
   private static final String ENDPOINT_NAME = "cluster-stable-tls";

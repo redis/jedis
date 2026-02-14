@@ -186,6 +186,14 @@ public class MultiDbClient extends UnifiedJedis {
     return getMultiDbConnectionProvider().isHealthy(endpoint);
   }
 
+  public float getWeight(Endpoint endpoint) {
+    return getMultiDbConnectionProvider().getDatabase(endpoint).getWeight();
+  }
+
+  public void setWeight(Endpoint endpoint, float weight) {
+    getMultiDbConnectionProvider().getDatabase(endpoint).setWeight(weight);
+  }
+
   /**
    * Dynamically removes a database endpoint from the multi-database client.
    * <p>

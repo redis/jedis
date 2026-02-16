@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 
 import static org.awaitility.Awaitility.await;
@@ -53,6 +54,12 @@ public class MultiDbClientTest {
 
     redisProxy1 = tp.createProxy("redis-1", "0.0.0.0:29379", "redis-failover-1:9379");
     redisProxy2 = tp.createProxy("redis-2", "0.0.0.0:29380", "redis-failover-2:9380");
+  }
+
+  @AfterAll
+  public static void cleanupAdminClients() throws IOException {
+    if (redisProxy1 != null) redisProxy1.delete();
+    if (redisProxy2 != null) redisProxy2.delete();
   }
 
   @BeforeEach

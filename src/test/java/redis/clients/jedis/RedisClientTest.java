@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -72,6 +71,7 @@ public class RedisClientTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithUrlString() {
     try (Jedis j = new Jedis(endpointStandalone1.getHostAndPort())) {
       j.auth(endpointStandalone1.getPassword());
@@ -88,7 +88,8 @@ public class RedisClientTest {
   }
 
   @Test
-  public void startWithUrl() throws URISyntaxException {
+  @SuppressWarnings("deprecation")
+  public void startWithUrl() {
     try (Jedis j = new Jedis(endpointStandalone1.getHostAndPort())) {
       j.auth(endpointStandalone1.getPassword());
       j.select(2);
@@ -102,13 +103,15 @@ public class RedisClientTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void shouldThrowExceptionForInvalidURI() {
     assertThrows(Exception.class,
       () -> RedisClient.builder().fromURI(new URI("localhost:6380")).build());
   }
 
   @Test
-  public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
+  @SuppressWarnings("deprecation")
+  public void allowUrlWithNoDBAndNoPassword() {
     RedisClient.builder().fromURI(endpointStandalone1.getURI().toString()).build().close();
     RedisClient.builder().fromURI(endpointStandalone1.getURI()).build().close();
   }

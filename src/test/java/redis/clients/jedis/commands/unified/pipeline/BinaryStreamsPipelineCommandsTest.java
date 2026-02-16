@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.unified.pipeline;
 
+import io.redis.test.annotations.EnabledOnCommand;
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -9,6 +11,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XCfgSetParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.resps.StreamEntryBinary;
@@ -219,6 +222,21 @@ public class BinaryStreamsPipelineCommandsTest extends PipelineCommandsTestBase 
 
     assertThat(actualEntries.get(STREAM_KEY_1), equalsStreamEntries(stream1Entries));
     assertThat(actualEntries.get(STREAM_KEY_2), equalsStreamEntries(stream2Entries));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void xcfgset() {
+    // Add an entry to create the stream
+    client.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
+
+    // Configure idempotent producer settings via pipeline
+    Response<byte[]> response = pipe.xcfgset(STREAM_KEY_1,
+        XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+
+    pipe.sync();
+
+    assertArrayEquals("OK".getBytes(), response.get());
   }
 
 }

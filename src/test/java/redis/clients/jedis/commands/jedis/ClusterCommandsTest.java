@@ -252,7 +252,6 @@ public class ClusterCommandsTest {
         assertNotNull(nodeInfo.getIp());
         assertNull(nodeInfo.getHostname());
         assertNotNull(nodeInfo.getPort());
-        assertNotNull(nodeInfo.getTlsPort()); // currently we are always starting Redis server with `tls-port`
         assertNotNull(nodeInfo.getRole());
         assertNotNull(nodeInfo.getReplicationOffset());
         assertNotNull(nodeInfo.getHealth());

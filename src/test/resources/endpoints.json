@@ -157,16 +157,6 @@
       "redis://127.0.0.1:7481"
     ]
   },
-  "cluster-unbound-tls": {
-    "password": "cluster",
-    "tls": true,
-    "certificates_location": "cluster-unbound/work/tls",
-    "endpoints": [
-      "rediss://127.0.0.1:8379",
-      "rediss://127.0.0.1:8380",
-      "rediss://127.0.0.1:8381"
-    ]
-  },
   "cluster-stable-tls": {
     "password": "cluster",
     "tls": true,
@@ -175,6 +165,15 @@
       "rediss://127.0.0.1:8479",
       "rediss://127.0.0.1:8480",
       "rediss://127.0.0.1:8481"
+    ]
+  },
+  "cluster-stack": {
+    "password": "cluster",
+    "tls": false,
+    "endpoints": [
+      "redis://127.0.0.1:16479",
+      "redis://127.0.0.1:16480",
+      "redis://127.0.0.1:16481"
     ]
   }
 }

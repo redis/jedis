@@ -5,7 +5,7 @@ import java.util.*;
 
 public class JedisByteMap<T> implements Map<byte[], T>, Cloneable, Serializable {
     private static final long serialVersionUID = -6971431362627219416L;
-    private final Map<ByteArrayWrapper, T> internalMap = new HashMap<>();
+    private final Map<ByteArrayWrapper, T> internalMap = new LinkedHashMap<>();
 
     @Override
     public void clear() {
@@ -27,7 +27,7 @@ public class JedisByteMap<T> implements Map<byte[], T>, Cloneable, Serializable 
     public Set<Entry<byte[], T>> entrySet() {
         Iterator<Entry<ByteArrayWrapper, T>> iterator = internalMap.entrySet()
                 .iterator();
-        HashSet<Entry<byte[], T>> hashSet = new HashSet<>();
+        LinkedHashSet<Entry<byte[], T>> hashSet = new LinkedHashSet<>();
         while (iterator.hasNext()) {
             Entry<ByteArrayWrapper, T> entry = iterator.next();
             hashSet.add(new JedisByteEntry(entry.getKey().data, entry.getValue()));
@@ -48,7 +48,7 @@ public class JedisByteMap<T> implements Map<byte[], T>, Cloneable, Serializable 
 
     @Override
     public Set<byte[]> keySet() {
-        Set<byte[]> keySet = new HashSet<>();
+        Set<byte[]> keySet = new LinkedHashSet<>();
         Iterator<ByteArrayWrapper> iterator = internalMap.keySet().iterator();
         while (iterator.hasNext()) {
             keySet.add(iterator.next().data);

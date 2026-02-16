@@ -10,6 +10,7 @@ import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.CompareCondition;
 
 public interface KeyPipelineBinaryCommands {
 
@@ -64,6 +65,10 @@ public interface KeyPipelineBinaryCommands {
   Response<Long> del(byte[] key);
 
   Response<Long> del(byte[]... keys);
+
+  Response<Long> delex(byte[] key, CompareCondition condition);
+
+  Response<byte[]> digestKey(byte[] key);
 
   Response<Long> unlink(byte[] key);
 

@@ -73,5 +73,8 @@ public class DefaultValuesTest {
     // check delay between failover attempts
     assertEquals(12000, multiConfig.getDelayInBetweenFailoverAttempts());
 
+    // check initialization policy
+    assertEquals(InitializationPolicy.BuiltIn.MAJORITY_AVAILABLE,
+      multiConfig.getInitializationPolicy());
   }
 }

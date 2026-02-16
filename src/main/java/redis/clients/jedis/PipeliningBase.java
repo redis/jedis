@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
@@ -20,8 +21,11 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
 
 public abstract class PipeliningBase
@@ -319,16 +323,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<Long> setnx(String key, String value) {
     return appendCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> setex(String key, long seconds, String value) {
     return appendCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> psetex(String key, long milliseconds, String value) {
     return appendCommand(commandObjects.psetex(key, milliseconds, value));
@@ -384,6 +403,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#getrange(String, long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> substr(String key, int start, int end) {
     return appendCommand(commandObjects.substr(key, start, end));
@@ -580,11 +604,23 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#lmove(String, String, ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<String> rpoplpush(String srcKey, String dstKey) {
     return appendCommand(commandObjects.rpoplpush(srcKey, dstKey));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#blmove(String, String, ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<String> brpoplpush(String source, String destination, int timeout) {
     return appendCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -706,6 +742,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#hset(String, Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> hmset(String key, Map<String, String> hash) {
     return appendCommand(commandObjects.hmset(key, hash));
@@ -1698,6 +1739,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> xcfgset(String key, XCfgSetParams params) {
+    return appendCommand(commandObjects.xcfgset(key, params));
+  }
+
+  @Override
   public Response<Object> eval(String script) {
     return appendCommand(commandObjects.eval(script));
   }
@@ -2138,6 +2184,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hsetnx(key, field, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#hset(byte[], Map)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   */
+  @Deprecated
   @Override
   public Response<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
     return appendCommand(commandObjects.hmset(key, hash));
@@ -2434,6 +2485,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> delex(byte[] key, CompareCondition condition) {
+    return appendCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
+  public Response<Long> delex(String key, CompareCondition condition) {
+    return appendCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
+  public Response<byte[]> digestKey(byte[] key) {
+    return appendCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public Response<String> digestKey(String key) {
+    return appendCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
   public Response<Long> unlink(byte[] key) {
     return appendCommand(commandObjects.unlink(key));
   }
@@ -2643,11 +2714,23 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#lmove(byte[], byte[], ListDirection, ListDirection)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey) {
     return appendCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
+   * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> brpoplpush(byte[] source, byte[] destination, int timeout) {
     return appendCommand(commandObjects.brpoplpush(source, destination, timeout));
@@ -3455,6 +3538,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<byte[]> xcfgset(byte[] key, XCfgSetParams params) {
+    return appendCommand(commandObjects.xcfgset(key, params));
+  }
+
+  @Override
   public Response<String> set(byte[] key, byte[] value) {
     return appendCommand(commandObjects.set(key, value));
   }
@@ -3518,16 +3606,31 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getSet(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<Long> setnx(byte[] key, byte[] value) {
     return appendCommand(commandObjects.setnx(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> setex(byte[] key, long seconds, byte[] value) {
     return appendCommand(commandObjects.setex(key, seconds, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   */
+  @Deprecated
   @Override
   public Response<String> psetex(byte[] key, long milliseconds, byte[] value) {
     return appendCommand(commandObjects.psetex(key, milliseconds, value));
@@ -3583,6 +3686,11 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.append(key, value));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#getrange(byte[], long, long)} instead.
+   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> substr(byte[] key, int start, int end) {
     return appendCommand(commandObjects.substr(key, start, end));
@@ -3713,6 +3821,12 @@ public abstract class PipeliningBase
   @Override
   public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  @Experimental
+  public Response<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 
   @Override
@@ -4818,6 +4932,24 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.vsetattr(key, element, attributes));
   }
   // Vector Set pipeline commands end
+
+  // Hotkeys pipeline commands
+  public Response<String> hotkeysStart(HotkeysParams params) {
+    return appendCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public Response<String> hotkeysStop() {
+    return appendCommand(commandObjects.hotkeysStop());
+  }
+
+  public Response<String> hotkeysReset() {
+    return appendCommand(commandObjects.hotkeysReset());
+  }
+
+  public Response<HotkeysInfo> hotkeysGet() {
+    return appendCommand(commandObjects.hotkeysGet());
+  }
+  // Hotkeys pipeline commands end
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

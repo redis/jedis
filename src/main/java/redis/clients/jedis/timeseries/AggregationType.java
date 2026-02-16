@@ -10,7 +10,17 @@ public enum AggregationType implements Rawable {
   RANGE, COUNT, FIRST, LAST,
   STD_P("STD.P"), STD_S("STD.S"),
   VAR_P("VAR.P"), VAR_S("VAR.S"),
-  TWA;
+  TWA,
+  /**
+   * Count the number of NaN values in the bucket.
+   * @since RedisTimeSeries 8.6.0
+   */
+  COUNTNAN,
+  /**
+   * Count all values in the bucket, including NaN values.
+   * @since RedisTimeSeries 8.6.0
+   */
+  COUNTALL;
 
   private final byte[] raw;
 

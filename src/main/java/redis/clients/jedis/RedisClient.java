@@ -7,6 +7,7 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
@@ -53,31 +54,6 @@ public class RedisClient extends UnifiedJedis {
   }
 
   /**
-   * Creates a RedisClient from a Redis URI.
-   * <p>
-   * The URI must be in the format: {@code redis[s]://[[user][:password]@]host[:port][/database]}
-   * <p>
-   * Examples:
-   * <ul>
-   * <li>{@code redis://localhost:6379}</li>
-   * <li>{@code redis://user:password@localhost:6379/0}</li>
-   * <li>{@code rediss://localhost:6380} (SSL)</li>
-   * </ul>
-   * <p>
-   * <b>Note:</b> To connect using just a hostname and port without a URI, use
-   * {@link #create(String, int)} instead.
-   * <p>
-   * This is a convenience factory method that uses the builder pattern internally.
-   * @param url Redis URI string (not just a hostname)
-   * @return a new {@link RedisClient} instance
-   * @throws IllegalArgumentException if the URI format is invalid
-   * @see JedisURIHelper#isValid(java.net.URI)
-   */
-  public static RedisClient create(final String url) {
-    return builder().fromURI(url).build();
-  }
-
-  /**
    * Creates a RedisClient with the specified host and port.
    * <p>
    * This is a convenience factory method that uses the builder pattern internally.
@@ -120,12 +96,44 @@ public class RedisClient extends UnifiedJedis {
   /**
    * Creates a RedisClient from a Redis URI.
    * <p>
+   * The URI must be in the format: {@code redis[s]://[[user][:password]@]host[:port][/database]}
+   * <p>
+   * Examples:
+   * <ul>
+   * <li>{@code redis://localhost:6379}</li>
+   * <li>{@code redis://user:password@localhost:6379/0}</li>
+   * <li>{@code rediss://localhost:6380} (SSL)</li>
+   * </ul>
+   * <p>
+   * <b>Note:</b> To connect using just a hostname and port without a URI, use
+   * {@link #create(String, int)} instead.
+   * <p>
+   * This is a convenience factory method that uses the builder pattern internally.
+   * @param url Redis URI string (not just a hostname)
+   * @return a new {@link RedisClient} instance
+   * @throws IllegalArgumentException if the URI format is invalid
+   * @see JedisURIHelper#isValid(java.net.URI)
+   */
+  public static RedisClient create(final String url) {
+
+    return create(URI.create(url));
+  }
+
+  /**
+   * Creates a RedisClient from a Redis URI.
+   * <p>
    * This is a convenience factory method that uses the builder pattern internally.
    * @param uri the Redis server URI
    * @return a new {@link RedisClient} instance
    */
   public static RedisClient create(final URI uri) {
-    return builder().fromURI(uri).build();
+    JedisAsserts.notNull(uri, "Redis URI must not be null");
+    JedisAsserts.isTrue(JedisURIHelper.isValid(uri), "Invalid Redis URI");
+
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder(uri).build();
+    HostAndPort hostAndPort = JedisURIHelper.getHostAndPort(uri);
+
+    return builder().hostAndPort(hostAndPort).clientConfig(clientConfig).build();
   }
 
   /**

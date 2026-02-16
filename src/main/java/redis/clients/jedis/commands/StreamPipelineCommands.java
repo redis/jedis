@@ -279,4 +279,14 @@ public interface StreamPipelineCommands {
   Response<Map<String, List<StreamEntry>>> xreadGroupAsMap(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
+  /**
+   * XCFGSET key [IDMP-DURATION duration] [IDMP-MAXSIZE maxsize]
+   * Configure idempotent producer settings for a stream.
+   *
+   * @param key Stream name
+   * @param params Configuration parameters
+   * @return OK if successful
+   */
+  Response<String> xcfgset(String key, XCfgSetParams params);
+
 }

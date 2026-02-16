@@ -1,0 +1,223 @@
+# Note: this action is used as a part of redis oss release and test automation in
+# redis-developer/redis-oss-release-automation repo
+name: 'Run Jedis Tests'
+description: 'Run Jedis tests in a containerized environment'
+
+inputs:
+  redis_version:
+    description: 'Redis version to test against'
+    required: false
+  client_libs_test_image_tag:
+    description: 'Custom client libs test image tag to use instead of redis_version'
+    required: false
+    default: ''
+  client_libs_test_image:
+    description: 'Custom client libs test image name to use'
+    required: false
+    default: ''
+  java_version:
+    description: 'Java version to use'
+    required: false
+    default: '8'
+  java_distribution:
+    description: 'Java distribution to use'
+    required: false
+    default: 'temurin'
+  specific_test:
+    description: 'Run specific test(s) (optional)'
+    required: false
+    default: ''
+  codecov_token:
+    description: 'Codecov token for uploading coverage'
+    required: false
+    default: ''
+  # repository and ref are reqired for correct checkout when using action
+  # externally (e.g.: in redis-developer/redis-oss-release-automation)
+  repository:
+    description: 'Git repository to checkout'
+    required: false
+    default: ''
+  ref:
+    description: 'Git ref to checkout'
+    required: false
+    default: ''
+  redis_env_work_dir:
+    description: 'Redis env work directory'
+    required: false
+    default: ''
+  redis_env_conf_dir:
+    description: 'Redis env conf directory'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
+
+    - name: Validate inputs and prepare environment
+      shell: bash
+      id: args
+      env:
+        REDIS_VERSION: ${{ inputs.redis_version }}
+        CLIENT_LIBS_TEST_IMAGE: ${{ inputs.client_libs_test_image }}
+        CLIENT_LIBS_TEST_IMAGE_TAG: ${{ inputs.client_libs_test_image_tag }}
+        REDIS_ENV_WORK_DIR: ${{ inputs.redis_env_work_dir }}
+        REDIS_ENV_CONF_DIR: ${{ inputs.redis_env_conf_dir }}
+        REDIS_VERSION_LABEL: ${{ inputs.client_libs_test_image_tag || inputs.redis_version }}
+      run: |
+        make_args=()
+
+        if [ -n "$CLIENT_LIBS_TEST_IMAGE" ]; then
+          make_args+=(CLIENT_LIBS_TEST_IMAGE="$CLIENT_LIBS_TEST_IMAGE")
+        fi
+
+        if [ -n "$CLIENT_LIBS_TEST_IMAGE_TAG" ]; then
+          make_args+=(CLIENT_LIBS_TEST_IMAGE_TAG="$CLIENT_LIBS_TEST_IMAGE_TAG")
+        elif [ -n "$REDIS_VERSION" ]; then
+          make_args+=(version="$REDIS_VERSION")
+        else
+          echo "Error: redis_version or client_libs_test_image_tag input is required"
+          exit 1
+        fi
+
+        echo "make_args=${make_args[*]}" | tee -a ${GITHUB_OUTPUT}
+        # either custom docker tag name or actual redis version
+        echo "redis_version_label=$REDIS_VERSION_LABEL" | tee -a ${GITHUB_OUTPUT}
+
+        if [ -z "$REDIS_ENV_CONF_DIR" ]; then
+          REDIS_ENV_CONF_DIR=$(readlink -f "${{ github.action_path }}/../../../src/test/resources/env")
+        fi
+        echo "redis_env_conf_dir=$REDIS_ENV_CONF_DIR" | tee -a ${GITHUB_OUTPUT}
+
+        if [ -n "$REDIS_ENV_WORK_DIR" ]; then
+          echo "redis_env_work_dir=$REDIS_ENV_WORK_DIR" | tee -a ${GITHUB_OUTPUT}
+        else
+          REDIS_ENV_WORK_DIR=$(mktemp -du)
+          echo "redis_env_work_dir=$REDIS_ENV_WORK_DIR" | tee -a ${GITHUB_OUTPUT}
+        fi
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java_version }}
+        distribution: ${{ inputs.java_distribution }}
+
+    - name: System setup
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y make
+        make compile-module
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.m2/repository
+          /var/cache/apt
+        key: jedis-${{hashFiles('**/pom.xml')}}
+
+    - name: Set up Docker Compose environment
+      shell: bash
+      run: |
+        mkdir -m 777 $REDIS_ENV_WORK_DIR
+        make start ${{ steps.args.outputs.make_args }}
+      env:
+        REDIS_ENV_CONF_DIR: ${{ steps.args.outputs.redis_env_conf_dir }}
+        REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}
+
+    - name: Maven offline
+      shell: bash
+      run: |
+        mvn -q dependency:go-offline
+
+    - name: Build docs
+      shell: bash
+      run: |
+        mvn javadoc:jar
+
+    - name: Run Maven tests
+      shell: bash
+      run: |
+        export TEST_ENV_PROVIDER=oss-docker
+        export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
+        echo $TEST_WORK_FOLDER
+        if [ -z "$TESTS" ]; then
+          mvn -B -Dwith-param-names=true clean compile verify
+        else
+          mvn -B -Dwith-param-names=true -Dtest=$TESTS clean verify
+        fi
+      env:
+        REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}
+        JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ steps.args.outputs.redis_version_label }}.hprof"
+        TESTS: ${{ inputs.specific_test }}
+
+    - name: Upload Heap Dumps
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: heap-dumps-${{ steps.args.outputs.redis_version_label }}
+        path: ${{ runner.temp }}/heapdump-${{ steps.args.outputs.redis_version_label }}.hprof
+        retention-days: 5
+
+    - name: Upload Surefire Dump File
+      uses: actions/upload-artifact@v4
+      with:
+        name: surefire-dumpstream
+        path: target/surefire-reports/*.dumpstream
+
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: github.actor != 'dependabot[bot]'
+      with:
+        files: |
+          target/surefire-reports/**/*.xml
+          target/failsafe-reports/**/*.xml
+
+    - name: Collect logs on failure
+      if: failure()
+      shell: bash
+      run: |
+        echo "Collecting logs from $REDIS_ENV_WORK_DIR..."
+        ls -la $REDIS_ENV_WORK_DIR
+      env:
+        REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}
+
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: redis-env-work-logs-${{ steps.args.outputs.redis_version_label }}
+        path: ${{ steps.args.outputs.redis_env_work_dir }}
+
+    - name: Tear down Docker Compose environment
+      if: always()
+      shell: bash
+      run: |
+        make stop
+      continue-on-error: true
+
+    - name: Upload merged coverage to Codecov
+      if: inputs.codecov_token != ''
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./target/site/jacoco/jacoco.xml
+        flags: docker-${{ steps.args.outputs.redis_version_label }}
+        name: merged-coverage
+        fail_ci_if_error: false
+        token: ${{ inputs.codecov_token }}
+
+    - name: Upload test results to Codecov (unit + IT)
+      if: inputs.codecov_token != '' && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      uses: codecov/test-results-action@v1
+      with:
+        fail_ci_if_error: false
+        files: ./target/surefire-reports/TEST*,./target/failsafe-reports/TEST*
+        flags: test-results-docker-${{ steps.args.outputs.redis_version_label }}
+        token: ${{ inputs.codecov_token }}
+

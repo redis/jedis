@@ -59,7 +59,7 @@
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.21.0</jackson.version>
 		<maven.surefire.version>3.5.4</maven.surefire.version>
-		<junit.version>5.14.2</junit.version>
+		<junit.version>5.14.3</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->

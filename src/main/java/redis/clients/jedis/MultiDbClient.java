@@ -186,10 +186,27 @@ public class MultiDbClient extends UnifiedJedis {
     return getMultiDbConnectionProvider().isHealthy(endpoint);
   }
 
+  /**
+   * Returns the weight of the specified database.
+   * <p>
+   * This method provides the current weight of a specific endpoint.
+   * </p>
+   * @param endpoint the endpoint to check
+   * @return the weight of the endpoint
+   */
   public float getWeight(Endpoint endpoint) {
     return getMultiDbConnectionProvider().getDatabase(endpoint).getWeight();
   }
 
+  /**
+   * Sets the weight of the specified database.
+   * <p>
+   * This method allows changing the weight of a specific endpoint at runtime. The weight determines
+   * the priority of the endpoint during failover operations.
+   * </p>
+   * @param endpoint the endpoint to change
+   * @param weight the new weight for the endpoint
+   */
   public void setWeight(Endpoint endpoint, float weight) {
     getMultiDbConnectionProvider().getDatabase(endpoint).setWeight(weight);
   }

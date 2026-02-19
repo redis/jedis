@@ -122,7 +122,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
   @Test
   void testRemoveNonExistentDatabase() {
-    HostAndPort nonExistentEndpoint = new HostAndPort("localhost", 9999);
+    HostAndPort nonExistentEndpoint = new HostAndPort("dummy", 9999);
 
     // Should throw validation exception for non-existent endpoint
     assertThrows(JedisValidationException.class, () -> provider.remove(nonExistentEndpoint));
@@ -146,7 +146,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
     DatabaseConfig config2 = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
 
     // Create a third endpoint for this test
-    HostAndPort endpoint3 = new HostAndPort("localhost", 6381);
+    HostAndPort endpoint3 = new HostAndPort("dummy", 6381);
     DatabaseConfig config3 = createDatabaseConfig(endpoint3, 3.0f);
 
     provider.add(config2);
@@ -222,9 +222,6 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   @Test
   void testGetWeight() {
     MultiDbClient client = getClient();
-    // MultiDbClient client = MultiDbClient.builder().connectionProvider(provider).build();
-
-    // client.getWeight(null)
     // Verify we can get the initial weight set during configuration
     float weight1 = client.getWeight(endpoint1.getHostAndPort());
     float weight2 = client.getWeight(endpoint2.getHostAndPort());
@@ -256,10 +253,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
     Endpoint endpoint = endpoint2.getHostAndPort();
 
     // Set weight to zero
-    client.setWeight(endpoint, 0.0f);
-
-    // Verify the weight is now zero
-    assertEquals(0.0f, client.getWeight(endpoint));
+    assertThrows(IllegalArgumentException.class, () -> client.setWeight(endpoint, 0.0f));
   }
 
   @Test

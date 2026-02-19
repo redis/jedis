@@ -30,7 +30,7 @@ public class LagAwareStrategyUnitTest {
     endpoint = new Endpoint() {
       @Override
       public String getHost() {
-        return "localhost";
+        return "dummy";
       }
 
       @Override
@@ -44,7 +44,7 @@ public class LagAwareStrategyUnitTest {
   @Test
   void healthy_when_bdb_available_and_cached_uid_used_on_next_check() throws Exception {
     RedisRestAPI.BdbInfo bdbInfo = new RedisRestAPI.BdbInfo("1", Arrays.asList(
-      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "dummy", 6379, "1:1")));
 
     RedisRestAPI[] reference = new RedisRestAPI[1];
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
@@ -89,7 +89,7 @@ public class LagAwareStrategyUnitTest {
   @Test
   void exception_and_cache_reset_on_exception_then_recovers_next_time() throws Exception {
     RedisRestAPI.BdbInfo bdbInfo = new RedisRestAPI.BdbInfo("42", Arrays.asList(
-      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "dummy", 6379, "1:1")));
 
     RedisRestAPI[] reference = new RedisRestAPI[1];
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
@@ -123,7 +123,7 @@ public class LagAwareStrategyUnitTest {
   @Test
   void healthy_when_matching_bdb_found_by_host() throws Exception {
     RedisRestAPI.BdbInfo matchingBdb = new RedisRestAPI.BdbInfo("matched-bdb-123", Arrays.asList(
-      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "dummy", 6379, "1:1")));
 
     RedisRestAPI[] reference = new RedisRestAPI[1];
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
@@ -226,7 +226,7 @@ public class LagAwareStrategyUnitTest {
   @Test
   void healthy_when_extended_check_enabled_and_lag_check_passes() throws Exception {
     RedisRestAPI.BdbInfo bdbInfo = new RedisRestAPI.BdbInfo("1", Arrays.asList(
-      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "dummy", 6379, "1:1")));
 
     RedisRestAPI[] reference = new RedisRestAPI[1];
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,
@@ -252,7 +252,7 @@ public class LagAwareStrategyUnitTest {
   @Test
   void healthy_when_extended_check_disabled_and_standard_check_passes() throws Exception {
     RedisRestAPI.BdbInfo bdbInfo = new RedisRestAPI.BdbInfo("1", Arrays.asList(
-      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "localhost", 6379, "1:1")));
+      new RedisRestAPI.EndpointInfo(Arrays.asList("127.0.0.1"), "dummy", 6379, "1:1")));
 
     RedisRestAPI[] reference = new RedisRestAPI[1];
     try (MockedConstruction<RedisRestAPI> mockedConstructor = mockConstruction(RedisRestAPI.class,

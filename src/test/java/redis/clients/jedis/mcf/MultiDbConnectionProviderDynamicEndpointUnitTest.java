@@ -231,6 +231,22 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   }
 
   @Test
+  void testGetWeightWithNonExistingEndpoint() {
+    MultiDbClient client = getClient();
+
+    Endpoint nonExistingEndpoint = new HostAndPort("non-existing-host", 6379);
+    assertThrows(JedisValidationException.class, () -> client.getWeight(nonExistingEndpoint));
+  }
+
+  @Test
+  void testSetWeightWithNonExistingEndpoint() {
+    MultiDbClient client = getClient();
+
+    Endpoint nonExistingEndpoint = new HostAndPort("non-existing-host", 6379);
+    assertThrows(JedisValidationException.class, () -> client.setWeight(nonExistingEndpoint, 1.0f));
+  }
+
+  @Test
   void testSetWeight() {
     MultiDbClient client = getClient();
 
@@ -271,5 +287,14 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
     client.setWeight(endpoint, 1.0f);
     assertEquals(1.0f, client.getWeight(endpoint));
+  }
+
+  @Test
+  void testSetWeightWithNegativeWeight() {
+    MultiDbClient client = getClient();
+
+    Endpoint endpoint = endpoint1.getHostAndPort();
+    // Verify that setting a negative weight is rejected
+    assertThrows(JedisValidationException.class, () -> client.setWeight(endpoint, -1.0f));
   }
 }

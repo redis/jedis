@@ -4,12 +4,14 @@ import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.MultiDbClientBuilder;
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mcf.MultiDbCommandExecutor;
 import redis.clients.jedis.mcf.MultiDbPipeline;
 import redis.clients.jedis.mcf.MultiDbTransaction;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 
 import java.util.Set;
 
@@ -192,10 +194,15 @@ public class MultiDbClient extends UnifiedJedis {
    * This method provides the current weight of a specific endpoint.
    * </p>
    * @param endpoint the endpoint to check
+   * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint doesn't exist
    * @return the weight of the endpoint
    */
   public float getWeight(Endpoint endpoint) {
-    return getMultiDbConnectionProvider().getDatabase(endpoint).getWeight();
+    Database db = getMultiDbConnectionProvider().getDatabase(endpoint);
+    if (db == null) {
+      throw new JedisValidationException("Endpoint " + endpoint + " does not exist.");
+    }
+    return db.getWeight();
   }
 
   /**
@@ -206,9 +213,14 @@ public class MultiDbClient extends UnifiedJedis {
    * </p>
    * @param endpoint the endpoint to change
    * @param weight the new weight for the endpoint
+   * @throws redis.clients.jedis.exceptions.JedisValidationException if the endpoint doesn't exist
    */
   public void setWeight(Endpoint endpoint, float weight) {
-    getMultiDbConnectionProvider().getDatabase(endpoint).setWeight(weight);
+    Database db = getMultiDbConnectionProvider().getDatabase(endpoint);
+    if (db == null) {
+      throw new JedisValidationException("Endpoint " + endpoint + " does not exist.");
+    }
+    db.setWeight(weight);
   }
 
   /**

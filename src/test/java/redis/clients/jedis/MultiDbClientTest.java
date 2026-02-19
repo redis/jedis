@@ -235,12 +235,7 @@ public class MultiDbClientTest {
   @Test
   void testSetWeightToZero() {
     Endpoint endpoint = endpoint2.getHostAndPort();
-
-    // Set weight to zero
-    client.setWeight(endpoint, 0.0f);
-
-    // Verify the weight is now zero
-    assertEquals(0.0f, client.getWeight(endpoint));
+    assertThrows(IllegalArgumentException.class, () -> client.setWeight(endpoint, 0.0f));
   }
 
   @Test

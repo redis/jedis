@@ -295,6 +295,6 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
     Endpoint endpoint = endpoint1.getHostAndPort();
     // Verify that setting a negative weight is rejected
-    assertThrows(JedisValidationException.class, () -> client.setWeight(endpoint, -1.0f));
+    assertThrows(IllegalArgumentException.class, () -> client.setWeight(endpoint, -1.0f));
   }
 }

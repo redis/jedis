@@ -54,37 +54,44 @@ public class LibraryInfo {
       List list = (List) data;
       if (list.isEmpty()) return null;
 
+      String[] libname = { null };
+      String[] enginename = { null };
+      String[] librarycode = { null };
+      List[] functions = { null };
+
       if (list.get(0) instanceof KeyValue) {
-        String libname = null, enginename = null, librarycode = null;
-        List<Map<String, Object>> functions = null;
+        // RESP3 format: list of KeyValue objects
         for (KeyValue kv : (List<KeyValue>) list) {
-          switch (BuilderFactory.STRING.build(kv.getKey())) {
-            case "library_name":
-              libname = BuilderFactory.STRING.build(kv.getValue());
-              break;
-            case "engine":
-              enginename = BuilderFactory.STRING.build(kv.getValue());
-              break;
-            case "functions":
-              functions = ((List<Object>) kv.getValue()).stream().map(o -> ENCODED_OBJECT_MAP.build(o)).collect(Collectors.toList());
-              break;
-            case "library_code":
-              librarycode = BuilderFactory.STRING.build(kv.getValue());
-              break;
-          }
+          processField(kv.getKey(), kv.getValue(), libname, enginename, functions, librarycode);
         }
-        return new LibraryInfo(libname, enginename, functions, librarycode);
+      } else {
+        // RESP2 format: flat list with alternating key-value pairs
+        // Note: Redis Enterprise may include extra fields like "consistent"
+        for (int i = 0; i + 1 < list.size(); i += 2) {
+          processField(list.get(i), list.get(i + 1), libname, enginename, functions, librarycode);
+        }
       }
 
-      String libname = STRING.build(list.get(1));
-      String engine = STRING.build(list.get(3));
-      List<Object> rawFunctions = (List<Object>) list.get(5);
-      List<Map<String, Object>> functions = rawFunctions.stream().map(o -> ENCODED_OBJECT_MAP.build(o)).collect(Collectors.toList());
-      if (list.size() <= 6) {
-        return new LibraryInfo(libname, engine, functions);
+      return new LibraryInfo(libname[0], enginename[0], functions[0], librarycode[0]);
+    }
+
+    private void processField(Object key, Object value, String[] libname, String[] enginename,
+        List[] functions, String[] librarycode) {
+      switch (BuilderFactory.STRING.build(key)) {
+        case "library_name":
+          libname[0] = BuilderFactory.STRING.build(value);
+          break;
+        case "engine":
+          enginename[0] = BuilderFactory.STRING.build(value);
+          break;
+        case "functions":
+          functions[0] = ((List<Object>) value).stream().map(ENCODED_OBJECT_MAP::build)
+              .collect(Collectors.toList());
+          break;
+        case "library_code":
+          librarycode[0] = BuilderFactory.STRING.build(value);
+          break;
       }
-      String code = STRING.build(list.get(7));
-      return new LibraryInfo(libname, engine, functions, code);
     }
   };
 

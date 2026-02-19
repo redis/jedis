@@ -20,10 +20,6 @@ public class LibraryInfo {
   private final List<Map<String, Object>> functions;
   private final String libraryCode;
 
-  public LibraryInfo(String libraryName, String engineName, List<Map<String, Object>> functions) {
-    this(libraryName, engineName, functions, null);
-  }
-
   public LibraryInfo(String libraryName, String engineName, List<Map<String, Object>> functions, String code) {
     this.libraryName = libraryName;
     this.engine = engineName;

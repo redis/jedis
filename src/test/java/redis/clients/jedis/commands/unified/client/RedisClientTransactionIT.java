@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands.unified.client;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -114,30 +116,6 @@ public class RedisClientTransactionIT extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  public void transactionManualCommandsBeforeMultiReturnResponseImmediately() {
-
-    try (AbstractTransaction tx = jedis.transaction(false)) {
-      // command before multi
-      Response<String> txSet = tx.set("mykey", "foo");
-      Response<String> txGet = tx.get("mykey");
-      assertEquals("OK", txSet.get());
-      assertEquals("foo", txGet.get());
-    }
-  }
-
-  @Test
-  public void transactionManualCommandsBeforeMultiPropagateException() {
-
-    try (AbstractTransaction tx = jedis.transaction(false)) {
-      Response<String> txSet = tx.set("mykey", "foo");
-      Response<Long> txIncr = tx.incr("mykey");
-      assertEquals("OK", txSet.get());
-      JedisDataException ex = assertThrows(JedisDataException.class, txIncr::get);
-      assertEquals("ERR value is not an integer or out of range", ex.getMessage());
-    }
-  }
-
-  @Test
   public void publishInTransaction() {
     try (AbstractTransaction tx = jedis.multi()) {
       Response<Long> p1 = tx.publish("foo", "bar");
@@ -146,6 +124,96 @@ public class RedisClientTransactionIT extends UnifiedJedisCommandsTestBase {
 
       assertEquals(0, p1.get().longValue());
       assertEquals(0, p2.get().longValue());
+    }
+  }
+
+  @Nested
+  class ResponseHandlingIT {
+
+    @BeforeEach
+    public void setUp() {
+      RedisClientCommandsTestHelper.clearData();
+    }
+
+    @Test
+    public void notInTransactionResponseReturnsExpectedValue() {
+      // Commands executed before multi() should return immediate responses
+      try (AbstractTransaction tx = jedis.transaction(false)) {
+        Response<String> setResponse = tx.set("key1", "value1");
+        Response<String> getResponse = tx.get("key1");
+
+        // Responses should be available immediately (not in transaction yet)
+        assertEquals("OK", setResponse.get());
+        assertEquals("value1", getResponse.get());
+      }
+    }
+
+    @Test
+    public void notInTransactionResponsePropagatesException() {
+      // Commands executed before multi() that fail should propagate exceptions
+      try (AbstractTransaction tx = jedis.transaction(false)) {
+        Response<String> setResponse = tx.set("key1", "not_a_number");
+        Response<Long> incrResponse = tx.incr("key1");
+
+        // Set should succeed
+        assertEquals("OK", setResponse.get());
+
+        // Incr should fail and propagate exception immediately
+        JedisDataException ex = assertThrows(JedisDataException.class, incrResponse::get);
+        assertEquals("ERR value is not an integer or out of range", ex.getMessage());
+      }
+    }
+
+    @Test
+    public void inTransactionResponseThrowsBeforeExec() {
+      // Calling response.get() before exec() should throw IllegalStateException
+      try (AbstractTransaction tx = jedis.multi()) {
+        Response<String> response = tx.set("key1", "value1");
+
+        // Attempting to get response before exec() should throw
+        IllegalStateException ex = assertThrows(IllegalStateException.class, response::get);
+        assertTrue(ex.getMessage()
+            .contains("Please close pipeline or multi block before calling this method"));
+
+        // Now exec the transaction
+        tx.exec();
+
+        // After exec, response should be available
+        assertEquals("OK", response.get());
+      }
+    }
+
+    @Test
+    public void afterExecResponseContainsActualResults() {
+      // After exec(), Response objects should contain actual results from Redis
+      try (AbstractTransaction tx = jedis.multi()) {
+        Response<String> setResponse = tx.set("key1", "value1");
+        Response<String> getResponse = tx.get("key1");
+
+        tx.exec();
+
+        // Verify Response objects contain correct values
+        assertEquals("OK", setResponse.get());
+        assertEquals("value1", getResponse.get());
+      }
+    }
+
+    @Test
+    public void execReturnsListWithAllResultsInOrder() {
+      // exec() should return List<Object> with all command results in order
+      try (AbstractTransaction tx = jedis.multi()) {
+        tx.set("key1", "value1");
+        tx.get("key1");
+        tx.del("key1");
+
+        List<Object> results = tx.exec();
+
+        // Verify all results are in the correct order
+        assertEquals(3, results.size());
+        assertEquals("OK", results.get(0)); // set key1
+        assertEquals("value1", results.get(1)); // get key1
+        assertEquals(1L, results.get(2)); // del key1
+      }
     }
   }
 }

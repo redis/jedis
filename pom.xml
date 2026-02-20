@@ -567,6 +567,7 @@
 						<include>**/*Hotkeys*.java</include>
 						<include>**/TestDataUtil*.java</include>
 						<include>**/*JedisClientConfig*.java</include>
+						<include>**/resps/LibraryInfoTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

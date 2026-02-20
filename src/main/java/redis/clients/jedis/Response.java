@@ -75,4 +75,31 @@ public class Response<T> implements Supplier<T> {
     return "Response " + builder.toString();
   }
 
+  static class DecodedResponse<T> extends Response<T> {
+    private final T response;
+    private final JedisDataException exception;
+
+    DecodedResponse(T response, JedisDataException exception) {
+      super(null);
+      this.exception = exception;
+      this.response = response;
+    }
+
+    @Override
+    public T get() {
+      if (exception != null) {
+        throw exception;
+      }
+
+      return response;
+    }
+  }
+
+   static <T> Response<T> of(T response) {
+      return new DecodedResponse<>(response, null);
+   }
+
+   static <T> Response<T> error(JedisDataException exception) {
+      return new DecodedResponse<>(null, exception);
+   }
 }

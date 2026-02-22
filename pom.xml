@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>7.3.0-SNAPSHOT</version>
+	<version>7.4.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -567,6 +567,7 @@
 						<include>**/*Hotkeys*.java</include>
 						<include>**/TestDataUtil*.java</include>
 						<include>**/*JedisClientConfig*.java</include>
+						<include>**/resps/LibraryInfoTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

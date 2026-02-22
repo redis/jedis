@@ -20,6 +20,11 @@ public class LibraryInfo {
   private final List<Map<String, Object>> functions;
   private final String libraryCode;
 
+  /**
+   * @deprecated Since 7.4. This constructor will be removed in the next major release.
+   *             Use {@link #LibraryInfo(String, String, List, String)} instead.
+   */
+  @Deprecated
   public LibraryInfo(String libraryName, String engineName, List<Map<String, Object>> functions) {
     this(libraryName, engineName, functions, null);
   }
@@ -47,6 +52,13 @@ public class LibraryInfo {
     return libraryCode;
   }
 
+  private static class LibraryInfoHolder {
+    String libraryName;
+    String engineName;
+    String libraryCode;
+    List<Map<String, Object>> functions;
+  }
+
   public static final Builder<LibraryInfo> LIBRARY_INFO = new Builder<LibraryInfo>() {
     @Override
     public LibraryInfo build(Object data) {
@@ -54,37 +66,41 @@ public class LibraryInfo {
       List list = (List) data;
       if (list.isEmpty()) return null;
 
+      LibraryInfoHolder holder = new LibraryInfoHolder();
+
       if (list.get(0) instanceof KeyValue) {
-        String libname = null, enginename = null, librarycode = null;
-        List<Map<String, Object>> functions = null;
+        // RESP3 format: list of KeyValue objects
         for (KeyValue kv : (List<KeyValue>) list) {
-          switch (BuilderFactory.STRING.build(kv.getKey())) {
-            case "library_name":
-              libname = BuilderFactory.STRING.build(kv.getValue());
-              break;
-            case "engine":
-              enginename = BuilderFactory.STRING.build(kv.getValue());
-              break;
-            case "functions":
-              functions = ((List<Object>) kv.getValue()).stream().map(o -> ENCODED_OBJECT_MAP.build(o)).collect(Collectors.toList());
-              break;
-            case "library_code":
-              librarycode = BuilderFactory.STRING.build(kv.getValue());
-              break;
-          }
+          processField(kv.getKey(), kv.getValue(), holder);
         }
-        return new LibraryInfo(libname, enginename, functions, librarycode);
+      } else {
+        // RESP2 format: flat list with alternating key-value pairs
+        // Note: Redis Enterprise may include extra fields like "consistent"
+        for (int i = 0; i + 1 < list.size(); i += 2) {
+          processField(list.get(i), list.get(i + 1), holder);
+        }
       }
 
-      String libname = STRING.build(list.get(1));
-      String engine = STRING.build(list.get(3));
-      List<Object> rawFunctions = (List<Object>) list.get(5);
-      List<Map<String, Object>> functions = rawFunctions.stream().map(o -> ENCODED_OBJECT_MAP.build(o)).collect(Collectors.toList());
-      if (list.size() <= 6) {
-        return new LibraryInfo(libname, engine, functions);
+      return new LibraryInfo(holder.libraryName, holder.engineName, holder.functions, holder.libraryCode);
+    }
+
+    private void processField(Object key, Object value, LibraryInfoHolder holder) {
+      switch (BuilderFactory.STRING.build(key)) {
+        case "library_name":
+          holder.libraryName = BuilderFactory.STRING.build(value);
+          break;
+        case "engine":
+          holder.engineName = BuilderFactory.STRING.build(value);
+          break;
+        case "functions":
+          holder.functions = ((List<Object>) value).stream()
+              .map(ENCODED_OBJECT_MAP::build)
+              .collect(Collectors.toList());
+          break;
+        case "library_code":
+          holder.libraryCode = BuilderFactory.STRING.build(value);
+          break;
       }
-      String code = STRING.build(list.get(7));
-      return new LibraryInfo(libname, engine, functions, code);
     }
   };
 

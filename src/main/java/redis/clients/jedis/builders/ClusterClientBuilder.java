@@ -18,12 +18,14 @@ import redis.clients.jedis.providers.ConnectionProvider;
 public abstract class ClusterClientBuilder<C>
     extends AbstractClientBuilder<ClusterClientBuilder<C>, C> {
 
+  private static final ReadFrom DEFAULT_READ_FROM = ReadFrom.UPSTREAM;
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
   private int maxAttempts = JedisCluster.DEFAULT_MAX_ATTEMPTS;
   private Duration maxTotalRetriesDuration;
   private Duration topologyRefreshPeriod = null;
   private CommandFlagsRegistry commandFlags = null;
+  private ReadFrom readFrom = DEFAULT_READ_FROM;
 
   /**
    * Sets the cluster nodes to connect to.
@@ -88,6 +90,27 @@ public abstract class ClusterClientBuilder<C>
     return this;
   }
 
+  /**
+   * Sets the read preference for cluster operations.
+   * <p>
+   * This determines whether read operations should be directed to master nodes, replica nodes, or
+   * follow a specific strategy. If not set, reads will default to master nodes.
+   * @param readFrom the read preference strategy
+   * @return this builder
+   */
+  public ClusterClientBuilder<C> readFrom(ReadFrom readFrom) {
+    this.readFrom = readFrom;
+    return this;
+  }
+
+  /**
+   * Gets the configured ReadFrom strategy.
+   * @return the configured ReadFrom, or null if not set
+   */
+  protected ReadFrom getReadFrom() {
+    return this.readFrom;
+  }
+
   @Override
   protected ClusterClientBuilder<C> self() {
     return this;
@@ -118,7 +141,7 @@ public abstract class ClusterClientBuilder<C>
         : this.maxTotalRetriesDuration;
 
     return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
-        this.maxAttempts, effectiveMaxTotalRetriesDuration, this.commandFlags);
+        this.maxAttempts, effectiveMaxTotalRetriesDuration, this.commandFlags, this.readFrom);
   }
 
   @Override

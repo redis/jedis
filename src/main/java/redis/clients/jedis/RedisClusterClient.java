@@ -57,9 +57,13 @@ public class RedisClusterClient extends UnifiedJedis {
    */
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
+  // TODO: ClusterClientConfig? for cluster specific configurations
+  private final ReadFrom readFrom;
+
   private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache, ReadFrom readFrom) {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    this.readFrom = readFrom;
   }
 
   /**
@@ -133,7 +137,7 @@ public class RedisClusterClient extends UnifiedJedis {
     @Override
     protected RedisClusterClient createClient() {
       return new RedisClusterClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache);
+          clientConfig.getRedisProtocol(), cache, getReadFrom());
     }
   }
 
@@ -162,6 +166,14 @@ public class RedisClusterClient extends UnifiedJedis {
    */
   public Connection getConnectionFromSlot(int slot) {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
+  }
+
+  /**
+   * Returns the configured read preference strategy.
+   * @return the ReadFrom configuration, or null if not configured
+   */
+  public ReadFrom getReadFrom() {
+    return readFrom;
   }
 
   // commands

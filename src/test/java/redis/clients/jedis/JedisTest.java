@@ -303,6 +303,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void checkCloseableAfterConnect() {
     Jedis bj = new Jedis();
     bj.connect();

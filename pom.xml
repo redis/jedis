@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>7.3.0-SNAPSHOT</version>
+	<version>7.4.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -58,7 +58,7 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.21.0</jackson.version>
-		<maven.surefire.version>3.5.4</maven.surefire.version>
+		<maven.surefire.version>3.5.5</maven.surefire.version>
 		<junit.version>5.14.3</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
@@ -568,6 +568,7 @@
 						<include>**/TestDataUtil*.java</include>
 						<include>**/*JedisClientConfig*.java</include>
 						<include>**/RedisClientTransactionIT.java</include>
+						<include>**/resps/LibraryInfoTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

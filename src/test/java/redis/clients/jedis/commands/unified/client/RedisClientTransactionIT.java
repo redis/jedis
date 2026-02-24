@@ -88,7 +88,7 @@ public class RedisClientTransactionIT extends UnifiedJedisCommandsTestBase {
   }
 
   /**
-   * Verify manual multi and commands send before sending multi does not cause out of order
+   * Verify manual multi and commands sent before sending multi does not cause out of order
    * responses
    */
   @Test

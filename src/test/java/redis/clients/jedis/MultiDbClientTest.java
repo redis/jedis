@@ -208,6 +208,51 @@ public class MultiDbClientTest {
     }
   }
 
+  @Test
+  void testGetWeight() {
+    // Verify we can get the initial weight set during configuration
+    float weight1 = client.getWeight(endpoint1.getHostAndPort());
+    float weight2 = client.getWeight(endpoint2.getHostAndPort());
+
+    assertEquals(100.0f, weight1);
+    assertEquals(50.0f, weight2);
+  }
+
+  @Test
+  void testSetWeight() {
+    Endpoint endpoint = endpoint1.getHostAndPort();
+
+    // Verify initial weight
+    assertEquals(100.0f, client.getWeight(endpoint));
+
+    // Set a new weight
+    client.setWeight(endpoint, 75.0f);
+
+    // Verify the weight has changed
+    assertEquals(75.0f, client.getWeight(endpoint));
+  }
+
+  @Test
+  void testSetWeightToZero() {
+    Endpoint endpoint = endpoint2.getHostAndPort();
+    assertThrows(IllegalArgumentException.class, () -> client.setWeight(endpoint, 0.0f));
+  }
+
+  @Test
+  void testSetWeightMultipleTimes() {
+    Endpoint endpoint = endpoint1.getHostAndPort();
+
+    // Set weight multiple times
+    client.setWeight(endpoint, 25.0f);
+    assertEquals(25.0f, client.getWeight(endpoint));
+
+    client.setWeight(endpoint, 80.0f);
+    assertEquals(80.0f, client.getWeight(endpoint));
+
+    client.setWeight(endpoint, 1.0f);
+    assertEquals(1.0f, client.getWeight(endpoint));
+  }
+
   private void awaitIsHealthy(HostAndPort hostAndPort) {
     await().atMost(Duration.ofSeconds(1)).until(() -> client.isHealthy(hostAndPort));
   }

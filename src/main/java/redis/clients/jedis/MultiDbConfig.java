@@ -1062,6 +1062,7 @@ public final class MultiDbConfig {
        * @return this builder instance for method chaining
        */
       public Builder weight(float weight) {
+        JedisAsserts.isTrue(weight > 0, "Database weight must be greater than 0");
         this.weight = weight;
         return this;
       }

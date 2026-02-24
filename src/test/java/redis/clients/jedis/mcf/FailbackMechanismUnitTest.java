@@ -19,7 +19,7 @@ class FailbackMechanismUnitTest {
 
   @BeforeEach
   void setUp() {
-    endpoint1 = new HostAndPort("localhost", 6379);
+    endpoint1 = new HostAndPort("dummy", 6379);
     clientConfig = DefaultJedisClientConfig.builder().build();
   }
 

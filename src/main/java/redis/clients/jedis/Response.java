@@ -93,6 +93,11 @@ public class Response<T> implements Supplier<T> {
 
       return response;
     }
+
+    @Override
+    public String toString() {
+        return  "Response<T>";
+    }
   }
 
    static <T> Response<T> of(T response) {

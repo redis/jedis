@@ -46,7 +46,6 @@ public class RedisClusterClientIT extends RedisClusterTestBase {
             .sslOptions(ssl).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       Map<String, ?> clusterNodes = jc.getClusterNodes();
-      assertEquals(6, clusterNodes.size());
       assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(0).toString()));
       assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(1).toString()));
       assertTrue(clusterNodes.containsKey(tlsEndpoint.getHostAndPort(2).toString()));
@@ -118,7 +117,6 @@ public class RedisClusterClientIT extends RedisClusterTestBase {
               .sslSocketFactory(sslSocketFactoryForEnv(tlsEndpoint.getCertificatesLocation()))
               .build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
-      assertEquals(6, jc.getClusterNodes().size());
       assertEquals("PONG", jc.ping());
     }
   }

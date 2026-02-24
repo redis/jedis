@@ -11,9 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.time.Duration;
 
+import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,6 +26,7 @@ import redis.clients.jedis.args.HotkeysMetric;
 import redis.clients.jedis.commands.unified.HotkeysCommandsTestBase;
 import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.resps.HotkeysInfo;
+import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TestDataUtil;
 
 @ParameterizedClass
@@ -182,8 +185,16 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
 
   @Test
   public void infoHotkeysSection() {
+    boolean isRedis8_6_1OrHigher = getRedisVersion(jedis)
+        .isGreaterThanOrEqualTo(RedisVersion.of("8.6.1"));
+
     String info = jedis.info();
-    assertFalse(info.contains("# Hotkeys"));
+    // Hotkeys section is displayed in info even when empty starting from Redis 8.6.1+
+    if (isRedis8_6_1OrHigher) {
+      assertTrue(info.contains("# Hotkeys"));
+    } else {
+      assertFalse(info.contains("# Hotkeys"));
+    }
 
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU));
     info = jedis.info();
@@ -197,6 +208,13 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
 
     jedis.hotkeysReset();
     info = jedis.info();
-    assertFalse(info.contains("# Hotkeys"));
+
+    // Hotkeys section is displayed in info even when empty starting from Redis 8.6.1+
+    if (isRedis8_6_1OrHigher) {
+      assertTrue(info.contains("# Hotkeys"));
+    } else {
+      assertFalse(info.contains("# Hotkeys"));
+    }
+
   }
 }

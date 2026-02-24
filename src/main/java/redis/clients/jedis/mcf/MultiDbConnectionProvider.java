@@ -43,6 +43,7 @@ import redis.clients.jedis.mcf.InitializationPolicy.Decision;
 import redis.clients.jedis.mcf.JedisFailoverException.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.Pool;
 
 /**
@@ -831,7 +832,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     private TrackingConnectionPool connectionPool;
     private final Retry retry;
     private final CircuitBreaker circuitBreaker;
-    private final float weight;
+    private float weight;
     private final HealthCheck healthCheck;
     private final MultiDbConfig multiDbConfig;
     private boolean disabled = false;
@@ -899,6 +900,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
      */
     public float getWeight() {
       return weight;
+    }
+
+    public void setWeight(float weight) {
+      JedisAsserts.isTrue(weight > 0, "Database weight must be greater than 0");
+      this.weight = weight;
     }
 
     public boolean isCBForcedOpen() {

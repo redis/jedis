@@ -162,9 +162,9 @@
     "tls": true,
     "tls_cert_path": "cluster-stable/work/tls",
     "endpoints": [
-      "rediss://127.0.0.1:8479",
-      "rediss://127.0.0.1:8480",
-      "rediss://127.0.0.1:8481"
+      "rediss://localhost:8479",
+      "rediss://localhost:8480",
+      "rediss://localhost:8481"
     ]
   },
   "cluster-stack": {

@@ -12,13 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.EndpointConfig;
-import redis.clients.jedis.Endpoints;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPortMapper;
-import redis.clients.jedis.RedisClusterClient;
-import redis.clients.jedis.SslOptions;
+import redis.clients.jedis.*;
 import redis.clients.jedis.util.*;
 
 /**
@@ -57,18 +51,6 @@ public abstract class RedisClusterTestBase {
   protected RedisClusterClient cluster;
 
   /**
-   * HostAndPortMapper that maps IP addresses (127.0.0.1) to localhost for hostname verification.
-   */
-  protected final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
-    String host = hostAndPort.getHost();
-    int port = hostAndPort.getPort();
-    if ("127.0.0.1".equals(host)) {
-      host = "localhost";
-    }
-    return new HostAndPort(host, port);
-  };
-
-  /**
    * HostAndPortMapper that only maps localhost, leaving IP addresses unchanged. Useful for testing
    * hostname verification failures.
    */
@@ -97,11 +79,11 @@ public abstract class RedisClusterTestBase {
   @BeforeEach
   public void setUp() {
     SslOptions sslOptions = SslOptions.builder().truststore(trustStorePath.toFile())
-        .trustStoreType("jceks").build();
+        .trustStoreType("jceks").sslVerifyMode(SslVerifyMode.CA).build();
 
     cluster = RedisClusterClient.builder().nodes(new HashSet<>(tlsEndpoint.getHostsAndPorts()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(sslOptions).hostAndPortMapper(hostAndPortMap).build())
+            .sslOptions(sslOptions).build())
         .build();
     cluster.flushAll();
   }

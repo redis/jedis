@@ -326,6 +326,22 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  public void zrangeParamsLongMinMax() {
+
+    long min = 0;
+    long max = 1;
+
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+
+    List<String> expected = new ArrayList<String>();
+    expected.add("b");
+    expected.add("a");
+
+    assertEquals(expected, jedis.zrange("foo", ZRangeParams.zrangeParams(min, max).rev()));
+  }
+
+  @Test
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zrangestore() {
     jedis.zadd("foo", 1, "aa");

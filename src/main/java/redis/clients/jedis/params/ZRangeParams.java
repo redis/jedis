@@ -29,7 +29,7 @@ public class ZRangeParams implements IParams {
     this((long) min, (long) max);
   }
 
-  private ZRangeParams(long min, long max) {
+  public ZRangeParams(long min, long max) {
     this.by = null;
     this.min = from(min);
     this.max = from(max);

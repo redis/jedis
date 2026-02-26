@@ -543,8 +543,6 @@
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
 						<include>**/MultiDb*.java</include>
-						<include>**/ClientTestUtil.java</include>
-						<include>**/ReflectionTestUtil.java</include>
 						<include>**/*CommandFlags*.java</include>
 						<include>**/*CompareCondition*.java</include>
 						<include>**/*MSetExParams*.java</include>
@@ -554,7 +552,6 @@
 						<include>**/ClientCommandsTest*.java</include>
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
-						<include>**/ACLTestUtil.java</include>
 						<include>**/search/Apply.java</include>
 						<include>**/search/Combiner.java</include>
 						<include>**/search/Combiners.java</include>
@@ -568,6 +565,8 @@
 						<include>**/TestDataUtil*.java</include>
 						<include>**/*JedisClientConfig*.java</include>
 						<include>**/resps/LibraryInfoTest.java</include>
+						<include>**/*Matchers.java</include>
+						<include>**/*TestUtil.java</include>
 					</includes>
 				</configuration>
 				<executions>

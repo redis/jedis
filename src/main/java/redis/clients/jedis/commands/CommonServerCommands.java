@@ -10,13 +10,13 @@ import redis.clients.jedis.params.LolwutParams;
  * <p>
  * These commands either:
  * <ul>
- *   <li>Work on any arbitrary node (ping, echo, lolwut)</li>
- *   <li>Can be broadcast to all shards with meaningful aggregation (info, flushDB, flushAll, dbSize)</li>
+ * <li>Work on any arbitrary node (ping, echo, lolwut)</li>
+ * <li>Can be broadcast to all shards with meaningful aggregation (info, flushDB, flushAll,
+ * dbSize)</li>
  * </ul>
  * <p>
- * This interface is implemented by both {@code Jedis} (via {@code ServerCommands}) and 
+ * This interface is implemented by both {@code Jedis} (via {@code ServerCommands}) and
  * {@code UnifiedJedis} for use in pooled and cluster environments.
- * 
  * @see ServerCommands for the full set of server commands (single-node only)
  */
 public interface CommonServerCommands {
@@ -126,16 +126,15 @@ public interface CommonServerCommands {
   String lolwut(LolwutParams lolwutParams);
 
   /**
-   * The TIME command returns the current server time as a two items list:
-   * a Unix timestamp and the amount of microseconds already elapsed in the current second.
+   * The TIME command returns the current server time as a two items list: a Unix timestamp and the
+   * amount of microseconds already elapsed in the current second.
    * <p>
-   * This command is useful for scripts that need to handle time-related operations
-   * or for synchronization purposes.
+   * This command is useful for scripts that need to handle time-related operations or for
+   * synchronization purposes.
    * <p>
    * In cluster mode, this command can be executed on any node.
-   * @return a list of two strings: the first is the Unix timestamp (seconds),
-   *         the second is the microseconds elapsed in the current second
+   * @return a list of two strings: the first is the Unix timestamp (seconds), the second is the
+   *         microseconds elapsed in the current second
    */
   List<String> time();
 }
-

@@ -54,4 +54,3 @@ public class ClusterClientCommandsTest extends ClientCommandsTestBase {
     // Note: In cluster mode, the list doesn't contain the clientId from another node
   }
 }
-

@@ -7,17 +7,16 @@ import redis.clients.jedis.params.ShutdownParams;
 /**
  * Commands for shutting down a Redis server.
  * <p>
- * These commands are only available for single-node connections (e.g., {@code Jedis}).
- * They are NOT suitable for pooled or cluster connections because:
+ * These commands are only available for single-node connections (e.g., {@code Jedis}). They are NOT
+ * suitable for pooled or cluster connections because:
  * <ul>
- *   <li>They terminate the Redis server process</li>
- *   <li>In a cluster, shutting down nodes should be done carefully to maintain availability</li>
- *   <li>Pool connections would lose their server</li>
+ * <li>They terminate the Redis server process</li>
+ * <li>In a cluster, shutting down nodes should be done carefully to maintain availability</li>
+ * <li>Pool connections would lose their server</li>
  * </ul>
  * <p>
- * For cluster deployments, shutdown operations should be performed by connecting
- * directly to individual nodes as part of a controlled maintenance procedure.
- * 
+ * For cluster deployments, shutdown operations should be performed by connecting directly to
+ * individual nodes as part of a controlled maintenance procedure.
  * @see ServerCommands for the full set of server commands
  */
 public interface ShutdownCommands {
@@ -52,4 +51,3 @@ public interface ShutdownCommands {
    */
   String shutdownAbort();
 }
-

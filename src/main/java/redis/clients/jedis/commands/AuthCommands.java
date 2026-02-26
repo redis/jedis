@@ -4,12 +4,11 @@ package redis.clients.jedis.commands;
  * Commands for Redis authentication.
  * <p>
  * These commands operate on the current connection and are primarily used for single-node
- * connections (e.g., {@code Jedis}). For pooled or cluster connections, authentication
- * is typically configured at the connection/pool level rather than per-command.
+ * connections (e.g., {@code Jedis}). For pooled or cluster connections, authentication is typically
+ * configured at the connection/pool level rather than per-command.
  * <p>
- * Note: In most cases, authentication credentials should be provided when creating
- * the connection or pool, rather than calling these commands directly.
- * 
+ * Note: In most cases, authentication credentials should be provided when creating the connection
+ * or pool, rather than calling these commands directly.
  * @see ServerCommands for the full set of server commands
  */
 public interface AuthCommands {
@@ -31,4 +30,3 @@ public interface AuthCommands {
    */
   String auth(String user, String password);
 }
-

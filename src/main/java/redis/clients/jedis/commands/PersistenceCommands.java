@@ -7,14 +7,13 @@ package redis.clients.jedis.commands;
  * connections (e.g., {@code Jedis}). They are NOT suitable for pooled or cluster connections
  * because:
  * <ul>
- *   <li>They operate on node-local storage and configuration</li>
- *   <li>Commands like SAVE block the entire node</li>
- *   <li>Background save operations are node-specific</li>
+ * <li>They operate on node-local storage and configuration</li>
+ * <li>Commands like SAVE block the entire node</li>
+ * <li>Background save operations are node-specific</li>
  * </ul>
  * <p>
- * For cluster deployments, persistence operations should be performed by connecting
- * directly to individual nodes.
- * 
+ * For cluster deployments, persistence operations should be performed by connecting directly to
+ * individual nodes.
  * @see ServerCommands for the full set of server commands
  */
 public interface PersistenceCommands {
@@ -39,8 +38,8 @@ public interface PersistenceCommands {
   String bgsave();
 
   /**
-   * Schedule a background save operation. The save will be performed only if there is no
-   * BGSAVE already scheduled or an AOF rewrite in progress.
+   * Schedule a background save operation. The save will be performed only if there is no BGSAVE
+   * already scheduled or an AOF rewrite in progress.
    * @return Status code reply
    */
   String bgsaveSchedule();
@@ -67,4 +66,3 @@ public interface PersistenceCommands {
    */
   long lastsave();
 }
-

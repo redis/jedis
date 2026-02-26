@@ -20,4 +20,3 @@ public class RedisClientClientCommandsTest extends ClientCommandsTestBase {
     return RedisClientCommandsTestHelper.getClient(protocol);
   }
 }
-

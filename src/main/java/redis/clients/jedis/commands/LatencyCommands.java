@@ -14,14 +14,13 @@ import redis.clients.jedis.resps.LatencyLatestInfo;
  * connections (e.g., {@code Jedis}). They are NOT suitable for pooled or cluster connections
  * because:
  * <ul>
- *   <li>Latency data is collected and stored per-node</li>
- *   <li>Each node tracks its own latency events independently</li>
- *   <li>Results cannot be meaningfully aggregated across nodes</li>
+ * <li>Latency data is collected and stored per-node</li>
+ * <li>Each node tracks its own latency events independently</li>
+ * <li>Results cannot be meaningfully aggregated across nodes</li>
  * </ul>
  * <p>
- * For cluster deployments, latency monitoring should be performed by connecting
- * directly to individual nodes.
- * 
+ * For cluster deployments, latency monitoring should be performed by connecting directly to
+ * individual nodes.
  * @see ServerCommands for the full set of server commands
  */
 public interface LatencyCommands {
@@ -37,7 +36,6 @@ public interface LatencyCommands {
    * <p>
    * This is the output you should post in the Redis mailing list if you are looking for help about
    * Latency related issues.
-   *
    * @return the report
    */
   String latencyDoctor();
@@ -56,11 +54,10 @@ public interface LatencyCommands {
   List<LatencyHistoryInfo> latencyHistory(LatencyEvent events);
 
   /**
-   * Resets the latency data for the specified events.
-   * If no events are specified, all events are reset.
+   * Resets the latency data for the specified events. If no events are specified, all events are
+   * reset.
    * @param events the events to reset (optional)
    * @return the number of event time series that were reset
    */
   long latencyReset(LatencyEvent... events);
 }
-

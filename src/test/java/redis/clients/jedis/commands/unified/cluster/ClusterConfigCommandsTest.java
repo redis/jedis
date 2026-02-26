@@ -38,7 +38,7 @@ public class ClusterConfigCommandsTest extends ConfigCommandsTestBase {
   public void configGetBinarySinglePattern() {
     // FIXME: This should work in cluster mode
     assertThrows(JedisBroadcastException.class,
-        () -> jedis.configGet(SafeEncoder.encode("maxmemory")));
+      () -> jedis.configGet(SafeEncoder.encode("maxmemory")));
   }
 
   @Override
@@ -46,7 +46,6 @@ public class ClusterConfigCommandsTest extends ConfigCommandsTestBase {
   public void configGetBinaryMultiplePatterns() {
     // FIXME: This should work in cluster mode
     assertThrows(JedisBroadcastException.class,
-        () -> jedis.configGet(SafeEncoder.encode("maxmemory"), SafeEncoder.encode("timeout")));
+      () -> jedis.configGet(SafeEncoder.encode("maxmemory"), SafeEncoder.encode("timeout")));
   }
 }
-

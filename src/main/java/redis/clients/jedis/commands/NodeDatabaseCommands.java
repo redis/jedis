@@ -5,18 +5,17 @@ import redis.clients.jedis.params.MigrateParams;
 /**
  * Commands for database management that operate on a specific Redis node.
  * <p>
- * These commands are only available for single-node connections (e.g., {@code Jedis}).
- * They are NOT suitable for pooled or cluster connections because:
+ * These commands are only available for single-node connections (e.g., {@code Jedis}). They are NOT
+ * suitable for pooled or cluster connections because:
  * <ul>
- *   <li>They operate on node-specific database indices (SELECT, SWAPDB)</li>
- *   <li>They move/copy data between databases on the same node (MOVE)</li>
- *   <li>Cross-database operations don't exist in cluster mode (only DB 0)</li>
+ * <li>They operate on node-specific database indices (SELECT, SWAPDB)</li>
+ * <li>They move/copy data between databases on the same node (MOVE)</li>
+ * <li>Cross-database operations don't exist in cluster mode (only DB 0)</li>
  * </ul>
  * <p>
- * For cluster deployments, these operations should be performed by connecting
- * directly to individual nodes if needed. Note that Redis Cluster only supports
- * database 0, so most of these commands are not applicable.
- * 
+ * For cluster deployments, these operations should be performed by connecting directly to
+ * individual nodes if needed. Note that Redis Cluster only supports database 0, so most of these
+ * commands are not applicable.
  * @see DatabaseCommands for the full set of database commands
  */
 public interface NodeDatabaseCommands {
@@ -50,8 +49,8 @@ public interface NodeDatabaseCommands {
    * Note: Not available in Redis Cluster.
    * @param key the specified key
    * @param dbIndex specified destination database
-   * @return 1 if the key was moved, 0 if the key was not moved because already present on the target
-   *         DB or was not found in the current DB
+   * @return 1 if the key was moved, 0 if the key was not moved because already present on the
+   *         target DB or was not found in the current DB
    */
   long move(String key, int dbIndex);
 
@@ -64,9 +63,9 @@ public interface NodeDatabaseCommands {
   /**
    * Copy the value stored at the source key to the destination key in a specific database.
    * <p>
-   * This version allows specifying a destination database and is only available for
-   * single-node connections. For cluster-safe copy without database selection,
-   * use {@link KeyCommands#copy(String, String, boolean)}.
+   * This version allows specifying a destination database and is only available for single-node
+   * connections. For cluster-safe copy without database selection, use
+   * {@link KeyCommands#copy(String, String, boolean)}.
    * @param srcKey the source key
    * @param dstKey the destination key
    * @param db the destination database index
@@ -82,12 +81,12 @@ public interface NodeDatabaseCommands {
   boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
 
   /**
-   * Atomically transfer a key from a source Redis instance to a destination Redis instance
-   * with a specific destination database.
+   * Atomically transfer a key from a source Redis instance to a destination Redis instance with a
+   * specific destination database.
    * <p>
-   * This version allows specifying a destination database and is only available for
-   * single-node connections. For cluster-safe migrate without database selection,
-   * use {@link KeyCommands#migrate(String, int, String, int)}.
+   * This version allows specifying a destination database and is only available for single-node
+   * connections. For cluster-safe migrate without database selection, use
+   * {@link KeyCommands#migrate(String, int, String, int)}.
    * @param host target host
    * @param port target port
    * @param key migrate key
@@ -107,9 +106,9 @@ public interface NodeDatabaseCommands {
    * Atomically transfer multiple keys from a source Redis instance to a destination Redis instance
    * with a specific destination database.
    * <p>
-   * This version allows specifying a destination database and is only available for
-   * single-node connections. For cluster-safe migrate without database selection,
-   * use {@link KeyCommands#migrate(String, int, int, MigrateParams, String...)}.
+   * This version allows specifying a destination database and is only available for single-node
+   * connections. For cluster-safe migrate without database selection, use
+   * {@link KeyCommands#migrate(String, int, int, MigrateParams, String...)}.
    * @param host target host
    * @param port target port
    * @param destinationDB target database index
@@ -122,10 +121,10 @@ public interface NodeDatabaseCommands {
       String... keys);
 
   /**
-   * Binary version of {@link NodeDatabaseCommands#migrate(String, int, int, int, MigrateParams, String...) MIGRATE}.
+   * Binary version of
+   * {@link NodeDatabaseCommands#migrate(String, int, int, int, MigrateParams, String...) MIGRATE}.
    * @see NodeDatabaseCommands#migrate(String, int, int, int, MigrateParams, String...)
    */
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
       byte[]... keys);
 }
-

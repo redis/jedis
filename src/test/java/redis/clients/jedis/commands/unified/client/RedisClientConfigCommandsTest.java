@@ -20,4 +20,3 @@ public class RedisClientConfigCommandsTest extends ConfigCommandsTestBase {
     return RedisClientCommandsTestHelper.getClient(protocol);
   }
 }
-

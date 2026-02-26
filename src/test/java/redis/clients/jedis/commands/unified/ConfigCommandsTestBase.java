@@ -53,10 +53,8 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void configGetBinaryMultiplePatterns() {
-    Map<byte[], byte[]> result = jedis.configGet(
-        SafeEncoder.encode("maxmemory"),
-        SafeEncoder.encode("timeout")
-    );
+    Map<byte[], byte[]> result = jedis.configGet(SafeEncoder.encode("maxmemory"),
+      SafeEncoder.encode("timeout"));
     assertNotNull(result);
     assertFalse(result.isEmpty());
   }
@@ -123,10 +121,8 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
     String originalValue = current.get("slowlog-max-len");
 
     try {
-      String result = jedis.configSet(
-          SafeEncoder.encode("slowlog-max-len"),
-          SafeEncoder.encode("190")
-      );
+      String result = jedis.configSet(SafeEncoder.encode("slowlog-max-len"),
+        SafeEncoder.encode("190"));
       assertEquals("OK", result);
     } finally {
       jedis.configSet("slowlog-max-len", originalValue);
@@ -139,9 +135,8 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
     String origLen = current.get("slowlog-max-len");
 
     try {
-      String result = jedis.configSet(
-          SafeEncoder.encode("slowlog-max-len"), SafeEncoder.encode("160")
-      );
+      String result = jedis.configSet(SafeEncoder.encode("slowlog-max-len"),
+        SafeEncoder.encode("160"));
       assertEquals("OK", result);
     } finally {
       jedis.configSet("slowlog-max-len", origLen);
@@ -185,4 +180,3 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
     }
   }
 }
-

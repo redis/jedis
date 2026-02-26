@@ -24,6 +24,7 @@ The remainder of this guide describes:
 * A basic failover and health check configuration
 * Supported retry and circuit breaker settings
 * Failback and the database selection API
+* Dynamic weight management for runtime priority adjustments (since 7.4.0)
 
 We recommend that you read this guide carefully and understand the configuration settings before enabling Jedis failover
 in production.
@@ -84,6 +85,8 @@ To configure Jedis for failover, you specify a weighted list of Redis databases.
 Jedis will connect to the Redis database in the list with the highest weight. 
 If the highest-weighted database becomes unavailable,
 Jedis will attempt to connect to the database with the next highest weight in the list, and so on.
+
+Database weights determine the priority for selecting which database becomes active. Weights can be configured at initialization and can also be changed dynamically at runtime (introduced in version 7.4.0), allowing you to adjust active database selection priorities without recreating the client.
 
 Suppose you run two Redis deployments.
 We'll call them `redis-east` and `redis-west`.
@@ -446,6 +449,107 @@ This method is thread-safe.
 If you decide to implement manual failback, you will need a way for external systems to trigger this method in your
 application. For example, if your application exposes a REST API, you might consider creating a REST endpoint
 to call `setActiveDatabase` and fail back the application.
+
+## Dynamic Weight Management
+
+> Introduced in version 7.4.0
+
+Jedis allows you to dynamically adjust database weights at runtime without recreating the `MultiDbClient`.
+
+**Important**: Weight determines the **priority for selecting which database becomes the active database**. At any given time, only ONE database is active and receives all traffic. Weight does not distribute load across databases - it determines which single database Jedis will prefer to use as the active connection.
+
+This is useful for scenarios where you need to change the active database selection priority based on operational conditions, such as:
+
+- Changing which database should be preferred during planned maintenance
+- Adjusting selection priority based on database performance or regional preferences
+- Implementing controlled switchover between databases
+- Responding to changing infrastructure conditions
+
+### Getting and Setting Weights
+
+The `MultiDbClient` provides methods to query and modify database weights at runtime:
+
+```java
+// Get the current weight of a database
+HostAndPort east = new HostAndPort("redis-east.example.com", 14000);
+float currentWeight = client.getWeight(east);
+System.out.println("Current weight: " + currentWeight);
+
+// Set a new weight for a database
+client.setWeight(east, 2.0f);
+```
+
+### Weight Constraints
+
+When setting weights dynamically, the following constraints apply:
+
+- **Weight must be greater than 0**: Attempting to set a weight of 0 or negative values will throw an `IllegalArgumentException`
+- **Endpoint must exist**: The endpoint must be part of the configured databases, otherwise a `JedisValidationException` is thrown
+
+### Runtime Behavior
+
+When you change a database's weight at runtime:
+
+1. **Immediate Effect on Selection**: The weight change takes effect immediately for future active database selection decisions during failover or failback
+2. **Automatic Failback Trigger**: If automatic failback is enabled and you increase a database's weight above the currently active database, Jedis will automatically switch to the higher-weight database during the next periodic failback check (if the database is healthy and the grace period has elapsed)
+3. **No Disruption**: Changing weights does not interrupt ongoing operations or force an immediate switch
+4. **Single Active Database**: Remember that only one database is active at any time - all traffic goes to that single database
+
+### How Weight Affects Database Selection
+
+During failover or failback, Jedis selects the active database by:
+
+1. Filtering for healthy databases (passing health checks, not in grace period, circuit breaker not open)
+2. Sorting the healthy databases by weight in descending order (highest weight first)
+3. Selecting the first database from this sorted list as the active database
+
+### Example: Changing Active Database Priority
+
+Here's a practical example of dynamically adjusting weights to control which database should be active:
+
+```java
+// Initial configuration - primary has higher weight, so it will be selected as active
+HostAndPort primary = new HostAndPort("redis-primary.example.com", 6379);
+HostAndPort secondary = new HostAndPort("redis-secondary.example.com", 6379);
+
+MultiDbConfig config = MultiDbConfig.builder()
+        .database(DatabaseConfig.builder(primary, clientConfig).weight(2.0f).build())
+        .database(DatabaseConfig.builder(secondary, clientConfig).weight(1.0f).build())
+        .failbackSupported(true)
+        .failbackCheckInterval(1000)
+        .build();
+
+MultiDbClient client = MultiDbClient.builder()
+        .multiDbConfig(config)
+        .build();
+
+// At this point, 'primary' is the active database (weight 2.0 > 1.0)
+
+// Before planned maintenance on primary, make secondary the preferred database
+client.setWeight(secondary, 3.0f);  // Now secondary has highest weight
+// During the next failback check, Jedis will switch to secondary as the active database
+
+// After maintenance, restore primary as the preferred database
+client.setWeight(primary, 4.0f);  // Now primary has highest weight again
+// During the next failback check, Jedis will switch back to primary as the active database
+```
+
+### Monitoring Database Switches
+
+You can combine weight changes with failover callbacks to monitor when the active database switches due to weight adjustments:
+
+```java
+MultiDbClient client = MultiDbClient.builder()
+        .multiDbConfig(config)
+        .databaseSwitchListener(event -> {
+            System.out.println("Active database switched to: " + event.getEndpoint() +
+                             " due to: " + event.getReason());
+        })
+        .build();
+
+// Change weight - may trigger automatic failback to switch active database
+client.setWeight(secondary, 5.0f);
+```
 
 ## Troubleshooting Failover and Failback Issues
 

@@ -11,6 +11,10 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
+import redis.clients.jedis.commands.ClientCommands;
+import redis.clients.jedis.commands.CommonServerCommands;
+import redis.clients.jedis.commands.ConfigCommands;
+import redis.clients.jedis.commands.HotkeysCommands;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -51,7 +55,7 @@ import redis.clients.jedis.util.KeyValue;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
-    AutoCloseable {
+    CommonServerCommands, HotkeysCommands, ConfigCommands, ClientCommands, AutoCloseable {
 
   @Deprecated
   protected RedisProtocol protocol = null;
@@ -343,46 +347,260 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return cache;
   }
 
+  // CommonServerCommands implementation
+  @Override
   public String ping() {
     return checkAndBroadcastCommand(commandObjects.ping());
   }
 
+  @Override
+  public String ping(String message) {
+    return executeCommand(commandObjects.ping(message));
+  }
+
+  @Override
   public String echo(String string) {
     return executeCommand(commandObjects.echo(string));
   }
 
+  @Override
+  public byte[] echo(byte[] arg) {
+    return executeCommand(commandObjects.echo(arg));
+  }
+
+  @Override
   public String flushDB() {
     return checkAndBroadcastCommand(commandObjects.flushDB());
   }
 
+  @Override
+  public String flushDB(FlushMode flushMode) {
+    return checkAndBroadcastCommand(commandObjects.flushDB(flushMode));
+  }
+
+  @Override
   public String flushAll() {
     return checkAndBroadcastCommand(commandObjects.flushAll());
   }
 
-  public String configSet(String parameter, String value) {
-    return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+  @Override
+  public String flushAll(FlushMode flushMode) {
+    return checkAndBroadcastCommand(commandObjects.flushAll(flushMode));
   }
 
+  @Override
   public String info() {
     return executeCommand(commandObjects.info());
   }
 
+  @Override
   public String info(String section) {
     return executeCommand(commandObjects.info(section));
   }
 
+  @Override
+  public long dbSize() {
+    return executeCommand(commandObjects.dbSize());
+  }
+
+  @Override
+  public String lolwut() {
+    return executeCommand(commandObjects.lolwut());
+  }
+
+  @Override
+  public String lolwut(LolwutParams lolwutParams) {
+    return executeCommand(commandObjects.lolwut(lolwutParams));
+  }
+
+  @Override
+  public List<String> time() {
+    return executeCommand(commandObjects.time());
+  }
+
+  // ConfigCommands
+  @Override
+  public Map<String, String> configGet(String pattern) {
+    return checkAndBroadcastCommand(commandObjects.configGet(pattern));
+  }
+
+  @Override
+  public Map<String, String> configGet(String... patterns) {
+    return checkAndBroadcastCommand(commandObjects.configGet(patterns));
+  }
+
+  @Override
+  public Map<byte[], byte[]> configGet(byte[] pattern) {
+    return checkAndBroadcastCommand(commandObjects.configGet(pattern));
+  }
+
+  @Override
+  public Map<byte[], byte[]> configGet(byte[]... patterns) {
+    return checkAndBroadcastCommand(commandObjects.configGet(patterns));
+  }
+
+  @Override
+  public String configSet(String parameter, String value) {
+    return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+  }
+
+  @Override
+  public String configSet(String... parameterValues) {
+    return checkAndBroadcastCommand(commandObjects.configSet(parameterValues));
+  }
+
+  @Override
+  public String configSet(Map<String, String> parameterValues) {
+    return checkAndBroadcastCommand(commandObjects.configSet(parameterValues));
+  }
+
+  @Override
+  public String configSet(byte[] parameter, byte[] value) {
+    return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+  }
+
+  @Override
+  public String configSet(byte[]... parameterValues) {
+    return checkAndBroadcastCommand(commandObjects.configSet(parameterValues));
+  }
+
+  @Override
+  public String configSetBinary(Map<byte[], byte[]> parameterValues) {
+    return checkAndBroadcastCommand(commandObjects.configSetBinary(parameterValues));
+  }
+
+  @Override
+  public String configResetStat() {
+    return checkAndBroadcastCommand(commandObjects.configResetStat());
+  }
+
+  @Override
+  public String configRewrite() {
+    return checkAndBroadcastCommand(commandObjects.configRewrite());
+  }
+
+  // ClientCommands
+  @Override
+  public String clientKill(String ipPort) {
+    return executeCommand(commandObjects.clientKill(ipPort));
+  }
+
+  @Override
+  public String clientKill(String ip, int port) {
+    return executeCommand(commandObjects.clientKill(ip, port));
+  }
+
+  @Override
+  public long clientKill(ClientKillParams params) {
+    return executeCommand(commandObjects.clientKill(params));
+  }
+
+  @Override
+  public String clientGetname() {
+    return executeCommand(commandObjects.clientGetname());
+  }
+
+  @Override
+  public String clientList() {
+    return executeCommand(commandObjects.clientList());
+  }
+
+  @Override
+  public String clientList(ClientType type) {
+    return executeCommand(commandObjects.clientList(type));
+  }
+
+  @Override
+  public String clientList(long... clientIds) {
+    return executeCommand(commandObjects.clientList(clientIds));
+  }
+
+  @Override
+  public String clientInfo() {
+    return executeCommand(commandObjects.clientInfo());
+  }
+
+  @Override
+  public String clientSetInfo(ClientAttributeOption attr, String value) {
+    return executeCommand(commandObjects.clientSetInfo(attr, value));
+  }
+
+  @Override
+  public String clientSetname(String name) {
+    return executeCommand(commandObjects.clientSetname(name));
+  }
+
+  @Override
+  public long clientId() {
+    return executeCommand(commandObjects.clientId());
+  }
+
+  @Override
+  public long clientUnblock(long clientId) {
+    return executeCommand(commandObjects.clientUnblock(clientId));
+  }
+
+  @Override
+  public long clientUnblock(long clientId, UnblockType unblockType) {
+    return executeCommand(commandObjects.clientUnblock(clientId, unblockType));
+  }
+
+  @Override
+  public String clientPause(long timeout) {
+    return checkAndBroadcastCommand(commandObjects.clientPause(timeout));
+  }
+
+  @Override
+  public String clientPause(long timeout, ClientPauseMode mode) {
+    return checkAndBroadcastCommand(commandObjects.clientPause(timeout, mode));
+  }
+
+  @Override
+  public String clientUnpause() {
+    return checkAndBroadcastCommand(commandObjects.clientUnpause());
+  }
+
+  @Override
+  public String clientNoEvictOn() {
+    return executeCommand(commandObjects.clientNoEvictOn());
+  }
+
+  @Override
+  public String clientNoEvictOff() {
+    return executeCommand(commandObjects.clientNoEvictOff());
+  }
+
+  @Override
+  public String clientNoTouchOn() {
+    return executeCommand(commandObjects.clientNoTouchOn());
+  }
+
+  @Override
+  public String clientNoTouchOff() {
+    return executeCommand(commandObjects.clientNoTouchOff());
+  }
+
+  @Override
+  public TrackingInfo clientTrackingInfo() {
+    return executeCommand(commandObjects.clientTrackingInfo());
+  }
+
+  @Override
   public String hotkeysStart(HotkeysParams params) {
     return checkAndBroadcastCommand(commandObjects.hotkeysStart(params));
   }
 
+  @Override
   public String hotkeysStop() {
     return checkAndBroadcastCommand(commandObjects.hotkeysStop());
   }
 
+  @Override
   public String hotkeysReset() {
     return checkAndBroadcastCommand(commandObjects.hotkeysReset());
   }
 
+  @Override
   public HotkeysInfo hotkeysGet() {
     return executeCommand(commandObjects.hotkeysGet());
   }
@@ -746,10 +964,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long renamenx(byte[] oldkey, byte[] newkey) {
     return executeCommand(commandObjects.renamenx(oldkey, newkey));
-  }
-
-  public long dbSize() {
-    return executeCommand(commandObjects.dbSize());
   }
 
   @Override

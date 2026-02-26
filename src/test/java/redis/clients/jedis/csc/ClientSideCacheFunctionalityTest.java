@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import org.mockito.Mockito;
 import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
@@ -327,6 +329,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSequentialAccess() throws InterruptedException {
     int threadCount = 10;
     int iterations = 10000;
@@ -376,6 +379,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testConcurrentAccessWithStats() throws InterruptedException {
     int threadCount = 10;
     int iterations = 10000;
@@ -419,6 +423,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testMaxSize() throws InterruptedException {
     int threadCount = 10;
     int iterations = 11000;
@@ -511,6 +516,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvictionPolicyMultithreaded() throws InterruptedException {
     int NUMBER_OF_THREADS = 100;
     int TOTAL_OPERATIONS = 1000000;

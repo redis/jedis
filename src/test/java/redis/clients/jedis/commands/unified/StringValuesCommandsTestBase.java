@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
@@ -25,6 +26,7 @@ import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @Tag("integration")
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -157,6 +159,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void msetnx() {
     assertEquals(1, jedis.msetnx("foo", "bar", "bar", "foo"));
     assertEquals("bar", jedis.get("foo"));
@@ -236,6 +239,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void substr() {
     jedis.set("s", "This is a string");
     assertEquals("This", jedis.substr("s", 0, 3));
@@ -273,6 +277,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 

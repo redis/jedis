@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.resps.TrackingInfo;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -257,6 +259,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void killUser() {
     client.aclSetUser("test_kill", "on", "+acl", ">password1");
     try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
@@ -300,6 +303,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clientListWithClientId() {
     long id = client.clientId();
     String listInfo = jedis.clientList(id);
@@ -312,7 +316,9 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     assertTrue(client.clientList(ClientType.NORMAL).split("\\n").length > 1);
     assertEquals(0, client.clientList(ClientType.MASTER).length());
     assertEquals(1, client.clientList(ClientType.SLAVE).split("\\n").length);
-    assertEquals(1, client.clientList(ClientType.REPLICA).split("\\n").length);
+    if (!TestEnvUtil.getTestEnvProvider().equals(TestEnvUtil.ENV_REDIS_ENTERPRISE)) {
+      assertEquals(1, client.clientList(ClientType.REPLICA).split("\\n").length);
+    }
     assertEquals(1, client.clientList(ClientType.PUBSUB).split("\\n").length);
   }
 

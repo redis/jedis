@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.client;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.TestEnvUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +42,7 @@ public class RedisClientTransactionIT extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void transaction() {
     final int count = 10;
     int totalCount = 0;
@@ -73,6 +76,7 @@ public class RedisClientTransactionIT extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void watch() {
     try (AbstractTransaction tx = jedis.transaction(false)) {
       assertEquals("OK", tx.watch("mykey", "somekey"));

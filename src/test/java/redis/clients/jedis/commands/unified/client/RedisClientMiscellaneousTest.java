@@ -102,10 +102,10 @@ public class RedisClientMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value = "7.0.0")
+  @SinceRedisVersion(value="7.0.0")
   public void broadcastWithError() {
     JedisDataException error = assertThrows(JedisDataException.class,
-      () -> jedis.functionDelete("xyz"));
+        () -> jedis.functionDelete("xyz"));
     assertEquals("ERR Library not found", error.getMessage());
   }
 

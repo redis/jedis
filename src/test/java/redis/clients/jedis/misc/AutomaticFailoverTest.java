@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +24,9 @@ import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -33,7 +37,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("failover")
 @Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class AutomaticFailoverTest {
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 

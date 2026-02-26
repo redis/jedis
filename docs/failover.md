@@ -534,25 +534,6 @@ client.setWeight(primary, 4.0f);  // Now primary has highest weight again
 // During the next failback check, Jedis will switch back to primary as the active database
 ```
 
-### Example: Controlled Database Switchover
-
-You can use weight changes to trigger a controlled switchover between databases:
-
-```java
-// Current state: primary is active (weight 2.0), secondary is standby (weight 1.0)
-HostAndPort primary = new HostAndPort("redis-primary.example.com", 6379);
-HostAndPort secondary = new HostAndPort("redis-secondary.example.com", 6379);
-
-// Trigger switchover to secondary by giving it higher weight
-client.setWeight(secondary, 3.0f);
-
-// Wait for automatic failback to switch to secondary
-// (or use client.setActiveDatabase(secondary) for immediate switch)
-
-// Later, switch back to primary
-client.setWeight(primary, 4.0f);
-```
-
 ### Monitoring Database Switches
 
 You can combine weight changes with failover callbacks to monitor when the active database switches due to weight adjustments:

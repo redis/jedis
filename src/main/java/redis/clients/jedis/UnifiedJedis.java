@@ -349,15 +349,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public String hotkeysStart(HotkeysParams params) {
-    return checkAndBroadcastCommand(commandObjects.hotkeysStart(params));
+    return executeCommand(commandObjects.hotkeysStart(params));
   }
 
   public String hotkeysStop() {
-    return checkAndBroadcastCommand(commandObjects.hotkeysStop());
+    return executeCommand(commandObjects.hotkeysStop());
   }
 
   public String hotkeysReset() {
-    return checkAndBroadcastCommand(commandObjects.hotkeysReset());
+    return executeCommand(commandObjects.hotkeysReset());
   }
 
   public HotkeysInfo hotkeysGet() {

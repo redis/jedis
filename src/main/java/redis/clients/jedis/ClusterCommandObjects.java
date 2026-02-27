@@ -4,6 +4,7 @@ import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.HotkeysInfo;
+import redis.clients.jedis.params.HotkeysParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterHashTag;

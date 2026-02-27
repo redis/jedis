@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Module;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.resps.CommandInfo;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -187,14 +188,14 @@ public class CommandFlagsRegistryGenerator {
       serverMetadata = new ServerMetadata(version, mode, modules);
 
       // Get all commands using COMMAND
-      Map<String, redis.clients.jedis.resps.CommandInfo> commands = jedis.command();
+      Map<String, CommandInfo> commands = jedis.command();
 
-      for (Map.Entry<String, redis.clients.jedis.resps.CommandInfo> entry : commands.entrySet()) {
-        redis.clients.jedis.resps.CommandInfo cmdInfo = entry.getValue();
+      for (Map.Entry<String, CommandInfo> entry : commands.entrySet()) {
+        CommandInfo cmdInfo = entry.getValue();
         String commandName = normalizeCommandName(cmdInfo.getName());
 
         // Check for subcommands
-        Map<String, redis.clients.jedis.resps.CommandInfo> subcommands = cmdInfo.getSubcommands();
+        Map<String, CommandInfo> subcommands = cmdInfo.getSubcommands();
 
         if (subcommands != null && !subcommands.isEmpty()) {
           // This command has subcommands - add parent command with its flags first
@@ -204,9 +205,9 @@ public class CommandFlagsRegistryGenerator {
           }
 
           // Then process subcommands
-          for (Map.Entry<String, redis.clients.jedis.resps.CommandInfo> subEntry : subcommands
+          for (Map.Entry<String, CommandInfo> subEntry : subcommands
               .entrySet()) {
-            redis.clients.jedis.resps.CommandInfo subCmdInfo = subEntry.getValue();
+            CommandInfo subCmdInfo = subEntry.getValue();
             String subCommandName = normalizeCommandName(subCmdInfo.getName());
 
             // Filter out unwanted commands
@@ -236,7 +237,7 @@ public class CommandFlagsRegistryGenerator {
   /**
    * Extract command metadata (flags, request_policy, response_policy) from CommandInfo.
    */
-  private CommandMetadata extractCommandMetadata(redis.clients.jedis.resps.CommandInfo cmdInfo) {
+  private CommandMetadata extractCommandMetadata(CommandInfo cmdInfo) {
     // Get flags
     List<String> flags = new ArrayList<>();
     if (cmdInfo.getFlags() != null) {

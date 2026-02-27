@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static redis.clients.jedis.Protocol.Command.PING;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 public class ClusterCommandExecutorTest {
 
@@ -45,6 +45,16 @@ public class ClusterCommandExecutorTest {
   // Keyless command object for testing keyless command execution with WRITE flag (FLUSHDB is keyless and WRITE)
   private static final CommandObject<String> KEYLESS_WRITE_COM_OBJECT
       = new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHDB), BuilderFactory.STRING);
+
+  /**
+   * Helper method to invoke the private executeKeylessCommand method via reflection.
+   */
+  @SuppressWarnings("unchecked")
+  private static <T> T invokeExecuteKeylessCommand(ClusterCommandExecutor executor,
+      CommandObject<T> commandObject) {
+    return ReflectionTestUtil.invokeMethod(executor, "executeKeylessCommand",
+        new Class<?>[] { CommandObject.class }, commandObject);
+  }
 
   @Test
   public void runSuccessfulExecute() {
@@ -415,7 +425,7 @@ public class ClusterCommandExecutorTest {
         throw new RuntimeException("This test should never sleep");
       }
     };
-    assertEquals("OK", testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT));
+    assertEquals("OK", invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
   }
 
   @Test
@@ -441,7 +451,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+    invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
 
     // Verify that getPrimaryNodesConnectionMap() was called for round-robin distribution
     InOrder inOrder = inOrder(connectionHandler, pool, connection);
@@ -484,7 +494,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    assertEquals("OK", testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT));
+    assertEquals("OK", invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
 
     // Verify that we called getPrimaryNodesConnectionMap() twice (first failed with redirection, second succeeded)
     // and that we didn't follow the redirection to a specific node
@@ -522,7 +532,7 @@ public class ClusterCommandExecutorTest {
     };
 
     try {
-      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+      invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
       fail("keyless command did not fail");
     } catch (JedisClusterOperationException e) {
       // expected
@@ -560,7 +570,7 @@ public class ClusterCommandExecutorTest {
     };
 
     try {
-      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+      invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
       fail("keyless command should fail with empty connection map");
     } catch (JedisClusterOperationException e) {
       assertEquals("No cluster nodes available.", e.getMessage());
@@ -610,10 +620,10 @@ public class ClusterCommandExecutorTest {
     };
 
     // Execute multiple keyless commands to verify round-robin
-    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
-    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
-    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
-    testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT); // Should cycle back to first
+    invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
+    invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
+    invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
+    invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT); // Should cycle back to first
 
     // Verify round-robin behavior - should cycle through all connections
     assertEquals(4, usedConnections.size());
@@ -661,7 +671,7 @@ public class ClusterCommandExecutorTest {
     // With our implementation using getAndUpdate(current -> (current + 1) % nodeCount),
     // the counter never exceeds nodeCount-1, so overflow is impossible
     for (int i = 0; i < 100; i++) {
-      String result = testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+      String result = invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
       assertEquals("OK", result);
     }
 
@@ -723,7 +733,7 @@ public class ClusterCommandExecutorTest {
     // Execute commands - should be evenly distributed
     int totalCommands = 40; // Multiple of 4 for perfect distribution
     for (int i = 0; i < totalCommands; i++) {
-      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+      invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
     }
 
     // Verify even distribution - each node should get exactly 10 commands
@@ -794,7 +804,7 @@ public class ClusterCommandExecutorTest {
 
     // Execute 9 commands to see 3 complete cycles
     for (int i = 0; i < 9; i++) {
-      testMe.executeKeylessCommand(KEYLESS_WRITE_COM_OBJECT);
+      invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
     }
 
     // Verify the round-robin sequence
@@ -838,7 +848,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    assertEquals("readonly_result", testMe.executeKeylessCommand(readOnlyCommandObject));
+    assertEquals("readonly_result", invokeExecuteKeylessCommand(testMe, readOnlyCommandObject));
 
     // Verify that getConnectionMap() was called (for read-only commands, uses all nodes)
     // and NOT getPrimaryNodesConnectionMap()
@@ -879,7 +889,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    assertEquals("write_result", testMe.executeKeylessCommand(writeCommandObject));
+    assertEquals("write_result", invokeExecuteKeylessCommand(testMe, writeCommandObject));
 
     // Verify that getPrimaryNodesConnectionMap() was called (for write commands, uses only primaries)
     // and NOT getConnectionMap()

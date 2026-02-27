@@ -184,7 +184,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     }
   }
 
-  public final <T> T executeKeylessCommand(CommandObject<T> commandObject) {
+  private <T> T executeKeylessCommand(CommandObject<T> commandObject) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
     int consecutiveConnectionFailures = 0;
     Exception lastException = null;

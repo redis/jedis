@@ -33,7 +33,8 @@ import redis.clients.jedis.exceptions.UnsupportedAggregationException;
  * <li>{@code ALL_SUCCEEDED} - Return first reply if all are equal, throw exception if
  * different</li>
  * <li>{@code ONE_SUCCEEDED} - Return first non-null reply</li>
- * <li>{@code DEFAULT} - Aggregate replies by merging collections (concatenate lists, merge maps)</li>
+ * <li>{@code DEFAULT} - Aggregate replies by merging collections (concatenate lists, merge
+ * maps)</li>
  * <li>{@code SPECIAL} - Use custom handling logic for special commands</li>
  * </ul>
  */
@@ -142,10 +143,9 @@ public final class ClusterReplyAggregator {
 
     // For other types, log warning and fall back to returning existing (current behavior)
     LOG.warn("Unsupported type for DEFAULT aggregation: existing={}, newReply={}. "
-        + "Returning existing value without aggregation. "
-        + "Supported types are: List, Map, Set.",
-        existing != null ? existing.getClass().getName() : "null",
-        newReply != null ? newReply.getClass().getName() : "null");
+        + "Returning existing value without aggregation. " + "Supported types are: List, Map, Set.",
+      existing != null ? existing.getClass().getName() : "null",
+      newReply != null ? newReply.getClass().getName() : "null");
     return existing;
   }
 

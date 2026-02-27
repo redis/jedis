@@ -189,7 +189,7 @@ public class ClusterReplyAggregatorTest {
 
     assertEquals(4, result.size(), "Should contain all elements from both lists");
     assertEquals(Arrays.asList("key1", "key2", "key3", "key4"), result,
-        "Should concatenate lists in order");
+      "Should concatenate lists in order");
   }
 
   @Test
@@ -201,7 +201,8 @@ public class ClusterReplyAggregatorTest {
     List<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
 
     assertEquals(2, result.size(), "Should contain elements from non-empty list");
-    assertEquals(Arrays.asList("key1", "key2"), result, "Should contain all elements from second list");
+    assertEquals(Arrays.asList("key1", "key2"), result,
+      "Should contain all elements from second list");
   }
 
   @Test
@@ -213,7 +214,8 @@ public class ClusterReplyAggregatorTest {
     List<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
 
     assertEquals(2, result.size(), "Should contain elements from first list");
-    assertEquals(Arrays.asList("key1", "key2"), result, "Should contain all elements from first list");
+    assertEquals(Arrays.asList("key1", "key2"), result,
+      "Should contain all elements from first list");
   }
 
   @Test
@@ -231,10 +233,8 @@ public class ClusterReplyAggregatorTest {
 
   @Test
   public void testAggregateDefault_twoByteArrayLists_concatenatesThem() {
-    List<byte[]> first = new ArrayList<>(Arrays.asList(
-        new byte[] { 1, 2 }, new byte[] { 3, 4 }));
-    List<byte[]> second = new ArrayList<>(Arrays.asList(
-        new byte[] { 5, 6 }, new byte[] { 7, 8 }));
+    List<byte[]> first = new ArrayList<>(Arrays.asList(new byte[] { 1, 2 }, new byte[] { 3, 4 }));
+    List<byte[]> second = new ArrayList<>(Arrays.asList(new byte[] { 5, 6 }, new byte[] { 7, 8 }));
 
     @SuppressWarnings("unchecked")
     List<byte[]> result = ClusterReplyAggregator.aggregateDefault(first, second);

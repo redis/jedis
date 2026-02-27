@@ -72,28 +72,6 @@ public class CommandFlagsRegistryGenerator {
     FLAG_MAPPING.put("allow_busy", "ALLOW_BUSY");
   }
 
-  // Map request_policy values from tips to Java enum names
-  private static final Map<String, String> REQUEST_POLICY_MAPPING = new LinkedHashMap<>();
-  static {
-    REQUEST_POLICY_MAPPING.put("all_nodes", "ALL_NODES");
-    REQUEST_POLICY_MAPPING.put("all_shards", "ALL_SHARDS");
-    REQUEST_POLICY_MAPPING.put("multi_shard", "MULTI_SHARD");
-    REQUEST_POLICY_MAPPING.put("special", "SPECIAL");
-  }
-
-  // Map response_policy values from tips to Java enum names
-  private static final Map<String, String> RESPONSE_POLICY_MAPPING = new LinkedHashMap<>();
-  static {
-    RESPONSE_POLICY_MAPPING.put("one_succeeded", "ONE_SUCCEEDED");
-    RESPONSE_POLICY_MAPPING.put("all_succeeded", "ALL_SUCCEEDED");
-    RESPONSE_POLICY_MAPPING.put("agg_logical_and", "AGG_LOGICAL_AND");
-    RESPONSE_POLICY_MAPPING.put("agg_logical_or", "AGG_LOGICAL_OR");
-    RESPONSE_POLICY_MAPPING.put("agg_min", "AGG_MIN");
-    RESPONSE_POLICY_MAPPING.put("agg_max", "AGG_MAX");
-    RESPONSE_POLICY_MAPPING.put("agg_sum", "AGG_SUM");
-    RESPONSE_POLICY_MAPPING.put("special", "SPECIAL");
-  }
-
   /**
    * Manual command flag overrides that take precedence over Redis server metadata. These overrides
    * allow defining custom flag combinations, request policies, and response policies for specific
@@ -105,12 +83,6 @@ public class CommandFlagsRegistryGenerator {
    * To add a new override, add an entry to this map in the static initializer block.
    */
   private static final Map<String, CommandMetadata> MANUAL_OVERRIDES = new LinkedHashMap<>();
-  static {
-    // KEYS command: Override request_policy from ALL_SHARDS to SPECIAL
-    // The KEYS command requires special handling in cluster mode as it needs to be
-    // executed on all nodes and results aggregated in a specific way
-    MANUAL_OVERRIDES.put("KEYS", new CommandMetadata(Arrays.asList("readonly"), "special", null));
-  }
 
   public CommandFlagsRegistryGenerator(String host, int port) {
     this.redisHost = host;
@@ -192,7 +164,7 @@ public class CommandFlagsRegistryGenerator {
     Map<String, CommandMetadata> result = new LinkedHashMap<>();
 
     try (Jedis jedis = new Jedis(redisHost, redisPort)) {
-      jedis.auth("foobared");
+
       jedis.connect();
 
       // Collect server metadata
@@ -225,7 +197,13 @@ public class CommandFlagsRegistryGenerator {
         Map<String, redis.clients.jedis.resps.CommandInfo> subcommands = cmdInfo.getSubcommands();
 
         if (subcommands != null && !subcommands.isEmpty()) {
-          // This command has subcommands - process them instead of the parent
+          // This command has subcommands - add parent command with its flags first
+          if (!shouldExcludeCommand(commandName)) {
+            CommandMetadata parentMetadata = extractCommandMetadata(cmdInfo);
+            result.put(commandName, parentMetadata);
+          }
+
+          // Then process subcommands
           for (Map.Entry<String, redis.clients.jedis.resps.CommandInfo> subEntry : subcommands
               .entrySet()) {
             redis.clients.jedis.resps.CommandInfo subCmdInfo = subEntry.getValue();
@@ -373,12 +351,11 @@ public class CommandFlagsRegistryGenerator {
       List<String> javaFlags = metadata.flags.stream().map(f -> FLAG_MAPPING.get(f.toLowerCase()))
           .filter(Objects::nonNull).sorted().collect(Collectors.toList());
 
-      // Map request and response policies to Java enum names
-      String requestPolicy = metadata.requestPolicy != null
-          ? REQUEST_POLICY_MAPPING.get(metadata.requestPolicy.toLowerCase())
+      // Convert request and response policies to Java enum names (uppercase)
+      String requestPolicy = metadata.requestPolicy != null ? metadata.requestPolicy.toUpperCase()
           : null;
       String responsePolicy = metadata.responsePolicy != null
-          ? RESPONSE_POLICY_MAPPING.get(metadata.responsePolicy.toLowerCase())
+          ? metadata.responsePolicy.toUpperCase()
           : null;
 
       MetadataKey key = new MetadataKey(javaFlags, requestPolicy, responsePolicy);
@@ -462,7 +439,13 @@ public class CommandFlagsRegistryGenerator {
 
     // Generate parent command registries
     for (String parent : knownParents) {
-      sb.append(String.format("    builder.register(\"%s\", EMPTY_FLAGS);\n", parent));
+      // Use parent command's actual metadata if available, otherwise use EMPTY_FLAGS
+      MetadataKey parentMetadata = simpleCommands.remove(parent);
+      if (parentMetadata != null) {
+        sb.append(generateRegisterCall(parent, null, parentMetadata));
+      } else {
+        sb.append(String.format("    builder.register(\"%s\", EMPTY_FLAGS);\n", parent));
+      }
 
       Map<String, MetadataKey> subcommands = parentCommands.get(parent);
       if (subcommands != null && !subcommands.isEmpty()) {

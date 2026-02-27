@@ -22,27 +22,8 @@ public class ClusterCommandObjects extends CommandObjects {
 
   private static final String CLUSTER_UNSUPPORTED_MESSAGE = "Not supported in cluster mode.";
 
-  private static final String KEYS_PATTERN_MESSAGE = "Cluster mode only supports KEYS command"
-      + " with pattern containing hash-tag ( curly-brackets enclosed string )";
-
   private static final String SCAN_PATTERN_MESSAGE = "Cluster mode only supports SCAN command"
       + " with MATCH pattern containing hash-tag ( curly-brackets enclosed string )";
-
-  @Override
-  public final CommandObject<Set<String>> keys(String pattern) {
-    if (!JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) {
-      throw new IllegalArgumentException(KEYS_PATTERN_MESSAGE);
-    }
-    return new CommandObject<>(commandArguments(KEYS).key(pattern), BuilderFactory.STRING_SET);
-  }
-
-  @Override
-  public final CommandObject<Set<byte[]>> keys(byte[] pattern) {
-    if (!JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) {
-      throw new IllegalArgumentException(KEYS_PATTERN_MESSAGE);
-    }
-    return new CommandObject<>(commandArguments(KEYS).key(pattern), BuilderFactory.BINARY_SET);
-  }
 
   @Override
   public final CommandObject<ScanResult<String>> scan(String cursor) {

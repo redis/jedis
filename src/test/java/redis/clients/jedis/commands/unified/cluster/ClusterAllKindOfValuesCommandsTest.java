@@ -100,17 +100,17 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
   @Test
   @Override
   public void keys() {
-    jedis.set("{foo}", "bar");
-    jedis.set("{foo}bar", "bar");
+    jedis.set("foo", "bar");
+    jedis.set("foobar", "bar");
 
-    Set<String> keys = jedis.keys("{foo}*");
+    Set<String> keys = jedis.keys("foo*");
     Set<String> expected = new HashSet<>();
-    expected.add("{foo}");
-    expected.add("{foo}bar");
+    expected.add("foo");
+    expected.add("foobar");
     assertEquals(expected, keys);
 
     expected.clear();
-    keys = jedis.keys("{bar}*");
+    keys = jedis.keys("bar*");
 
     assertEquals(expected, keys);
   }

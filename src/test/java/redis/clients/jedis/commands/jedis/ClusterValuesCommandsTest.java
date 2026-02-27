@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
@@ -27,6 +29,7 @@ import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
@@ -239,5 +242,37 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     assertEquals(2, results.size());
     assertTrue(results.get(0));  // Known script exists
     assertFalse(results.get(1)); // Unknown script doesn't exist
+  }
+
+  @Test
+  @SinceRedisVersion(value = "8.0.0", message = "CLUSTER SLOT-STATS requires Redis 8.0 or later")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void clusterSlotStatsAggregation() {
+    // Set some keys across the cluster to ensure slots have data
+    cluster.set("key1", "value1");
+    cluster.set("key2", "value2");
+    cluster.set("key3", "value3");
+
+    // Use broadcastCommand to send to all shards and aggregate with DEFAULT policy
+    // CLUSTER SLOT-STATS SLOTSRANGE returns a list (array) of slot statistics from each shard
+    // Each element is [slot_number, {key-count: N, cpu-usec: N, ...}]
+    // The DEFAULT response policy should concatenate lists from all nodes
+    List<Object> result = cluster.broadcastCommand(
+        new CommandObject<>(
+            new CommandArguments(Protocol.Command.CLUSTER).add("SLOT-STATS").add("SLOTSRANGE").add(0).add(16383),
+            BuilderFactory.RAW_OBJECT_LIST));
+
+    // Verify we got aggregated results from multiple shards
+    assertThat(result, notNullValue());
+
+    // The result should be a concatenated list containing slot statistics from all shards
+    // In a 3-shard cluster, each shard returns stats only for slots it owns
+    // so the merged list should contain entries from all 16384 slots
+    assertFalse(result.isEmpty(), "Should have aggregated slot statistics from cluster nodes");
+
+    // Verify the aggregated list contains entries from all shards
+    // Each shard owns roughly 1/3 of the 16384 slots, so the combined list
+    // should have approximately 16384 entries (one per slot)
+    assertTrue(result.size() > 5000, "Aggregated list should contain slot statistics from multiple shards");
   }
 }

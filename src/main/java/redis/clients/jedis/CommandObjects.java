@@ -409,12 +409,12 @@ public class CommandObjects {
   }
 
   public CommandObject<Set<String>> keys(String pattern) {
-    CommandArguments args = commandArguments(Command.KEYS).key(pattern);
+    CommandArguments args = commandArguments(Command.KEYS).add(pattern);
     return new CommandObject<>(args, BuilderFactory.STRING_SET);
   }
 
   public CommandObject<Set<byte[]>> keys(byte[] pattern) {
-    CommandArguments args = commandArguments(Command.KEYS).key(pattern);
+    CommandArguments args = commandArguments(Command.KEYS).add(pattern);
     return new CommandObject<>(args, BuilderFactory.BINARY_SET);
   }
 

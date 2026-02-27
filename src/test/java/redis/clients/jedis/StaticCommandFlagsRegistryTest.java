@@ -303,4 +303,24 @@ public class StaticCommandFlagsRegistryTest {
     assertNotNull(ResponsePolicy.valueOf("AGG_SUM"));
     assertNotNull(ResponsePolicy.valueOf("SPECIAL"));
   }
+
+  /**
+   * Test that correct flags are stored for commands with subcommands.
+   */
+  @Test
+  public void testFlagsForCommandWithSubcommands() {
+    // verify flags for COMMAND (top level)
+    CommandArguments commandArgs = new CommandArguments(Protocol.Command.COMMAND);
+    EnumSet<CommandFlag> commandFlags = registry.getFlags(commandArgs);
+    EnumSet<CommandFlag> expectedCommandFlags = EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE);
+    assertEquals(expectedCommandFlags, commandFlags, "COMMAND should have expected flags");
+
+    // verify flags for COMMAND INFO (subcommand)
+    CommandArguments commandInfoArgs = new CommandArguments(Protocol.Command.COMMAND).add("INFO");
+    EnumSet<CommandFlag> commandInfoflags = registry.getFlags(commandInfoArgs);
+    EnumSet<CommandFlag> expectedCommandInfoFlags = EnumSet.of(CommandFlag.LOADING,
+      CommandFlag.STALE);
+    assertEquals(expectedCommandInfoFlags, commandInfoflags,
+      "COMMAND INFO should have expected flags");
+  }
 }

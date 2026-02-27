@@ -2,6 +2,14 @@ package redis.clients.jedis.executors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandFlagsRegistry;
 import redis.clients.jedis.exceptions.ClusterAggregationException;
@@ -25,10 +33,13 @@ import redis.clients.jedis.exceptions.UnsupportedAggregationException;
  * <li>{@code ALL_SUCCEEDED} - Return first reply if all are equal, throw exception if
  * different</li>
  * <li>{@code ONE_SUCCEEDED} - Return first non-null reply</li>
- * <li>{@code SPECIAL}/{@code DEFAULT} - Use legacy hardcoded logic for backward compatibility</li>
+ * <li>{@code DEFAULT} - Aggregate replies by merging collections (concatenate lists, merge maps)</li>
+ * <li>{@code SPECIAL} - Use custom handling logic for special commands</li>
  * </ul>
  */
 public final class ClusterReplyAggregator {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ClusterReplyAggregator.class);
 
   private ClusterReplyAggregator() {
     // Utility class, prevent instantiation
@@ -71,14 +82,71 @@ public final class ClusterReplyAggregator {
       case ALL_SUCCEEDED:
         return aggregateAllSucceeded(existing, newReply);
 
+      case DEFAULT:
+        return aggregateDefault(existing, newReply);
+
       case SPECIAL:
         // NOTE(imalinovskyi): Handling of special commands (SCAN, FT.CURSOR, etc.) should happen
         // in the custom abstractions.
       case ONE_SUCCEEDED:
-      case DEFAULT:
       default:
         return existing;
     }
+  }
+
+  /**
+   * Aggregate replies using DEFAULT policy. For keyless commands, merges replies into a single
+   * nested data structure by concatenating lists, merging maps, or combining sets.
+   * <p>
+   * Supports:
+   * <ul>
+   * <li>List types (e.g., ArrayList&lt;String&gt;, ArrayList&lt;byte[]&gt;) - concatenates all
+   * elements</li>
+   * <li>Map types - merges all entries, with entries from newReply overwriting existing entries on
+   * key collision</li>
+   * <li>Set types (e.g., HashSet&lt;String&gt;, SetFromList&lt;byte[]&gt;) - combines all elements
+   * into a single set</li>
+   * </ul>
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T aggregateDefault(T existing, T newReply) {
+    // Handle List types - concatenate all elements
+    if (existing instanceof List && newReply instanceof List) {
+      List<Object> existingList = (List<Object>) existing;
+      List<Object> newList = (List<Object>) newReply;
+      ArrayList<Object> result = new ArrayList<>(existingList.size() + newList.size());
+      result.addAll(existingList);
+      result.addAll(newList);
+      return (T) result;
+    }
+
+    // Handle Map types - merge all entries (newReply overwrites existing on collision)
+    if (existing instanceof Map && newReply instanceof Map) {
+      Map<Object, Object> existingMap = (Map<Object, Object>) existing;
+      Map<Object, Object> newMap = (Map<Object, Object>) newReply;
+      HashMap<Object, Object> result = new HashMap<>(existingMap.size() + newMap.size());
+      result.putAll(existingMap);
+      result.putAll(newMap);
+      return (T) result;
+    }
+
+    // Handle Set types - combine all elements into a single set
+    if (existing instanceof Set && newReply instanceof Set) {
+      Set<Object> existingSet = (Set<Object>) existing;
+      Set<Object> newSet = (Set<Object>) newReply;
+      HashSet<Object> result = new HashSet<>(existingSet.size() + newSet.size());
+      result.addAll(existingSet);
+      result.addAll(newSet);
+      return (T) result;
+    }
+
+    // For other types, log warning and fall back to returning existing (current behavior)
+    LOG.warn("Unsupported type for DEFAULT aggregation: existing={}, newReply={}. "
+        + "Returning existing value without aggregation. "
+        + "Supported types are: List, Map, Set.",
+        existing != null ? existing.getClass().getName() : "null",
+        newReply != null ? newReply.getClass().getName() : "null");
+    return existing;
   }
 
   /**

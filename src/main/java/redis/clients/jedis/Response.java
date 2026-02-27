@@ -76,8 +76,6 @@ public class Response<T> implements Supplier<T> {
   }
 
   static class DecodedResponse<T> extends Response<T> {
-    private final T response;
-    private final JedisDataException exception;
 
     DecodedResponse(T response, JedisDataException exception) {
       super(null);

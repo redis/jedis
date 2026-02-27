@@ -5585,39 +5585,102 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(PING));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(commandObjects.commandArguments(cmd));
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(GET).key("mykey".getBytes()));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey".getBytes()).add("0".getBytes()).blocking());
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(SET).key("x").add("1"));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey").add("0").blocking());
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(GET).key("mykey".getBytes()).processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey".getBytes()).add("0".getBytes()).blocking().processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(
         commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(GET).key("mykey").processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
   }
 
+  /**
+   * @deprecated Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey").add("0").blocking().processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(
         commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));

@@ -295,10 +295,20 @@ public class RedisClusterClient extends UnifiedJedis {
    * This override automatically splits the keys by hash slot and executes MGET on each shard,
    * concatenating the results.
    * </p>
-   * <p>
-   * <b>Note:</b> The order of values in the result may not match the order of input keys
-   * when keys are distributed across multiple slots.
-   * </p>
+   *
+   * <p><b>Order Guarantee:</b> The returned values are in the same order as the input keys.
+   * Each {@code values.get(i)} corresponds to {@code keys[i]}.</p>
+   *
+   * <p><b>Performance Tip:</b> For better performance, pre-sort keys by hash slot before calling
+   * this method. This minimizes the number of separate Redis commands by allowing consecutive
+   * keys with the same slot to be batched together. Example:</p>
+   * <pre>{@code
+   * // Sort keys by hash slot for optimal batching
+   * String[] sortedKeys = Arrays.stream(keys)
+   *     .sorted(Comparator.comparingInt(JedisClusterCRC16::getSlot))
+   *     .toArray(String[]::new);
+   * List<String> values = client.mget(sortedKeys);
+   * }</pre>
    */
   @Override
   public List<String> mget(String... keys) {
@@ -311,10 +321,20 @@ public class RedisClusterClient extends UnifiedJedis {
    * This override automatically splits the keys by hash slot and executes MGET on each shard,
    * concatenating the results.
    * </p>
-   * <p>
-   * <b>Note:</b> The order of values in the result may not match the order of input keys
-   * when keys are distributed across multiple slots.
-   * </p>
+   *
+   * <p><b>Order Guarantee:</b> The returned values are in the same order as the input keys.
+   * Each {@code values.get(i)} corresponds to {@code keys[i]}.</p>
+   *
+   * <p><b>Performance Tip:</b> For better performance, pre-sort keys by hash slot before calling
+   * this method. This minimizes the number of separate Redis commands by allowing consecutive
+   * keys with the same slot to be batched together. Example:</p>
+   * <pre>{@code
+   * // Sort keys by hash slot for optimal batching
+   * byte[][] sortedKeys = Arrays.stream(keys)
+   *     .sorted(Comparator.comparingInt(JedisClusterCRC16::getSlot))
+   *     .toArray(byte[][]::new);
+   * List<byte[]> values = client.mget(sortedKeys);
+   * }</pre>
    */
   @Override
   public List<byte[]> mget(byte[]... keys) {

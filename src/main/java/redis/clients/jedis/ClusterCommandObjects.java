@@ -153,10 +153,17 @@ public class ClusterCommandObjects extends CommandObjects {
    * across Redis cluster nodes by ensuring that each resulting command only operates on keys
    * that hash to the same slot.
    *
+   * <p><b>Order Preservation:</b> This method preserves the order of keys as they appear in the input array.
+   * Consecutive keys that hash to the same slot are grouped together into a single CommandArguments,
+   * but non-consecutive keys with the same slot are kept in separate CommandArguments to maintain order.
+   * For example, if input keys map to slots [A, B, A], the result will be 3 separate CommandArguments
+   * (not 2), ensuring that when results are concatenated, they match the original input key order.</p>
+   *
    * @param args the original command arguments to copy (the command itself will be preserved)
    * @param keys variable number of keys to be grouped
    * @param params additional parameters for the command (may be null)
-   * @return a list of CommandArguments objects, each containing only keys that belong to the same hash slot
+   * @return a list of CommandArguments objects, each containing only keys that belong to the same hash slot,
+   *         preserving the original key order
    */
   protected List<CommandArguments> groupArgumentsByKeyHashSlot(CommandArguments args, String[] keys, IParams params) {
     return groupArgumentsByKeyValueHashSlotImpl(
@@ -176,10 +183,17 @@ public class ClusterCommandObjects extends CommandObjects {
    * across Redis cluster nodes by ensuring that each resulting command only operates on keys
    * that hash to the same slot.
    *
+   * <p><b>Order Preservation:</b> This method preserves the order of keys as they appear in the input array.
+   * Consecutive keys that hash to the same slot are grouped together into a single CommandArguments,
+   * but non-consecutive keys with the same slot are kept in separate CommandArguments to maintain order.
+   * For example, if input keys map to slots [A, B, A], the result will be 3 separate CommandArguments
+   * (not 2), ensuring that when results are concatenated, they match the original input key order.</p>
+   *
    * @param args the original command arguments to copy (the command itself will be preserved)
    * @param keys variable number of keys to be grouped
    * @param params additional parameters for the command (may be null)
-   * @return a list of CommandArguments objects, each containing only keys that belong to the same hash slot
+   * @return a list of CommandArguments objects, each containing only keys that belong to the same hash slot,
+   *         preserving the original key order
    */
   protected List<CommandArguments> groupArgumentsByKeyHashSlot(CommandArguments args, byte[][] keys, IParams params) {
     return groupArgumentsByKeyValueHashSlotImpl(
@@ -196,6 +210,10 @@ public class ClusterCommandObjects extends CommandObjects {
   /**
    * Groups key-value pairs by their hash slot and creates separate CommandArguments for each slot.
    * Inserts the key count after the command but before the keys (for commands like MSETEX).
+   *
+   * <p><b>Order Preservation:</b> This method preserves the order of key-value pairs as they appear
+   * in the input array. Consecutive pairs that hash to the same slot are grouped together, but
+   * non-consecutive pairs with the same slot are kept in separate CommandArguments to maintain order.</p>
    *
    * @param args the original command arguments to copy (the command itself will be preserved)
    * @param keysValues variable number of key-value pairs to be grouped (must be even length)
@@ -242,6 +260,12 @@ public class ClusterCommandObjects extends CommandObjects {
    * When valueAdder is null, this method processes keys only (for commands like DEL, EXISTS, MGET).
    * When valueAdder is provided, this method processes key-value pairs (for commands like MSET).
    *
+   * <p><b>Order Preservation:</b> This method preserves the order of keys as they appear in the input array.
+   * Consecutive keys that hash to the same slot are grouped together into a single CommandArguments,
+   * but non-consecutive keys with the same slot are kept in separate CommandArguments to maintain order.
+   * For example, if input keys map to slots [A, B, A], the result will be 3 separate CommandArguments
+   * (not 2), preserving the original key order in the concatenated results.</p>
+   *
    * @param <T> the type of key/value elements (String or byte[])
    * @param args the original command arguments to copy (the command itself will be preserved)
    * @param keysOrKeysValues array of keys (when valueAdder is null) or key-value pairs (when valueAdder is provided)
@@ -250,7 +274,8 @@ public class ClusterCommandObjects extends CommandObjects {
    * @param keyAdder function to add a key to CommandArguments
    * @param valueAdder function to add a value to CommandArguments (may be null for key-only operations)
    * @param insertKeyCount if true, inserts the number of keys after the command but before the keys (for commands like MSETEX)
-   * @return a list of CommandArguments objects, each containing only keys/values that belong to the same hash slot
+   * @return a list of CommandArguments objects, each containing only keys/values that belong to the same hash slot,
+   *         preserving the original key order
    * @throws IllegalArgumentException if valueAdder is provided and keysOrKeysValues has odd length
    */
   private <T> List<CommandArguments> groupArgumentsByKeyValueHashSlotImpl(
@@ -269,46 +294,77 @@ public class ClusterCommandObjects extends CommandObjects {
       throw new IllegalArgumentException("keysValues must contain an even number of elements (key-value pairs)");
     }
 
-    // Group keys (and optionally values) by hash slot
-    Map<Integer, List<T>> slotToElements = new HashMap<>();
+    if (keysOrKeysValues.length == 0) {
+      return new ArrayList<>();
+    }
+
+    // Group consecutive keys with the same slot together, preserving input order
+    // Non-consecutive keys with the same slot will be in separate commands
+    List<CommandArguments> result = new ArrayList<>();
+
+    int currentSlot = -1;
+    List<T> currentGroup = new ArrayList<>();
+
     for (int i = 0; i < keysOrKeysValues.length; i += step) {
       T key = keysOrKeysValues[i];
       int slot = slotCalculator.apply(key);
 
-      slotToElements.computeIfAbsent(slot, k -> new ArrayList<>()).add(key);
+      if (slot != currentSlot && !currentGroup.isEmpty()) {
+        // Slot changed - finalize the current group
+        result.add(createCommandArgsForGroup(args, currentGroup, params, keyAdder, valueAdder, insertKeyCount, step));
+        currentGroup = new ArrayList<>();
+      }
+
+      currentSlot = slot;
+      currentGroup.add(key);
       if (keyValueMode) {
-        slotToElements.get(slot).add(keysOrKeysValues[i + 1]);
+        currentGroup.add(keysOrKeysValues[i + 1]);
       }
     }
 
-    // Create CommandArguments for each hash slot group
-    List<CommandArguments> result = new ArrayList<>();
-    for (List<T> groupedElements : slotToElements.values()) {
-      CommandArguments slotArgs = commandArguments(args.getCommand());
-
-      // Insert key count after command but before keys (e.g., numkeys for MSETEX)
-      if (insertKeyCount) {
-        int keyCount = groupedElements.size() / step;
-        slotArgs.add(keyCount);
-      }
-
-      // Add keys (and optionally values) for this slot
-      for (int i = 0; i < groupedElements.size(); i += step) {
-        keyAdder.accept(slotArgs, groupedElements.get(i));
-        if (keyValueMode) {
-          valueAdder.accept(slotArgs, groupedElements.get(i + 1));
-        }
-      }
-
-      // Add params if provided
-      if (params != null) {
-        slotArgs.addParams(params);
-      }
-
-      result.add(slotArgs);
+    // Finalize the last group
+    if (!currentGroup.isEmpty()) {
+      result.add(createCommandArgsForGroup(args, currentGroup, params, keyAdder, valueAdder, insertKeyCount, step));
     }
 
     return result;
+  }
+
+  /**
+   * Helper method to create a CommandArguments for a group of keys/values.
+   */
+  private <T> CommandArguments createCommandArgsForGroup(
+      CommandArguments args,
+      List<T> groupedElements,
+      IParams params,
+      BiConsumer<CommandArguments, T> keyAdder,
+      BiConsumer<CommandArguments, T> valueAdder,
+      boolean insertKeyCount,
+      int step) {
+
+    boolean keyValueMode = valueAdder != null;
+    CommandArguments slotArgs = commandArguments(args.getCommand());
+
+    // Insert key count after command but before keys (e.g., numkeys for MSETEX)
+    if (insertKeyCount) {
+      int keyCount = groupedElements.size() / step;
+      slotArgs.add(keyCount);
+    }
+
+    // Add keys (and optionally values) for this slot
+    for (int i = 0; i < groupedElements.size(); i += step) {
+      keyAdder.accept(slotArgs, groupedElements.get(i));
+      if (keyValueMode) {
+        valueAdder.accept(slotArgs, groupedElements.get(i + 1));
+      }
+    }
+
+    // Add params if provided
+    if (params != null) {
+      slotArgs.addParams(params);
+    }
+
+    return slotArgs;
   }
 
   // ==================== Multi-Shard Command Methods ====================
@@ -384,6 +440,10 @@ public class ClusterCommandObjects extends CommandObjects {
    * This enables the MGET command to be executed across multiple Redis cluster shards
    * when keys hash to different slots.
    *
+   * <p><b>Order Preservation:</b> The returned commands preserve the order of keys as they appear
+   * in the input array. When the results from all commands are concatenated in order, the values
+   * will correspond positionally to the input keys.</p>
+   *
    * @param keys the keys to retrieve values for
    * @return a list of CommandObject instances, each containing keys that belong to the same hash slot
    */
@@ -399,6 +459,10 @@ public class ClusterCommandObjects extends CommandObjects {
    * Creates multiple MGET command objects, one for each hash slot group.
    * This enables the MGET command to be executed across multiple Redis cluster shards
    * when keys hash to different slots.
+   *
+   * <p><b>Order Preservation:</b> The returned commands preserve the order of keys as they appear
+   * in the input array. When the results from all commands are concatenated in order, the values
+   * will correspond positionally to the input keys.</p>
    *
    * @param keys the keys to retrieve values for
    * @return a list of CommandObject instances, each containing keys that belong to the same hash slot

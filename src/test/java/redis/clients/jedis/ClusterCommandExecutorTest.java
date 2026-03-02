@@ -1,8 +1,10 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -19,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
+
+import redis.clients.jedis.util.JedisClusterCRC16;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -897,5 +901,255 @@ public class ClusterCommandExecutorTest {
     verify(connectionHandler, times(0)).getConnectionMap();
     verify(pool).getResource();
     verify(connection).close();
+  }
+
+  /**
+   * This test verifies the bug: MGET multi-shard silently returns values in wrong order.
+   *
+   * The issue is that mgetMultiShard groups keys by hash slot using a HashMap, which doesn't
+   * preserve insertion order. The aggregated result concatenates per-slot lists in arbitrary
+   * order, breaking MGET's contract that returned values correspond positionally to input keys.
+   *
+   * Callers using index-based access (e.g., values.get(i) for keys[i]) will silently get
+   * wrong values when keys span multiple slots.
+   *
+   * This test runs MGET with many different key combinations to find at least one case where
+   * the HashMap iteration order differs from insertion order, proving the bug exists.
+   *
+   * NOTE: This test FAILS when the bug exists, demonstrating the issue.
+   * When the bug is fixed (e.g., by using LinkedHashMap to preserve insertion order),
+   * this test will pass.
+   */
+  /**
+   * This test verifies that MGET multi-shard returns values in the correct order
+   * matching the input keys, even when keys span multiple hash slots.
+   *
+   * The fix groups consecutive keys with the same slot together, but keeps
+   * non-consecutive keys with the same slot in separate commands to preserve order.
+   * For example, keys mapping to slots [A, B, A] result in 3 separate commands,
+   * not 2, ensuring the concatenated results match the input key order.
+   */
+  @Test
+  public void mgetMultiShardReturnsValuesInCorrectOrderWhenKeysSpanMultipleSlots() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+
+    // Try many different key combinations including ones where keys hash to different slots
+    for (int i = 0; i < 100; i++) {
+      // Generate unique keys that are likely to hash to different slots
+      String key1 = "testkey_a_" + i;
+      String key2 = "testkey_b_" + i;
+      String key3 = "testkey_c_" + i;
+
+      int slot1 = JedisClusterCRC16.getSlot(key1);
+      int slot2 = JedisClusterCRC16.getSlot(key2);
+      int slot3 = JedisClusterCRC16.getSlot(key3);
+
+      // Only test if all keys hash to different slots (the challenging case)
+      if (slot1 == slot2 || slot2 == slot3 || slot1 == slot3) {
+        continue;
+      }
+
+      // Use the standard MGET multi-shard API
+      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2, key3);
+
+      List<String> inputOrder = java.util.Arrays.asList(key1, key2, key3);
+
+      // Execute MGET with the standard executeMultiShardCommand
+      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+          StaticCommandFlagsRegistry.registry()) {
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T execute(Connection conn, CommandObject<T> commandObject) {
+          List<String> values = new ArrayList<>();
+          CommandArguments args = commandObject.getArguments();
+          boolean isFirst = true;
+          for (redis.clients.jedis.args.Rawable arg : args) {
+            if (isFirst) {
+              isFirst = false;
+              continue;
+            }
+            String key = new String(arg.getRaw());
+            values.add("value_for_" + key);
+          }
+          return (T) values;
+        }
+        @Override
+        protected void sleep(long ignored) {
+          throw new RuntimeException("This test should never sleep");
+        }
+      };
+
+      // Use the standard executeMultiShardCommand method
+      List<String> result = testMe.executeMultiShardCommand(mgetCommands);
+
+      // Expected correct order based on input - MGET contract says values must match key positions
+      List<String> expectedCorrectOrder = java.util.Arrays.asList(
+          "value_for_" + key1,
+          "value_for_" + key2,
+          "value_for_" + key3);
+
+      // Verify all values are present
+      assertEquals(3, result.size(), "Should have 3 values");
+      assertTrue(result.contains("value_for_" + key1));
+      assertTrue(result.contains("value_for_" + key2));
+      assertTrue(result.contains("value_for_" + key3));
+
+      // THE KEY ASSERTION: Values must be in the same order as input keys
+      // With the fix (grouping consecutive keys only), this should pass for all key combinations
+      assertEquals(expectedCorrectOrder, result,
+          "MGET multi-shard should return values in the same order as input keys. " +
+          "Input keys: " + inputOrder + ", slots: [" + slot1 + ", " + slot2 + ", " + slot3 + "]");
+    }
+  }
+
+  /**
+   * This test verifies that MGET multi-shard returns values in the correct order
+   * when keys have interleaved hash slots (e.g., [slotA, slotB, slotA]).
+   *
+   * This is the critical case that the fix addresses: without the fix, keys with
+   * the same slot would be grouped together, producing 2 commands instead of 3,
+   * which would return values in wrong order.
+   */
+  @Test
+  public void mgetMultiShardReturnsValuesInCorrectOrderForInterleavedSlots() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
+    String key1 = "key1";
+    String key2 = "key2";
+    String key3 = "key3";
+
+    // Mock JedisClusterCRC16.getSlot to return interleaved slots: [slotA, slotB, slotA]
+    try (org.mockito.MockedStatic<JedisClusterCRC16> mockedStatic =
+        Mockito.mockStatic(JedisClusterCRC16.class)) {
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key1)).thenReturn(100);
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key2)).thenReturn(200);
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key3)).thenReturn(100);
+
+      ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+
+      // The fix should create 3 separate commands (not 2) to preserve order
+      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2, key3);
+      assertEquals(3, mgetCommands.size(),
+          "Should have 3 separate commands for interleaved slots [A, B, A], not 2");
+
+      // Execute MGET with the standard executeMultiShardCommand
+      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+          StaticCommandFlagsRegistry.registry()) {
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T execute(Connection conn, CommandObject<T> commandObject) {
+          List<String> values = new ArrayList<>();
+          CommandArguments args = commandObject.getArguments();
+          boolean isFirst = true;
+          for (redis.clients.jedis.args.Rawable arg : args) {
+            if (isFirst) {
+              isFirst = false;
+              continue;
+            }
+            String key = new String(arg.getRaw());
+            values.add("value_for_" + key);
+          }
+          return (T) values;
+        }
+        @Override
+        protected void sleep(long ignored) {
+          throw new RuntimeException("This test should never sleep");
+        }
+      };
+
+      // Use the standard executeMultiShardCommand method
+      List<String> result = testMe.executeMultiShardCommand(mgetCommands);
+
+      // Expected correct order based on input
+      List<String> expectedCorrectOrder = java.util.Arrays.asList(
+          "value_for_" + key1,
+          "value_for_" + key2,
+          "value_for_" + key3);
+
+      // THE KEY ASSERTION: Values must be in the same order as input keys
+      assertEquals(expectedCorrectOrder, result,
+          "MGET multi-shard should return values in the same order as input keys. " +
+          "Input keys: [" + key1 + ", " + key2 + ", " + key3 + "], slots: [100, 200, 100]");
+    }
+  }
+
+  /**
+   * This test verifies that when keys are sorted by hash slot (consecutive keys belong to
+   * the same slot), they are combined into a single command for optimal batching.
+   *
+   * For example, keys mapping to slots [A, A, B, B] should result in 2 commands (not 4),
+   * with keys grouped as: command1=[key1, key2], command2=[key3, key4].
+   */
+  @Test
+  public void mgetMultiShardCombinesConsecutiveKeysWithSameSlotIntoOneCommand() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
+    String key1 = "key1";
+    String key2 = "key2";
+    String key3 = "key3";
+    String key4 = "key4";
+
+    // Mock JedisClusterCRC16.getSlot to return sorted/grouped slots: [A, A, B, B]
+    try (org.mockito.MockedStatic<JedisClusterCRC16> mockedStatic =
+        Mockito.mockStatic(JedisClusterCRC16.class)) {
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key1)).thenReturn(100);
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key2)).thenReturn(100);
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key3)).thenReturn(200);
+      mockedStatic.when(() -> JedisClusterCRC16.getSlot(key4)).thenReturn(200);
+
+      ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+
+      // Consecutive keys with the same slot should be combined into one command
+      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2, key3, key4);
+      assertEquals(2, mgetCommands.size(),
+          "Should have 2 commands for sorted slots [A, A, B, B], not 4");
+
+      // Execute MGET with the standard executeMultiShardCommand
+      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+          StaticCommandFlagsRegistry.registry()) {
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T execute(Connection conn, CommandObject<T> commandObject) {
+          List<String> values = new ArrayList<>();
+          CommandArguments args = commandObject.getArguments();
+          boolean isFirst = true;
+          for (redis.clients.jedis.args.Rawable arg : args) {
+            if (isFirst) {
+              isFirst = false;
+              continue;
+            }
+            String key = new String(arg.getRaw());
+            values.add("value_for_" + key);
+          }
+          return (T) values;
+        }
+        @Override
+        protected void sleep(long ignored) {
+          throw new RuntimeException("This test should never sleep");
+        }
+      };
+
+      // Use the standard executeMultiShardCommand method
+      List<String> result = testMe.executeMultiShardCommand(mgetCommands);
+
+      // Expected correct order based on input
+      List<String> expectedCorrectOrder = java.util.Arrays.asList(
+          "value_for_" + key1,
+          "value_for_" + key2,
+          "value_for_" + key3,
+          "value_for_" + key4);
+
+      // Verify values are in the correct order
+      assertEquals(expectedCorrectOrder, result,
+          "MGET multi-shard should return values in the same order as input keys");
+    }
   }
 }

@@ -1093,6 +1093,13 @@ public class ClusterPipeliningTest {
   }
 
   @Test
+  public void withTransaction() {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+      assertThrows(UnsupportedOperationException.class, () -> cluster.withMulti( t -> t.exec()));
+    }
+  }
+
+  @Test
   @Timeout(10)
   public void multiple() {
     final int maxTotal = 100;

@@ -5,6 +5,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
@@ -5565,6 +5568,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * Transaction object must be closed after usage
    * @return transaction object
    */
   public AbstractTransaction multi() {
@@ -5572,6 +5576,29 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * Executes action within a multi transaction, auto-closing it
+   * @param action logic to be executed
+   */
+  public void withMulti(Consumer<AbstractTransaction> action) {
+    try (AbstractTransaction transaction = multi()) {
+      action.accept(transaction);
+    }
+  }
+
+  /**
+   * Executes action within a multi transaction, auto-closing it
+   * @param action logic to be executed
+   * @return value returned from function
+   */
+  public <R> R withMultiGet(Function<AbstractTransaction, R> action) {
+    try (AbstractTransaction transaction = multi()) {
+      return action.apply(transaction);
+    }
+  }
+
+
+  /**
+   * Transaction object must be closed after usage
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @return transaction object
    */
@@ -5582,6 +5609,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       return new MultiDbTransaction((MultiDbConnectionProvider) provider, doMulti, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
+    }
+  }
+
+
+  /**
+   * Executes action within a transaction, auto-closing it
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param action logic to be executed
+   */
+  public void withTransaction(boolean doMulti, Consumer<AbstractTransaction> action) {
+    try (AbstractTransaction transaction = transaction(doMulti)) {
+      action.accept(transaction);
+    }
+  }
+
+  /**
+   * Executes action within a transaction, auto-closing it
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param action logic to be executed
+   * @return value returned from function
+   */
+  public <R> R withTransactionGet(boolean doMulti, Function<AbstractTransaction, R> action) {
+    try (AbstractTransaction transaction = transaction(doMulti)) {
+      return action.apply(transaction);
     }
   }
 

@@ -323,4 +323,56 @@ public class StaticCommandFlagsRegistryTest {
     assertEquals(expectedCommandInfoFlags, commandInfoflags,
       "COMMAND INFO should have expected flags");
   }
+
+  /**
+   * Test that HOTKEYS subcommands (START, STOP, GET, RESET) return the correct flags.
+   * All HOTKEYS subcommands should have ADMIN and NOSCRIPT flags.
+   */
+  @Test
+  public void testHotkeysSubcommandFlags() {
+    // Expected flags for all HOTKEYS subcommands: ADMIN, NOSCRIPT
+    EnumSet<CommandFlag> expectedFlags = EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT);
+
+    // Test HOTKEYS START
+    CommandArguments hotkeysStartArgs = new CommandArguments(Protocol.Command.HOTKEYS).add("START");
+    EnumSet<CommandFlag> startFlags = registry.getFlags(hotkeysStartArgs);
+    assertNotNull(startFlags, "HOTKEYS START flags should not be null");
+    assertFalse(startFlags.isEmpty(), "HOTKEYS START should have flags");
+    assertEquals(expectedFlags, startFlags, "HOTKEYS START should have ADMIN and NOSCRIPT flags");
+
+    // Test HOTKEYS STOP
+    CommandArguments hotkeysStopArgs = new CommandArguments(Protocol.Command.HOTKEYS).add("STOP");
+    EnumSet<CommandFlag> stopFlags = registry.getFlags(hotkeysStopArgs);
+    assertNotNull(stopFlags, "HOTKEYS STOP flags should not be null");
+    assertFalse(stopFlags.isEmpty(), "HOTKEYS STOP should have flags");
+    assertEquals(expectedFlags, stopFlags, "HOTKEYS STOP should have ADMIN and NOSCRIPT flags");
+
+    // Test HOTKEYS GET
+    CommandArguments hotkeysGetArgs = new CommandArguments(Protocol.Command.HOTKEYS).add("GET");
+    EnumSet<CommandFlag> getFlags = registry.getFlags(hotkeysGetArgs);
+    assertNotNull(getFlags, "HOTKEYS GET flags should not be null");
+    assertFalse(getFlags.isEmpty(), "HOTKEYS GET should have flags");
+    assertEquals(expectedFlags, getFlags, "HOTKEYS GET should have ADMIN and NOSCRIPT flags");
+
+    // Test HOTKEYS RESET
+    CommandArguments hotkeysResetArgs = new CommandArguments(Protocol.Command.HOTKEYS).add("RESET");
+    EnumSet<CommandFlag> resetFlags = registry.getFlags(hotkeysResetArgs);
+    assertNotNull(resetFlags, "HOTKEYS RESET flags should not be null");
+    assertFalse(resetFlags.isEmpty(), "HOTKEYS RESET should have flags");
+    assertEquals(expectedFlags, resetFlags, "HOTKEYS RESET should have ADMIN and NOSCRIPT flags");
+
+    // Verify request policy for HOTKEYS GET (has SPECIAL request and response policy)
+    RequestPolicy getRequestPolicy = registry.getRequestPolicy(hotkeysGetArgs);
+    assertEquals(RequestPolicy.SPECIAL, getRequestPolicy,
+        "HOTKEYS GET should have SPECIAL request policy");
+
+    ResponsePolicy getResponsePolicy = registry.getResponsePolicy(hotkeysGetArgs);
+    assertEquals(ResponsePolicy.SPECIAL, getResponsePolicy,
+        "HOTKEYS GET should have SPECIAL response policy");
+
+    // Verify request policy for HOTKEYS START (has SPECIAL request policy)
+    RequestPolicy startRequestPolicy = registry.getRequestPolicy(hotkeysStartArgs);
+    assertEquals(RequestPolicy.SPECIAL, startRequestPolicy,
+        "HOTKEYS START should have SPECIAL request policy");
+  }
 }

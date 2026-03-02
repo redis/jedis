@@ -10,15 +10,19 @@ import static redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
  * CommandFlagsRegistryGenerator. DO NOT EDIT MANUALLY.
  * <p>Generated from Redis Server:
  * <ul>
- * <li>Version: 8.6.0</li>
+ * <li>Version: 8.6.1</li>
  * <li>Mode: standalone</li>
- * <li>Loaded Modules: search, vectorset, timeseries, bf, ReJSON</li>
- * <li>Generated at: 2026-02-27 17:04:05 CET</li>
+ * <li>Loaded Modules: timeseries, search, bf, vectorset, ReJSON</li>
+ * <li>Generated at: 2026-03-02 16:18:50 CET</li>
  * </ul>
  */
 final class StaticCommandFlagsRegistryInitializer {
 
   static void initialize(StaticCommandFlagsRegistry.Builder builder) {
+    builder.register("FT.CONFIG", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    // FT.CONFIG subcommands
+    builder.register("FT.CONFIG", "GET", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    builder.register("FT.CONFIG", "SET", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("ACL", EMPTY_FLAGS);
     // ACL subcommands
     builder.register("ACL", "CAT", EnumSet.of(CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.STALE));
@@ -80,6 +84,12 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("MODULE", "LOAD", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT, CommandFlag.NO_ASYNC_LOADING));
     builder.register("MODULE", "LOADEX", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT, CommandFlag.NO_ASYNC_LOADING));
     builder.register("MODULE", "UNLOAD", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT, CommandFlag.NO_ASYNC_LOADING));
+    builder.register("HOTKEYS", EMPTY_FLAGS);
+    // HOTKEYS subcommands
+    builder.register("HOTKEYS", "GET", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, ResponsePolicy.SPECIAL);
+    builder.register("HOTKEYS", "RESET", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, null);
+    builder.register("HOTKEYS", "START", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, null);
+    builder.register("HOTKEYS", "STOP", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, null);
     builder.register("PUBSUB", EMPTY_FLAGS);
     // PUBSUB subcommands
     builder.register("PUBSUB", "CHANNELS", EnumSet.of(CommandFlag.LOADING, CommandFlag.PUBSUB, CommandFlag.STALE));
@@ -106,6 +116,11 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("SLOWLOG", "GET", EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.STALE), RequestPolicy.ALL_NODES, null);
     builder.register("SLOWLOG", "LEN", EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.STALE), RequestPolicy.ALL_NODES, ResponsePolicy.AGG_SUM);
     builder.register("SLOWLOG", "RESET", EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.STALE), RequestPolicy.ALL_NODES, ResponsePolicy.ALL_SUCCEEDED);
+    builder.register("FT.CURSOR", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    // FT.CURSOR subcommands
+    builder.register("FT.CURSOR", "DEL", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY), RequestPolicy.SPECIAL, null);
+    builder.register("FT.CURSOR", "GC", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    builder.register("FT.CURSOR", "READ", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY), RequestPolicy.SPECIAL, null);
     builder.register("COMMAND", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
     // COMMAND subcommands
     builder.register("COMMAND", "COUNT", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
@@ -166,9 +181,6 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("XGROUP", "DELCONSUMER", EnumSet.of(CommandFlag.WRITE));
     builder.register("XGROUP", "DESTROY", EnumSet.of(CommandFlag.WRITE));
     builder.register("XGROUP", "SETID", EnumSet.of(CommandFlag.WRITE));
-    // 1 command(s) with: no flags
-    builder.register("HOTKEYS", EMPTY_FLAGS);
-
     // 1 command(s) with: admin
     builder.register("PFSELFTEST", EnumSet.of(CommandFlag.ADMIN));
 
@@ -247,14 +259,6 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("ZREMRANGEBYLEX", EnumSet.of(CommandFlag.WRITE));
     builder.register("ZREMRANGEBYRANK", EnumSet.of(CommandFlag.WRITE));
     builder.register("ZREMRANGEBYSCORE", EnumSet.of(CommandFlag.WRITE));
-
-    // 1 command(s) with: admin, noscript; request_policy=special; response_policy=special
-    builder.register("HOTKEYS GET", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, ResponsePolicy.SPECIAL);
-
-    // 3 command(s) with: admin, noscript; request_policy=special
-    builder.register("HOTKEYS RESET", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, null);
-    builder.register("HOTKEYS START", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, null);
-    builder.register("HOTKEYS STOP", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT), RequestPolicy.SPECIAL, null);
 
     // 2 command(s) with: blocking, write
     builder.register("BLPOP", EnumSet.of(CommandFlag.BLOCKING, CommandFlag.WRITE));
@@ -372,18 +376,10 @@ final class StaticCommandFlagsRegistryInitializer {
     // 1 command(s) with: loading, stale; request_policy=all_shards; response_policy=special
     builder.register("INFO", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE), RequestPolicy.ALL_SHARDS, ResponsePolicy.SPECIAL);
 
-    // 2 command(s) with: module, readonly; request_policy=special
-    builder.register("FT.CURSOR DEL", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY), RequestPolicy.SPECIAL, null);
-    builder.register("FT.CURSOR READ", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY), RequestPolicy.SPECIAL, null);
-
-    // 61 command(s) with: module, readonly
+    // 56 command(s) with: module, readonly
     builder.register("CMS.INFO", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("CMS.QUERY", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.AGGREGATE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
-    builder.register("FT.CONFIG", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
-    builder.register("FT.CONFIG GET", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
-    builder.register("FT.CURSOR", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
-    builder.register("FT.CURSOR GC", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.DICTDUMP", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.EXPLAIN", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.EXPLAINCLI", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
@@ -436,12 +432,10 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("VRANGE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("VSIM", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("_FT.CONFIG", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
-    builder.register("_FT.CONFIG GET", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("_FT.DEBUG", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
 
-    // 23 command(s) with: module, write
+    // 21 command(s) with: module, write
     builder.register("FT.ALIASDEL", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
-    builder.register("FT.CONFIG SET", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("FT.DEL", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("FT.DICTDEL", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("FT.DROP", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
@@ -462,7 +456,6 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("TS.DEL", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("TS.DELETERULE", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("VREM", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
-    builder.register("_FT.CONFIG SET", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
 
     // 6 command(s) with: movablekeys, readonly
     builder.register("SINTERCARD", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));

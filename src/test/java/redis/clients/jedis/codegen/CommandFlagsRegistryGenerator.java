@@ -2,6 +2,7 @@ package redis.clients.jedis.codegen;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Module;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -85,6 +86,19 @@ public class CommandFlagsRegistryGenerator {
    */
   private static final Map<String, CommandMetadata> MANUAL_OVERRIDES = new LinkedHashMap<>();
 
+  /**
+   * Known parent commands that have subcommands. When the generator encounters a command name
+   * containing a space (e.g., "FUNCTION LOAD"), the parent part (e.g., "FUNCTION") must be listed
+   * here for proper subcommand registration.
+   * <p>
+   * If a new Redis command with subcommands is added, add the parent command name to this set.
+   * The generator will fail with a helpful error message if an unknown parent command is encountered.
+   */
+  private static final Set<String> KNOWN_PARENT_COMMANDS = new HashSet<>(
+      Arrays.asList("ACL", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION", "HOTKEYS",
+        "LATENCY", "MEMORY", "MODULE", "OBJECT", "PUBSUB", "SCRIPT", "SLOWLOG", "XGROUP", "XINFO",
+          "FT.CONFIG", "FT.CURSOR"));
+
   public CommandFlagsRegistryGenerator(String host, int port) {
     this.redisHost = host;
     this.redisPort = port;
@@ -167,6 +181,7 @@ public class CommandFlagsRegistryGenerator {
     try (Jedis jedis = new Jedis(redisHost, redisPort)) {
 
       jedis.connect();
+      jedis.auth(Endpoints.getRedisEndpoint("standalone0").getPassword());
 
       // Collect server metadata
       String infoServer = jedis.info("server");
@@ -289,7 +304,9 @@ public class CommandFlagsRegistryGenerator {
     }
 
     // Exclude FT.DEBUG and _FT.DEBUG subcommands
-    return commandName.startsWith("FT.DEBUG ") || commandName.startsWith("_FT.DEBUG ");
+    return commandName.startsWith("FT.DEBUG ")
+        || commandName.startsWith("_FT.DEBUG ")
+        || commandName.startsWith("_FT.CONFIG ");
   }
 
   private String extractInfoValue(String info, String key) {
@@ -409,11 +426,6 @@ public class CommandFlagsRegistryGenerator {
     Map<String, Map<String, MetadataKey>> parentCommands = new LinkedHashMap<>();
     Map<String, MetadataKey> simpleCommands = new LinkedHashMap<>();
 
-    // Known parent commands
-    Set<String> knownParents = new HashSet<>(
-        Arrays.asList("ACL", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION", "LATENCY",
-          "MEMORY", "MODULE", "OBJECT", "PUBSUB", "SCRIPT", "SLOWLOG", "XGROUP", "XINFO"));
-
     // Categorize commands
     for (Map.Entry<MetadataKey, List<String>> entry : metadataCombinations.entrySet()) {
       MetadataKey metadataKey = entry.getKey();
@@ -424,12 +436,16 @@ public class CommandFlagsRegistryGenerator {
           String parent = command.substring(0, spaceIndex);
           String subcommand = command.substring(spaceIndex + 1);
 
-          if (knownParents.contains(parent)) {
+          if (KNOWN_PARENT_COMMANDS.contains(parent)) {
             parentCommands.computeIfAbsent(parent, k -> new LinkedHashMap<>()).put(subcommand,
               metadataKey);
           } else {
-            // Not a known parent, treat as simple command
-            simpleCommands.put(command, metadataKey);
+            // Unknown parent command with subcommands - fail with helpful error message
+            throw new IllegalStateException(String.format(
+                "Unknown command with subcommands encountered: '%s' (parent: '%s', subcommand: '%s'). "
+                    + "Command names cannot contain spaces unless the parent command is registered. "
+                    + "To fix this, add '%s' to the 'KNOWN_PARENT_COMMANDS' set in CommandFlagsRegistryGenerator.java.",
+                command, parent, subcommand, parent));
           }
         } else {
           // Simple command without subcommands
@@ -439,7 +455,7 @@ public class CommandFlagsRegistryGenerator {
     }
 
     // Generate parent command registries
-    for (String parent : knownParents) {
+    for (String parent : KNOWN_PARENT_COMMANDS) {
       // Use parent command's actual metadata if available, otherwise use EMPTY_FLAGS
       MetadataKey parentMetadata = simpleCommands.remove(parent);
       if (parentMetadata != null) {

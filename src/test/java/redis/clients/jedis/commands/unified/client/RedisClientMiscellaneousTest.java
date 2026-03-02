@@ -125,6 +125,39 @@ public class RedisClientMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   @Test
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void withTransaction() {
+    final int count = 10;
+    int totalCount = 0;
+    for (int i = 0; i < count; i++) {
+      jedis.set("foo" + i, "bar" + i);
+    }
+    totalCount += count;
+    for (int i = 0; i < count; i++) {
+      jedis.rpush("foobar" + i, "foo" + i, "bar" + i);
+    }
+    totalCount += count;
+
+    List<Object> expected = new ArrayList<>(totalCount);
+
+    List<Object> responses = jedis.withMultiGet( transaction -> {
+      for (int i = 0; i < count; i++) {
+        transaction.get("foo" + i);
+        expected.add("bar" + i);
+      }
+      for (int i = 0; i < count; i++) {
+        transaction.lrange("foobar" + i, 0, -1);
+        expected.add(Arrays.asList("foo" + i, "bar" + i));
+      }
+      return transaction.exec();
+    });
+
+    for (int i = 0; i < totalCount; i++) {
+      assertEquals(expected.get(i), responses.get(i));
+    }
+  }
+
+  @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void watch() {
     try (AbstractTransaction tx = jedis.transaction(false)) {
       assertEquals("OK", tx.watch("mykey", "somekey"));

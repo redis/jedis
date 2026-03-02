@@ -69,4 +69,20 @@ public abstract class PrefixedKeysTest<T extends UnifiedJedis> {
             assertEquals("bar2-value", jedis.hget("test-prefix:foo2", "bar2-key"));
         }
     }
+
+    @Test
+    @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+    public void prefixesKeysInTransactionWithMulti() {
+        try (UnifiedJedis jedis = prefixingJedis()) {
+            jedis.withMulti( transaction -> {
+                transaction.set("foo1", "bar1-from-transaction");
+                transaction.hset("foo2", "bar2-key", "bar2-value");
+                transaction.exec();
+            });
+        }
+        try (UnifiedJedis jedis = nonPrefixingJedis()) {
+            assertEquals("bar1-from-transaction", jedis.get("test-prefix:foo1"));
+            assertEquals("bar2-value", jedis.hget("test-prefix:foo2", "bar2-key"));
+        }
+    }
 }

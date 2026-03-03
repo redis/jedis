@@ -872,13 +872,13 @@ public final class MultiDbConfig {
     private float weight = 1.0f;
 
     /** Health check enabled. Default: true */
-    private boolean healthCheckEnabled;
+    private boolean healthCheckEnabled = true;
 
     /**
      * Strategy supplier for creating health check instances for this database. Default is
      * PingStrategy.DEFAULT.
      */
-    private StrategySupplier healthCheckStrategySupplier;
+    private StrategySupplier healthCheckStrategySupplier = PingStrategy.DEFAULT;
 
     /**
      * Constructs a DatabaseConfig with basic endpoint and client configuration.

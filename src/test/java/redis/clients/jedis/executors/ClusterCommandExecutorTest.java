@@ -1316,4 +1316,140 @@ public class ClusterCommandExecutorTest {
         "MGET multi-shard should return values in the same order as input keys");
     }
   }
+
+  /**
+   * This test verifies the fix for the race condition in RoundRobinConnectionResolver where the
+   * round-robin counter could cause IndexOutOfBoundsException on topology change.
+   * <p>
+   * The bug occurred because: 1. Thread A with a 5-node list sets counter to 4 (valid for its list)
+   * 2. Thread B with a 3-node list (after topology change) reads counter value 4 3. Thread B uses 4
+   * as index into a 3-element list -> IndexOutOfBoundsException
+   * <p>
+   * The fix applies modulo with the current list size after reading the counter, ensuring the index
+   * is always valid for the current thread's node list.
+   */
+  @Test
+  public void runKeylessCommandDoesNotThrowIndexOutOfBoundsOnTopologyChange() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+
+    // Create initial larger connection map (5 nodes)
+    Map<String, ConnectionPool> largeConnectionMap = new java.util.LinkedHashMap<>();
+    ConnectionPool pool1 = mock(ConnectionPool.class);
+    ConnectionPool pool2 = mock(ConnectionPool.class);
+    ConnectionPool pool3 = mock(ConnectionPool.class);
+    ConnectionPool pool4 = mock(ConnectionPool.class);
+    ConnectionPool pool5 = mock(ConnectionPool.class);
+
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+    Connection connection4 = mock(Connection.class);
+    Connection connection5 = mock(Connection.class);
+
+    largeConnectionMap.put("node1:6379", pool1);
+    largeConnectionMap.put("node2:6379", pool2);
+    largeConnectionMap.put("node3:6379", pool3);
+    largeConnectionMap.put("node4:6379", pool4);
+    largeConnectionMap.put("node5:6379", pool5);
+
+    when(pool1.getResource()).thenReturn(connection1);
+    when(pool2.getResource()).thenReturn(connection2);
+    when(pool3.getResource()).thenReturn(connection3);
+    when(pool4.getResource()).thenReturn(connection4);
+    when(pool5.getResource()).thenReturn(connection5);
+
+    // Create smaller connection map (2 nodes) - simulates topology change
+    Map<String, ConnectionPool> smallConnectionMap = new java.util.LinkedHashMap<>();
+    smallConnectionMap.put("node1:6379", pool1);
+    smallConnectionMap.put("node2:6379", pool2);
+
+    // Start with large map, then switch to small map
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(largeConnectionMap)
+        .thenReturn(largeConnectionMap).thenReturn(largeConnectionMap)
+        .thenReturn(largeConnectionMap)
+        // After 4 calls, switch to smaller topology
+        .thenReturn(smallConnectionMap).thenReturn(smallConnectionMap)
+        .thenReturn(smallConnectionMap).thenReturn(smallConnectionMap)
+        .thenReturn(smallConnectionMap);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "OK";
+      }
+
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // Execute with large topology (5 nodes) - this advances the round-robin counter
+    for (int i = 0; i < 4; i++) {
+      String result = invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
+      assertEquals("OK", result);
+    }
+
+    // At this point, the internal counter could be at value 4 (pointing to 5th node)
+    // Now topology changes to only 2 nodes
+
+    // Execute with small topology (2 nodes) - should NOT throw IndexOutOfBoundsException
+    // This is the key assertion: the fix ensures modulo is applied with current list size
+    for (int i = 0; i < 5; i++) {
+      String result = invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
+      assertEquals("OK", result, "Should succeed even when counter value exceeds new list size");
+    }
+
+    // Verify both maps were used
+    verify(connectionHandler, times(9)).getPrimaryNodesConnectionMap();
+  }
+
+  /**
+   * This test verifies the round-robin counter handles integer overflow gracefully. When the
+   * counter reaches Integer.MAX_VALUE, the next increment wraps to Integer.MIN_VALUE. The fix uses
+   * Math.abs to ensure the modulo result is always non-negative.
+   */
+  @Test
+  public void runKeylessCommandHandlesCounterOverflowGracefully() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new java.util.LinkedHashMap<>();
+    ConnectionPool pool = mock(ConnectionPool.class);
+    Connection connection = mock(Connection.class);
+
+    connectionMap.put("node1:6379", pool);
+    connectionMap.put("node2:6379", pool);
+    connectionMap.put("node3:6379", pool);
+
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
+    when(pool.getResource()).thenReturn(connection);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "OK";
+      }
+
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // Get the roundRobinConnectionResolver field and set its counter to near MAX_VALUE
+    ConnectionResolver roundRobinResolver = ReflectionTestUtil.getField(testMe,
+      "roundRobinConnectionResolver");
+    java.util.concurrent.atomic.AtomicInteger counter = ReflectionTestUtil
+        .getField(roundRobinResolver, "roundRobinCounter");
+
+    // Set counter to MAX_VALUE - 1, so next calls will overflow
+    counter.set(Integer.MAX_VALUE - 1);
+
+    // Execute several commands - should NOT throw any exception even when counter overflows
+    for (int i = 0; i < 5; i++) {
+      String result = invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT);
+      assertEquals("OK", result, "Should handle counter overflow gracefully");
+    }
+  }
 }

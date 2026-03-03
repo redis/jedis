@@ -35,8 +35,12 @@ final class RoundRobinConnectionResolver implements ConnectionResolver {
     ConnectionResolver.ConnectionIntent intent = getIntent(cmd, flags);
     List<Map.Entry<String, ConnectionPool>> nodeList = selectConnectionPool(intent);
 
-    int roundRobinIndex = roundRobinCounter
-        .getAndUpdate(current -> (current + 1) % nodeList.size());
+    int size = nodeList.size();
+    // Get and increment counter, then apply modulo with the current list size.
+    // This handles the race condition where another thread may have updated the counter
+    // based on a different (larger) node list size, which could result in an index
+    // that is out of bounds for the current thread's smaller node list after topology change.
+    int roundRobinIndex = Math.abs(roundRobinCounter.getAndIncrement() % size);
     Map.Entry<String, ConnectionPool> selectedEntry = nodeList.get(roundRobinIndex);
     ConnectionPool pool = selectedEntry.getValue();
 

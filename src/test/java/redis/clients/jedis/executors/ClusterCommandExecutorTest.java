@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 
+import redis.clients.jedis.*;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -37,7 +38,6 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.ReflectionTestUtil;
 
@@ -45,12 +45,13 @@ public class ClusterCommandExecutorTest {
 
   private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
-  private static final CommandObject<String> STR_COM_OBJECT
-      = new CommandObject<>(new CommandArguments(Protocol.Command.GET).key("testkey"), BuilderFactory.STRING);
+  private static final CommandObject<String> STR_COM_OBJECT = new CommandObject<>(
+      new CommandArguments(Protocol.Command.GET).key("testkey"), BuilderFactory.STRING);
 
-  // Keyless command object for testing keyless command execution with WRITE flag (FLUSHDB is keyless and WRITE)
-  private static final CommandObject<String> KEYLESS_WRITE_COM_OBJECT
-      = new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHDB), BuilderFactory.STRING);
+  // Keyless command object for testing keyless command execution with WRITE flag (FLUSHDB is
+  // keyless and WRITE)
+  private static final CommandObject<String> KEYLESS_WRITE_COM_OBJECT = new CommandObject<>(
+      new CommandArguments(Protocol.Command.FLUSHDB), BuilderFactory.STRING);
 
   /**
    * Helper method to invoke the private executeKeylessCommand method via reflection.
@@ -59,14 +60,15 @@ public class ClusterCommandExecutorTest {
   private static <T> T invokeExecuteKeylessCommand(ClusterCommandExecutor executor,
       CommandObject<T> commandObject) {
     return ReflectionTestUtil.invokeMethod(executor, "executeKeylessCommand",
-        new Class<?>[] { CommandObject.class }, commandObject);
+      new Class<?>[] { CommandObject.class }, commandObject);
   }
 
   @Test
   public void runSuccessfulExecute() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
         StaticCommandFlagsRegistry.registry()) {
@@ -74,6 +76,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "foo";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -86,7 +89,8 @@ public class ClusterCommandExecutorTest {
   public void runFailOnFirstExecSuccessOnSecondExec() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
         StaticCommandFlagsRegistry.registry()) {
@@ -115,7 +119,8 @@ public class ClusterCommandExecutorTest {
   public void runAlwaysFailing() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     final LongConsumer sleep = mock(LongConsumer.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND,
@@ -138,7 +143,8 @@ public class ClusterCommandExecutorTest {
       // expected
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);
-    inOrder.verify(connectionHandler, times(2)).getConnection(ArgumentMatchers.any(CommandArguments.class));
+    inOrder.verify(connectionHandler, times(2))
+        .getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
@@ -150,7 +156,8 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
     final HostAndPort movedTarget = new HostAndPort(null, 0);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
     when(connectionHandler.getConnection(movedTarget)).thenReturn(connection);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
@@ -189,7 +196,8 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
     final HostAndPort askTarget = new HostAndPort(null, 0);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
     when(connectionHandler.getConnection(askTarget)).thenReturn(connection);
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
@@ -235,12 +243,15 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
     final Connection redirecter = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(redirecter);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(redirecter);
 
     final Connection failer = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(HostAndPort.class))).thenReturn(failer);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(HostAndPort.class)))
+        .thenReturn(failer);
     Mockito.doAnswer((InvocationOnMock invocation) -> {
-      when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(failer);
+      when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+          .thenReturn(failer);
       return null;
     }).when(connectionHandler).renewSlotCache();
 
@@ -281,7 +292,8 @@ public class ClusterCommandExecutorTest {
     inOrder.verify(connectionHandler, times(2)).getConnection(movedTarget);
     inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verify(connectionHandler, times(2)).getConnection(ArgumentMatchers.any(CommandArguments.class));
+    inOrder.verify(connectionHandler, times(2))
+        .getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verifyNoMoreInteractions();
@@ -306,10 +318,12 @@ public class ClusterCommandExecutorTest {
 
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(master);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(master);
 
     Mockito.doAnswer((InvocationOnMock invocation) -> {
-      when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(replica);
+      when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+          .thenReturn(replica);
       return null;
     }).when(connectionHandler).renewSlotCache();
 
@@ -339,7 +353,8 @@ public class ClusterCommandExecutorTest {
 
     assertEquals("Success!", testMe.executeCommand(STR_COM_OBJECT));
     InOrder inOrder = inOrder(connectionHandler);
-    inOrder.verify(connectionHandler, times(2)).getConnection(ArgumentMatchers.any(CommandArguments.class));
+    inOrder.verify(connectionHandler, times(2))
+        .getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verifyNoMoreInteractions();
@@ -349,11 +364,11 @@ public class ClusterCommandExecutorTest {
   @Test
   public void runRethrowsJedisNoReachableClusterNodeException() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenThrow(
-        JedisClusterOperationException.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenThrow(JedisClusterOperationException.class);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
-        Duration.ZERO, StaticCommandFlagsRegistry.registry()) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return null;
@@ -372,9 +387,10 @@ public class ClusterCommandExecutorTest {
   public void runStopsRetryingAfterTimeout() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
-    //final LongConsumer sleep = mock(LongConsumer.class);
+    // final LongConsumer sleep = mock(LongConsumer.class);
     final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, Duration.ZERO,
         StaticCommandFlagsRegistry.registry()) {
@@ -391,7 +407,7 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        //sleep.accept(sleepMillis);
+        // sleep.accept(sleepMillis);
         totalSleepMs.addAndGet(sleepMillis);
       }
     };
@@ -402,7 +418,7 @@ public class ClusterCommandExecutorTest {
     } catch (JedisClusterOperationException e) {
       // expected
     }
-    //InOrder inOrder = inOrder(connectionHandler, sleep);
+    // InOrder inOrder = inOrder(connectionHandler, sleep);
     InOrder inOrder = inOrder(connectionHandler);
     inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verifyNoMoreInteractions();
@@ -426,6 +442,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -451,6 +468,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -502,7 +520,8 @@ public class ClusterCommandExecutorTest {
 
     assertEquals("OK", invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
 
-    // Verify that we called getPrimaryNodesConnectionMap() twice (first failed with redirection, second succeeded)
+    // Verify that we called getPrimaryNodesConnectionMap() twice (first failed with redirection,
+    // second succeeded)
     // and that we didn't follow the redirection to a specific node
     verify(connectionHandler, times(2)).getPrimaryNodesConnectionMap();
     verify(pool, times(2)).getResource();
@@ -569,6 +588,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "should_not_reach_here";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -619,6 +639,7 @@ public class ClusterCommandExecutorTest {
         usedConnections.add(connection);
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -635,7 +656,7 @@ public class ClusterCommandExecutorTest {
     assertEquals(4, usedConnections.size());
     Set<Connection> uniqueConnections = new HashSet<>(usedConnections);
     assertEquals(3, uniqueConnections.size(),
-        "Round-robin should distribute across multiple nodes");
+      "Round-robin should distribute across multiple nodes");
   }
 
   @Test
@@ -667,6 +688,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -730,6 +752,7 @@ public class ClusterCommandExecutorTest {
         connectionUsage.put(connection, connectionUsage.get(connection) + 1);
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -745,13 +768,13 @@ public class ClusterCommandExecutorTest {
     // Verify even distribution - each node should get exactly 10 commands
     int expectedPerNode = totalCommands / 4;
     assertEquals(expectedPerNode, connectionUsage.get(connection1).intValue(),
-        "Node 1 should receive exactly " + expectedPerNode + " commands");
+      "Node 1 should receive exactly " + expectedPerNode + " commands");
     assertEquals(expectedPerNode, connectionUsage.get(connection2).intValue(),
-        "Node 2 should receive exactly " + expectedPerNode + " commands");
+      "Node 2 should receive exactly " + expectedPerNode + " commands");
     assertEquals(expectedPerNode, connectionUsage.get(connection3).intValue(),
-        "Node 3 should receive exactly " + expectedPerNode + " commands");
+      "Node 3 should receive exactly " + expectedPerNode + " commands");
     assertEquals(expectedPerNode, connectionUsage.get(connection4).intValue(),
-        "Node 4 should receive exactly " + expectedPerNode + " commands");
+      "Node 4 should receive exactly " + expectedPerNode + " commands");
 
     // Verify total commands executed
     int totalExecuted = connectionUsage.values().stream().mapToInt(Integer::intValue).sum();
@@ -802,6 +825,7 @@ public class ClusterCommandExecutorTest {
         }
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -815,12 +839,18 @@ public class ClusterCommandExecutorTest {
 
     // Verify the round-robin sequence
     List<String> expectedSequence = new ArrayList<>();
-    expectedSequence.add("node1"); expectedSequence.add("node2"); expectedSequence.add("node3"); // First cycle
-    expectedSequence.add("node1"); expectedSequence.add("node2"); expectedSequence.add("node3"); // Second cycle
-    expectedSequence.add("node1"); expectedSequence.add("node2"); expectedSequence.add("node3"); // Third cycle
+    expectedSequence.add("node1");
+    expectedSequence.add("node2");
+    expectedSequence.add("node3"); // First cycle
+    expectedSequence.add("node1");
+    expectedSequence.add("node2");
+    expectedSequence.add("node3"); // Second cycle
+    expectedSequence.add("node1");
+    expectedSequence.add("node2");
+    expectedSequence.add("node3"); // Third cycle
 
     assertEquals(expectedSequence, connectionSequence,
-        "Round-robin should follow exact sequence: node1 -> node2 -> node3 -> node1 -> ...");
+      "Round-robin should follow exact sequence: node1 -> node2 -> node3 -> node1 -> ...");
   }
 
   @Test
@@ -848,6 +878,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "readonly_result";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -889,6 +920,7 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return (T) "write_result";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -897,7 +929,8 @@ public class ClusterCommandExecutorTest {
 
     assertEquals("write_result", invokeExecuteKeylessCommand(testMe, writeCommandObject));
 
-    // Verify that getPrimaryNodesConnectionMap() was called (for write commands, uses only primaries)
+    // Verify that getPrimaryNodesConnectionMap() was called (for write commands, uses only
+    // primaries)
     // and NOT getConnectionMap()
     verify(connectionHandler).getPrimaryNodesConnectionMap();
     verify(connectionHandler, times(0)).getConnectionMap();
@@ -906,27 +939,25 @@ public class ClusterCommandExecutorTest {
   }
 
   /**
-   * Provides command objects for commands that use ONE_SUCCEEDED response policy.
-   * These commands should return success if at least one node succeeds.
+   * Provides command objects for commands that use ONE_SUCCEEDED response policy. These commands
+   * should return success if at least one node succeeds.
    */
   static java.util.stream.Stream<CommandObject<String>> oneSucceededPolicyCommands() {
     return java.util.stream.Stream.of(
-        new CommandObject<>(new CommandArguments(Protocol.Command.SCRIPT).add("KILL"), BuilderFactory.STRING),
-        new CommandObject<>(new CommandArguments(Protocol.Command.FUNCTION).add("KILL"), BuilderFactory.STRING)
-    );
+      new CommandObject<>(new CommandArguments(Protocol.Command.SCRIPT).add("KILL"),
+          BuilderFactory.STRING),
+      new CommandObject<>(new CommandArguments(Protocol.Command.FUNCTION).add("KILL"),
+          BuilderFactory.STRING));
   }
 
   /**
-   * This test verifies the bug: broadcastCommand throws on partial failure ignoring ONE_SUCCEEDED policy.
-   *
-   * When any node throws an exception, isErrored is set to true, which causes subsequent successful
-   * replies to be skipped and the method to unconditionally throw JedisBroadcastException.
-   * For ONE_SUCCEEDED response policy (used by SCRIPT KILL, FUNCTION KILL), the method needs to
-   * return success if at least one node succeeded. Currently, a single node failure causes the
-   * entire broadcast to fail even when other nodes succeed.
-   *
-   * NOTE: This test FAILS when the bug exists, demonstrating the issue.
-   * When the bug is fixed, this test will pass.
+   * This test verifies the bug: broadcastCommand throws on partial failure ignoring ONE_SUCCEEDED
+   * policy. When any node throws an exception, isErrored is set to true, which causes subsequent
+   * successful replies to be skipped and the method to unconditionally throw
+   * JedisBroadcastException. For ONE_SUCCEEDED response policy (used by SCRIPT KILL, FUNCTION
+   * KILL), the method needs to return success if at least one node succeeded. Currently, a single
+   * node failure causes the entire broadcast to fail even when other nodes succeed. NOTE: This test
+   * FAILS when the bug exists, demonstrating the issue. When the bug is fixed, this test will pass.
    */
   @ParameterizedTest
   @MethodSource("oneSucceededPolicyCommands")
@@ -971,6 +1002,7 @@ public class ClusterCommandExecutorTest {
         nodeResults.add("OK");
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -990,21 +1022,19 @@ public class ClusterCommandExecutorTest {
 
   /**
    * This test verifies the bug: executeMultiShardCommand throws on partial failure ignoring
-   * ONE_SUCCEEDED policy.
-   *
-   * The same issue as broadcastCommand exists in executeMultiShardCommand: when any shard throws
-   * an exception, isErrored is set to true, which causes subsequent successful replies to be
-   * skipped and the method to unconditionally throw JedisBroadcastException. For ONE_SUCCEEDED
-   * response policy, the method needs to return success if at least one shard succeeded.
-   *
-   * NOTE: This test FAILS when the bug exists, demonstrating the issue.
-   * When the bug is fixed, this test will pass.
+   * ONE_SUCCEEDED policy. The same issue as broadcastCommand exists in executeMultiShardCommand:
+   * when any shard throws an exception, isErrored is set to true, which causes subsequent
+   * successful replies to be skipped and the method to unconditionally throw
+   * JedisBroadcastException. For ONE_SUCCEEDED response policy, the method needs to return success
+   * if at least one shard succeeded. NOTE: This test FAILS when the bug exists, demonstrating the
+   * issue. When the bug is fixed, this test will pass.
    */
   @Test
   public void executeMultiShardCommandShouldSucceedWithOneSucceededPolicyWhenSomeShardsFail() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     // Create multiple command objects to simulate multi-shard execution
     // Using SCRIPT KILL which has ONE_SUCCEEDED policy
@@ -1030,6 +1060,7 @@ public class ClusterCommandExecutorTest {
         // Other shards succeed
         return (T) "OK";
       }
+
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
@@ -1046,36 +1077,29 @@ public class ClusterCommandExecutorTest {
   }
 
   /**
-   * This test verifies the bug: MGET multi-shard silently returns values in wrong order.
-   *
-   * The issue is that mgetMultiShard groups keys by hash slot using a HashMap, which doesn't
-   * preserve insertion order. The aggregated result concatenates per-slot lists in arbitrary
-   * order, breaking MGET's contract that returned values correspond positionally to input keys.
-   *
-   * Callers using index-based access (e.g., values.get(i) for keys[i]) will silently get
-   * wrong values when keys span multiple slots.
-   *
-   * This test runs MGET with many different key combinations to find at least one case where
-   * the HashMap iteration order differs from insertion order, proving the bug exists.
-   *
-   * NOTE: This test FAILS when the bug exists, demonstrating the issue.
-   * When the bug is fixed (e.g., by using LinkedHashMap to preserve insertion order),
-   * this test will pass.
+   * This test verifies the bug: MGET multi-shard silently returns values in wrong order. The issue
+   * is that mgetMultiShard groups keys by hash slot using a HashMap, which doesn't preserve
+   * insertion order. The aggregated result concatenates per-slot lists in arbitrary order, breaking
+   * MGET's contract that returned values correspond positionally to input keys. Callers using
+   * index-based access (e.g., values.get(i) for keys[i]) will silently get wrong values when keys
+   * span multiple slots. This test runs MGET with many different key combinations to find at least
+   * one case where the HashMap iteration order differs from insertion order, proving the bug
+   * exists. NOTE: This test FAILS when the bug exists, demonstrating the issue. When the bug is
+   * fixed (e.g., by using LinkedHashMap to preserve insertion order), this test will pass.
    */
   /**
-   * This test verifies that MGET multi-shard returns values in the correct order
-   * matching the input keys, even when keys span multiple hash slots.
-   *
-   * The fix groups consecutive keys with the same slot together, but keeps
-   * non-consecutive keys with the same slot in separate commands to preserve order.
-   * For example, keys mapping to slots [A, B, A] result in 3 separate commands,
-   * not 2, ensuring the concatenated results match the input key order.
+   * This test verifies that MGET multi-shard returns values in the correct order matching the input
+   * keys, even when keys span multiple hash slots. The fix groups consecutive keys with the same
+   * slot together, but keeps non-consecutive keys with the same slot in separate commands to
+   * preserve order. For example, keys mapping to slots [A, B, A] result in 3 separate commands, not
+   * 2, ensuring the concatenated results match the input key order.
    */
   @Test
   public void mgetMultiShardReturnsValuesInCorrectOrderWhenKeysSpanMultipleSlots() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     ClusterCommandObjects commandObjects = new ClusterCommandObjects();
 
@@ -1096,13 +1120,14 @@ public class ClusterCommandExecutorTest {
       }
 
       // Use the standard MGET multi-shard API
-      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2, key3);
+      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2,
+        key3);
 
       List<String> inputOrder = java.util.Arrays.asList(key1, key2, key3);
 
       // Execute MGET with the standard executeMultiShardCommand
-      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
-          StaticCommandFlagsRegistry.registry()) {
+      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
+          Duration.ZERO, StaticCommandFlagsRegistry.registry()) {
         @Override
         @SuppressWarnings("unchecked")
         public <T> T execute(Connection conn, CommandObject<T> commandObject) {
@@ -1119,6 +1144,7 @@ public class ClusterCommandExecutorTest {
           }
           return (T) values;
         }
+
         @Override
         protected void sleep(long ignored) {
           throw new RuntimeException("This test should never sleep");
@@ -1129,10 +1155,8 @@ public class ClusterCommandExecutorTest {
       List<String> result = testMe.executeMultiShardCommand(mgetCommands);
 
       // Expected correct order based on input - MGET contract says values must match key positions
-      List<String> expectedCorrectOrder = java.util.Arrays.asList(
-          "value_for_" + key1,
-          "value_for_" + key2,
-          "value_for_" + key3);
+      List<String> expectedCorrectOrder = java.util.Arrays.asList("value_for_" + key1,
+        "value_for_" + key2, "value_for_" + key3);
 
       // Verify all values are present
       assertEquals(3, result.size(), "Should have 3 values");
@@ -1143,32 +1167,31 @@ public class ClusterCommandExecutorTest {
       // THE KEY ASSERTION: Values must be in the same order as input keys
       // With the fix (grouping consecutive keys only), this should pass for all key combinations
       assertEquals(expectedCorrectOrder, result,
-          "MGET multi-shard should return values in the same order as input keys. " +
-          "Input keys: " + inputOrder + ", slots: [" + slot1 + ", " + slot2 + ", " + slot3 + "]");
+        "MGET multi-shard should return values in the same order as input keys. " + "Input keys: "
+            + inputOrder + ", slots: [" + slot1 + ", " + slot2 + ", " + slot3 + "]");
     }
   }
 
   /**
-   * This test verifies that MGET multi-shard returns values in the correct order
-   * when keys have interleaved hash slots (e.g., [slotA, slotB, slotA]).
-   *
-   * This is the critical case that the fix addresses: without the fix, keys with
-   * the same slot would be grouped together, producing 2 commands instead of 3,
-   * which would return values in wrong order.
+   * This test verifies that MGET multi-shard returns values in the correct order when keys have
+   * interleaved hash slots (e.g., [slotA, slotB, slotA]). This is the critical case that the fix
+   * addresses: without the fix, keys with the same slot would be grouped together, producing 2
+   * commands instead of 3, which would return values in wrong order.
    */
   @Test
   public void mgetMultiShardReturnsValuesInCorrectOrderForInterleavedSlots() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     String key1 = "key1";
     String key2 = "key2";
     String key3 = "key3";
 
     // Mock JedisClusterCRC16.getSlot to return interleaved slots: [slotA, slotB, slotA]
-    try (org.mockito.MockedStatic<JedisClusterCRC16> mockedStatic =
-        Mockito.mockStatic(JedisClusterCRC16.class)) {
+    try (org.mockito.MockedStatic<JedisClusterCRC16> mockedStatic = Mockito
+        .mockStatic(JedisClusterCRC16.class)) {
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key1)).thenReturn(100);
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key2)).thenReturn(200);
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key3)).thenReturn(100);
@@ -1176,13 +1199,14 @@ public class ClusterCommandExecutorTest {
       ClusterCommandObjects commandObjects = new ClusterCommandObjects();
 
       // The fix should create 3 separate commands (not 2) to preserve order
-      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2, key3);
+      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2,
+        key3);
       assertEquals(3, mgetCommands.size(),
-          "Should have 3 separate commands for interleaved slots [A, B, A], not 2");
+        "Should have 3 separate commands for interleaved slots [A, B, A], not 2");
 
       // Execute MGET with the standard executeMultiShardCommand
-      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
-          StaticCommandFlagsRegistry.registry()) {
+      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
+          Duration.ZERO, StaticCommandFlagsRegistry.registry()) {
         @Override
         @SuppressWarnings("unchecked")
         public <T> T execute(Connection conn, CommandObject<T> commandObject) {
@@ -1199,6 +1223,7 @@ public class ClusterCommandExecutorTest {
           }
           return (T) values;
         }
+
         @Override
         protected void sleep(long ignored) {
           throw new RuntimeException("This test should never sleep");
@@ -1209,30 +1234,28 @@ public class ClusterCommandExecutorTest {
       List<String> result = testMe.executeMultiShardCommand(mgetCommands);
 
       // Expected correct order based on input
-      List<String> expectedCorrectOrder = java.util.Arrays.asList(
-          "value_for_" + key1,
-          "value_for_" + key2,
-          "value_for_" + key3);
+      List<String> expectedCorrectOrder = java.util.Arrays.asList("value_for_" + key1,
+        "value_for_" + key2, "value_for_" + key3);
 
       // THE KEY ASSERTION: Values must be in the same order as input keys
       assertEquals(expectedCorrectOrder, result,
-          "MGET multi-shard should return values in the same order as input keys. " +
-          "Input keys: [" + key1 + ", " + key2 + ", " + key3 + "], slots: [100, 200, 100]");
+        "MGET multi-shard should return values in the same order as input keys. " + "Input keys: ["
+            + key1 + ", " + key2 + ", " + key3 + "], slots: [100, 200, 100]");
     }
   }
 
   /**
-   * This test verifies that when keys are sorted by hash slot (consecutive keys belong to
-   * the same slot), they are combined into a single command for optimal batching.
-   *
-   * For example, keys mapping to slots [A, A, B, B] should result in 2 commands (not 4),
-   * with keys grouped as: command1=[key1, key2], command2=[key3, key4].
+   * This test verifies that when keys are sorted by hash slot (consecutive keys belong to the same
+   * slot), they are combined into a single command for optimal batching. For example, keys mapping
+   * to slots [A, A, B, B] should result in 2 commands (not 4), with keys grouped as:
+   * command1=[key1, key2], command2=[key3, key4].
    */
   @Test
   public void mgetMultiShardCombinesConsecutiveKeysWithSameSlotIntoOneCommand() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);
-    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
 
     String key1 = "key1";
     String key2 = "key2";
@@ -1240,8 +1263,8 @@ public class ClusterCommandExecutorTest {
     String key4 = "key4";
 
     // Mock JedisClusterCRC16.getSlot to return sorted/grouped slots: [A, A, B, B]
-    try (org.mockito.MockedStatic<JedisClusterCRC16> mockedStatic =
-        Mockito.mockStatic(JedisClusterCRC16.class)) {
+    try (org.mockito.MockedStatic<JedisClusterCRC16> mockedStatic = Mockito
+        .mockStatic(JedisClusterCRC16.class)) {
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key1)).thenReturn(100);
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key2)).thenReturn(100);
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key3)).thenReturn(200);
@@ -1250,13 +1273,14 @@ public class ClusterCommandExecutorTest {
       ClusterCommandObjects commandObjects = new ClusterCommandObjects();
 
       // Consecutive keys with the same slot should be combined into one command
-      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2, key3, key4);
+      List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2,
+        key3, key4);
       assertEquals(2, mgetCommands.size(),
-          "Should have 2 commands for sorted slots [A, A, B, B], not 4");
+        "Should have 2 commands for sorted slots [A, A, B, B], not 4");
 
       // Execute MGET with the standard executeMultiShardCommand
-      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
-          StaticCommandFlagsRegistry.registry()) {
+      ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
+          Duration.ZERO, StaticCommandFlagsRegistry.registry()) {
         @Override
         @SuppressWarnings("unchecked")
         public <T> T execute(Connection conn, CommandObject<T> commandObject) {
@@ -1273,6 +1297,7 @@ public class ClusterCommandExecutorTest {
           }
           return (T) values;
         }
+
         @Override
         protected void sleep(long ignored) {
           throw new RuntimeException("This test should never sleep");
@@ -1283,15 +1308,12 @@ public class ClusterCommandExecutorTest {
       List<String> result = testMe.executeMultiShardCommand(mgetCommands);
 
       // Expected correct order based on input
-      List<String> expectedCorrectOrder = java.util.Arrays.asList(
-          "value_for_" + key1,
-          "value_for_" + key2,
-          "value_for_" + key3,
-          "value_for_" + key4);
+      List<String> expectedCorrectOrder = java.util.Arrays.asList("value_for_" + key1,
+        "value_for_" + key2, "value_for_" + key3, "value_for_" + key4);
 
       // Verify values are in the correct order
       assertEquals(expectedCorrectOrder, result,
-          "MGET multi-shard should return values in the same order as input keys");
+        "MGET multi-shard should return values in the same order as input keys");
     }
   }
 }

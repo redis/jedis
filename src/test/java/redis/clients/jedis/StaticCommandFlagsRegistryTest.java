@@ -325,8 +325,8 @@ public class StaticCommandFlagsRegistryTest {
   }
 
   /**
-   * Test that HOTKEYS subcommands (START, STOP, GET, RESET) return the correct flags.
-   * All HOTKEYS subcommands should have ADMIN and NOSCRIPT flags.
+   * Test that HOTKEYS subcommands (START, STOP, GET, RESET) return the correct flags. All HOTKEYS
+   * subcommands should have ADMIN and NOSCRIPT flags.
    */
   @Test
   public void testHotkeysSubcommandFlags() {
@@ -364,15 +364,15 @@ public class StaticCommandFlagsRegistryTest {
     // Verify request policy for HOTKEYS GET (has SPECIAL request and response policy)
     RequestPolicy getRequestPolicy = registry.getRequestPolicy(hotkeysGetArgs);
     assertEquals(RequestPolicy.SPECIAL, getRequestPolicy,
-        "HOTKEYS GET should have SPECIAL request policy");
+      "HOTKEYS GET should have SPECIAL request policy");
 
     ResponsePolicy getResponsePolicy = registry.getResponsePolicy(hotkeysGetArgs);
     assertEquals(ResponsePolicy.SPECIAL, getResponsePolicy,
-        "HOTKEYS GET should have SPECIAL response policy");
+      "HOTKEYS GET should have SPECIAL response policy");
 
     // Verify request policy for HOTKEYS START (has SPECIAL request policy)
     RequestPolicy startRequestPolicy = registry.getRequestPolicy(hotkeysStartArgs);
     assertEquals(RequestPolicy.SPECIAL, startRequestPolicy,
-        "HOTKEYS START should have SPECIAL request policy");
+      "HOTKEYS START should have SPECIAL request policy");
   }
 }

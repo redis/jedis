@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +25,8 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -34,6 +35,7 @@ import org.mockito.invocation.InvocationOnMock;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -901,6 +903,146 @@ public class ClusterCommandExecutorTest {
     verify(connectionHandler, times(0)).getConnectionMap();
     verify(pool).getResource();
     verify(connection).close();
+  }
+
+  /**
+   * Provides command objects for commands that use ONE_SUCCEEDED response policy.
+   * These commands should return success if at least one node succeeds.
+   */
+  static java.util.stream.Stream<CommandObject<String>> oneSucceededPolicyCommands() {
+    return java.util.stream.Stream.of(
+        new CommandObject<>(new CommandArguments(Protocol.Command.SCRIPT).add("KILL"), BuilderFactory.STRING),
+        new CommandObject<>(new CommandArguments(Protocol.Command.FUNCTION).add("KILL"), BuilderFactory.STRING)
+    );
+  }
+
+  /**
+   * This test verifies the bug: broadcastCommand throws on partial failure ignoring ONE_SUCCEEDED policy.
+   *
+   * When any node throws an exception, isErrored is set to true, which causes subsequent successful
+   * replies to be skipped and the method to unconditionally throw JedisBroadcastException.
+   * For ONE_SUCCEEDED response policy (used by SCRIPT KILL, FUNCTION KILL), the method needs to
+   * return success if at least one node succeeded. Currently, a single node failure causes the
+   * entire broadcast to fail even when other nodes succeed.
+   *
+   * NOTE: This test FAILS when the bug exists, demonstrating the issue.
+   * When the bug is fixed, this test will pass.
+   */
+  @ParameterizedTest
+  @MethodSource("oneSucceededPolicyCommands")
+  public void broadcastCommandShouldSucceedWithOneSucceededPolicyWhenSomeNodesFail(
+      CommandObject<String> killCommand) {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Map<String, ConnectionPool> connectionMap = new java.util.LinkedHashMap<>();
+
+    // Create 3 node pools
+    ConnectionPool pool1 = mock(ConnectionPool.class);
+    ConnectionPool pool2 = mock(ConnectionPool.class);
+    ConnectionPool pool3 = mock(ConnectionPool.class);
+
+    Connection connection1 = mock(Connection.class);
+    Connection connection2 = mock(Connection.class);
+    Connection connection3 = mock(Connection.class);
+
+    connectionMap.put("node1:6379", pool1);
+    connectionMap.put("node2:6379", pool2);
+    connectionMap.put("node3:6379", pool3);
+
+    when(connectionHandler.getPrimaryNodesConnectionMap()).thenReturn(connectionMap);
+    when(pool1.getResource()).thenReturn(connection1);
+    when(pool2.getResource()).thenReturn(connection2);
+    when(pool3.getResource()).thenReturn(connection3);
+
+    List<String> nodeResults = new ArrayList<>();
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
+      int callCount = 0;
+
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        callCount++;
+        if (callCount == 1 || callCount == 3) {
+          // First and third nodes fail (e.g., no script/function running)
+          nodeResults.add("FAIL");
+          throw new JedisDataException("NOTBUSY No scripts in execution right now.");
+        }
+        // Second node succeeds
+        nodeResults.add("OK");
+        return (T) "OK";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // With ONE_SUCCEEDED policy, the broadcast should succeed because at least one node returned OK
+    // BUG: Currently this throws JedisBroadcastException because isErrored=true ignores the policy
+    String result = testMe.broadcastCommand(killCommand, true);
+
+    assertEquals("OK", result, "broadcastCommand should return OK when at least one node succeeds "
+        + "with ONE_SUCCEEDED policy");
+    // Verify that all nodes were queried
+    assertEquals(3, nodeResults.size(), "Should have queried all 3 nodes");
+    assertTrue(nodeResults.contains("OK"), "At least one node should have succeeded");
+  }
+
+  /**
+   * This test verifies the bug: executeMultiShardCommand throws on partial failure ignoring
+   * ONE_SUCCEEDED policy.
+   *
+   * The same issue as broadcastCommand exists in executeMultiShardCommand: when any shard throws
+   * an exception, isErrored is set to true, which causes subsequent successful replies to be
+   * skipped and the method to unconditionally throw JedisBroadcastException. For ONE_SUCCEEDED
+   * response policy, the method needs to return success if at least one shard succeeded.
+   *
+   * NOTE: This test FAILS when the bug exists, demonstrating the issue.
+   * When the bug is fixed, this test will pass.
+   */
+  @Test
+  public void executeMultiShardCommandShouldSucceedWithOneSucceededPolicyWhenSomeShardsFail() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class))).thenReturn(connection);
+
+    // Create multiple command objects to simulate multi-shard execution
+    // Using SCRIPT KILL which has ONE_SUCCEEDED policy
+    List<CommandObject<String>> commandObjects = new ArrayList<>();
+    commandObjects.add(new CommandObject<>(
+        new CommandArguments(Protocol.Command.SCRIPT).add("KILL"), BuilderFactory.STRING));
+    commandObjects.add(new CommandObject<>(
+        new CommandArguments(Protocol.Command.SCRIPT).add("KILL"), BuilderFactory.STRING));
+    commandObjects.add(new CommandObject<>(
+        new CommandArguments(Protocol.Command.SCRIPT).add("KILL"), BuilderFactory.STRING));
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO,
+        StaticCommandFlagsRegistry.registry()) {
+      int callCount = 0;
+
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        callCount++;
+        if (callCount == 1) {
+          // First shard fails
+          throw new JedisDataException("NOTBUSY No scripts in execution right now.");
+        }
+        // Other shards succeed
+        return (T) "OK";
+      }
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    // With ONE_SUCCEEDED policy, the multi-shard command should succeed because at least one
+    // shard returned OK
+    // BUG: Currently this throws JedisBroadcastException because isErrored=true ignores the policy
+    String result = testMe.executeMultiShardCommand(commandObjects);
+
+    assertEquals("OK", result, "executeMultiShardCommand should return OK when at least one shard "
+        + "succeeds with ONE_SUCCEEDED policy");
   }
 
   /**

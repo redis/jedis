@@ -2,12 +2,10 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +20,28 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
+  /**
+   * Connection resolver used for keyed commands, to acquire connection based on slot.
+   */
+  private final ConnectionResolver slotBasedConnectionResolver;
+
+  /**
+   * Connection resolver used for keyless commands, to acquire connection in round-robin fashion
+   * from arbitrary node.
+   */
+  private final ConnectionResolver roundRobinConnectionResolver;
+
+  /**
+   * Connection resolver used to enforce command execution on replicas.
+   *
+   * @see #executeCommandToReplica(CommandObject)
+   */
+  private final ConnectionResolver replicaOnlyConnectionResolver;
+
   public final ClusterConnectionProvider provider;
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
   protected final CommandFlagsRegistry flags;
-
-  // Round-robin counter for keyless command distribution
-  private final AtomicInteger roundRobinCounter = new AtomicInteger(0);
 
   /**
    * @deprecated use {@link #ClusterCommandExecutor(ClusterConnectionProvider, int, Duration, CommandFlagsRegistry)}
@@ -51,6 +64,13 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
     this.flags = flags;
+
+    this.slotBasedConnectionResolver = ConnectionResolverFactory.createSlotBasedResolver(
+        provider, flags);
+    this.roundRobinConnectionResolver = ConnectionResolverFactory.createRoundRobinResolver(
+        provider, flags);
+    this.replicaOnlyConnectionResolver = ConnectionResolverFactory.createReplicaOnlyResolver(
+        provider);
   }
 
   @Override
@@ -131,7 +151,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     for (CommandObject<T> commandObject : commandObjects) {
       try {
         // Execute each command on its appropriate shard using the existing retry logic
-        T aReply = doExecuteCommand(commandObject, false);
+        T aReply = doExecuteCommand(commandObject, slotBasedConnectionResolver, true);
 
         if (isErrored) {
           // Already errored, just continue collecting results for error reporting
@@ -179,72 +199,35 @@ public class ClusterCommandExecutor implements CommandExecutor {
         if (args.isKeyless()) {
           return executeKeylessCommand(commandObject);
         } else {
-          return doExecuteCommand(commandObject, false);
+          return executeKeyedCommand(commandObject);
         }
     }
-  }
-
-  private <T> T executeKeylessCommand(CommandObject<T> commandObject) {
-    Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
-    int consecutiveConnectionFailures = 0;
-    Exception lastException = null;
-
-    RequiredConnectionType connectionType;
-    if (flags.getFlags(commandObject.getArguments())
-        .contains(CommandFlagsRegistry.CommandFlag.READONLY)) {
-      connectionType = RequiredConnectionType.REPLICA;
-    } else {
-      connectionType = RequiredConnectionType.PRIMARY;
-    }
-
-    for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
-      Connection connection = null;
-      try {
-        // Use round-robin distribution for keyless commands
-        connection = getNextConnection(connectionType);
-        return execute(connection, commandObject);
-
-      } catch (JedisConnectionException jce) {
-        lastException = jce;
-        ++consecutiveConnectionFailures;
-        log.debug("Failed connecting to Redis: {}", connection, jce);
-
-        if (consecutiveConnectionFailures < 2) {
-          continue;
-        }
-
-        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures,
-          deadline);
-        if (reset) {
-          consecutiveConnectionFailures = 0;
-        }
-      } catch (JedisRedirectionException jre) {
-        // For keyless commands, we don't follow redirections since we're not targeting a specific
-        // slot
-        // Just retry with a different random node
-        lastException = jre;
-        log.debug("Received redirection for keyless command, retrying with different node: {}",
-          jre.getMessage());
-        consecutiveConnectionFailures = 0;
-      } finally {
-        IOUtils.closeQuietly(connection);
-      }
-      if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterOperationException("Cluster retry deadline exceeded.", lastException);
-      }
-    }
-
-    JedisClusterOperationException maxAttemptsException = new JedisClusterOperationException(
-        "No more cluster attempts left.");
-    maxAttemptsException.addSuppressed(lastException);
-    throw maxAttemptsException;
   }
 
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
-    return doExecuteCommand(commandObject, true);
+    return doExecuteCommand(commandObject, replicaOnlyConnectionResolver, true);
   }
 
-  private <T> T doExecuteCommand(CommandObject<T> commandObject, boolean toReplica) {
+  private <T> T executeKeylessCommand(CommandObject<T> commandObject) {
+    // For keyless commands, don't follow redirections - just retry with a different random node
+    return doExecuteCommand(commandObject, roundRobinConnectionResolver, false);
+  }
+
+  private <T> T executeKeyedCommand(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, slotBasedConnectionResolver, true);
+  }
+
+  /**
+   * Executes a command with retry logic using the provided connection resolver.
+   *
+   * @param commandObject the command to execute
+   * @param resolver the connection resolver to use for acquiring connections
+   * @param followRedirections whether to follow cluster redirections (MOVED/ASK). Set to false for
+   *     keyless commands that should retry with the resolver instead.
+   * @return the command result
+   */
+  private <T> T doExecuteCommand(CommandObject<T> commandObject, ConnectionResolver resolver,
+      boolean followRedirections) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
@@ -253,15 +236,15 @@ public class ClusterCommandExecutor implements CommandExecutor {
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
       Connection connection = null;
       try {
-        if (redirect != null) {
+        if (followRedirections && redirect != null) {
+          // Following redirection, we need to use connection to the target node
           connection = provider.getConnection(redirect.getTargetNode());
           if (redirect instanceof JedisAskDataException) {
             // TODO: Pipeline asking with the original command to make it faster....
             connection.executeCommand(Protocol.Command.ASKING);
           }
         } else {
-          connection = toReplica ? provider.getReplicaConnection(commandObject.getArguments())
-              : provider.getConnection(commandObject.getArguments());
+          connection = resolver.resolve(commandObject);
         }
 
         return execute(connection, commandObject);
@@ -283,14 +266,20 @@ public class ClusterCommandExecutor implements CommandExecutor {
         if (lastException == null || lastException instanceof JedisRedirectionException) {
           lastException = jre;
         }
-        log.debug("Redirected by server to {}", jre.getTargetNode());
-        consecutiveConnectionFailures = 0;
-        redirect = jre;
-        // if MOVED redirection occurred,
-        if (jre instanceof JedisMovedDataException) {
-          // it rebuilds cluster's slot cache recommended by Redis cluster specification
-          provider.renewSlotCache(connection);
+        if (followRedirections) {
+          log.debug("Redirected by server to {}", jre.getTargetNode());
+          redirect = jre;
+          // if MOVED redirection occurred,
+          if (jre instanceof JedisMovedDataException) {
+            // it rebuilds cluster's slot cache recommended by Redis cluster specification
+            provider.renewSlotCache(connection);
+          }
+        } else {
+          // For keyless commands, just log and retry with a different node
+          log.debug("Received redirection for keyless command, retrying with different node: {}",
+              jre.getMessage());
         }
+        consecutiveConnectionFailures = 0;
       } finally {
         IOUtils.closeQuietly(connection);
       }
@@ -299,54 +288,12 @@ public class ClusterCommandExecutor implements CommandExecutor {
       }
     }
 
-    JedisClusterOperationException maxAttemptsException
-        = new JedisClusterOperationException("No more cluster attempts left.");
+    JedisClusterOperationException maxAttemptsException =
+        new JedisClusterOperationException("No more cluster attempts left.");
     if (lastException != null) {
       maxAttemptsException.addSuppressed(lastException);
     }
     throw maxAttemptsException;
-  }
-
-  private enum RequiredConnectionType {
-    PRIMARY, REPLICA
-  }
-
-  /**
-   * Gets a connection using round-robin distribution across all cluster nodes. This ensures even
-   * distribution of keyless commands across the cluster.
-   * @return Connection from the next node in round-robin sequence
-   * @throws JedisClusterOperationException if no cluster nodes are available
-   */
-  private Connection getNextConnection(RequiredConnectionType connectionType) {
-    List<Map.Entry<String, ConnectionPool>> nodeList = selectNextConnectionPool(connectionType);
-    // Select node using round-robin distribution for true unified distribution
-    // Use modulo directly on the node list size to create a circular counter
-    int roundRobinIndex = roundRobinCounter
-        .getAndUpdate(current -> (current + 1) % nodeList.size());
-    Map.Entry<String, ConnectionPool> selectedEntry = nodeList.get(roundRobinIndex);
-    ConnectionPool pool = selectedEntry.getValue();
-
-    return pool.getResource();
-  }
-
-  private List<Map.Entry<String, ConnectionPool>> selectNextConnectionPool(
-      RequiredConnectionType connectionType) {
-    Map<String, ConnectionPool> connectionMap;
-
-    // NOTE(imalinovskyi): If we need to connect to replica, we use all nodes, otherwise we use only
-    // primary nodes
-    if (connectionType == RequiredConnectionType.REPLICA) {
-      connectionMap = provider.getConnectionMap();
-    } else {
-      connectionMap = provider.getPrimaryNodesConnectionMap();
-    }
-
-    if (connectionMap.isEmpty()) {
-      throw new JedisClusterOperationException("No cluster nodes available.");
-    }
-
-    // Convert connection map to list for round-robin access
-    return new ArrayList<>(connectionMap.entrySet());
   }
 
     /**

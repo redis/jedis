@@ -80,11 +80,22 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   /**
    * Broadcast a command to cluster nodes.
+   * <p>
+   * This method uses {@link #doExecuteCommand} with a {@link SingleConnectionResolver} for each
+   * node, which adds retry logic and connection failure handling to broadcast commands.
+   * Redirections are not followed since we want to execute on specific nodes.
+   * <p>
+   * Error handling depends on the command's response policy:
+   * <ul>
+   *   <li>{@code ONE_SUCCEEDED}: Returns success if at least one node succeeds</li>
+   *   <li>Other policies: Throws {@link JedisBroadcastException} if any node fails</li>
+   * </ul>
+   *
    * @param commandObject the command to broadcast
    * @param primaryOnly if true, broadcast only to primary nodes; if false, broadcast to all nodes
    *        including replicas
-   * @return the reply from the command (if all nodes return the same reply)
-   * @throws JedisBroadcastException if any node returns an error or different replies
+   * @return the reply from the command
+   * @throws JedisBroadcastException if error handling criteria based on response policy are not met
    */
   public final <T> T broadcastCommand(CommandObject<T> commandObject, boolean primaryOnly) {
     Map<String, ConnectionPool> connectionMap = primaryOnly ? provider.getPrimaryNodesConnectionMap()
@@ -94,32 +105,24 @@ public class ClusterCommandExecutor implements CommandExecutor {
     CommandFlagsRegistry.ResponsePolicy responsePolicy = flags.getResponsePolicy(commandObject
         .getArguments());
 
-    boolean isErrored = false;
-    T reply = null;
-    JedisBroadcastException bcastError = new JedisBroadcastException();
+    MultiNodeResultAggregator<T> aggregator = new MultiNodeResultAggregator<>(responsePolicy);
+
     for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
       HostAndPort node = HostAndPort.from(entry.getKey());
       ConnectionPool pool = entry.getValue();
-      try (Connection connection = pool.getResource()) {
-        T aReply = execute(connection, commandObject);
-        bcastError.addReply(node, aReply);
-        if (isErrored) {
-          // Already errored, just continue collecting results
-        } else if (reply == null) {
-          reply = aReply;
-        } else {
-          // Aggregate the reply based on response policy
-          reply = ClusterReplyAggregator.aggregate(reply, aReply, responsePolicy);
-        }
+      try {
+        // Create a resolver that returns a connection from this specific node's pool
+        // The doExecuteCommand method will handle connection lifecycle (close after use)
+        SingleConnectionResolver resolver = new SingleConnectionResolver(pool.getResource());
+        // Don't follow redirections - we want to execute on specific nodes
+        T aReply = doExecuteCommand(commandObject, resolver, false);
+        aggregator.addSuccess(node, aReply);
       } catch (Exception anError) {
-        bcastError.addReply(node, anError);
-        isErrored = true;
+        aggregator.addError(node, anError);
       }
     }
-    if (isErrored) {
-      throw bcastError;
-    }
-    return reply;
+
+    return aggregator.getResult();
   }
 
   /**
@@ -129,11 +132,17 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * hash slots (e.g., DEL, EXISTS, MGET with keys from different slots). Each CommandObject in the
    * list is executed on its appropriate shard based on the key's hash slot, and the results are
    * aggregated using the command's response policy.
-   * </p>
+   * <p>
+   * Error handling depends on the command's response policy:
+   * <ul>
+   *   <li>{@code ONE_SUCCEEDED}: Returns success if at least one shard succeeds</li>
+   *   <li>Other policies: Throws {@link JedisBroadcastException} if any shard fails</li>
+   * </ul>
+   *
    * @param commandObjects list of CommandObject instances, each targeting keys in the same hash slot
    * @param <T> the return type of the command
    * @return the aggregated reply from all shards
-   * @throws JedisBroadcastException if any shard returns an error
+   * @throws JedisBroadcastException if error handling criteria based on response policy are not met
    */
   public final <T> T executeMultiShardCommand(List<CommandObject<T>> commandObjects) {
     if (commandObjects == null || commandObjects.isEmpty()) {
@@ -144,35 +153,20 @@ public class ClusterCommandExecutor implements CommandExecutor {
     CommandFlagsRegistry.ResponsePolicy responsePolicy = flags.getResponsePolicy(
         commandObjects.get(0).getArguments());
 
-    boolean isErrored = false;
-    T reply = null;
-    JedisBroadcastException bcastError = new JedisBroadcastException();
+    MultiNodeResultAggregator<T> aggregator = new MultiNodeResultAggregator<>(responsePolicy);
 
     for (CommandObject<T> commandObject : commandObjects) {
       try {
         // Execute each command on its appropriate shard using the existing retry logic
         T aReply = doExecuteCommand(commandObject, slotBasedConnectionResolver, true);
-
-        if (isErrored) {
-          // Already errored, just continue collecting results for error reporting
-        } else if (reply == null) {
-          reply = aReply;
-        } else {
-          // Aggregate the reply based on response policy
-          reply = ClusterReplyAggregator.aggregate(reply, aReply, responsePolicy);
-        }
+        aggregator.addSuccess(aReply);
       } catch (Exception anError) {
-        // For multi-shard commands, we don't have a specific node to report
-        // Use a placeholder to indicate which command failed
-        bcastError.addReply(HostAndPort.from("multi-shard:0"), anError);
-        isErrored = true;
+        // Extract node from exception (JedisClusterOperationException includes node info)
+        aggregator.addError(anError);
       }
     }
 
-    if (isErrored) {
-      throw bcastError;
-    }
-    return reply;
+    return aggregator.getResult();
   }
 
   @Override
@@ -225,6 +219,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * @param followRedirections whether to follow cluster redirections (MOVED/ASK). Set to false for
    *     keyless commands that should retry with the resolver instead.
    * @return the command result
+   * @throws JedisClusterOperationException if all retry attempts fail, includes the last node tried
    */
   private <T> T doExecuteCommand(CommandObject<T> commandObject, ConnectionResolver resolver,
       boolean followRedirections) {
@@ -233,6 +228,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     JedisRedirectionException redirect = null;
     int consecutiveConnectionFailures = 0;
     Exception lastException = null;
+    HostAndPort lastNode = null;  // Track the last node we attempted to use
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
       Connection connection = null;
       try {
@@ -247,10 +243,13 @@ public class ClusterCommandExecutor implements CommandExecutor {
           connection = resolver.resolve(commandObject);
         }
 
+        // Track the node we're using for error reporting
+        lastNode = connection.getHostAndPort();
+
         return execute(connection, commandObject);
 
-      } catch (JedisClusterOperationException jnrcne) {
-        throw jnrcne;
+      } catch (JedisClusterOperationException jcoe) {
+        throw jcoe;
       } catch (JedisConnectionException jce) {
         lastException = jce;
         ++consecutiveConnectionFailures;
@@ -284,15 +283,14 @@ public class ClusterCommandExecutor implements CommandExecutor {
         IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterOperationException("Cluster retry deadline exceeded.", lastException);
+        throw new JedisClusterOperationException("Cluster retry deadline exceeded.", lastException,
+            lastNode);
       }
     }
 
     JedisClusterOperationException maxAttemptsException =
-        new JedisClusterOperationException("No more cluster attempts left.");
-    if (lastException != null) {
-      maxAttemptsException.addSuppressed(lastException);
-    }
+        new JedisClusterOperationException("No more cluster attempts left.", lastException,
+            lastNode);
     throw maxAttemptsException;
   }
 

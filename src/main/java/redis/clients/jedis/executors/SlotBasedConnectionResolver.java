@@ -8,8 +8,8 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 /**
  * Connection resolver for keyed commands that acquires connections based on hash slot.
  * <p>
- * This resolver routes commands to the appropriate cluster node based on the key's hash slot.
- * All commands (both read and write) are routed to the primary node for the slot.
+ * This resolver routes commands to the appropriate cluster node based on the key's hash slot. All
+ * commands (both read and write) are routed to the primary node for the slot.
  */
 final class SlotBasedConnectionResolver implements ConnectionResolver {
 
@@ -27,4 +27,3 @@ final class SlotBasedConnectionResolver implements ConnectionResolver {
     return provider.getConnection(cmd.getArguments());
   }
 }
-

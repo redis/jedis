@@ -7,9 +7,8 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 /**
  * Connection resolver that always routes to replica nodes.
  * <p>
- * This resolver is used to enforce command execution on replicas, regardless of the
- * command type or global ReadFrom configuration.
- *
+ * This resolver is used to enforce command execution on replicas, regardless of the command type or
+ * global ReadFrom configuration.
  * @see redis.clients.jedis.executors.ClusterCommandExecutor#executeCommandToReplica(CommandObject)
  */
 final class ReplicaOnlyConnectionResolver implements ConnectionResolver {
@@ -25,4 +24,3 @@ final class ReplicaOnlyConnectionResolver implements ConnectionResolver {
     return provider.getReplicaConnection(cmd.getArguments());
   }
 }
-

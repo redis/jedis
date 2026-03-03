@@ -16,8 +16,8 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
  * Connection resolver for keyless commands that acquires connections in round-robin fashion.
  * <p>
  * This resolver distributes keyless commands evenly across cluster nodes using round-robin
- * selection. Read operations can go to any node for load distribution, while write operations
- * go to primary nodes only.
+ * selection. Read operations can go to any node for load distribution, while write operations go to
+ * primary nodes only.
  */
 final class RoundRobinConnectionResolver implements ConnectionResolver {
 
@@ -62,4 +62,3 @@ final class RoundRobinConnectionResolver implements ConnectionResolver {
     return new ArrayList<>(connectionMap.entrySet());
   }
 }
-

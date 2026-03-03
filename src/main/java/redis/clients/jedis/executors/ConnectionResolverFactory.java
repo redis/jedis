@@ -16,7 +16,6 @@ final class ConnectionResolverFactory {
 
   /**
    * Creates a slot-based connection resolver for keyed commands.
-   *
    * @param provider the cluster connection provider
    * @param flags the command flags registry
    * @return a new SlotBasedConnectionResolver
@@ -28,7 +27,6 @@ final class ConnectionResolverFactory {
 
   /**
    * Creates a round-robin connection resolver for keyless commands.
-   *
    * @param provider the cluster connection provider
    * @param flags the command flags registry
    * @return a new RoundRobinConnectionResolver
@@ -40,7 +38,6 @@ final class ConnectionResolverFactory {
 
   /**
    * Creates a replica-only connection resolver.
-   *
    * @param provider the cluster connection provider
    * @return a new ReplicaOnlyConnectionResolver
    */
@@ -48,4 +45,3 @@ final class ConnectionResolverFactory {
     return new ReplicaOnlyConnectionResolver(provider);
   }
 }
-

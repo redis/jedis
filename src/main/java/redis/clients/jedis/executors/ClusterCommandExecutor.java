@@ -111,9 +111,10 @@ public class ClusterCommandExecutor implements CommandExecutor {
       HostAndPort node = HostAndPort.from(entry.getKey());
       ConnectionPool pool = entry.getValue();
       try {
-        // Create a resolver that returns a connection from this specific node's pool
-        // The doExecuteCommand method will handle connection lifecycle (close after use)
-        SingleConnectionResolver resolver = new SingleConnectionResolver(pool.getResource());
+        // Create a resolver that acquires connections from this specific node's pool
+        // A fresh connection is obtained on each resolve() call, allowing retries to work correctly
+        // The doExecuteCommand method will close the connection after each attempt
+        SingleConnectionResolver resolver = new SingleConnectionResolver(pool);
         // Don't follow redirections - we want to execute on specific nodes
         T aReply = doExecuteCommand(commandObject, resolver, false);
         aggregator.addSuccess(node, aReply);

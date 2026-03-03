@@ -347,53 +347,35 @@ public class ClusterCommandObjectsTest {
     return result;
   }
 
-  // ==================== Rawable Key Hash Slot Tests ====================
-  // These tests verify that Rawable keys are handled correctly in hash slot computation.
-  // Bug: getKeyHashSlots() only handles byte[] and String keys, but key(Object) also accepts
-  // Rawable instances. When getKeyHashSlots() encounters a Rawable key, it falls to the else
-  // branch and casts to String, throwing ClassCastException.
-
-  /**
-   * Test that using a Rawable key (created via RawableFactory.from(byte[])) throws
-   * ClassCastException when computing hash slots. This demonstrates the bug where the old code
-   * called processKey(raw.getRaw()) to extract the byte array before slot computation, but the new
-   * code stores the original Rawable object without extracting raw bytes.
-   */
   @Test
-  public void testGetKeyHashSlots_withRawableFromByteArray_throwsClassCastException() {
+  public void testGetKeyHashSlots_withRawableFromByteArray() {
     CommandArguments args = new CommandArguments(Protocol.Command.GET);
     Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("testkey".getBytes());
 
     // Using key() with a Rawable should store the Rawable object in the keys list
     args.key(rawableKey);
 
-    // getKeyHashSlots() only handles byte[] and String, not Rawable
-    // This should throw ClassCastException because it tries to cast Rawable to String
-    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
-      "Expected ClassCastException when computing hash slots for Rawable key");
+    // This should not throw an exception
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(1, slots.size());
+    assertTrue(slots.contains(JedisClusterCRC16.getSlot("testkey".getBytes())));
   }
 
-  /**
-   * Test that using a Rawable key (created via RawableFactory.from(String)) throws
-   * ClassCastException when computing hash slots.
-   */
   @Test
-  public void testGetKeyHashSlots_withRawableFromString_throwsClassCastException() {
+  public void testGetKeyHashSlots_withRawableFromString() {
     CommandArguments args = new CommandArguments(Protocol.Command.GET);
     Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("testkey");
 
     args.key(rawableKey);
 
-    // This should throw ClassCastException
-    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
-      "Expected ClassCastException when computing hash slots for RawString key");
+    // This should not throw an exception
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(1, slots.size());
+    assertTrue(slots.contains(JedisClusterCRC16.getSlot("testkey")));
   }
 
-  /**
-   * Test that using multiple Rawable keys throws ClassCastException when computing hash slots.
-   */
   @Test
-  public void testGetKeyHashSlots_withMultipleRawableKeys_throwsClassCastException() {
+  public void testGetKeyHashSlots_withMultipleRawableKeys() {
     CommandArguments args = new CommandArguments(Protocol.Command.MGET);
     Rawable rawableKey1 = redis.clients.jedis.args.RawableFactory.from("{user}:1".getBytes());
     Rawable rawableKey2 = redis.clients.jedis.args.RawableFactory.from("{user}:2".getBytes());
@@ -401,17 +383,14 @@ public class ClusterCommandObjectsTest {
     args.key(rawableKey1);
     args.key(rawableKey2);
 
-    // This should throw ClassCastException
-    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
-      "Expected ClassCastException when computing hash slots for multiple Rawable keys");
+    // This should not throw an exception
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(1, slots.size());
+    assertTrue(slots.contains(JedisClusterCRC16.getSlot("{user}:1")));
   }
 
-  /**
-   * Test that using a mix of Rawable and String keys throws ClassCastException when computing hash
-   * slots.
-   */
   @Test
-  public void testGetKeyHashSlots_withMixedRawableAndStringKeys_throwsClassCastException() {
+  public void testGetKeyHashSlots_withMixedRawableAndStringKeys() {
     CommandArguments args = new CommandArguments(Protocol.Command.MGET);
 
     // First add a String key - this works fine
@@ -421,10 +400,9 @@ public class ClusterCommandObjectsTest {
     Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("rawableKey".getBytes());
     args.key(rawableKey);
 
-    // When iterating keys, the String key will be processed fine,
-    // but the Rawable key will cause ClassCastException
-    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
-      "Expected ClassCastException when computing hash slots for mixed Rawable and String keys");
+    // This should not throw an exception
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(2, slots.size());
   }
 
   /**
@@ -432,7 +410,7 @@ public class ClusterCommandObjectsTest {
    * slots.
    */
   @Test
-  public void testGetKeyHashSlots_withMixedRawableAndByteArrayKeys_throwsClassCastException() {
+  public void testGetKeyHashSlots_withMixedRawableAndByteArrayKeys() {
     CommandArguments args = new CommandArguments(Protocol.Command.MGET);
 
     // First add a byte[] key - this works fine
@@ -442,10 +420,9 @@ public class ClusterCommandObjectsTest {
     Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("rawableKey".getBytes());
     args.key(rawableKey);
 
-    // When iterating keys, the byte[] key will be processed fine,
-    // but the Rawable key will cause ClassCastException
-    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
-      "Expected ClassCastException when computing hash slots for mixed Rawable and byte[] keys");
+    // This should not throw an exception
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(2, slots.size());
   }
 
   /**
@@ -478,5 +455,162 @@ public class ClusterCommandObjectsTest {
     java.util.Set<Integer> slots = args.getKeyHashSlots();
     assertEquals(1, slots.size());
     assertTrue(slots.contains(JedisClusterCRC16.getSlot(key)));
+  }
+
+  // ==================== Key Preprocessor Hash Slot Tests ====================
+  // These tests verify that the keyPreProcessor is properly accounted for when
+  // calculating hash slots for multi-shard grouping.
+
+  /**
+   * Test that demonstrates the bug where groupArgumentsByKeyHashSlot calculates hash slots from the
+   * original keys but the keyPreProcessor transforms them into different keys with different hash
+   * slots. Bug: When a prefix like "{prefix}:" is added by keyPreProcessor, the original keys
+   * "key1" and "key2" might hash to different slots, but after prefixing they become
+   * "{prefix}:key1" and "{prefix}:key2" which hash to the same slot (due to the hash tag). The slot
+   * calculation should use the preprocessed keys.
+   */
+  @Test
+  public void testGroupArgumentsByKeyHashSlot_withKeyPreProcessor_usesPreprocessedSlot() {
+    // Create ClusterCommandObjects with a key preprocessor that adds a hash tag prefix
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    // The prefix "{sameSlot}:" ensures all keys hash to the same slot
+    clusterCmdObjects.setKeyArgumentPreProcessor(
+      new redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor("{sameSlot}:"));
+
+    // These keys hash to different slots without the prefix
+    String[] keys = { "key1", "key2", "key3" };
+    int slot1 = JedisClusterCRC16.getSlot("key1");
+    int slot2 = JedisClusterCRC16.getSlot("key2");
+    int slot3 = JedisClusterCRC16.getSlot("key3");
+    // Verify the original keys hash to at least 2 different slots
+    assertTrue(slot1 != slot2 || slot2 != slot3 || slot1 != slot3,
+      "Test setup error: original keys should hash to different slots");
+
+    // After preprocessing, all keys should hash to the same slot because of the hash tag
+    int expectedSlot = JedisClusterCRC16.getSlot("{sameSlot}:key1");
+    assertEquals(expectedSlot, JedisClusterCRC16.getSlot("{sameSlot}:key2"),
+      "Preprocessed keys should hash to the same slot due to hash tag");
+    assertEquals(expectedSlot, JedisClusterCRC16.getSlot("{sameSlot}:key3"),
+      "Preprocessed keys should hash to the same slot due to hash tag");
+
+    // Call groupArgumentsByKeyHashSlot
+    CommandArguments args = new CommandArguments(Protocol.Command.DEL);
+    List<CommandArguments> result = clusterCmdObjects.groupArgumentsByKeyHashSlot(args, keys, null);
+
+    // BUG REPRODUCTION: With the bug, this would return multiple CommandArguments
+    // because the slot calculation uses the original keys which hash to different slots.
+    // The fix should make this return 1 CommandArguments because after preprocessing,
+    // all keys hash to the same slot (due to the "{sameSlot}:" hash tag prefix).
+    assertEquals(1, result.size(),
+      "After preprocessing with hash tag prefix, all keys should group into one slot. " + "Got "
+          + result.size()
+          + " groups instead of 1, indicating slot calculation used original keys.");
+
+    // Verify the preprocessed keys are in the result
+    List<String> argsStrings = extractArgsAsStrings(result.get(0));
+    assertTrue(argsStrings.contains("{sameSlot}:key1"));
+    assertTrue(argsStrings.contains("{sameSlot}:key2"));
+    assertTrue(argsStrings.contains("{sameSlot}:key3"));
+  }
+
+  /**
+   * Test that groupArgumentsByKeyValueHashSlot also accounts for keyPreProcessor when calculating
+   * hash slots for key-value pairs.
+   */
+  @Test
+  public void testGroupArgumentsByKeyValueHashSlot_withKeyPreProcessor_usesPreprocessedSlot() {
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    clusterCmdObjects.setKeyArgumentPreProcessor(
+      new redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor("{sameSlot}:"));
+
+    // These key-value pairs have keys that hash to different slots without the prefix
+    String[] keysValues = { "key1", "value1", "key2", "value2", "key3", "value3" };
+
+    // Verify original keys hash to different slots
+    int slot1 = JedisClusterCRC16.getSlot("key1");
+    int slot2 = JedisClusterCRC16.getSlot("key2");
+    int slot3 = JedisClusterCRC16.getSlot("key3");
+    assertTrue(slot1 != slot2 || slot2 != slot3 || slot1 != slot3,
+      "Test setup error: original keys should hash to different slots");
+
+    CommandArguments args = new CommandArguments(Protocol.Command.MSET);
+    List<CommandArguments> result = clusterCmdObjects.groupArgumentsByKeyValueHashSlot(args,
+      keysValues, null);
+
+    // With the fix, all keys should group into one slot
+    assertEquals(1, result.size(),
+      "After preprocessing with hash tag prefix, all keys should group into one slot");
+
+    // Verify the preprocessed keys and values are in the result
+    List<String> argsStrings = extractArgsAsStrings(result.get(0));
+    assertTrue(argsStrings.contains("{sameSlot}:key1"));
+    assertTrue(argsStrings.contains("value1"));
+    assertTrue(argsStrings.contains("{sameSlot}:key2"));
+    assertTrue(argsStrings.contains("value2"));
+    assertTrue(argsStrings.contains("{sameSlot}:key3"));
+    assertTrue(argsStrings.contains("value3"));
+  }
+
+  /**
+   * Test the reverse case: keys that originally hash to the same slot but after preprocessing hash
+   * to different slots.
+   */
+  @Test
+  public void testGroupArgumentsByKeyHashSlot_withKeyPreProcessor_differentSlotsAfterPreprocess() {
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    // This preprocessor changes the hash tag, causing keys to hash to different slots
+    clusterCmdObjects.setKeyArgumentPreProcessor(key -> {
+      String keyStr = (String) key;
+      // Remove the hash tag, making keys hash based on their full content
+      return keyStr.replace("{same}:", "different:");
+    });
+
+    // These keys all hash to the same slot due to the {same} hash tag
+    String[] keys = { "{same}:key1", "{same}:key2", "{same}:key3" };
+    int originalSlot = JedisClusterCRC16.getSlot("{same}:key1");
+    assertEquals(originalSlot, JedisClusterCRC16.getSlot("{same}:key2"));
+    assertEquals(originalSlot, JedisClusterCRC16.getSlot("{same}:key3"));
+
+    // After preprocessing, keys become "different:key1", etc. which hash to different slots
+    int slot1 = JedisClusterCRC16.getSlot("different:key1");
+    int slot2 = JedisClusterCRC16.getSlot("different:key2");
+    int slot3 = JedisClusterCRC16.getSlot("different:key3");
+    // At least some should be different (depending on actual hash values)
+    assertTrue(slot1 != slot2 || slot2 != slot3 || slot1 != slot3,
+      "Test setup: preprocessed keys should hash to different slots");
+
+    CommandArguments args = new CommandArguments(Protocol.Command.DEL);
+    List<CommandArguments> result = clusterCmdObjects.groupArgumentsByKeyHashSlot(args, keys, null);
+
+    // With the fix, keys should be grouped by their preprocessed slot values
+    // which should result in multiple groups (not just 1 as with original keys)
+    assertTrue(result.size() > 1,
+      "After preprocessing removes hash tag, keys should be in different slots. " + "Got "
+          + result.size() + " groups.");
+  }
+
+  /**
+   * Test with byte[] keys and keyPreProcessor.
+   */
+  @Test
+  public void testGroupArgumentsByKeyHashSlot_withKeyPreProcessor_binaryKeys() {
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    clusterCmdObjects.setKeyArgumentPreProcessor(
+      new redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor("{sameSlot}:"));
+
+    byte[][] keys = { "key1".getBytes(), "key2".getBytes(), "key3".getBytes() };
+
+    CommandArguments args = new CommandArguments(Protocol.Command.DEL);
+    List<CommandArguments> result = clusterCmdObjects.groupArgumentsByKeyHashSlot(args, keys, null);
+
+    // With the fix, all keys should group into one slot due to the hash tag prefix
+    assertEquals(1, result.size(),
+      "After preprocessing with hash tag prefix, all binary keys should group into one slot");
+
+    // Verify the preprocessed keys are in the result
+    List<String> argsStrings = extractArgsAsStrings(result.get(0));
+    assertTrue(argsStrings.contains("{sameSlot}:key1"));
+    assertTrue(argsStrings.contains("{sameSlot}:key2"));
+    assertTrue(argsStrings.contains("{sameSlot}:key3"));
   }
 }

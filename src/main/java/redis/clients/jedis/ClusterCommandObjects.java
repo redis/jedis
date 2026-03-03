@@ -298,6 +298,12 @@ public class ClusterCommandObjects extends CommandObjects {
       return new ArrayList<>();
     }
 
+    // Wrap slotCalculator to apply keyPreProcessor transformation before slot calculation.
+    // This ensures keys are grouped by their actual slot (after preprocessing), not the original key's slot.
+    Function<T, Integer> effectiveSlotCalculator = keyPreProcessor != null
+        ? key -> calculateSlotFromPreprocessedKey(keyPreProcessor.actualKey(key))
+        : slotCalculator;
+
     // Group consecutive keys with the same slot together, preserving input order
     // Non-consecutive keys with the same slot will be in separate commands
     List<CommandArguments> result = new ArrayList<>();
@@ -307,7 +313,7 @@ public class ClusterCommandObjects extends CommandObjects {
 
     for (int i = 0; i < keysOrKeysValues.length; i += step) {
       T key = keysOrKeysValues[i];
-      int slot = slotCalculator.apply(key);
+      int slot = effectiveSlotCalculator.apply(key);
 
       if (slot != currentSlot && !currentGroup.isEmpty()) {
         // Slot changed - finalize the current group
@@ -328,6 +334,23 @@ public class ClusterCommandObjects extends CommandObjects {
     }
 
     return result;
+  }
+
+  /**
+   * Calculates the hash slot for a preprocessed key.
+   *
+   * @param preprocessedKey the key after preprocessing (may be String, byte[], or Rawable)
+   * @return the hash slot for the key
+   */
+  private int calculateSlotFromPreprocessedKey(Object preprocessedKey) {
+    if (preprocessedKey instanceof byte[]) {
+      return JedisClusterCRC16.getSlot((byte[]) preprocessedKey);
+    } else if (preprocessedKey instanceof String) {
+      return JedisClusterCRC16.getSlot((String) preprocessedKey);
+    } else if (preprocessedKey instanceof redis.clients.jedis.args.Rawable) {
+      return JedisClusterCRC16.getSlot(((redis.clients.jedis.args.Rawable) preprocessedKey).getRaw());
+    }
+    throw new IllegalArgumentException("Unsupported key type: " + preprocessedKey.getClass().getName());
   }
 
   /**

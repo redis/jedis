@@ -346,4 +346,137 @@ public class ClusterCommandObjectsTest {
     }
     return result;
   }
+
+  // ==================== Rawable Key Hash Slot Tests ====================
+  // These tests verify that Rawable keys are handled correctly in hash slot computation.
+  // Bug: getKeyHashSlots() only handles byte[] and String keys, but key(Object) also accepts
+  // Rawable instances. When getKeyHashSlots() encounters a Rawable key, it falls to the else
+  // branch and casts to String, throwing ClassCastException.
+
+  /**
+   * Test that using a Rawable key (created via RawableFactory.from(byte[])) throws
+   * ClassCastException when computing hash slots. This demonstrates the bug where the old code
+   * called processKey(raw.getRaw()) to extract the byte array before slot computation, but the new
+   * code stores the original Rawable object without extracting raw bytes.
+   */
+  @Test
+  public void testGetKeyHashSlots_withRawableFromByteArray_throwsClassCastException() {
+    CommandArguments args = new CommandArguments(Protocol.Command.GET);
+    Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("testkey".getBytes());
+
+    // Using key() with a Rawable should store the Rawable object in the keys list
+    args.key(rawableKey);
+
+    // getKeyHashSlots() only handles byte[] and String, not Rawable
+    // This should throw ClassCastException because it tries to cast Rawable to String
+    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
+      "Expected ClassCastException when computing hash slots for Rawable key");
+  }
+
+  /**
+   * Test that using a Rawable key (created via RawableFactory.from(String)) throws
+   * ClassCastException when computing hash slots.
+   */
+  @Test
+  public void testGetKeyHashSlots_withRawableFromString_throwsClassCastException() {
+    CommandArguments args = new CommandArguments(Protocol.Command.GET);
+    Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("testkey");
+
+    args.key(rawableKey);
+
+    // This should throw ClassCastException
+    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
+      "Expected ClassCastException when computing hash slots for RawString key");
+  }
+
+  /**
+   * Test that using multiple Rawable keys throws ClassCastException when computing hash slots.
+   */
+  @Test
+  public void testGetKeyHashSlots_withMultipleRawableKeys_throwsClassCastException() {
+    CommandArguments args = new CommandArguments(Protocol.Command.MGET);
+    Rawable rawableKey1 = redis.clients.jedis.args.RawableFactory.from("{user}:1".getBytes());
+    Rawable rawableKey2 = redis.clients.jedis.args.RawableFactory.from("{user}:2".getBytes());
+
+    args.key(rawableKey1);
+    args.key(rawableKey2);
+
+    // This should throw ClassCastException
+    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
+      "Expected ClassCastException when computing hash slots for multiple Rawable keys");
+  }
+
+  /**
+   * Test that using a mix of Rawable and String keys throws ClassCastException when computing hash
+   * slots.
+   */
+  @Test
+  public void testGetKeyHashSlots_withMixedRawableAndStringKeys_throwsClassCastException() {
+    CommandArguments args = new CommandArguments(Protocol.Command.MGET);
+
+    // First add a String key - this works fine
+    args.key("stringKey");
+
+    // Then add a Rawable key
+    Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("rawableKey".getBytes());
+    args.key(rawableKey);
+
+    // When iterating keys, the String key will be processed fine,
+    // but the Rawable key will cause ClassCastException
+    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
+      "Expected ClassCastException when computing hash slots for mixed Rawable and String keys");
+  }
+
+  /**
+   * Test that using a mix of Rawable and byte[] keys throws ClassCastException when computing hash
+   * slots.
+   */
+  @Test
+  public void testGetKeyHashSlots_withMixedRawableAndByteArrayKeys_throwsClassCastException() {
+    CommandArguments args = new CommandArguments(Protocol.Command.MGET);
+
+    // First add a byte[] key - this works fine
+    args.key("byteKey".getBytes());
+
+    // Then add a Rawable key
+    Rawable rawableKey = redis.clients.jedis.args.RawableFactory.from("rawableKey".getBytes());
+    args.key(rawableKey);
+
+    // When iterating keys, the byte[] key will be processed fine,
+    // but the Rawable key will cause ClassCastException
+    assertThrows(ClassCastException.class, () -> args.getKeyHashSlots(),
+      "Expected ClassCastException when computing hash slots for mixed Rawable and byte[] keys");
+  }
+
+  /**
+   * Verify that String keys work correctly (baseline test).
+   */
+  @Test
+  public void testGetKeyHashSlots_withStringKey_worksCorrectly() {
+    CommandArguments args = new CommandArguments(Protocol.Command.GET);
+    String key = "testkey";
+
+    args.key(key);
+
+    // String keys should work correctly
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(1, slots.size());
+    assertTrue(slots.contains(JedisClusterCRC16.getSlot(key)));
+  }
+
+  /**
+   * Verify that byte[] keys work correctly (baseline test).
+   */
+  @Test
+  public void testGetKeyHashSlots_withByteArrayKey_worksCorrectly() {
+    CommandArguments args = new CommandArguments(Protocol.Command.GET);
+    byte[] key = "testkey".getBytes();
+
+    args.key(key);
+
+    // byte[] keys should work correctly
+    java.util.Set<Integer> slots = args.getKeyHashSlots();
+    assertEquals(1, slots.size());
+    assertTrue(slots.contains(JedisClusterCRC16.getSlot(key)));
+  }
 }

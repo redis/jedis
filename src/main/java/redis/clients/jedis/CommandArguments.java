@@ -134,17 +134,19 @@ public class CommandArguments implements Iterable<Rawable> {
     if (key instanceof Rawable) {
       Rawable raw = (Rawable) key;
       args.add(raw);
+      // Extract raw bytes for hash slot computation to avoid ClassCastException in getKeyHashSlots()
+      addHashSlotKey(raw.getRaw());
     } else if (key instanceof byte[]) {
       byte[] raw = (byte[]) key;
       args.add(RawableFactory.from(raw));
+      addHashSlotKey(raw);
     } else if (key instanceof String) {
       String raw = (String) key;
       args.add(RawableFactory.from(raw));
+      addHashSlotKey(raw);
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
-
-    addHashSlotKey(key);
 
     return this;
   }

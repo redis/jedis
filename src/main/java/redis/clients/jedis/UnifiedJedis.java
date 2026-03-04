@@ -931,7 +931,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -941,7 +941,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -951,7 +951,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -970,7 +970,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -980,7 +980,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -990,7 +990,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -1095,7 +1095,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#getrange(String, long, long)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   @Override
@@ -1115,7 +1115,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#getrange(byte[], long, long)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   @Override
@@ -1463,7 +1463,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * @deprecated Use {@link UnifiedJedis#lmove(String, String, ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -1474,7 +1474,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * @deprecated Use {@link UnifiedJedis#blmove(String, String, ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -1485,7 +1485,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * @deprecated Use {@link UnifiedJedis#lmove(byte[], byte[], ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -1496,7 +1496,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * @deprecated Use {@link UnifiedJedis#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -1608,7 +1608,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#hset(String, Map)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   @Override
@@ -1663,7 +1663,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#hset(byte[], Map)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   @Override
@@ -2397,7 +2397,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2412,7 +2412,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2437,7 +2437,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2447,7 +2447,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2457,7 +2457,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2467,7 +2467,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2477,7 +2477,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2487,7 +2487,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2497,7 +2497,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2507,7 +2507,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2517,7 +2517,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2527,7 +2527,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2537,7 +2537,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2547,7 +2547,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2557,7 +2557,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2567,7 +2567,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2577,7 +2577,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2587,7 +2587,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(String, ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2602,7 +2602,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2617,7 +2617,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2642,7 +2642,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2652,7 +2652,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2662,7 +2662,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2672,7 +2672,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2682,7 +2682,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2692,7 +2692,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2702,7 +2702,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2712,7 +2712,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2722,7 +2722,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2732,7 +2732,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2742,7 +2742,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2752,7 +2752,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2762,7 +2762,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2772,7 +2772,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2782,7 +2782,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2792,7 +2792,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrangeWithScores(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByScoreParams(double, double)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2837,7 +2837,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2847,7 +2847,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2857,7 +2857,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2867,7 +2867,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(String, ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2887,7 +2887,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2897,7 +2897,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2907,7 +2907,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2917,7 +2917,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#zrange(byte[], ZRangeParams)} with {@link ZRangeParams#zrangeByLexParams(String, String)} and {@link ZRangeParams#rev()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -3216,7 +3216,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -3236,7 +3236,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#geosearch(String, GeoSearchParam)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -3371,7 +3371,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -3391,7 +3391,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @deprecated Use {@link UnifiedJedis#geosearch(byte[], GeoSearchParam)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -5562,39 +5562,111 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(PING));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(commandObjects.commandArguments(cmd));
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(GET).key("mykey".getBytes()));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey".getBytes()).add("0".getBytes()).blocking());
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(SET).key("x").add("1"));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey").add("0").blocking());
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(GET).key("mykey".getBytes()).processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey".getBytes()).add("0".getBytes()).blocking().processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
     return executeCommand(
         commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(GET).key("mykey").processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).addHashSlotKey(sampleKey));
   }
 
+  /**
+   * @deprecated Deprecated in Jedis 7.4.0.
+   * Use {@link #executeCommand(CommandArguments)} with a {@link CommandArguments} object directly.
+   * <pre>{@code
+   * jedis.executeCommand(new CommandArguments(BLPOP).key("mykey").add("0").blocking().processKey(sampleKey));
+   * }</pre>
+   */
+  @Deprecated
   public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
     return executeCommand(
         commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().addHashSlotKey(sampleKey));

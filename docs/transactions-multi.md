@@ -97,11 +97,14 @@ jedis.close();
 
 The `WATCH` command monitors keys for changes. If any watched key is modified before `EXEC`, the transaction is aborted and `exec()` returns `null`.
 
+**Important:** `WATCH` must be executed through the transaction object to ensure it uses the transaction's dedicated connection.
+
 ```java
 try (AbstractTransaction tx = jedis.transaction(false)) {
+    // WATCH must be on the transaction's dedicated connection
     tx.watch("counter");
 
-    // Read current value (executed immediately)
+    // Read current value - can use the client directly
     String current = jedis.get("counter");
     int newValue = Integer.parseInt(current) + 1;
 
@@ -129,6 +132,10 @@ try (AbstractTransaction tx = jedis.multi()) {
 }
 ```
 
+**Important:** `WATCH` must be executed through the transaction object to ensure it uses the transaction's dedicated connection.
+
+
+
 ## Transaction Completion
 
 Complete a transaction by calling either:
@@ -139,4 +146,6 @@ Complete a transaction by calling either:
 ### Automatic Cleanup
 
 When using try-with-resources, `close()` automatically sends `DISCARD` (if in `MULTI` state) or `UNWATCH` (if in `WATCH` state) to ensure the connection is returned to the pool in a clean state.
+
+
 

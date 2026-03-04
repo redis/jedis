@@ -94,10 +94,16 @@ public class TlsUtil {
     }
 
     private static Path envCa(Path certLocation) {
+        if (certLocation.isAbsolute()) {
+            return certLocation.resolve(TEST_CA_CERT);
+        }
         return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_CA_CERT);
     }
 
     private static Path envServerCert(Path certLocation) {
+        if (certLocation.isAbsolute()) {
+          return certLocation.resolve(TEST_SERVER_CERT);
+        }
         return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_SERVER_CERT);
     }
 
@@ -285,16 +291,6 @@ public class TlsUtil {
                 }
             }
             throw new IllegalArgumentException("The certificate has no common name.");
-        }
-    }
-
-    public static class LocalhostVerifier extends BasicHostnameVerifier {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            if (hostname.equals("127.0.0.1")) {
-                hostname = "localhost";
-            }
-            return super.verify(hostname, session);
         }
     }
 }

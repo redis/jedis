@@ -22,7 +22,7 @@ public abstract class RedisModuleCommandsTestBase {
       () -> Endpoints.getRedisEndpoint(preferredEndpointId));
 
   @RegisterExtension
-  public EnvCondition envCondition = new EnvCondition();
+  public static EnvCondition envCondition = new EnvCondition();
 
   protected static EndpointConfig endpoint;
 

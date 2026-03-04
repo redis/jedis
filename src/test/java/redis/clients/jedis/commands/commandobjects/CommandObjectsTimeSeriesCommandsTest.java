@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.timeseries.AggregationType;
@@ -30,6 +31,7 @@ import redis.clients.jedis.timeseries.TSMGetParams;
 import redis.clients.jedis.timeseries.TSMRangeElements;
 import redis.clients.jedis.timeseries.TSMRangeParams;
 import redis.clients.jedis.timeseries.TSRangeParams;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=timeseries">Time series</a> commands.
@@ -120,6 +122,7 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testTsMAdd() {
     String key1 = "testTsMAdd1";
     String key2 = "testTsMAdd2";

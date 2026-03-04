@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -236,6 +238,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void msetnx() {
     assertEquals(1, jedis.msetnx(bfoo, binaryValue, bbar, bfoo));
     assertArrayEquals(binaryValue, jedis.get(bfoo));
@@ -315,6 +318,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void substr() {
     jedis.set(bfoo, binaryValue);
 

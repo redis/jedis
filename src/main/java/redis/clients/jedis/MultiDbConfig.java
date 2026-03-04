@@ -871,11 +871,14 @@ public final class MultiDbConfig {
      */
     private float weight = 1.0f;
 
+    /** Health check enabled. Default: true */
+    private boolean healthCheckEnabled = true;
+
     /**
      * Strategy supplier for creating health check instances for this database. Default is
      * PingStrategy.DEFAULT.
      */
-    private StrategySupplier healthCheckStrategySupplier;
+    private StrategySupplier healthCheckStrategySupplier = PingStrategy.DEFAULT;
 
     /**
      * Constructs a DatabaseConfig with basic endpoint and client configuration.
@@ -920,6 +923,7 @@ public final class MultiDbConfig {
       this.jedisClientConfig = builder.jedisClientConfig;
       this.connectionPoolConfig = builder.connectionPoolConfig;
       this.weight = builder.weight;
+      this.healthCheckEnabled = builder.healthCheckEnabled;
       this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
     }
 
@@ -982,7 +986,18 @@ public final class MultiDbConfig {
      * @see redis.clients.jedis.mcf.HealthCheckStrategy
      */
     public StrategySupplier getHealthCheckStrategySupplier() {
+      if (!healthCheckEnabled) {
+        return null;
+      }
       return healthCheckStrategySupplier;
+    }
+
+    /**
+     * Returns whether health checks are enabled for this database.
+     * @return true if health checks are enabled, false otherwise
+     */
+    public boolean isHealthCheckEnabled() {
+      return healthCheckEnabled;
     }
 
     /**
@@ -1013,6 +1028,9 @@ public final class MultiDbConfig {
 
       /** Weight for database selection priority. Default: 1.0f */
       private float weight = 1.0f;
+
+      /** Health check enabled. Default: true */
+      private boolean healthCheckEnabled = true;
 
       /** Health check strategy supplier. Default: PingStrategy.DEFAULT */
       private StrategySupplier healthCheckStrategySupplier = PingStrategy.DEFAULT;
@@ -1130,11 +1148,7 @@ public final class MultiDbConfig {
        * @return this builder instance for method chaining
        */
       public Builder healthCheckEnabled(boolean healthCheckEnabled) {
-        if (!healthCheckEnabled) {
-          this.healthCheckStrategySupplier = null;
-        } else if (healthCheckStrategySupplier == null) {
-          this.healthCheckStrategySupplier = PingStrategy.DEFAULT;
-        }
+        this.healthCheckEnabled = healthCheckEnabled;
         return this;
       }
 

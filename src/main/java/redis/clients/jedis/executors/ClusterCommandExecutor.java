@@ -275,9 +275,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
             provider.renewSlotCache(connection);
           }
         } else {
-          // For keyless commands, just log and retry with a different node
-          log.debug("Received redirection for keyless command, retrying with different node: {}",
-              jre.getMessage());
+          // When followRedirections is false, throw the redirection exception immediately
+          // instead of silently handling or ignoring it
+          throw jre;
         }
         consecutiveConnectionFailures = 0;
       } finally {

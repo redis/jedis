@@ -1,11 +1,15 @@
 package redis.clients.jedis.codegen;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Module;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.resps.CommandInfo;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +23,7 @@ import java.util.stream.Collectors;
  * StaticCommandFlagsRegistry class that implements CommandFlagsRegistry interface.
  * <p>
  * Usage:
- * 
+ *
  * <pre>
  * java -cp ... redis.clients.jedis.codegen.CommandFlagsRegistryGenerator [host] [port]
  * </pre>
@@ -35,7 +39,7 @@ import java.util.stream.Collectors;
 public class CommandFlagsRegistryGenerator {
 
   private static final String JAVA_FILE = "src/main/java/redis/clients/jedis/StaticCommandFlagsRegistryInitializer.java";
-  private static final String BACKUP_JSON_FILE = "redis_commands_flags.json";
+  private static final String BACKUP_JSON_FILE = "redis_commands_metadata.json";
 
   private final String redisHost;
   private final int redisPort;
@@ -69,6 +73,30 @@ public class CommandFlagsRegistryGenerator {
     FLAG_MAPPING.put("no_mandatory_keys", "NO_MANDATORY_KEYS");
     FLAG_MAPPING.put("allow_busy", "ALLOW_BUSY");
   }
+
+  /**
+   * Manual command flag overrides that take precedence over Redis server metadata. These overrides
+   * allow defining custom flag combinations, request policies, and response policies for specific
+   * commands when the server-provided metadata is incorrect or needs customization.
+   * <p>
+   * Key: Command name (uppercase, e.g., "KEYS" or "ACL CAT" for subcommands) Value: CommandMetadata
+   * with the override values
+   * <p>
+   * To add a new override, add an entry to this map in the static initializer block.
+   */
+  private static final Map<String, CommandMetadata> MANUAL_OVERRIDES = new LinkedHashMap<>();
+
+  /**
+   * Known parent commands that have subcommands. When the generator encounters a command name
+   * containing a space (e.g., "FUNCTION LOAD"), the parent part (e.g., "FUNCTION") must be listed
+   * here for proper subcommand registration.
+   * <p>
+   * If a new Redis command with subcommands is added, add the parent command name to this set. The
+   * generator will fail with a helpful error message if an unknown parent command is encountered.
+   */
+  private static final Set<String> KNOWN_PARENT_COMMANDS = new HashSet<>(Arrays.asList("ACL",
+    "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION", "HOTKEYS", "LATENCY", "MEMORY", "MODULE",
+    "OBJECT", "PUBSUB", "SCRIPT", "SLOWLOG", "XGROUP", "XINFO", "FT.CONFIG", "FT.CURSOR"));
 
   public CommandFlagsRegistryGenerator(String host, int port) {
     this.redisHost = host;
@@ -113,31 +141,31 @@ public class CommandFlagsRegistryGenerator {
   }
 
   public void generate() throws IOException {
-    Map<String, List<String>> commandsFlags;
+    Map<String, CommandMetadata> commandsMetadata;
 
     // Step 1: Retrieve commands from Redis
     System.out.println("\nStep 1: Connecting to Redis at " + redisHost + ":" + redisPort + "...");
     try {
-      commandsFlags = retrieveCommandsFromRedis();
-      System.out.println("✓ Retrieved " + commandsFlags.size() + " commands from Redis");
+      commandsMetadata = retrieveCommandsFromRedis();
+      System.out.println("✓ Retrieved " + commandsMetadata.size() + " commands from Redis");
 
       // Save to backup JSON file
-      saveToJsonFile(commandsFlags);
+      saveToJsonFile(commandsMetadata);
     } catch (JedisConnectionException e) {
       System.err.println("✗ Failed to connect to Redis: " + e.getMessage());
       System.out.println("\nAttempting to use backup JSON file: " + BACKUP_JSON_FILE);
-      commandsFlags = readJsonFile();
-      System.out.println("✓ Loaded " + commandsFlags.size() + " commands from backup file");
+      commandsMetadata = readJsonFile();
+      System.out.println("✓ Loaded " + commandsMetadata.size() + " commands from backup file");
     }
 
-    // Step 2: Process commands and group by flag combinations
-    System.out.println("\nStep 2: Processing commands and grouping by flags...");
-    Map<FlagSet, List<String>> flagCombinations = groupByFlags(commandsFlags);
-    System.out.println("✓ Found " + flagCombinations.size() + " unique flag combinations");
+    // Step 2: Process commands and group by metadata combinations
+    System.out.println("\nStep 2: Processing commands and grouping by metadata...");
+    Map<MetadataKey, List<String>> metadataCombinations = groupByMetadata(commandsMetadata);
+    System.out.println("✓ Found " + metadataCombinations.size() + " unique metadata combinations");
 
     // Step 3: Generate StaticCommandFlagsRegistry class
     System.out.println("\nStep 3: Generating StaticCommandFlagsRegistry class...");
-    String classContent = generateRegistryClass(flagCombinations);
+    String classContent = generateRegistryClass(metadataCombinations);
     System.out.println("✓ Generated " + classContent.split("\n").length + " lines of code");
 
     // Step 4: Write StaticCommandFlagsRegistry.java
@@ -146,11 +174,13 @@ public class CommandFlagsRegistryGenerator {
     System.out.println("✓ Successfully created StaticCommandFlagsRegistry.java");
   }
 
-  private Map<String, List<String>> retrieveCommandsFromRedis() {
-    Map<String, List<String>> result = new LinkedHashMap<>();
+  private Map<String, CommandMetadata> retrieveCommandsFromRedis() {
+    Map<String, CommandMetadata> result = new LinkedHashMap<>();
 
     try (Jedis jedis = new Jedis(redisHost, redisPort)) {
+
       jedis.connect();
+      jedis.auth(Endpoints.getRedisEndpoint("standalone0").getPassword());
 
       // Collect server metadata
       String infoServer = jedis.info("server");
@@ -172,28 +202,25 @@ public class CommandFlagsRegistryGenerator {
       serverMetadata = new ServerMetadata(version, mode, modules);
 
       // Get all commands using COMMAND
-      Map<String, redis.clients.jedis.resps.CommandInfo> commands = jedis.command();
+      Map<String, CommandInfo> commands = jedis.command();
 
-      for (Map.Entry<String, redis.clients.jedis.resps.CommandInfo> entry : commands.entrySet()) {
-        redis.clients.jedis.resps.CommandInfo cmdInfo = entry.getValue();
+      for (Map.Entry<String, CommandInfo> entry : commands.entrySet()) {
+        CommandInfo cmdInfo = entry.getValue();
         String commandName = normalizeCommandName(cmdInfo.getName());
 
-        // Get flags
-        List<String> flags = new ArrayList<>();
-        if (cmdInfo.getFlags() != null) {
-          for (String flag : cmdInfo.getFlags()) {
-            flags.add(flag.toLowerCase());
-          }
-        }
-
         // Check for subcommands
-        Map<String, redis.clients.jedis.resps.CommandInfo> subcommands = cmdInfo.getSubcommands();
+        Map<String, CommandInfo> subcommands = cmdInfo.getSubcommands();
 
         if (subcommands != null && !subcommands.isEmpty()) {
-          // This command has subcommands - process them instead of the parent
-          for (Map.Entry<String, redis.clients.jedis.resps.CommandInfo> subEntry : subcommands
-              .entrySet()) {
-            redis.clients.jedis.resps.CommandInfo subCmdInfo = subEntry.getValue();
+          // This command has subcommands - add parent command with its flags first
+          if (!shouldExcludeCommand(commandName)) {
+            CommandMetadata parentMetadata = extractCommandMetadata(cmdInfo);
+            result.put(commandName, parentMetadata);
+          }
+
+          // Then process subcommands
+          for (Map.Entry<String, CommandInfo> subEntry : subcommands.entrySet()) {
+            CommandInfo subCmdInfo = subEntry.getValue();
             String subCommandName = normalizeCommandName(subCmdInfo.getName());
 
             // Filter out unwanted commands
@@ -201,21 +228,15 @@ public class CommandFlagsRegistryGenerator {
               continue;
             }
 
-            // Get subcommand flags
-            List<String> subFlags = new ArrayList<>();
-            if (subCmdInfo.getFlags() != null) {
-              for (String flag : subCmdInfo.getFlags()) {
-                subFlags.add(flag.toLowerCase());
-              }
-            }
-
-            result.put(subCommandName, subFlags);
+            CommandMetadata metadata = extractCommandMetadata(subCmdInfo);
+            result.put(subCommandName, metadata);
           }
         } else {
           // Regular command without subcommands
           // Filter out unwanted commands
           if (!shouldExcludeCommand(commandName)) {
-            result.put(commandName, flags);
+            CommandMetadata metadata = extractCommandMetadata(cmdInfo);
+            result.put(commandName, metadata);
           }
         }
       }
@@ -224,6 +245,36 @@ public class CommandFlagsRegistryGenerator {
     // Ignore close errors
 
     return result;
+  }
+
+  /**
+   * Extract command metadata (flags, request_policy, response_policy) from CommandInfo.
+   */
+  private CommandMetadata extractCommandMetadata(CommandInfo cmdInfo) {
+    // Get flags
+    List<String> flags = new ArrayList<>();
+    if (cmdInfo.getFlags() != null) {
+      for (String flag : cmdInfo.getFlags()) {
+        flags.add(flag.toLowerCase());
+      }
+    }
+
+    // Extract request_policy and response_policy from tips
+    String requestPolicy = null;
+    String responsePolicy = null;
+    List<String> tips = cmdInfo.getTips();
+    if (tips != null) {
+      for (String tip : tips) {
+        String tipLower = tip.toLowerCase();
+        if (tipLower.startsWith("request_policy:")) {
+          requestPolicy = tipLower.substring("request_policy:".length());
+        } else if (tipLower.startsWith("response_policy:")) {
+          responsePolicy = tipLower.substring("response_policy:".length());
+        }
+      }
+    }
+
+    return new CommandMetadata(flags, requestPolicy, responsePolicy);
   }
 
   /**
@@ -251,7 +302,8 @@ public class CommandFlagsRegistryGenerator {
     }
 
     // Exclude FT.DEBUG and _FT.DEBUG subcommands
-    return commandName.startsWith("FT.DEBUG ") || commandName.startsWith("_FT.DEBUG ");
+    return commandName.startsWith("FT.DEBUG ") || commandName.startsWith("_FT.DEBUG ")
+        || commandName.startsWith("_FT.CONFIG ");
   }
 
   private String extractInfoValue(String info, String key) {
@@ -264,16 +316,16 @@ public class CommandFlagsRegistryGenerator {
     return "unknown";
   }
 
-  private void saveToJsonFile(Map<String, List<String>> commandsFlags) throws IOException {
+  private void saveToJsonFile(Map<String, CommandMetadata> commandsMetadata) throws IOException {
     Gson gson = new Gson();
-    String json = gson.toJson(commandsFlags);
+    String json = gson.toJson(commandsMetadata);
 
     Path jsonPath = Paths.get(BACKUP_JSON_FILE);
     Files.write(jsonPath, json.getBytes(StandardCharsets.UTF_8));
     System.out.println("✓ Saved backup to " + BACKUP_JSON_FILE);
   }
 
-  private Map<String, List<String>> readJsonFile() throws IOException {
+  private Map<String, CommandMetadata> readJsonFile() throws IOException {
     Path jsonPath = Paths.get(BACKUP_JSON_FILE);
     if (!Files.exists(jsonPath)) {
       throw new IOException("Backup file not found: " + BACKUP_JSON_FILE);
@@ -285,32 +337,50 @@ public class CommandFlagsRegistryGenerator {
 
     Gson gson = new Gson();
 
-    // Parse JSON manually to preserve order
-    @SuppressWarnings("unchecked")
-    Map<String, List<String>> parsed = gson.fromJson(jsonContent, Map.class);
+    // Parse JSON with proper type
+    Type type = new TypeToken<Map<String, CommandMetadata>>() {
+    }.getType();
+    Map<String, CommandMetadata> parsed = gson.fromJson(jsonContent, type);
 
     return new LinkedHashMap<>(parsed);
   }
 
-  private Map<FlagSet, List<String>> groupByFlags(Map<String, List<String>> commandsFlags) {
-    Map<FlagSet, List<String>> result = new LinkedHashMap<>();
+  private Map<MetadataKey, List<String>> groupByMetadata(
+      Map<String, CommandMetadata> commandsMetadata) {
+    Map<MetadataKey, List<String>> result = new LinkedHashMap<>();
 
-    for (Map.Entry<String, List<String>> entry : commandsFlags.entrySet()) {
+    for (Map.Entry<String, CommandMetadata> entry : commandsMetadata.entrySet()) {
       String command = entry.getKey();
-      List<String> jsonFlags = entry.getValue();
+      String commandUpper = command.toUpperCase();
+
+      // Check for manual override first - overrides take precedence over server metadata
+      CommandMetadata metadata;
+      if (MANUAL_OVERRIDES.containsKey(commandUpper)) {
+        metadata = MANUAL_OVERRIDES.get(commandUpper);
+        System.out.println("  Applying manual override for command: " + commandUpper);
+      } else {
+        metadata = entry.getValue();
+      }
 
       // Convert JSON flags to Java enum names and sort
-      List<String> javaFlags = jsonFlags.stream().map(f -> FLAG_MAPPING.get(f.toLowerCase()))
+      List<String> javaFlags = metadata.flags.stream().map(f -> FLAG_MAPPING.get(f.toLowerCase()))
           .filter(Objects::nonNull).sorted().collect(Collectors.toList());
 
-      FlagSet flagSet = new FlagSet(javaFlags);
-      result.computeIfAbsent(flagSet, k -> new ArrayList<>()).add(command.toUpperCase());
+      // Convert request and response policies to Java enum names (uppercase)
+      String requestPolicy = metadata.requestPolicy != null ? metadata.requestPolicy.toUpperCase()
+          : null;
+      String responsePolicy = metadata.responsePolicy != null
+          ? metadata.responsePolicy.toUpperCase()
+          : null;
+
+      MetadataKey key = new MetadataKey(javaFlags, requestPolicy, responsePolicy);
+      result.computeIfAbsent(key, k -> new ArrayList<>()).add(commandUpper);
     }
 
     return result;
   }
 
-  private String generateRegistryClass(Map<FlagSet, List<String>> flagCombinations) {
+  private String generateRegistryClass(Map<MetadataKey, List<String>> metadataCombinations) {
     StringBuilder sb = new StringBuilder();
 
     // Package and imports
@@ -318,6 +388,8 @@ public class CommandFlagsRegistryGenerator {
     sb.append("import java.util.EnumSet;\n");
     sb.append("import static redis.clients.jedis.StaticCommandFlagsRegistry.EMPTY_FLAGS;\n");
     sb.append("import static redis.clients.jedis.CommandFlagsRegistry.CommandFlag;\n");
+    sb.append("import static redis.clients.jedis.CommandFlagsRegistry.RequestPolicy;\n");
+    sb.append("import static redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;\n");
 
     // Class javadoc
     sb.append("/**\n");
@@ -348,17 +420,12 @@ public class CommandFlagsRegistryGenerator {
     sb.append("  static void initialize(StaticCommandFlagsRegistry.Builder builder) {\n");
 
     // Organize commands into parent commands and simple commands
-    Map<String, Map<String, FlagSet>> parentCommands = new LinkedHashMap<>();
-    Map<String, FlagSet> simpleCommands = new LinkedHashMap<>();
-
-    // Known parent commands
-    Set<String> knownParents = new HashSet<>(
-        Arrays.asList("ACL", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION", "LATENCY",
-          "MEMORY", "MODULE", "OBJECT", "PUBSUB", "SCRIPT", "SLOWLOG", "XGROUP", "XINFO"));
+    Map<String, Map<String, MetadataKey>> parentCommands = new LinkedHashMap<>();
+    Map<String, MetadataKey> simpleCommands = new LinkedHashMap<>();
 
     // Categorize commands
-    for (Map.Entry<FlagSet, List<String>> entry : flagCombinations.entrySet()) {
-      FlagSet flagSet = entry.getKey();
+    for (Map.Entry<MetadataKey, List<String>> entry : metadataCombinations.entrySet()) {
+      MetadataKey metadataKey = entry.getKey();
       for (String command : entry.getValue()) {
         int spaceIndex = command.indexOf(' ');
         if (spaceIndex > 0) {
@@ -366,70 +433,75 @@ public class CommandFlagsRegistryGenerator {
           String parent = command.substring(0, spaceIndex);
           String subcommand = command.substring(spaceIndex + 1);
 
-          if (knownParents.contains(parent)) {
+          if (KNOWN_PARENT_COMMANDS.contains(parent)) {
             parentCommands.computeIfAbsent(parent, k -> new LinkedHashMap<>()).put(subcommand,
-              flagSet);
+              metadataKey);
           } else {
-            // Not a known parent, treat as simple command
-            simpleCommands.put(command, flagSet);
+            // Unknown parent command with subcommands - fail with helpful error message
+            throw new IllegalStateException(String.format(
+              "Unknown command with subcommands encountered: '%s' (parent: '%s', subcommand: '%s'). "
+                  + "Command names cannot contain spaces unless the parent command is registered. "
+                  + "To fix this, add '%s' to the 'KNOWN_PARENT_COMMANDS' set in CommandFlagsRegistryGenerator.java.",
+              command, parent, subcommand, parent));
           }
         } else {
           // Simple command without subcommands
-          simpleCommands.put(command, flagSet);
+          simpleCommands.put(command, metadataKey);
         }
       }
     }
 
     // Generate parent command registries
-    for (String parent : knownParents) {
-      sb.append(String.format("builder.register(\"%s\", EMPTY_FLAGS);", parent));
+    for (String parent : KNOWN_PARENT_COMMANDS) {
+      // Use parent command's actual metadata if available, otherwise use EMPTY_FLAGS
+      MetadataKey parentMetadata = simpleCommands.remove(parent);
+      if (parentMetadata != null) {
+        sb.append(generateRegisterCall(parent, null, parentMetadata));
+      } else {
+        sb.append(String.format("    builder.register(\"%s\", EMPTY_FLAGS);\n", parent));
+      }
 
-      Map<String, FlagSet> subcommands = parentCommands.get(parent);
+      Map<String, MetadataKey> subcommands = parentCommands.get(parent);
       if (subcommands != null && !subcommands.isEmpty()) {
-        sb.append(String.format("    // %s parent command with subcommands\n", parent));
+        sb.append(String.format("    // %s subcommands\n", parent));
         // Add subcommands
         List<String> sortedSubcommands = new ArrayList<>(subcommands.keySet());
         Collections.sort(sortedSubcommands);
 
         for (String subcommand : sortedSubcommands) {
-          FlagSet flagSet = subcommands.get(subcommand);
-          String enumSetExpr = createEnumSetExpression(flagSet.flags);
-          sb.append(String.format("builder.register(\"%s\", \"%s\", %s);\n", parent, subcommand,
-            enumSetExpr));
+          MetadataKey metadataKey = subcommands.get(subcommand);
+          sb.append(generateRegisterCall(parent, subcommand, metadataKey));
         }
       }
     }
 
-    // Generate simple commands grouped by flags
-    Map<FlagSet, List<String>> simpleCommandsByFlags = new LinkedHashMap<>();
-    for (Map.Entry<String, FlagSet> entry : simpleCommands.entrySet()) {
-      simpleCommandsByFlags.computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
+    // Generate simple commands grouped by metadata
+    Map<MetadataKey, List<String>> simpleCommandsByMetadata = new LinkedHashMap<>();
+    for (Map.Entry<String, MetadataKey> entry : simpleCommands.entrySet()) {
+      simpleCommandsByMetadata.computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
           .add(entry.getKey());
     }
 
     // Sort by flag count, then alphabetically
-    List<Map.Entry<FlagSet, List<String>>> sortedEntries = simpleCommandsByFlags.entrySet().stream()
+    List<Map.Entry<MetadataKey, List<String>>> sortedEntries = simpleCommandsByMetadata.entrySet()
+        .stream()
         .sorted(
-          Comparator.comparing((Map.Entry<FlagSet, List<String>> e) -> e.getKey().flags.size())
+          Comparator.comparing((Map.Entry<MetadataKey, List<String>> e) -> e.getKey().flags.size())
               .thenComparing(e -> e.getKey().toString()))
         .collect(Collectors.toList());
 
-    for (Map.Entry<FlagSet, List<String>> entry : sortedEntries) {
-      FlagSet flagSet = entry.getKey();
+    for (Map.Entry<MetadataKey, List<String>> entry : sortedEntries) {
+      MetadataKey metadataKey = entry.getKey();
       List<String> commands = entry.getValue();
       Collections.sort(commands);
 
-      // Add comment
-      String flagDesc = flagSet.flags.isEmpty() ? "no flags"
-          : flagSet.flags.stream().map(String::toLowerCase).collect(Collectors.joining(", "));
-      sb.append(String.format("    // %d command(s) with: %s\n", commands.size(), flagDesc));
+      // Add comment describing the metadata
+      sb.append(String.format("    // %d command(s) with: %s\n", commands.size(),
+        metadataKey.toDescription()));
 
-      // Generate EnumSet expression
-      String enumSetExpr = createEnumSetExpression(flagSet.flags);
-
-      // Add registry entries using SafeEncoder.encode()
+      // Add registry entries
       for (String command : commands) {
-        sb.append(String.format("builder.register(\"%s\", %s);\n", command, enumSetExpr));
+        sb.append(generateRegisterCall(command, null, metadataKey));
       }
       sb.append("\n");
     }
@@ -441,6 +513,41 @@ public class CommandFlagsRegistryGenerator {
     sb.append("}\n");
 
     return sb.toString();
+  }
+
+  /**
+   * Generate a builder.register() call for a command with its metadata.
+   */
+  private String generateRegisterCall(String command, String subcommand, MetadataKey metadataKey) {
+    String enumSetExpr = createEnumSetExpression(metadataKey.flags);
+    String requestPolicyExpr = metadataKey.requestPolicy != null
+        ? "RequestPolicy." + metadataKey.requestPolicy
+        : "null";
+    String responsePolicyExpr = metadataKey.responsePolicy != null
+        ? "ResponsePolicy." + metadataKey.responsePolicy
+        : "null";
+
+    // Check if we need to use the extended register method (with policies)
+    boolean hasPolicies = metadataKey.requestPolicy != null || metadataKey.responsePolicy != null;
+
+    if (subcommand != null) {
+      // Subcommand registration
+      if (hasPolicies) {
+        return String.format("    builder.register(\"%s\", \"%s\", %s, %s, %s);\n", command,
+          subcommand, enumSetExpr, requestPolicyExpr, responsePolicyExpr);
+      } else {
+        return String.format("    builder.register(\"%s\", \"%s\", %s);\n", command, subcommand,
+          enumSetExpr);
+      }
+    } else {
+      // Simple command registration
+      if (hasPolicies) {
+        return String.format("    builder.register(\"%s\", %s, %s, %s);\n", command, enumSetExpr,
+          requestPolicyExpr, responsePolicyExpr);
+      } else {
+        return String.format("    builder.register(\"%s\", %s);\n", command, enumSetExpr);
+      }
+    }
   }
 
   private String createEnumSetExpression(List<String> flags) {
@@ -463,23 +570,45 @@ public class CommandFlagsRegistryGenerator {
   }
 
   /**
-   * Represents a set of flags for grouping commands
+   * Holds command metadata extracted from Redis (flags, request_policy, response_policy). Used for
+   * JSON serialization/deserialization.
    */
-  private static class FlagSet {
+  private static class CommandMetadata {
     final List<String> flags;
+    final String requestPolicy;
+    final String responsePolicy;
+
+    CommandMetadata(List<String> flags, String requestPolicy, String responsePolicy) {
+      this.flags = flags != null ? flags : new ArrayList<>();
+      this.requestPolicy = requestPolicy;
+      this.responsePolicy = responsePolicy;
+    }
+  }
+
+  /**
+   * Represents a unique combination of flags, request policy, and response policy for grouping
+   * commands.
+   */
+  private static class MetadataKey {
+    final List<String> flags;
+    final String requestPolicy;
+    final String responsePolicy;
     final int hashCode;
 
-    FlagSet(List<String> flags) {
+    MetadataKey(List<String> flags, String requestPolicy, String responsePolicy) {
       this.flags = new ArrayList<>(flags);
-      this.hashCode = this.flags.hashCode();
+      this.requestPolicy = requestPolicy;
+      this.responsePolicy = responsePolicy;
+      this.hashCode = Objects.hash(this.flags, requestPolicy, responsePolicy);
     }
 
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (!(o instanceof FlagSet)) return false;
-      FlagSet flagSet = (FlagSet) o;
-      return flags.equals(flagSet.flags);
+      if (!(o instanceof MetadataKey)) return false;
+      MetadataKey that = (MetadataKey) o;
+      return flags.equals(that.flags) && Objects.equals(requestPolicy, that.requestPolicy)
+          && Objects.equals(responsePolicy, that.responsePolicy);
     }
 
     @Override
@@ -489,7 +618,27 @@ public class CommandFlagsRegistryGenerator {
 
     @Override
     public String toString() {
-      return flags.toString();
+      return String.format("flags=%s, request=%s, response=%s", flags, requestPolicy,
+        responsePolicy);
+    }
+
+    /**
+     * Generate a human-readable description for comments.
+     */
+    String toDescription() {
+      StringBuilder sb = new StringBuilder();
+      if (flags.isEmpty()) {
+        sb.append("no flags");
+      } else {
+        sb.append(flags.stream().map(String::toLowerCase).collect(Collectors.joining(", ")));
+      }
+      if (requestPolicy != null) {
+        sb.append("; request_policy=").append(requestPolicy.toLowerCase());
+      }
+      if (responsePolicy != null) {
+        sb.append("; response_policy=").append(responsePolicy.toLowerCase());
+      }
+      return sb.toString();
     }
   }
 

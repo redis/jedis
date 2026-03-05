@@ -155,7 +155,12 @@ public class Connection implements Closeable {
     this.memberOf = pool;
   }
 
-  final HostAndPort getHostAndPort() {
+  /**
+   * Returns the host and port of the Redis server this connection is connected to.
+   *
+   * @return the host and port, or null if not available
+   */
+  public final HostAndPort getHostAndPort() {
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
   }
 

@@ -2,8 +2,6 @@ package redis.clients.jedis.executors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -113,56 +111,51 @@ public final class ClusterReplyAggregator {
    */
   @SuppressWarnings("unchecked")
   public static <T> T aggregateDefault(T existing, T newReply) {
-    // Handle List types - concatenate all elements
+    // Handle List types - mutate in place if ArrayList, otherwise create once
     if (existing instanceof List && newReply instanceof List) {
       List<Object> existingList = (List<Object>) existing;
       List<Object> newList = (List<Object>) newReply;
-      ArrayList<Object> result = new ArrayList<>(existingList.size() + newList.size());
-      result.addAll(existingList);
-      result.addAll(newList);
-      return (T) result;
+
+      if (existingList instanceof ArrayList) {
+        // Mutate existing ArrayList in place - avoids creating new collection
+        ((ArrayList<Object>) existingList).ensureCapacity(existingList.size() + newList.size());
+      }
+      existingList.addAll(newList);
+      return (T) existingList;
     }
 
-    // Handle JedisByteHashMap types - merge all entries (newReply overwrites existing on collision)
+    // Handle JedisByteHashMap types - mutate in place
     // NOTE: Must be checked before generic Map since JedisByteHashMap implements Map
     if (existing instanceof JedisByteHashMap && newReply instanceof JedisByteHashMap) {
       JedisByteHashMap existingMap = (JedisByteHashMap) existing;
       JedisByteHashMap newMap = (JedisByteHashMap) newReply;
-      JedisByteHashMap result = new JedisByteHashMap();
-      result.putAll(existingMap);
-      result.putAll(newMap);
-      return (T) result;
+      existingMap.putAll(newMap);
+      return (T) existingMap;
     }
 
-    // Handle JedisByteMap types - merge all entries (newReply overwrites existing on collision)
+    // Handle JedisByteMap types - mutate in place
     // NOTE: Must be checked before generic Map since JedisByteMap implements Map
     if (existing instanceof JedisByteMap && newReply instanceof JedisByteMap) {
       JedisByteMap<Object> existingMap = (JedisByteMap<Object>) existing;
       JedisByteMap<Object> newMap = (JedisByteMap<Object>) newReply;
-      JedisByteMap<Object> result = new JedisByteMap<>();
-      result.putAll(existingMap);
-      result.putAll(newMap);
-      return (T) result;
+      existingMap.putAll(newMap);
+      return (T) existingMap;
     }
 
-    // Handle Map types - merge all entries (newReply overwrites existing on collision)
+    // Handle Map types - mutate in place
     if (existing instanceof Map && newReply instanceof Map) {
       Map<Object, Object> existingMap = (Map<Object, Object>) existing;
       Map<Object, Object> newMap = (Map<Object, Object>) newReply;
-      HashMap<Object, Object> result = new HashMap<>(existingMap.size() + newMap.size());
-      result.putAll(existingMap);
-      result.putAll(newMap);
-      return (T) result;
+      existingMap.putAll(newMap);
+      return (T) existingMap;
     }
 
-    // Handle Set types - combine all elements into a single set
+    // Handle Set types - mutate in place if HashSet, otherwise create once
     if (existing instanceof Set && newReply instanceof Set) {
       Set<Object> existingSet = (Set<Object>) existing;
       Set<Object> newSet = (Set<Object>) newReply;
-      HashSet<Object> result = new HashSet<>(existingSet.size() + newSet.size());
-      result.addAll(existingSet);
-      result.addAll(newSet);
-      return (T) result;
+      existingSet.addAll(newSet);
+      return (T) existingSet;
     }
 
     // For other types, log warning and fall back to returning existing (current behavior)

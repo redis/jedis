@@ -251,7 +251,7 @@ public class ClusterReplyAggregatorTest {
   // ==================== aggregateDefault - Different List Implementations ====================
 
   @Test
-  public void testAggregateDefault_linkedListAndArrayList_concatenatesThem() {
+  public void testAggregateDefault_linkedListAndArrayList_mutatesLinkedListInPlace() {
     List<String> first = new LinkedList<>(Arrays.asList("a", "b"));
     List<String> second = new ArrayList<>(Arrays.asList("c", "d"));
 
@@ -260,7 +260,9 @@ public class ClusterReplyAggregatorTest {
 
     assertEquals(4, result.size(), "Should concatenate different list implementations");
     assertEquals(Arrays.asList("a", "b", "c", "d"), result);
-    assertTrue(result instanceof ArrayList, "Result should be an ArrayList");
+    assertSame(first, result,
+      "Result should be the same instance as first list (mutated in place)");
+    assertTrue(result instanceof LinkedList, "Result should remain a LinkedList");
   }
 
   // ==================== aggregateDefault - Non-List Types Fallback ====================
@@ -285,18 +287,22 @@ public class ClusterReplyAggregatorTest {
     assertEquals(100L, result, "Should return existing Long value");
   }
 
-  // ==================== aggregateDefault - Preserves Original Lists ====================
+  // ==================== aggregateDefault - Mutates Existing ArrayList In Place
+  // ====================
 
   @Test
-  public void testAggregateDefault_doesNotModifyOriginalLists() {
+  public void testAggregateDefault_mutatesExistingArrayListInPlace() {
     List<String> first = new ArrayList<>(Arrays.asList("a", "b"));
     List<String> second = new ArrayList<>(Arrays.asList("c", "d"));
 
-    ClusterReplyAggregator.aggregateDefault(first, second);
+    List<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
 
-    assertEquals(2, first.size(), "First list should not be modified");
+    // Result should be the same instance as first (mutated in place)
+    assertSame(first, result, "Result should be the same instance as first list");
+    assertEquals(4, first.size(), "First list should be mutated with all elements");
+    assertEquals(Arrays.asList("a", "b", "c", "d"), first);
+    // Second list should NOT be modified
     assertEquals(2, second.size(), "Second list should not be modified");
-    assertEquals(Arrays.asList("a", "b"), first);
     assertEquals(Arrays.asList("c", "d"), second);
   }
 
@@ -404,7 +410,7 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateDefault_doesNotModifyOriginalMaps() {
+  public void testAggregateDefault_mutatesExistingHashMapInPlace() {
     Map<String, String> first = new HashMap<>();
     first.put("a", "1");
     first.put("b", "2");
@@ -413,12 +419,17 @@ public class ClusterReplyAggregatorTest {
     second.put("c", "3");
     second.put("d", "4");
 
-    ClusterReplyAggregator.aggregateDefault(first, second);
+    Map<String, String> result = ClusterReplyAggregator.aggregateDefault(first, second);
 
-    assertEquals(2, first.size(), "First map should not be modified");
-    assertEquals(2, second.size(), "Second map should not be modified");
+    // Result should be the same instance as first (mutated in place)
+    assertSame(first, result, "Result should be the same instance as first map");
+    assertEquals(4, first.size(), "First map should be mutated with all entries");
     assertEquals("1", first.get("a"));
     assertEquals("2", first.get("b"));
+    assertEquals("3", first.get("c"));
+    assertEquals("4", first.get("d"));
+    // Second map should NOT be modified
+    assertEquals(2, second.size(), "Second map should not be modified");
     assertEquals("3", second.get("c"));
     assertEquals("4", second.get("d"));
   }
@@ -511,16 +522,21 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateDefault_doesNotModifyOriginalSets() {
+  public void testAggregateDefault_mutatesExistingHashSetInPlace() {
     Set<String> first = new HashSet<>(Arrays.asList("a", "b"));
     Set<String> second = new HashSet<>(Arrays.asList("c", "d"));
 
-    ClusterReplyAggregator.aggregateDefault(first, second);
+    Set<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
 
-    assertEquals(2, first.size(), "First set should not be modified");
-    assertEquals(2, second.size(), "Second set should not be modified");
+    // Result should be the same instance as first (mutated in place)
+    assertSame(first, result, "Result should be the same instance as first set");
+    assertEquals(4, first.size(), "First set should be mutated with all elements");
     assertTrue(first.contains("a"));
     assertTrue(first.contains("b"));
+    assertTrue(first.contains("c"));
+    assertTrue(first.contains("d"));
+    // Second set should NOT be modified
+    assertEquals(2, second.size(), "Second set should not be modified");
     assertTrue(second.contains("c"));
     assertTrue(second.contains("d"));
   }
@@ -620,7 +636,7 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateDefault_doesNotModifyOriginalJedisByteHashMaps() {
+  public void testAggregateDefault_mutatesExistingJedisByteHashMapInPlace() {
     JedisByteHashMap first = new JedisByteHashMap();
     first.put(new byte[] { 'a' }, new byte[] { '1' });
     first.put(new byte[] { 'b' }, new byte[] { '2' });
@@ -629,12 +645,17 @@ public class ClusterReplyAggregatorTest {
     second.put(new byte[] { 'c' }, new byte[] { '3' });
     second.put(new byte[] { 'd' }, new byte[] { '4' });
 
-    ClusterReplyAggregator.aggregateDefault(first, second);
+    JedisByteHashMap result = ClusterReplyAggregator.aggregateDefault(first, second);
 
-    assertEquals(2, first.size(), "First map should not be modified");
-    assertEquals(2, second.size(), "Second map should not be modified");
+    // Result should be the same instance as first (mutated in place)
+    assertSame(first, result, "Result should be the same instance as first map");
+    assertEquals(4, first.size(), "First map should be mutated with all entries");
     assertArrayEquals(new byte[] { '1' }, first.get(new byte[] { 'a' }));
     assertArrayEquals(new byte[] { '2' }, first.get(new byte[] { 'b' }));
+    assertArrayEquals(new byte[] { '3' }, first.get(new byte[] { 'c' }));
+    assertArrayEquals(new byte[] { '4' }, first.get(new byte[] { 'd' }));
+    // Second map should NOT be modified
+    assertEquals(2, second.size(), "Second map should not be modified");
     assertArrayEquals(new byte[] { '3' }, second.get(new byte[] { 'c' }));
     assertArrayEquals(new byte[] { '4' }, second.get(new byte[] { 'd' }));
   }
@@ -713,7 +734,7 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateDefault_doesNotModifyOriginalJedisByteMaps() {
+  public void testAggregateDefault_mutatesExistingJedisByteMapInPlace() {
     JedisByteMap<String> first = new JedisByteMap<>();
     first.put(new byte[] { 'a' }, "1");
     first.put(new byte[] { 'b' }, "2");
@@ -722,12 +743,17 @@ public class ClusterReplyAggregatorTest {
     second.put(new byte[] { 'c' }, "3");
     second.put(new byte[] { 'd' }, "4");
 
-    ClusterReplyAggregator.aggregateDefault(first, second);
+    JedisByteMap<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
 
-    assertEquals(2, first.size(), "First map should not be modified");
-    assertEquals(2, second.size(), "Second map should not be modified");
+    // Result should be the same instance as first (mutated in place)
+    assertSame(first, result, "Result should be the same instance as first map");
+    assertEquals(4, first.size(), "First map should be mutated with all entries");
     assertEquals("1", first.get(new byte[] { 'a' }));
     assertEquals("2", first.get(new byte[] { 'b' }));
+    assertEquals("3", first.get(new byte[] { 'c' }));
+    assertEquals("4", first.get(new byte[] { 'd' }));
+    // Second map should NOT be modified
+    assertEquals(2, second.size(), "Second map should not be modified");
     assertEquals("3", second.get(new byte[] { 'c' }));
     assertEquals("4", second.get(new byte[] { 'd' }));
   }

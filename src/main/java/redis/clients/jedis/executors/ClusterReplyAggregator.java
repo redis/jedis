@@ -9,6 +9,7 @@ import redis.clients.jedis.CommandFlagsRegistry;
 import redis.clients.jedis.exceptions.UnsupportedAggregationException;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisByteMap;
+import redis.clients.jedis.util.KeyValue;
 
 /**
  * Utility class for aggregating replies from multiple Redis cluster nodes.
@@ -179,9 +180,18 @@ final class ClusterReplyAggregator {
 
   /**
    * Return minimum value for comparable types.
+   * <p>
+   * Also supports {@link KeyValue} types where both key and value are {@link Comparable}. For
+   * KeyValue, returns a new KeyValue with the minimum of each component (used by WAITAOF).
    */
   @SuppressWarnings("unchecked")
   public static <T> T aggregateMin(T existing, T newReply) {
+    // Handle KeyValue types (e.g., KeyValue<Long, Long> from WAITAOF)
+    // Returns a new KeyValue with the minimum of each component
+    if (existing instanceof KeyValue && newReply instanceof KeyValue) {
+      return (T) aggregateKeyValueMin((KeyValue<?, ?>) existing, (KeyValue<?, ?>) newReply);
+    }
+
     if (existing instanceof Comparable && newReply instanceof Comparable) {
       Comparable<Object> existingComp = (Comparable<Object>) existing;
       return existingComp.compareTo(newReply) <= 0 ? existing : newReply;
@@ -191,16 +201,97 @@ final class ClusterReplyAggregator {
   }
 
   /**
+   * Aggregates two KeyValue pairs by taking the minimum of each component.
+   */
+  @SuppressWarnings("unchecked")
+  private static KeyValue<?, ?> aggregateKeyValueMin(KeyValue<?, ?> existing,
+      KeyValue<?, ?> newReply) {
+    Object minKey;
+    Object minValue;
+
+    // Get minimum key
+    if (existing.getKey() instanceof Comparable && newReply.getKey() instanceof Comparable) {
+      Comparable<Object> existingKey = (Comparable<Object>) existing.getKey();
+      minKey = existingKey.compareTo(newReply.getKey()) <= 0 ? existing.getKey()
+          : newReply.getKey();
+    } else {
+      throw new UnsupportedAggregationException(
+          "AGG_MIN for KeyValue requires Comparable key types, but got: "
+              + (existing.getKey() != null ? existing.getKey().getClass().getSimpleName()
+                  : "null"));
+    }
+
+    // Get minimum value
+    if (existing.getValue() instanceof Comparable && newReply.getValue() instanceof Comparable) {
+      Comparable<Object> existingValue = (Comparable<Object>) existing.getValue();
+      minValue = existingValue.compareTo(newReply.getValue()) <= 0 ? existing.getValue()
+          : newReply.getValue();
+    } else {
+      throw new UnsupportedAggregationException(
+          "AGG_MIN for KeyValue requires Comparable value types, but got: "
+              + (existing.getValue() != null ? existing.getValue().getClass().getSimpleName()
+                  : "null"));
+    }
+
+    return KeyValue.of(minKey, minValue);
+  }
+
+  /**
    * Return maximum value for comparable types.
+   * <p>
+   * Also supports {@link KeyValue} types where both key and value are {@link Comparable}. For
+   * KeyValue, returns a new KeyValue with the maximum of each component.
    */
   @SuppressWarnings("unchecked")
   public static <T> T aggregateMax(T existing, T newReply) {
+    // Handle KeyValue types (e.g., KeyValue<Long, Long>)
+    // Returns a new KeyValue with the maximum of each component
+    if (existing instanceof KeyValue && newReply instanceof KeyValue) {
+      return (T) aggregateKeyValueMax((KeyValue<?, ?>) existing, (KeyValue<?, ?>) newReply);
+    }
+
     if (existing instanceof Comparable && newReply instanceof Comparable) {
       Comparable<Object> existingComp = (Comparable<Object>) existing;
       return existingComp.compareTo(newReply) >= 0 ? existing : newReply;
     }
     throw new UnsupportedAggregationException("AGG_MAX policy requires Comparable types, but got: "
         + existing.getClass().getSimpleName() + " and " + newReply.getClass().getSimpleName());
+  }
+
+  /**
+   * Aggregates two KeyValue pairs by taking the maximum of each component.
+   */
+  @SuppressWarnings("unchecked")
+  private static KeyValue<?, ?> aggregateKeyValueMax(KeyValue<?, ?> existing,
+      KeyValue<?, ?> newReply) {
+    Object maxKey;
+    Object maxValue;
+
+    // Get maximum key
+    if (existing.getKey() instanceof Comparable && newReply.getKey() instanceof Comparable) {
+      Comparable<Object> existingKey = (Comparable<Object>) existing.getKey();
+      maxKey = existingKey.compareTo(newReply.getKey()) >= 0 ? existing.getKey()
+          : newReply.getKey();
+    } else {
+      throw new UnsupportedAggregationException(
+          "AGG_MAX for KeyValue requires Comparable key types, but got: "
+              + (existing.getKey() != null ? existing.getKey().getClass().getSimpleName()
+                  : "null"));
+    }
+
+    // Get maximum value
+    if (existing.getValue() instanceof Comparable && newReply.getValue() instanceof Comparable) {
+      Comparable<Object> existingValue = (Comparable<Object>) existing.getValue();
+      maxValue = existingValue.compareTo(newReply.getValue()) >= 0 ? existing.getValue()
+          : newReply.getValue();
+    } else {
+      throw new UnsupportedAggregationException(
+          "AGG_MAX for KeyValue requires Comparable value types, but got: "
+              + (existing.getValue() != null ? existing.getValue().getClass().getSimpleName()
+                  : "null"));
+    }
+
+    return KeyValue.of(maxKey, maxValue);
   }
 
   /**

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.UnsupportedAggregationException;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisByteMap;
+import redis.clients.jedis.util.KeyValue;
 
 public class ClusterReplyAggregatorTest {
 
@@ -733,5 +734,119 @@ public class ClusterReplyAggregatorTest {
     assertEquals(2, second.size(), "Second map should not be modified");
     assertEquals("3", second.get(new byte[] { 'c' }));
     assertEquals("4", second.get(new byte[] { 'd' }));
+  }
+
+  // ==================== aggregateMin - KeyValue Tests ====================
+
+  @Test
+  public void testAggregateMin_keyValueLongLong_returnsMinOfEachComponent() {
+    KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
+    KeyValue<Long, Long> second = KeyValue.of(5L, 25L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMin(first, second);
+
+    assertEquals(5L, result.getKey(), "Should return minimum key");
+    assertEquals(20L, result.getValue(), "Should return minimum value");
+  }
+
+  @Test
+  public void testAggregateMin_keyValueLongLong_firstSmaller() {
+    KeyValue<Long, Long> first = KeyValue.of(1L, 2L);
+    KeyValue<Long, Long> second = KeyValue.of(10L, 20L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMin(first, second);
+
+    assertEquals(1L, result.getKey(), "Should return minimum key from first");
+    assertEquals(2L, result.getValue(), "Should return minimum value from first");
+  }
+
+  @Test
+  public void testAggregateMin_keyValueLongLong_secondSmaller() {
+    KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
+    KeyValue<Long, Long> second = KeyValue.of(1L, 2L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMin(first, second);
+
+    assertEquals(1L, result.getKey(), "Should return minimum key from second");
+    assertEquals(2L, result.getValue(), "Should return minimum value from second");
+  }
+
+  @Test
+  public void testAggregateMin_keyValueLongLong_equalValues() {
+    KeyValue<Long, Long> first = KeyValue.of(5L, 5L);
+    KeyValue<Long, Long> second = KeyValue.of(5L, 5L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMin(first, second);
+
+    assertEquals(5L, result.getKey(), "Should return equal key");
+    assertEquals(5L, result.getValue(), "Should return equal value");
+  }
+
+  @Test
+  public void testAggregateMin_keyValueStringString_returnsMinOfEachComponent() {
+    KeyValue<String, String> first = KeyValue.of("b", "y");
+    KeyValue<String, String> second = KeyValue.of("a", "z");
+
+    KeyValue<String, String> result = ClusterReplyAggregator.aggregateMin(first, second);
+
+    assertEquals("a", result.getKey(), "Should return minimum key");
+    assertEquals("y", result.getValue(), "Should return minimum value");
+  }
+
+  // ==================== aggregateMax - KeyValue Tests ====================
+
+  @Test
+  public void testAggregateMax_keyValueLongLong_returnsMaxOfEachComponent() {
+    KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
+    KeyValue<Long, Long> second = KeyValue.of(5L, 25L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMax(first, second);
+
+    assertEquals(10L, result.getKey(), "Should return maximum key");
+    assertEquals(25L, result.getValue(), "Should return maximum value");
+  }
+
+  @Test
+  public void testAggregateMax_keyValueLongLong_firstLarger() {
+    KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
+    KeyValue<Long, Long> second = KeyValue.of(1L, 2L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMax(first, second);
+
+    assertEquals(10L, result.getKey(), "Should return maximum key from first");
+    assertEquals(20L, result.getValue(), "Should return maximum value from first");
+  }
+
+  @Test
+  public void testAggregateMax_keyValueLongLong_secondLarger() {
+    KeyValue<Long, Long> first = KeyValue.of(1L, 2L);
+    KeyValue<Long, Long> second = KeyValue.of(10L, 20L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMax(first, second);
+
+    assertEquals(10L, result.getKey(), "Should return maximum key from second");
+    assertEquals(20L, result.getValue(), "Should return maximum value from second");
+  }
+
+  @Test
+  public void testAggregateMax_keyValueLongLong_equalValues() {
+    KeyValue<Long, Long> first = KeyValue.of(5L, 5L);
+    KeyValue<Long, Long> second = KeyValue.of(5L, 5L);
+
+    KeyValue<Long, Long> result = ClusterReplyAggregator.aggregateMax(first, second);
+
+    assertEquals(5L, result.getKey(), "Should return equal key");
+    assertEquals(5L, result.getValue(), "Should return equal value");
+  }
+
+  @Test
+  public void testAggregateMax_keyValueStringString_returnsMaxOfEachComponent() {
+    KeyValue<String, String> first = KeyValue.of("b", "y");
+    KeyValue<String, String> second = KeyValue.of("a", "z");
+
+    KeyValue<String, String> result = ClusterReplyAggregator.aggregateMax(first, second);
+
+    assertEquals("b", result.getKey(), "Should return maximum key");
+    assertEquals("z", result.getValue(), "Should return maximum value");
   }
 }

@@ -29,6 +29,7 @@ import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
@@ -272,5 +273,33 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
     // Verify the aggregated list contains entries from all shards
     assertEquals(16384, result.size(), "Aggregated list should contain slot statistics from multiple shards");
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.2.0", message = "WAITAOF requires Redis 7.2 or later")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void waitAOFAggregation() {
+    // Set some keys across the cluster to ensure there's data to sync
+    cluster.set("key1", "value1");
+    cluster.set("key2", "value2");
+    cluster.set("key3", "value3");
+
+    // Use broadcastCommand to send WAITAOF to all shards and aggregate with AGG_MIN policy
+    // WAITAOF returns a KeyValue<Long, Long> where:
+    //   - key = number of local AOF syncs
+    //   - value = number of replica AOF syncs
+    // The AGG_MIN response policy should return the minimum values across all shards
+    KeyValue<Long, Long> result = cluster.broadcastCommand(
+        new CommandObject<>(
+            new CommandArguments(Protocol.Command.WAITAOF).add(0).add(0).add(100),
+            BuilderFactory.LONG_LONG_PAIR));
+
+    // Verify we got aggregated results
+    assertThat(result, notNullValue());
+
+    // With numLocal=0 and numReplicas=0, the command should return immediately
+    // The minimum across all shards should be >= 0 for both values
+    assertTrue(result.getKey() >= 0, "Local AOF sync count should be >= 0");
+    assertTrue(result.getValue() >= 0, "Replica AOF sync count should be >= 0");
   }
 }

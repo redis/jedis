@@ -137,11 +137,11 @@ final class MultiNodeResultAggregator<T> {
         return aggregatedReply;
       }
       // All nodes failed
-      throw bcastError;
+      throw bcastError.prepareToThrow();
     } else {
       // All other policies: throw if any node failed
       if (hasError) {
-        throw bcastError;
+        throw bcastError.prepareToThrow();
       }
       return aggregatedReply;
     }

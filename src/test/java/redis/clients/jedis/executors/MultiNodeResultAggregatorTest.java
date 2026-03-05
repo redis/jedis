@@ -313,7 +313,7 @@ public class MultiNodeResultAggregatorTest {
     JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
       () -> aggregator.getResult(), "Should throw JedisBroadcastException when any node fails");
 
-    assertTrue(ex.getMessage().contains("failure"),
+    assertTrue(ex.getMessage().contains("failed"),
       "Exception message should indicate broadcast failure");
   }
 
@@ -649,7 +649,7 @@ public class MultiNodeResultAggregatorTest {
     JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
       () -> aggregator.getResult());
 
-    assertTrue(ex.getMessage().contains("failure") || ex.getMessage().contains("broadcasting"),
+    assertTrue(ex.getMessage().contains("failed"),
       "JedisBroadcastException should have meaningful message");
   }
 

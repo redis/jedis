@@ -33,7 +33,7 @@ import redis.clients.jedis.util.JedisByteMap;
  * <li>{@code SPECIAL} - Use custom handling logic for special commands</li>
  * </ul>
  */
-public final class ClusterReplyAggregator {
+final class ClusterReplyAggregator {
 
   private ClusterReplyAggregator() {
     // Utility class, prevent instantiation

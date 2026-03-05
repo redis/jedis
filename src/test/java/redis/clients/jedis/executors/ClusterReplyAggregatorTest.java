@@ -15,23 +15,25 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.exceptions.ClusterAggregationException;
+import redis.clients.jedis.exceptions.UnsupportedAggregationException;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisByteMap;
 
 public class ClusterReplyAggregatorTest {
 
-  // ==================== aggregateAllSucceeded - Byte Array Tests ====================
+  // ==================== aggregateAllSucceeded Tests ====================
+  // Per Redis ALL_SUCCEEDED spec: returns successfully only if there are no error replies.
+  // Error handling is done separately by the caller (MultiNodeResultAggregator.addError()),
+  // so aggregateAllSucceeded simply returns the first reply when aggregating successful responses.
 
   @Test
-  public void testAggregateAllSucceeded_identicalByteArrays_returnsFirstArray() {
+  public void testAggregateAllSucceeded_byteArrays_returnsFirstArray() {
     byte[] first = new byte[] { 1, 2, 3, 4, 5 };
     byte[] second = new byte[] { 1, 2, 3, 4, 5 };
 
-    // Byte arrays with same content should be treated as equal using Arrays.equals()
     byte[] result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertSame(first, result, "Should return the first byte array when contents are equal");
+    assertSame(first, result, "Should return the first byte array");
   }
 
   @Test
@@ -44,25 +46,18 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateAllSucceeded_differentByteArrays_throwsException() {
+  public void testAggregateAllSucceeded_differentByteArrays_returnsFirst() {
     byte[] first = new byte[] { 1, 2, 3 };
     byte[] second = new byte[] { 4, 5, 6 };
 
-    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
-      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-      "Should throw ClusterAggregationException when byte arrays differ");
+    byte[] result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertTrue(
-      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-      "Exception message should contain policy information");
-    assertTrue(exception.getMessage().contains("vs"),
-      "Exception message should contain 'vs' to show comparison");
+    assertSame(first, result,
+      "Should return the first byte array regardless of content difference");
   }
 
-  // ==================== aggregateAllSucceeded - Long Tests ====================
-
   @Test
-  public void testAggregateAllSucceeded_identicalLongValues_returnsFirstValue() {
+  public void testAggregateAllSucceeded_longValues_returnsFirstValue() {
     Long first = 42L;
     Long second = 42L;
 
@@ -72,27 +67,17 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateAllSucceeded_differentLongValues_throwsException() {
+  public void testAggregateAllSucceeded_differentLongValues_returnsFirst() {
     Long first = 42L;
     Long second = 100L;
 
-    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
-      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-      "Should throw ClusterAggregationException when Long values differ");
+    Long result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertTrue(
-      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-      "Exception message should contain policy information");
-    assertTrue(exception.getMessage().contains("42"),
-      "Exception message should contain the first value");
-    assertTrue(exception.getMessage().contains("100"),
-      "Exception message should contain the second value");
+    assertEquals(42L, result, "Should return the first Long value regardless of difference");
   }
 
-  // ==================== aggregateAllSucceeded - Integer Tests ====================
-
   @Test
-  public void testAggregateAllSucceeded_identicalIntegerValues_returnsFirstValue() {
+  public void testAggregateAllSucceeded_integerValues_returnsFirstValue() {
     Integer first = 123;
     Integer second = 123;
 
@@ -102,27 +87,17 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateAllSucceeded_differentIntegerValues_throwsException() {
+  public void testAggregateAllSucceeded_differentIntegerValues_returnsFirst() {
     Integer first = 123;
     Integer second = 456;
 
-    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
-      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-      "Should throw ClusterAggregationException when Integer values differ");
+    Integer result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertTrue(
-      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-      "Exception message should contain policy information");
-    assertTrue(exception.getMessage().contains("123"),
-      "Exception message should contain the first value");
-    assertTrue(exception.getMessage().contains("456"),
-      "Exception message should contain the second value");
+    assertEquals(123, result, "Should return the first Integer value regardless of difference");
   }
 
-  // ==================== aggregateAllSucceeded - Double Tests ====================
-
   @Test
-  public void testAggregateAllSucceeded_identicalDoubleValues_returnsFirstValue() {
+  public void testAggregateAllSucceeded_doubleValues_returnsFirstValue() {
     Double first = 3.14159;
     Double second = 3.14159;
 
@@ -132,27 +107,17 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateAllSucceeded_differentDoubleValues_throwsException() {
+  public void testAggregateAllSucceeded_differentDoubleValues_returnsFirst() {
     Double first = 3.14159;
     Double second = 2.71828;
 
-    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
-      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-      "Should throw ClusterAggregationException when Double values differ");
+    Double result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertTrue(
-      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-      "Exception message should contain policy information");
-    assertTrue(exception.getMessage().contains("3.14159"),
-      "Exception message should contain the first value");
-    assertTrue(exception.getMessage().contains("2.71828"),
-      "Exception message should contain the second value");
+    assertEquals(3.14159, result, "Should return the first Double value regardless of difference");
   }
 
-  // ==================== aggregateAllSucceeded - String Tests ====================
-
   @Test
-  public void testAggregateAllSucceeded_identicalStringValues_returnsFirstValue() {
+  public void testAggregateAllSucceeded_stringValues_returnsFirstValue() {
     String first = "OK";
     String second = "OK";
 
@@ -162,21 +127,25 @@ public class ClusterReplyAggregatorTest {
   }
 
   @Test
-  public void testAggregateAllSucceeded_differentStringValues_throwsException() {
+  public void testAggregateAllSucceeded_differentStringValues_returnsFirst() {
     String first = "OK";
-    String second = "ERROR";
+    String second = "DIFFERENT";
 
-    ClusterAggregationException exception = assertThrows(ClusterAggregationException.class,
-      () -> ClusterReplyAggregator.aggregateAllSucceeded(first, second),
-      "Should throw ClusterAggregationException when String values differ");
+    String result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
 
-    assertTrue(
-      exception.getMessage().contains("ALL_SUCCEEDED policy requires all replies to be equal"),
-      "Exception message should contain policy information");
-    assertTrue(exception.getMessage().contains("OK"),
-      "Exception message should contain the first value");
-    assertTrue(exception.getMessage().contains("ERROR"),
-      "Exception message should contain the second value");
+    assertEquals("OK", result, "Should return the first String value regardless of difference");
+  }
+
+  @Test
+  public void testAggregateAllSucceeded_booleanValues_returnsFirst() {
+    // This tests the use case mentioned in the bug: MSETEX with NX/XX conditions
+    // where different shards can legitimately return different non-error values
+    Boolean first = true;
+    Boolean second = false;
+
+    Boolean result = ClusterReplyAggregator.aggregateAllSucceeded(first, second);
+
+    assertTrue(result, "Should return the first Boolean value regardless of difference");
   }
 
   // ==================== aggregateDefault - List<String> Tests ====================
@@ -265,26 +234,34 @@ public class ClusterReplyAggregatorTest {
     assertTrue(result instanceof LinkedList, "Result should remain a LinkedList");
   }
 
-  // ==================== aggregateDefault - Non-List Types Fallback ====================
+  // ==================== aggregateDefault - Unsupported Types Throw Exception ====================
 
   @Test
-  public void testAggregateDefault_nonListTypes_returnsExisting() {
+  public void testAggregateDefault_nonListTypes_throwsUnsupportedAggregationException() {
     String first = "existing";
     String second = "new";
 
-    String result = ClusterReplyAggregator.aggregateDefault(first, second);
+    UnsupportedAggregationException exception = assertThrows(UnsupportedAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateDefault(first, second));
 
-    assertEquals("existing", result, "Should return existing value for non-list types");
+    assertTrue(exception.getMessage().contains("DEFAULT policy requires"),
+      "Exception message should describe the policy requirement");
+    assertTrue(exception.getMessage().contains("String"),
+      "Exception message should mention the unsupported type");
   }
 
   @Test
-  public void testAggregateDefault_longValues_returnsExisting() {
+  public void testAggregateDefault_longValues_throwsUnsupportedAggregationException() {
     Long first = 100L;
     Long second = 200L;
 
-    Long result = ClusterReplyAggregator.aggregateDefault(first, second);
+    UnsupportedAggregationException exception = assertThrows(UnsupportedAggregationException.class,
+      () -> ClusterReplyAggregator.aggregateDefault(first, second));
 
-    assertEquals(100L, result, "Should return existing Long value");
+    assertTrue(exception.getMessage().contains("DEFAULT policy requires"),
+      "Exception message should describe the policy requirement");
+    assertTrue(exception.getMessage().contains("Long"),
+      "Exception message should mention the unsupported type");
   }
 
   // ==================== aggregateDefault - Mutates Existing ArrayList In Place

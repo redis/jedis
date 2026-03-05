@@ -66,7 +66,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.flags = flags;
 
     this.slotBasedConnectionResolver = ConnectionResolverFactory.createSlotBasedResolver(
-        provider, flags);
+        provider);
     this.roundRobinConnectionResolver = ConnectionResolverFactory.createRoundRobinResolver(
         provider, flags);
     this.replicaOnlyConnectionResolver = ConnectionResolverFactory.createReplicaOnlyResolver(
@@ -186,7 +186,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
       // NOTE(imalinovskyi): Handling of special commands (SCAN, FT.CURSOR, etc.) should happen
       // in the custom abstractions and dedicated executor methods.
-      case MULTI_SHARD:
+      case MULTI_SHARD: // Here we assume that MULTI_SHARD is already split into single-shard commands
+                        // and we just execute them one by one
       case SPECIAL:
       case DEFAULT:
       default:

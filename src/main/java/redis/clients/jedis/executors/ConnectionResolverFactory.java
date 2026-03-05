@@ -16,13 +16,11 @@ final class ConnectionResolverFactory {
 
   /**
    * Creates a slot-based connection resolver for keyed commands.
-   * @param provider the cluster connection provider
-   * @param flags the command flags registry
+   * @param provider the cluster connection provider*
    * @return a new SlotBasedConnectionResolver
    */
-  public static ConnectionResolver createSlotBasedResolver(ClusterConnectionProvider provider,
-      CommandFlagsRegistry flags) {
-    return new SlotBasedConnectionResolver(provider, flags);
+  public static ConnectionResolver createSlotBasedResolver(ClusterConnectionProvider provider) {
+    return new SlotBasedConnectionResolver(provider);
   }
 
   /**

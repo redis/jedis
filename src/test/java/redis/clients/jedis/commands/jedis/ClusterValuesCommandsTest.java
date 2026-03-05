@@ -271,8 +271,6 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     assertFalse(result.isEmpty(), "Should have aggregated slot statistics from cluster nodes");
 
     // Verify the aggregated list contains entries from all shards
-    // Each shard owns roughly 1/3 of the 16384 slots, so the combined list
-    // should have approximately 16384 entries (one per slot)
-    assertTrue(result.size() > 5000, "Aggregated list should contain slot statistics from multiple shards");
+    assertEquals(16384, result.size(), "Aggregated list should contain slot statistics from multiple shards");
   }
 }

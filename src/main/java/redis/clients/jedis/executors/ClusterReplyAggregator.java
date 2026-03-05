@@ -1,16 +1,11 @@
 package redis.clients.jedis.executors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import redis.clients.jedis.CommandFlagsRegistry;
-import redis.clients.jedis.exceptions.ClusterAggregationException;
 import redis.clients.jedis.exceptions.UnsupportedAggregationException;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisByteMap;
@@ -39,8 +34,6 @@ import redis.clients.jedis.util.JedisByteMap;
  * </ul>
  */
 public final class ClusterReplyAggregator {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ClusterReplyAggregator.class);
 
   private ClusterReplyAggregator() {
     // Utility class, prevent instantiation
@@ -158,14 +151,11 @@ public final class ClusterReplyAggregator {
       return (T) existingSet;
     }
 
-    // For other types, log warning and fall back to returning existing (current behavior)
-    LOG.warn(
-      "Unsupported type for DEFAULT aggregation: existing={}, newReply={}. "
-          + "Returning existing value without aggregation. "
-          + "Supported types are: List, Map, Set, JedisByteHashMap, JedisByteMap.",
-      existing != null ? existing.getClass().getName() : "null",
-      newReply != null ? newReply.getClass().getName() : "null");
-    return existing;
+    // For other types, throw UnsupportedAggregationException
+    throw new UnsupportedAggregationException(
+        "DEFAULT policy requires List, Map, Set, JedisByteHashMap, or JedisByteMap types, but got: "
+            + (existing != null ? existing.getClass().getName() : "null") + " and "
+            + (newReply != null ? newReply.getClass().getName() : "null"));
   }
 
   /**
@@ -330,25 +320,12 @@ public final class ClusterReplyAggregator {
   }
 
   /**
-   * Return first reply if all are equal, throw exception if different. Uses Arrays.equals() for
-   * byte array comparison.
+   * Return the first reply. Per Redis ALL_SUCCEEDED response policy spec, this policy returns
+   * successfully only if there are no error replies. Error handling is done separately by the
+   * caller (e.g., MultiNodeResultAggregator.addError()), so this method simply returns the first
+   * reply when aggregating successful responses.
    */
   public static <T> T aggregateAllSucceeded(T existing, T newReply) {
-    if (areEqual(existing, newReply)) {
-      return existing;
-    }
-    throw new ClusterAggregationException(
-        "ALL_SUCCEEDED policy requires all replies to be equal, but got different values: "
-            + existing + " vs " + newReply);
-  }
-
-  /**
-   * Compare two values for equality, with special handling for byte arrays.
-   */
-  private static <T> boolean areEqual(T existing, T newReply) {
-    if (existing instanceof byte[] && newReply instanceof byte[]) {
-      return Arrays.equals((byte[]) existing, (byte[]) newReply);
-    }
-    return existing.equals(newReply);
+    return existing;
   }
 }

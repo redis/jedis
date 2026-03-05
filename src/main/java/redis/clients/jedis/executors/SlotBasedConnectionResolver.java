@@ -14,11 +14,9 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 final class SlotBasedConnectionResolver implements ConnectionResolver {
 
   private final ClusterConnectionProvider provider;
-  private final CommandFlagsRegistry flags;
 
-  SlotBasedConnectionResolver(ClusterConnectionProvider provider, CommandFlagsRegistry flags) {
+  SlotBasedConnectionResolver(ClusterConnectionProvider provider) {
     this.provider = provider;
-    this.flags = flags;
   }
 
   @Override

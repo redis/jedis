@@ -2,6 +2,9 @@ package redis.clients.jedis.executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -330,22 +333,23 @@ public class MultiNodeResultAggregatorTest {
 
   @Test
   public void testGetResult_default_allNodesSucceed_returnsResult() {
-    MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+    MultiNodeResultAggregator<ArrayList<String>> aggregator = new MultiNodeResultAggregator<>(
         ResponsePolicy.DEFAULT);
 
-    aggregator.addSuccess(NODE_1, "OK");
-    aggregator.addSuccess(NODE_2, "OK");
+    aggregator.addSuccess(NODE_1, new ArrayList<>(Collections.singletonList("a")));
+    aggregator.addSuccess(NODE_2, new ArrayList<>(Collections.singletonList("b")));
 
-    String result = aggregator.getResult();
-    assertEquals("OK", result, "Should return result when all nodes succeed");
+    ArrayList<String> result = aggregator.getResult();
+    assertEquals(new ArrayList<>(Arrays.asList("a", "b")), result,
+      "Should return result when all nodes succeed");
   }
 
   @Test
   public void testGetResult_default_oneNodeFails_throwsException() {
-    MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+    MultiNodeResultAggregator<ArrayList<String>> aggregator = new MultiNodeResultAggregator<>(
         ResponsePolicy.DEFAULT);
 
-    aggregator.addSuccess(NODE_1, "OK");
+    aggregator.addSuccess(NODE_1, new ArrayList<>(Collections.singletonList("a")));
     aggregator.addError(NODE_2, new RuntimeException("Error"));
 
     assertThrows(JedisBroadcastException.class, () -> aggregator.getResult(),

@@ -16,6 +16,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.exceptions.ClusterAggregationException;
+import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.JedisByteMap;
 
 public class ClusterReplyAggregatorTest {
 
@@ -538,5 +540,195 @@ public class ClusterReplyAggregatorTest {
 
     assertEquals(3, result.size(), "Should contain all byte arrays from both sets");
     assertTrue(result instanceof HashSet, "Result should be a HashSet");
+  }
+
+  // ==================== aggregateDefault - JedisByteHashMap Tests ====================
+
+  @Test
+  public void testAggregateDefault_twoJedisByteHashMapsWithDifferentKeys_mergesThem() {
+    JedisByteHashMap first = new JedisByteHashMap();
+    first.put(new byte[] { 'k', '1' }, new byte[] { 'v', '1' });
+    first.put(new byte[] { 'k', '2' }, new byte[] { 'v', '2' });
+
+    JedisByteHashMap second = new JedisByteHashMap();
+    second.put(new byte[] { 'k', '3' }, new byte[] { 'v', '3' });
+    second.put(new byte[] { 'k', '4' }, new byte[] { 'v', '4' });
+
+    @SuppressWarnings("unchecked")
+    JedisByteHashMap result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(4, result.size(), "Should contain all entries from both maps");
+    assertArrayEquals(new byte[] { 'v', '1' }, result.get(new byte[] { 'k', '1' }));
+    assertArrayEquals(new byte[] { 'v', '2' }, result.get(new byte[] { 'k', '2' }));
+    assertArrayEquals(new byte[] { 'v', '3' }, result.get(new byte[] { 'k', '3' }));
+    assertArrayEquals(new byte[] { 'v', '4' }, result.get(new byte[] { 'k', '4' }));
+    assertTrue(result instanceof JedisByteHashMap, "Result should be a JedisByteHashMap");
+  }
+
+  @Test
+  public void testAggregateDefault_twoJedisByteHashMapsWithOverlappingKeys_secondMapTakesPrecedence() {
+    JedisByteHashMap first = new JedisByteHashMap();
+    first.put(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' }, new byte[] { 'f', 'i', 'r', 's', 't' });
+    first.put(new byte[] { 'u', 'n', 'i', 'q', '1' }, new byte[] { 'v', 'a', 'l', '1' });
+
+    JedisByteHashMap second = new JedisByteHashMap();
+    second.put(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' },
+      new byte[] { 's', 'e', 'c', 'o', 'n', 'd' });
+    second.put(new byte[] { 'u', 'n', 'i', 'q', '2' }, new byte[] { 'v', 'a', 'l', '2' });
+
+    @SuppressWarnings("unchecked")
+    JedisByteHashMap result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(3, result.size(), "Should contain merged entries");
+    assertArrayEquals(new byte[] { 's', 'e', 'c', 'o', 'n', 'd' },
+      result.get(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' }),
+      "Second map's value should overwrite first");
+    assertArrayEquals(new byte[] { 'v', 'a', 'l', '1' },
+      result.get(new byte[] { 'u', 'n', 'i', 'q', '1' }));
+    assertArrayEquals(new byte[] { 'v', 'a', 'l', '2' },
+      result.get(new byte[] { 'u', 'n', 'i', 'q', '2' }));
+  }
+
+  @Test
+  public void testAggregateDefault_emptyAndNonEmptyJedisByteHashMaps_returnsNonEmptyEntries() {
+    JedisByteHashMap first = new JedisByteHashMap();
+    JedisByteHashMap second = new JedisByteHashMap();
+    second.put(new byte[] { 'k', '1' }, new byte[] { 'v', '1' });
+    second.put(new byte[] { 'k', '2' }, new byte[] { 'v', '2' });
+
+    @SuppressWarnings("unchecked")
+    JedisByteHashMap result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, result.size(), "Should contain entries from non-empty map");
+    assertArrayEquals(new byte[] { 'v', '1' }, result.get(new byte[] { 'k', '1' }));
+    assertArrayEquals(new byte[] { 'v', '2' }, result.get(new byte[] { 'k', '2' }));
+  }
+
+  @Test
+  public void testAggregateDefault_nonEmptyAndEmptyJedisByteHashMaps_returnsFirstEntries() {
+    JedisByteHashMap first = new JedisByteHashMap();
+    first.put(new byte[] { 'k', '1' }, new byte[] { 'v', '1' });
+    first.put(new byte[] { 'k', '2' }, new byte[] { 'v', '2' });
+    JedisByteHashMap second = new JedisByteHashMap();
+
+    @SuppressWarnings("unchecked")
+    JedisByteHashMap result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, result.size(), "Should contain entries from first map");
+    assertArrayEquals(new byte[] { 'v', '1' }, result.get(new byte[] { 'k', '1' }));
+    assertArrayEquals(new byte[] { 'v', '2' }, result.get(new byte[] { 'k', '2' }));
+  }
+
+  @Test
+  public void testAggregateDefault_doesNotModifyOriginalJedisByteHashMaps() {
+    JedisByteHashMap first = new JedisByteHashMap();
+    first.put(new byte[] { 'a' }, new byte[] { '1' });
+    first.put(new byte[] { 'b' }, new byte[] { '2' });
+
+    JedisByteHashMap second = new JedisByteHashMap();
+    second.put(new byte[] { 'c' }, new byte[] { '3' });
+    second.put(new byte[] { 'd' }, new byte[] { '4' });
+
+    ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, first.size(), "First map should not be modified");
+    assertEquals(2, second.size(), "Second map should not be modified");
+    assertArrayEquals(new byte[] { '1' }, first.get(new byte[] { 'a' }));
+    assertArrayEquals(new byte[] { '2' }, first.get(new byte[] { 'b' }));
+    assertArrayEquals(new byte[] { '3' }, second.get(new byte[] { 'c' }));
+    assertArrayEquals(new byte[] { '4' }, second.get(new byte[] { 'd' }));
+  }
+
+  // ==================== aggregateDefault - JedisByteMap Tests ====================
+
+  @Test
+  public void testAggregateDefault_twoJedisByteMapsWithDifferentKeys_mergesThem() {
+    JedisByteMap<String> first = new JedisByteMap<>();
+    first.put(new byte[] { 'k', '1' }, "value1");
+    first.put(new byte[] { 'k', '2' }, "value2");
+
+    JedisByteMap<String> second = new JedisByteMap<>();
+    second.put(new byte[] { 'k', '3' }, "value3");
+    second.put(new byte[] { 'k', '4' }, "value4");
+
+    @SuppressWarnings("unchecked")
+    JedisByteMap<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(4, result.size(), "Should contain all entries from both maps");
+    assertEquals("value1", result.get(new byte[] { 'k', '1' }));
+    assertEquals("value2", result.get(new byte[] { 'k', '2' }));
+    assertEquals("value3", result.get(new byte[] { 'k', '3' }));
+    assertEquals("value4", result.get(new byte[] { 'k', '4' }));
+    assertTrue(result instanceof JedisByteMap, "Result should be a JedisByteMap");
+  }
+
+  @Test
+  public void testAggregateDefault_twoJedisByteMapsWithOverlappingKeys_secondMapTakesPrecedence() {
+    JedisByteMap<String> first = new JedisByteMap<>();
+    first.put(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' }, "first_value");
+    first.put(new byte[] { 'u', 'n', 'i', 'q', '1' }, "unique1");
+
+    JedisByteMap<String> second = new JedisByteMap<>();
+    second.put(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' }, "second_value");
+    second.put(new byte[] { 'u', 'n', 'i', 'q', '2' }, "unique2");
+
+    @SuppressWarnings("unchecked")
+    JedisByteMap<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(3, result.size(), "Should contain merged entries");
+    assertEquals("second_value", result.get(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' }),
+      "Second map's value should overwrite first");
+    assertEquals("unique1", result.get(new byte[] { 'u', 'n', 'i', 'q', '1' }));
+    assertEquals("unique2", result.get(new byte[] { 'u', 'n', 'i', 'q', '2' }));
+  }
+
+  @Test
+  public void testAggregateDefault_emptyAndNonEmptyJedisByteMaps_returnsNonEmptyEntries() {
+    JedisByteMap<Integer> first = new JedisByteMap<>();
+    JedisByteMap<Integer> second = new JedisByteMap<>();
+    second.put(new byte[] { 'k', '1' }, 1);
+    second.put(new byte[] { 'k', '2' }, 2);
+
+    @SuppressWarnings("unchecked")
+    JedisByteMap<Integer> result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, result.size(), "Should contain entries from non-empty map");
+    assertEquals(1, result.get(new byte[] { 'k', '1' }));
+    assertEquals(2, result.get(new byte[] { 'k', '2' }));
+  }
+
+  @Test
+  public void testAggregateDefault_nonEmptyAndEmptyJedisByteMaps_returnsFirstEntries() {
+    JedisByteMap<Integer> first = new JedisByteMap<>();
+    first.put(new byte[] { 'k', '1' }, 1);
+    first.put(new byte[] { 'k', '2' }, 2);
+    JedisByteMap<Integer> second = new JedisByteMap<>();
+
+    @SuppressWarnings("unchecked")
+    JedisByteMap<Integer> result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, result.size(), "Should contain entries from first map");
+    assertEquals(1, result.get(new byte[] { 'k', '1' }));
+    assertEquals(2, result.get(new byte[] { 'k', '2' }));
+  }
+
+  @Test
+  public void testAggregateDefault_doesNotModifyOriginalJedisByteMaps() {
+    JedisByteMap<String> first = new JedisByteMap<>();
+    first.put(new byte[] { 'a' }, "1");
+    first.put(new byte[] { 'b' }, "2");
+
+    JedisByteMap<String> second = new JedisByteMap<>();
+    second.put(new byte[] { 'c' }, "3");
+    second.put(new byte[] { 'd' }, "4");
+
+    ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, first.size(), "First map should not be modified");
+    assertEquals(2, second.size(), "Second map should not be modified");
+    assertEquals("1", first.get(new byte[] { 'a' }));
+    assertEquals("2", first.get(new byte[] { 'b' }));
+    assertEquals("3", second.get(new byte[] { 'c' }));
+    assertEquals("4", second.get(new byte[] { 'd' }));
   }
 }

@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandFlagsRegistry;
 import redis.clients.jedis.exceptions.ClusterAggregationException;
 import redis.clients.jedis.exceptions.UnsupportedAggregationException;
+import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.JedisByteMap;
 
 /**
  * Utility class for aggregating replies from multiple Redis cluster nodes.
@@ -121,6 +123,28 @@ public final class ClusterReplyAggregator {
       return (T) result;
     }
 
+    // Handle JedisByteHashMap types - merge all entries (newReply overwrites existing on collision)
+    // NOTE: Must be checked before generic Map since JedisByteHashMap implements Map
+    if (existing instanceof JedisByteHashMap && newReply instanceof JedisByteHashMap) {
+      JedisByteHashMap existingMap = (JedisByteHashMap) existing;
+      JedisByteHashMap newMap = (JedisByteHashMap) newReply;
+      JedisByteHashMap result = new JedisByteHashMap();
+      result.putAll(existingMap);
+      result.putAll(newMap);
+      return (T) result;
+    }
+
+    // Handle JedisByteMap types - merge all entries (newReply overwrites existing on collision)
+    // NOTE: Must be checked before generic Map since JedisByteMap implements Map
+    if (existing instanceof JedisByteMap && newReply instanceof JedisByteMap) {
+      JedisByteMap<Object> existingMap = (JedisByteMap<Object>) existing;
+      JedisByteMap<Object> newMap = (JedisByteMap<Object>) newReply;
+      JedisByteMap<Object> result = new JedisByteMap<>();
+      result.putAll(existingMap);
+      result.putAll(newMap);
+      return (T) result;
+    }
+
     // Handle Map types - merge all entries (newReply overwrites existing on collision)
     if (existing instanceof Map && newReply instanceof Map) {
       Map<Object, Object> existingMap = (Map<Object, Object>) existing;
@@ -142,8 +166,10 @@ public final class ClusterReplyAggregator {
     }
 
     // For other types, log warning and fall back to returning existing (current behavior)
-    LOG.warn("Unsupported type for DEFAULT aggregation: existing={}, newReply={}. "
-        + "Returning existing value without aggregation. " + "Supported types are: List, Map, Set.",
+    LOG.warn(
+      "Unsupported type for DEFAULT aggregation: existing={}, newReply={}. "
+          + "Returning existing value without aggregation. "
+          + "Supported types are: List, Map, Set, JedisByteHashMap, JedisByteMap.",
       existing != null ? existing.getClass().getName() : "null",
       newReply != null ? newReply.getClass().getName() : "null");
     return existing;

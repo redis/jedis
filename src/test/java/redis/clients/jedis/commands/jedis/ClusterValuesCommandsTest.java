@@ -245,7 +245,7 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion(value = "8.0.0", message = "CLUSTER SLOT-STATS requires Redis 8.0 or later")
+  @SinceRedisVersion(value = "8.2.0", message = "CLUSTER SLOT-STATS requires Redis 8.2 or later")
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void clusterSlotStatsAggregation() {
     // Set some keys across the cluster to ensure slots have data

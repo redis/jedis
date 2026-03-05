@@ -514,7 +514,7 @@ public class ClusterCommandExecutorTest {
 
     // When followRedirections=false, the redirection exception should be thrown
     JedisMovedDataException exception = assertThrows(JedisMovedDataException.class,
-        () -> invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
+      () -> invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
 
     // Verify exception contains correct information
     assertEquals(movedTarget, exception.getTargetNode());
@@ -555,7 +555,7 @@ public class ClusterCommandExecutorTest {
 
     // When followRedirections=false, the ASK exception should be thrown
     JedisAskDataException exception = assertThrows(JedisAskDataException.class,
-        () -> invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
+      () -> invokeExecuteKeylessCommand(testMe, KEYLESS_WRITE_COM_OBJECT));
 
     // Verify exception contains correct information
     assertEquals(askTarget, exception.getTargetNode());
@@ -1059,9 +1059,9 @@ public class ClusterCommandExecutorTest {
   }
 
   /**
-   * This test verifies that broadcastCommand throws JedisMovedDataException when a node
-   * responds with a MOVED redirection, since broadcastCommand uses followRedirections=false.
-   * The exception should contain the correct target node and slot information.
+   * This test verifies that broadcastCommand throws JedisMovedDataException when a node responds
+   * with a MOVED redirection, since broadcastCommand uses followRedirections=false. The exception
+   * should contain the correct target node and slot information.
    */
   @Test
   public void broadcastCommandThrowsMovedDataExceptionOnRedirection() {
@@ -1111,9 +1111,9 @@ public class ClusterCommandExecutorTest {
   }
 
   /**
-   * This test verifies that broadcastCommand throws JedisAskDataException when a node
-   * responds with an ASK redirection, since broadcastCommand uses followRedirections=false.
-   * The exception should contain the correct target node and slot information.
+   * This test verifies that broadcastCommand throws JedisAskDataException when a node responds with
+   * an ASK redirection, since broadcastCommand uses followRedirections=false. The exception should
+   * contain the correct target node and slot information.
    */
   @Test
   public void broadcastCommandThrowsAskDataExceptionOnRedirection() {

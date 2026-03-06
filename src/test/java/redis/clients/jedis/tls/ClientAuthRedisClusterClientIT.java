@@ -75,7 +75,7 @@ public class ClientAuthRedisClusterClientIT {
   private static SslOptions createMtlsSslOptions(Path keystorePath) {
     return SslOptions.builder().truststore(trustStorePath.toFile()).trustStoreType("jceks")
         .keystore(keystorePath.toFile(), KEYSTORE_PASSWORD.toCharArray()).keyStoreType("PKCS12")
-        .sslVerifyMode(SslVerifyMode.CA).build();
+        .sslVerifyMode(SslVerifyMode.FULL).build();
   }
 
   /**

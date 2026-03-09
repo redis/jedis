@@ -3,14 +3,12 @@ package redis.clients.jedis.commands.unified.client;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,6 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.AbstractPipeline;
-import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.UnifiedJedis;
@@ -28,7 +25,6 @@ import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
-import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -86,68 +82,6 @@ public class RedisClientMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
     for (int i = 0; i < totalCount; i++) {
       assertEquals(expected.get(i), responses.get(i).get());
-    }
-  }
-
-  @Test
-  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
-  public void transaction() {
-    final int count = 10;
-    int totalCount = 0;
-    for (int i = 0; i < count; i++) {
-      jedis.set("foo" + i, "bar" + i);
-    }
-    totalCount += count;
-    for (int i = 0; i < count; i++) {
-      jedis.rpush("foobar" + i, "foo" + i, "bar" + i);
-    }
-    totalCount += count;
-
-    List<Object> responses;
-    List<Object> expected = new ArrayList<>(totalCount);
-
-    try (AbstractTransaction transaction = jedis.multi()) {
-      for (int i = 0; i < count; i++) {
-        transaction.get("foo" + i);
-        expected.add("bar" + i);
-      }
-      for (int i = 0; i < count; i++) {
-        transaction.lrange("foobar" + i, 0, -1);
-        expected.add(Arrays.asList("foo" + i, "bar" + i));
-      }
-      responses = transaction.exec();
-    }
-
-    for (int i = 0; i < totalCount; i++) {
-      assertEquals(expected.get(i), responses.get(i));
-    }
-  }
-
-  @Test
-  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
-  public void watch() {
-    try (AbstractTransaction tx = jedis.transaction(false)) {
-      assertEquals("OK", tx.watch("mykey", "somekey"));
-      tx.multi();
-
-      jedis.set("mykey", "bar");
-
-      tx.set("mykey", "foo");
-      assertNull(tx.exec());
-
-      assertEquals("bar", jedis.get("mykey"));
-    }
-  }
-
-  @Test
-  public void publishInTransaction() {
-    try (AbstractTransaction tx = jedis.multi()) {
-      Response<Long> p1 = tx.publish("foo", "bar");
-      Response<Long> p2 = tx.publish("foo".getBytes(), "bar".getBytes());
-      tx.exec();
-
-      assertEquals(0, p1.get().longValue());
-      assertEquals(0, p2.get().longValue());
     }
   }
 

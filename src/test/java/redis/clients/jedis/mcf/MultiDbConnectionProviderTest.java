@@ -168,10 +168,15 @@ public class MultiDbConnectionProviderTest {
     poolConfig.setMaxIdle(4);
     poolConfig.setMinIdle(1);
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
-    databaseConfigs[0] = new DatabaseConfig(endpointStandalone0.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
-    databaseConfigs[1] = new DatabaseConfig(endpointStandalone1.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+
+    databaseConfigs[0] = DatabaseConfig
+        .builder(endpointStandalone0.getHostAndPort(),
+          endpointStandalone0.getClientConfigBuilder().build())
+        .connectionPoolConfig(poolConfig).build();
+    databaseConfigs[1] = DatabaseConfig
+        .builder(endpointStandalone1.getHostAndPort(),
+          endpointStandalone1.getClientConfigBuilder().build())
+        .connectionPoolConfig(poolConfig).build();
     try (MultiDbConnectionProvider customProvider = new MultiDbConnectionProvider(
         new MultiDbConfig.Builder(databaseConfigs).build())) {
       MultiDbConnectionProvider.Database activeDatabase = customProvider.getDatabase();

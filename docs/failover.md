@@ -24,6 +24,7 @@ The remainder of this guide describes:
 * A basic failover and health check configuration
 * Supported retry and circuit breaker settings
 * Failback and the database selection API
+* Dynamic database management for adding and removing databases at runtime
 * Dynamic weight management for runtime priority adjustments (since 7.4.0)
 
 We recommend that you read this guide carefully and understand the configuration settings before enabling Jedis failover
@@ -550,6 +551,140 @@ MultiDbClient client = MultiDbClient.builder()
 // Change weight - may trigger automatic failback to switch active database
 client.setWeight(secondary, 5.0f);
 ```
+
+## Dynamic Database Management
+
+Jedis allows you to dynamically add and remove database endpoints at runtime without recreating the `MultiDbClient`. This provides flexibility for scenarios such as:
+
+- Adding new database replicas or regions as they become available
+- Removing databases during planned maintenance or decommissioning
+- Scaling your Redis infrastructure dynamically
+- Responding to infrastructure changes without application restarts
+
+### Adding Databases at Runtime
+
+The `MultiDbClient` provides two overloaded methods for adding databases dynamically:
+
+#### Method 1: Using DatabaseConfig
+
+This method provides maximum flexibility for advanced configurations including custom health check strategies, connection pool settings, and other database-specific options.
+
+```java
+// Create a fully configured DatabaseConfig
+HostAndPort newEndpoint = new HostAndPort("redis-new.example.com", 6379);
+JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .user("cache").password("secret").build();
+
+DatabaseConfig databaseConfig = DatabaseConfig.builder(newEndpoint, clientConfig)
+        .weight(1.5f).connectionPoolConfig(poolConfig).healthCheckEnabled(true).build();
+
+// Add the database to the client
+client.addDatabase(databaseConfig);
+```
+
+#### Method 2: Using Endpoint, Weight, and ClientConfig
+
+This is a convenience method for simpler configurations when you don't need advanced customization.
+
+```java
+HostAndPort newEndpoint = new HostAndPort("redis-new.example.com", 6379);
+JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .user("cache").password("secret").build();
+
+// Add the database with basic configuration
+client.addDatabase(newEndpoint, 1.5f, clientConfig);
+```
+
+### Removing Databases at Runtime
+
+You can remove database endpoints dynamically using the `removeDatabase()` method:
+
+```java
+HostAndPort endpointToRemove = new HostAndPort("redis-old.example.com", 6379);
+
+// Remove the database from the client
+client.removeDatabase(endpointToRemove);
+```
+
+### Behavior and Constraints
+
+When adding or removing databases, the following behavior applies:
+
+#### Adding Databases
+
+- **Immediate Availability**: The new endpoint becomes available for failover operations immediately after being added
+- **Health Check Integration**: If health checks are configured, the new database will be monitored according to the configured health check strategy
+- **Duplicate Prevention**: Attempting to add an endpoint that already exists will throw a `JedisValidationException`
+- **Weight-Based Selection**: The new database participates in weight-based active database selection according to its configured weight
+
+#### Removing Databases
+
+- **Automatic Failover**: If the removed endpoint is currently the active database, Jedis will automatically failover to the next available healthy endpoint based on weight priority
+- **Last Database Protection**: You cannot remove the last remaining endpoint - attempting to do so will throw a `JedisValidationException`
+- **Non-Existent Endpoint**: Attempting to remove an endpoint that doesn't exist will throw a `JedisValidationException`
+- **Resource Cleanup**: The removed database's connections and resources are properly closed and cleaned up
+- **Health Check Cleanup**: Health checks for the removed database are automatically stopped and unregistered
+
+### Querying Configured Databases
+
+You can retrieve the set of all currently configured database endpoints:
+
+```java
+Set<Endpoint> endpoints = client.getDatabaseEndpoints();
+System.out.println("Configured databases: " + endpoints);
+```
+
+### Complete Example: Dynamic Database Management
+
+Here's a practical example demonstrating dynamic database management:
+
+```java
+// Initial setup with two databases, primary and secondary.
+HostAndPort primary = new HostAndPort("redis-primary.example.com", 6379);
+HostAndPort secondary = new HostAndPort("redis-secondary.example.com", 6379);
+
+JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .user("cache").password("secret").build();
+
+MultiDbConfig config = MultiDbConfig.builder()
+        .database(DatabaseConfig.builder(primary, clientConfig).weight(2.0f).build())
+        .database(DatabaseConfig.builder(secondary, clientConfig).weight(1.0f).build())
+        .failbackSupported(true)
+        .build();
+
+MultiDbClient client = MultiDbClient.builder()
+        .multiDbConfig(config)
+        .databaseSwitchListener(event -> {
+            System.out.println("Switched to: " + event.getEndpoint() +
+                             " due to: " + event.getReason());
+        })
+        .build();
+
+// Add a new database in a different region
+HostAndPort newRegion = new HostAndPort("redis-eu.example.com", 6379);
+client.addDatabase(newRegion, 1.0f, clientConfig);
+System.out.println("Added new database: " + newRegion);
+
+// Verify the database was added
+Set<Endpoint> endpoints = client.getDatabaseEndpoints();
+System.out.println("Current databases: " + endpoints);
+// Output: [redis-primary.example.com:6379, redis-secondary.example.com:6379, redis-eu.example.com:6379]
+
+// Later, remove the secondary database for maintenance
+client.removeDatabase(secondary);
+System.out.println("Removed database: " + secondary);
+// If secondary was active, automatic failover occurs to primary or newRegion
+
+// Verify the database was removed
+endpoints = client.getDatabaseEndpoints();
+System.out.println("Current databases: " + endpoints);
+// Output: [redis-primary.example.com:6379, redis-eu.example.com:6379]
+
+```
+
+### Thread Safety
+
+Both `addDatabase()` and `removeDatabase()` methods are thread-safe and can be called concurrently from multiple threads. The client ensures that database additions and removals are properly synchronized with ongoing operations.
 
 ## Troubleshooting Failover and Failback Issues
 

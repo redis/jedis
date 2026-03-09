@@ -56,17 +56,25 @@ public abstract class ClientAuthTestBase {
   public static void setUpMtlsStores() {
     standaloneEndpoint = Endpoints.getRedisEndpoint("standalone-mtls");
     clusterEndpoint = Endpoints.getRedisEndpoint("cluster-mtls");
+    // Subclasses will set up their specific truststore and keystores
+  }
 
+  /**
+   * Sets up mTLS stores for a specific endpoint. Should be called by subclasses in their @BeforeAll
+   * method.
+   * @param endpoint the endpoint to configure mTLS for
+   * @param testClassName the test class name for truststore naming
+   */
+  protected static void setUpMtlsStoresForEndpoint(EndpointConfig endpoint, String testClassName) {
     // Create truststore with CA certificate for server verification
-    List<Path> trustedCertLocation = Collections
-        .singletonList(standaloneEndpoint.getCertificatesLocation());
-    trustStorePath = TlsUtil.createAndSaveTestTruststore(ClientAuthTestBase.class.getSimpleName(),
-      trustedCertLocation, TRUSTSTORE_PASSWORD);
+    List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
+    trustStorePath = TlsUtil.createAndSaveTestTruststore(testClassName, trustedCertLocation,
+      TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);
 
     // Use pre-generated PKCS12 keystores from Docker container
     // The container generates .p12 files with password "changeit" for each TLS_CLIENT_CNS entry
-    Path certLocation = standaloneEndpoint.getCertificatesLocation();
+    Path certLocation = endpoint.getCertificatesLocation();
     keyStorePath1 = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_1);
     keyStorePath2 = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_2);
   }

@@ -2,6 +2,7 @@ package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -16,6 +17,11 @@ import redis.clients.jedis.SslOptions;
  * Different client certificates authenticate as different users
  */
 public class ClientAuthJedisIT extends ClientAuthTestBase {
+
+  @BeforeAll
+  public static void setUpStandaloneMtlsStores() {
+    setUpMtlsStoresForEndpoint(standaloneEndpoint, ClientAuthJedisIT.class.getSimpleName());
+  }
 
   /**
    * Tests mTLS connection with mtls-user1 certificate using Jedis. Verifies that ACL WHOAMI returns

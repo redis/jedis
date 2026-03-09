@@ -897,24 +897,6 @@ public final class MultiDbConfig {
     }
 
     /**
-     * Constructs a DatabaseConfig with endpoint, client, and connection pool configuration.
-     * <p>
-     * This constructor allows specification of connection pool settings in addition to basic
-     * endpoint configuration. Default weight of 1.0f and PingStrategy for health checks are used.
-     * </p>
-     * @param endpoint the Redis endpoint (host and port)
-     * @param clientConfig the Jedis client configuration
-     * @param connectionPoolConfig the connection pool configuration
-     * @throws IllegalArgumentException if endpoint or clientConfig is null
-     */
-    public DatabaseConfig(Endpoint endpoint, JedisClientConfig clientConfig,
-        GenericObjectPoolConfig<Connection> connectionPoolConfig) {
-      this.endpoint = endpoint;
-      this.jedisClientConfig = clientConfig;
-      this.connectionPoolConfig = connectionPoolConfig;
-    }
-
-    /**
      * Private constructor used by the Builder to create configured instances.
      * @param builder the builder containing configuration values
      */

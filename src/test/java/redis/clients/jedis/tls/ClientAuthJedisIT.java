@@ -2,9 +2,11 @@ package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.SslOptions;
 
@@ -17,6 +19,12 @@ import redis.clients.jedis.SslOptions;
  */
 public class ClientAuthJedisIT extends ClientAuthTestBase {
 
+  @BeforeAll
+  public static void setUpStandaloneMtlsStores() {
+    endpoint = Endpoints.getRedisEndpoint("standalone-mtls");
+    setUpMtlsStoresForEndpoint(endpoint, ClientAuthJedisIT.class.getSimpleName());
+  }
+
   /**
    * Tests mTLS connection with mtls-user1 certificate using Jedis. Verifies that ACL WHOAMI returns
    * the expected username based on Redis version.
@@ -25,7 +33,7 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
   public void connectWithMtlsUser1() {
     SslOptions sslOptions = createMtlsSslOptionsUser1();
 
-    try (Jedis jedis = new Jedis(standaloneEndpoint.getHostAndPort(),
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())) {
       assertEquals("PONG", jedis.ping());
       // Verify username based on Redis version
@@ -41,7 +49,7 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
   public void connectWithMtlsUser2() {
     SslOptions sslOptions = createMtlsSslOptionsUser2();
 
-    try (Jedis jedis = new Jedis(standaloneEndpoint.getHostAndPort(),
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())) {
       assertEquals("PONG", jedis.ping());
       // Verify username based on Redis version
@@ -56,7 +64,7 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
   public void connectWithHostAndPort() {
     SslOptions sslOptions = createMtlsSslOptionsUser1();
 
-    try (Jedis jedis = new Jedis(standaloneEndpoint.getHost(), standaloneEndpoint.getPort(),
+    try (Jedis jedis = new Jedis(endpoint.getHost(), endpoint.getPort(),
         DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())) {
       assertEquals("PONG", jedis.ping());
       assertExpectedUsername(jedis, jedis.aclWhoAmI(), MTLS_USER_1);
@@ -70,7 +78,7 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
   public void performBasicOperationsWithMtls() {
     SslOptions sslOptions = createMtlsSslOptionsUser1();
 
-    try (Jedis jedis = new Jedis(standaloneEndpoint.getHostAndPort(),
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())) {
       // Test basic operations
       String key = "mtls-jedis-test-key";

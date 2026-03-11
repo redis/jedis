@@ -46,27 +46,27 @@ public abstract class ClientAuthTestBase {
   @RegisterExtension
   public static EnvCondition envCondition = new EnvCondition();
 
-  protected static EndpointConfig standaloneEndpoint;
-  protected static EndpointConfig clusterEndpoint;
+  protected static EndpointConfig endpoint;
   protected static Path trustStorePath;
   protected static Path keyStorePath1;
   protected static Path keyStorePath2;
 
-  @BeforeAll
-  public static void setUpMtlsStores() {
-    standaloneEndpoint = Endpoints.getRedisEndpoint("standalone-mtls");
-    clusterEndpoint = Endpoints.getRedisEndpoint("cluster-mtls");
-
+  /**
+   * Sets up mTLS stores for a specific targetEndpioint. Should be called by subclasses in their @BeforeAll
+   * method.
+   * @param targetEndpioint the targetEndpioint to configure mTLS for
+   * @param testClassName the test class name for truststore naming
+   */
+  protected static void setUpMtlsStoresForEndpoint(EndpointConfig targetEndpioint, String testClassName) {
     // Create truststore with CA certificate for server verification
-    List<Path> trustedCertLocation = Collections
-        .singletonList(standaloneEndpoint.getCertificatesLocation());
-    trustStorePath = TlsUtil.createAndSaveTestTruststore(ClientAuthTestBase.class.getSimpleName(),
-      trustedCertLocation, TRUSTSTORE_PASSWORD);
+    List<Path> trustedCertLocation = Collections.singletonList(targetEndpioint.getCertificatesLocation());
+    trustStorePath = TlsUtil.createAndSaveTestTruststore(testClassName, trustedCertLocation,
+      TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);
 
     // Use pre-generated PKCS12 keystores from Docker container
     // The container generates .p12 files with password "changeit" for each TLS_CLIENT_CNS entry
-    Path certLocation = standaloneEndpoint.getCertificatesLocation();
+    Path certLocation = targetEndpioint.getCertificatesLocation();
     keyStorePath1 = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_1);
     keyStorePath2 = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_2);
   }

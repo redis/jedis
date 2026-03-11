@@ -46,18 +46,10 @@ public abstract class ClientAuthTestBase {
   @RegisterExtension
   public static EnvCondition envCondition = new EnvCondition();
 
-  protected static EndpointConfig standaloneEndpoint;
-  protected static EndpointConfig clusterEndpoint;
+  protected static EndpointConfig endpoint;
   protected static Path trustStorePath;
   protected static Path keyStorePath1;
   protected static Path keyStorePath2;
-
-  @BeforeAll
-  public static void setUpMtlsStores() {
-    standaloneEndpoint = Endpoints.getRedisEndpoint("standalone-mtls");
-    clusterEndpoint = Endpoints.getRedisEndpoint("cluster-mtls");
-    // Subclasses will set up their specific truststore and keystores
-  }
 
   /**
    * Sets up mTLS stores for a specific endpoint. Should be called by subclasses in their @BeforeAll

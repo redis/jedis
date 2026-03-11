@@ -14,12 +14,13 @@ public class ClientAuthRedisClientIT extends ClientAuthIT {
 
   @BeforeAll
   public static void setUpStandaloneMtlsStores() {
-    setUpMtlsStoresForEndpoint(standaloneEndpoint, ClientAuthRedisClientIT.class.getSimpleName());
+    endpoint = Endpoints.getRedisEndpoint("standalone-mtls");
+    setUpMtlsStoresForEndpoint(endpoint, ClientAuthRedisClientIT.class.getSimpleName());
   }
 
   @Override
   protected UnifiedJedis createClient(SslOptions sslOptions) {
-    return RedisClient.builder().hostAndPort(standaloneEndpoint.getHostAndPort())
+    return RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
         .clientConfig(DefaultJedisClientConfig.builder().sslOptions(sslOptions).build()).build();
   }
 

@@ -25,13 +25,14 @@ public class ClientAuthRedisClusterClientIT extends ClientAuthIT {
 
   @BeforeAll
   public static void setUpClusterMtlsStores() {
-    setUpMtlsStoresForEndpoint(clusterEndpoint,
+    endpoint = Endpoints.getRedisEndpoint("cluster-mtls");
+    setUpMtlsStoresForEndpoint(endpoint,
       ClientAuthRedisClusterClientIT.class.getSimpleName());
   }
 
   @Override
   protected UnifiedJedis createClient(SslOptions sslOptions) {
-    return RedisClusterClient.builder().nodes(new HashSet<>(clusterEndpoint.getHostsAndPorts()))
+    return RedisClusterClient.builder().nodes(new HashSet<>(endpoint.getHostsAndPorts()))
         .clientConfig(DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build();
   }
@@ -54,9 +55,9 @@ public class ClientAuthRedisClusterClientIT extends ClientAuthIT {
       Map<String, ?> clusterNodes = cluster.getClusterNodes();
       // Should discover all 3 cluster nodes
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey(clusterEndpoint.getHostAndPort(0).toString()));
-      assertTrue(clusterNodes.containsKey(clusterEndpoint.getHostAndPort(1).toString()));
-      assertTrue(clusterNodes.containsKey(clusterEndpoint.getHostAndPort(2).toString()));
+      assertTrue(clusterNodes.containsKey(endpoint.getHostAndPort(0).toString()));
+      assertTrue(clusterNodes.containsKey(endpoint.getHostAndPort(1).toString()));
+      assertTrue(clusterNodes.containsKey(endpoint.getHostAndPort(2).toString()));
     }
   }
 }

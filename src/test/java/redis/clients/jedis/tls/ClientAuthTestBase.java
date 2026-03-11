@@ -52,14 +52,16 @@ public abstract class ClientAuthTestBase {
   protected static Path keyStorePath2;
 
   /**
-   * Sets up mTLS stores for a specific targetEndpioint. Should be called by subclasses in their @BeforeAll
-   * method.
+   * Sets up mTLS stores for a specific targetEndpioint. Should be called by subclasses in
+   * their @BeforeAll method.
    * @param targetEndpioint the targetEndpioint to configure mTLS for
    * @param testClassName the test class name for truststore naming
    */
-  protected static void setUpMtlsStoresForEndpoint(EndpointConfig targetEndpioint, String testClassName) {
+  protected static void setUpMtlsStoresForEndpoint(EndpointConfig targetEndpioint,
+      String testClassName) {
     // Create truststore with CA certificate for server verification
-    List<Path> trustedCertLocation = Collections.singletonList(targetEndpioint.getCertificatesLocation());
+    List<Path> trustedCertLocation = Collections
+        .singletonList(targetEndpioint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(testClassName, trustedCertLocation,
       TRUSTSTORE_PASSWORD);
     TlsUtil.setCustomTrustStore(trustStorePath, TRUSTSTORE_PASSWORD);

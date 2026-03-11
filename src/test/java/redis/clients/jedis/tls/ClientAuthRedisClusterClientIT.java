@@ -26,8 +26,7 @@ public class ClientAuthRedisClusterClientIT extends ClientAuthIT {
   @BeforeAll
   public static void setUpClusterMtlsStores() {
     endpoint = Endpoints.getRedisEndpoint("cluster-mtls");
-    setUpMtlsStoresForEndpoint(endpoint,
-      ClientAuthRedisClusterClientIT.class.getSimpleName());
+    setUpMtlsStoresForEndpoint(endpoint, ClientAuthRedisClusterClientIT.class.getSimpleName());
   }
 
   @Override

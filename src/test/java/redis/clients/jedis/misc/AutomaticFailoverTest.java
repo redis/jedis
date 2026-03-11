@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.DatabaseSwitchEvent;
@@ -63,7 +64,7 @@ public class AutomaticFailoverTest {
   private List<MultiDbConfig.DatabaseConfig> getDatabaseConfigs(
       JedisClientConfig clientConfig, HostAndPort... hostPorts) {
     return Arrays.stream(hostPorts)
-        .map(hp -> new MultiDbConfig.DatabaseConfig(hp, clientConfig))
+        .map(hp -> DatabaseConfig.builder(hp, clientConfig).healthCheckEnabled(false).build())
         .collect(Collectors.toList());
   }
 

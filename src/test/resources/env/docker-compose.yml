@@ -208,7 +208,7 @@ services:
       - TLS_ENABLED=yes
       - TLS_PORT=6790
       - PORT=6789
-      - TLS_CLIENT_CNS=mtls-user1 mtls-user2
+      - TLS_CLIENT_CNS=mtls-user1 mtls-user2 mtls-user-without-acl
     ports:
       # We don't expose non-TLS port on purpose
       - "6790:6790"
@@ -254,7 +254,7 @@ services:
       - PORT=7579
       - NODES=3
       - REPLICAS=0
-      - TLS_CLIENT_CNS=mtls-user1 mtls-user2
+      - TLS_CLIENT_CNS=mtls-user1 mtls-user2 mtls-user-without-acl
     ports:
       # We don't expose non-TLS ports on purpose
       - "8579-8581:8579-8581"

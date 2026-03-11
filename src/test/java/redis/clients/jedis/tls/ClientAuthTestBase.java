@@ -42,6 +42,7 @@ public abstract class ClientAuthTestBase {
   /** Default mTLS user for testing */
   protected static final String MTLS_USER_1 = "mtls-user1";
   protected static final String MTLS_USER_2 = "mtls-user2";
+  protected static final String MTLS_USER_WITHOUT_ACL = "mtls-user-without-acl";
 
   @RegisterExtension
   public static EnvCondition envCondition = new EnvCondition();
@@ -50,6 +51,7 @@ public abstract class ClientAuthTestBase {
   protected static Path trustStorePath;
   protected static Path keyStorePath1;
   protected static Path keyStorePath2;
+  protected static Path keyStorePathUserWithoutAcl;
 
   /**
    * Sets up mTLS stores for a specific targetEndpioint. Should be called by subclasses in
@@ -71,6 +73,7 @@ public abstract class ClientAuthTestBase {
     Path certLocation = targetEndpioint.getCertificatesLocation();
     keyStorePath1 = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_1);
     keyStorePath2 = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_2);
+    keyStorePathUserWithoutAcl = TlsUtil.clientKeystorePath(certLocation, MTLS_USER_WITHOUT_ACL);
   }
 
   @AfterAll
@@ -101,6 +104,13 @@ public abstract class ClientAuthTestBase {
    */
   protected static SslOptions createMtlsSslOptionsUser2() {
     return createMtlsSslOptions(keyStorePath2);
+  }
+
+  /**
+   * Creates SslOptions for mtls-user-without-acl.
+   */
+  protected static SslOptions createMtlsSslOptionsUserWithoutAcl() {
+    return createMtlsSslOptions(keyStorePathUserWithoutAcl);
   }
 
   /**

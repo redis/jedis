@@ -69,6 +69,22 @@ public abstract class ClientAuthIT extends ClientAuthTestBase {
   }
 
   /**
+   * Tests mTLS connection with mtls-user-without-acl certificate.
+   * <p>
+   * Verifies that when using a certificate for a user without a corresponding ACL user configured
+   * in Redis, the connection succeeds and ACL WHOAMI returns "default".
+   */
+  @Test
+  public void connectWithMtlsUserWithoutAcl() {
+    SslOptions sslOptions = createMtlsSslOptionsUserWithoutAcl();
+
+    try (UnifiedJedis client = createClient(sslOptions)) {
+      assertEquals("PONG", client.ping());
+      assertEquals("default", executeAclWhoAmI(client));
+    }
+  }
+
+  /**
    * Tests that mTLS authenticated users can perform basic Redis operations.
    */
   @Test

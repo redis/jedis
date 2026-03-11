@@ -58,6 +58,22 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
   }
 
   /**
+   * Tests mTLS connection with mtls-user-without-acl certificate using Jedis. Verifies that when
+   * using a certificate for a user without a corresponding ACL user configured in Redis, the
+   * connection succeeds and ACL WHOAMI returns "default".
+   */
+  @Test
+  public void connectWithMtlsUserWithoutAcl() {
+    SslOptions sslOptions = createMtlsSslOptionsUserWithoutAcl();
+
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())) {
+      assertEquals("PONG", jedis.ping());
+      assertEquals("default", jedis.aclWhoAmI());
+    }
+  }
+
+  /**
    * Tests mTLS connection using host and port separately.
    */
   @Test

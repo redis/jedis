@@ -57,8 +57,8 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.21.0</jackson.version>
-		<maven.surefire.version>3.5.4</maven.surefire.version>
+		<jackson.version>2.21.1</jackson.version>
+		<maven.surefire.version>3.5.5</maven.surefire.version>
 		<junit.version>5.14.3</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
@@ -543,8 +543,6 @@
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
 						<include>**/MultiDb*.java</include>
-						<include>**/ClientTestUtil.java</include>
-						<include>**/ReflectionTestUtil.java</include>
 						<include>**/*CommandFlags*.java</include>
 						<include>**/*CompareCondition*.java</include>
 						<include>**/*MSetExParams*.java</include>
@@ -554,7 +552,6 @@
 						<include>**/ClientCommandsTest*.java</include>
 						<include>**/Delay*.java</include>
 						<include>**/SentineledConnectionProviderReconnectionTest.java</include>
-						<include>**/ACLTestUtil.java</include>
 						<include>**/search/Apply.java</include>
 						<include>**/search/Combiner.java</include>
 						<include>**/search/Combiners.java</include>
@@ -567,7 +564,10 @@
 						<include>**/*Hotkeys*.java</include>
 						<include>**/TestDataUtil*.java</include>
 						<include>**/*JedisClientConfig*.java</include>
+
 						<include>**/resps/LibraryInfoTest.java</include>
+						<include>**/*Matchers.java</include>
+						<include>**/*TestUtil.java</include>
 					</includes>
 				</configuration>
 				<executions>

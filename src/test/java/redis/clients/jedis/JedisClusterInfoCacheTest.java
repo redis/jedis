@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 import static redis.clients.jedis.Protocol.Command.CLUSTER;
-import static redis.clients.jedis.util.CommandArgumentMatchers.commandWithArgs;
+import static redis.clients.jedis.util.CommandArgumentsMatchers.commandWithArgs;
 
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)

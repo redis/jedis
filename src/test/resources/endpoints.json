@@ -56,7 +56,7 @@
     "username": "default",
     "password": "foobared",
     "tls": true,
-    "certificates_location": "redis1-2-5-8-sentinel/work/tls",
+    "tls_cert_path": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
     ]
@@ -73,7 +73,7 @@
     "username": "acljedis",
     "password": "fizzbuzz",
     "tls": true,
-    "certificates_location": "redis1-2-5-8-sentinel/work/tls",
+    "tls_cert_path": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
     ]
@@ -160,11 +160,11 @@
   "cluster-stable-tls": {
     "password": "cluster",
     "tls": true,
-    "certificates_location": "cluster-stable/work/tls",
+    "tls_cert_path": "cluster-stable/work/tls",
     "endpoints": [
-      "rediss://127.0.0.1:8479",
-      "rediss://127.0.0.1:8480",
-      "rediss://127.0.0.1:8481"
+      "rediss://localhost:8479",
+      "rediss://localhost:8480",
+      "rediss://localhost:8481"
     ]
   },
   "cluster-stack": {

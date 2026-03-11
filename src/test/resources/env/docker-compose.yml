@@ -137,7 +137,7 @@ services:
     <<: *client-libs-image
     container_name: cluster-stable-1
     #network_mode: host
-    command: --cluster-announce-ip 127.0.0.1 --cluster-node-timeout 150 --tls-auth-clients no --save ""
+    command: --cluster-preferred-endpoint-type hostname --cluster-announce-hostname "localhost" --cluster-node-timeout 150 --tls-auth-clients no --save ""
     environment:
       - REDIS_CLUSTER=yes
       - REDIS_PASSWORD=cluster

@@ -50,7 +50,10 @@ public class ClientAuthRedisClusterClientIT extends ClientAuthIT {
   public void discoverClusterNodesWithMtls() {
     SslOptions sslOptions = createMtlsSslOptionsUser1();
 
-    try (RedisClusterClient cluster = (RedisClusterClient) createClient(sslOptions)) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder()
+        .nodes(Collections.singleton(endpoint.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder().sslOptions(sslOptions).build())
+        .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       Map<String, ?> clusterNodes = cluster.getClusterNodes();
       // Should discover all 3 cluster nodes
       assertEquals(3, clusterNodes.size());

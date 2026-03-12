@@ -25,7 +25,7 @@ import redis.clients.jedis.search.aggr.*;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class AggregateIteratorTest extends RedisModuleCommandsTestBase {
+public class AggregateIteratorIT extends RedisModuleCommandsTestBase {
 
   private static final String index = "aggiteratorindex";
 
@@ -34,7 +34,7 @@ public class AggregateIteratorTest extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
-  public AggregateIteratorTest(RedisProtocol redisProtocol) {
+  public AggregateIteratorIT(RedisProtocol redisProtocol) {
     super(redisProtocol);
   }
 
@@ -88,15 +88,12 @@ public class AggregateIteratorTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  @SuppressWarnings("resource") // Expected to throw exception before resource is created
   public void testAggregateIteratorWithoutCursor() {
     // Create aggregation without cursor - should throw exception
     AggregationBuilder aggr = new AggregationBuilder().groupBy("@name",
       Reducers.sum("@count").as("sum"));
 
-    assertThrows(IllegalArgumentException.class, () -> {
-      client.ftAggregateIterator(index, aggr);
-    });
+    assertThrows(IllegalArgumentException.class, () -> client.ftAggregateIterator(index, aggr));
   }
 
   @Test

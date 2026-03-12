@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.search;
+package redis.clients.jedis.search;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.search.aggr.Reducer;
@@ -25,3 +25,4 @@ public class AggregationBuilderTest {
     assertNull(count.getAlias());
   }
 }
+

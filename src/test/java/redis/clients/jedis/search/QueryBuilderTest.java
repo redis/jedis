@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.search;
+package redis.clients.jedis.search;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -108,3 +108,4 @@ public class QueryBuilderTest {
     assertEquals("~(~@name:{foo | bar} ~@name:{foo | bar})", n.toString());
   }
 }
+

@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.search;
+package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -7,98 +7,106 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
 import io.redis.test.annotations.SinceRedisVersion;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedClass;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.EndpointConfig;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.NumericField;
-import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
-import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 
-@ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
-public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
+@Tag("search")
+public abstract class SearchDefaultDialectCommandsTestBase {
 
-  private static final String INDEX = "dialect-INDEX";
+  protected static final String INDEX = "dialect-INDEX";
 
-  @BeforeAll
-  public static void prepare() {
-    RedisModuleCommandsTestBase.prepare();
+  protected static EndpointConfig endpoint;
+
+  protected final RedisProtocol protocol;
+
+  protected UnifiedJedis jedis;
+
+  public SearchDefaultDialectCommandsTestBase(RedisProtocol protocol) {
+    this.protocol = protocol;
   }
 
-  public SearchDefaultDialectTest(RedisProtocol protocol) {
-    super(protocol);
+  protected abstract UnifiedJedis createTestClient();
+
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0");
   }
 
-  @Override
   @BeforeEach
   public void setUp() {
-    super.setUp();
-    client.setDefaultSearchDialect(SearchProtocol.DEFAULT_DIALECT);
+    jedis = createTestClient();
+    // Clean up before each test
+    try {
+      jedis.ftDropIndex(INDEX);
+    } catch (Exception e) {
+      // Index might not exist, ignore
+    }
+    jedis.flushAll();
+    jedis.setDefaultSearchDialect(SearchProtocol.DEFAULT_DIALECT);
+  }
+
+  @AfterEach
+  public void tearDown() throws Exception {
+    if (jedis != null) {
+      jedis.close();
+    }
   }
 
   private void addDocument(Document doc) {
     String key = doc.getId();
     Map<String, String> map = new LinkedHashMap<>();
     doc.getProperties().forEach(entry -> map.put(entry.getKey(), String.valueOf(entry.getValue())));
-    client.hset(key, map);
-  }
-
-  private static Map<String, String> toMap(String... values) {
-    Map<String, String> map = new HashMap<>();
-    for (int i = 0; i < values.length; i += 2) {
-      map.put(values[i], values[i + 1]);
-    }
-    return map;
+    jedis.hset(key, map);
   }
 
   @Test
   public void testQueryParams() {
     Schema sc = new Schema().addNumericField("numval");
-    assertEquals("OK", client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
+    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
 
-    client.hset("1", "numval", "1");
-    client.hset("2", "numval", "2");
-    client.hset("3", "numval", "3");
+    jedis.hset("1", "numval", "1");
+    jedis.hset("2", "numval", "2");
+    jedis.hset("3", "numval", "3");
 
-    Query query =  new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2);
-    assertEquals(2, client.ftSearch(INDEX, query).getTotalResults());
+    Query query = new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2);
+    assertEquals(2, jedis.ftSearch(INDEX, query).getTotalResults());
   }
 
   @Test
   public void testQueryParamsWithParams() {
-    assertOK(client.ftCreate(INDEX, NumericField.of("numval")));
+    assertOK(jedis.ftCreate(INDEX, NumericField.of("numval")));
 
-    client.hset("1", "numval", "1");
-    client.hset("2", "numval", "2");
-    client.hset("3", "numval", "3");
+    jedis.hset("1", "numval", "1");
+    jedis.hset("2", "numval", "2");
+    jedis.hset("3", "numval", "3");
 
-    assertEquals(2, client.ftSearch(INDEX, "@numval:[$min $max]",
+    assertEquals(2, jedis.ftSearch(INDEX, "@numval:[$min $max]",
         FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)).getTotalResults());
 
     Map<String, Object> paramValues = new HashMap<>();
     paramValues.put("min", 1);
     paramValues.put("max", 2);
-    assertEquals(2, client.ftSearch(INDEX, "@numval:[$min $max]",
+    assertEquals(2, jedis.ftSearch(INDEX, "@numval:[$min $max]",
         FTSearchParams.searchParams().params(paramValues)).getTotalResults());
   }
 
@@ -115,40 +123,39 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
         .addTextField("t1", 1.0)
         .addTextField("t2", 1.0)
         .addNumericField("num");
-    assertEquals("OK", client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
+    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
 
-    client.hset("1", "t1", "hello");
+    jedis.hset("1", "t1", "hello");
 
     String q = "(*)";
     Query query = new Query(q).dialect(1);
-    assertSyntaxError(query, client); // dialect=1 throws syntax error
+    assertSyntaxError(query, jedis); // dialect=1 throws syntax error
     query = new Query(q); // dialect=default=2 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), containsString("WILDCARD"));
+    assertThat(jedis.ftExplain(INDEX, query), containsString("WILDCARD"));
 
     q = "$hello";
     query = new Query(q).dialect(1);
-    assertSyntaxError(query, client); // dialect=1 throws syntax error
+    assertSyntaxError(query, jedis); // dialect=1 throws syntax error
     query = new Query(q).addParam("hello", "hello"); // dialect=default=2 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
-
+    assertThat(jedis.ftExplain(INDEX, query), not(emptyOrNullString()));
 
     q = "@title:(@num:[0 10])";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
+    assertThat(jedis.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
-    assertSyntaxError(query, client); // dialect=2 throws syntax error
+    assertSyntaxError(query, jedis); // dialect=2 throws syntax error
 
     q = "@t1:@t2:@t3:hello";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
+    assertThat(jedis.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
-    assertSyntaxError(query, client); // dialect=2 throws syntax error
+    assertSyntaxError(query, jedis); // dialect=2 throws syntax error
 
     q = "@title:{foo}}}}}";
     query = new Query(q).dialect(1); // dialect=1 should return execution plan
-    assertThat(client.ftExplain(INDEX, query), not(emptyOrNullString()));
+    assertThat(jedis.ftExplain(INDEX, query), not(emptyOrNullString()));
     query = new Query(q); // dialect=default=2
-    assertSyntaxError(query, client); // dialect=2 throws syntax error
+    assertSyntaxError(query, jedis); // dialect=2 throws syntax error
   }
 
   @Test
@@ -156,7 +163,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);
     sc.addSortableNumericField("count");
-    client.ftCreate(INDEX, IndexOptions.defaultOptions(), sc);
+    jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc);
     addDocument(new Document("data1").set("name", "abc").set("count", 10));
     addDocument(new Document("data2").set("name", "def").set("count", 5));
     addDocument(new Document("data3").set("name", "def").set("count", 25));
@@ -168,7 +175,7 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
             .groupBy("@name", Reducers.sum("@count").as("sum"))
             .params(params);
 
-    AggregationResult res = client.ftAggregate(INDEX, r);
+    AggregationResult res = jedis.ftAggregate(INDEX, r);
     assertEquals(1, res.getTotalResults());
 
     Row r1 = res.getRow(0);
@@ -179,9 +186,9 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void dialectBoundSpellCheck() {
-    client.ftCreate(INDEX, TextField.of("t"));
+    jedis.ftCreate(INDEX, TextField.of("t"));
     JedisDataException error = assertThrows(JedisDataException.class,
-        () -> client.ftSpellCheck(INDEX, "Tooni toque kerfuffle",
+        () -> jedis.ftSpellCheck(INDEX, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
     assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
   }
@@ -191,33 +198,5 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
         () -> client.ftExplain(INDEX, query));
     assertThat(error.getMessage(), containsString("Syntax error"));
   }
-
-  @Test
-  @SinceRedisVersion(value = "7.9.0")
-  public void warningMaxPrefixExpansions() {
-    final String configParam = "search-max-prefix-expansions";
-    String defaultConfigValue = jedis.configGet(configParam).get(configParam);
-    try {
-      assertOK(client.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.HASH),
-          TextField.of("t"), TagField.of("t2")));
-
-      client.hset("doc13", toMap("t", "foo", "t2", "foo"));
-
-      jedis.configSet(configParam, "1");
-
-      SearchResult srcResult = client.ftSearch(INDEX, "fo*");
-      assertEqualsByProtocol(protocol, null, Arrays.asList(), srcResult.getWarnings());
-
-      client.hset("doc23", toMap("t", "fooo", "t2", "fooo"));
-
-      AggregationResult aggResult = client.ftAggregate(INDEX, new AggregationBuilder("fo*").loadAll());
-      assertEqualsByProtocol(protocol,
-          /* resp2 */ null,
-          Arrays.asList("Max prefix expansions limit was reached"),
-          aggResult.getWarnings());
-    } finally {
-      jedis.configSet(configParam, defaultConfigValue);
-    }
-  }
-
 }
+

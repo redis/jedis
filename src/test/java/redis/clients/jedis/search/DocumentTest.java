@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.search;
+package redis.clients.jedis.search;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,7 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.search.Document;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -64,3 +63,4 @@ public class DocumentTest {
   }
 
 }
+

@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.json;
+package redis.clients.jedis.json;
 
 import java.time.Instant;
 import java.util.List;

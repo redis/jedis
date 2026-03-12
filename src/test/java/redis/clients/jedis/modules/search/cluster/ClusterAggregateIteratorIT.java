@@ -33,7 +33,7 @@ import redis.clients.jedis.search.aggr.*;
  * This test verifies that ftAggregateIterator works correctly in cluster mode
  */
 @SinceRedisVersion(value = "8.0.0", message = "Cluster aggregate iterator tests require Redis OSS 8.0 or higher")
-public class ClusterAggregateIteratorTest {
+public class ClusterAggregateIteratorIT {
 
   private static final String index = "cluster_aggiteratorindex";
 

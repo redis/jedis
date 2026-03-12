@@ -176,3 +176,87 @@ services:
 #    volumes:
 #      - "./redis_uds/config/node-0/redis.conf:/etc/redis.conf"
 #      - "./work/redis_uds/work:/tmp/docker/"
+
+  # Standalone Redis instance with mTLS (mutual TLS) authentication
+  # Uses TLS_CLIENT_CNS to generate client certificates for mTLS users
+  # TLS_AUTH_CLIENTS_USER=CN (default) extracts username from client certificate CN
+  # ACL users matching client certificate CNs are configured via --user directives
+  standalone-mtls:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    <<: *client-libs-image
+    container_name: standalone-mtls
+    command:
+      - "--save"
+      - ""
+      - "--user"
+      - "mtls-user1"
+      - "on"
+      - "nopass"
+      - "~*"
+      - "&*"
+      - "+@all"
+      - "--user"
+      - "mtls-user2"
+      - "on"
+      - "nopass"
+      - "~*"
+      - "&*"
+      - "+@all"
+    environment:
+      - REDIS_CLUSTER=no
+      - TLS_ENABLED=yes
+      - TLS_PORT=6790
+      - PORT=6789
+      - TLS_CLIENT_CNS=mtls-user1 mtls-user2 mtls-user-without-acl
+    ports:
+      # We don't expose non-TLS port on purpose
+      - "6790:6790"
+    volumes:
+      - ${REDIS_ENV_WORK_DIR}/standalone-mtls/work:/redis/work:rw
+
+  # Redis cluster with mTLS (mutual TLS) authentication
+  # 3 nodes without replicas to minimize memory footprint
+  # TLS_AUTH_CLIENTS_USER=CN (default) extracts username from client certificate CN
+  # ACL users matching client certificate CNs are configured via --user directives
+  cluster-mtls:
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    <<: *client-libs-image
+    container_name: cluster-mtls
+    command:
+      - "--cluster-preferred-endpoint-type"
+      - "hostname"
+      - "--cluster-announce-hostname"
+      - "localhost"
+      - "--cluster-node-timeout"
+      - "150"
+      - "--save"
+      - ""
+      - "--user"
+      - "mtls-user1"
+      - "on"
+      - "nopass"
+      - "~*"
+      - "&*"
+      - "+@all"
+      - "--user"
+      - "mtls-user2"
+      - "on"
+      - "nopass"
+      - "~*"
+      - "&*"
+      - "+@all"
+    environment:
+      - REDIS_CLUSTER=yes
+      - TLS_ENABLED=yes
+      - TLS_PORT=8579
+      - PORT=7579
+      - NODES=3
+      - REPLICAS=0
+      - TLS_CLIENT_CNS=mtls-user1 mtls-user2 mtls-user-without-acl
+    ports:
+      # We don't expose non-TLS ports on purpose
+      - "8579-8581:8579-8581"
+    volumes:
+      - ${REDIS_ENV_WORK_DIR}/cluster-mtls/work:/redis/work:rw

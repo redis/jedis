@@ -51,7 +51,6 @@ public class CommandObjects {
   }
 
   protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
-  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
   private Lock mapperLock = new ReentrantLock(true);
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(SearchProtocol.DEFAULT_DIALECT);
@@ -59,10 +58,6 @@ public class CommandObjects {
   @Experimental
   public void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.keyPreProcessor = keyPreProcessor;
-  }
-
-  void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
-    this.broadcastAndRoundRobinConfig = config;
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
@@ -414,12 +409,12 @@ public class CommandObjects {
   }
 
   public CommandObject<Set<String>> keys(String pattern) {
-    CommandArguments args = commandArguments(Command.KEYS).key(pattern);
+    CommandArguments args = commandArguments(Command.KEYS).add(pattern);
     return new CommandObject<>(args, BuilderFactory.STRING_SET);
   }
 
   public CommandObject<Set<byte[]>> keys(byte[] pattern) {
-    CommandArguments args = commandArguments(Command.KEYS).key(pattern);
+    CommandArguments args = commandArguments(Command.KEYS).add(pattern);
     return new CommandObject<>(args, BuilderFactory.BINARY_SET);
   }
 
@@ -3100,12 +3095,12 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> eval(String script, String sampleKey) {
-    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).processKey(sampleKey), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).addHashSlotKey(sampleKey), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(String script, int keyCount, String... params) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keyCount)
-        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
+        .addObjects((Object[]) params).addHashSlotKeys(Arrays.copyOf(params, keyCount)),
         BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
@@ -3124,12 +3119,12 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> eval(byte[] script, byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).processKey(sampleKey), BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).addHashSlotKey(sampleKey), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> eval(byte[] script, int keyCount, byte[]... params) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keyCount)
-        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
+        .addObjects((Object[]) params).addHashSlotKeys(Arrays.copyOf(params, keyCount)),
         BuilderFactory.RAW_OBJECT);
   }
 
@@ -3148,12 +3143,12 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> evalsha(String sha1, String sampleKey) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).processKey(sampleKey), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).addHashSlotKey(sampleKey), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(String sha1, int keyCount, String... params) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
-        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
+        .addObjects((Object[]) params).addHashSlotKeys(Arrays.copyOf(params, keyCount)),
         BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
@@ -3172,12 +3167,12 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1, byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).processKey(sampleKey), BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).addHashSlotKey(sampleKey), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
-        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
+        .addObjects((Object[]) params).addHashSlotKeys(Arrays.copyOf(params, keyCount)),
         BuilderFactory.RAW_OBJECT);
   }
 
@@ -3197,7 +3192,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
     return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
-        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
+        .addHashSlotKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
   }
 
   public final CommandObject<String> scriptLoad(String script) {
@@ -3205,7 +3200,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> scriptLoad(String script, String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   private final CommandObject<String> SCRIPT_FLUSH_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(FLUSH), BuilderFactory.STRING);
@@ -3215,11 +3210,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> scriptFlush(String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptFlush(String sampleKey, FlushMode flushMode) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
@@ -3229,28 +3224,28 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> scriptKill(String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {
     return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
-        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
+        .addHashSlotKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
   }
 
   public final CommandObject<byte[]> scriptLoad(byte[] script, byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).addHashSlotKey(sampleKey), BuilderFactory.BINARY);
   }
 
   public final CommandObject<String> scriptFlush(byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptFlush(byte[] sampleKey, FlushMode flushMode) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptKill(byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT
@@ -3501,11 +3496,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).addHashSlotKey(sampleKey), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).addHashSlotKey(sampleKey), BuilderFactory.LONG);
   }
 
   public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
@@ -3513,11 +3508,11 @@ public class CommandObjects {
   }
 
   public CommandObject<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG_LONG_PAIR);
+    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).addHashSlotKey(sampleKey), BuilderFactory.LONG_LONG_PAIR);
   }
 
   public CommandObject<KeyValue<Long, Long>> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG_LONG_PAIR);
+    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).addHashSlotKey(sampleKey), BuilderFactory.LONG_LONG_PAIR);
   }
 
   public final CommandObject<Long> publish(String channel, String message) {
@@ -3546,18 +3541,16 @@ public class CommandObjects {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
-  private boolean isRoundRobinSearchCommand() {
-    if (broadcastAndRoundRobinConfig == null) {
-      return true;
-    } else if (broadcastAndRoundRobinConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
-      return false;
-    }
-    return true;
+  private boolean isRoundRobinSearchCommand(SearchCommand sc) {
+
+    return !(sc.equals(SearchCommand.SUGGET) || sc.equals(SearchCommand.SUGADD) || sc.equals(
+        SearchCommand.SUGLEN) || sc.equals(SearchCommand.SUGDEL) || sc.equals(
+        SearchCommand.CURSOR));
   }
 
   private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx) {
     CommandArguments ca = commandArguments(sc);
-    if (isRoundRobinSearchCommand()) {
+    if (isRoundRobinSearchCommand(sc)) {
       ca.add(idx);
     } else {
       ca.key(idx);
@@ -3565,9 +3558,10 @@ public class CommandObjects {
     return ca;
   }
 
-  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx1, String idx2) {
+  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, String idx1,
+      String idx2) {
     CommandArguments ca = commandArguments(sc);
-    if (isRoundRobinSearchCommand()) {
+    if (isRoundRobinSearchCommand(sc)) {
       ca.add(idx1).add(idx2);
     } else {
       ca.key(idx1).key(idx2);
@@ -3575,12 +3569,18 @@ public class CommandObjects {
     return ca;
   }
 
-  private CommandArguments checkAndRoundRobinSearchCommand(CommandArguments commandArguments, byte[] indexName) {
-    return isRoundRobinSearchCommand() ? commandArguments.add(indexName) : commandArguments.key(indexName);
+  private CommandArguments checkAndRoundRobinSearchCommand(SearchCommand sc, byte[] indexName) {
+    CommandArguments ca = commandArguments(sc);
+    if (isRoundRobinSearchCommand(sc)) {
+      ca.add(indexName);
+    } else {
+      ca.key(indexName);
+    }
+    return ca;
   }
 
   private <T> CommandObject<T> directSearchCommand(CommandObject<T> object, String indexName) {
-    object.getArguments().processKey(indexName);
+    object.getArguments().addHashSlotKey(indexName);
     return object;
   }
 
@@ -3657,7 +3657,7 @@ public class CommandObjects {
     if (protocol == RedisProtocol.RESP3) {
       throw new UnsupportedOperationException("binary ft.search is not implemented with resp3.");
     }
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.SEARCH, indexName)
         .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(null,
         () -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false)));
   }

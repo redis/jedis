@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -33,4 +34,5 @@ public interface SentinelCommands {
   String sentinelRemove(String masterName);
 
   String sentinelSet(String masterName, Map<String, String> parameterMap);
+
 }

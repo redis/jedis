@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
-import static redis.clients.jedis.commands.unified.json.JsonObjects.*;
+import static redis.clients.jedis.json.JsonObjects.*;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

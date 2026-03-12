@@ -48,7 +48,7 @@ public class JsonObjects {
 
   public static class Baz {
 
-    String quuz;
+    public String quuz;
     private String grault;
     private String waldo;
 

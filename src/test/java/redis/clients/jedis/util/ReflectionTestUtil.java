@@ -1,6 +1,8 @@
 package redis.clients.jedis.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Simple utility for accessing private fields in tests using reflection.
@@ -87,5 +89,68 @@ public class ReflectionTestUtil {
     }
     throw new NoSuchFieldException(
         "Field '" + fieldName + "' not found in class hierarchy of " + clazz.getName());
+  }
+
+  /**
+   * Invokes a private method on an object.
+   * @param target the object on which to invoke the method
+   * @param methodName the name of the method to invoke
+   * @param parameterTypes the parameter types of the method
+   * @param args the arguments to pass to the method
+   * @param <T> the expected return type
+   * @return the result of the method invocation
+   * @throws RuntimeException if the method cannot be invoked
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T invokeMethod(Object target, String methodName, Class<?>[] parameterTypes,
+      Object... args) {
+    if (target == null) {
+      throw new IllegalArgumentException("Target object cannot be null");
+    }
+    if (methodName == null || methodName.isEmpty()) {
+      throw new IllegalArgumentException("Method name cannot be null or empty");
+    }
+
+    try {
+      Method method = findMethod(target.getClass(), methodName, parameterTypes);
+      method.setAccessible(true);
+      return (T) method.invoke(target, args);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(
+          "Method '" + methodName + "' not found in class " + target.getClass().getName(), e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(
+          "Cannot access method '" + methodName + "' in class " + target.getClass().getName(), e);
+    } catch (InvocationTargetException e) {
+      Throwable cause = e.getCause();
+      if (cause instanceof RuntimeException) {
+        throw (RuntimeException) cause;
+      }
+      throw new RuntimeException(
+          "Exception thrown by method '" + methodName + "' in class " + target.getClass().getName(),
+          cause);
+    }
+  }
+
+  /**
+   * Finds a method in the class hierarchy.
+   * @param clazz the class to search
+   * @param methodName the name of the method
+   * @param parameterTypes the parameter types of the method
+   * @return the method
+   * @throws NoSuchMethodException if the method is not found
+   */
+  private static Method findMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes)
+      throws NoSuchMethodException {
+    Class<?> current = clazz;
+    while (current != null) {
+      try {
+        return current.getDeclaredMethod(methodName, parameterTypes);
+      } catch (NoSuchMethodException e) {
+        current = current.getSuperclass();
+      }
+    }
+    throw new NoSuchMethodException(
+        "Method '" + methodName + "' not found in class hierarchy of " + clazz.getName());
   }
 }

@@ -11,6 +11,7 @@ import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @Tag("integration")
@@ -26,6 +27,8 @@ public abstract class ClusterJedisCommandsTestBase {
   @RegisterExtension
   public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
       () -> Endpoints.getRedisEndpoint("cluster-stable"));
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   @BeforeAll
   public static void prepareEndpoint() {

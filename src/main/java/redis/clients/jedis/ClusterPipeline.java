@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
@@ -57,7 +58,17 @@ public class ClusterPipeline extends MultiNodePipelineBase {
 
   @Override
   protected HostAndPort getNodeKey(CommandArguments args) {
-    return provider.getNode(((ClusterCommandArguments) args).getCommandHashSlot());
+    Set<Integer> slots = args.getKeyHashSlots();
+
+    if (slots.size() > 1) {
+      throw new JedisClusterOperationException("Cannot get NodeKey for command with multiple hash slots");
+    }
+
+    if (slots.isEmpty()) {
+      return null; // Let getConnection(null) handle it by using a random node
+    }
+
+    return provider.getNode(slots.iterator().next());
   }
 
   @Override

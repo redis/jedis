@@ -2,13 +2,15 @@ package redis.clients.jedis.search.aggr;
 
 import java.io.Closeable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchProtocol;
-import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.Pool;
 
 /**
  * Iterator for Redis search aggregation results with cursor support. This class manages the
@@ -18,21 +20,17 @@ import redis.clients.jedis.util.IOUtils;
  * The iterator supports the {@link #remove()} method which deletes the cursor on the server and
  * terminates the iteration, freeing server resources immediately.
  * <p>
+ * This implementation uses connection pooling to prevent connection pool exhaustion during
+ * long-running aggregation operations. Connections are borrowed from the pool for each batch
+ * operation and returned immediately after use.
+ * <p>
  * Usage example:
- * 
+ *
  * <pre>
  * {
  *   &#64;code
- *   AggregationBuilder aggr = new AggregationBuilder().groupBy("@field").cursor(100, 60000); // 100
- *                                                                                            // results
- *                                                                                            // per
- *                                                                                            // batch,
- *                                                                                            // 60
- *                                                                                            // second
- *                                                                                            // TTL
- *                                                                                            // for
- *                                                                                            // the
- *                                                                                            // cursor
+ *   // 100 results per batch, 60 second TTL for the cursor
+ *   AggregationBuilder aggr = new AggregationBuilder().groupBy("@field").cursor(100, 60000);
  *
  *   try (AggregateIterator iterator = new AggregateIterator(provider, "myindex", aggr)) {
  *     while (iterator.hasNext()) {
@@ -56,11 +54,11 @@ import redis.clients.jedis.util.IOUtils;
  */
 public class AggregateIterator implements Iterator<AggregationResult>, Closeable {
 
-  private final ConnectionProvider connectionProvider;
   private final String indexName;
   private final Integer batchSize;
 
-  private Connection connection;
+  // Connection pool entry - can be either Connection or Pool<Connection>
+  private final Map.Entry<?, ?> connectionEntry;
   private Long cursorId = -1L;
   private AggregationResult aggrCommandResult;
 
@@ -77,12 +75,19 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
       throw new IllegalArgumentException("AggregationBuilder must have cursor configured");
     }
 
-    this.connectionProvider = connectionProvider;
     this.indexName = indexName;
     this.batchSize = aggregationBuilder.getCursorCount();
 
-    // Get a dedicated connection for this cursor session
-    this.connection = acquireConnection(aggregationBuilder);
+    // Get connection pool entry - use getPrimaryNodesConnectionMap() to get pool-based connections
+    Map<?, ?> connectionMap = connectionProvider.getPrimaryNodesConnectionMap();
+    if (connectionMap.isEmpty()) {
+      throw new JedisException("No connections available from connection provider");
+    }
+    // Get the first (or only) entry from the map
+    this.connectionEntry = connectionMap.entrySet().iterator().next();
+
+    // Execute initial aggregation command
+    initializeAggregation(aggregationBuilder);
   }
 
   @Override
@@ -139,7 +144,7 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
     deleteCursor();
     // Mark cursor as closed to prevent further operations
     cursorId = -1L;
-    IOUtils.closeQuietly(connection);
+    // Note: No connection to close - connections are borrowed and returned per operation
   }
 
   /**
@@ -148,11 +153,11 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
    */
   private void deleteCursor() {
     if (cursorId != null && cursorId > 0) {
+      CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.CURSOR)
+          .add(SearchProtocol.SearchKeyword.DEL).add(indexName).add(cursorId);
       try {
         // Delete the cursor to free server resources
-        connection.executeCommand(
-          new redis.clients.jedis.CommandArguments(SearchProtocol.SearchCommand.CURSOR)
-              .add(SearchProtocol.SearchKeyword.DEL).add(indexName).add(cursorId));
+        executeCommand(args);
       } catch (Exception e) {
         // Log but don't throw - cursor will expire naturally
         System.err.println("Warning: Failed to delete cursor " + cursorId + ": " + e.getMessage());
@@ -165,16 +170,15 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
       return null;
     }
 
-    redis.clients.jedis.CommandArguments args = new redis.clients.jedis.ClusterCommandArguments(
-        SearchProtocol.SearchCommand.CURSOR).add(SearchProtocol.SearchKeyword.READ).add(indexName)
-            .add(cursorId);
+    CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.CURSOR)
+        .add(SearchProtocol.SearchKeyword.READ).add(indexName).add(cursorId);
 
     // Only add COUNT argument if a batch size was explicitly specified
     if (batchSize != null) {
       args.add(SearchProtocol.SearchKeyword.COUNT).add(batchSize);
     }
 
-    Object rawReply = connection.executeCommand(args);
+    Object rawReply = executeCommand(args);
     AggregationResult result = AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR
         .build(rawReply);
 
@@ -182,25 +186,41 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
     return result;
   }
 
-  private Connection acquireConnection(AggregationBuilder aggregationBuilder) {
-    // Create the initial FT.AGGREGATE command
-    redis.clients.jedis.CommandArguments args = new redis.clients.jedis.ClusterCommandArguments(
-        SearchProtocol.SearchCommand.AGGREGATE).add(indexName).addParams(aggregationBuilder);
+  /**
+   * Initializes the aggregation by executing the initial FT.AGGREGATE command.
+   */
+  private void initializeAggregation(AggregationBuilder aggregationBuilder) {
+    CommandArguments args = new CommandArguments(SearchProtocol.SearchCommand.AGGREGATE)
+        .add(indexName).addParams(aggregationBuilder);
 
-    Connection conn = null;
     try {
-      // Get connection and execute initial command
-      conn = connectionProvider.getConnection(args);
-      Object rawReply = conn.executeCommand(args);
+      Object rawReply = executeCommand(args);
       aggrCommandResult = AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR.build(rawReply);
-
       cursorId = aggrCommandResult.getCursorId();
-
-      return conn;
-
     } catch (Exception e) {
-      IOUtils.closeQuietly(conn);
       throw new JedisException("Failed to initialize aggregation cursor", e);
+    }
+  }
+
+  /**
+   * Executes a command using the connection entry. If the entry value is a Pool, borrows a
+   * connection, executes the command, and returns the connection to the pool. This pattern prevents
+   * connection pool exhaustion during long-running aggregation operations.
+   */
+  @SuppressWarnings("unchecked")
+  private Object executeCommand(CommandArguments args) {
+    Object entryValue = connectionEntry.getValue();
+
+    if (entryValue instanceof Connection) {
+      // Direct connection (non-pooled) - use directly
+      return ((Connection) entryValue).executeCommand(args);
+    } else if (entryValue instanceof Pool) {
+      // Pooled connection - borrow, use, and return
+      try (Connection conn = ((Pool<Connection>) entryValue).getResource()) {
+        return conn.executeCommand(args);
+      }
+    } else {
+      throw new IllegalArgumentException(entryValue.getClass() + " is not supported.");
     }
   }
 

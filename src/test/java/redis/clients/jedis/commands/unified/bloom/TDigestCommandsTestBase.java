@@ -42,8 +42,8 @@ public abstract class TDigestCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   private void assertTotalWeight(String key, long totalWeight) {
     Map<String, Object> info = jedis.tdigestInfo(key);
-    assertEquals(totalWeight, (Long) info.get("Merged weight")
-        + (Long) info.get("Unmerged weight"));
+    assertEquals(totalWeight,
+      (Long) info.get("Merged weight") + (Long) info.get("Unmerged weight"));
   }
 
   @Test
@@ -85,7 +85,8 @@ public abstract class TDigestCommandsTestBase extends UnifiedJedisCommandsTestBa
     assertEquals("OK", jedis.tdigestAdd("tdadd", randomValue()));
     assertMergedUnmergedNodes("tdadd", 0, 1);
 
-    assertEquals("OK", jedis.tdigestAdd("tdadd", randomValue(), randomValue(), randomValue(), randomValue()));
+    assertEquals("OK",
+      jedis.tdigestAdd("tdadd", randomValue(), randomValue(), randomValue(), randomValue()));
     assertMergedUnmergedNodes("tdadd", 0, 5);
   }
 
@@ -115,8 +116,9 @@ public abstract class TDigestCommandsTestBase extends UnifiedJedisCommandsTestBa
     assertEquals("OK", jedis.tdigestMerge("{key}to", "{key}from1", "{key}from2"));
     assertTotalWeight("{key}to", 11L);
 
-    assertEquals("OK", jedis.tdigestMerge(TDigestMergeParams.mergeParams()
-        .compression(50).override(), "{key}to", "{key}from1", "{key}from2"));
+    assertEquals("OK",
+      jedis.tdigestMerge(TDigestMergeParams.mergeParams().compression(50).override(), "{key}to",
+        "{key}from1", "{key}from2"));
     assertEquals(50L, jedis.tdigestInfo("{key}to").get("Compression"));
   }
 
@@ -190,4 +192,3 @@ public abstract class TDigestCommandsTestBase extends UnifiedJedisCommandsTestBa
     return values;
   }
 }
-

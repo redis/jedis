@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.search;
+package redis.clients.jedis.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.search.FieldName;
-import redis.clients.jedis.search.Schema;
 
 public class SchemaTest {
 
@@ -93,3 +91,4 @@ public class SchemaTest {
     assertThat(schemaString, Matchers.containsString("DISTANCE_METRIC=L2"));
   }
 }
+

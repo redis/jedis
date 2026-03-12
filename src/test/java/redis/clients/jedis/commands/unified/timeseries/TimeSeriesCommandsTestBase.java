@@ -1,0 +1,982 @@
+package redis.clients.jedis.commands.unified.timeseries;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
+
+import java.util.*;
+
+import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
+
+import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
+
+/**
+ * Base test class for Time Series commands using the UnifiedJedis pattern.
+ */
+@Tag("integration")
+@Tag("timeseries")
+public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTestBase {
+
+  @BeforeAll
+  public static void prepareEndpoint() {
+    endpoint = Endpoints.getRedisEndpoint("modules-docker");
+  }
+
+  public TimeSeriesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
+
+  @Test
+  public void testCreate() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+
+    assertEquals("OK",
+      jedis.tsCreate("series1", TSCreateParams.createParams().retention(10).labels(labels)));
+    assertEquals("TSDB-TYPE", jedis.type("series1"));
+
+    assertEquals("OK", jedis.tsCreate("series2", TSCreateParams.createParams().labels(labels)));
+    assertEquals("TSDB-TYPE", jedis.type("series2"));
+
+    assertEquals("OK", jedis.tsCreate("series3", TSCreateParams.createParams().retention(10)));
+    assertEquals("TSDB-TYPE", jedis.type("series3"));
+
+    assertEquals("OK", jedis.tsCreate("series4"));
+    assertEquals("TSDB-TYPE", jedis.type("series4"));
+
+    assertEquals("OK", jedis.tsCreate("series5",
+      TSCreateParams.createParams().retention(0).uncompressed().labels(labels)));
+    assertEquals("TSDB-TYPE", jedis.type("series5"));
+    assertEquals("OK", jedis.tsCreate("series6", TSCreateParams.createParams().retention(7898)
+        .uncompressed().duplicatePolicy(DuplicatePolicy.MAX).labels(labels)));
+    assertEquals("TSDB-TYPE", jedis.type("series6"));
+
+    try {
+      assertEquals("OK",
+        jedis.tsCreate("series1", TSCreateParams.createParams().retention(10).labels(labels)));
+      fail();
+    } catch (JedisDataException e) {
+    }
+
+    try {
+      assertEquals("OK", jedis.tsCreate("series1", TSCreateParams.createParams().labels(labels)));
+      fail();
+    } catch (JedisDataException e) {
+    }
+
+    try {
+      assertEquals("OK", jedis.tsCreate("series1", TSCreateParams.createParams().retention(10)));
+      fail();
+    } catch (JedisDataException e) {
+    }
+
+    try {
+      assertEquals("OK", jedis.tsCreate("series1"));
+      fail();
+    } catch (JedisDataException e) {
+    }
+
+    try {
+      assertEquals("OK", jedis.tsCreate("series1"));
+      fail();
+    } catch (JedisDataException e) {
+    }
+
+    try {
+      assertEquals("OK", jedis.tsCreate("series7", TSCreateParams.createParams().retention(7898)
+          .uncompressed().chunkSize(-10).duplicatePolicy(DuplicatePolicy.MAX).labels(labels)));
+      fail();
+    } catch (JedisDataException e) {
+    }
+  }
+
+  @Test
+  public void testAlter() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK",
+      jedis.tsCreate("seriesAlter", TSCreateParams.createParams().retention(60000).labels(labels)));
+    assertEquals(Collections.emptyList(), jedis.tsQueryIndex("l2=v22"));
+
+    labels.put("l1", "v11");
+    labels.remove("l2");
+    labels.put("l3", "v33");
+    assertEquals("OK", jedis.tsAlter("seriesAlter", TSAlterParams.alterParams().retention(15000)
+        .chunkSize(8192).duplicatePolicy(DuplicatePolicy.SUM).labels(labels)));
+
+    TSInfo info = jedis.tsInfo("seriesAlter");
+    assertEquals(Long.valueOf(15000), info.getProperty("retentionTime"));
+    assertEquals(Long.valueOf(8192), info.getProperty("chunkSize"));
+    assertEquals(DuplicatePolicy.SUM, info.getProperty("duplicatePolicy"));
+    assertEquals("v11", info.getLabel("l1"));
+    assertNull(info.getLabel("l2"));
+    assertEquals("v33", info.getLabel("l3"));
+  }
+
+  @Test
+  public void createAndAlterParams() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+
+    assertEquals("OK",
+      jedis.tsCreate("ts-params",
+        TSCreateParams.createParams().retention(60000).encoding(EncodingFormat.UNCOMPRESSED)
+            .chunkSize(4096).duplicatePolicy(DuplicatePolicy.BLOCK).ignore(50, 12.5)
+            .labels(labels)));
+
+    labels.put("l1", "v11");
+    labels.remove("l2");
+    labels.put("l3", "v33");
+    assertEquals("OK", jedis.tsAlter("ts-params", TSAlterParams.alterParams().retention(15000)
+        .chunkSize(8192).duplicatePolicy(DuplicatePolicy.SUM).ignore(50, 12.5).labels(labels)));
+  }
+
+  @Test
+  public void testRule() {
+    assertEquals("OK", jedis.tsCreate("{ts}source"));
+    assertEquals("OK", jedis.tsCreate("{ts}dest", TSCreateParams.createParams().retention(10)));
+
+    assertEquals("OK", jedis.tsCreateRule("{ts}source", "{ts}dest", AggregationType.AVG, 100));
+
+    try {
+      jedis.tsCreateRule("{ts}source", "{ts}dest", AggregationType.COUNT, 100);
+      fail();
+    } catch (JedisDataException e) {
+      // Error on creating same rule twice
+    }
+
+    assertEquals("OK", jedis.tsDeleteRule("{ts}source", "{ts}dest"));
+    assertEquals("OK", jedis.tsCreateRule("{ts}source", "{ts}dest", AggregationType.COUNT, 100));
+
+    try {
+      assertEquals("OK", jedis.tsDeleteRule("{ts}source", "{ts}dest1"));
+      fail();
+    } catch (JedisDataException e) {
+      // Error on creating same rule twice
+    }
+  }
+
+  @Test
+  public void addParams() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+
+    assertEquals(1000L,
+      jedis.tsAdd("add1", 1000L, 1.1,
+        TSAddParams.addParams().retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
+            .chunkSize(1000).duplicatePolicy(DuplicatePolicy.FIRST)
+            .onDuplicate(DuplicatePolicy.LAST).ignore(50, 12.5).labels(labels)));
+
+    assertEquals(1000L,
+      jedis.tsAdd("add2", 1000L, 1.1,
+        TSAddParams.addParams().retention(10000).encoding(EncodingFormat.COMPRESSED).chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.MIN).onDuplicate(DuplicatePolicy.MAX).ignore(50, 12.5)
+            .labels(labels)));
+  }
+
+  @Test
+  public void testAdd() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK",
+      jedis.tsCreate("seriesAdd", TSCreateParams.createParams().retention(10000).labels(labels)));
+    assertEquals(0, jedis.tsRange("seriesAdd", TSRangeParams.rangeParams()).size());
+
+    assertEquals(1000L, jedis.tsAdd("seriesAdd", 1000L, 1.1,
+      TSCreateParams.createParams().retention(10000).labels(null)));
+    assertEquals(2000L,
+      jedis.tsAdd("seriesAdd", 2000L, 0.9, TSCreateParams.createParams().labels(null)));
+    assertEquals(3200L,
+      jedis.tsAdd("seriesAdd", 3200L, 1.1, TSCreateParams.createParams().retention(10000)));
+    assertEquals(4500L, jedis.tsAdd("seriesAdd", 4500L, -1.1));
+
+    TSElement[] rawValues = new TSElement[] { new TSElement(1000L, 1.1), new TSElement(2000L, 0.9),
+        new TSElement(3200L, 1.1), new TSElement(4500L, -1.1) };
+    List<TSElement> values = jedis.tsRange("seriesAdd", 800L, 3000L);
+    assertEquals(2, values.size());
+    assertEquals(Arrays.asList(rawValues[0], rawValues[1]), values);
+    values = jedis.tsRange("seriesAdd", 800L, 5000L);
+    assertEquals(4, values.size());
+    assertEquals(Arrays.asList(rawValues), values);
+    assertEquals(Arrays.asList(rawValues), jedis.tsRange("seriesAdd", TSRangeParams.rangeParams()));
+
+    List<TSElement> expectedCountValues = Arrays.asList(new TSElement(2000L, 1),
+      new TSElement(3200L, 1), new TSElement(4500L, 1));
+    values = jedis.tsRange("seriesAdd",
+      TSRangeParams.rangeParams(1200L, 4600L).aggregation(AggregationType.COUNT, 1));
+    assertEquals(3, values.size());
+    assertEquals(expectedCountValues, values);
+
+    List<TSElement> expectedAvgValues = Arrays.asList(new TSElement(0L, 1.1),
+      new TSElement(2000L, 1), new TSElement(4000L, -1.1));
+    values = jedis.tsRange("seriesAdd",
+      TSRangeParams.rangeParams(500L, 4600L).aggregation(AggregationType.AVG, 2000L));
+    assertEquals(3, values.size());
+    assertEquals(expectedAvgValues, values);
+
+    // ensure zero-based index
+    List<TSElement> valuesZeroBased = jedis.tsRange("seriesAdd",
+      TSRangeParams.rangeParams(0L, 4600L).aggregation(AggregationType.AVG, 2000L));
+    assertEquals(3, valuesZeroBased.size());
+    assertEquals(values, valuesZeroBased);
+
+    List<TSElement> expectedOverallSumValues = Arrays.asList(new TSElement(0L, 2.0));
+    values = jedis.tsRange("seriesAdd",
+      TSRangeParams.rangeParams(0L, 5000L).aggregation(AggregationType.SUM, 5000L));
+    assertEquals(1, values.size());
+    assertEquals(expectedOverallSumValues, values);
+
+    List<TSElement> expectedOverallMinValues = Arrays.asList(new TSElement(0L, -1.1));
+    values = jedis.tsRange("seriesAdd",
+      TSRangeParams.rangeParams(0L, 5000L).aggregation(AggregationType.MIN, 5000L));
+    assertEquals(1, values.size());
+    assertEquals(expectedOverallMinValues, values);
+
+    List<TSElement> expectedOverallMaxValues = Arrays.asList(new TSElement(0L, 1.1));
+    values = jedis.tsRange("seriesAdd",
+      TSRangeParams.rangeParams(0L, 5000L).aggregation(AggregationType.MAX, 5000L));
+    assertEquals(1, values.size());
+    assertEquals(expectedOverallMaxValues, values);
+
+    // MRANGE
+    assertEquals(Collections.emptyMap(),
+      jedis.tsMRange(TSMRangeParams.multiRangeParams().filter("l=v")));
+    try {
+      jedis.tsMRange(
+        TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1));
+      fail();
+    } catch (IllegalArgumentException e) {
+    }
+
+    try {
+      jedis.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+          .aggregation(AggregationType.COUNT, 1).filter((String) null));
+      fail();
+    } catch (IllegalArgumentException e) {
+    }
+
+    Map<String, TSMRangeElements> ranges = jedis.tsMRange(TSMRangeParams
+        .multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1).filter("l1=v1"));
+    assertEquals(1, ranges.size());
+
+    TSMRangeElements range = ranges.values().stream().findAny().get();
+    assertEquals("seriesAdd", range.getKey());
+    assertEquals(Collections.emptyMap(), range.getLabels());
+
+    List<TSElement> rangeValues = range.getValue();
+    assertEquals(4, rangeValues.size());
+    assertEquals(new TSElement(1000, 1), rangeValues.get(0));
+    assertNotEquals(new TSElement(1000, 1.1), rangeValues.get(0));
+    assertEquals(2000L, rangeValues.get(1).getTimestamp());
+    assertEquals("(2000:1.0)", rangeValues.get(1).toString());
+
+    // Add with labels
+    Map<String, String> labels2 = new HashMap<>();
+    labels2.put("l3", "v3");
+    labels2.put("l4", "v4");
+    assertEquals(1000L, jedis.tsAdd("seriesAdd2", 1000L, 1.1,
+      TSCreateParams.createParams().retention(10000).labels(labels2)));
+    Map<String, TSMRangeElements> ranges2 = jedis
+        .tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1)
+            .withLabels().filter("l4=v4"));
+    assertEquals(1, ranges2.size());
+    TSMRangeElements elements2 = ranges2.values().stream().findAny().get();
+    assertEquals(labels2, elements2.getLabels());
+    assertEqualsByProtocol(protocol, null, Arrays.asList(AggregationType.COUNT),
+      elements2.getAggregators());
+
+    Map<String, String> labels3 = new HashMap<>();
+    labels3.put("l3", "v33");
+    labels3.put("l4", "v4");
+    assertEquals(1000L,
+      jedis.tsAdd("seriesAdd3", 1000L, 1.1, TSCreateParams.createParams().labels(labels3)));
+    assertEquals(2000L,
+      jedis.tsAdd("seriesAdd3", 2000L, 1.1, TSCreateParams.createParams().labels(labels3)));
+    assertEquals(3000L,
+      jedis.tsAdd("seriesAdd3", 3000L, 1.1, TSCreateParams.createParams().labels(labels3)));
+    Map<String, TSMRangeElements> ranges3 = jedis
+        .tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.AVG, 1L)
+            .withLabels(true).count(2).filter("l4=v4"));
+    assertEquals(2, ranges3.size());
+    ArrayList<TSMRangeElements> ranges3List = new ArrayList<>(ranges3.values());
+    assertEquals(1, ranges3List.get(0).getValue().size());
+    assertEquals(labels2, ranges3List.get(0).getLabels());
+    assertEqualsByProtocol(protocol, null, Arrays.asList(AggregationType.AVG),
+      ranges3List.get(0).getAggregators());
+    assertEquals(2, ranges3List.get(1).getValue().size());
+    assertEquals(labels3, ranges3List.get(1).getLabels());
+    assertEqualsByProtocol(protocol, null, Arrays.asList(AggregationType.AVG),
+      ranges3List.get(1).getAggregators());
+
+    assertEquals(800L, jedis.tsAdd("seriesAdd", 800L, 1.1));
+    assertEquals(700L,
+      jedis.tsAdd("seriesAdd", 700L, 1.1, TSCreateParams.createParams().retention(10000)));
+    assertEquals(600L, jedis.tsAdd("seriesAdd", 600L, 1.1,
+      TSCreateParams.createParams().retention(10000).labels(null)));
+
+    assertEquals(400L,
+      jedis.tsAdd("seriesAdd4", 400L, 0.4, TSCreateParams.createParams().retention(7898L)
+          .uncompressed().chunkSize(1000L).duplicatePolicy(DuplicatePolicy.SUM).labels(labels)));
+    assertEquals("TSDB-TYPE", jedis.type("seriesAdd4"));
+    assertEquals(400L,
+      jedis.tsAdd("seriesAdd4", 400L, 0.3, TSCreateParams.createParams().retention(7898L)
+          .uncompressed().chunkSize(1000L).duplicatePolicy(DuplicatePolicy.SUM).labels(labels)));
+    assertEquals(Arrays.asList(new TSElement(400L, 0.7)),
+      jedis.tsRange("seriesAdd4", 0L, Long.MAX_VALUE));
+
+    // Range on none existing key
+    try {
+      jedis.tsRange("seriesAdd1",
+        TSRangeParams.rangeParams(500L, 4000L).aggregation(AggregationType.COUNT, 1));
+      fail();
+    } catch (JedisDataException e) {
+    }
+  }
+
+  @Test
+  public void issue75() {
+    jedis.tsMRange(TSMRangeParams.multiRangeParams().filter("id=1"));
+  }
+
+  @Test
+  public void del() {
+    try {
+      jedis.tsDel("ts-del", 0, 1);
+      fail();
+    } catch (JedisDataException jde) {
+      // expected
+    }
+
+    assertEquals("OK", jedis.tsCreate("ts-del", TSCreateParams.createParams().retention(10000L)));
+    assertEquals(0, jedis.tsDel("ts-del", 0, 1));
+
+    assertEquals(1000L,
+      jedis.tsAdd("ts-del", 1000L, 1.1, TSCreateParams.createParams().retention(10000)));
+    assertEquals(2000L, jedis.tsAdd("ts-del", 2000L, 0.9));
+    assertEquals(3200L,
+      jedis.tsAdd("ts-del", 3200L, 1.1, TSCreateParams.createParams().retention(10000)));
+    assertEquals(4500L, jedis.tsAdd("ts-del", 4500L, -1.1));
+    assertEquals(4, jedis.tsRange("ts-del", 0, 5000).size());
+
+    assertEquals(2, jedis.tsDel("ts-del", 2000, 4000));
+    assertEquals(2, jedis.tsRange("ts-del", 0, 5000).size());
+    assertEquals(1, jedis.tsRange("ts-del", 0, 2500).size());
+    assertEquals(1, jedis.tsRange("ts-del", 2500, 5000).size());
+  }
+
+  @Test
+  public void testValue() {
+    TSElement v = new TSElement(1234, 234.89634);
+    assertEquals(1234, v.getTimestamp());
+    assertEquals(234.89634, v.getValue(), 0);
+
+    assertEquals(v, new TSElement(1234, 234.89634));
+    assertNotEquals(v, new TSElement(1334, 234.89634));
+    assertNotEquals(v, new TSElement(1234, 234.8934));
+    assertNotEquals(1234, v.getValue());
+
+    assertEquals("(1234:234.89634)", v.toString());
+    assertEquals(-1856719580, v.hashCode());
+  }
+
+  @Test
+  public void testAddStar() throws InterruptedException {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l11", "v11");
+    labels.put("l22", "v22");
+    assertEquals("OK",
+      jedis.tsCreate("seriesAdd2", TSCreateParams.createParams().retention(10000L).labels(labels)));
+
+    // Use 50ms for cases when Redis is not running locally
+    int delayInMillis = 50;
+    long startTime = System.currentTimeMillis();
+    Thread.sleep(delayInMillis);
+    long add1 = jedis.tsAdd("seriesAdd2", 1.1);
+    assertTrue(add1 > startTime);
+    Thread.sleep(delayInMillis);
+    long add2 = jedis.tsAdd("seriesAdd2", 3.2);
+    assertTrue(add2 > add1);
+    Thread.sleep(delayInMillis);
+    long add3 = jedis.tsAdd("seriesAdd2", 3.2);
+    assertTrue(add3 > add2);
+    Thread.sleep(delayInMillis);
+    long add4 = jedis.tsAdd("seriesAdd2", -1.2);
+    assertTrue(add4 > add3);
+    Thread.sleep(delayInMillis);
+    long endTime = System.currentTimeMillis();
+    assertTrue(endTime > add4);
+
+    List<TSElement> values = jedis.tsRange("seriesAdd2", startTime, add3);
+    assertEquals(3, values.size());
+  }
+
+  @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testMadd() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", jedis.tsCreate("{madd}seriesAdd1",
+      TSCreateParams.createParams().retention(10000L).labels(labels)));
+    assertEquals("OK", jedis.tsCreate("{madd}seriesAdd2",
+      TSCreateParams.createParams().retention(10000L).labels(labels)));
+
+    List<Long> result = jedis.tsMAdd(new KeyValue<>("{madd}seriesAdd1", new TSElement(1000L, 1.1)),
+      new KeyValue<>("{madd}seriesAdd2", new TSElement(2000L, 3.2)),
+      new KeyValue<>("{madd}seriesAdd1", new TSElement(1500L, 2.67)),
+      new KeyValue<>("{madd}seriesAdd2", new TSElement(3200L, 54.2)),
+      new KeyValue<>("{madd}seriesAdd2", new TSElement(4300L, 21.2)));
+
+    assertEquals(1000L, result.get(0).longValue());
+    assertEquals(2000L, result.get(1).longValue());
+    assertEquals(1500L, result.get(2).longValue());
+    assertEquals(3200L, result.get(3).longValue());
+    assertEquals(4300L, result.get(4).longValue());
+
+    List<TSElement> values1 = jedis.tsRange("{madd}seriesAdd1", 0, Long.MAX_VALUE);
+    assertEquals(2, values1.size());
+    assertEquals(1.1, values1.get(0).getValue(), 0.001);
+    assertEquals(2.67, values1.get(1).getValue(), 0.001);
+
+    List<TSElement> values2 = jedis.tsRange("{madd}seriesAdd2",
+      TSRangeParams.rangeParams(0, Long.MAX_VALUE).count(2));
+    assertEquals(2, values2.size());
+    assertEquals(3.2, values2.get(0).getValue(), 0.001);
+    assertEquals(54.2, values2.get(1).getValue(), 0.001);
+  }
+
+  @Test
+  public void testIncrByDecrBy() throws InterruptedException {
+    assertEquals("OK", jedis.tsCreate("seriesIncDec",
+      TSCreateParams.createParams().retention(100 * 1000 /* 100 sec */)));
+
+    assertEquals(1L, jedis.tsAdd("seriesIncDec", 1L, 1), 0);
+    assertEquals(2L, jedis.tsIncrBy("seriesIncDec", 3, 2L), 0);
+    assertEquals(3L, jedis.tsDecrBy("seriesIncDec", 2, 3L), 0);
+    List<TSElement> values = jedis.tsRange("seriesIncDec", 1L, 3L);
+    assertEquals(3, values.size());
+    assertEquals(2, values.get(2).getValue(), 0);
+
+    assertEquals(3L, jedis.tsDecrBy("seriesIncDec", 2, 3L), 0);
+    values = jedis.tsRange("seriesIncDec", 1L, Long.MAX_VALUE);
+    assertEquals(3, values.size());
+
+    jedis.tsIncrBy("seriesIncDec", 100);
+    jedis.tsDecrBy("seriesIncDec", 33);
+  }
+
+  @Test
+  public void incrByDecrByParams() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+
+    assertEquals(1000L,
+      jedis.tsIncrBy("incr1", 1.1,
+        TSIncrByParams.incrByParams().timestamp(1000).retention(10000)
+            .encoding(EncodingFormat.UNCOMPRESSED).chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).ignore(50, 12.5).labels(labels)));
+
+    assertEquals(1000L,
+      jedis.tsIncrBy("incr2", 1.1,
+        TSIncrByParams.incrByParams().timestamp(1000).retention(10000)
+            .encoding(EncodingFormat.COMPRESSED).chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.MIN).ignore(50, 12.5).labels(labels)));
+
+    assertEquals(1000L,
+      jedis.tsDecrBy("decr1", 1.1,
+        TSDecrByParams.decrByParams().timestamp(1000).retention(10000)
+            .encoding(EncodingFormat.COMPRESSED).chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.LAST).ignore(50, 12.5).labels(labels)));
+
+    assertEquals(1000L,
+      jedis.tsDecrBy("decr2", 1.1,
+        TSDecrByParams.decrByParams().timestamp(1000).retention(10000)
+            .encoding(EncodingFormat.UNCOMPRESSED).chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.MAX).ignore(50, 12.5).labels(labels)));
+  }
+
+  @Test
+  public void align() {
+    jedis.tsAdd("align", 1, 10d);
+    jedis.tsAdd("align", 3, 5d);
+    jedis.tsAdd("align", 11, 10d);
+    jedis.tsAdd("align", 25, 11d);
+
+    List<TSElement> values = jedis.tsRange("align",
+      TSRangeParams.rangeParams(1L, 30L).aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
+      values);
+
+    values = jedis.tsRange("align",
+      TSRangeParams.rangeParams(1L, 30L).alignStart().aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
+      values);
+
+    values = jedis.tsRange("align",
+      TSRangeParams.rangeParams(1L, 30L).alignEnd().aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
+      values);
+
+    values = jedis.tsRange("align",
+      TSRangeParams.rangeParams(1L, 30L).align(5).aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
+      values);
+  }
+
+  @Test
+  public void rangeFilterBy() {
+    TSElement[] rawValues = new TSElement[] { new TSElement(1000L, 1.0), new TSElement(2000L, 0.9),
+        new TSElement(3200L, 1.1), new TSElement(4500L, -1.1) };
+
+    for (TSElement value : rawValues) {
+      jedis.tsAdd("filterBy", value.getTimestamp(), value.getValue());
+    }
+
+    // RANGE
+    List<TSElement> values = jedis.tsRange("filterBy", 0L, 5000L);
+    assertEquals(Arrays.asList(rawValues), values);
+
+    values = jedis.tsRange("filterBy",
+      TSRangeParams.rangeParams(0L, 5000L).filterByTS(1000L, 2000L));
+    assertEquals(Arrays.asList(rawValues[0], rawValues[1]), values);
+
+    values = jedis.tsRange("filterBy",
+      TSRangeParams.rangeParams(0L, 5000L).filterByValues(1.0, 1.2));
+    assertEquals(Arrays.asList(rawValues[0], rawValues[2]), values);
+
+    values = jedis.tsRange("filterBy",
+      TSRangeParams.rangeParams(0L, 5000L).filterByTS(1000L, 2000L).filterByValues(1.0, 1.2));
+    assertEquals(Arrays.asList(rawValues[0]), values);
+
+    // REVRANGE
+    values = jedis.tsRevRange("filterBy", 0L, 5000L);
+    assertEquals(Arrays.asList(rawValues[3], rawValues[2], rawValues[1], rawValues[0]), values);
+
+    values = jedis.tsRevRange("filterBy",
+      TSRangeParams.rangeParams(0L, 5000L).filterByTS(1000L, 2000L));
+    assertEquals(Arrays.asList(rawValues[1], rawValues[0]), values);
+
+    values = jedis.tsRevRange("filterBy",
+      TSRangeParams.rangeParams(0L, 5000L).filterByValues(1.0, 1.2));
+    assertEquals(Arrays.asList(rawValues[2], rawValues[0]), values);
+
+    values = jedis.tsRevRange("filterBy",
+      TSRangeParams.rangeParams(0L, 5000L).filterByTS(1000L, 2000L).filterByValues(1.0, 1.2));
+    assertEquals(Arrays.asList(rawValues[0]), values);
+  }
+
+  @Test
+  public void testGet() {
+    // Test for empty result none existing series
+    try {
+      jedis.tsGet("seriesGet");
+      fail();
+    } catch (JedisDataException e) {
+    }
+
+    assertEquals("OK", jedis.tsCreate("seriesGet",
+      TSCreateParams.createParams().retention(100 * 1000 /* 100sec retentionTime */)));
+
+    // Test for empty result
+    assertNull(jedis.tsGet("seriesGet"));
+
+    // Test returned last Value
+    jedis.tsAdd("seriesGet", 2558, 8.7);
+    assertEquals(new TSElement(2558, 8.7), jedis.tsGet("seriesGet"));
+
+    jedis.tsAdd("seriesGet", 3458, 1.117);
+    assertEquals(new TSElement(3458, 1.117), jedis.tsGet("seriesGet"));
+  }
+
+  @Test
+  public void testMGet() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", jedis.tsCreate("seriesMGet1", TSCreateParams.createParams()
+        .retention(100 * 1000 /* 100sec retentionTime */).labels(labels)));
+    assertEquals("OK", jedis.tsCreate("seriesMGet2", TSCreateParams.createParams()
+        .retention(100 * 1000 /* 100sec retentionTime */).labels(labels)));
+
+    // Test for empty result
+    Map<String, TSMGetElement> ranges1 = jedis
+        .tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v2");
+    assertEquals(0, ranges1.size());
+
+    // Test for empty ranges
+    Map<String, TSMGetElement> ranges2 = jedis
+        .tsMGet(TSMGetParams.multiGetParams().withLabels(true), "l1=v1");
+    assertEquals(2, ranges2.size());
+    ArrayList<TSMGetElement> ranges2List = new ArrayList<>(ranges2.values());
+    assertEquals(labels, ranges2List.get(0).getLabels());
+    assertEquals(labels, ranges2List.get(1).getLabels());
+    assertNull(ranges2List.get(0).getValue());
+
+    // Test for returned result on MGet
+    jedis.tsAdd("seriesMGet1", 1500, 1.3);
+    Map<String, TSMGetElement> ranges3 = jedis
+        .tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v1");
+    assertEquals(2, ranges3.size());
+    ArrayList<TSMGetElement> ranges3List = new ArrayList<>(ranges3.values());
+    assertEquals(Collections.emptyMap(), ranges3List.get(0).getLabels());
+    assertEquals(Collections.emptyMap(), ranges3List.get(1).getLabels());
+    assertEquals(new TSElement(1500, 1.3), ranges3List.get(0).getValue());
+    assertNull(ranges3List.get(1).getValue());
+  }
+
+  @Test
+  public void testQueryIndex() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", jedis.tsCreate("seriesQueryIndex1", TSCreateParams.createParams()
+        .retention(100 * 1000 /* 100sec retentionTime */).labels(labels)));
+
+    labels.put("l2", "v22");
+    labels.put("l3", "v33");
+    assertEquals("OK", jedis.tsCreate("seriesQueryIndex2", TSCreateParams.createParams()
+        .retention(100 * 1000 /* 100sec retentionTime */).labels(labels)));
+
+    assertEquals(Arrays.<String> asList(), jedis.tsQueryIndex("l1=v2"));
+    assertEquals(Arrays.asList("seriesQueryIndex1", "seriesQueryIndex2"),
+      jedis.tsQueryIndex("l1=v1"));
+    assertEquals(Arrays.asList("seriesQueryIndex2"), jedis.tsQueryIndex("l2=v22"));
+  }
+
+  @Test
+  public void testInfo() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", jedis.tsCreate("{info}source",
+      TSCreateParams.createParams().retention(10000L).labels(labels)));
+    assertEquals("OK",
+      jedis.tsCreate("{info}dest", TSCreateParams.createParams().retention(20000L)));
+    assertEquals("OK", jedis.tsCreateRule("{info}source", "{info}dest", AggregationType.AVG, 100));
+
+    TSInfo info = jedis.tsInfo("{info}source");
+    assertEquals((Long) 10000L, info.getProperty("retentionTime"));
+    assertEquals((Long) 4096L, info.getProperty("chunkSize"));
+    assertEquals("v1", info.getLabel("l1"));
+    assertEquals("v2", info.getLabel("l2"));
+    assertNull(info.getLabel("l3"));
+
+    assertEquals(1, info.getRules().size());
+    TSInfo.Rule rule = info.getRule("{info}dest");
+    assertEquals("{info}dest", rule.getCompactionKey());
+    assertEquals(100L, rule.getBucketDuration());
+    assertEquals(AggregationType.AVG, rule.getAggregator());
+
+    try {
+      jedis.tsInfo("none");
+      fail();
+    } catch (JedisDataException e) {
+      // Error on info on none existing series
+    }
+  }
+
+  @Test
+  public void testInfoDebug() {
+    assertEquals("OK", jedis.tsCreate("source", TSCreateParams.createParams()));
+
+    TSInfo info = jedis.tsInfoDebug("source");
+    assertEquals((Long) 0L, info.getProperty("retentionTime"));
+    assertEquals(0, info.getLabels().size());
+    assertEquals(0, info.getRules().size());
+
+    List<Map<String, Object>> chunks = info.getChunks();
+    assertEquals(1, chunks.size());
+    Map<String, Object> chunk = chunks.get(0);
+    assertEquals(0L, chunk.get("samples"));
+    // Don't care what the values are as long as the values are parsed according to types
+    assertTrue(chunk.get("size") instanceof Long);
+    assertTrue(chunk.get("startTimestamp") instanceof Long);
+    assertTrue(chunk.get("endTimestamp") instanceof Long);
+    assertTrue(chunk.get("bytesPerSample") instanceof Double);
+
+    try {
+      jedis.tsInfoDebug("none");
+      fail();
+    } catch (JedisDataException e) {
+      // Error on info on none existing series
+    }
+  }
+
+  @Test
+  public void testRevRange() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK",
+      jedis.tsCreate("seriesAdd", TSCreateParams.createParams().retention(10000L).labels(labels)));
+    assertEquals(Collections.emptyList(),
+      jedis.tsRevRange("seriesAdd", TSRangeParams.rangeParams()));
+
+    assertEquals(1000L,
+      jedis.tsAdd("seriesRevRange", 1000L, 1.1, TSCreateParams.createParams().retention(10000)));
+    assertEquals(2000L,
+      jedis.tsAdd("seriesRevRange", 2000L, 0.9, TSCreateParams.createParams().labels(null)));
+    assertEquals(3200L,
+      jedis.tsAdd("seriesRevRange", 3200L, 1.1, TSCreateParams.createParams().retention(10000)));
+    assertEquals(4500L, jedis.tsAdd("seriesRevRange", 4500L, -1.1));
+
+    TSElement[] rawValues = new TSElement[] { new TSElement(4500L, -1.1), new TSElement(3200L, 1.1),
+        new TSElement(2000L, 0.9), new TSElement(1000L, 1.1) };
+    List<TSElement> values = jedis.tsRevRange("seriesRevRange", 800L, 3000L);
+    assertEquals(2, values.size());
+    assertEquals(Arrays.asList(Arrays.copyOfRange(rawValues, 2, 4)), values);
+    values = jedis.tsRevRange("seriesRevRange", 800L, 5000L);
+    assertEquals(4, values.size());
+    assertEquals(Arrays.asList(rawValues), values);
+    assertEquals(Arrays.asList(rawValues),
+      jedis.tsRevRange("seriesRevRange", TSRangeParams.rangeParams()));
+
+    List<TSElement> expectedCountValues = Arrays.asList(new TSElement(4500L, 1),
+      new TSElement(3200L, 1), new TSElement(2000L, 1));
+    values = jedis.tsRevRange("seriesRevRange",
+      TSRangeParams.rangeParams(1200L, 4600L).aggregation(AggregationType.COUNT, 1));
+    assertEquals(3, values.size());
+    assertEquals(expectedCountValues, values);
+
+    List<TSElement> expectedAvgValues = Arrays.asList(new TSElement(4000L, -1.1),
+      new TSElement(2000L, 1), new TSElement(0L, 1.1));
+    values = jedis.tsRevRange("seriesRevRange",
+      TSRangeParams.rangeParams(500L, 4600L).aggregation(AggregationType.AVG, 2000L));
+    assertEquals(3, values.size());
+    assertEquals(expectedAvgValues, values);
+  }
+
+  @Test
+  public void latest() {
+    jedis.tsCreate("{latest}ts1");
+    jedis.tsCreate("{latest}ts2");
+    jedis.tsCreateRule("{latest}ts1", "{latest}ts2", AggregationType.SUM, 10);
+    jedis.tsAdd("{latest}ts1", 1, 1);
+    jedis.tsAdd("{latest}ts1", 2, 3);
+    jedis.tsAdd("{latest}ts1", 11, 7);
+    jedis.tsAdd("{latest}ts1", 13, 1);
+    List<TSElement> range = jedis.tsRange("{latest}ts1", 0, 20);
+    assertEquals(4, range.size());
+
+    final TSElement compact = new TSElement(0, 4);
+    final TSElement latest = new TSElement(10, 8);
+
+    // get
+    assertEquals(compact, jedis.tsGet("{latest}ts2", TSGetParams.getParams()));
+    assertEquals(latest, jedis.tsGet("{latest}ts2", TSGetParams.getParams().latest()));
+
+    // range
+    assertEquals(Arrays.asList(compact),
+      jedis.tsRange("{latest}ts2", TSRangeParams.rangeParams(0, 10)));
+    assertEquals(Arrays.asList(compact, latest),
+      jedis.tsRange("{latest}ts2", TSRangeParams.rangeParams(0, 10).latest()));
+
+    // revrange
+    assertEquals(Arrays.asList(compact),
+      jedis.tsRevRange("{latest}ts2", TSRangeParams.rangeParams(0, 10)));
+    assertEquals(Arrays.asList(latest, compact),
+      jedis.tsRevRange("{latest}ts2", TSRangeParams.rangeParams(0, 10).latest()));
+  }
+
+  @Test
+  public void latestMulti() {
+    jedis.tsCreate("{latestm}ts1");
+    jedis.tsCreate("{latestm}ts2", TSCreateParams.createParams().label("compact", "true"));
+    jedis.tsCreateRule("{latestm}ts1", "{latestm}ts2", AggregationType.SUM, 10);
+    jedis.tsAdd("{latestm}ts1", 1, 1);
+    jedis.tsAdd("{latestm}ts1", 2, 3);
+    jedis.tsAdd("{latestm}ts1", 11, 7);
+    jedis.tsAdd("{latestm}ts1", 13, 1);
+    List<TSElement> range = jedis.tsRange("{latestm}ts1", 0, 20);
+    assertEquals(4, range.size());
+
+    final TSElement compact = new TSElement(0, 4);
+    final TSElement latest = new TSElement(10, 8);
+
+    // mget
+    assertEquals(makeSingletonMap(new TSMGetElement("{latestm}ts2", null, compact)),
+      jedis.tsMGet(TSMGetParams.multiGetParams(), "compact=true"));
+
+    assertEquals(makeSingletonMap(new TSMGetElement("{latestm}ts2", null, latest)),
+      jedis.tsMGet(TSMGetParams.multiGetParams().latest(), "compact=true"));
+
+    // mrange
+    assertEquals(
+      makeSingletonMap(new TSMRangeElements("{latestm}ts2", null, Arrays.asList(compact))),
+      jedis.tsMRange(TSMRangeParams.multiRangeParams().filter("compact=true")));
+
+    assertEquals(
+      makeSingletonMap(new TSMRangeElements("{latestm}ts2", null, Arrays.asList(compact, latest))),
+      jedis.tsMRange(TSMRangeParams.multiRangeParams().latest().filter("compact=true")));
+
+    // mrevrange
+    assertEquals(
+      makeSingletonMap(new TSMRangeElements("{latestm}ts2", null, Arrays.asList(compact))),
+      jedis.tsMRevRange(TSMRangeParams.multiRangeParams().filter("compact=true")));
+
+    assertEquals(
+      makeSingletonMap(new TSMRangeElements("{latestm}ts2", null, Arrays.asList(latest, compact))),
+      jedis.tsMRevRange(TSMRangeParams.multiRangeParams().latest().filter("compact=true")));
+  }
+
+  private Map<String, TSMGetElement> makeSingletonMap(TSMGetElement value) {
+    return Collections.singletonMap(value.getKey(), value);
+  }
+
+  private Map<String, TSMRangeElements> makeSingletonMap(TSMRangeElements value) {
+    return Collections.singletonMap(value.getKey(), value);
+  }
+
+  @Test
+  public void empty() {
+    jedis.tsCreate("ts", TSCreateParams.createParams().label("l", "v"));
+    jedis.tsAdd("ts", 1, 1);
+    jedis.tsAdd("ts", 2, 3);
+    jedis.tsAdd("ts", 11, 7);
+    jedis.tsAdd("ts", 13, 1);
+
+    // range
+    List<TSElement> range = jedis.tsRange("ts",
+      TSRangeParams.rangeParams().aggregation(AggregationType.MAX, 5));
+    assertEquals(2, range.size());
+    range = jedis.tsRange("ts",
+      TSRangeParams.rangeParams().aggregation(AggregationType.MAX, 5).empty());
+    assertEquals(3, range.size());
+    assertNotNull(range.get(1).getValue()); // any parsable value
+
+    // revrange
+    range = jedis.tsRevRange("ts", TSRangeParams.rangeParams().aggregation(AggregationType.MIN, 5));
+    assertEquals(2, range.size());
+    range = jedis.tsRevRange("ts",
+      TSRangeParams.rangeParams().aggregation(AggregationType.MIN, 5).empty());
+    assertEquals(3, range.size());
+    assertNotNull(range.get(1).getValue()); // any parsable value
+
+    // mrange
+    Map<String, TSMRangeElements> mrange = jedis.tsMRange(
+      TSMRangeParams.multiRangeParams().aggregation(AggregationType.MIN, 5).filter("l=v"));
+    assertEquals(1, mrange.size());
+    ArrayList<TSMRangeElements> mrangeList = new ArrayList<>(mrange.values());
+    assertEquals(2, mrangeList.get(0).getValue().size());
+    mrange = jedis.tsMRange(
+      TSMRangeParams.multiRangeParams().aggregation(AggregationType.MIN, 5).empty().filter("l=v"));
+    assertEquals(1, mrange.size());
+    mrangeList = new ArrayList<>(mrange.values());
+    assertEquals(3, mrangeList.get(0).getValue().size());
+    assertNotNull(mrangeList.get(0).getValue().get(1).getValue()); // any parsable value
+
+    // mrevrange
+    mrange = jedis.tsMRevRange(
+      TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).filter("l=v"));
+    assertEquals(1, mrange.size());
+    mrangeList = new ArrayList<>(mrange.values());
+    assertEquals(2, mrangeList.get(0).getValue().size());
+    mrange = jedis.tsMRevRange(
+      TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).empty().filter("l=v"));
+    assertEquals(1, mrange.size());
+    mrangeList = new ArrayList<>(mrange.values());
+    assertEquals(3, mrangeList.get(0).getValue().size());
+    assertNotNull(mrangeList.get(0).getValue().get(1).getValue()); // any parsable value
+  }
+
+  @Test
+  public void bucketTimestamp() {
+    jedis.tsCreate("ts", TSCreateParams.createParams().label("l", "v"));
+    jedis.tsAdd("ts", 1, 1);
+    jedis.tsAdd("ts", 2, 3);
+
+    // range / revrange
+    assertEquals(0,
+      jedis
+          .tsRange("ts",
+            TSRangeParams.rangeParams().aggregation(AggregationType.FIRST, 10).bucketTimestampLow())
+          .get(0).getTimestamp());
+    assertEquals(10,
+      jedis
+          .tsRange("ts",
+            TSRangeParams.rangeParams().aggregation(AggregationType.LAST, 10).bucketTimestampHigh())
+          .get(0).getTimestamp());
+    assertEquals(5,
+      jedis
+          .tsRange("ts",
+            TSRangeParams.rangeParams().aggregation(AggregationType.RANGE, 10).bucketTimestampMid())
+          .get(0).getTimestamp());
+    assertEquals(5,
+      jedis
+          .tsRevRange("ts",
+            TSRangeParams.rangeParams().aggregation(AggregationType.TWA, 10).bucketTimestampMid())
+          .get(0).getTimestamp());
+    assertEquals(5,
+      jedis
+          .tsRevRange("ts",
+            TSRangeParams.rangeParams().aggregation(AggregationType.TWA, 10).bucketTimestamp("mid"))
+          .get(0).getTimestamp());
+
+    // mrange / mrevrange
+    assertEquals(0,
+      jedis
+          .tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.STD_P, 10)
+              .bucketTimestampLow().filter("l=v"))
+          .values().stream().findAny().get().getValue().get(0).getTimestamp());
+    assertEquals(10,
+      jedis
+          .tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.STD_S, 10)
+              .bucketTimestampHigh().filter("l=v"))
+          .values().stream().findAny().get().getValue().get(0).getTimestamp());
+    assertEquals(5,
+      jedis
+          .tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.TWA, 10)
+              .bucketTimestampMid().filter("l=v"))
+          .values().stream().findAny().get().getValue().get(0).getTimestamp());
+    assertEquals(5,
+      jedis
+          .tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.VAR_P, 10)
+              .bucketTimestampMid().filter("l=v"))
+          .values().stream().findAny().get().getValue().get(0).getTimestamp());
+    assertEquals(5,
+      jedis
+          .tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.VAR_S, 10)
+              .bucketTimestamp("~").filter("l=v"))
+          .values().stream().findAny().get().getValue().get(0).getTimestamp());
+  }
+
+  @Test
+  public void alignTimestamp() {
+    jedis.tsCreate("{align}ts1");
+    jedis.tsCreate("{align}ts2");
+    jedis.tsCreate("{align}ts3");
+    jedis.tsCreateRule("{align}ts1", "{align}ts2", AggregationType.COUNT, 10, 0);
+    jedis.tsCreateRule("{align}ts1", "{align}ts3", AggregationType.COUNT, 10, 1);
+    jedis.tsAdd("{align}ts1", 1, 1);
+    jedis.tsAdd("{align}ts1", 10, 3);
+    jedis.tsAdd("{align}ts1", 21, 7);
+    assertEquals(2,
+      jedis
+          .tsRange("{align}ts2", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10))
+          .size());
+    assertEquals(1,
+      jedis
+          .tsRange("{align}ts3", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10))
+          .size());
+  }
+}

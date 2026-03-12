@@ -196,22 +196,27 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
   @Test
   public void testJsonMerge() {
     // Test with root path
-    JSONObject json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
+    JSONObject json = new JSONObject(
+        "{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
     assertEquals("OK", jedis.jsonSet("test_merge", json));
 
-    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
+    json = new JSONObject(
+        "{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
     assertEquals("OK", jedis.jsonMerge("test_merge", Path2.of("$"), "{\"person\":{\"age\":30}}"));
 
     assertJsonArrayEquals(jsonArray(json), jedis.jsonGet("test_merge", Path2.of("$")));
 
     // Test with root path path $.a.b
-    assertEquals("OK", jedis.jsonMerge("test_merge", Path2.of("$.person.address"), "{\"work\":\"Redis office\"}"));
-    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
+    assertEquals("OK",
+      jedis.jsonMerge("test_merge", Path2.of("$.person.address"), "{\"work\":\"Redis office\"}"));
+    json = new JSONObject(
+        "{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
     assertJsonArrayEquals(jsonArray(json), jedis.jsonGet("test_merge", Path2.of("$")));
 
     // Test with null value to delete a value
     assertEquals("OK", jedis.jsonMerge("test_merge", Path2.of("$.person"), "{\"age\":null}"));
-    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
+    json = new JSONObject(
+        "{\"person\":{\"name\":\"John Doe\",\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
     assertJsonArrayEquals(jsonArray(json), jedis.jsonGet("test_merge", Path2.of("$")));
 
     // cleanup
@@ -229,13 +234,15 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     assertJsonArrayEquals(jsonArray(json), jedis.jsonGet("test_merge_array", Path2.of("$")));
 
     // Test merge an array on a value
-    assertEquals("OK", jedis.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}"));
+    assertEquals("OK",
+      jedis.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}"));
     assertEquals("OK", jedis.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]"));
     json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
     assertJsonArrayEquals(jsonArray(json), jedis.jsonGet("test_merge_array", Path2.of("$")));
 
     // Test with null value to delete an array value
-    assertEquals("OK", jedis.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}"));
+    assertEquals("OK",
+      jedis.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}"));
     assertEquals("OK", jedis.jsonMerge("test_merge_array", Path2.of("$.a.b"), "{\"c\":null}"));
     json = new JSONObject("{\"a\":{\"b\":{}}}");
     assertJsonArrayEquals(jsonArray(json), jedis.jsonGet("test_merge_array", Path2.of("$")));
@@ -277,7 +284,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void arrLen() {
-    jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
+    jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[] { 0, 1, 2, 3, 4 }));
     assertEquals(singletonList(5L), jedis.jsonArrLen("arr", ROOT_PATH));
   }
 
@@ -315,7 +322,8 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     jedis.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(6L), jedis.jsonArrAppend("test_arrappend", Path2.of(".b"), 4, 5, 6));
 
-    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, 4, 5, 6)), jedis.jsonGet("test_arrappend", Path2.of(".b")));
+    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, 4, 5, 6)),
+      jedis.jsonGet("test_arrappend", Path2.of(".b")));
   }
 
   @Test
@@ -325,27 +333,33 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     Object nullObject = gson.toJson(null);
     String json = "{ a: 'hello', b: [1, 2, 3], c: { d: ['ello'] }}";
     jedis.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
-    assertEquals(singletonList(6L), jedis.jsonArrAppend("test_arrappend", Path2.of(".b"), fooObject, trueObject, nullObject));
+    assertEquals(singletonList(6L),
+      jedis.jsonArrAppend("test_arrappend", Path2.of(".b"), fooObject, trueObject, nullObject));
 
-    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, "foo", true, null)), jedis.jsonGet("test_arrappend", Path2.of(".b")));
+    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, "foo", true, null)),
+      jedis.jsonGet("test_arrappend", Path2.of(".b")));
   }
 
   @Test
   public void arrAppendMultipleTypesWithDeepPath() {
     String json = "{ a: 'hello', b: [1, 2, 3], c: { d: ['ello'] }}";
     jedis.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
-    assertEquals(singletonList(4L), jedis.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "foo", true, null));
+    assertEquals(singletonList(4L),
+      jedis.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "foo", true, null));
 
-    assertJsonArrayEquals(jsonArray(jsonArray("ello", "foo", true, null)), jedis.jsonGet("test_arrappend", Path2.of(".c.d")));
+    assertJsonArrayEquals(jsonArray(jsonArray("ello", "foo", true, null)),
+      jedis.jsonGet("test_arrappend", Path2.of(".c.d")));
   }
 
   @Test
   public void arrAppendAgaintsEmptyArray() {
     String json = "{ a: 'hello', b: [1, 2, 3], c: { d: [] }}";
     jedis.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
-    assertEquals(singletonList(3L), jedis.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "a", "b", "c"));
+    assertEquals(singletonList(3L),
+      jedis.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "a", "b", "c"));
 
-    assertJsonArrayEquals(jsonArray(jsonArray("a", "b", "c")), jedis.jsonGet("test_arrappend", Path2.of(".c.d")));
+    assertJsonArrayEquals(jsonArray(jsonArray("a", "b", "c")),
+      jedis.jsonGet("test_arrappend", Path2.of(".c.d")));
   }
 
   @Test
@@ -353,64 +367,71 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     String json = "{ a: 'hello', b: [1, 2, 3], c: { d: ['ello'] }}";
     jedis.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(null), jedis.jsonArrAppend("test_arrappend", Path2.of(".a"), 1));
-    assertEquals(singletonList(null), jedis.jsonArrAppend("test_arrappend", Path2.of(".a"), gson.toJson(1)));
-    assertEquals(singletonList(null), jedis.jsonArrAppendWithEscape("test_arrappend", Path2.of(".a"), 1));
+    assertEquals(singletonList(null),
+      jedis.jsonArrAppend("test_arrappend", Path2.of(".a"), gson.toJson(1)));
+    assertEquals(singletonList(null),
+      jedis.jsonArrAppendWithEscape("test_arrappend", Path2.of(".a"), 1));
   }
 
   @Test
   public void arrIndexAbsentKey() {
     assertThrows(JedisDataException.class,
-        () -> jedis.jsonArrIndexWithEscape("quxquux", ROOT_PATH, new JSONObject()));
+      () -> jedis.jsonArrIndexWithEscape("quxquux", ROOT_PATH, new JSONObject()));
   }
 
   @Test
   public void arrIndexWithInts() {
-    jedis.jsonSetWithEscape("quxquux", ROOT_PATH, new int[]{8, 6, 7, 5, 3, 0, 9});
+    jedis.jsonSetWithEscape("quxquux", ROOT_PATH, new int[] { 8, 6, 7, 5, 3, 0, 9 });
     assertEquals(singletonList(2L), jedis.jsonArrIndexWithEscape("quxquux", ROOT_PATH, 7));
     assertEquals(singletonList(-1L), jedis.jsonArrIndexWithEscape("quxquux", ROOT_PATH, "7"));
   }
 
   @Test
   public void arrIndexWithStrings() {
-    jedis.jsonSetWithEscape("quxquux", ROOT_PATH, new String[]{"8", "6", "7", "5", "3", "0", "9"});
+    jedis.jsonSetWithEscape("quxquux", ROOT_PATH,
+      new String[] { "8", "6", "7", "5", "3", "0", "9" });
     assertEquals(singletonList(2L), jedis.jsonArrIndexWithEscape("quxquux", ROOT_PATH, "7"));
   }
 
   @Test
   public void arrIndexWithStringsAndPath() {
     jedis.jsonSetWithEscape("foobar", ROOT_PATH, new FooBarObject());
-    assertEquals(singletonList(1L), jedis.jsonArrIndexWithEscape("foobar", Path2.of(".fooArr"), "b"));
+    assertEquals(singletonList(1L),
+      jedis.jsonArrIndexWithEscape("foobar", Path2.of(".fooArr"), "b"));
   }
 
   @Test
   public void arrIndexNonExistentPath() {
     jedis.jsonSet("foobar", ROOT_PATH, gson.toJson(new FooBarObject()));
-    assertEquals(Collections.emptyList(), jedis.jsonArrIndex("foobar", Path2.of(".barArr"), gson.toJson("x")));
+    assertEquals(Collections.emptyList(),
+      jedis.jsonArrIndex("foobar", Path2.of(".barArr"), gson.toJson("x")));
   }
 
   @Test
   public void arrInsert() {
     String json = "['hello', 'world', true, 1, 3, null, false]";
     jedis.jsonSet("test_arrinsert", ROOT_PATH, new JSONArray(json));
-    assertEquals(singletonList(8L), jedis.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, 1, "foo"));
+    assertEquals(singletonList(8L),
+      jedis.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, 1, "foo"));
 
     assertJsonArrayEquals(jsonArray(jsonArray("hello", "foo", "world", true, 1, 3, null, false)),
-        jedis.jsonGet("test_arrinsert", ROOT_PATH));
+      jedis.jsonGet("test_arrinsert", ROOT_PATH));
   }
 
   @Test
   public void arrInsertWithNegativeIndex() {
     String json = "['hello', 'world', true, 1, 3, null, false]";
     jedis.jsonSet("test_arrinsert", ROOT_PATH, new JSONArray(json));
-    assertEquals(singletonList(8L), jedis.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, -1, "foo"));
+    assertEquals(singletonList(8L),
+      jedis.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, -1, "foo"));
 
     assertJsonArrayEquals(jsonArray(jsonArray("hello", "world", true, 1, 3, null, "foo", false)),
-        jedis.jsonGet("test_arrinsert", ROOT_PATH));
+      jedis.jsonGet("test_arrinsert", ROOT_PATH));
   }
 
   @Test
   public void arrPop() {
-    jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
+    jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[] { 0, 1, 2, 3, 4 }));
     assertEquals(singletonList(4d), jedis.jsonArrPop("arr", ROOT_PATH));
     assertEquals(singletonList(3d), jedis.jsonArrPop("arr", ROOT_PATH, -1));
     assertEquals(singletonList(0d), jedis.jsonArrPop("arr", ROOT_PATH, 0));
@@ -418,7 +439,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void arrTrim() {
-    jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
+    jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[] { 0, 1, 2, 3, 4 }));
     assertEquals(singletonList(3L), jedis.jsonArrTrim("arr", ROOT_PATH, 1, 3));
     assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3)), jedis.jsonGet("arr", ROOT_PATH));
   }
@@ -441,8 +462,10 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     assumeFalse(protocol == RedisProtocol.RESP3);
     jedis.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), jedis.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
-    assertJsonArrayEquals(jsonArray(null, 4, 7, null), jedis.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
-    assertJsonArrayEquals(jsonArray((Object) null), jedis.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
+    assertJsonArrayEquals(jsonArray(null, 4, 7, null),
+      jedis.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
+    assertJsonArrayEquals(jsonArray((Object) null),
+      jedis.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
     assertJsonArrayEquals(jsonArray(), jedis.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
   }
 
@@ -451,7 +474,8 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     assumeTrue(protocol == RedisProtocol.RESP3);
     jedis.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertEquals(singletonList((Object) null), jedis.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
-    assertEquals(Arrays.asList(null, 4d, 7d, null), jedis.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
+    assertEquals(Arrays.asList(null, 4d, 7d, null),
+      jedis.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
     assertEquals(singletonList((Object) null), jedis.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
     assertEquals(Collections.emptyList(), jedis.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
   }
@@ -463,7 +487,8 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals(Arrays.asList(2L), jedis.jsonObjLen("doc", ROOT_PATH));
     assertEquals(Arrays.asList(Arrays.asList("a", "nested")), jedis.jsonObjKeys("doc", ROOT_PATH));
     assertEquals(Arrays.asList(null, 2L), jedis.jsonObjLen("doc", Path2.of("..a")));
-    assertEquals(Arrays.asList(null, Arrays.asList("b", "c")), jedis.jsonObjKeys("doc", Path2.of("..a")));
+    assertEquals(Arrays.asList(null, Arrays.asList("b", "c")),
+      jedis.jsonObjKeys("doc", Path2.of("..a")));
   }
 
   @Test
@@ -497,7 +522,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
         assertJsonObjectEquals((JSONObject) ia, ib);
       } else if (ia instanceof Number && ib instanceof Number) {
         assertEquals(((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d,
-            index + "'th element mismatch");
+          index + "'th element mismatch");
       } else {
         assertEquals(ia, ib, index + "'th element mismatch");
       }
@@ -536,4 +561,3 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     return arr;
   }
 }
-

@@ -52,9 +52,8 @@ public abstract class TopKCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertNull(jedis.topkIncrBy("aaa", "ff", 5));
     assertEquals(Arrays.asList("ff", "bb", "cc"), jedis.topkList("aaa"));
 
-    assertEquals(Collections.<String>singletonList(null),
-        jedis.topkIncrBy("aaa", Collections.singletonMap("ff", 8L)));
+    assertEquals(Collections.<String> singletonList(null),
+      jedis.topkIncrBy("aaa", Collections.singletonMap("ff", 8L)));
     assertEquals(Long.valueOf(13), jedis.topkListWithCount("aaa").get("ff"));
   }
 }
-

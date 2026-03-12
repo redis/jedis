@@ -89,8 +89,8 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void reserveExpansion() {
     jedis.bfReserve("bfexpansion", 0.001, 1000, BFReserveParams.reserveParams().expansion(4));
     assertEquals(Arrays.asList(true), jedis.bfInsert("bfexpansion", "a"));
-    assertEquals(Arrays.asList(true), jedis.bfInsert("bfexpansion",
-        BFInsertParams.insertParams().noCreate(), "b"));
+    assertEquals(Arrays.asList(true),
+      jedis.bfInsert("bfexpansion", BFInsertParams.insertParams().noCreate(), "b"));
   }
 
   @Test
@@ -123,7 +123,8 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
 
     jedis.bfMAdd("simpleBloom", "foo", "bar", "baz", "bat", "bag");
 
-    List<Boolean> rv = jedis.bfMExists("simpleBloom", "foo", "bar", "baz", "bat", "Mark", "nonexist");
+    List<Boolean> rv = jedis.bfMExists("simpleBloom", "foo", "bar", "baz", "bat", "Mark",
+      "nonexist");
     assertEquals(Arrays.asList(true, true, true, true, true, false), rv);
 
     jedis.bfReserve("specialBloom", 0.0001, 10000);
@@ -136,8 +137,8 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
     assertTrue(jedis.bfExists("b1", "1"));
 
     JedisDataException jde = assertThrows(JedisDataException.class,
-        () -> jedis.bfInsert("b2", new BFInsertParams().noCreate(), "1"),
-        "Should error if the filter does not already exist.");
+      () -> jedis.bfInsert("b2", new BFInsertParams().noCreate(), "1"),
+      "Should error if the filter does not already exist.");
     assertEquals("ERR not found", jde.getMessage());
 
     jedis.bfInsert("b3", new BFInsertParams().capacity(1L).error(0.0001), "2");
@@ -160,7 +161,7 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
 
     jedis.set("foo", "bar");
     assertThrows(JedisDataException.class, () -> jedis.bfCard("foo"),
-        "Should error if the filter is not a bloom filter");
+      "Should error if the filter is not a bloom filter");
   }
 
   @Test
@@ -169,15 +170,15 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
     Map<String, Object> info = jedis.bfInfo("test_info");
     assertEquals(1L, info.get("Number of items inserted"));
 
-    JedisDataException jde = assertThrows(JedisDataException.class,
-        () -> jedis.bfInfo("not_exist"), "Should error if the filter does not already exist.");
+    JedisDataException jde = assertThrows(JedisDataException.class, () -> jedis.bfInfo("not_exist"),
+      "Should error if the filter does not already exist.");
     assertEquals("ERR not found", jde.getMessage());
   }
 
   @Test
   public void insertNonScaling() {
     List<Boolean> insert = jedis.bfInsert("nonscaling_err",
-        BFInsertParams.insertParams().capacity(4).nonScaling(), "a", "b", "c");
+      BFInsertParams.insertParams().capacity(4).nonScaling(), "a", "b", "c");
     assertEquals(Arrays.asList(true, true, true), insert);
 
     insert = jedis.bfInsert("nonscaling_err", "d", "e");
@@ -187,9 +188,8 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
   @Test
   public void insertExpansion() {
     List<Boolean> insert = jedis.bfInsert("bfexpansion2",
-        BFInsertParams.insertParams().capacity(3).expansion(3),
-        "a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l",
-        "o", "i", "u", "y", "t", "r", "e", "w", "q");
+      BFInsertParams.insertParams().capacity(3).expansion(3), "a", "b", "c", "d", "e", "f", "g",
+      "h", "j", "k", "l", "o", "i", "u", "y", "t", "r", "e", "w", "q");
     assertEquals(20, insert.size());
   }
 
@@ -210,4 +210,3 @@ public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase
     assertTrue(jedis.bfExists("bloom-load", "a"));
   }
 }
-

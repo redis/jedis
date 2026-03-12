@@ -24,8 +24,7 @@ public class JsonObjects {
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
       final IRLObject other = (IRLObject) obj;
-      return Objects.equals(str, other.str)
-          && Objects.equals(bool, other.bool);
+      return Objects.equals(str, other.str) && Objects.equals(bool, other.bool);
     }
   }
 
@@ -43,7 +42,7 @@ public class JsonObjects {
       this.fooB = true;
       this.fooI = 6574;
       this.fooF = 435.345f;
-      this.fooArr = new String[]{"a", "b", "c"};
+      this.fooArr = new String[] { "a", "b", "c" };
     }
   }
 
@@ -65,8 +64,7 @@ public class JsonObjects {
       if (o == null) return false;
       if (getClass() != o.getClass()) return false;
       Baz other = (Baz) o;
-      return Objects.equals(quuz, other.quuz)
-          && Objects.equals(grault, other.grault)
+      return Objects.equals(quuz, other.quuz) && Objects.equals(grault, other.grault)
           && Objects.equals(waldo, other.waldo);
     }
   }
@@ -91,10 +89,8 @@ public class JsonObjects {
       if (o == null) return false;
       if (getClass() != o.getClass()) return false;
       Qux other = (Qux) o;
-      return Objects.equals(quux, other.quux)
-          && Objects.equals(corge, other.corge)
-          && Objects.equals(garply, other.garply)
-          && Objects.equals(baz, other.baz);
+      return Objects.equals(quux, other.quux) && Objects.equals(corge, other.corge)
+          && Objects.equals(garply, other.garply) && Objects.equals(baz, other.baz);
     }
   }
 
@@ -118,10 +114,8 @@ public class JsonObjects {
       if (this == o) return true;
       if (o == null) return false;
       Person other = (Person) o;
-      return Objects.equals(name, other.name)
-          && Objects.equals(age, other.age)
-          && Objects.equals(address, other.address)
-          && Objects.equals(phone, other.phone)
+      return Objects.equals(name, other.name) && Objects.equals(age, other.age)
+          && Objects.equals(address, other.address) && Objects.equals(phone, other.phone)
           && Objects.equals(childrens, other.childrens);
     }
   }
@@ -144,4 +138,3 @@ public class JsonObjects {
     }
   }
 }
-

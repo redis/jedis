@@ -35,8 +35,8 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.util.JsonObjectMapperTestUtil;
 
 /**
- * Base test class for RedisJSON V1 commands using the UnifiedJedis pattern.
- * V1 of the RedisJSON is only supported with RESP2.
+ * Base test class for RedisJSON V1 commands using the UnifiedJedis pattern. V1 of the RedisJSON is
+ * only supported with RESP2.
  */
 @Tag("integration")
 @Tag("json")
@@ -124,7 +124,8 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     IRLObject obj = new IRLObject();
     jedis.jsonSetLegacy("obj", obj);
     Object expected = gson.fromJson(gson.toJson(obj), Object.class);
-    assertTrue(expected.equals(jedis.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
+    assertTrue(
+      expected.equals(jedis.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
   }
 
   @Test
@@ -159,7 +160,7 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
   public void getAbsent() {
     jedis.jsonSet("test", ROOT_PATH, "foo");
     assertThrows(JedisDataException.class,
-        () -> jedis.jsonGet("test", String.class, Path.of(".bar")));
+      () -> jedis.jsonGet("test", String.class, Path.of(".bar")));
   }
 
   @Test
@@ -227,13 +228,9 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
 
     assertEquals(2, allBaz.size());
 
-    Baz testBaz1 = allBaz.stream()
-        .filter(b -> b.quuz.equals("quuz1"))
-        .findFirst()
+    Baz testBaz1 = allBaz.stream().filter(b -> b.quuz.equals("quuz1")).findFirst()
         .orElseThrow(() -> new NullPointerException(""));
-    Baz testBaz2 = allBaz.stream()
-        .filter(q -> q.quuz.equals("quuz2"))
-        .findFirst()
+    Baz testBaz2 = allBaz.stream().filter(q -> q.quuz.equals("quuz2")).findFirst()
         .orElseThrow(() -> new NullPointerException(""));
 
     assertEquals(baz1, testBaz1);
@@ -267,7 +264,7 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
   @Test
   public void arrLenDefaultPath() {
     assertNull(jedis.jsonArrLen("array"));
-    jedis.jsonSetLegacy("array", new int[]{1, 2, 3});
+    jedis.jsonSetLegacy("array", new int[] { 1, 2, 3 });
     assertEquals(Long.valueOf(3), jedis.jsonArrLen("array"));
   }
 
@@ -309,7 +306,7 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals(Long.valueOf(6), jedis.jsonArrAppend("test_arrappend", Path.of(".b"), 4, 5, 6));
 
     Integer[] array = jedis.jsonGet("test_arrappend", Integer[].class, Path.of(".b"));
-    assertArrayEquals(new Integer[]{1, 2, 3, 4, 5, 6}, array);
+    assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, array);
   }
 
   @Test
@@ -318,13 +315,14 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
     jedis.jsonSet("test_arrappend", ROOT_PATH, jsonObject);
-    assertEquals(Long.valueOf(6), jedis.jsonArrAppend("test_arrappend", Path.of(".b"), "foo", true, null));
+    assertEquals(Long.valueOf(6),
+      jedis.jsonArrAppend("test_arrappend", Path.of(".b"), "foo", true, null));
 
     Object[] array = jedis.jsonGet("test_arrappend", Object[].class, Path.of(".b"));
 
     // NOTE: GSon converts numeric types to the most accommodating type (Double)
     // when type information is not provided (as in the Object[] below)
-    assertArrayEquals(new Object[]{1.0, 2.0, 3.0, "foo", true, null}, array);
+    assertArrayEquals(new Object[] { 1.0, 2.0, 3.0, "foo", true, null }, array);
   }
 
   @Test
@@ -333,10 +331,11 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
     jedis.jsonSet("test_arrappend", ROOT_PATH, jsonObject);
-    assertEquals(Long.valueOf(4), jedis.jsonArrAppend("test_arrappend", Path.of(".c.d"), "foo", true, null));
+    assertEquals(Long.valueOf(4),
+      jedis.jsonArrAppend("test_arrappend", Path.of(".c.d"), "foo", true, null));
 
     Object[] array = jedis.jsonGet("test_arrappend", Object[].class, Path.of(".c.d"));
-    assertArrayEquals(new Object[]{"ello", "foo", true, null}, array);
+    assertArrayEquals(new Object[] { "ello", "foo", true, null }, array);
   }
 
   @Test
@@ -345,10 +344,11 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
     jedis.jsonSet("test_arrappend", ROOT_PATH, jsonObject);
-    assertEquals(Long.valueOf(3), jedis.jsonArrAppend("test_arrappend", Path.of(".c.d"), "a", "b", "c"));
+    assertEquals(Long.valueOf(3),
+      jedis.jsonArrAppend("test_arrappend", Path.of(".c.d"), "a", "b", "c"));
 
     String[] array = jedis.jsonGet("test_arrappend", String[].class, Path.of(".c.d"));
-    assertArrayEquals(new String[]{"a", "b", "c"}, array);
+    assertArrayEquals(new String[] { "a", "b", "c" }, array);
   }
 
   @Test
@@ -358,25 +358,25 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
 
     jedis.jsonSet("test_arrappend", ROOT_PATH, jsonObject);
     assertThrows(JedisDataException.class,
-        () -> jedis.jsonArrAppend("test_arrappend", Path.of(".a"), 1));
+      () -> jedis.jsonArrAppend("test_arrappend", Path.of(".a"), 1));
   }
 
   @Test
   public void arrIndexAbsentKey() {
     assertThrows(JedisDataException.class,
-        () -> jedis.jsonArrIndex("quxquux", ROOT_PATH, gson.toJson(new Object())));
+      () -> jedis.jsonArrIndex("quxquux", ROOT_PATH, gson.toJson(new Object())));
   }
 
   @Test
   public void arrIndexWithInts() {
-    jedis.jsonSet("quxquux", ROOT_PATH, new int[]{8, 6, 7, 5, 3, 0, 9});
+    jedis.jsonSet("quxquux", ROOT_PATH, new int[] { 8, 6, 7, 5, 3, 0, 9 });
     assertEquals(2L, jedis.jsonArrIndex("quxquux", ROOT_PATH, 7));
     assertEquals(-1L, jedis.jsonArrIndex("quxquux", ROOT_PATH, "7"));
   }
 
   @Test
   public void arrIndexWithStrings() {
-    jedis.jsonSet("quxquux", ROOT_PATH, new String[]{"8", "6", "7", "5", "3", "0", "9"});
+    jedis.jsonSet("quxquux", ROOT_PATH, new String[] { "8", "6", "7", "5", "3", "0", "9" });
     assertEquals(2L, jedis.jsonArrIndex("quxquux", ROOT_PATH, "7"));
   }
 
@@ -390,7 +390,7 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
   public void arrIndexNonExistentPath() {
     jedis.jsonSet("foobar", ROOT_PATH, new FooBarObject());
     assertThrows(JedisDataException.class,
-        () -> assertEquals(1L, jedis.jsonArrIndex("foobar", Path.of(".barArr"), "x")));
+      () -> assertEquals(1L, jedis.jsonArrIndex("foobar", Path.of(".barArr"), "x")));
   }
 
   @Test
@@ -405,7 +405,7 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
 
     // NOTE: GSon converts numeric types to the most accommodating type (Double)
     // when type information is not provided (as in the Object[] below)
-    assertArrayEquals(new Object[]{"hello", "foo", "world", true, 1.0, 3.0, null, false}, array);
+    assertArrayEquals(new Object[] { "hello", "foo", "world", true, 1.0, 3.0, null, false }, array);
   }
 
   @Test
@@ -417,12 +417,12 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals(8L, jedis.jsonArrInsert("test_arrinsert", ROOT_PATH, -1, "foo"));
 
     Object[] array = jedis.jsonGet("test_arrinsert", Object[].class, ROOT_PATH);
-    assertArrayEquals(new Object[]{"hello", "world", true, 1.0, 3.0, null, "foo", false}, array);
+    assertArrayEquals(new Object[] { "hello", "world", true, 1.0, 3.0, null, "foo", false }, array);
   }
 
   @Test
   public void testArrayPop() {
-    jedis.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3, 4});
+    jedis.jsonSet("arr", ROOT_PATH, new int[] { 0, 1, 2, 3, 4 });
     assertEquals(Long.valueOf(4), jedis.jsonArrPop("arr", Long.class, ROOT_PATH));
     assertEquals(Long.valueOf(3), jedis.jsonArrPop("arr", Long.class, ROOT_PATH, -1));
     assertEquals(Long.valueOf(2), jedis.jsonArrPop("arr", Long.class));
@@ -432,9 +432,9 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void arrTrim() {
-    jedis.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3, 4});
+    jedis.jsonSet("arr", ROOT_PATH, new int[] { 0, 1, 2, 3, 4 });
     assertEquals(Long.valueOf(3), jedis.jsonArrTrim("arr", ROOT_PATH, 1, 3));
-    assertArrayEquals(new Integer[]{1, 2, 3}, jedis.jsonGet("arr", Integer[].class, ROOT_PATH));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, jedis.jsonGet("arr", Integer[].class, ROOT_PATH));
   }
 
   @Test
@@ -534,4 +534,3 @@ public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals(valueExpected, person.getCreated().toString());
   }
 }
-

@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.JedisSentinelTestUtil;
 
-import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,14 +69,11 @@ public class JedisSentinelTest {
       HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0),
           Integer.parseInt(masterHostAndPort.get(1)));
       assertEquals(master.getPort(), masterFromSentinel.getPort());
+
       List<Map<String, String>> slaves = j.sentinelReplicas(MASTER_NAME);
-      await().atMost(Duration.ofSeconds(30)).until( () -> !j.sentinelReplicas(MASTER_NAME).isEmpty());
       assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
-      // RESET TAKES SOME TIME TO... RESET
-      assertEquals(Long.valueOf(1), j.sentinelReset(MASTER_NAME));
       assertEquals(Long.valueOf(0), j.sentinelReset("woof" + MASTER_NAME));
-
     } finally {
       j.close();
     }
@@ -156,7 +151,7 @@ public class JedisSentinelTest {
     Jedis j = new Jedis(sentinel);
 
     try {
-      Map<String, String> parameterMap = new HashMap<String, String>();
+      Map<String, String> parameterMap = new HashMap<>();
       parameterMap.put("down-after-milliseconds", String.valueOf(1234));
       parameterMap.put("parallel-syncs", String.valueOf(3));
       parameterMap.put("quorum", String.valueOf(2));

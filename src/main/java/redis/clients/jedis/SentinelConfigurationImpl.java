@@ -15,17 +15,17 @@ class SentinelConfigurationImpl implements SentinelConfiguration {
   }
 
   @Override
-  public String getMasterName(){
+  public String getMasterName() {
     return masterName;
   }
 
   @Override
-  public Set<HostAndPort> getSentinels(){
+  public Set<HostAndPort> getSentinels() {
     return sentinels;
   }
 
   @Override
-  public JedisClientConfig getSentinelClientConfig(){
+  public JedisClientConfig getSentinelClientConfig() {
     return sentinelClientConfig;
   }
 
@@ -33,7 +33,7 @@ class SentinelConfigurationImpl implements SentinelConfiguration {
     return new Builder();
   }
 
-  static class Builder  {
+  static class Builder {
 
     private String masterName;
     private Set<HostAndPort> sentinels;
@@ -59,4 +59,3 @@ class SentinelConfigurationImpl implements SentinelConfiguration {
     }
   }
 }
-

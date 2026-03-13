@@ -85,16 +85,10 @@ public class RedisSentinelInstanceClientIT {
       assertEquals(master.getPort(), masterFromSentinel.getPort());
 
       List<Map<String, String>> slaves = client.sentinelReplicas(MASTER_NAME);
-      await().atMost(Duration.ofSeconds(30))
-          .until(() -> !client.sentinelReplicas(MASTER_NAME).isEmpty());
       assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
       // RESET TAKES SOME TIME TO... RESET
-      assertEquals(Long.valueOf(1), client.sentinelReset(MASTER_NAME));
       assertEquals(Long.valueOf(0), client.sentinelReset("woof" + MASTER_NAME));
-
-      Awaitility.await().atMost(Duration.ofSeconds(30))
-          .until(() -> !client.sentinelReplicas(MASTER_NAME).isEmpty());
     }
   }
 

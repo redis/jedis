@@ -13,23 +13,19 @@ interface SentinelConfiguration {
 
   /**
    * Returns the master name being monitored by the sentinels.
-   *
    * @return the master name
    */
   String getMasterName();
 
   /**
    * Returns the configured sentinel nodes.
-   *
    * @return a set of sentinel nodes
    */
   Set<HostAndPort> getSentinels();
 
   /**
    * Returns the client configuration for sentinel connections.
-   *
    * @return the sentinel client configuration
    */
   JedisClientConfig getSentinelClientConfig();
 }
-

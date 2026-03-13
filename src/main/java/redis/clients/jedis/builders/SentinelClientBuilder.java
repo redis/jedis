@@ -20,9 +20,9 @@ public abstract class SentinelClientBuilder<C>
     extends AbstractClientBuilder<SentinelClientBuilder<C>, C> {
 
   // Sentinel-specific configuration fields
-  private String masterName = null;
-  private Set<HostAndPort> sentinels = null;
-  private JedisClientConfig sentinelClientConfig = null;
+  protected String masterName = null;
+  protected Set<HostAndPort> sentinels = null;
+  protected JedisClientConfig sentinelClientConfig = null;
 
   // delay between re-subscribing to sentinel nodes after a disconnection
   private Delay sentinelReconnectDelay = SentineledConnectionProvider.DEFAULT_RESUBSCRIBE_DELAY;

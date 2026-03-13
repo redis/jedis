@@ -56,31 +56,6 @@ public class RedisSentinelClient extends UnifiedJedis {
    * </p>
    */
   public static class Builder extends SentinelClientBuilder<RedisSentinelClient> {
-    private String masterName;
-    private Set<HostAndPort> sentinels;
-    private JedisClientConfig sentinelClientConfig;
-
-    @Override
-    public SentinelClientBuilder<RedisSentinelClient> masterName(String masterName) {
-      this.masterName = masterName;
-      super.masterName(masterName);
-      return this;
-    }
-
-    @Override
-    public SentinelClientBuilder<RedisSentinelClient> sentinels(Set<HostAndPort> sentinels) {
-      this.sentinels = sentinels;
-      super.sentinels(sentinels);
-      return this;
-    }
-
-    @Override
-    public SentinelClientBuilder<RedisSentinelClient> sentinelClientConfig(
-        JedisClientConfig sentinelClientConfig) {
-      this.sentinelClientConfig = sentinelClientConfig;
-      super.sentinelClientConfig(sentinelClientConfig);
-      return this;
-    }
 
     @Override
     protected RedisSentinelClient createClient() {

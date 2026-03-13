@@ -121,12 +121,6 @@ public final class RedisSentinelInstanceClient extends UnifiedJedis
       return new RedisSentinelInstanceClient(commandExecutor, connectionProvider, commandObjects,
           clientConfig.getRedisProtocol(), cache);
     }
-
-    @Override
-    protected void validateSpecificConfiguration() {
-
-    }
-
   }
 
   /**

@@ -4468,6 +4468,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return TrackingInfo.TRACKING_INFO_BUILDER.build(connection.getOne());
   }
 
+  @Override
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);

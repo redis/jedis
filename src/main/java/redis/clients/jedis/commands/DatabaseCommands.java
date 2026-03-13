@@ -1,19 +1,33 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.args.FlushMode;
-import redis.clients.jedis.params.MigrateParams;
 
-public interface DatabaseCommands {
-
-  /**
-   * Select the DB with having the specified zero-based numeric index.
-   * @param index the index
-   * @return OK
-   */
-  String select(int index);
+/**
+ * The full set of database commands for single-node Redis connections.
+ * <p>
+ * This interface combines node-specific database operations with common server commands
+ * that relate to database management. It is intended for use with direct single-node
+ * connections (e.g., {@code Jedis}).
+ * <p>
+ * For pooled or cluster connections, note that:
+ * <ul>
+ *   <li>Redis Cluster only supports database 0</li>
+ *   <li>Commands like SELECT, SWAPDB, MOVE are not available in cluster mode</li>
+ *   <li>Use {@link CommonServerCommands} for dbSize and flushDB in cluster environments</li>
+ * </ul>
+ * <p>
+ * <b>Migration note:</b> This interface now extends {@link NodeDatabaseCommands} for better
+ * modularity. Existing code using {@code DatabaseCommands} will continue to work unchanged.
+ *
+ * @see NodeDatabaseCommands for node-specific database operations
+ * @see CommonServerCommands for cluster-safe database operations (dbSize, flushDB)
+ */
+public interface DatabaseCommands extends NodeDatabaseCommands {
 
   /**
    * Return the number of keys in the currently-selected database.
+   * <p>
+   * Note: This method is also available in {@link CommonServerCommands} for cluster-safe usage.
    * @return The number of keys
    */
   long dbSize();
@@ -21,6 +35,8 @@ public interface DatabaseCommands {
   /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
+   * <p>
+   * Note: This method is also available in {@link CommonServerCommands} for cluster-safe usage.
    * @return OK
    */
   String flushDB();
@@ -28,96 +44,10 @@ public interface DatabaseCommands {
   /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
+   * <p>
+   * Note: This method is also available in {@link CommonServerCommands} for cluster-safe usage.
    * @param flushMode can be SYNC or ASYNC
    * @return OK
    */
   String flushDB(FlushMode flushMode);
-
-  /**
-   * This command swaps two Redis databases, so that immediately all the clients connected to a
-   * given database will see the data of the other database, and the other way around.
-   * @param index1
-   * @param index2
-   * @return OK
-   */
-  String swapDB(int index1, int index2);
-
-  /**
-   * Move the specified key from the currently selected DB to the specified destination DB. Note
-   * that this command returns 1 only if the key was successfully moved, and 0 if the target key was
-   * already there or if the source key was not found at all, so it is possible to use MOVE as a
-   * locking primitive.
-   * @param key  The specified key
-   * @param dbIndex Specified destination database
-   * @return 1 if the key was moved, 0 if the key was not moved because already present on the target
-   * DB or was not found in the current DB
-   */
-  long move(String key, int dbIndex);
-
-  /**
-   * Binary version of {@link DatabaseCommands#move(String, int) MOVE}.
-   * @see DatabaseCommands#move(String, int)
-   */
-  long move(byte[] key, int dbIndex);
-
-  /**
-   * Copy the value stored at the source key to the destination key.
-   * @param srcKey the source key.
-   * @param dstKey the destination key.
-   * @param db allows specifying an alternative logical database index for the destination key.
-   * @param replace removes the destination key before copying the value to it, in order to avoid error.
-   */
-  boolean copy(String srcKey, String dstKey, int db, boolean replace);
-
-  /**
-   * Binary version of {@link DatabaseCommands#copy(String, String, int, boolean) COPY}.
-   * @see DatabaseCommands#copy(String, String, int, boolean)
-   */
-  boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
-
-  /**
-   * <b><a href="http://redis.io/commands/migrate">Migrate Command</a></b>
-   * Atomically transfer a key from a source Redis instance to a destination Redis instance.
-   * On success the key is deleted from the original instance and is guaranteed to exist in
-   * the target instance.
-   *
-   * @param host          target host
-   * @param port          target port
-   * @param key           migrate key
-   * @param destinationDB target db
-   * @param timeout       the maximum idle time in any moment of the communication with the
-   *                      destination instance in milliseconds.
-   * @return OK on success, or NOKEY if no keys were found in the source instance
-   */
-  String migrate(String host, int port, String key, int destinationDB, int timeout);
-
-  /**
-   * Binary version of {@link DatabaseCommands#migrate(String, int, String, int, int) MIGRATE}.
-   * @see DatabaseCommands#migrate(String, int, String, int, int)
-   */
-  String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
-
-  /**
-   * <b><a href="http://redis.io/commands/migrate">Migrate Command</a></b>
-   * Atomically transfer a key from a source Redis instance to a destination Redis instance.
-   * On success the key is deleted from the original instance and is guaranteed to exist in
-   * the target instance.
-   * @param host          target host
-   * @param port          target port
-   * @param destinationDB target db
-   * @param timeout the maximum idle time in any moment of the communication with the
-   *               destination instance in milliseconds.
-   * @param params {@link MigrateParams}
-   * @param keys to migrate
-   * @return OK on success, or NOKEY if no keys were found in the source instance.
-   */
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
-      String... keys);
-
-  /**
-   * Binary version of {@link DatabaseCommands#migrate(String, int, int, int, MigrateParams, String...) MIGRATE}.
-   * @see DatabaseCommands#migrate(String, int, int, int, MigrateParams, String...)
-   */
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
-      byte[]... keys);
 }

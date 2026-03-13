@@ -77,8 +77,16 @@ public class CommandObjects {
     return PING_COMMAND_OBJECT;
   }
 
+  public final CommandObject<String> ping(String message) {
+    return new CommandObject<>(commandArguments(PING).add(message), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> echo(String msg) {
     return new CommandObject<>(commandArguments(ECHO).add(msg), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> echo(byte[] msg) {
+    return new CommandObject<>(commandArguments(ECHO).add(msg), BuilderFactory.BINARY);
   }
 
   private final CommandObject<String> FLUSHALL_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHALL), BuilderFactory.STRING);
@@ -87,14 +95,173 @@ public class CommandObjects {
     return FLUSHALL_COMMAND_OBJECT;
   }
 
+  public final CommandObject<String> flushAll(FlushMode flushMode) {
+    return new CommandObject<>(commandArguments(FLUSHALL).add(flushMode), BuilderFactory.STRING);
+  }
+
   private final CommandObject<String> FLUSHDB_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHDB), BuilderFactory.STRING);
 
   public final CommandObject<String> flushDB() {
     return FLUSHDB_COMMAND_OBJECT;
   }
 
+  public final CommandObject<String> flushDB(FlushMode flushMode) {
+    return new CommandObject<>(commandArguments(FLUSHDB).add(flushMode), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> LOLWUT_COMMAND_OBJECT = new CommandObject<>(commandArguments(LOLWUT), BuilderFactory.STRING);
+
+  public final CommandObject<String> lolwut() {
+    return LOLWUT_COMMAND_OBJECT;
+  }
+
+  public final CommandObject<String> lolwut(LolwutParams lolwutParams) {
+    return new CommandObject<>(commandArguments(LOLWUT).addParams(lolwutParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> time() {
+    return new CommandObject<>(commandArguments(Command.TIME), BuilderFactory.STRING_LIST);
+  }
+
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(String... parameterValues) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).addObjects((Object[]) parameterValues), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(Map<String, String> parameterValues) {
+    CommandArguments args = commandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(byte[] parameter, byte[] value) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(byte[]... parameterValues) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).addObjects((Object[]) parameterValues), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSetBinary(Map<byte[], byte[]> parameterValues) {
+    CommandArguments args = commandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, String>> configGet(String pattern) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).add(pattern), BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<Map<String, String>> configGet(String... patterns) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).addObjects((Object[]) patterns), BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<Map<byte[], byte[]>> configGet(byte[] pattern) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).add(pattern), BuilderFactory.BINARY_MAP);
+  }
+
+  public final CommandObject<Map<byte[], byte[]>> configGet(byte[]... patterns) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).addObjects((Object[]) patterns), BuilderFactory.BINARY_MAP);
+  }
+
+  public final CommandObject<String> configResetStat() {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.RESETSTAT), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configRewrite() {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.REWRITE), BuilderFactory.STRING);
+  }
+
+  // Client commands
+  public final CommandObject<String> clientKill(String ipPort) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.KILL).add(ipPort), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientKill(String ip, int port) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.KILL).add(ip + ":" + port), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> clientKill(ClientKillParams params) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.KILL).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> clientGetname() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.GETNAME), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientList() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.LIST), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientList(ClientType type) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.LIST).add(Keyword.TYPE).add(type), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientList(long... clientIds) {
+    CommandArguments args = commandArguments(Command.CLIENT).add(Keyword.LIST).add(Keyword.ID);
+    for (long id : clientIds) {
+      args.add(id);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientInfo() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.INFO), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientSetInfo(ClientAttributeOption attr, String value) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.SETINFO).add(attr).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientSetname(String name) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.SETNAME).add(name), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> clientId() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.ID), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> clientUnblock(long clientId) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.UNBLOCK).add(clientId), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> clientUnblock(long clientId, UnblockType unblockType) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.UNBLOCK).add(clientId).add(unblockType), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> clientPause(long timeout) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.PAUSE).add(timeout), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientPause(long timeout, ClientPauseMode mode) {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.PAUSE).add(timeout).add(mode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientUnpause() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add(Keyword.UNPAUSE), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientNoEvictOn() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add("NO-EVICT").add("ON"), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientNoEvictOff() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add("NO-EVICT").add("OFF"), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientNoTouchOn() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add("NO-TOUCH").add("ON"), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> clientNoTouchOff() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add("NO-TOUCH").add("OFF"), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<TrackingInfo> clientTrackingInfo() {
+    return new CommandObject<>(commandArguments(Command.CLIENT).add("TRACKINGINFO"), TrackingInfo.TRACKING_INFO_BUILDER);
   }
 
   private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),

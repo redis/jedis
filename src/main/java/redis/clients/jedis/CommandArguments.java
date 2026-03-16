@@ -151,7 +151,14 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  protected final CommandArguments addHashSlotKey(Object key) {
+  final CommandArguments addHashSlotKey(String key) {
+    keys.add(key);
+    // Invalidate cached hash slots since keys have changed
+    cachedHashSlots = null;
+    return this;
+  }
+
+  final CommandArguments addHashSlotKey(byte[] key) {
     keys.add(key);
     // Invalidate cached hash slots since keys have changed
     cachedHashSlots = null;

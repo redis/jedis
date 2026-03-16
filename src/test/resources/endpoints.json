@@ -175,5 +175,21 @@
       "redis://127.0.0.1:16480",
       "redis://127.0.0.1:16481"
     ]
+  },
+  "standalone-mtls": {
+    "tls": true,
+    "tls_cert_path": "standalone-mtls/work/tls",
+    "endpoints": [
+      "rediss://localhost:6790"
+    ]
+  },
+  "cluster-mtls": {
+    "tls": true,
+    "tls_cert_path": "cluster-mtls/work/tls",
+    "endpoints": [
+      "rediss://localhost:8579",
+      "rediss://localhost:8580",
+      "rediss://localhost:8581"
+    ]
   }
 }

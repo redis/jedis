@@ -206,9 +206,29 @@ public class CommandArguments implements Iterable<Rawable> {
     return args.iterator();
   }
 
+  /**
+   * Returns the keys used in this command.
+   * <p>
+   * <b>Internal API:</b> This method is internal and should not be used by external code.
+   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getRedisKeys()})
+   * and cluster operations.
+   * <p>
+   * <b>Supported types:</b> Keys are stored as either {@link String} or {@code byte[]} depending on
+   * how they were added via {@link #key(Object)} or {@link #addHashSlotKey(String)}/{@link #addHashSlotKey(byte[])}.
+   * Only {@link String} and {@code byte[]} are guaranteed to be supported by downstream consumers.
+   * <p>
+   * <b>Type safety:</b> Consumers must handle both {@link String} and {@code byte[]} types.
+   * Passing other types may cause {@link IllegalArgumentException} when used with caching
+   * (see {@link redis.clients.jedis.csc.AbstractCache#makeKeyForRedisKeysToCacheKeys(Object)})
+   * or cluster operations.
+   * <p>
+   * The returned list is unmodifiable to prevent external modification of the internal key tracking.
+   *
+   * @return unmodifiable list of keys ({@link String} or {@code byte[]})
+   */
   @Internal
   public List<Object> getKeys() {
-    return keys;
+    return Collections.unmodifiableList(keys);
   }
 
   @Internal

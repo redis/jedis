@@ -17,4 +17,9 @@ public class MultiDbConnectionProviderHelper {
       SwitchReason reason, MultiDbConnectionProvider.Database iterateFrom) {
     return provider.switchToHealthyDatabase(reason, iterateFrom);
   }
+
+  public static MultiDbConnectionProvider.Database waitForInitializationPolicy(
+      MultiDbConnectionProvider provider, StatusTracker statusTracker) {
+    return provider.waitForInitializationPolicy(statusTracker);
+  }
 }

@@ -1,37 +1,19 @@
-package redis.clients.jedis;
-
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.util.TlsUtil;
+package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("integration")
-public class SSLJedisTest {
+import org.junit.jupiter.api.Test;
 
-  protected static EndpointConfig endpoint;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 
-  private static final String trustStoreName = SSLJedisTest.class.getSimpleName();
-
-  @BeforeAll
-  public static void prepare() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
-    List<Path> trustedCertLocation = Collections.singletonList(endpoint.getCertificatesLocation());
-    Path trustStorePath = TlsUtil.createAndSaveTestTruststore(trustStoreName, trustedCertLocation,"changeit");
-
-    TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
-  }
-
-  @AfterAll
-  public static void teardownTrustStore() {
-    TlsUtil.restoreOriginalTrustStore();
-  }
+/**
+ * SSL/TLS tests for {@link Jedis} with basic authentication (password-only, no ACL).
+ * <p>
+ * Uses the system truststore (ssl=true flag) for SSL connections.
+ */
+public class JedisIT extends JedisTlsTestBase {
 
   @Test
   public void connectWithSsl() {
@@ -52,13 +34,12 @@ public class SSLJedisTest {
 
   @Test
   public void connectWithConfigInterface() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        new JedisClientConfig() {
-          @Override
-          public boolean isSsl() {
-            return true;
-          }
-        })) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), new JedisClientConfig() {
+      @Override
+      public boolean isSsl() {
+        return true;
+      }
+    })) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -87,5 +68,4 @@ public class SSLJedisTest {
       assertEquals("PONG", jedis.ping());
     }
   }
-
 }

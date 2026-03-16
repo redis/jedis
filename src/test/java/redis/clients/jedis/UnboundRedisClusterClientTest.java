@@ -42,7 +42,7 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.Pool;
 
 @Tag("integration")
-public class RedisClusterClientTest extends RedisClusterClientTestBase {
+public class UnboundRedisClusterClientTest extends UnboundRedisClusterClientTestBase {
 
   private static final int DEFAULT_TIMEOUT = 2000; //sec
   private static final int DEFAULT_REDIRECTIONS = 5;

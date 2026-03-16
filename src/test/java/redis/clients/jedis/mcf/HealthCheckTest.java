@@ -47,7 +47,7 @@ public class HealthCheckTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    testEndpoint = new HostAndPort("localhost", 6379);
+    testEndpoint = new HostAndPort("dummy", 6379);
     testConfig = DefaultJedisClientConfig.builder().build();
 
     // Default stubs for mockStrategy used across tests

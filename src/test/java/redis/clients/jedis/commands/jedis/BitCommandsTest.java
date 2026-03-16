@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import java.util.List;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -17,6 +18,7 @@ import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -210,6 +212,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOp() {
     jedis.set("key1", "\u0060");
     jedis.set("key2", "\u0044");
@@ -228,6 +231,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpNot() {
     jedis.setbit("key", 0, true);
     jedis.setbit("key", 4, true);
@@ -238,6 +242,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpBinary() {
     byte[] dest = {0x0};
     byte[] key1 = {0x1};
@@ -313,6 +318,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpDiff() {
     // Use single-byte values for simplicity
     byte[] key1 = new byte[] { (byte) 0b00000111 }; // bits 0,1,2 set
@@ -346,6 +352,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpDiff1() {
     // Use single-byte values for simplicity
     byte[] key1 = new byte[] { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
@@ -379,6 +386,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpAndor() {
     // Use single-byte values for simplicity
     byte[] key1 = new byte[] { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
@@ -411,6 +419,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpOne() {
     // Use single-byte values for simplicity
     byte[] key1 = new byte[] { (byte) 0x01 }; // 00000001 - bit 0 set
@@ -442,6 +451,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpDiffBinary() {
     byte[] key1 = { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
     byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
@@ -470,6 +480,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpDiff1Binary() {
     byte[] key1 = { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
     byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
@@ -498,6 +509,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpAndorBinary() {
     byte[] key1 = { (byte) 0x07 }; // 00000111 - bits 0,1,2 set
     byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set
@@ -525,6 +537,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.1.240")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bitOpOneBinary() {
     byte[] key1 = { (byte) 0x01 }; // 00000001 - bit 0 set
     byte[] key2 = { (byte) 0x02 }; // 00000010 - bit 1 set

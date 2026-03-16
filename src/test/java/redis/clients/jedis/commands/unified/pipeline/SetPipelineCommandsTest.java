@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -29,6 +30,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -208,6 +210,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void smove() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");
@@ -322,6 +325,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sinter() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");
@@ -350,6 +354,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sinterstore() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");
@@ -383,6 +388,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test
   @SinceRedisVersion(value="7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sintercard() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");
@@ -417,6 +423,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunion() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");
@@ -445,6 +452,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunionstore() {
     pipe.sadd("foo", "a");
     pipe.sadd("foo", "b");
@@ -477,6 +485,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiff() {
     pipe.sadd("foo", "x");
     pipe.sadd("foo", "a");
@@ -513,6 +522,7 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffstore() {
     pipe.sadd("foo", "x");
     pipe.sadd("foo", "a");

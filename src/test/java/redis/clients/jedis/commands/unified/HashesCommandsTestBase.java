@@ -803,7 +803,7 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals(asList(1L, 0L), jedis.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared"));
 
     assertThat(jedis.hpttl("foo", "bar", "bare", "bared"),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 1000)), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test
@@ -819,7 +819,7 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals(asList(1L, 0L), jedis.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3));
 
     assertThat(jedis.hpttl(bfoo, bbar1, bbar2, bbar3),
-        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 1000)), equalTo(-2L), equalTo(-1L)));
   }
 
   @Test

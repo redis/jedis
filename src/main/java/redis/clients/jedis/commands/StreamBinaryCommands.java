@@ -158,4 +158,14 @@ public interface StreamBinaryCommands {
   Map<byte[], List<StreamEntryBinary>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams);
 
+  /**
+   * XCFGSET key [IDMP-DURATION duration] [IDMP-MAXSIZE maxsize]
+   * Configure idempotent producer settings for a stream.
+   *
+   * @param key Stream name
+   * @param params Configuration parameters
+   * @return OK if successful
+   */
+  byte[] xcfgset(byte[] key, XCfgSetParams params);
+
 }

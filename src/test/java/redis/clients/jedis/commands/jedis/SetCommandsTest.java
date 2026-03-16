@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -29,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -204,6 +206,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void smove() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
@@ -308,6 +311,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sinter() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
@@ -336,6 +340,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sinterstore() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
@@ -370,6 +375,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sintercard() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
@@ -398,6 +404,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunion() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
@@ -431,6 +438,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunionstore() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
@@ -468,6 +476,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiff() {
     jedis.sadd("foo", "x");
     jedis.sadd("foo", "a");
@@ -507,6 +516,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffstore() {
     jedis.sadd("foo", "x");
     jedis.sadd("foo", "a");

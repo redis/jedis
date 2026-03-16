@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -30,6 +31,7 @@ import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=sorted-set">Sorted set</a> commands.
@@ -460,6 +462,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBzpopmaxAndBzpopmin() {
     String key1 = "zset1";
     String key2 = "zset2";
@@ -482,6 +485,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBzpopmaxAndBzpopminBinary() {
     byte[] key1 = "zset1".getBytes();
     byte[] key2 = "zset2".getBytes();
@@ -604,6 +608,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZrangestore() {
     String srcKey = "zsetSrc";
     String destKey = "zsetDest";
@@ -629,6 +634,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZrangestoreBinary() {
     byte[] srcKey = "zsetSrcB".getBytes();
     byte[] destKey = "zsetDestB".getBytes();
@@ -1127,6 +1133,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZdiffAndZdiffWithScores() {
     String key1 = "zset1";
     String key2 = "zset2";
@@ -1153,6 +1160,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZdiffStore() {
     String dstKey = "result";
 
@@ -1177,6 +1185,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZdiffStoreBinary() {
     byte[] dstKey = "result".getBytes();
 
@@ -1203,6 +1212,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.2.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZinterAndZintercard() {
     ZParams params = new ZParams().aggregate(ZParams.Aggregate.SUM).weights(1, 2);
 
@@ -1238,6 +1248,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZinterstore() {
     String dstKey = "destinationIntersect";
     String set1 = "sortedSet1";
@@ -1274,6 +1285,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZinterstoreBinary() {
     byte[] dstKey = "destinationIntersect".getBytes();
     byte[] set1 = "sortedSet1".getBytes();
@@ -1313,6 +1325,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZunionAndZunionWithScores() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1346,6 +1359,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZunionstore() {
     String dstKey = "destinationSet";
     String set1 = "sortedSet1";
@@ -1385,6 +1399,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZunionstoreBinary() {
     byte[] dstKey = "destinationSet".getBytes();
     byte[] set1 = "sortedSet1".getBytes();
@@ -1425,6 +1440,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.2.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZmpopAndZmpopWithCount() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1451,6 +1467,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.2.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testZmpopAndZmpopWithCountBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();
@@ -1477,6 +1494,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBzmpop() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1505,6 +1523,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.2.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBzmpopBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();
@@ -1533,6 +1552,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.2.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBzmpopCount() {
     String key1 = "sortedSet1";
     String key2 = "sortedSet2";
@@ -1553,6 +1573,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBzmpopCountBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();

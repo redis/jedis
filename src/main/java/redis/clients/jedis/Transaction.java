@@ -121,10 +121,25 @@ public class Transaction extends AbstractTransaction {
 
   @Override
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
-    connection.sendCommand(commandObject.getArguments());
-    // processAppendStatus(); // do nothing
-    Response<T> response = new Response<>(commandObject.getBuilder());
-    pipelinedResponses.add(response);
+    Response<T> response = null;
+    if (!inMulti) {
+      response = execute(commandObject);
+    } else {
+      connection.sendCommand(commandObject.getArguments());
+      response = new Response<>(commandObject.getBuilder());
+      pipelinedResponses.add(response);
+    }
+    return response;
+  }
+
+  private <T> Response<T> execute(CommandObject<T> commandObject) {
+    Response<T> response;
+    try {
+      T result =  connection.executeCommand(commandObject);
+      response = Response.of(result);
+    } catch (JedisDataException e) {
+      response = Response.error(e);
+    }
     return response;
   }
 

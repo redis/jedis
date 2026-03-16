@@ -134,22 +134,9 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithZeroWeights() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
-      DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(0.0f) // Zero
-                                                                                        // weight
-          .healthCheckEnabled(false).build();
-
-      DatabaseConfig db2 = DatabaseConfig.builder(endpoint2, clientConfig).weight(0.0f) // Zero
-                                                                                        // weight
-          .healthCheckEnabled(false).build();
-
-      MultiDbConfig config = new MultiDbConfig.Builder(new DatabaseConfig[] { db1, db2 }).build();
-
-      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
-        // Should still initialize and select one of the databases
-        assertNotNull(provider.getDatabase());
-      }
-    }
+    assertThrows(IllegalArgumentException.class, () -> {
+      DatabaseConfig.builder(endpoint1, clientConfig).weight(0.0f);
+    });
   }
 
   @Test

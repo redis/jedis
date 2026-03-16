@@ -21,7 +21,7 @@ public class RedisRestAPIUnitTest {
   static class TestEndpoint implements Endpoint {
     @Override
     public String getHost() {
-      return "localhost";
+      return "dummy";
     }
 
     @Override
@@ -95,7 +95,7 @@ public class RedisRestAPIUnitTest {
 
     // Verify the correct URL was constructed with extended check parameters
     verify(api).createConnection(eq(
-      "https://localhost:8443/v1/bdbs/123/availability?extend_check=lag&availability_lag_tolerance_ms=100"),
+      "https://dummy:8443/v1/bdbs/123/availability?extend_check=lag&availability_lag_tolerance_ms=100"),
       eq("GET"), any());
   }
 
@@ -110,8 +110,8 @@ public class RedisRestAPIUnitTest {
     assertTrue(api.checkBdbAvailability("123", true, null));
 
     // Verify the correct URL was constructed with extended check but no tolerance parameter
-    verify(api).createConnection(
-      eq("https://localhost:8443/v1/bdbs/123/availability?extend_check=lag"), eq("GET"), any());
+    verify(api).createConnection(eq("https://dummy:8443/v1/bdbs/123/availability?extend_check=lag"),
+      eq("GET"), any());
   }
 
   @Test
@@ -125,7 +125,7 @@ public class RedisRestAPIUnitTest {
     assertTrue(api.checkBdbAvailability("123", false, null));
 
     // Verify the correct URL was constructed for standard check (no query parameters)
-    verify(api).createConnection(eq("https://localhost:8443/v1/bdbs/123/availability"), eq("GET"),
+    verify(api).createConnection(eq("https://dummy:8443/v1/bdbs/123/availability"), eq("GET"),
       any());
   }
 

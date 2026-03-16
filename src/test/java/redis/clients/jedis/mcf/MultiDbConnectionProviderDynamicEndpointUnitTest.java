@@ -7,10 +7,12 @@ import org.mockito.MockedConstruction;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.Endpoint;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
@@ -27,6 +29,9 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
   private JedisClientConfig clientConfig;
   private static EndpointConfig endpoint1;
   private static EndpointConfig endpoint2;
+
+  private static final float WEIGHT1 = 0.9f;
+  private static final float WEIGHT2 = 0.8f;
 
   @BeforeAll
   static void prepareEndpoints() {
@@ -117,7 +122,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
 
   @Test
   void testRemoveNonExistentDatabase() {
-    HostAndPort nonExistentEndpoint = new HostAndPort("localhost", 9999);
+    HostAndPort nonExistentEndpoint = new HostAndPort("dummy", 9999);
 
     // Should throw validation exception for non-existent endpoint
     assertThrows(JedisValidationException.class, () -> provider.remove(nonExistentEndpoint));
@@ -141,7 +146,7 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
     DatabaseConfig config2 = createDatabaseConfig(endpoint2.getHostAndPort(), 2.0f);
 
     // Create a third endpoint for this test
-    HostAndPort endpoint3 = new HostAndPort("localhost", 6381);
+    HostAndPort endpoint3 = new HostAndPort("dummy", 6381);
     DatabaseConfig config3 = createDatabaseConfig(endpoint3, 3.0f);
 
     provider.add(config2);
@@ -203,5 +208,93 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
         assertNotNull(providerWithMockedPool.getDatabase());
       }
     }
+  }
+
+  private MultiDbClient getClient() {
+    MultiDbClient client = MultiDbClient.builder()
+        .multiDbConfig(MultiDbConfig.builder()
+            .database(createDatabaseConfig(endpoint1.getHostAndPort(), WEIGHT1))
+            .database(createDatabaseConfig(endpoint2.getHostAndPort(), WEIGHT2)).build())
+        .build();
+    return client;
+  }
+
+  @Test
+  void testGetWeight() {
+    MultiDbClient client = getClient();
+    // Verify we can get the initial weight set during configuration
+    float weight1 = client.getWeight(endpoint1.getHostAndPort());
+    float weight2 = client.getWeight(endpoint2.getHostAndPort());
+
+    assertEquals(WEIGHT1, weight1);
+    assertEquals(WEIGHT2, weight2);
+  }
+
+  @Test
+  void testGetWeightWithNonExistingEndpoint() {
+    MultiDbClient client = getClient();
+
+    Endpoint nonExistingEndpoint = new HostAndPort("non-existing-host", 6379);
+    assertThrows(JedisValidationException.class, () -> client.getWeight(nonExistingEndpoint));
+  }
+
+  @Test
+  void testSetWeightWithNonExistingEndpoint() {
+    MultiDbClient client = getClient();
+
+    Endpoint nonExistingEndpoint = new HostAndPort("non-existing-host", 6379);
+    assertThrows(JedisValidationException.class, () -> client.setWeight(nonExistingEndpoint, 1.0f));
+  }
+
+  @Test
+  void testSetWeight() {
+    MultiDbClient client = getClient();
+
+    Endpoint endpoint = endpoint1.getHostAndPort();
+
+    // Verify initial weight
+    assertEquals(WEIGHT1, client.getWeight(endpoint));
+
+    // Set a new weight
+    client.setWeight(endpoint, 75.0f);
+
+    // Verify the weight has changed
+    assertEquals(75.0f, client.getWeight(endpoint));
+  }
+
+  @Test
+  void testSetWeightToZero() {
+    MultiDbClient client = getClient();
+
+    Endpoint endpoint = endpoint2.getHostAndPort();
+
+    // Set weight to zero
+    assertThrows(IllegalArgumentException.class, () -> client.setWeight(endpoint, 0.0f));
+  }
+
+  @Test
+  void testSetWeightMultipleTimes() {
+    MultiDbClient client = getClient();
+
+    Endpoint endpoint = endpoint1.getHostAndPort();
+
+    // Set weight multiple times
+    client.setWeight(endpoint, 25.0f);
+    assertEquals(25.0f, client.getWeight(endpoint));
+
+    client.setWeight(endpoint, 80.0f);
+    assertEquals(80.0f, client.getWeight(endpoint));
+
+    client.setWeight(endpoint, 1.0f);
+    assertEquals(1.0f, client.getWeight(endpoint));
+  }
+
+  @Test
+  void testSetWeightWithNegativeWeight() {
+    MultiDbClient client = getClient();
+
+    Endpoint endpoint = endpoint1.getHostAndPort();
+    // Verify that setting a negative weight is rejected
+    assertThrows(IllegalArgumentException.class, () -> client.setWeight(endpoint, -1.0f));
   }
 }

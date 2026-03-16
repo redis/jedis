@@ -36,13 +36,6 @@ public class ClientAuthRedisClusterClientIT extends ClientAuthIT {
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build();
   }
 
-  @Override
-  protected String executeAclWhoAmI(UnifiedJedis client) {
-    RedisClusterClient clusterClient = (RedisClusterClient) client;
-    return clusterClient.executeCommand(new CommandObject<>(
-        new ClusterCommandArguments(Protocol.Command.ACL).add("WHOAMI"), BuilderFactory.STRING));
-  }
-
   /**
    * Cluster-specific test: Verifies that cluster node discovery works with mTLS.
    */

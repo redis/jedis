@@ -64,6 +64,7 @@ class ClusterReplyAggregator<T> implements Aggregator<T, T> {
           delegate = new FirstNonNullAggregator<>();
           break;
       }
+
     }
 
     // Delegate the addition

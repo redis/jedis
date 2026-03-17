@@ -10,12 +10,12 @@ import java.util.Objects;
  * ResponsePolicy. The proper underlying aggregator is lazily created on the first non-null value.
  * If all added values are null, getResult() returns null.
  */
-class ReplyAggregator<T> implements Aggregator<T, T> {
+class ClusterReplyAggregator<T> implements Aggregator<T, T> {
 
   private final CommandFlagsRegistry.ResponsePolicy policy;
   private Aggregator<T, T> delegate;
 
-  public ReplyAggregator(CommandFlagsRegistry.ResponsePolicy policy) {
+  public ClusterReplyAggregator(CommandFlagsRegistry.ResponsePolicy policy) {
     this.policy = Objects.requireNonNull(policy, "policy cannot be null");
   }
 

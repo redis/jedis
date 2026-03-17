@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReplyAggregatorTest {
+public class ClusterReplyAggregatorTest {
 
   // ==================== aggregateAllSucceeded Tests ====================
   // Per Redis ALL_SUCCEEDED spec: returns successfully only if there are no error replies.
@@ -64,7 +64,7 @@ public class ReplyAggregatorTest {
     @MethodSource("valuesProvider")
     void testAggregateAllSucceeded_returnsFirstValue(Object first, Object second, Object third) {
       @SuppressWarnings("unchecked")
-      ReplyAggregator<Object> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<Object> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.ALL_SUCCEEDED);
 
       // first addition
@@ -93,7 +93,7 @@ public class ReplyAggregatorTest {
     public void testAggregateDefault_nonListTypes_throwsUnsupportedAggregationException() {
       String first = "existing";
 
-      ReplyAggregator<String> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<String> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.DEFAULT);
       UnsupportedAggregationException exception = assertThrows(
         UnsupportedAggregationException.class, () -> aggregator.add(first));
@@ -138,7 +138,7 @@ public class ReplyAggregatorTest {
       @MethodSource("listProvider")
       void testAggregateDefault_lists(List<String> first, List<String> second,
           List<String> expected) {
-        ReplyAggregator<List<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<List<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
 
         aggregator.add(first);
@@ -157,7 +157,7 @@ public class ReplyAggregatorTest {
         List<byte[]> second = new ArrayList<>(
             Arrays.asList(new byte[] { 5, 6 }, new byte[] { 7, 8 }));
 
-        ReplyAggregator<List<byte[]>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<List<byte[]>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -174,7 +174,7 @@ public class ReplyAggregatorTest {
         List<String> first = new LinkedList<>(Arrays.asList("a", "b"));
         List<String> second = new ArrayList<>(Arrays.asList("c", "d"));
 
-        ReplyAggregator<List<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<List<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -191,7 +191,7 @@ public class ReplyAggregatorTest {
         List<String> first = null;
         List<String> second = new ArrayList<>(Arrays.asList("c", "d"));
 
-        ReplyAggregator<List<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<List<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -221,7 +221,7 @@ public class ReplyAggregatorTest {
         second.put("key3", 3);
         second.put("key4", 4);
 
-        ReplyAggregator<Map<String, Integer>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Map<String, Integer>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -244,7 +244,7 @@ public class ReplyAggregatorTest {
         second.put("shared", "second_value");
         second.put("unique2", "value2");
 
-        ReplyAggregator<Map<String, String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -287,7 +287,7 @@ public class ReplyAggregatorTest {
       @MethodSource("mapProvider")
       void testAggregateDefault_maps(Map<String, Integer> first, Map<String, Integer> second,
           Map<String, Integer> expected) {
-        ReplyAggregator<Map<String, Integer>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Map<String, Integer>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
 
         aggregator.add(first);
@@ -307,7 +307,7 @@ public class ReplyAggregatorTest {
         second.put("c", "3");
         second.put("d", "4");
 
-        ReplyAggregator<Map<String, String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -331,13 +331,13 @@ public class ReplyAggregatorTest {
         second.put("c", "3");
         second.put("d", "4");
 
-        ReplyAggregator<Map<String, String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
 
         Map<String, String> result = aggregator.getResult();
-        // ReplyAggregator merges maps
+        // ClusterReplyAggregator merges maps
         assertEquals(4, result.size(), "Result should contain all entries");
         assertEquals("1", result.get("a"));
         assertEquals("2", result.get("b"));
@@ -359,7 +359,7 @@ public class ReplyAggregatorTest {
         second.put("c", "3");
         second.put("d", "4");
 
-        ReplyAggregator<Map<String, String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -386,7 +386,7 @@ public class ReplyAggregatorTest {
         Set<String> first = new HashSet<>(Arrays.asList("a", "b"));
         Set<String> second = new HashSet<>(Arrays.asList("c", "d"));
 
-        ReplyAggregator<Set<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -406,7 +406,7 @@ public class ReplyAggregatorTest {
         Set<String> first = new HashSet<>(Arrays.asList("a", "b", "c"));
         Set<String> second = new HashSet<>(Arrays.asList("b", "c", "d"));
 
-        ReplyAggregator<Set<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -439,7 +439,7 @@ public class ReplyAggregatorTest {
       @ParameterizedTest
       @MethodSource("setProvider")
       void testAggregateDefault_sets(Set<String> first, Set<String> second, Set<String> expected) {
-        ReplyAggregator<Set<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
 
         aggregator.add(first);
@@ -454,7 +454,7 @@ public class ReplyAggregatorTest {
         Set<String> first = new LinkedHashSet<>(Arrays.asList("a", "b"));
         Set<String> second = new HashSet<>(Arrays.asList("c", "d"));
 
-        ReplyAggregator<Set<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -474,14 +474,14 @@ public class ReplyAggregatorTest {
         Set<String> first = null;
         Set<String> second = new HashSet<>(Arrays.asList("c", "d"));
 
-        ReplyAggregator<Set<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
 
         Set<String> result = aggregator.getResult();
 
-        // ReplyAggregator mutates the first set in place
+        // ClusterReplyAggregator mutates the first set in place
         assertSame(second, result, "Result should be the same instance as first non-null set");
         assertThat(result, sameInstance(second));
         assertEquals(2, result.size(), "Result should contain all elements");
@@ -498,7 +498,7 @@ public class ReplyAggregatorTest {
         Set<byte[]> second = new HashSet<>();
         second.add(new byte[] { 5, 6 });
 
-        ReplyAggregator<Set<byte[]>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<Set<byte[]>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -526,7 +526,7 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 'k', '3' }, new byte[] { 'v', '3' });
         second.put(new byte[] { 'k', '4' }, new byte[] { 'v', '4' });
 
-        ReplyAggregator<JedisByteHashMap> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteHashMap> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -553,7 +553,7 @@ public class ReplyAggregatorTest {
           new byte[] { 's', 'e', 'c', 'o', 'n', 'd' });
         second.put(new byte[] { 'u', 'n', 'i', 'q', '2' }, new byte[] { 'v', 'a', 'l', '2' });
 
-        ReplyAggregator<JedisByteHashMap> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteHashMap> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -577,7 +577,7 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 'k', '1' }, new byte[] { 'v', '1' });
         second.put(new byte[] { 'k', '2' }, new byte[] { 'v', '2' });
 
-        ReplyAggregator<JedisByteHashMap> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteHashMap> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -596,7 +596,7 @@ public class ReplyAggregatorTest {
         first.put(new byte[] { 'k', '2' }, new byte[] { 'v', '2' });
         JedisByteHashMap second = new JedisByteHashMap();
 
-        ReplyAggregator<JedisByteHashMap> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteHashMap> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -618,14 +618,14 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 'c' }, new byte[] { '3' });
         second.put(new byte[] { 'd' }, new byte[] { '4' });
 
-        ReplyAggregator<JedisByteHashMap> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteHashMap> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
 
         JedisByteHashMap result = aggregator.getResult();
 
-        // ReplyAggregator creates a new JedisByteHashMap with merged entries
+        // ClusterReplyAggregator creates a new JedisByteHashMap with merged entries
         assertEquals(4, result.size(), "Result should contain all entries");
         assertArrayEquals(new byte[] { '1' }, result.get(new byte[] { 'a' }));
         assertArrayEquals(new byte[] { '2' }, result.get(new byte[] { 'b' }));
@@ -654,7 +654,7 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 'k', '3' }, "value3");
         second.put(new byte[] { 'k', '4' }, "value4");
 
-        ReplyAggregator<JedisByteMap<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteMap<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -679,7 +679,7 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 's', 'h', 'a', 'r', 'e', 'd' }, "second_value");
         second.put(new byte[] { 'u', 'n', 'i', 'q', '2' }, "unique2");
 
-        ReplyAggregator<JedisByteMap<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteMap<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -700,7 +700,7 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 'k', '1' }, 1);
         second.put(new byte[] { 'k', '2' }, 2);
 
-        ReplyAggregator<JedisByteMap<Integer>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteMap<Integer>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -719,7 +719,7 @@ public class ReplyAggregatorTest {
         first.put(new byte[] { 'k', '2' }, 2);
         JedisByteMap<Integer> second = new JedisByteMap<>();
 
-        ReplyAggregator<JedisByteMap<Integer>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteMap<Integer>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
@@ -741,14 +741,14 @@ public class ReplyAggregatorTest {
         second.put(new byte[] { 'c' }, "3");
         second.put(new byte[] { 'd' }, "4");
 
-        ReplyAggregator<JedisByteMap<String>> aggregator = new ReplyAggregator<>(
+        ClusterReplyAggregator<JedisByteMap<String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
         aggregator.add(first);
         aggregator.add(second);
 
         JedisByteMap<String> result = aggregator.getResult();
 
-        // ReplyAggregator creates a new JedisByteMap with merged entries
+        // ClusterReplyAggregator creates a new JedisByteMap with merged entries
         assertEquals(4, result.size(), "Result should contain all entries");
         assertEquals("1", result.get(new byte[] { 'a' }));
         assertEquals("2", result.get(new byte[] { 'b' }));
@@ -773,7 +773,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
       KeyValue<Long, Long> second = KeyValue.of(5L, 25L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MIN);
       aggregator.add(first);
       aggregator.add(second);
@@ -789,7 +789,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(1L, 2L);
       KeyValue<Long, Long> second = KeyValue.of(10L, 20L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MIN);
       aggregator.add(first);
       aggregator.add(second);
@@ -805,7 +805,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
       KeyValue<Long, Long> second = KeyValue.of(1L, 2L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MIN);
       aggregator.add(first);
       aggregator.add(second);
@@ -821,7 +821,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(5L, 5L);
       KeyValue<Long, Long> second = KeyValue.of(5L, 5L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MIN);
       aggregator.add(first);
       aggregator.add(second);
@@ -837,7 +837,7 @@ public class ReplyAggregatorTest {
       KeyValue<String, String> first = KeyValue.of("b", "y");
       KeyValue<String, String> second = KeyValue.of("a", "z");
 
-      ReplyAggregator<KeyValue<String, String>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<String, String>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MIN);
       aggregator.add(first);
       aggregator.add(second);
@@ -860,7 +860,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
       KeyValue<Long, Long> second = KeyValue.of(5L, 25L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MAX);
       aggregator.add(first);
       aggregator.add(second);
@@ -876,7 +876,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(10L, 20L);
       KeyValue<Long, Long> second = KeyValue.of(1L, 2L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MAX);
       aggregator.add(first);
       aggregator.add(second);
@@ -892,7 +892,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(1L, 2L);
       KeyValue<Long, Long> second = KeyValue.of(10L, 20L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MAX);
       aggregator.add(first);
       aggregator.add(second);
@@ -908,7 +908,7 @@ public class ReplyAggregatorTest {
       KeyValue<Long, Long> first = KeyValue.of(5L, 5L);
       KeyValue<Long, Long> second = KeyValue.of(5L, 5L);
 
-      ReplyAggregator<KeyValue<Long, Long>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<Long, Long>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MAX);
       aggregator.add(first);
       aggregator.add(second);
@@ -924,7 +924,7 @@ public class ReplyAggregatorTest {
       KeyValue<String, String> first = KeyValue.of("b", "y");
       KeyValue<String, String> second = KeyValue.of("a", "z");
 
-      ReplyAggregator<KeyValue<String, String>> aggregator = new ReplyAggregator<>(
+      ClusterReplyAggregator<KeyValue<String, String>> aggregator = new ClusterReplyAggregator<>(
           CommandFlagsRegistry.ResponsePolicy.AGG_MAX);
       aggregator.add(first);
       aggregator.add(second);

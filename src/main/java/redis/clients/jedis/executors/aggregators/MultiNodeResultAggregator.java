@@ -29,7 +29,7 @@ public final class MultiNodeResultAggregator<T> {
 
   private final CommandFlagsRegistry.ResponsePolicy responsePolicy;
   private final JedisBroadcastException bcastError;
-  private final Aggregator<T, T> responseAggregator;
+  private final Aggregator<T, T> replyAggregator;
   private boolean hasError;
   private boolean hasSuccess;
 
@@ -39,7 +39,7 @@ public final class MultiNodeResultAggregator<T> {
    */
   public MultiNodeResultAggregator(CommandFlagsRegistry.ResponsePolicy responsePolicy) {
     this.responsePolicy = responsePolicy;
-    this.responseAggregator = Aggregator.create(responsePolicy);
+    this.replyAggregator = new ClusterReplyAggregator<>(responsePolicy);
     this.bcastError = new JedisBroadcastException();
     this.hasError = false;
     this.hasSuccess = false;
@@ -78,7 +78,7 @@ public final class MultiNodeResultAggregator<T> {
     // Always aggregate successful results, even if we've seen errors
     // This is important for ONE_SUCCEEDED policy where we need to return
     // a successful result even if some nodes failed
-    responseAggregator.add(result);
+    replyAggregator.add(result);
   }
 
   /**
@@ -133,7 +133,7 @@ public final class MultiNodeResultAggregator<T> {
     if (responsePolicy == CommandFlagsRegistry.ResponsePolicy.ONE_SUCCEEDED) {
       // ONE_SUCCEEDED: return success if at least one node succeeded
       if (hasSuccess) {
-        return responseAggregator.getResult();
+        return replyAggregator.getResult();
       }
       // All nodes failed
       throw bcastError.prepareToThrow();
@@ -142,7 +142,7 @@ public final class MultiNodeResultAggregator<T> {
       if (hasError) {
         throw bcastError.prepareToThrow();
       }
-      return responseAggregator.getResult();
+      return replyAggregator.getResult();
     }
   }
 

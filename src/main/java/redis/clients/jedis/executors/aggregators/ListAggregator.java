@@ -12,7 +12,7 @@ class ListAggregator<T> implements Aggregator<List<T>, List<T>> {
     @Override
     public void add(List<T> list) {
 
-        if (list == null || list.isEmpty()) {
+        if (list == null) {
             return;
         }
 

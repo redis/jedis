@@ -4,6 +4,7 @@ import redis.clients.jedis.CommandFlagsRegistry;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.executors.aggregators.Aggregator;
 
 /**
  * Aggregates results from multiple node/shard executions based on response policy.
@@ -26,18 +27,17 @@ final class MultiNodeResultAggregator<T> {
 
   private final CommandFlagsRegistry.ResponsePolicy responsePolicy;
   private final JedisBroadcastException bcastError;
-  private T aggregatedReply;
+  private final Aggregator<T, T> replyAggregator;
   private boolean hasError;
   private boolean hasSuccess;
-
   /**
    * Creates a new aggregator with the specified response policy.
    * @param responsePolicy the policy that determines how to aggregate results and handle errors
    */
   MultiNodeResultAggregator(CommandFlagsRegistry.ResponsePolicy responsePolicy) {
     this.responsePolicy = responsePolicy;
+    this.replyAggregator = Aggregator.replyAggregator(responsePolicy);
     this.bcastError = new JedisBroadcastException();
-    this.aggregatedReply = null;
     this.hasError = false;
     this.hasSuccess = false;
   }
@@ -75,11 +75,7 @@ final class MultiNodeResultAggregator<T> {
     // Always aggregate successful results, even if we've seen errors
     // This is important for ONE_SUCCEEDED policy where we need to return
     // a successful result even if some nodes failed
-    if (aggregatedReply == null) {
-      aggregatedReply = result;
-    } else {
-      aggregatedReply = ClusterReplyAggregator.aggregate(aggregatedReply, result, responsePolicy);
-    }
+    replyAggregator.add(result);
   }
 
   /**
@@ -134,7 +130,7 @@ final class MultiNodeResultAggregator<T> {
     if (responsePolicy == CommandFlagsRegistry.ResponsePolicy.ONE_SUCCEEDED) {
       // ONE_SUCCEEDED: return success if at least one node succeeded
       if (hasSuccess) {
-        return aggregatedReply;
+        return replyAggregator.getResult();
       }
       // All nodes failed
       throw bcastError.prepareToThrow();
@@ -143,7 +139,7 @@ final class MultiNodeResultAggregator<T> {
       if (hasError) {
         throw bcastError.prepareToThrow();
       }
-      return aggregatedReply;
+      return replyAggregator.getResult();
     }
   }
 

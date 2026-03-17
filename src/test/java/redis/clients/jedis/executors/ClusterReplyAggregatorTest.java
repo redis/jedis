@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,12 +16,21 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.CommandFlagsRegistry;
 import redis.clients.jedis.exceptions.UnsupportedAggregationException;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisByteMap;
 import redis.clients.jedis.util.KeyValue;
 
 public class ClusterReplyAggregatorTest {
+
+
+  @Test
+  public void testAggregate_DefaultWithUnsupportedTypeShouldThrow(){
+
+    assertThrows(UnsupportedAggregationException.class, () -> ClusterReplyAggregator.aggregate(null, "test", CommandFlagsRegistry.ResponsePolicy.DEFAULT));
+    assertThrows(UnsupportedAggregationException.class, () -> ClusterReplyAggregator.aggregate("test", "test1", CommandFlagsRegistry.ResponsePolicy.DEFAULT));
+  }
 
   // ==================== aggregateAllSucceeded Tests ====================
   // Per Redis ALL_SUCCEEDED spec: returns successfully only if there are no error replies.
@@ -162,6 +172,32 @@ public class ClusterReplyAggregatorTest {
     assertEquals(4, result.size(), "Should contain all elements from both lists");
     assertEquals(Arrays.asList("key1", "key2", "key3", "key4"), result,
       "Should concatenate lists in order");
+  }
+
+  @Test
+  public void testAggregateDefault_nullAndNonEmptyList_returnsNonEmptyElements() {
+    List<String> first = null;
+    List<String> second = new ArrayList<>(Arrays.asList("key1", "key2"));
+
+    @SuppressWarnings("unchecked")
+    List<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, result.size(), "Should contain elements from non-empty list");
+    assertEquals(Arrays.asList("key1", "key2"), result,
+            "Should contain all elements from second list");
+  }
+
+  @Test
+  public void testAggregateDefault_emptyUnmodifiableAndNonEmptyStringLists_returnsNonEmptyElements() {
+    List<String> first = Collections.emptyList();
+    List<String> second = new ArrayList<>(Arrays.asList("key1", "key2"));
+
+    @SuppressWarnings("unchecked")
+    List<String> result = ClusterReplyAggregator.aggregateDefault(first, second);
+
+    assertEquals(2, result.size(), "Should contain elements from non-empty list");
+    assertEquals(Arrays.asList("key1", "key2"), result,
+            "Should contain all elements from second list");
   }
 
   @Test

@@ -12,7 +12,7 @@ import java.util.Map;
 import static redis.clients.jedis.Protocol.Command.SENTINEL;
 import static redis.clients.jedis.Protocol.SentinelKeyword.*;
 
-public final class RedisSentinelInstanceClient extends UnifiedJedis
+final class RedisSentinelInstanceClient extends UnifiedJedis
     implements SentinelInstanceClient {
 
   RedisSentinelInstanceClient(CommandExecutor commandExecutor,
@@ -127,7 +127,7 @@ public final class RedisSentinelInstanceClient extends UnifiedJedis
    * Create a new builder for configuring RedisSentinelInstanceClient instances.
    * @return a new {@link RedisSentinelInstanceClient.Builder} instance
    */
-  public static Builder builder() {
+  static Builder builder() {
     return new Builder();
   }
 }

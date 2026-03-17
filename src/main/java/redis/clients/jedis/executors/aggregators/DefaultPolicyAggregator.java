@@ -10,61 +10,59 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Aggregator for DEFAULT policy.
- *
- * Lazily creates a delegate aggregator based on the first non-null sample value.
- * All subsequent additions are delegated to the same aggregator.
- * If all values are null, getResult() returns null.
+ * Aggregator for DEFAULT policy. Lazily creates a delegate aggregator based on the first non-null
+ * sample value. All subsequent additions are delegated to the same aggregator. If all values are
+ * null, getResult() returns null.
  */
 class DefaultPolicyAggregator<T> implements Aggregator<T, T> {
 
-    private Aggregator<T, T> delegate;
+  private Aggregator<T, T> delegate;
 
-    @Override
-    public void add(T sample) {
-        if (sample == null) {
-            return; // ignore nulls
-        }
-
-        // Lazy initialization of delegate aggregator
-        if (delegate == null) {
-            delegate = createDelegateAggregator(sample);
-        }
-
-        delegate.add(sample);
+  @Override
+  public void add(T sample) {
+    if (sample == null) {
+      return; // ignore nulls
     }
 
-    @Override
-    public T getResult() {
-        return delegate == null ? null : delegate.getResult();
+    // Lazy initialization of delegate aggregator
+    if (delegate == null) {
+      delegate = createDelegateAggregator(sample);
     }
 
-    @SuppressWarnings("unchecked")
-    private Aggregator<T, T> createDelegateAggregator(T sample) {
-        Objects.requireNonNull(sample, "Sample value must not be null");
+    delegate.add(sample);
+  }
 
-        if (sample instanceof List) {
-            return (Aggregator<T, T>) new ListAggregator<>();
-        }
+  @Override
+  public T getResult() {
+    return delegate == null ? null : delegate.getResult();
+  }
 
-        if (sample instanceof Set) {
-            return (Aggregator<T, T>) new SetAggregator<>();
-        }
+  @SuppressWarnings("unchecked")
+  private Aggregator<T, T> createDelegateAggregator(T sample) {
+    Objects.requireNonNull(sample, "Sample value must not be null");
 
-        if (sample instanceof JedisByteHashMap) {
-            return (Aggregator<T, T>) new JedisByteHashMapAggregator();
-        }
-
-        if (sample instanceof JedisByteMap) {
-            return (Aggregator<T, T>) new JedisByteMapAggregator<>();
-        }
-
-        if (sample instanceof Map) {
-            return (Aggregator<T, T>) new MapAggregator<>();
-        }
-
-        throw new UnsupportedAggregationException(
-                "DEFAULT policy requires List, Set, Map, JedisByteHashMap, or JedisByteMap types, but got: "
-                        + sample.getClass().getName());
+    if (sample instanceof List) {
+      return (Aggregator<T, T>) new ListAggregator<>();
     }
+
+    if (sample instanceof Set) {
+      return (Aggregator<T, T>) new SetAggregator<>();
+    }
+
+    if (sample instanceof JedisByteHashMap) {
+      return (Aggregator<T, T>) new JedisByteHashMapAggregator();
+    }
+
+    if (sample instanceof JedisByteMap) {
+      return (Aggregator<T, T>) new JedisByteMapAggregator<>();
+    }
+
+    if (sample instanceof Map) {
+      return (Aggregator<T, T>) new MapAggregator<>();
+    }
+
+    throw new UnsupportedAggregationException(
+        "DEFAULT policy requires List, Set, Map, JedisByteHashMap, or JedisByteMap types, but got: "
+            + sample.getClass().getName());
+  }
 }

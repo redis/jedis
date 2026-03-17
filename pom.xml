@@ -568,6 +568,7 @@
 						<include>**/resps/LibraryInfoTest.java</include>
 						<include>**/*Matchers.java</include>
 						<include>**/*TestUtil.java</include>
+						<include>**/executors/aggregators/*.java</include>
 					</includes>
 				</configuration>
 				<executions>

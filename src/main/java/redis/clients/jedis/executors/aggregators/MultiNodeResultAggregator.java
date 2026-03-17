@@ -7,7 +7,8 @@ import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 /**
- * Internal use only. Aggregates results from multiple node/shard executions based on response policy.
+ * Internal use only. Aggregates results from multiple node/shard executions based on response
+ * policy.
  * <p>
  * This class centralizes the logic for collecting results and errors from multi-node command
  * execution (broadcast commands, multi-shard commands) and determining the final result based on
@@ -31,6 +32,7 @@ public final class MultiNodeResultAggregator<T> {
   private final Aggregator<T, T> responseAggregator;
   private boolean hasError;
   private boolean hasSuccess;
+
   /**
    * Creates a new aggregator with the specified response policy.
    * @param responsePolicy the policy that determines how to aggregate results and handle errors
@@ -151,6 +153,5 @@ public final class MultiNodeResultAggregator<T> {
   public CommandFlagsRegistry.ResponsePolicy getResponsePolicy() {
     return responsePolicy;
   }
-
 
 }

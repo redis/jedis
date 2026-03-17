@@ -49,34 +49,38 @@ public class MultiNodeResultAggregatorTest {
   class BasicTests {
     // ==================== getResponsePolicy Tests ====================
 
-
     @Test
     public void testGetResponsePolicy_returnsCorrectPolicy() {
-      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.AGG_SUM);
+      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.AGG_SUM);
 
       assertEquals(ResponsePolicy.AGG_SUM, aggregator.getResponsePolicy(),
-              "getResponsePolicy should return the policy passed to constructor");
+        "getResponsePolicy should return the policy passed to constructor");
     }
 
     // ==================== addSuccess(HostAndPort, T) Tests ====================
     @Test
     public void testAddSuccess_withNode_addsToRepliesMap() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
 
       aggregator.addSuccess(NODE_1, "OK");
       aggregator.addError(NODE_2, new RuntimeException("error"));
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(2, replies.size(), "Should have entries for both nodes");
       assertEquals("OK", replies.get(NODE_1), "Should contain the success reply for NODE_1");
-      assertTrue(replies.get(NODE_2) instanceof RuntimeException, "Should contain the error for NODE_2");
+      assertTrue(replies.get(NODE_2) instanceof RuntimeException,
+        "Should contain the error for NODE_2");
     }
 
     @Test
     public void testAddSuccess_withNullNode_aggregatesResult() {
-      MultiNodeResultAggregator<List<String>> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.DEFAULT);
+      MultiNodeResultAggregator<List<String>> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.DEFAULT);
 
       aggregator.addSuccess(null, Collections.singletonList("S1"));
       aggregator.addSuccess(null, Collections.singletonList("S2"));
@@ -87,12 +91,14 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddSuccess_withNullNode_doesNotAddToRepliesMap() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
 
       aggregator.addSuccess(null, "result");
       aggregator.addError(NODE_1, new RuntimeException("error"));
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(1, replies.size(), "Should only have entry for NODE_1, not null node");
@@ -103,7 +109,8 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddSuccess_withoutNode_recordsResult() {
-      MultiNodeResultAggregator<List<String>> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.DEFAULT);
+      MultiNodeResultAggregator<List<String>> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.DEFAULT);
 
       aggregator.addSuccess(Collections.singletonList("S1"));
 
@@ -112,7 +119,8 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddSuccess_withoutNode_aggregatesMultipleResults() {
-      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.AGG_SUM);
+      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.AGG_SUM);
 
       aggregator.addSuccess(10L);
       aggregator.addSuccess(20L);
@@ -126,12 +134,14 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddError_withNode_recordsErrorAndNode() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
       RuntimeException error = new RuntimeException("Connection failed");
 
       aggregator.addError(NODE_1, error);
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(1, replies.size(), "Should have one error entry");
@@ -140,14 +150,16 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddError_multipleNodes_recordsAllErrors() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
       RuntimeException error1 = new RuntimeException("Error 1");
       RuntimeException error2 = new RuntimeException("Error 2");
 
       aggregator.addError(NODE_1, error1);
       aggregator.addError(NODE_2, error2);
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(2, replies.size(), "Should have two error entries");
@@ -159,28 +171,34 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddError_withJedisClusterOperationException_extractsNode() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
-      JedisClusterOperationException error = new JedisClusterOperationException("Cluster error", NODE_1);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
+      JedisClusterOperationException error = new JedisClusterOperationException("Cluster error",
+          NODE_1);
 
       aggregator.addError(error);
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(1, replies.size(), "Should have one error entry");
-      assertTrue(replies.containsKey(NODE_1), "Should extract node from JedisClusterOperationException");
+      assertTrue(replies.containsKey(NODE_1),
+        "Should extract node from JedisClusterOperationException");
       assertSame(error, replies.get(NODE_1), "Should contain the original exception");
     }
 
     @Test
     public void testAddError_withJedisClusterOperationException_nullNode_usesUnknown() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
       // JedisClusterOperationException without node (null)
       JedisClusterOperationException error = new JedisClusterOperationException("Cluster error");
 
       aggregator.addError(error);
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(1, replies.size(), "Should have one error entry");
@@ -189,16 +207,19 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testAddError_withRegularException_usesUnknownNode() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ALL_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ALL_SUCCEEDED);
       RuntimeException error = new RuntimeException("Generic error");
 
       aggregator.addError(error);
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult());
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult());
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(1, replies.size(), "Should have one error entry");
-      assertTrue(replies.containsKey(UNKNOWN_NODE), "Should use unknown:0 for non-JedisClusterOperationException");
+      assertTrue(replies.containsKey(UNKNOWN_NODE),
+        "Should use unknown:0 for non-JedisClusterOperationException");
       assertSame(error, replies.get(UNKNOWN_NODE));
     }
 
@@ -206,7 +227,8 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testGetResult_oneSucceeded_allNodesSucceed_returnsAggregatedResult() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ONE_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ONE_SUCCEEDED);
 
       aggregator.addSuccess(NODE_1, "OK");
       aggregator.addSuccess(NODE_2, "OK");
@@ -218,7 +240,8 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testGetResult_oneSucceeded_oneNodeSucceedsOthersFail_returnsSuccess() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ONE_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ONE_SUCCEEDED);
 
       aggregator.addError(NODE_1, new RuntimeException("Error 1"));
       aggregator.addSuccess(NODE_2, "OK");
@@ -231,14 +254,15 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testGetResult_oneSucceeded_allNodesFail_throwsException() {
-      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ONE_SUCCEEDED);
+      MultiNodeResultAggregator<String> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ONE_SUCCEEDED);
 
       aggregator.addError(NODE_1, new RuntimeException("Error 1"));
       aggregator.addError(NODE_2, new RuntimeException("Error 2"));
       aggregator.addError(NODE_3, new RuntimeException("Error 3"));
 
-      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class, () -> aggregator.getResult(),
-              "Should throw JedisBroadcastException when all nodes fail");
+      JedisBroadcastException ex = assertThrows(JedisBroadcastException.class,
+        () -> aggregator.getResult(), "Should throw JedisBroadcastException when all nodes fail");
 
       Map<HostAndPort, Object> replies = ex.getReplies();
       assertEquals(3, replies.size(), "Should contain all error replies");
@@ -246,7 +270,8 @@ public class MultiNodeResultAggregatorTest {
 
     @Test
     public void testGetResult_oneSucceeded_mixedResults_returnsFirstSuccess() {
-      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.ONE_SUCCEEDED);
+      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.ONE_SUCCEEDED);
 
       aggregator.addError(NODE_1, new RuntimeException("Error"));
       aggregator.addSuccess(NODE_2, 42L);
@@ -258,6 +283,7 @@ public class MultiNodeResultAggregatorTest {
     }
 
   }
+
   // ==================== getResult() - ALL_SUCCEEDED Policy Tests ====================
   @Nested
   class AllSucceededPolicyTests {
@@ -304,8 +330,8 @@ public class MultiNodeResultAggregatorTest {
   // ==================== getResult() - DEFAULT Policy Tests ====================
   // Nested class for comprehensive DEFAULT policy testing
 
-    @Nested
-    class DefaultPolicyTests {
+  @Nested
+  class DefaultPolicyTests {
 
     @Test
     public void testGetResult_default_allNodesSucceed_returnsResult() {
@@ -334,32 +360,35 @@ public class MultiNodeResultAggregatorTest {
   }
 
   // ==================== getResult() - AGG_SUM Policy Tests ====================
-    @Nested
-    class AggSumPolicyTests {
+  @Nested
+  class AggSumPolicyTests {
 
-      @Test
-      public void testGetResult_aggSum_sumsLongResults() {
-        MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.AGG_SUM);
+    @Test
+    public void testGetResult_aggSum_sumsLongResults() {
+      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.AGG_SUM);
 
-        aggregator.addSuccess(NODE_1, 5L);
-        aggregator.addSuccess(NODE_2, 10L);
-        aggregator.addSuccess(NODE_3, 15L);
+      aggregator.addSuccess(NODE_1, 5L);
+      aggregator.addSuccess(NODE_2, 10L);
+      aggregator.addSuccess(NODE_3, 15L);
 
-        Long result = aggregator.getResult();
-        assertEquals(30L, result, "Should sum all Long results");
-      }
-
-      @Test
-      public void testGetResult_aggSum_oneNodeFails_throwsException() {
-        MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(ResponsePolicy.AGG_SUM);
-
-        aggregator.addSuccess(NODE_1, 5L);
-        aggregator.addError(NODE_2, new RuntimeException("Error"));
-
-        assertThrows(JedisBroadcastException.class, () -> aggregator.getResult(), "AGG_SUM should throw when any node fails");
-      }
-
+      Long result = aggregator.getResult();
+      assertEquals(30L, result, "Should sum all Long results");
     }
+
+    @Test
+    public void testGetResult_aggSum_oneNodeFails_throwsException() {
+      MultiNodeResultAggregator<Long> aggregator = new MultiNodeResultAggregator<>(
+          ResponsePolicy.AGG_SUM);
+
+      aggregator.addSuccess(NODE_1, 5L);
+      aggregator.addError(NODE_2, new RuntimeException("Error"));
+
+      assertThrows(JedisBroadcastException.class, () -> aggregator.getResult(),
+        "AGG_SUM should throw when any node fails");
+    }
+
+  }
   // ==================== getResult() - AGG_MIN Policy Tests ====================
 
   @Nested
@@ -622,7 +651,8 @@ public class MultiNodeResultAggregatorTest {
       aggregator.addSuccess(NODE_2, "success");
 
       String result = aggregator.getResult();
-      assertEquals("success", result, "ONE_SUCCEEDED should return success even if error came first");
+      assertEquals("success", result,
+        "ONE_SUCCEEDED should return success even if error came first");
     }
 
     @Test
@@ -635,7 +665,8 @@ public class MultiNodeResultAggregatorTest {
       aggregator.addError(NODE_2, new RuntimeException("Error"));
 
       String result = aggregator.getResult();
-      assertEquals("success", result, "ONE_SUCCEEDED should return success even if error came after");
+      assertEquals("success", result,
+        "ONE_SUCCEEDED should return success even if error came after");
     }
 
     @Test

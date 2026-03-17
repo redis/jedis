@@ -4,11 +4,11 @@ import redis.clients.jedis.CommandFlagsRegistry;
 
 interface Aggregator<I, O> {
 
-    void add(I input);
+  void add(I input);
 
-    O getResult();
+  O getResult();
 
-    static <T> Aggregator<T,T> create(CommandFlagsRegistry.ResponsePolicy policy){
-        return new ReplyAggregator<T>(policy);
-    }
+  static <T> Aggregator<T, T> create(CommandFlagsRegistry.ResponsePolicy policy) {
+    return new ReplyAggregator<T>(policy);
+  }
 }

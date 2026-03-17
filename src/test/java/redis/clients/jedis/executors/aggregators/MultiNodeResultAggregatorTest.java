@@ -1,4 +1,4 @@
-package redis.clients.jedis.executors;
+package redis.clients.jedis.executors.aggregators;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

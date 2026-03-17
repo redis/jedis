@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
+import redis.clients.jedis.executors.aggregators.MultiNodeResultAggregator;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisAsserts;

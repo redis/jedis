@@ -45,40 +45,6 @@ public class ReplyAggregatorTest {
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
   class AggregateAllSucceededTests {
-
-    @Test
-    public void testAggregateAllSucceeded_byteArrays_returnsFirstArray() {
-      byte[] first = new byte[] { 1, 2};
-      byte[] second = new byte[] { 1, 2 };
-      byte[] third = new byte[] { 3, 4};
-
-
-      ReplyAggregator<byte[]> aggregator = new ReplyAggregator<>(CommandFlagsRegistry.ResponsePolicy.ALL_SUCCEEDED);
-      aggregator.add(first);
-      assertSame(first, aggregator.getResult(), "Should return the first byte array");
-
-      // verify returns first non null value
-      aggregator.add(second);
-      assertSame(first, aggregator.getResult(), "Should return the first byte array");
-
-      // add different conntent array, should still return first
-      aggregator.add(third);
-      assertSame(first, aggregator.getResult(), "Should return the first byte array");
-    }
-
-    @Test
-    public void testAggregateAllSucceeded_sameByteArrayReference_returnsArray() {
-      byte[] array = new byte[] { 1, 2, 3, 4, 5 };
-
-      ReplyAggregator<byte[]> aggregator = new ReplyAggregator<>(CommandFlagsRegistry.ResponsePolicy.ALL_SUCCEEDED);
-      aggregator.add(array);
-      assertThat( aggregator.getResult(), equalTo(array));
-
-      // verify adding same array multiple times, returns first non null value,
-      aggregator.add(array);
-      assertThat( aggregator.getResult(), equalTo(array));
-    }
-
     /**
      * Provides test cases for ALL_SUCCEEDED aggregator.
      * Each Object[] contains {firstValue, secondValue, thirdValue}.
@@ -91,7 +57,8 @@ public class ReplyAggregatorTest {
               new Object[]{3.14159, 3.14159, 2.71828}, // Double
               new Object[]{"OK", "OK", "DIFFERENT"},  // String
               new Object[]{true, true, false},        // Boolean
-              new Object[]{false, false, true}        // Boolean
+              new Object[]{false, false, true},        // Boolean
+              new Object[]{new byte[] { 1, 2},new byte[] { 1, 2},new byte[] { 3, 4}} // byte[]
       );
     }
 

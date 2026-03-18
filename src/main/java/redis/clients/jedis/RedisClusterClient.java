@@ -57,9 +57,13 @@ public class RedisClusterClient extends UnifiedJedis {
    */
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
+  private final CommandFlagsRegistry commandFlagsRegistry;
+
   private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache,
+      CommandFlagsRegistry commandFlagsRegistry) {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    this.commandFlagsRegistry = commandFlagsRegistry;
   }
 
   /**
@@ -133,7 +137,7 @@ public class RedisClusterClient extends UnifiedJedis {
     @Override
     protected RedisClusterClient createClient() {
       return new RedisClusterClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache);
+          clientConfig.getRedisProtocol(), cache, getCommandFlags());
     }
   }
 
@@ -189,7 +193,7 @@ public class RedisClusterClient extends UnifiedJedis {
   @Override
   public ClusterPipeline pipelined() {
     return new ClusterPipeline((ClusterConnectionProvider) provider,
-        (ClusterCommandObjects) commandObjects);
+        (ClusterCommandObjects) commandObjects, commandFlagsRegistry);
   }
 
   /**

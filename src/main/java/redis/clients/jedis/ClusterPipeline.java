@@ -7,6 +7,54 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
+/**
+ * Pipeline implementation for Redis Cluster mode.
+ * <p>
+ * ClusterPipeline allows batching multiple commands for efficient execution in a Redis Cluster
+ * environment. Commands are automatically routed to the appropriate cluster nodes based on
+ * key hash slots.
+ * </p>
+ * <p>
+ * <strong>Important Limitations:</strong>
+ * </p>
+ * <ul>
+ * <li><strong>Single-node commands only:</strong> Only commands that can be routed to a single
+ * node are supported. Commands requiring execution on multiple nodes (ALL_SHARDS, MULTI_SHARD,
+ * ALL_NODES, or SPECIAL request policies) will throw {@link UnsupportedOperationException}.</li>
+ * <li><strong>Examples of unsupported commands:</strong>
+ *   <ul>
+ *     <li>{@code KEYS} - requires execution on all master shards</li>
+ *     <li>{@code MGET} with keys in different slots - requires execution on multiple shards</li>
+ *     <li>{@code SCRIPT LOAD} - requires execution on all nodes</li>
+ *   </ul>
+ * </li>
+ * <li>For multi-node commands, use the non-pipelined mode
+ * of {@link RedisClusterClient} instead.</li>
+ * </ul>
+ * <p>
+ * <strong> Usage Pattern:</strong>
+ * </p>
+ * <pre>{@code
+ * try (RedisCluster cluster = new RedisCluster(nodes, config)) {
+ *   // For single-node commands, use pipelined mode
+ *   try (ClusterPipeline pipeline = cluster.pipelined()) {
+ *     Response<String> r1 = pipeline.set("key1", "value1");
+ *     Response<String> r2 = pipeline.get("key1");
+ *     pipeline.sync();
+ *
+ *     System.out.println(r1.get()); // "OK"
+ *     System.out.println(r2.get()); // "value1"
+ *   }
+ *
+ *   // For multi-node commands, use non-pipelined mode
+ *   Set<String> allKeys = cluster.keys("*"); // Executes on all master shards
+ *   List<String> values = cluster.mget("key1", "key2", "key3"); // Cross-slot keys
+ * }
+ * }</pre>
+ *
+ * @see MultiNodePipelineBase
+ * @see redis.clients.jedis.RedisClusterClient
+ */
 public class ClusterPipeline extends MultiNodePipelineBase {
 
   private final ClusterConnectionProvider provider;
@@ -38,6 +86,12 @@ public class ClusterPipeline extends MultiNodePipelineBase {
 
   public ClusterPipeline(ClusterConnectionProvider provider, ClusterCommandObjects commandObjects) {
     super(commandObjects);
+    this.provider = provider;
+  }
+
+  ClusterPipeline(ClusterConnectionProvider provider, ClusterCommandObjects commandObjects,
+      CommandFlagsRegistry commandFlagsRegistry) {
+    super(commandObjects, commandFlagsRegistry);
     this.provider = provider;
   }
 

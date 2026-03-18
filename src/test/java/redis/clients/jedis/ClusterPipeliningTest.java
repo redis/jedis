@@ -1171,4 +1171,87 @@ public class ClusterPipeliningTest {
         .count();
     MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
   }
+
+  @Test
+  public void testAllShardsCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // KEYS has ALL_SHARDS policy with pattern argument (not a key), should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.keys("*"));
+
+      assertTrue(ex.getMessage().contains("ALL_SHARDS"),
+          "Error message should mention ALL_SHARDS policy");
+      assertTrue(ex.getMessage().contains("KEYS"),
+          "Error message should mention the command name");
+      assertTrue(ex.getMessage().contains("no keys"),
+          "Error message should mention that command has no keys");
+    }
+  }
+
+  @Test
+  public void testAllShardsPolicyWithSampleKeyAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // SCRIPT EXISTS has ALL_SHARDS policy but with sampleKey it routes to single slot, should work
+      String dummySha1 = "0000000000000000000000000000000000000000";
+      Response<List<Boolean>> existsResponse = pipeline.scriptExists("samplekey", dummySha1);
+      pipeline.sync();
+
+      // The response should be valid (list with one boolean indicating if script exists)
+      assertNotNull(existsResponse.get(), "SCRIPT EXISTS with sampleKey should be allowed in pipeline");
+      assertEquals(1, existsResponse.get().size(), "SCRIPT EXISTS should return list with one element");
+      assertFalse(existsResponse.get().get(0), "Dummy script should not exist");
+    }
+  }
+
+  @Test
+  public void testMultiShardCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // MGET with keys in different slots should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.mget("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD"),
+          "Error message should mention MULTI_SHARD policy");
+    }
+  }
+
+  @Test
+  public void testDefaultPolicyCommandAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // SET with single key - DEFAULT policy, should work
+      Response<String> setResponse = pipeline.set("testkey", "testvalue");
+      Response<String> getResponse = pipeline.get("testkey");
+      pipeline.sync();
+
+      assertEquals("OK", setResponse.get());
+      assertEquals("testvalue", getResponse.get());
+    }
+  }
+
+  @Test
+  public void testMultiShardPolicyWithSingleKeyAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // EXISTS with single key has MULTI_SHARD policy but routes to single slot, should work
+      pipeline.set("existskey", "value");
+      Response<Boolean> existsResponse = pipeline.exists("existskey");
+      pipeline.sync();
+
+      assertTrue(existsResponse.get(), "EXISTS with single key should be allowed in pipeline");
+    }
+  }
+
+  @Test
+  public void testMultiShardPolicyWithMultipleKeysRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // EXISTS with multiple keys in different slots has MULTI_SHARD policy, should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.exists("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD") || ex.getMessage().contains("multiple slots"),
+          "Error message should mention MULTI_SHARD policy or multiple slots");
+    }
+  }
 }

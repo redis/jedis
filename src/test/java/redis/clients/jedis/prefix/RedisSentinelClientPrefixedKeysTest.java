@@ -16,25 +16,22 @@ import org.junit.jupiter.api.Tag;
 public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisSentinelClient> {
 
   private static final String MASTER_NAME = "mymaster";
-  private static final JedisClientConfig MASTER_CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("foobared").build();
+  private static final JedisClientConfig MASTER_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+      .password("foobared").build();
   private static Set<HostAndPort> SENTINEL_NODES;
-  private static final JedisClientConfig SENTINEL_CLIENT_CONFIG = DefaultJedisClientConfig.builder().build();
+  private static final JedisClientConfig SENTINEL_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+      .build();
 
   @BeforeAll
   public static void prepareEndpoints() {
     SENTINEL_NODES = new HashSet<>(
-        Arrays.asList(
-            Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
-            Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort()));
+        Arrays.asList(Endpoints.getRedisEndpoint("sentinel-standalone2-1").getHostAndPort(),
+          Endpoints.getRedisEndpoint("sentinel-standalone2-3").getHostAndPort()));
   }
 
   @Override
   RedisSentinelClient nonPrefixingJedis() {
-    return RedisSentinelClient.builder()
-        .masterName(MASTER_NAME)
-        .clientConfig(MASTER_CLIENT_CONFIG)
-        .sentinels(SENTINEL_NODES)
-        .sentinelClientConfig(SENTINEL_CLIENT_CONFIG)
-        .build();
+    return RedisSentinelClient.builder().masterName(MASTER_NAME).clientConfig(MASTER_CLIENT_CONFIG)
+        .sentinels(SENTINEL_NODES).sentinelClientConfig(SENTINEL_CLIENT_CONFIG).build();
   }
 }

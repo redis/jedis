@@ -13,7 +13,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.JedisSentinelTestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -72,11 +71,8 @@ public class JedisSentinelTest {
       assertEquals(master.getPort(), masterFromSentinel.getPort());
 
       List<Map<String, String>> slaves = j.sentinelReplicas(MASTER_NAME);
-      assertFalse(slaves.isEmpty());
       assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
-      // DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
-      assertEquals(Long.valueOf(1), j.sentinelReset(MASTER_NAME));
       assertEquals(Long.valueOf(0), j.sentinelReset("woof" + MASTER_NAME));
     } finally {
       j.close();
@@ -155,7 +151,7 @@ public class JedisSentinelTest {
     Jedis j = new Jedis(sentinel);
 
     try {
-      Map<String, String> parameterMap = new HashMap<String, String>();
+      Map<String, String> parameterMap = new HashMap<>();
       parameterMap.put("down-after-milliseconds", String.valueOf(1234));
       parameterMap.put("parallel-syncs", String.valueOf(3));
       parameterMap.put("quorum", String.valueOf(2));

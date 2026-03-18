@@ -33,4 +33,5 @@ public interface SentinelCommands {
   String sentinelRemove(String masterName);
 
   String sentinelSet(String masterName, Map<String, String> parameterMap);
+
 }

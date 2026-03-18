@@ -348,6 +348,25 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Map<String, String>>> STRING_MAP_LIST = new Builder<List<Map<String, String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map<String, String>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      return list.stream()
+          .map(STRING_MAP::build)
+          .collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map<String, String>>";
+    }
+  };
+
   public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
     @Override
     public Map<String, Object> build(Object data) {

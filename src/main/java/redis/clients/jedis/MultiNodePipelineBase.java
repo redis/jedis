@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -151,8 +152,11 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   /**
    * Validates that a command can be executed in a multi-node pipeline.
-   * Commands with ALL_SHARDS, MULTI_SHARD, ALL_NODES, or SPECIAL request policies
-   * require execution on multiple nodes and cannot be properly handled in pipelines.
+   * <p>
+   * Commands with multi-node request policies (ALL_SHARDS, MULTI_SHARD, ALL_NODES, SPECIAL)
+   * are rejected UNLESS they have keys that route to a single slot, in which case they can
+   * be executed on that single node.
+   * </p>
    *
    * @param args the command arguments
    * @throws UnsupportedOperationException if the command requires multi-node execution
@@ -161,33 +165,27 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     CommandFlagsRegistry.RequestPolicy policy =
         commandFlagsRegistry.getRequestPolicy(args);
 
+    // For multi-node policies, check if the command can be routed to a single slot
     switch (policy) {
       case ALL_SHARDS:
-        throw new UnsupportedOperationException(
-            "Command '" + args.getCommand() + "' with ALL_SHARDS request policy "
-                + "cannot be executed in pipeline mode. This command requires execution on all "
-                + "master shards but pipelines route to a single node. "
-                + "Use non-pipeline cluster client for this command.");
-
       case MULTI_SHARD:
-        throw new UnsupportedOperationException(
-            "Command '" + args.getCommand() + "' with MULTI_SHARD request policy "
-                + "cannot be executed in pipeline mode. This command requires execution on "
-                + "multiple shards but pipelines route to a single node. "
-                + "Use non-pipeline cluster client for this command.");
-
       case ALL_NODES:
-        throw new UnsupportedOperationException(
-            "Command '" + args.getCommand() + "' with ALL_NODES request policy "
-                + "cannot be executed in pipeline mode. This command requires execution on all "
-                + "nodes (masters and replicas) but pipelines route to a single node. "
-                + "Use non-pipeline cluster client for this command.");
-
       case SPECIAL:
+        // If the command has keys that route to a single slot, allow it
+        Set<Integer> slots = args.getKeyHashSlots();
+        if (slots.size() == 1) {
+          // Command can be routed to a single slot - allow it
+          return;
+        }
+
+        // Command cannot be routed to a single slot - reject it
+        String policyName = policy.name();
         throw new UnsupportedOperationException(
-            "Command '" + args.getCommand() + "' with SPECIAL request policy "
-                + "cannot be executed in pipeline mode. This command has non-trivial routing "
-                + "requirements that cannot be handled in pipelines. "
+            "Command '" + args.getCommand() + "' with " + policyName + " request policy "
+                + "cannot be executed in pipeline mode because it cannot be routed to a single slot. "
+                + (slots.isEmpty()
+                    ? "This command has no keys to determine routing. "
+                    : "This command's keys map to multiple slots (" + slots.size() + " slots). ")
                 + "Use non-pipeline cluster client for this command.");
 
       case DEFAULT:

@@ -1171,4 +1171,44 @@ public class ClusterPipeliningTest {
         .count();
     MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
   }
+
+  @Test
+  public void testAllShardsCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.keys("*"));
+
+      assertTrue(ex.getMessage().contains("ALL_SHARDS"),
+          "Error message should mention ALL_SHARDS policy");
+      assertTrue(ex.getMessage().contains("KEYS"),
+          "Error message should mention the command name");
+    }
+  }
+
+  @Test
+  public void testMultiShardCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // MGET with keys in different slots should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.mget("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD"),
+          "Error message should mention MULTI_SHARD policy");
+    }
+  }
+
+  @Test
+  public void testDefaultPolicyCommandAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // SET with single key - DEFAULT policy, should work
+      Response<String> setResponse = pipeline.set("testkey", "testvalue");
+      Response<String> getResponse = pipeline.get("testkey");
+      pipeline.sync();
+
+      assertEquals("OK", setResponse.get());
+      assertEquals("testvalue", getResponse.get());
+    }
+  }
 }

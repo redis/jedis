@@ -29,7 +29,7 @@ import redis.clients.jedis.util.IOUtils;
  *   </ul>
  * </li>
  * <li>For multi-node commands, use the non-pipelined mode
- * of {@link redis.clients.jedis.RedisCluster} instead.</li>
+ * of {@link RedisClusterClient} instead.</li>
  * </ul>
  * <p>
  * <strong> Usage Pattern:</strong>
@@ -53,7 +53,7 @@ import redis.clients.jedis.util.IOUtils;
  * }</pre>
  *
  * @see MultiNodePipelineBase
- * @see redis.clients.jedis.RedisCluster
+ * @see redis.clients.jedis.RedisClusterClient
  */
 public class ClusterPipeline extends MultiNodePipelineBase {
 

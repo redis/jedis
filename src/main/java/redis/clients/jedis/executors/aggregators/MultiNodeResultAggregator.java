@@ -1,12 +1,14 @@
-package redis.clients.jedis.executors;
+package redis.clients.jedis.executors.aggregators;
 
 import redis.clients.jedis.CommandFlagsRegistry;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 /**
- * Aggregates results from multiple node/shard executions based on response policy.
+ * Internal use only. Aggregates results from multiple node/shard executions based on response
+ * policy.
  * <p>
  * This class centralizes the logic for collecting results and errors from multi-node command
  * execution (broadcast commands, multi-shard commands) and determining the final result based on
@@ -20,13 +22,14 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
  * </ul>
  * @param <T> the type of the command result
  */
-final class MultiNodeResultAggregator<T> {
+@Internal
+public final class MultiNodeResultAggregator<T> {
 
   private static final HostAndPort UNKNOWN_NODE = HostAndPort.from("unknown:0");
 
   private final CommandFlagsRegistry.ResponsePolicy responsePolicy;
   private final JedisBroadcastException bcastError;
-  private T aggregatedReply;
+  private final Aggregator<T, T> replyAggregator;
   private boolean hasError;
   private boolean hasSuccess;
 
@@ -34,10 +37,10 @@ final class MultiNodeResultAggregator<T> {
    * Creates a new aggregator with the specified response policy.
    * @param responsePolicy the policy that determines how to aggregate results and handle errors
    */
-  MultiNodeResultAggregator(CommandFlagsRegistry.ResponsePolicy responsePolicy) {
+  public MultiNodeResultAggregator(CommandFlagsRegistry.ResponsePolicy responsePolicy) {
     this.responsePolicy = responsePolicy;
+    this.replyAggregator = new ClusterReplyAggregator<>(responsePolicy);
     this.bcastError = new JedisBroadcastException();
-    this.aggregatedReply = null;
     this.hasError = false;
     this.hasSuccess = false;
   }
@@ -47,7 +50,7 @@ final class MultiNodeResultAggregator<T> {
    * @param node the node that returned the result
    * @param result the result from the node
    */
-  void addSuccess(HostAndPort node, T result) {
+  public void addSuccess(HostAndPort node, T result) {
     if (node != null) {
       bcastError.addReply(node, result);
     }
@@ -61,7 +64,7 @@ final class MultiNodeResultAggregator<T> {
    * commands where extracting the node would require additional computation.
    * @param result the result from the operation
    */
-  void addSuccess(T result) {
+  public void addSuccess(T result) {
     aggregateSuccess(result);
   }
 
@@ -75,11 +78,7 @@ final class MultiNodeResultAggregator<T> {
     // Always aggregate successful results, even if we've seen errors
     // This is important for ONE_SUCCEEDED policy where we need to return
     // a successful result even if some nodes failed
-    if (aggregatedReply == null) {
-      aggregatedReply = result;
-    } else {
-      aggregatedReply = ClusterReplyAggregator.aggregate(aggregatedReply, result, responsePolicy);
-    }
+    replyAggregator.add(result);
   }
 
   /**
@@ -87,7 +86,7 @@ final class MultiNodeResultAggregator<T> {
    * @param node the node that returned the error
    * @param error the exception from the node
    */
-  void addError(HostAndPort node, Exception error) {
+  public void addError(HostAndPort node, Exception error) {
     bcastError.addReply(node, error);
     hasError = true;
   }
@@ -99,7 +98,7 @@ final class MultiNodeResultAggregator<T> {
    * otherwise uses a placeholder "unknown:0" node.
    * @param error the exception from the failed operation
    */
-  void addError(Exception error) {
+  public void addError(Exception error) {
     HostAndPort node = extractNodeFromException(error);
     addError(node, error);
   }
@@ -130,11 +129,11 @@ final class MultiNodeResultAggregator<T> {
    * @return the aggregated result
    * @throws JedisBroadcastException if the policy criteria are not met
    */
-  T getResult() {
+  public T getResult() {
     if (responsePolicy == CommandFlagsRegistry.ResponsePolicy.ONE_SUCCEEDED) {
       // ONE_SUCCEEDED: return success if at least one node succeeded
       if (hasSuccess) {
-        return aggregatedReply;
+        return replyAggregator.getResult();
       }
       // All nodes failed
       throw bcastError.prepareToThrow();
@@ -143,7 +142,7 @@ final class MultiNodeResultAggregator<T> {
       if (hasError) {
         throw bcastError.prepareToThrow();
       }
-      return aggregatedReply;
+      return replyAggregator.getResult();
     }
   }
 
@@ -151,7 +150,8 @@ final class MultiNodeResultAggregator<T> {
    * Returns the response policy being used by this aggregator.
    * @return the response policy
    */
-  CommandFlagsRegistry.ResponsePolicy getResponsePolicy() {
+  public CommandFlagsRegistry.ResponsePolicy getResponsePolicy() {
     return responsePolicy;
   }
+
 }

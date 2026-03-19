@@ -25,7 +25,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
@@ -381,45 +383,6 @@ public class ClusterReplyAggregatorTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class AggregateDefaultSetTests {
 
-      @Test
-      public void testAggregateDefault_twoSetsWithDifferentElements_mergesThem() {
-        Set<String> first = new HashSet<>(Arrays.asList("a", "b"));
-        Set<String> second = new HashSet<>(Arrays.asList("c", "d"));
-
-        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Set<String> result = aggregator.getResult();
-
-        assertEquals(4, result.size(), "Should contain all elements from both sets");
-        assertTrue(result.contains("a"));
-        assertTrue(result.contains("b"));
-        assertTrue(result.contains("c"));
-        assertTrue(result.contains("d"));
-        assertTrue(result instanceof HashSet, "Result should be a HashSet");
-      }
-
-      @Test
-      public void testAggregateDefault_twoSetsWithOverlappingElements_mergesWithoutDuplicates() {
-        Set<String> first = new HashSet<>(Arrays.asList("a", "b", "c"));
-        Set<String> second = new HashSet<>(Arrays.asList("b", "c", "d"));
-
-        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Set<String> result = aggregator.getResult();
-
-        assertEquals(4, result.size(), "Should contain unique elements from both sets");
-        assertTrue(result.contains("a"));
-        assertTrue(result.contains("b"));
-        assertTrue(result.contains("c"));
-        assertTrue(result.contains("d"));
-      }
-
       /**
        * Provides test cases: {firstSet, secondSet, expectedResult}.
        */
@@ -433,7 +396,20 @@ public class ClusterReplyAggregatorTest {
           // non-empty + empty → non-empty
           new Object[] { nonEmptySet, new HashSet<String>(), expectedSet },
           // empty + empty → empty
-          new Object[] { new HashSet<String>(), new HashSet<String>(), new HashSet<String>() });
+          new Object[] { new HashSet<String>(), new HashSet<String>(), new HashSet<String>() },
+          // sets with overlapping elements, merges without duplicates
+          new Object[] { new HashSet<String>(Arrays.asList("a", "b", "c")),
+              new HashSet<String>(Arrays.asList("b", "c", "d")),
+              new HashSet<String>(Arrays.asList("a", "b", "c", "d")) },
+          // sets with different elements, merges all elements
+          new Object[] { new HashSet<String>(Arrays.asList("a", "b")),
+              new HashSet<String>(Arrays.asList("c", "d")),
+              new HashSet<String>(Arrays.asList("a", "b", "c", "d")) },
+          // different set implementations, merges all elements
+          new Object[] { new LinkedHashSet<String>(Arrays.asList("a", "b")),
+              new HashSet<String>(Arrays.asList("c", "d")),
+              new HashSet<String>(Arrays.asList("a", "b", "c", "d")) });
+
       }
 
       @ParameterizedTest
@@ -446,27 +422,44 @@ public class ClusterReplyAggregatorTest {
         aggregator.add(second);
 
         Set<String> result = aggregator.getResult();
-        assertThat("Aggregated set should match expected", result, equalTo(expected));
+        assertThat("Aggregated set should match expected", result, instanceOf(HashSet.class));
+        assertThat("Aggregated set should match expected", result,
+          containsInAnyOrder(expected.toArray(new String[0])));
       }
 
-      @Test
-      public void testAggregateDefault_differentSetImplementations_mergesThem() {
-        Set<String> first = new LinkedHashSet<>(Arrays.asList("a", "b"));
-        Set<String> second = new HashSet<>(Arrays.asList("c", "d"));
+      /**
+       * Provides test cases: {firstSet, secondSet, expectedResult}.
+       */
+      Stream<Object[]> setByteArrayProvider() {
+        Set<byte[]> nonEmptySet1 = new HashSet<>(Arrays.asList("a".getBytes(), "b".getBytes()));
+        Set<byte[]> nonEmptySet2 = new HashSet<>(Arrays.asList("c".getBytes(), "d".getBytes()));
 
-        ClusterReplyAggregator<Set<String>> aggregator = new ClusterReplyAggregator<>(
+        Set<byte[]> expectedSet = new HashSet<>(
+            Arrays.asList("a".getBytes(), "b".getBytes(), "c".getBytes(), "d".getBytes()));
+        return Stream.of(
+          // set of byte arrays
+          new Object[] { nonEmptySet1, nonEmptySet2, expectedSet },
+          // empty + non-empty → non-empty
+          new Object[] { new HashSet<byte[]>(), nonEmptySet1, nonEmptySet1 },
+          // non-empty + empty → non-empty
+          new Object[] { nonEmptySet1, new HashSet<byte[]>(), nonEmptySet1 });
+
+      }
+
+      @ParameterizedTest
+      @MethodSource("setByteArrayProvider")
+      void testAggregateDefault_sets_byteArrays(Set<byte[]> first, Set<byte[]> second,
+          Set<byte[]> expected) {
+        ClusterReplyAggregator<Set<byte[]>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
+
         aggregator.add(first);
         aggregator.add(second);
 
-        Set<String> result = aggregator.getResult();
-
-        assertEquals(4, result.size(), "Should merge different set implementations");
-        assertTrue(result.contains("a"));
-        assertTrue(result.contains("b"));
-        assertTrue(result.contains("c"));
-        assertTrue(result.contains("d"));
-        assertTrue(result instanceof HashSet, "Result should be a HashSet");
+        Set<byte[]> result = aggregator.getResult();
+        assertThat("Aggregated set should match expected", result, instanceOf(HashSet.class));
+        assertThat(result.toArray(new byte[0][]),
+          arrayContainingInAnyOrder(expected.toArray(new byte[0][])));
       }
 
       @Test
@@ -482,9 +475,7 @@ public class ClusterReplyAggregatorTest {
         Set<String> result = aggregator.getResult();
 
         // ClusterReplyAggregator mutates the first set in place
-        assertSame(second, result, "Result should be the same instance as first non-null set");
         assertThat(result, sameInstance(second));
-        assertEquals(2, result.size(), "Result should contain all elements");
         assertThat(result, contains("c", "d"));
       }
 
@@ -496,6 +487,28 @@ public class ClusterReplyAggregatorTest {
         first.add(new byte[] { 3, 4 });
 
         Set<byte[]> second = new HashSet<>();
+        second.add(new byte[] { 5, 6 });
+
+        ClusterReplyAggregator<Set<byte[]>> aggregator = new ClusterReplyAggregator<>(
+            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
+        aggregator.add(first);
+        aggregator.add(second);
+
+        Set<byte[]> result = aggregator.getResult();
+
+        assertEquals(3, result.size(), "Should contain all byte arrays from both sets");
+        assertTrue(result instanceof HashSet, "Result should be a HashSet");
+      }
+
+      @Test
+      public void testAggregateDefault_byteArraySets_overlapping_mergesThem() {
+        // Testing with byte[] sets similar to what BINARY_SET returns
+        Set<byte[]> first = new HashSet<>();
+        first.add(new byte[] { 1, 2 });
+        first.add(new byte[] { 3, 4 });
+
+        Set<byte[]> second = new HashSet<>();
+        second.add(new byte[] { 3, 4 });
         second.add(new byte[] { 5, 6 });
 
         ClusterReplyAggregator<Set<byte[]>> aggregator = new ClusterReplyAggregator<>(

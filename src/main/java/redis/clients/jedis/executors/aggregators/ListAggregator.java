@@ -5,6 +5,12 @@ import java.util.List;
 
 class ListAggregator<T> implements Aggregator<List<T>, List<T>> {
 
+  // Parts stores references to the maps added to the aggregator.
+  // Defines the initial capacity of the list holding the parts.
+  // Hard to come up with a reasonable default.
+  // Start with 3 as min redis cluster has 3 masters.
+  private static final int INITIAL_CAPACITY = 3;
+
   private List<List<T>> parts;
   private int totalSize;
 
@@ -16,7 +22,7 @@ class ListAggregator<T> implements Aggregator<List<T>, List<T>> {
     }
 
     if (parts == null) {
-      parts = new ArrayList<>(4);
+      parts = new ArrayList<>(INITIAL_CAPACITY);
     }
 
     parts.add(list);

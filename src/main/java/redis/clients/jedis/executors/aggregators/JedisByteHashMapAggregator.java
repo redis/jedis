@@ -7,6 +7,12 @@ import java.util.List;
 
 class JedisByteHashMapAggregator implements Aggregator<JedisByteHashMap, JedisByteHashMap> {
 
+  // Parts stores references to the maps added to the aggregator.
+  // Defines the initial capacity of the list holding the parts.
+  // Hard to come up with a reasonable default.
+  // Start with 3 as min redis cluster has 3 masters.
+  private static final int INITIAL_CAPACITY = 3;
+
   private List<JedisByteHashMap> parts;
   private int totalSize;
 
@@ -17,7 +23,7 @@ class JedisByteHashMapAggregator implements Aggregator<JedisByteHashMap, JedisBy
     }
 
     if (parts == null) {
-      parts = new ArrayList<>(4);
+      parts = new ArrayList<>(INITIAL_CAPACITY);
     }
 
     parts.add(map);
@@ -37,8 +43,6 @@ class JedisByteHashMapAggregator implements Aggregator<JedisByteHashMap, JedisBy
 
     JedisByteHashMap result = new JedisByteHashMap();
 
-    // Pre-allocate internal map if needed (optional)
-    // Note: JedisByteHashMap internally uses LinkedHashMap, which grows automatically
     for (JedisByteHashMap part : parts) {
       result.putAll(part);
     }

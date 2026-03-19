@@ -2,9 +2,9 @@ package redis.clients.jedis.executors.aggregators;
 
 import redis.clients.jedis.CommandFlagsRegistry;
 
-interface Aggregator<I, O> {
+interface Aggregator<I, R> {
 
   void add(I input);
 
-  O getResult();
+  R getResult();
 }

@@ -7,6 +7,12 @@ import java.util.Map;
 
 class MapAggregator<K, V> implements Aggregator<Map<K, V>, Map<K, V>> {
 
+  // Parts stores references to the maps added to the aggregator.
+  // Defines the initial capacity of the list holding the parts.
+  // Hard to come up with a reasonable default.
+  // Start with 3 as min redis cluster has 3 masters.
+  private static final int INITIAL_CAPACITY = 3;
+
   private List<Map<K, V>> parts;
   private int totalSize;
 
@@ -18,7 +24,7 @@ class MapAggregator<K, V> implements Aggregator<Map<K, V>, Map<K, V>> {
     }
 
     if (parts == null) {
-      parts = new ArrayList<>(4);
+      parts = new ArrayList<>(INITIAL_CAPACITY);
     }
 
     parts.add(map);

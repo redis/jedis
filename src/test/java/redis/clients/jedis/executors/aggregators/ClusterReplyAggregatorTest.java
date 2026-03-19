@@ -358,8 +358,8 @@ public class ClusterReplyAggregatorTest {
         second.put("a", "1");
         second.put("b", "2");
         Map<String, String> third = new HashMap<>();
-        second.put("c", "3");
-        second.put("d", "4");
+        third.put("c", "3");
+        third.put("d", "4");
 
         ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
             CommandFlagsRegistry.ResponsePolicy.DEFAULT);
@@ -439,6 +439,10 @@ public class ClusterReplyAggregatorTest {
         return Stream.of(
           // set of byte arrays
           new Object[] { nonEmptySet1, nonEmptySet2, expectedSet },
+          // overlapping elements
+          new Object[] { new HashSet<>(Arrays.asList("a".getBytes(), "b".getBytes())),
+              new HashSet<>(Arrays.asList("b".getBytes(), "c".getBytes())),
+              new HashSet<>(Arrays.asList("a".getBytes(), "b".getBytes(), "c".getBytes())) },
           // empty + non-empty → non-empty
           new Object[] { new HashSet<byte[]>(), nonEmptySet1, nonEmptySet1 },
           // non-empty + empty → non-empty
@@ -478,49 +482,6 @@ public class ClusterReplyAggregatorTest {
         assertThat(result, sameInstance(second));
         assertThat(result, contains("c", "d"));
       }
-
-      @Test
-      public void testAggregateDefault_byteArraySets_mergesThem() {
-        // Testing with byte[] sets similar to what BINARY_SET returns
-        Set<byte[]> first = new HashSet<>();
-        first.add(new byte[] { 1, 2 });
-        first.add(new byte[] { 3, 4 });
-
-        Set<byte[]> second = new HashSet<>();
-        second.add(new byte[] { 5, 6 });
-
-        ClusterReplyAggregator<Set<byte[]>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Set<byte[]> result = aggregator.getResult();
-
-        assertEquals(3, result.size(), "Should contain all byte arrays from both sets");
-        assertTrue(result instanceof HashSet, "Result should be a HashSet");
-      }
-
-      @Test
-      public void testAggregateDefault_byteArraySets_overlapping_mergesThem() {
-        // Testing with byte[] sets similar to what BINARY_SET returns
-        Set<byte[]> first = new HashSet<>();
-        first.add(new byte[] { 1, 2 });
-        first.add(new byte[] { 3, 4 });
-
-        Set<byte[]> second = new HashSet<>();
-        second.add(new byte[] { 3, 4 });
-        second.add(new byte[] { 5, 6 });
-
-        ClusterReplyAggregator<Set<byte[]>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Set<byte[]> result = aggregator.getResult();
-
-        assertEquals(3, result.size(), "Should contain all byte arrays from both sets");
-        assertTrue(result instanceof HashSet, "Result should be a HashSet");
-      }
     }
 
     // ==================== aggregateDefault - JedisByteHashMap Tests ====================
@@ -529,7 +490,7 @@ public class ClusterReplyAggregatorTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class AggregateDefaultJedisByteHashMapTests {
 
-      @Test
+          @Test
       public void testAggregateDefault_twoJedisByteHashMapsWithDifferentKeys_mergesThem() {
         JedisByteHashMap first = new JedisByteHashMap();
         first.put(new byte[] { 'k', '1' }, new byte[] { 'v', '1' });

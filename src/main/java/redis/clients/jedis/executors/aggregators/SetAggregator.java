@@ -44,10 +44,13 @@ class SetAggregator<T> implements Aggregator<Set<T>, Set<T>> {
     }
 
     // Check if we're dealing with Set<byte[]> - need special handling for proper deduplication
-    if (!parts.isEmpty() && !parts.get(0).isEmpty()) {
-      Object firstElement = parts.get(0).iterator().next();
-      if (firstElement instanceof byte[]) {
-        return mergeByteArraySets();
+    for (Set<T> set : parts) {
+      if (!set.isEmpty()) {
+        Object firstElement = set.iterator().next();
+        if (firstElement instanceof byte[]) {
+          return mergeByteArraySets();
+        }
+        break;
       }
     }
 

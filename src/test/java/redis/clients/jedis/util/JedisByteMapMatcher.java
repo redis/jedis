@@ -16,8 +16,8 @@ public class JedisByteMapMatcher<T> extends TypeSafeMatcher<Map<byte[], T>> {
 
   @Override
   protected boolean matchesSafely(Map<byte[], T> actual) {
-    if (actual == null ) {
-        return expected == null;
+    if (actual == null) {
+      return expected == null;
     }
 
     if (actual.size() != expected.size()) return false;
@@ -34,14 +34,14 @@ public class JedisByteMapMatcher<T> extends TypeSafeMatcher<Map<byte[], T>> {
           keyFound = true;
           // Verify the value for this key matches
           if (!expectedValue.equals(actualEntry.getValue())) {
-            return false;  // Key found but value doesn't match
+            return false; // Key found but value doesn't match
           }
           break;
         }
       }
 
       if (!keyFound) {
-        return false;  // Expected key not found in actual
+        return false; // Expected key not found in actual
       }
     }
 

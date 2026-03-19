@@ -1,4 +1,5 @@
 package redis.clients.jedis.util;
+
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import java.util.Map;
@@ -14,8 +15,8 @@ public class ByteArrayMapMatcher extends TypeSafeMatcher<Map<byte[], byte[]>> {
 
   @Override
   protected boolean matchesSafely(Map<byte[], byte[]> actual) {
-    if (actual == null ) {
-        return expected == null;
+    if (actual == null) {
+      return expected == null;
     }
 
     if (actual.size() != expected.size()) return false;
@@ -32,14 +33,14 @@ public class ByteArrayMapMatcher extends TypeSafeMatcher<Map<byte[], byte[]>> {
           keyFound = true;
           // Verify the value for this key matches
           if (!Arrays.equals(expectedValue, actualEntry.getValue())) {
-            return false;  // Key found but value doesn't match
+            return false; // Key found but value doesn't match
           }
           break;
         }
       }
 
       if (!keyFound) {
-        return false;  // Expected key not found in actual
+        return false; // Expected key not found in actual
       }
     }
 

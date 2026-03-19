@@ -92,8 +92,10 @@ class ClientBuilderTest {
   void cacheRequiresRESP3() {
     Cache cache = mock(Cache.class);
 
-    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> RedisClient
-        .builder().commandExecutor(exec).connectionProvider(provider).cache(cache).build(),
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+      () -> RedisClient.builder()
+          .clientConfig(DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2).build())
+          .commandExecutor(exec).connectionProvider(provider).cache(cache).build(),
       "Cache requires RESP3");
 
     assertThat(ex.getMessage(), containsString("Client-side caching is only supported with RESP3"));
@@ -303,7 +305,7 @@ class ClientBuilderTest {
         .fromURI("redis://localhost:6379");
 
     JedisClientConfig resultConfig = getClientConfig(builder);
-    assertNull(resultConfig.getRedisProtocol());
+    assertThat(resultConfig.getRedisProtocol(), equalTo(RedisProtocol.RESP3));
   }
 
   /**

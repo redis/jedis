@@ -216,76 +216,60 @@ public class ClusterReplyAggregatorTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class AggregateDefaultMapTests {
 
-      @Test
-      public void testAggregateDefault_twoMapsWithDifferentKeys_mergesThem() {
-        Map<String, Integer> first = new HashMap<>();
-        first.put("key1", 1);
-        first.put("key2", 2);
-
-        Map<String, Integer> second = new HashMap<>();
-        second.put("key3", 3);
-        second.put("key4", 4);
-
-        ClusterReplyAggregator<Map<String, Integer>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Map<String, Integer> result = aggregator.getResult();
-        assertEquals(4, result.size(), "Should contain all entries from both maps");
-        assertEquals(1, result.get("key1"));
-        assertEquals(2, result.get("key2"));
-        assertEquals(3, result.get("key3"));
-        assertEquals(4, result.get("key4"));
-      }
-
-      @Test
-      public void testAggregateDefault_twoMapsWithOverlappingKeys_secondMapTakesPrecedence() {
-        Map<String, String> first = new HashMap<>();
-        first.put("shared", "first_value");
-        first.put("unique1", "value1");
-
-        Map<String, String> second = new HashMap<>();
-        second.put("shared", "second_value");
-        second.put("unique2", "value2");
-
-        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Map<String, String> result = aggregator.getResult();
-        assertEquals(3, result.size(), "Should contain merged entries");
-        assertEquals("second_value", result.get("shared"),
-          "Second map's value should overwrite first");
-        assertEquals("value1", result.get("unique1"));
-        assertEquals("value2", result.get("unique2"));
-      }
-
       /**
        * Provides test cases: {firstMap, secondMap, expectedResult}.
        */
       Stream<Object[]> mapProvider() {
-        Map<String, Integer> nonEmptyMap = new HashMap<>();
-        nonEmptyMap.put("key1", 1);
-        nonEmptyMap.put("key2", 2);
+        Map<String, Integer> firstMap = new HashMap<>();
+        firstMap.put("key1", 1);
+        firstMap.put("key2", 2);
 
-        Map<String, Integer> expectedMap = new HashMap<>();
-        expectedMap.put("key1", 1);
-        expectedMap.put("key2", 2);
+        Map<String, Integer> secondMap = new HashMap<>();
+        secondMap.put("key3", 3);
+        secondMap.put("key4", 4);
+
+        Map<String, Integer> expectedFirstOnly = new HashMap<>();
+        expectedFirstOnly.put("key1", 1);
+        expectedFirstOnly.put("key2", 2);
+
+        Map<String, Integer> expectedMergedMap = new HashMap<>();
+        expectedMergedMap.put("key1", 1);
+        expectedMergedMap.put("key2", 2);
+        expectedMergedMap.put("key3", 3);
+        expectedMergedMap.put("key4", 4);
+
+        Map<String, Integer> overlappingMap = new HashMap<>();
+        overlappingMap.put("key1", 1);
+        overlappingMap.put("key3", 3);
+
+        Map<String, Integer> expectedOverlappingMap = new HashMap<>();
+        expectedOverlappingMap.put("key1", 1);
+        expectedOverlappingMap.put("key2", 2);
+        expectedOverlappingMap.put("key3", 3);
 
         return Stream.of(
           // empty + non-empty → non-empty
-          new Object[] { new HashMap<String, Integer>(), nonEmptyMap, expectedMap },
+          new Object[] { new HashMap<String, Integer>(), firstMap, expectedFirstOnly },
           // non-empty + empty → non-empty
-          new Object[] { nonEmptyMap, new HashMap<String, Integer>(), expectedMap },
+          new Object[] { firstMap, new HashMap<String, Integer>(), expectedFirstOnly },
           // empty + empty → empty
           new Object[] { new HashMap<String, Integer>(), new HashMap<String, Integer>(),
               new HashMap<String, Integer>() },
           // null + null → null
           new Object[] { null, null, null },
           // null + empty → empty
-          new Object[] { null, new HashMap<String, Integer>(), new HashMap<String, Integer>() });
+          new Object[] { null, new HashMap<String, Integer>(), new HashMap<String, Integer>() },
+          // unmodifiableMap + non-empty → non-empty
+          new Object[] { Collections.emptyMap(), firstMap, expectedFirstOnly },
+          // non-empty + unmodifiableMap → non-empty
+          new Object[] { firstMap, Collections.emptyMap(), expectedFirstOnly },
+          // maps with different keys
+          new Object[] { firstMap, secondMap, expectedMergedMap },
+          // maps with overlapping keys, second map takes precedence
+          new Object[] { firstMap, overlappingMap, expectedOverlappingMap }
+
+        );
+
       }
 
       @ParameterizedTest
@@ -325,59 +309,6 @@ public class ClusterReplyAggregatorTest {
         assertEquals("4", result.get("d"));
         assertTrue(result instanceof HashMap, "Result should be a HashMap");
       }
-
-      @Test
-      public void testAggregateDefault_mergesHashMaps() {
-        Map<String, String> first = new HashMap<>();
-        first.put("a", "1");
-        first.put("b", "2");
-
-        Map<String, String> second = new HashMap<>();
-        second.put("c", "3");
-        second.put("d", "4");
-
-        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-
-        Map<String, String> result = aggregator.getResult();
-        // ClusterReplyAggregator merges maps
-        assertEquals(4, result.size(), "Result should contain all entries");
-        assertEquals("1", result.get("a"));
-        assertEquals("2", result.get("b"));
-        assertEquals("3", result.get("c"));
-        assertEquals("4", result.get("d"));
-        // Second map should NOT be modified
-        assertEquals(2, second.size(), "Second map should not be modified");
-        assertEquals("3", second.get("c"));
-        assertEquals("4", second.get("d"));
-      }
-
-      @Test
-      public void testAggregateDefault_unmodifiableMap_returnsNewHashMap() {
-        Map<String, String> first = Collections.emptyMap();
-        Map<String, String> second = new HashMap<>();
-        second.put("a", "1");
-        second.put("b", "2");
-        Map<String, String> third = new HashMap<>();
-        third.put("c", "3");
-        third.put("d", "4");
-
-        ClusterReplyAggregator<Map<String, String>> aggregator = new ClusterReplyAggregator<>(
-            CommandFlagsRegistry.ResponsePolicy.DEFAULT);
-        aggregator.add(first);
-        aggregator.add(second);
-        aggregator.add(third);
-
-        Map<String, String> result = aggregator.getResult();
-        assertNotNull(result);
-        assertThat(result, instanceOf(HashMap.class));
-        assertEquals("1", result.get("a"));
-        assertEquals("2", result.get("b"));
-        assertEquals("3", result.get("c"));
-        assertEquals("4", result.get("d"));
-      }
     }
 
     // ==================== aggregateDefault - Set Tests ====================
@@ -400,6 +331,10 @@ public class ClusterReplyAggregatorTest {
           new Object[] { nonEmptySet, new HashSet<String>(), expectedSet },
           // empty + empty → empty
           new Object[] { new HashSet<String>(), new HashSet<String>(), new HashSet<String>() },
+          // unmodifiableSet + non-empty → non-empty
+          new Object[] { Collections.emptySet(), nonEmptySet, expectedSet },
+          // non-empty + unmodifiableSet → non-empty
+          new Object[] { nonEmptySet, Collections.emptySet(), expectedSet },
           // sets with overlapping elements, merges without duplicates
           new Object[] { new HashSet<String>(Arrays.asList("a", "b", "c")),
               new HashSet<String>(Arrays.asList("b", "c", "d")),

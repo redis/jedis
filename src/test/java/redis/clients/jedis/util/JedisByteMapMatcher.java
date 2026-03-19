@@ -1,19 +1,21 @@
 package redis.clients.jedis.util;
+
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import java.util.Map;
+
 import java.util.Arrays;
+import java.util.Map;
 
-public class ByteArrayMapMatcher extends TypeSafeMatcher<Map<byte[], byte[]>> {
+public class JedisByteMapMatcher<T> extends TypeSafeMatcher<Map<byte[], T>> {
 
-  private final Map<byte[], byte[]> expected;
+  private final Map<byte[], T> expected;
 
-  public ByteArrayMapMatcher(Map<byte[], byte[]> expected) {
+  public JedisByteMapMatcher(Map<byte[], T> expected) {
     this.expected = expected;
   }
 
   @Override
-  protected boolean matchesSafely(Map<byte[], byte[]> actual) {
+  protected boolean matchesSafely(Map<byte[], T> actual) {
     if (actual == null ) {
         return expected == null;
     }
@@ -21,17 +23,17 @@ public class ByteArrayMapMatcher extends TypeSafeMatcher<Map<byte[], byte[]>> {
     if (actual.size() != expected.size()) return false;
 
     // For each expected key, find the matching key in actual and verify the value matches
-    for (Map.Entry<byte[], byte[]> expectedEntry : expected.entrySet()) {
+    for (Map.Entry<byte[], T> expectedEntry : expected.entrySet()) {
       byte[] expectedKey = expectedEntry.getKey();
-      byte[] expectedValue = expectedEntry.getValue();
+      T expectedValue = expectedEntry.getValue();
 
       // Find the actual entry with matching key
       boolean keyFound = false;
-      for (Map.Entry<byte[], byte[]> actualEntry : actual.entrySet()) {
+      for (Map.Entry<byte[], T> actualEntry : actual.entrySet()) {
         if (Arrays.equals(expectedKey, actualEntry.getKey())) {
           keyFound = true;
           // Verify the value for this key matches
-          if (!Arrays.equals(expectedValue, actualEntry.getValue())) {
+          if (!expectedValue.equals(actualEntry.getValue())) {
             return false;  // Key found but value doesn't match
           }
           break;
@@ -51,7 +53,7 @@ public class ByteArrayMapMatcher extends TypeSafeMatcher<Map<byte[], byte[]>> {
     description.appendText("maps to be equal by byte[] content");
   }
 
-  public static ByteArrayMapMatcher contentEquals(Map<byte[], byte[]> expected) {
-    return new ByteArrayMapMatcher(expected);
+  public static <T> JedisByteMapMatcher<T> contentEquals(Map<byte[], T> expected) {
+    return new JedisByteMapMatcher<T>(expected);
   }
 }

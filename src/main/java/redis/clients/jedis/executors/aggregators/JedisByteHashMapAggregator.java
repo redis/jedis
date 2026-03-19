@@ -14,11 +14,10 @@ class JedisByteHashMapAggregator implements Aggregator<JedisByteHashMap, JedisBy
   private static final int INITIAL_CAPACITY = 3;
 
   private List<JedisByteHashMap> parts;
-  private int totalSize;
 
   @Override
   public void add(JedisByteHashMap map) {
-    if (map == null || map.isEmpty()) {
+    if (map == null) {
       return;
     }
 
@@ -27,7 +26,6 @@ class JedisByteHashMapAggregator implements Aggregator<JedisByteHashMap, JedisBy
     }
 
     parts.add(map);
-    totalSize += map.size();
   }
 
   @Override

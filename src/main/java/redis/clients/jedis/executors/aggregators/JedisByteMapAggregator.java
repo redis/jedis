@@ -14,11 +14,10 @@ class JedisByteMapAggregator<T> implements Aggregator<JedisByteMap<T>, JedisByte
   private static final int INITIAL_CAPACITY = 3;
 
   private List<JedisByteMap<T>> parts;
-  private int totalSize;
 
   @Override
   public void add(JedisByteMap<T> map) {
-    if (map == null || map.isEmpty()) {
+    if (map == null) {
       return;
     }
 
@@ -27,7 +26,6 @@ class JedisByteMapAggregator<T> implements Aggregator<JedisByteMap<T>, JedisByte
     }
 
     parts.add(map);
-    totalSize += map.size();
   }
 
   @Override

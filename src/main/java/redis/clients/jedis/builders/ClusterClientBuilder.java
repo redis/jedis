@@ -88,6 +88,17 @@ public abstract class ClusterClientBuilder<C>
     return this;
   }
 
+  /**
+   * Gets the command flags registry, initializing it if necessary.
+   * @return the command flags registry
+   */
+  protected CommandFlagsRegistry getCommandFlags() {
+    if (this.commandFlags == null) {
+      this.commandFlags = createDefaultCommandFlagsRegistry();
+    }
+    return this.commandFlags;
+  }
+
   @Override
   protected ClusterClientBuilder<C> self() {
     return this;

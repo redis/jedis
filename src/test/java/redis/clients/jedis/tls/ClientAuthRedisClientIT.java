@@ -23,11 +23,4 @@ public class ClientAuthRedisClientIT extends ClientAuthIT {
     return RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
         .clientConfig(DefaultJedisClientConfig.builder().sslOptions(sslOptions).build()).build();
   }
-
-  @Override
-  protected String executeAclWhoAmI(UnifiedJedis client) {
-    RedisClient redisClient = (RedisClient) client;
-    return redisClient.executeCommand(new CommandObject<>(
-        new CommandArguments(Protocol.Command.ACL).add("WHOAMI"), BuilderFactory.STRING));
-  }
 }

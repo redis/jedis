@@ -373,7 +373,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   // Legacy
   public Transaction multi() {
-    transaction = new Transaction(this);
+    transaction = new Transaction(getConnection()) {
+      @Override
+      protected void onAfterExec() {
+        resetState();
+      }
+
+      @Override
+      protected void onAfterDiscard() {
+        resetState();
+      }
+    };
     return transaction;
   }
 

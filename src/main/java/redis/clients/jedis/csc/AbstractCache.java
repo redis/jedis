@@ -214,6 +214,34 @@ public abstract class AbstractCache implements Cache {
 
   // End of abstract methods to be implemented by the concrete classes
 
+  /**
+   * Normalizes Redis keys to ByteBuffer for use as map keys in {@link #redisKeysToCacheKeys}.
+   * <p>
+   * This method provides type safety by accepting only {@link String} and {@code byte[]} types,
+   * which are the only types stored by {@link redis.clients.jedis.CommandArguments#getKeys()}.
+   * <p>
+   * <b>Normalization strategy:</b>
+   * <ul>
+   *   <li>{@link String} keys are converted to {@code byte[]} using UTF-8 encoding via {@link SafeEncoder#encode(String)}</li>
+   *   <li>{@code byte[]} keys are used directly</li>
+   *   <li>Both are wrapped in {@link ByteBuffer} for content-based equality (similar to {@link redis.clients.jedis.util.JedisByteMap})</li>
+   * </ul>
+   * <p>
+   * <b>Why ByteBuffer:</b> {@link ByteBuffer} provides content-based {@code equals()} and {@code hashCode()}
+   * for byte arrays, which is required for proper map key behavior. Plain {@code byte[]} uses identity-based
+   * equality, which would break key lookups.
+   * <p>
+   * This normalization ensures that:
+   * <ul>
+   *   <li>String key {@code "user:1"} and byte key {@code byte[]{0x75, 0x73, 0x65, 0x72, 0x3a, 0x31}} are treated as equal</li>
+   *   <li>Cache invalidation works correctly regardless of whether keys were added as String or byte[]</li>
+   *   <li>Type mismatches are caught early with clear error messages</li>
+   * </ul>
+   *
+   * @param key the Redis key (must be {@link String} or {@code byte[]})
+   * @return ByteBuffer wrapping the normalized byte representation
+   * @throws IllegalArgumentException if key is not {@link String} or {@code byte[]}
+   */
   private ByteBuffer makeKeyForRedisKeysToCacheKeys(Object key) {
     if (key instanceof byte[]) {
       return makeKeyForRedisKeysToCacheKeys((byte[]) key);
@@ -225,6 +253,15 @@ public abstract class AbstractCache implements Cache {
     }
   }
 
+  /**
+   * Wraps a byte array in a ByteBuffer for use as a map key.
+   * <p>
+   * ByteBuffer provides content-based equality, which is required for proper map key behavior
+   * with byte arrays.
+   *
+   * @param b the byte array to wrap
+   * @return ByteBuffer wrapping the byte array
+   */
   private static ByteBuffer makeKeyForRedisKeysToCacheKeys(byte[] b) {
     return ByteBuffer.wrap(b);
   }

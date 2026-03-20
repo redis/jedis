@@ -14,8 +14,8 @@ import static redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
  * <ul>
  * <li>Version: 8.6.1</li>
  * <li>Mode: standalone</li>
- * <li>Loaded Modules: timeseries, search, bf, vectorset, ReJSON</li>
- * <li>Generated at: 2026-03-02 16:18:50 CET</li>
+ * <li>Loaded Modules: timeseries, search, vectorset, bf, ReJSON</li>
+ * <li>Generated at: 2026-03-20 13:22:33 EET</li>
  * </ul>
  */
 final class StaticCommandFlagsRegistryInitializer {
@@ -77,7 +77,7 @@ final class StaticCommandFlagsRegistryInitializer {
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.NOSCRIPT, CommandFlag.WRITE),
       RequestPolicy.ALL_SHARDS, ResponsePolicy.ALL_SUCCEEDED);
     builder.register("FUNCTION", "STATS", EnumSet.of(CommandFlag.ALLOW_BUSY, CommandFlag.NOSCRIPT),
-      RequestPolicy.ALL_SHARDS, ResponsePolicy.SPECIAL);
+      RequestPolicy.DEFAULT, ResponsePolicy.SPECIAL);
     builder.register("CLIENT", EMPTY_FLAGS);
     // CLIENT subcommands
     builder.register("CLIENT", "CACHING",
@@ -498,9 +498,9 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("ZPOPMIN", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("ZREM", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
 
-    // 1 command(s) with: loading, stale; request_policy=all_shards; response_policy=special
+    // 1 command(s) with: loading, stale; request_policy=default; response_policy=special
     builder.register("INFO", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE),
-      RequestPolicy.ALL_SHARDS, ResponsePolicy.SPECIAL);
+      RequestPolicy.DEFAULT, ResponsePolicy.SPECIAL);
 
     // 56 command(s) with: module, readonly
     builder.register("CMS.INFO", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));

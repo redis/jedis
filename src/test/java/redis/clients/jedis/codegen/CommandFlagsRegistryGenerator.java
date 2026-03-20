@@ -87,24 +87,16 @@ public class CommandFlagsRegistryGenerator {
   private static final Map<String, CommandMetadata> MANUAL_OVERRIDES = new LinkedHashMap<>();
   static {
     // Override INFO: change request policy from ALL_SHARDS to DEFAULT
-    // Reason: SPECIAL Response not yet supported in the library and defaults to return single
-    // result INFO should be executed on a single node, not broadcast to all shards
-    MANUAL_OVERRIDES.put("INFO", new CommandMetadata(Arrays.asList("loading", "stale"), "default", // request_policy:
-                                                                                                   // DEFAULT
-                                                                                                   // instead
-                                                                                                   // of
-                                                                                                   // ALL_SHARDS
-        "special")); // response_policy: SPECIAL (preserve from server metadata)
+    // Reason: SPECIAL response policy not yet supported in the library and defaults to return
+    // single result INFO should be executed on a single node, not broadcast to all shards
+    MANUAL_OVERRIDES.put("INFO",
+      new CommandMetadata(Arrays.asList("loading", "stale"), "default", "special"));
 
     // Override FUNCTION STATS: change request policy from ALL_SHARDS to DEFAULT
-    // Reason: FUNCTION STATS should be executed on a single node, not broadcast to all shards
-    // Note: response_policy is SPECIAL (for custom aggregation of function stats from single node)
+    // Reason: SPECIAL response policy not yet supported in the library and defaults to return
+    // single result FUNCTION STATS should be executed on a single node, not broadcast to all shards
     MANUAL_OVERRIDES.put("FUNCTION STATS",
-      new CommandMetadata(Arrays.asList("noscript", "allow_busy"), "default", // request_policy:
-                                                                              // DEFAULT
-                                                                              // instead of
-                                                                              // ALL_SHARDS
-          "special")); // response_policy: SPECIAL (preserve from server metadata)
+      new CommandMetadata(Arrays.asList("noscript", "allow_busy"), "default", "special"));
   }
 
   /**

@@ -154,7 +154,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
     CommandArguments commandArgumentsWithKey = mock(CommandArguments.class);
 
     when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
-    when(commandArgumentsWithArgs.processKey(sampleKey)).thenReturn(commandArgumentsWithKey);
+    when(commandArgumentsWithArgs.addHashSlotKey(sampleKey)).thenReturn(commandArgumentsWithKey);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
@@ -184,7 +184,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
 
     when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
     when(commandArgumentsWithArgs.blocking()).thenReturn(commandArgumentsBlocking);
-    when(commandArgumentsBlocking.processKey(sampleKey)).thenReturn(commandArgumentsWithKey);
+    when(commandArgumentsBlocking.addHashSlotKey(sampleKey)).thenReturn(commandArgumentsWithKey);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
@@ -212,7 +212,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
     CommandArguments commandArgumentsWithKey = mock(CommandArguments.class);
 
     when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
-    when(commandArgumentsWithArgs.processKey(sampleKey)).thenReturn(commandArgumentsWithKey);
+    when(commandArgumentsWithArgs.addHashSlotKey(sampleKey)).thenReturn(commandArgumentsWithKey);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
@@ -242,7 +242,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
 
     when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
     when(commandArgumentsWithArgs.blocking()).thenReturn(commandArgumentsBlocking);
-    when(commandArgumentsBlocking.processKey(sampleKey)).thenReturn(commandArgumentsWithKey);
+    when(commandArgumentsBlocking.addHashSlotKey(sampleKey)).thenReturn(commandArgumentsWithKey);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");

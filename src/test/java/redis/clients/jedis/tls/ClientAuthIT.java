@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.SslOptions;
 import redis.clients.jedis.UnifiedJedis;
 
@@ -31,12 +35,14 @@ public abstract class ClientAuthIT extends ClientAuthTestBase {
   /**
    * Executes ACL WHOAMI command and returns the authenticated username.
    * <p>
-   * Subclasses provide environment-specific implementations to handle different command argument
-   * types (CommandArguments vs ClusterCommandArguments).
    * @param client the connected client
    * @return the authenticated username
    */
-  protected abstract String executeAclWhoAmI(UnifiedJedis client);
+  private String aclWhoAmI(UnifiedJedis client) {
+
+    return client.executeCommand(new CommandObject<>(
+        new CommandArguments(Protocol.Command.ACL).add("WHOAMI"), BuilderFactory.STRING));
+  }
 
   /**
    * Tests mTLS connection with mtls-user1 certificate.
@@ -49,7 +55,7 @@ public abstract class ClientAuthIT extends ClientAuthTestBase {
 
     try (UnifiedJedis client = createClient(sslOptions)) {
       assertEquals("PONG", client.ping());
-      assertExpectedUsername(client, executeAclWhoAmI(client), MTLS_USER_1);
+      assertExpectedUsername(client, aclWhoAmI(client), MTLS_USER_1);
     }
   }
 
@@ -64,7 +70,7 @@ public abstract class ClientAuthIT extends ClientAuthTestBase {
 
     try (UnifiedJedis client = createClient(sslOptions)) {
       assertEquals("PONG", client.ping());
-      assertExpectedUsername(client, executeAclWhoAmI(client), MTLS_USER_2);
+      assertExpectedUsername(client, aclWhoAmI(client), MTLS_USER_2);
     }
   }
 
@@ -80,7 +86,7 @@ public abstract class ClientAuthIT extends ClientAuthTestBase {
 
     try (UnifiedJedis client = createClient(sslOptions)) {
       assertEquals("PONG", client.ping());
-      assertEquals("default", executeAclWhoAmI(client));
+      assertEquals("default", aclWhoAmI(client));
     }
   }
 

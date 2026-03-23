@@ -40,6 +40,8 @@ public class JedisCluster extends UnifiedJedis {
    */
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
+  private final CommandFlagsRegistry commandFlagsRegistry;
+
   /**
    * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.
    * <p>
@@ -291,11 +293,13 @@ public class JedisCluster extends UnifiedJedis {
   // Uses a fetched connection to process protocol. Should be avoided if possible.
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     super(provider, maxAttempts, maxTotalRetriesDuration);
+    this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
+    this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   @Experimental
@@ -343,10 +347,14 @@ public class JedisCluster extends UnifiedJedis {
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, Cache clientSideCache) {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
+    this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
-  private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+  private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache,
+      CommandFlagsRegistry commandFlagsRegistry) {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    this.commandFlagsRegistry = commandFlagsRegistry;
   }
 
   /**
@@ -359,8 +367,8 @@ public class JedisCluster extends UnifiedJedis {
 
     @Override
     protected JedisCluster createClient() {
-      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, clientConfig.getRedisProtocol(),
-          cache);
+      return new JedisCluster(commandExecutor, connectionProvider, commandObjects,
+          clientConfig.getRedisProtocol(), cache, getCommandFlags());
     }
   }
 
@@ -414,7 +422,8 @@ public class JedisCluster extends UnifiedJedis {
 
   @Override
   public ClusterPipeline pipelined() {
-    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
+    return new ClusterPipeline((ClusterConnectionProvider) provider,
+        (ClusterCommandObjects) commandObjects, commandFlagsRegistry);
   }
 
   /**

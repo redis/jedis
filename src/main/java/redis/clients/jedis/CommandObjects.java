@@ -4019,7 +4019,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+  public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, Number value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
         JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST);
   }

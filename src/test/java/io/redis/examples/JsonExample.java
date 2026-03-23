@@ -71,7 +71,7 @@ public class JsonExample {
         String res7 = jedis.jsonSet("crashes", new Path2("$"), 0);
         System.out.println(res7);   // >>> OK
 
-        Object res8 = jedis.jsonNumIncrBy("crashes", new Path2("$"), 1);
+        Object res8 = jedis.jsonNumIncrBy("crashes", new Path2("$"), 1.0);
         System.out.println(res8);   // >>> [1]
 
         Object res9 = jedis.jsonNumIncrBy("crashes", new Path2("$"), 1.5);
@@ -84,7 +84,7 @@ public class JsonExample {
         // Tests for 'num' step.
         // REMOVE_START
         assertEquals("OK", res7);
-        assertEquals("[1]", res8.toString());
+        assertEquals("[1.0]", res8.toString());
         assertEquals("[2.5]", res9.toString());
         assertEquals("[1.75]", res10.toString());
         // REMOVE_END
@@ -463,8 +463,8 @@ public class JsonExample {
         // Tests for 'update_bikes' step.
         // REMOVE_START
         assertEquals("[1920,2072,3264,1475,3941]", res39.toString());
-        assertEquals("[1820,1972,3164,1375,3841]", res40.toString());
-        assertEquals("[1920,2072,3264,1475,3941]", res41.toString());
+        assertEquals("[1820, 1972, 3164, 1375, 3841]", res40.toString());
+        assertEquals("[1920, 2072, 3264, 1475, 3941]", res41.toString());
         // REMOVE_END
 
 

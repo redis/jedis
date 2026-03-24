@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
-import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
@@ -223,7 +222,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertTrue(newConnection.ping());
 
       // Verify that new connections are being created against server2
-      assertEquals(server2Address, ConnectionTestHelper.getHostAndPort(newConnection));
+      assertEquals(server2Address, newConnection.getHostAndPort());
       assertEquals(1, mockServer2.getConnectedClientCount());
     }
   }

@@ -95,7 +95,6 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private boolean isRelaxed = false;
   private JedisClientConfig clientConfig;
-  private boolean relaxedTimeoutActive = false;
   private boolean rebindRequested = false;
 
   protected PushConsumerChain pushConsumer;
@@ -125,62 +124,54 @@ public class Connection implements Closeable {
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.clientConfig = clientConfig;
-    initPushConsumers(null, clientConfig);
+    initPushConsumers(clientConfig);
     initializeFromClientConfig(clientConfig);
   }
 
-    public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, PushHandler pushHandler) {
-        this.socketFactory = socketFactory;
-        this.relaxedTimeout = clientConfig.getTimeoutOptions().getRelaxedTimeout();
+  protected Connection(Builder builder) {
+    this.socketFactory = builder.getSocketFactory();
+    this.clientConfig = builder.getClientConfig();
+    initPushConsumers(clientConfig);
+  }
 
-        initPushConsumers(pushHandler, clientConfig);
-        initializeFromClientConfig(clientConfig);
-    }
+  protected void initPushConsumers(JedisClientConfig config) {
+      /*
+       * Default consumers to process push messages.
+       * Marks all @{link PushMessage}s as processed, except for pub/sub.
+       * Pub/sub messages are propagated to the client.
+       */
+      this.pushConsumer = PushConsumerChain.of(
+              PushConsumerChain.PUBSUB_ONLY_HANDLER
+      );
 
+      if (config != null) {
 
-    protected Connection(Builder builder) {
-        this.socketFactory = builder.getSocketFactory();
-        this.clientConfig = builder.getClientConfig();
-    }
+          /*
+           * Add consumer to handle server maintenance events.
+           * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
+           */
+          MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
+          if (maintenanceEventHandler != null) {
+              this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler));
 
-    protected void initPushConsumers(JedisClientConfig config) {
-        /*
-         * Default consumers to process push messages.
-         * Marks all @{link PushMessage}s as processed, except for pub/sub.
-         * Pub/sub messages are propagated to the client.
-         */
-        this.pushConsumer = PushConsumerChain.of(
-                PushConsumerChain.PUBSUB_ONLY_HANDLER
-        );
+              if (config.isProactiveRebindEnabled()) {
+                  maintenanceEventHandler.addListener(new ConnectionRebindHandler());
+              }
 
-        if (config != null) {
+              if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
+                  maintenanceEventHandler.addListener(new AdaptiveTimeoutHandler(Connection.this));
+              }
+          }
 
-            /*
-             * Add consumer to handle server maintenance events.
-             * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
-             */
-            MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
-            if (maintenanceEventHandler != null) {
-                this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler));
-
-                if (config.isProactiveRebindEnabled()) {
-                    maintenanceEventHandler.addListener(new ConnectionRebindHandler());
-                }
-
-                if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
-                    maintenanceEventHandler.addListener(new AdaptiveTimeoutHandler(Connection.this));
-                }
-            }
-
-            /*
-             * Add consumer to notify registered {@link PushListener}s.
-             */
-            PushHandler pushHandler = config.getPushHandler();
-            if (pushHandler != null) {
-                this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
-            }
-        }
-    }
+          /*
+           * Add consumer to notify registered {@link PushListener}s.
+           */
+          PushHandler pushHandler = config.getPushHandler();
+          if (pushHandler != null) {
+              this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
+          }
+      }
+  }
 
   @Override
   public String toString() {
@@ -343,7 +334,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); //?
+        soTimeout = socket.getSoTimeout(); // ?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -527,22 +518,8 @@ public class Connection implements Closeable {
     }
   }
 
-  /**
-   * @deprecated Use {@link #readProtocolWithCheckingBroken(PushConsumer)}
-   * @return
-   */
-  @Deprecated
   protected Object readProtocolWithCheckingBroken() {
-    if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection.");
-    }
-
-    try {
-      return protocolRead(inputStream, PROPAGATE_ALL_HANDLER);
-    } catch (JedisConnectionException exc) {
-      broken = true;
-      throw exc;
-    }
+    return readProtocolWithCheckingBroken(PROPAGATE_ALL_HANDLER);
   }
 
   protected void readPushesWithCheckingBroken() {
@@ -578,7 +555,6 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
-   *
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -602,6 +578,11 @@ public class Connection implements Closeable {
     try {
       this.soTimeout = config.getSocketTimeoutMillis();
       this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
+      // TODO : ggivo Allign configuration properties to other clients
+      this.relaxedTimeout = NumberUtils.safeToInt(config.getTimeoutOptions().getRelaxedTimeout().toMillis());
+      this.relaxedBlockingTimeout = NumberUtils.safeToInt(config.getTimeoutOptions().getRelaxedBlockingTimeout().toMillis());
+      this.relaxedTimeoutEnabled =  TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ||
+              TimeoutOptions.isRelaxedTimeoutEnabled(relaxedBlockingTimeout);
 
       connect();
 

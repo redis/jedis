@@ -27,10 +27,10 @@ import redis.clients.jedis.util.RedisVersionCondition;
 @SinceRedisVersion("6.0.0")
 public class PushMessageNotificationTest {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(endpoint);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() ->endpoint);
 
   private Connection connection;
   private UnifiedJedis unifiedJedis;

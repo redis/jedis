@@ -39,12 +39,7 @@ public class ConnectionPool extends Pool<Connection> {
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
-  }
-
-  @Experimental
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, PushHandler pushHandler) {
-      this(new ConnectionFactory(hostAndPort, clientConfig, pushHandler));
-      attachAuthenticationListener(clientConfig.getAuthXManager());
+    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   @Experimental

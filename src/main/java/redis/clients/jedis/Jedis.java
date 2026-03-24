@@ -10637,37 +10637,4 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
-
-
-    /**
-     * Push consumer that delegates to a {@link PushHandler} for listener notification.
-     */
-    private static class ListenerNotificationConsumer implements PushConsumer {
-        private final PushHandler pushHandler;
-
-        public ListenerNotificationConsumer(PushHandler pushHandler) {
-            this.pushHandler = pushHandler;
-        }
-
-        @Override
-        public void accept(PushConsumerContext context) {
-            if (pushHandler != null) {
-                notifyListeners(context.getMessage());
-            }
-        }
-
-        private void notifyListeners(PushMessage pushMessage) {
-            try {
-                pushHandler.getPushListeners().forEach(pushListener -> {
-                    try {
-                        pushListener.onPush(pushMessage);
-                    } catch (Exception e) {
-                        // Log individual listener failures but don't propagate
-                    }
-                });
-            } catch (Exception e) {
-                // Log notification failures but don't propagate
-            }
-        }
-    }
 }

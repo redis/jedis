@@ -578,6 +578,7 @@
                         <include>**/TimeoutOptions.java</include>
                         <include>**/*Handler.java</include>
                         <include>**/ConnectionTestHelper.java</include>
+					</includes>
                 </configuration>
 				<executions>
 					<execution>

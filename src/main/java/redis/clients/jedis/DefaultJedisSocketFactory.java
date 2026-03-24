@@ -17,7 +17,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.IOUtils;
 
-public class DefaultJedisSocketFactory implements JedisSocketFactory {
+public class DefaultJedisSocketFactory implements JedisSocketFactory, RebindAware {
 
   protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST,
       Protocol.DEFAULT_PORT);
@@ -156,6 +156,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   public void updateHostAndPort(HostAndPort hostAndPort) {
     this.hostAndPort = hostAndPort;
+  }
+
+  @Override
+  public void rebind(HostAndPort newHostAndPort) {
+    updateHostAndPort(newHostAndPort);
   }
 
   public HostAndPort getHostAndPort() {

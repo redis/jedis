@@ -14,7 +14,7 @@ import redis.clients.jedis.MaintenanceEventHandlerImpl;
 import redis.clients.jedis.MaintenanceEventListener;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.TimeoutOptions;
-import redis.clients.jedis.util.ReflectionTestUtils;
+import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.server.CommandHandler;
 import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
@@ -91,7 +91,7 @@ public class ConnectionAdaptiveTimeoutTest {
 
   @Test
   public void testMigratingPushMessage() throws SocketException {
-    Socket socket = ReflectionTestUtils.getField(connection, "socket");
+    Socket socket = ReflectionTestUtil.getField(connection, "socket");
 
     assertTrue(connection.isConnected());
     assertEquals(originalTimeoutMs, connection.getSoTimeout());
@@ -111,7 +111,7 @@ public class ConnectionAdaptiveTimeoutTest {
 
   @Test
   public void testFailoverPushMessage() throws SocketException {
-    Socket socket = ReflectionTestUtils.getField(connection, "socket");
+    Socket socket = ReflectionTestUtil.getField(connection, "socket");
 
     assertTrue(connection.isConnected());
     assertEquals(originalTimeoutMs, connection.getSoTimeout());
@@ -133,7 +133,7 @@ public class ConnectionAdaptiveTimeoutTest {
   public void testDisabledTimeoutRelaxationDoesNotApplyRelaxedTimeout() throws Exception {
     // Create a connection with disabled timeout relaxation
     Connection disabledConnection = createConnectionWithDisabledTimeoutRelaxation();
-    Socket disabledSocket = ReflectionTestUtils.getField(disabledConnection, "socket");
+    Socket disabledSocket = ReflectionTestUtil.getField(disabledConnection, "socket");
 
     try {
       assertTrue(disabledConnection.isConnected());
@@ -180,7 +180,7 @@ public class ConnectionAdaptiveTimeoutTest {
   public void testManualRelaxTimeoutsCallWithDisabledTimeoutRelaxation() throws Exception {
     // Create a connection with disabled timeout relaxation
     Connection disabledConnection = createConnectionWithDisabledTimeoutRelaxation();
-    Socket disabledSocket = ReflectionTestUtils.getField(disabledConnection, "socket");
+    Socket disabledSocket = ReflectionTestUtil.getField(disabledConnection, "socket");
 
     try {
       assertTrue(disabledConnection.isConnected());
@@ -207,7 +207,7 @@ public class ConnectionAdaptiveTimeoutTest {
   public void testDefaultTimeoutOptionsDisablesRelaxedTimeout() throws Exception {
     // Create a connection with null timeout options
     Connection defaultTimeoutConnection = createConnectionWithDefaultTimeoutOptions();
-    Socket nullTimeoutSocket = ReflectionTestUtils.getField(defaultTimeoutConnection, "socket");
+    Socket nullTimeoutSocket = ReflectionTestUtil.getField(defaultTimeoutConnection, "socket");
 
     try {
       assertTrue(defaultTimeoutConnection.isConnected());
@@ -242,7 +242,7 @@ public class ConnectionAdaptiveTimeoutTest {
       throws IOException, InterruptedException {
 
     // Verify initial timeout
-    Socket socket = ReflectionTestUtils.getField(connection, "socket");
+    Socket socket = ReflectionTestUtil.getField(connection, "socket");
     assertEquals(originalTimeoutMs, socket.getSoTimeout());
 
     CountDownLatch blpopLatch = new CountDownLatch(1);

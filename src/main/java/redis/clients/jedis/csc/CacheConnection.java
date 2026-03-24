@@ -85,16 +85,13 @@ public class CacheConnection extends Connection {
     super(socketFactory, clientConfig);
 
     this.cache = Objects.requireNonNull(cache);
-
-    this.pushHandlerChain = PushHandlerChain.of(new PushEventInvalidateHandler(cache));
-    setPushHandlers(pushHandlerChain);
     initializeClientSideCache();
   }
 
-    private CacheConnection(Builder builder) {
-        super(builder);
-        this.cache = builder.getCache();
-    }
+  private CacheConnection(Builder builder) {
+    super(builder);
+    this.cache = builder.getCache();
+  }
 
   @Override
   protected void initPushConsumers( JedisClientConfig config) {

@@ -137,7 +137,7 @@ public class Connection implements Closeable {
   protected void initPushConsumers(JedisClientConfig config) {
       /*
        * Default consumers to process push messages.
-       * Marks all @{link PushMessage}s as processed, except for pub/sub.
+       * Marks all @{link PushMessages as processed, except for pub/sub.
        * Pub/sub messages are propagated to the client.
        */
       this.pushConsumer = PushConsumerChain.of(
@@ -163,13 +163,7 @@ public class Connection implements Closeable {
               }
           }
 
-          /*
-           * Add consumer to notify registered {@link PushListener}s.
-           */
-          PushHandler pushHandler = config.getPushHandler();
-          if (pushHandler != null) {
-              this.pushConsumer.add(new ListenerNotificationConsumer(pushHandler));
-          }
+
       }
   }
 
@@ -803,38 +797,6 @@ public class Connection implements Closeable {
       } catch (SocketException ex) {
         setBroken();
         throw new JedisConnectionException(ex);
-      }
-    }
-  }
-
-  /**
-   * Push consumer that delegates to a {@link PushHandler} for listener notification.
-   */
-  private static class ListenerNotificationConsumer implements PushConsumer {
-    private final PushHandler pushHandler;
-
-    public ListenerNotificationConsumer(PushHandler pushHandler) {
-      this.pushHandler = pushHandler;
-    }
-
-    @Override
-    public void accept(PushConsumerContext context) {
-      if (pushHandler != null) {
-        notifyListeners(context.getMessage());
-      }
-    }
-
-    private void notifyListeners(PushMessage pushMessage) {
-      try {
-        pushHandler.getListeners().forEach(pushListener -> {
-          try {
-            pushListener.onPush(pushMessage);
-          } catch (Exception e) {
-            // ignore
-          }
-        });
-      } catch (Exception e) {
-        // Log notification failures
       }
     }
   }

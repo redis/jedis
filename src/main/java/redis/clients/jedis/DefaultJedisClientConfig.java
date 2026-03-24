@@ -40,8 +40,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean proactiveRebindEnabled;
 
-  private final PushHandler pushHandler;
-
   private final MaintenanceEventHandler maintenanceEventHandler;
 
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
@@ -63,14 +61,14 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.authXManager = builder.authXManager;
     this.timeoutOptions = builder.timeoutOptions;
     this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
-    this.pushHandler = builder.pushHandler;
 
     if ((builder.proactiveRebindEnabled
         || TimeoutOptions.isRelaxedTimeoutEnabled(builder.timeoutOptions.getRelaxedTimeout())
-        || TimeoutOptions.isRelaxedTimeoutEnabled(builder.timeoutOptions.getRelaxedBlockingTimeout()))
+        || TimeoutOptions
+            .isRelaxedTimeoutEnabled(builder.timeoutOptions.getRelaxedBlockingTimeout()))
         && builder.maintenanceEventHandler == null) {
       // Proactive rebind or relaxed timeouts require a maintenance event handler
-      this.maintenanceEventHandler = new MaintenanceEventHandlerImpl();
+      this.maintenanceEventHandler = new MaintenanceEventHandler();
     } else {
       this.maintenanceEventHandler = builder.maintenanceEventHandler;
     }
@@ -178,12 +176,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public PushHandler getPushHandler() {
-    return pushHandler;
-  }
-
-
-  @Override
   public MaintenanceEventHandler getMaintenanceEventHandler() {
     return maintenanceEventHandler;
   }
@@ -273,8 +265,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private TimeoutOptions timeoutOptions = TimeoutOptions.create();
 
     private boolean proactiveRebindEnabled = false;
-
-    private PushHandler pushHandler = null;
 
     private MaintenanceEventHandler maintenanceEventHandler = null;
 
@@ -411,11 +401,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder pushHandler(PushHandler pushHandler) {
-      this.pushHandler = pushHandler;
-      return this;
-    }
-
     public Builder maintenanceEventHandler(MaintenanceEventHandler maintenanceEventHandler) {
       this.maintenanceEventHandler = maintenanceEventHandler;
       return this;
@@ -440,7 +425,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.authXManager = instance.getAuthXManager();
       this.timeoutOptions = instance.getTimeoutOptions();
       this.proactiveRebindEnabled = instance.isProactiveRebindEnabled();
-      this.pushHandler = instance.getPushHandler();
       this.maintenanceEventHandler = instance.getMaintenanceEventHandler();
       return this;
     }

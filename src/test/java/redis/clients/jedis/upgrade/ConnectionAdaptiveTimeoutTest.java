@@ -10,7 +10,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MaintenanceEventHandler;
-import redis.clients.jedis.MaintenanceEventHandlerImpl;
+
 import redis.clients.jedis.MaintenanceEventListener;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.TimeoutOptions;
@@ -60,7 +60,7 @@ public class ConnectionAdaptiveTimeoutTest {
         .proactiveTimeoutsRelaxing(relaxedTimeout)
         .proactiveBlockingTimeoutsRelaxing(relaxedBlockingTimeout).build();
 
-    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandlerImpl();
+    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandler();
 
     MaintenanceEventListener testListener = new MaintenanceEventListener() {
       @Override
@@ -293,7 +293,7 @@ public class ConnectionAdaptiveTimeoutTest {
         .proactiveTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT)
         .proactiveBlockingTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT).build();
 
-    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandlerImpl();
+    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandler();
 
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(originalTimeoutMs).timeoutOptions(disabledTimeoutOptions)
@@ -311,7 +311,7 @@ public class ConnectionAdaptiveTimeoutTest {
    * Helper method to create a connection with null timeout options.
    */
   private Connection createConnectionWithDefaultTimeoutOptions() {
-    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandlerImpl();
+    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandler();
 
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(originalTimeoutMs)

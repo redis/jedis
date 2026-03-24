@@ -30,7 +30,7 @@ public class PushMessageNotificationTest {
   private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(() ->endpoint);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() -> endpoint);
 
   private Connection connection;
   private UnifiedJedis unifiedJedis;
@@ -136,71 +136,6 @@ public class PushMessageNotificationTest {
     String pingResponse = unifiedJedis.ping();
     // Next reply should be PONG
     assertEquals("PONG", pingResponse);
-  }
-
-  @Test
-  public void testUnifiedJedisCustomPushListener() {
-    List<PushMessage> receivedMessages = new ArrayList<>();
-    PushHandlerImpl pushHandler = new PushHandlerImpl();
-    pushHandler.addListener(receivedMessages::add);
-
-    DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder()
-        .pushHandler(pushHandler).protocol(RedisProtocol.RESP3).build();
-
-    unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(), clientConfig);
-
-    // Enable client tracking
-    unifiedJedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
-
-    // Set initial value
-    unifiedJedis.set(testKey, initialValue);
-
-    // Get the key to track it
-    assertEquals(initialValue, unifiedJedis.get(testKey));
-
-    // Modify the key from another connection to trigger invalidation
-    triggerKeyInvalidation(testKey, modifiedValue);
-
-    // Send PING command
-    String pingResponse = unifiedJedis.ping();
-    // Next reply should be PONG
-    assertEquals("PONG", pingResponse);
-    assertEquals(1, receivedMessages.size());
-    assertEquals("invalidate", receivedMessages.get(0).getType());
-  }
-
-  @Test
-  public void testJedisCustomPushListener() {
-    List<PushMessage> receivedMessages = new ArrayList<>();
-    PushHandlerImpl pushHandler = new PushHandlerImpl();
-    pushHandler.addListener(receivedMessages::add);
-
-    DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder()
-        .pushHandler(pushHandler).protocol(RedisProtocol.RESP3).build();
-
-    Jedis jedis = new Jedis(endpoint.getHostAndPort(), clientConfig);
-
-    // Enable client tracking
-    jedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
-
-    // Set initial value
-    jedis.set(testKey, initialValue);
-
-    // Get the key to track it
-    assertEquals(initialValue, jedis.get(testKey));
-
-    // Modify the key from another connection to trigger invalidation
-    triggerKeyInvalidation(testKey, modifiedValue);
-
-    // Send PING command
-    String pingResponse = jedis.ping();
-    // Next reply should be PONG
-    assertEquals("PONG", pingResponse);
-    assertEquals(1, receivedMessages.size());
-    assertEquals("invalidate", receivedMessages.get(0).getType());
-
-    // Clean up
-    jedis.close();
   }
 
   @Test

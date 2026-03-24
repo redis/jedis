@@ -7,12 +7,18 @@ import redis.clients.jedis.annots.Internal;
 public interface PushConsumer {
 
   /**
-   * Handle a push message.
-   * <p>
-   * Messages are not processed by default. Handlers should update the context's processed flag to
-   * true if they have processed the message.
-   * </p>
-   * @param context The context of the message to respond to.
+   * Process a push message. Each PushConsumer can decide to:
+   * <ul>
+   * <li>Allow the message to be returned to the client by calling
+   * {@link PushConsumerContext#setForwardToClient(boolean)}</li>
+   * <li>Process the message and prevent forwarding by not calling
+   * {@link PushConsumerContext#setForwardToClient(boolean)}</li>
+   * </ul>
+   * Following handlers in the chain can override the decision of previous handlers. By default, if
+   * no handler sets the forward flag, the message not be returned to the client.
+   * @see PushConsumerContext#setForwardToClient(boolean)
+   * @see PushConsumerChain
+   * @param context The context of the push message
    */
   void accept(PushConsumerContext context);
 

@@ -121,25 +121,20 @@ public interface JedisClientConfig {
   }
 
   /**
-   * Configure whether the driver should listen for server events that indicate the current endpoint is being re-bound.
-   * When enabled, the proactive re-bind will help with the connection handover and reduce the number of failed commands.
-   * This feature requires the server to support proactive re-binds.
-   * Enabling this feature requires also setting a {@link #getMaintenanceEventHandler() maintenance event handler}
-   *
-   * Defaults to {@code false}.
+   * Configure whether the driver should listen for server events that indicate the current endpoint
+   * is being re-bound. When enabled, the proactive re-bind will help with the connection handover
+   * and reduce the number of failed commands. This feature requires the server to support proactive
+   * re-binds. Enabling this feature requires also setting a {@link #getMaintenanceEventHandler()
+   * maintenance event handler} Defaults to {@code false}.
    */
   default boolean isProactiveRebindEnabled() {
     return false;
   }
 
-  default PushHandler getPushHandler() {
-    return null;
-  }
-
   /**
    * @return The event handler to use for server maintenance events.
    */
-  default MaintenanceEventHandler getMaintenanceEventHandler(){
+  default MaintenanceEventHandler getMaintenanceEventHandler() {
     return null;
   }
 

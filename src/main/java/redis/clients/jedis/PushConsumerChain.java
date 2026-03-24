@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.annots.Internal;
 
 import java.util.ArrayList;
@@ -54,7 +52,7 @@ public final class PushConsumerChain implements PushConsumer {
       }
     }
   };
-  private static final Logger log = LoggerFactory.getLogger(PushConsumerChain.class);
+
   private final List<PushConsumer> consumers;
 
   /**
@@ -91,28 +89,6 @@ public final class PushConsumerChain implements PushConsumer {
       consumers.add(handler);
     }
     return this;
-  }
-
-  /**
-   * Insert a handler at the specified position.
-   * @param index The position to insert at (0-based)
-   * @param handler The handler to insert
-   * @return this chain for method chaining
-   */
-  public PushConsumerChain insert(int index, PushConsumer handler) {
-    if (handler != null) {
-      consumers.add(index, handler);
-    }
-    return this;
-  }
-
-  /**
-   * Remove a handler from the chain.
-   * @param handler The handler to remove
-   * @return true if the handler was removed
-   */
-  public boolean remove(PushConsumer handler) {
-    return consumers.remove(handler);
   }
 
   /**

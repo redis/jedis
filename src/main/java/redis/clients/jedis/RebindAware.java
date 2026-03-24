@@ -17,10 +17,7 @@ public interface RebindAware {
   /**
    * Notifies the component that a re-bind to a new host and port is scheduled.
    * <p>
-   * This is called when a MOVING notification is received. Components that implement this interface
-   * should update their internal state to reflect the new host and port, and return true if the
-   * re-bind was accepted. Components might decide to reject the re-bind request if they are not in
-   * a state to support it.
+   * Called when a MOVING notification is received.
    * </p>
    * @param newHostAndPort The new host and port to use for new connections
    */

@@ -1,9 +1,15 @@
 package redis.clients.jedis.search.aggr;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
@@ -54,6 +60,8 @@ import redis.clients.jedis.util.Pool;
  */
 public class AggregateIterator implements Iterator<AggregationResult>, Closeable {
 
+  private static final Logger logger = LoggerFactory.getLogger(AggregateIterator.class);
+
   private final String indexName;
   private final Integer batchSize;
 
@@ -83,8 +91,9 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
     if (connectionMap.isEmpty()) {
       throw new JedisException("No connections available from connection provider");
     }
-    // Get the first (or only) entry from the map
-    this.connectionEntry = connectionMap.entrySet().iterator().next();
+    // Randomly select an entry from the map to distribute load across shards
+    List<? extends Map.Entry<?, ?>> entries = new ArrayList<>(connectionMap.entrySet());
+    this.connectionEntry = entries.get(ThreadLocalRandom.current().nextInt(entries.size()));
 
     // Execute initial aggregation command
     initializeAggregation(aggregationBuilder);
@@ -141,10 +150,15 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
 
   @Override
   public void close() {
+    aggrCommandResult = null;
     deleteCursor();
     // Mark cursor as closed to prevent further operations
     cursorId = -1L;
-    // Note: No connection to close - connections are borrowed and returned per operation
+
+    Object entryValue = connectionEntry.getValue();
+    if (entryValue instanceof Connection) {
+      ((Connection) entryValue).close();
+    }
   }
 
   /**
@@ -160,7 +174,7 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
         executeCommand(args);
       } catch (Exception e) {
         // Log but don't throw - cursor will expire naturally
-        System.err.println("Warning: Failed to delete cursor " + cursorId + ": " + e.getMessage());
+        logger.warn("Failed to delete cursor {}: {}", cursorId, e.getMessage());
       }
     }
   }

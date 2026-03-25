@@ -147,10 +147,12 @@ runs:
         export TEST_ENV_PROVIDER=oss-docker
         export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
         echo $TEST_WORK_FOLDER
+
+        # Unit tests are run in a separate workflow (unit-tests.yml), skip them here
         if [ -z "$TESTS" ]; then
-          mvn -B -Dwith-param-names=true clean compile verify
+          mvn -B -Dwith-param-names=true -DskipUnitTests=true clean compile verify
         else
-          mvn -B -Dwith-param-names=true -Dtest=$TESTS clean verify
+          mvn -B -Dwith-param-names=true -DskipUnitTests=true -Dtest=$TESTS clean verify
         fi
       env:
         REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}

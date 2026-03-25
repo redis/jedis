@@ -1,0 +1,71 @@
+---
+
+name: Unit Tests
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
+    branches:
+      - master
+      - '[0-9].*'
+      - 'feature/**'
+      - 'topic/**'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].*'
+      - 'feature/**'
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: jedis-${{hashFiles('**/pom.xml')}}
+
+      - name: Maven offline
+        run: |
+          mvn -q dependency:go-offline
+
+      - name: Build docs
+        run: |
+          mvn javadoc:jar
+
+      - name: Run Unit Tests
+        run: |
+          mvn -B clean test -DskipIntegrationTests=true
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always() && github.actor != 'dependabot[bot]'
+        with:
+          files: |
+            target/surefire-reports/**/*.xml
+
+      - name: Upload coverage to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./target/site/jacoco/jacoco.xml
+          flags: unit-tests
+          name: unit-test-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+

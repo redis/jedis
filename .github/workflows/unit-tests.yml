@@ -60,7 +60,6 @@ jobs:
             target/surefire-reports/**/*.xml
 
       - name: Upload coverage to Codecov
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v5
         with:
           files: ./target/site/jacoco/jacoco.xml

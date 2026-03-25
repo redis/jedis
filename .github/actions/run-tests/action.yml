@@ -136,11 +136,6 @@ runs:
       run: |
         mvn -q dependency:go-offline
 
-    - name: Build docs
-      shell: bash
-      run: |
-        mvn javadoc:jar
-
     - name: Run Maven tests
       shell: bash
       run: |

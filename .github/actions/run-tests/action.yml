@@ -145,9 +145,9 @@ runs:
 
         # Unit tests are run in a separate workflow (unit-tests.yml), skip them here
         if [ -z "$TESTS" ]; then
-          mvn -B -Dwith-param-names=true -DskipUnitTests=true clean compile verify
+          mvn -B -DskipUnitTests=true clean compile verify
         else
-          mvn -B -Dwith-param-names=true -DskipUnitTests=true -Dtest=$TESTS clean verify
+          mvn -B -DskipUnitTests=true -Dtest=$TESTS clean verify
         fi
       env:
         REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}

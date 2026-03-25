@@ -24,7 +24,7 @@ import redis.clients.jedis.util.server.TcpMockServer;
  * Test that UnifiedJedis proactively rebinds to new target when receiving MOVING notifications.
  * Uses mock TCP servers to simulate Redis cluster slot migration scenarios.
  */
-@Tag("upgrade")
+@Tag("sch")
 public class UnifiedJedisProactiveRebindTest {
 
   private TcpMockServer mockServer1;

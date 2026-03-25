@@ -40,8 +40,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final boolean proactiveRebindEnabled;
 
-  private final MaintenanceEventHandler maintenanceEventHandler;
-
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -61,17 +59,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.authXManager = builder.authXManager;
     this.timeoutOptions = builder.timeoutOptions;
     this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
-
-    if ((builder.proactiveRebindEnabled
-        || TimeoutOptions.isRelaxedTimeoutEnabled(builder.timeoutOptions.getRelaxedTimeout())
-        || TimeoutOptions
-            .isRelaxedTimeoutEnabled(builder.timeoutOptions.getRelaxedBlockingTimeout()))
-        && builder.maintenanceEventHandler == null) {
-      // Proactive rebind or relaxed timeouts require a maintenance event handler
-      this.maintenanceEventHandler = new MaintenanceEventHandler();
-    } else {
-      this.maintenanceEventHandler = builder.maintenanceEventHandler;
-    }
   }
 
   @Override
@@ -175,11 +162,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return proactiveRebindEnabled;
   }
 
-  @Override
-  public MaintenanceEventHandler getMaintenanceEventHandler() {
-    return maintenanceEventHandler;
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -265,8 +247,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private TimeoutOptions timeoutOptions = TimeoutOptions.create();
 
     private boolean proactiveRebindEnabled = false;
-
-    private MaintenanceEventHandler maintenanceEventHandler = null;
 
     private Builder() {
     }
@@ -401,11 +381,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder maintenanceEventHandler(MaintenanceEventHandler maintenanceEventHandler) {
-      this.maintenanceEventHandler = maintenanceEventHandler;
-      return this;
-    }
-
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -425,7 +400,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.authXManager = instance.getAuthXManager();
       this.timeoutOptions = instance.getTimeoutOptions();
       this.proactiveRebindEnabled = instance.isProactiveRebindEnabled();
-      this.maintenanceEventHandler = instance.getMaintenanceEventHandler();
       return this;
     }
   }

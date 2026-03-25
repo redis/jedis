@@ -147,12 +147,11 @@ public class Connection implements Closeable {
 
           /*
            * Add consumer to handle server maintenance events.
-           * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
            * Per-connection concerns (timeout relaxation, rebind flag) are handled inline.
+           * Pool-level concerns (factory rebind, pool clear) are notified via memberOf.
            */
-          MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
-          if (maintenanceEventHandler != null) {
-              this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler,
+          if (config.isProactiveRebindEnabled() || relaxedTimeoutEnabled) {
+              this.pushConsumer.add(new MaintenanceEventConsumer(
                   config.isProactiveRebindEnabled()));
           }
 
@@ -796,17 +795,14 @@ public class Connection implements Closeable {
   /**
    * Push consumer that handles server maintenance events.
    * <p>
-   * Handles per-connection concerns (timeout relaxation, rebind flag) inline,
-   * then delegates to registered {@link MaintenanceEventListener}s for external notification.
+   * Handles per-connection concerns (timeout relaxation, rebind flag) inline.
+   * Notifies the owning {@link ConnectionPool} via {@code memberOf} for pool-level concerns.
    * </p>
    */
   private class MaintenanceEventConsumer implements PushConsumer {
-    private final MaintenanceEventHandler eventHandler;
     private final boolean proactiveRebindEnabled;
 
-    public MaintenanceEventConsumer(MaintenanceEventHandler eventHandler,
-        boolean proactiveRebindEnabled) {
-      this.eventHandler = eventHandler;
+    public MaintenanceEventConsumer(boolean proactiveRebindEnabled) {
       this.proactiveRebindEnabled = proactiveRebindEnabled;
     }
 
@@ -819,16 +815,16 @@ public class Connection implements Closeable {
         onMoving(message);
         break;
       case "MIGRATING":
-        onMigrating();
+        relaxTimeouts();
         break;
       case "MIGRATED":
-        onMigrated();
+        disableRelaxedTimeout();
         break;
       case "FAILING_OVER":
-        onFailOver();
+        relaxTimeouts();
         break;
       case "FAILED_OVER":
-        onFailedOver();
+        disableRelaxedTimeout();
         break;
       }
     }
@@ -842,27 +838,10 @@ public class Connection implements Closeable {
       }
       relaxTimeouts();
 
-      eventHandler.getListeners().forEach(listener -> listener.onRebind(rebindTarget));
-    }
-
-    private void onMigrating() {
-      relaxTimeouts();
-      eventHandler.getListeners().forEach(MaintenanceEventListener::onMigrating);
-    }
-
-    private void onMigrated() {
-      disableRelaxedTimeout();
-      eventHandler.getListeners().forEach(MaintenanceEventListener::onMigrated);
-    }
-
-    private void onFailOver() {
-      relaxTimeouts();
-      eventHandler.getListeners().forEach(MaintenanceEventListener::onFailOver);
-    }
-
-    private void onFailedOver() {
-      disableRelaxedTimeout();
-      eventHandler.getListeners().forEach(MaintenanceEventListener::onFailedOver);
+      // notify owning pool to rebind factory and clear idle connections
+      if (memberOf != null) {
+        memberOf.onMoving(rebindTarget);
+      }
     }
 
     private HostAndPort getRebindTarget(PushMessage message) {

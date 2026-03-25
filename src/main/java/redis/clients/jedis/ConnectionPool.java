@@ -32,14 +32,12 @@ public class ConnectionPool extends Pool<Connection> {
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig));
     attachAuthenticationListener(clientConfig.getAuthXManager());
-    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
-    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   @Experimental
@@ -47,7 +45,6 @@ public class ConnectionPool extends Pool<Connection> {
       Cache clientSideCache) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
     attachAuthenticationListener(clientConfig.getAuthXManager());
-    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   @Experimental
@@ -55,7 +52,6 @@ public class ConnectionPool extends Pool<Connection> {
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
-    attachRebindHandler(clientConfig, (ConnectionFactory) this.getFactory());
   }
 
   @Override
@@ -98,34 +94,29 @@ public class ConnectionPool extends Pool<Connection> {
     }
   }
 
-  private void attachRebindHandler(JedisClientConfig clientConfig, ConnectionFactory factory) {
-    if (clientConfig.isProactiveRebindEnabled()) {
-      RebindHandler rebindHandler = new RebindHandler(this, factory);
-      clientConfig.getMaintenanceEventHandler().addListener(rebindHandler);
-    }
-  }
+  private final AtomicReference<HostAndPort> rebindTarget = new AtomicReference<>();
 
-  private static class RebindHandler implements MaintenanceEventListener {
-    private final ConnectionPool pool;
-    private final ConnectionFactory factory;
-    private final AtomicReference<HostAndPort> rebindTarget = new AtomicReference<>();
-
-    public RebindHandler(ConnectionPool pool, ConnectionFactory factory) {
-      this.pool = pool;
-      this.factory = factory;
+  /**
+   * Called by a connection when it receives a MOVING maintenance event.
+   * Rebinds the pool's factory to the new target and clears idle connections.
+   *
+   * @param target the new host and port to rebind to
+   */
+  void onMoving(HostAndPort target) {
+    if (target == null) {
+      return;
     }
 
-    @Override
-    public void onRebind(HostAndPort target) {
-      if (target == null) {
+
+    HostAndPort previous = rebindTarget.getAndSet(target);
+    if (!target.equals(previous)) {
+      PooledObjectFactory<Connection> factory = getFactory();
+      if (!(factory instanceof RebindAware)) {
         return;
       }
 
-      HostAndPort previous = rebindTarget.getAndSet(target);
-      if (!target.equals(previous)) {
-        this.factory.rebind(target);
-        this.pool.clear();
-      }
+      ((RebindAware) factory).rebind(target);
+      clear();
     }
   }
 }

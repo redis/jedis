@@ -9,9 +9,6 @@ import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.MaintenanceEventHandler;
-
-import redis.clients.jedis.MaintenanceEventListener;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.util.ReflectionTestUtil;
@@ -37,7 +34,7 @@ import static org.mockito.Mockito.doAnswer;
  * Test that connection adaptive timeout works as expected. Usses a mock TCP server to send
  * Maintenance push messages to the client in controllable manner.
  */
-@Tag("upgrade")
+@Tag("sch")
 public class ConnectionAdaptiveTimeoutTest {
 
   private final int originalTimeoutMs = 2000;
@@ -60,19 +57,9 @@ public class ConnectionAdaptiveTimeoutTest {
         .proactiveTimeoutsRelaxing(relaxedTimeout)
         .proactiveBlockingTimeoutsRelaxing(relaxedBlockingTimeout).build();
 
-    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandler();
-
-    MaintenanceEventListener testListener = new MaintenanceEventListener() {
-      @Override
-      public void onMigrating() {
-        System.out.println("MIGRATING");
-      }
-    };
-    maintenanceEventHandler.addListener(testListener);
-
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(originalTimeoutMs).timeoutOptions(timeoutOptions)
-        .maintenanceEventHandler(maintenanceEventHandler).protocol(RedisProtocol.RESP3).build();
+        .protocol(RedisProtocol.RESP3).build();
 
     // Create connection to the mock server
     HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
@@ -293,11 +280,9 @@ public class ConnectionAdaptiveTimeoutTest {
         .proactiveTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT)
         .proactiveBlockingTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT).build();
 
-    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandler();
-
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(originalTimeoutMs).timeoutOptions(disabledTimeoutOptions)
-        .maintenanceEventHandler(maintenanceEventHandler).protocol(RedisProtocol.RESP3).build();
+        .protocol(RedisProtocol.RESP3).build();
 
     // Create connection to the mock server
     HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
@@ -311,12 +296,10 @@ public class ConnectionAdaptiveTimeoutTest {
    * Helper method to create a connection with null timeout options.
    */
   private Connection createConnectionWithDefaultTimeoutOptions() {
-    MaintenanceEventHandler maintenanceEventHandler = new MaintenanceEventHandler();
-
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
         .socketTimeoutMillis(originalTimeoutMs)
         // Note: not setting timeoutOptions, so it will be null
-        .maintenanceEventHandler(maintenanceEventHandler).protocol(RedisProtocol.RESP3).build();
+        .protocol(RedisProtocol.RESP3).build();
 
     // Create connection to the mock server
     HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());

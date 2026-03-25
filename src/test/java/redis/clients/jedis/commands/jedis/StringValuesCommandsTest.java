@@ -15,15 +15,19 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.params.GCRAParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.resps.GCRAResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -330,6 +334,70 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     // Verify TTL is set
     long ttl = jedis.ttl(k1);
     assertTrue(ttl > 0L);
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraBasicNotLimited() {
+    GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0);
+    GCRAResponse response = jedis.gcra("rate:user:1", params);
+
+    assertNotNull(response);
+    assertFalse(response.isLimited());
+    assertEquals(6, response.getMaxRequests());
+    assertTrue(response.getAvailableRequests() >= 0);
+    assertEquals(-1, response.getRetryAfter());
+    assertTrue(response.getFullBurstAfter() >= 0);
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraExhaustBurstCapacity() {
+    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0);
+    String key = "rate:exhaust:1";
+
+    for (int i = 0; i < 3; i++) {
+      GCRAResponse response = jedis.gcra(key, params);
+      assertFalse(response.isLimited(), "Request " + i + " should not be limited");
+    }
+
+    GCRAResponse response = jedis.gcra(key, params);
+    assertTrue(response.isLimited());
+    assertEquals(3, response.getMaxRequests());
+    assertEquals(0, response.getAvailableRequests());
+    assertTrue(response.getRetryAfter() > 0);
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraWithNumRequests() {
+    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0).numRequests(3);
+    String key = "rate:weighted:1";
+
+    GCRAResponse response = jedis.gcra(key, params);
+    assertFalse(response.isLimited());
+    assertEquals(3, response.getMaxRequests());
+    assertEquals(0, response.getAvailableRequests());
+
+    GCRAParams singleParams = GCRAParams.gcraParams(2, 1, 60.0);
+    response = jedis.gcra(key, singleParams);
+    assertTrue(response.isLimited());
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraResponseFields() {
+    GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0);
+    GCRAResponse response = jedis.gcra("rate:fields:1", params);
+
+    assertNotNull(response);
+    assertEquals(6, response.getMaxRequests());
+    assertEquals(5, response.getAvailableRequests());
+    assertEquals(-1, response.getRetryAfter());
+    assertTrue(response.getFullBurstAfter() >= 0);
+    String str = response.toString();
+    assertTrue(str.contains("limited=false"));
+    assertTrue(str.contains("maxRequests=6"));
   }
 
 }

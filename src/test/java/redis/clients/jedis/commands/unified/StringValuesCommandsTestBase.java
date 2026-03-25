@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands.unified;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,9 +22,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.params.GCRAParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.resps.GCRAResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
@@ -343,4 +347,81 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     long ttl = jedis.ttl(k1);
     assertTrue(ttl > 0L);
   }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraBasicNotLimited() {
+    // Allow 5 burst + 10 requests per 60 seconds
+    GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0);
+    GCRAResponse response = jedis.gcra("rate:user:1", params);
+
+    assertNotNull(response);
+    assertFalse(response.isLimited());
+    assertEquals(6, response.getMaxRequests()); // max_burst + 1
+    assertTrue(response.getAvailableRequests() >= 0);
+    assertEquals(-1, response.getRetryAfter()); // not limited
+    assertTrue(response.getFullBurstAfter() >= 0);
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraExhaustBurstCapacity() {
+    // Allow 2 burst + 1 request per 60 seconds = 3 total requests
+    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0);
+    String key = "rate:exhaust:1";
+
+    // First 3 requests should succeed (max_burst + 1 = 3)
+    for (int i = 0; i < 3; i++) {
+      GCRAResponse response = jedis.gcra(key, params);
+      assertFalse(response.isLimited(), "Request " + i + " should not be limited");
+    }
+
+    // 4th request should be limited
+    GCRAResponse response = jedis.gcra(key, params);
+    assertTrue(response.isLimited());
+    assertEquals(3, response.getMaxRequests());
+    assertEquals(0, response.getAvailableRequests());
+    assertTrue(response.getRetryAfter() > 0);
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraWithNumRequests() {
+    // Allow 2 burst + 1 request per 60 seconds = 3 total
+    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0).numRequests(3);
+    String key = "rate:weighted:1";
+
+    // Single request consuming all 3 tokens
+    GCRAResponse response = jedis.gcra(key, params);
+    assertFalse(response.isLimited());
+    assertEquals(3, response.getMaxRequests());
+    assertEquals(0, response.getAvailableRequests());
+
+    // Next request should be limited
+    GCRAParams singleParams = GCRAParams.gcraParams(2, 1, 60.0);
+    response = jedis.gcra(key, singleParams);
+    assertTrue(response.isLimited());
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraResponseFields() {
+    GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0);
+    GCRAResponse response = jedis.gcra("rate:fields:1", params);
+
+    assertNotNull(response);
+    // maxRequests is always max_burst + 1
+    assertEquals(6, response.getMaxRequests());
+    // First request: should have 5 available (6 - 1)
+    assertEquals(5, response.getAvailableRequests());
+    // Not limited, so retryAfter is -1
+    assertEquals(-1, response.getRetryAfter());
+    // fullBurstAfter should be >= 0
+    assertTrue(response.getFullBurstAfter() >= 0);
+    // toString should contain all fields
+    String str = response.toString();
+    assertTrue(str.contains("limited=false"));
+    assertTrue(str.contains("maxRequests=6"));
+  }
+
 }

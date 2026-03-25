@@ -50,7 +50,7 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          mvn -B clean test -DskipIntegrationTests=true
+          mvn -B clean test jacoco:report
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2

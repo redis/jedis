@@ -250,8 +250,9 @@ public class TokenBasedAuthenticationIntegrationTests {
         .identityProviderConfig(idProviderConfig).expirationRefreshRatio(0.8F)
         .lowerRefreshBoundMillis(10000).tokenRequestExecTimeoutInMs(1000).build();
 
+    // Explicitly use RESP2 protocol to test the RESP2-specific error for token-based auth with pub/sub
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+        .authXManager(new AuthXManager(tokenAuthConfig)).protocol(RedisProtocol.RESP2).build();
 
     try (RedisClient jedis = RedisClient.builder()
         .hostAndPort(endpointConfig.getHostAndPort())

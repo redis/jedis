@@ -94,12 +94,6 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected void initPushConsumers( JedisClientConfig config) {
-    super.initPushConsumers(config);
-    this.pushConsumer.add(new PushInvalidateConsumer(cache));
-  }
-
-  @Override
   protected void initializeFromClientConfig(JedisClientConfig config) {
     lock = new ReentrantLock();
     super.initializeFromClientConfig(config);

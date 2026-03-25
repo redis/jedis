@@ -5,8 +5,8 @@ import redis.clients.jedis.util.SafeEncoder;
 import java.util.List;
 
 public class PushMessage {
-  String type;
-  List<Object> content;
+  private String type;
+  private List<Object> content;
 
   public PushMessage(List<Object> content) {
     this.content = content;

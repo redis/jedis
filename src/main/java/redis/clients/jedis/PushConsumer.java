@@ -9,14 +9,14 @@ public interface PushConsumer {
   /**
    * Process a push message. Each PushConsumer can decide to:
    * <ul>
-   * <li>Allow the message to be returned to the client by calling
-   * {@link PushConsumerContext#setForwardToClient(boolean)}</li>
-   * <li>Process the message and prevent forwarding by not calling
-   * {@link PushConsumerContext#setForwardToClient(boolean)}</li>
+   * <li>Allow the message to be returned to the caller by calling
+   * {@link PushConsumerContext#setReturnToCaller(boolean)}</li>
+   * <li>Process the message and prevent it from being returned by not calling
+   * {@link PushConsumerContext#setReturnToCaller(boolean)}</li>
    * </ul>
    * Following handlers in the chain can override the decision of previous handlers. By default, if
-   * no handler sets the forward flag, the message not be returned to the client.
-   * @see PushConsumerContext#setForwardToClient(boolean)
+   * no handler sets the flag, the message will not be returned to the caller.
+   * @see PushConsumerContext#setReturnToCaller(boolean)
    * @see PushConsumerChain
    * @param context The context of the push message
    */

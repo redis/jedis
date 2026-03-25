@@ -224,9 +224,9 @@ public final class Protocol {
     // for backward compatibility propagate all push events to application
     Object reply = process(is, PROPAGATE_ALL_HANDLER);
 
-    if (reply != null & reply instanceof PushConsumerContext) {
+    if (reply != null && reply instanceof PushConsumerContext) {
       PushConsumerContext context = (PushConsumerContext) reply;
-      if (!context.isForwardToClient()) {
+      if (!context.isReturnToCaller()) {
         return null;
       }
       return context.getMessage().getContent();
@@ -238,12 +238,12 @@ public final class Protocol {
   @Experimental
   public static Object read(final RedisInputStream is, PushConsumer pushConsumer) {
     // read until we have a non-push event,
-    // or push-event is not handled and need to be propagated to application
+    // or push-event is requested to be propagated propagated to caller as result
     Object reply;
     do {
       reply = process(is, pushConsumer);
 
-    } while (isPush(reply) && !((PushConsumerContext) reply).isForwardToClient());
+    } while (isPush(reply) && !((PushConsumerContext) reply).isReturnToCaller());
 
     if (isPush(reply)) {
       return ((PushConsumerContext) reply).getMessage().getContent();
@@ -256,7 +256,7 @@ public final class Protocol {
     return reply instanceof PushConsumerContext;
   }
 
-  // TODO : Refactor to use PushHandler
+  // TODO : Refactor to use PushConsumer
   @Experimental
   public static Object readPushes(final RedisInputStream is, final Cache cache,
       boolean onlyPendingBuffer) {

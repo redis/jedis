@@ -17,7 +17,7 @@ import redis.clients.jedis.annots.Internal;
 public class PushConsumerContext {
   private final PushMessage message;
 
-  private boolean forwardToClient = false;
+  private boolean returnToCaller = false;
 
   public PushConsumerContext(PushMessage message) {
     this.message = message;
@@ -32,20 +32,20 @@ public class PushConsumerContext {
   }
 
   /**
-   * Check if the message should be returned to the client.
-   * @return true if the message should be returned to the client
+   * Check if the message should be returned to the caller.
+   * @return true if the message should be returned to the caller
    */
-  public boolean isForwardToClient() {
-    return forwardToClient;
+  public boolean isReturnToCaller() {
+    return returnToCaller;
   }
 
   /**
-   * Set whether the message should be returned to the client. By default, if no handler sets this
-   * flag, the message will not be returned to the client. and silently consumed.
-   * @param forwardToClient
+   * Set whether the message should be returned to the caller. By default, if no handler sets this
+   * flag, the message will not be returned to the caller and will be silently consumed.
+   * @param returnToCaller
    */
-  public void setForwardToClient(boolean forwardToClient) {
-    this.forwardToClient = forwardToClient;
+  public void setReturnToCaller(boolean returnToCaller) {
+    this.returnToCaller = returnToCaller;
   }
 
 }

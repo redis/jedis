@@ -17,16 +17,16 @@ import java.util.Set;
 @Internal
 public final class PushConsumerChain implements PushConsumer {
   /**
-   * Handler that allows all push events to be propagated to the client.
+   * PushConsumer that marks all push events to be propagated to the caller.
    */
   public static final PushConsumer PROPAGATE_ALL_HANDLER = (context) -> {
     // mark as not-processed, always propagate
-    context.setForwardToClient(true);
+    context.setReturnToCaller(true);
   };
   /**
-   * Handler that allows only pub/sub related events to be propagated to the client
+   * PushConsumer that marks only pub/sub related events to be propagated to the caller
    * <p>
-   * Marks non-pub/sub events as processed, preventing their propagation.
+   * Marks non-pub/sub events as returnToCaller=false, preventing their propagation.
    * </p>
    */
   public static final PushConsumer PUBSUB_ONLY_HANDLER = new PushConsumer() {
@@ -48,7 +48,7 @@ public final class PushConsumerChain implements PushConsumer {
     public void accept(PushConsumerContext context) {
       if (pubSubCommands.contains(context.getMessage().getType())) {
         // Ensure pub/sub events are propagated to application
-        context.setForwardToClient(true);
+        context.setReturnToCaller(true);
       }
     }
   };

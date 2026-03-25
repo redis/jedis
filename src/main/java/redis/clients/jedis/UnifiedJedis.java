@@ -4571,7 +4571,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param aggr aggregation builder with cursor configuration
    * @return aggregate iterator for cursor-based pagination
    * @throws IllegalArgumentException if aggregation doesn't have cursor configured
-   * @since 6.1.0
+   * @since 8.0
    */
   public AggregateIterator ftAggregateIterator(String indexName, AggregationBuilder aggr) {
     return new AggregateIterator(provider, indexName, aggr);

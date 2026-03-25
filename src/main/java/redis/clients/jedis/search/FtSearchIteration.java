@@ -10,11 +10,15 @@ import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.util.JedisCommandIterationBase;
 
 /**
- * Iterator for FT.SEARCH results across cluster nodes.
+ * Iterator for paginating through FT.SEARCH results in batches.
+ * <p>
+ * This class provides an iteration mechanism over {@link Document} results from a RediSearch
+ * FT.SEARCH command, automatically handling pagination through the result set.
  *
- * @deprecated Since Redis 8.0, FT.SEARCH automatically retrieves results from all cluster nodes,
- *             eliminating the need for manual iteration across nodes. Use the standard
- *             {@code ftSearch} methods directly instead.
+ * @see SearchResult
+ * @see Document
+ * @deprecated Use {@link redis.clients.jedis.UnifiedJedis#ftSearch(String, String, FTSearchParams)} directly.
+ *             This class will be removed in a future release.
  */
 @Deprecated
 public class FtSearchIteration extends JedisCommandIterationBase<SearchResult, Document> {

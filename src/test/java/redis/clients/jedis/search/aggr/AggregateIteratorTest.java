@@ -33,8 +33,8 @@ import redis.clients.jedis.util.Pool;
 public class AggregateIteratorTest {
 
   /**
-   * Tests that close() clears aggrCommandResult so hasNext() returns false.
-   * This verifies the fix for the issue where close() didn't clear the cached result.
+   * Tests that close() clears aggrCommandResult so hasNext() returns false. This verifies the fix
+   * for the issue where close() didn't clear the cached result.
    */
   @Test
   public void closeMethodClearsAggrCommandResult() {
@@ -53,9 +53,8 @@ public class AggregateIteratorTest {
     when(mockPool.getResource()).thenReturn(mockConnection);
 
     // Mock initial aggregation response with cursor
-    List<Object> mockResponse = Arrays.asList(
-        Arrays.asList(1L), // results with 1 total
-        100L // cursor ID
+    List<Object> mockResponse = Arrays.asList(Arrays.asList(1L), // results with 1 total
+      100L // cursor ID
     );
     when(mockConnection.executeCommand(any(CommandArguments.class))).thenReturn(mockResponse);
 
@@ -90,10 +89,7 @@ public class AggregateIteratorTest {
     doReturn(connectionMap).when(mockProvider).getPrimaryNodesConnectionMap();
     when(mockPool.getResource()).thenReturn(mockConnection);
 
-    List<Object> mockResponse = Arrays.asList(
-        Arrays.asList(1L),
-        100L
-    );
+    List<Object> mockResponse = Arrays.asList(Arrays.asList(1L), 100L);
     when(mockConnection.executeCommand(any(CommandArguments.class))).thenReturn(mockResponse);
 
     AggregationBuilder aggr = new AggregationBuilder().cursor(10);
@@ -122,10 +118,7 @@ public class AggregateIteratorTest {
     doReturn(connectionMap).when(mockProvider).getPrimaryNodesConnectionMap();
     when(mockPool.getResource()).thenReturn(mockConnection);
 
-    List<Object> mockResponse = Arrays.asList(
-        Arrays.asList(1L),
-        100L
-    );
+    List<Object> mockResponse = Arrays.asList(Arrays.asList(1L), 100L);
     when(mockConnection.executeCommand(any(CommandArguments.class))).thenReturn(mockResponse);
 
     AggregationBuilder aggr = new AggregationBuilder().cursor(10);
@@ -134,13 +127,12 @@ public class AggregateIteratorTest {
     iterator.close();
 
     assertThrows(NoSuchElementException.class, iterator::next,
-        "next() should throw NoSuchElementException after close()");
+      "next() should throw NoSuchElementException after close()");
   }
 
   /**
-   * Tests that node selection is randomized across multiple nodes.
-   * Creates a connection map with multiple nodes and verifies that
-   * different nodes are selected over multiple iterator creations.
+   * Tests that node selection is randomized across multiple nodes. Creates a connection map with
+   * multiple nodes and verifies that different nodes are selected over multiple iterator creations.
    */
   @Test
   public void nodeSelectionIsRandomizedAcrossMultipleNodes() {
@@ -173,8 +165,8 @@ public class AggregateIteratorTest {
   }
 
   /**
-   * Tests that Pool-based connections are borrowed and returned properly.
-   * This verifies the connection leak fix.
+   * Tests that Pool-based connections are borrowed and returned properly. This verifies the
+   * connection leak fix.
    */
   @Test
   public void poolBasedConnectionsAreBorrowedAndReturned() {
@@ -189,9 +181,8 @@ public class AggregateIteratorTest {
     when(mockPool.getResource()).thenReturn(mockConnection);
 
     // Return cursor ID 0 to indicate no more results
-    List<Object> mockResponse = Arrays.asList(
-        Arrays.asList(1L),
-        0L // cursor ID 0 means iteration complete
+    List<Object> mockResponse = Arrays.asList(Arrays.asList(1L), 0L // cursor ID 0 means iteration
+                                                                    // complete
     );
     when(mockConnection.executeCommand(any(CommandArguments.class))).thenReturn(mockResponse);
 
@@ -218,8 +209,8 @@ public class AggregateIteratorTest {
     AggregationBuilder aggr = new AggregationBuilder(); // No cursor configured
 
     assertThrows(IllegalArgumentException.class,
-        () -> new AggregateIterator(mockProvider, "testIndex", aggr),
-        "Should throw IllegalArgumentException when cursor is not configured");
+      () -> new AggregateIterator(mockProvider, "testIndex", aggr),
+      "Should throw IllegalArgumentException when cursor is not configured");
   }
 
   /**
@@ -232,9 +223,8 @@ public class AggregateIteratorTest {
 
     AggregationBuilder aggr = new AggregationBuilder().cursor(10);
 
-    assertThrows(JedisException.class,
-        () -> new AggregateIterator(mockProvider, "testIndex", aggr),
-        "Should throw JedisException when no connections are available");
+    assertThrows(JedisException.class, () -> new AggregateIterator(mockProvider, "testIndex", aggr),
+      "Should throw JedisException when no connections are available");
   }
 
   /**
@@ -252,10 +242,7 @@ public class AggregateIteratorTest {
     doReturn(connectionMap).when(mockProvider).getPrimaryNodesConnectionMap();
     when(mockPool.getResource()).thenReturn(mockConnection);
 
-    List<Object> mockResponse = Arrays.asList(
-        Arrays.asList(1L),
-        100L
-    );
+    List<Object> mockResponse = Arrays.asList(Arrays.asList(1L), 100L);
     when(mockConnection.executeCommand(any(CommandArguments.class))).thenReturn(mockResponse);
 
     AggregationBuilder aggr = new AggregationBuilder().cursor(10);
@@ -270,4 +257,3 @@ public class AggregateIteratorTest {
     assertEquals(-1L, iterator.getCursorId());
   }
 }
-

@@ -92,9 +92,9 @@ public class GCRAResponse implements Serializable {
       }
 
       List<Long> list = (List<Long>) data;
-      if (list.size() != EXPECTED_SIZE) {
+      if (list.size() < EXPECTED_SIZE) {
         throw new IllegalArgumentException(
-            "GCRA response expected " + EXPECTED_SIZE + " elements but got " + list.size());
+            "GCRA response expected at least " + EXPECTED_SIZE + " elements but got " + list.size());
       }
 
       boolean limited = list.get(0) != 0;

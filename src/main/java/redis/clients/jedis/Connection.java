@@ -123,8 +123,8 @@ public class Connection implements Closeable {
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.clientConfig = clientConfig;
-    initPushConsumers(clientConfig);
     initializeFromClientConfig(clientConfig);
+    initPushConsumers(clientConfig);
   }
 
   protected Connection(Builder builder) {
@@ -405,7 +405,7 @@ public class Connection implements Closeable {
 
   public String getStatusCodeReply() {
     flush();
-    final byte[] resp = (byte[]) readProtocolWithCheckingBroken(pushConsumer);
+    final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
     if (null == resp) {
       return null;
     } else {
@@ -424,12 +424,12 @@ public class Connection implements Closeable {
 
   public byte[] getBinaryBulkReply() {
     flush();
-    return (byte[]) readProtocolWithCheckingBroken(pushConsumer);
+    return (byte[]) readProtocolWithCheckingBroken();
   }
 
   public Long getIntegerReply() {
     flush();
-    return (Long) readProtocolWithCheckingBroken(pushConsumer);
+    return (Long) readProtocolWithCheckingBroken();
   }
 
   public List<String> getMultiBulkReply() {
@@ -439,7 +439,7 @@ public class Connection implements Closeable {
   @SuppressWarnings("unchecked")
   public List<byte[]> getBinaryMultiBulkReply() {
     flush();
-    return (List<byte[]>) readProtocolWithCheckingBroken(pushConsumer);
+    return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
   /**
@@ -448,28 +448,28 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
-    return (List<Object>) readProtocolWithCheckingBroken(pushConsumer);
+    return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public Object getUnflushedObject() {
-    return readProtocolWithCheckingBroken(pushConsumer);
+    return readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
     flush();
-    return (List<Object>) readProtocolWithCheckingBroken(pushConsumer);
+    return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
     flush();
-    return (List<Long>) readProtocolWithCheckingBroken(pushConsumer);
+    return (List<Long>) readProtocolWithCheckingBroken();
   }
 
   public Object getOne() {
     flush();
-    return readProtocolWithCheckingBroken(pushConsumer);
+    return readProtocolWithCheckingBroken();
   }
 
   protected void flush() {
@@ -490,21 +490,17 @@ public class Connection implements Closeable {
   protected void protocolReadPushes(RedisInputStream is) {
   }
 
-  protected Object readProtocolWithCheckingBroken(PushConsumer handler) {
+  protected Object readProtocolWithCheckingBroken() {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
-      return protocolRead(inputStream, handler);
+      return protocolRead(inputStream, pushConsumer);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
     }
-  }
-
-  protected Object readProtocolWithCheckingBroken() {
-    return readProtocolWithCheckingBroken(PROPAGATE_ALL_HANDLER);
   }
 
   protected void readPushesWithCheckingBroken() {
@@ -530,7 +526,7 @@ public class Connection implements Closeable {
     final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       try {
-        responses.add(readProtocolWithCheckingBroken(pushConsumer));
+        responses.add(readProtocolWithCheckingBroken());
       } catch (JedisDataException e) {
         responses.add(e);
       }
@@ -563,7 +559,7 @@ public class Connection implements Closeable {
     try {
       this.soTimeout = config.getSocketTimeoutMillis();
       this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
-      // TODO : ggivo Allign configuration properties to other clients
+      // TODO : ggivo Align configuration properties to other clients
       this.relaxedTimeout = NumberUtils.safeToInt(config.getTimeoutOptions().getRelaxedTimeout().toMillis());
       this.relaxedBlockingTimeout = NumberUtils.safeToInt(config.getTimeoutOptions().getRelaxedBlockingTimeout().toMillis());
       this.relaxedTimeoutEnabled =  TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ||

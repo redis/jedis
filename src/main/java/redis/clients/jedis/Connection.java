@@ -5,7 +5,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -149,20 +148,13 @@ public class Connection implements Closeable {
           /*
            * Add consumer to handle server maintenance events.
            * Maintenance events are propagated to the registered {@link MaintenanceEventListener}s.
+           * Per-connection concerns (timeout relaxation, rebind flag) are handled inline.
            */
           MaintenanceEventHandler maintenanceEventHandler = config.getMaintenanceEventHandler();
           if (maintenanceEventHandler != null) {
-              this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler));
-
-              if (config.isProactiveRebindEnabled()) {
-                  maintenanceEventHandler.addListener(new ConnectionRebindHandler());
-              }
-
-              if (TimeoutOptions.isRelaxedTimeoutEnabled(config.getTimeoutOptions().getRelaxedTimeout())) {
-                  maintenanceEventHandler.addListener(new AdaptiveTimeoutHandler(Connection.this));
-              }
+              this.pushConsumer.add(new MaintenanceEventConsumer(maintenanceEventHandler,
+                  config.isProactiveRebindEnabled()));
           }
-
 
       }
   }
@@ -802,20 +794,27 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Push consumer that delegates to a {@link PushHandler} for listener notification.
+   * Push consumer that handles server maintenance events.
+   * <p>
+   * Handles per-connection concerns (timeout relaxation, rebind flag) inline,
+   * then delegates to registered {@link MaintenanceEventListener}s for external notification.
+   * </p>
    */
-  private static class MaintenanceEventConsumer implements PushConsumer {
+  private class MaintenanceEventConsumer implements PushConsumer {
     private final MaintenanceEventHandler eventHandler;
+    private final boolean proactiveRebindEnabled;
 
-    public MaintenanceEventConsumer(MaintenanceEventHandler eventHandler) {
+    public MaintenanceEventConsumer(MaintenanceEventHandler eventHandler,
+        boolean proactiveRebindEnabled) {
       this.eventHandler = eventHandler;
+      this.proactiveRebindEnabled = proactiveRebindEnabled;
     }
 
     @Override
     public void accept(PushConsumerContext context) {
       PushMessage message = context.getMessage();
 
-      switch ( message.getType()) {
+      switch (message.getType()) {
       case "MOVING":
         onMoving(message);
         break;
@@ -833,24 +832,36 @@ public class Connection implements Closeable {
         break;
       }
     }
+
     private void onMoving(PushMessage message) {
       HostAndPort rebindTarget = getRebindTarget(message);
+
+      // per-connection: mark rebind requested and relax timeouts
+      if (proactiveRebindEnabled) {
+        rebindRequested = true;
+      }
+      relaxTimeouts();
+
       eventHandler.getListeners().forEach(listener -> listener.onRebind(rebindTarget));
     }
 
     private void onMigrating() {
+      relaxTimeouts();
       eventHandler.getListeners().forEach(MaintenanceEventListener::onMigrating);
     }
 
     private void onMigrated() {
+      disableRelaxedTimeout();
       eventHandler.getListeners().forEach(MaintenanceEventListener::onMigrated);
     }
 
     private void onFailOver() {
+      relaxTimeouts();
       eventHandler.getListeners().forEach(MaintenanceEventListener::onFailOver);
     }
 
     private void onFailedOver() {
+      disableRelaxedTimeout();
       eventHandler.getListeners().forEach(MaintenanceEventListener::onFailedOver);
     }
 
@@ -886,61 +897,6 @@ public class Connection implements Closeable {
       } catch (Exception e) {
         logger.warn("Error parsing re-bind target from message: {}", message, e);
         return null;
-      }
-    }
-  }
-
-  private class ConnectionRebindHandler implements MaintenanceEventListener {
-      public void onRebind(HostAndPort target) {
-        rebindRequested = true;
-      }
-  }
-
-  private static class AdaptiveTimeoutHandler implements MaintenanceEventListener {
-
-    private final WeakReference<Connection> connectionRef;
-
-    /**
-     * Creates a new maintenance listener for the specified connection.
-     *
-     * @param connection The connection to manage timeouts for
-     */
-    public AdaptiveTimeoutHandler(Connection connection) {
-      this.connectionRef = new WeakReference<>(connection);
-    }
-
-    public void onMigrating() {
-      Connection connection = connectionRef.get();
-      if (connection != null) {
-        connection.relaxTimeouts();
-      }
-    }
-
-    public void onMigrated() {
-      Connection connection = connectionRef.get();
-      if (connection != null) {
-        connection.disableRelaxedTimeout();
-      }
-    }
-
-    public void onFailOver() {
-      Connection connection = connectionRef.get();
-      if (connection != null) {
-        connection.relaxTimeouts();
-      }
-    }
-
-    public void onFailedOver() {
-      Connection connection = connectionRef.get();
-      if (connection != null) {
-        connection.disableRelaxedTimeout();
-      }
-    }
-
-    public void onRebind(HostAndPort target) {
-      Connection connection = connectionRef.get();
-      if (connection != null) {
-        connection.relaxTimeouts();
       }
     }
   }

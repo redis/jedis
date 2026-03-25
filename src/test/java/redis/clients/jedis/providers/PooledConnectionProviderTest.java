@@ -39,10 +39,8 @@ public class PooledConnectionProviderTest {
   public void setUp() {
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(2);
-    provider = new PooledConnectionProvider(
-        endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build(),
-        poolConfig);
+    provider = new PooledConnectionProvider(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build(), poolConfig);
   }
 
   @AfterEach
@@ -53,8 +51,8 @@ public class PooledConnectionProviderTest {
   }
 
   /**
-   * Verifies that getConnectionMap() returns a Pool, not a Connection.
-   * This prevents connection leaks when callers expect pool-based connections.
+   * Verifies that getConnectionMap() returns a Pool, not a Connection. This prevents connection
+   * leaks when callers expect pool-based connections.
    */
   @Test
   public void getConnectionMapReturnsPool() {
@@ -67,9 +65,9 @@ public class PooledConnectionProviderTest {
   }
 
   /**
-   * Verifies that getPrimaryNodesConnectionMap() returns a Pool, not a Connection.
-   * This is the fix for the connection leak issue - previously it fell through to
-   * the default interface implementation which borrowed a connection from the pool.
+   * Verifies that getPrimaryNodesConnectionMap() returns a Pool, not a Connection. This is the fix
+   * for the connection leak issue - previously it fell through to the default interface
+   * implementation which borrowed a connection from the pool.
    */
   @Test
   public void getPrimaryNodesConnectionMapReturnsPool() {
@@ -82,9 +80,9 @@ public class PooledConnectionProviderTest {
   }
 
   /**
-   * Verifies that getPrimaryNodesConnectionMap() does not leak connections.
-   * With a pool of size 1, if getPrimaryNodesConnectionMap() borrowed a connection
-   * without returning it, subsequent getConnection() calls would block/fail.
+   * Verifies that getPrimaryNodesConnectionMap() does not leak connections. With a pool of size 1,
+   * if getPrimaryNodesConnectionMap() borrowed a connection without returning it, subsequent
+   * getConnection() calls would block/fail.
    */
   @Test
   @Timeout(value = 1)
@@ -93,10 +91,8 @@ public class PooledConnectionProviderTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
-    try (PooledConnectionProvider sut = new PooledConnectionProvider(
-        endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build(),
-        config)) {
+    try (PooledConnectionProvider sut = new PooledConnectionProvider(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build(), config)) {
 
       Pool<?> pool = sut.getPool();
       assertThat(pool.getNumActive(), equalTo(0));
@@ -132,4 +128,3 @@ public class PooledConnectionProviderTest {
     assertThat(key, equalTo(endpoint.getHostAndPort()));
   }
 }
-

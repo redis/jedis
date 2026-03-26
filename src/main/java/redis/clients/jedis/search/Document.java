@@ -24,7 +24,7 @@ public class Document implements Serializable {
   private final Map<String, Object> fields;
 
   public Document(String id) {
-    this(id, 1.0);
+    this(id, 0.0);
   }
 
   public Document(String id, double score) {
@@ -32,7 +32,7 @@ public class Document implements Serializable {
   }
 
   public Document(String id, Map<String, Object> fields) {
-    this(id, fields, 1.0f);
+    this(id, fields, 0.0f);
   }
 
   public Document(String id, Map<String, Object> fields, double score) {
@@ -43,8 +43,8 @@ public class Document implements Serializable {
 
   private Document(String id, Double score, Map<String, Object> fields) {
     this.id = id;
-    this.score = score;
-    this.fields = fields;
+    this.score = score != null ? score : 0.0d;
+    this.fields = fields != null ? fields : new HashMap<>();
   }
 
   public Iterable<Map.Entry<String, Object>> getProperties() {

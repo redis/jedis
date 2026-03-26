@@ -29,8 +29,8 @@ public class AggregationResult {
 
   private AggregationResult(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
     this.totalResults = totalResults;
-    this.results = results;
-    this.warnings = warnings;
+    this.results = results != null ? results : Collections.emptyList();
+    this.warnings = warnings != null ? warnings : Collections.emptyList();
   }
 
   private void setCursorId(Long cursorId) {

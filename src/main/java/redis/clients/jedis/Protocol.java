@@ -222,17 +222,7 @@ public final class Protocol {
 
   public static Object read(final RedisInputStream is) {
     // for backward compatibility propagate all push events to application
-    Object reply = process(is, PROPAGATE_ALL_HANDLER);
-
-    if (reply != null && reply instanceof PushConsumerContext) {
-      PushConsumerContext context = (PushConsumerContext) reply;
-      if (!context.isReturnToCaller()) {
-        return null;
-      }
-      return context.getMessage().getContent();
-    }
-
-    return reply;
+    return process(is, PROPAGATE_ALL_HANDLER);
   }
 
   @Experimental
@@ -280,7 +270,9 @@ public final class Protocol {
   private static PushConsumerContext processPush(final RedisInputStream is, PushConsumer handler) {
     List<Object> list = processMultiBulkReply(is);
     PushConsumerContext context = new PushConsumerContext(new PushMessage(list));
-    handler.accept(context);
+    if (handler != null)  {
+      handler.accept(context);
+    }
     return context;
   }
 

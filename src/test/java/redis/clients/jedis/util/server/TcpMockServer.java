@@ -2,15 +2,17 @@ package redis.clients.jedis.util.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -175,6 +177,110 @@ public class TcpMockServer {
   }
 
   /**
+   * Static registry of built-in command responses (shared across all client handlers). Commands are
+   * stored as CommandKey (command + optional subcommand) for smart lookup.
+   */
+  private static final java.util.Map<CommandKey, String> BUILTIN_RESPONSES;
+
+  static {
+    java.util.Map<CommandKey, String> responses = new java.util.HashMap<>();
+
+    // RESP3 HELLO response
+    responses.put(new CommandKey(Protocol.Command.HELLO),
+      "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n" + "$7\r\nversion\r\n$5\r\n7.0.0\r\n"
+          + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n" + "$4\r\nmode\r\n$10\r\nstandalone\r\n"
+          + "$4\r\nrole\r\n$6\r\nmaster\r\n" + "$7\r\nmodules\r\n*0\r\n");
+
+    responses.put(new CommandKey(Protocol.Command.PING), "+PONG\r\n");
+
+    // CLIENT subcommands
+    responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME), "+OK\r\n");
+    responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETINFO), "+OK\r\n");
+
+    BUILTIN_RESPONSES = java.util.Collections.unmodifiableMap(responses);
+  }
+
+  /**
+   * Simple implementation of ProtocolCommand for unknown commands.
+   */
+  private static class SimpleProtocolCommand implements ProtocolCommand {
+    private final byte[] raw;
+    private final int hashCode;
+
+    public SimpleProtocolCommand(String command) {
+      this.raw = SafeEncoder.encode(command);
+      this.hashCode = Arrays.hashCode(raw);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof ProtocolCommand)) return false;
+      ProtocolCommand that = (ProtocolCommand) o;
+      return Arrays.equals(raw, that.getRaw());
+    }
+
+    @Override
+    public int hashCode() {
+      return hashCode;
+    }
+
+    @Override
+    public String toString() {
+      return SafeEncoder.encode(raw);
+    }
+  }
+
+  /**
+   * Key for command lookup in the registry. Supports command + optional subcommand.
+   */
+  private static class CommandKey {
+    private final String command;
+    private final String subcommand;
+    private final int hashCode;
+
+    public CommandKey(ProtocolCommand command) {
+      this(command, null);
+    }
+
+    public CommandKey(ProtocolCommand command, redis.clients.jedis.args.Rawable subcommand) {
+      this.command = SafeEncoder.encode(command.getRaw()).toUpperCase();
+      this.subcommand = subcommand != null ? SafeEncoder.encode(subcommand.getRaw()).toUpperCase()
+          : null;
+      this.hashCode = java.util.Objects.hash(this.command, this.subcommand);
+    }
+
+    public CommandKey(String command, String subcommand) {
+      this.command = command.toUpperCase();
+      this.subcommand = subcommand != null ? subcommand.toUpperCase() : null;
+      this.hashCode = java.util.Objects.hash(this.command, this.subcommand);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof CommandKey)) return false;
+      CommandKey that = (CommandKey) o;
+      return command.equals(that.command) && java.util.Objects.equals(subcommand, that.subcommand);
+    }
+
+    @Override
+    public int hashCode() {
+      return hashCode;
+    }
+
+    @Override
+    public String toString() {
+      return subcommand != null ? command + " " + subcommand : command;
+    }
+  }
+
+  /**
    * Client handler for each connection
    */
   private class ClientHandler implements Runnable {
@@ -182,6 +288,7 @@ public class TcpMockServer {
     private final String clientId;
     private RedisOutputStream outputStream;
     private volatile boolean connected = true;
+    private final Object outputLock = new Object(); // Lock to prevent interleaving
 
     public ClientHandler(Socket clientSocket) {
       this.clientSocket = clientSocket;
@@ -205,28 +312,12 @@ public class TcpMockServer {
               break;
             }
 
-            List<Object> cmdArgs = (List<Object>) input;
-            String cmdString = SafeEncoder.encode((byte[]) cmdArgs.get(0));
+            // Deserialize into CommandArguments
+            List<byte[]> rawArgs = (List<byte[]>) input;
+            CommandArguments commandArgs = deserializeToCommandArguments(rawArgs);
 
-            // Convert arguments to strings (excluding command name)
-            List<String> args = new java.util.ArrayList<>();
-            for (int i = 1; i < cmdArgs.size(); i++) {
-              args.add(SafeEncoder.encode((byte[]) cmdArgs.get(i)));
-            }
-
-            // Try custom handler first
-            String customResponse = null;
-            if (commandHandler != null) {
-              customResponse = commandHandler.handleCommand(cmdString, args, clientId);
-            }
-
-            if (customResponse != null) {
-              out.write(customResponse.getBytes());
-              out.flush();
-            } else {
-              // Handle with default built-in handlers
-              handleBuiltinCommand(cmdString, out);
-            }
+            // Process command with custom handler or built-in responses
+            processCommand(commandArgs);
           } catch (IOException e) {
             logger.debug("Client " + clientId + " disconnected: " + e.getMessage());
             connected = false;
@@ -244,41 +335,114 @@ public class TcpMockServer {
       }
     }
 
-    private void sendHelloResponse(OutputStream out) throws IOException {
-      // RESP3 HELLO response
-      String response = "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n"
-          + "$7\r\nversion\r\n$5\r\n7.0.0\r\n" + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n"
-          + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
-          + "$7\r\nmodules\r\n*0\r\n";
-      out.write(response.getBytes());
-      out.flush();
-    }
+    /**
+     * Deserialize raw byte arrays into CommandArguments. First element is the command, rest are
+     * arguments.
+     */
+    private CommandArguments deserializeToCommandArguments(List<byte[]> rawArgs) {
+      if (rawArgs == null || rawArgs.isEmpty()) {
+        throw new IllegalArgumentException("Empty command");
+      }
 
-    private void sendPongResponse(OutputStream out) throws IOException {
-      String response = "+PONG\r\n";
-      out.write(response.getBytes());
-      out.flush();
-    }
+      // First element is the command - try to match it to a known ProtocolCommand
+      String cmdString = SafeEncoder.encode(rawArgs.get(0)).toUpperCase();
+      ProtocolCommand command = findProtocolCommand(cmdString);
 
-    private void sendOkResponse(OutputStream out) throws IOException {
-      String response = "+OK\r\n";
-      out.write(response.getBytes());
-      out.flush();
+      // If no known command found, create a simple wrapper
+      if (command == null) {
+        command = new SimpleProtocolCommand(cmdString);
+      }
+
+      // Create CommandArguments with the command
+      CommandArguments commandArgs = new CommandArguments(command);
+
+      // Add remaining arguments
+      for (int i = 1; i < rawArgs.size(); i++) {
+        commandArgs.add(rawArgs.get(i));
+      }
+
+      return commandArgs;
     }
 
     /**
-     * Handle a command with built-in handlers.
+     * Try to find a matching ProtocolCommand from Protocol.Command enum.
      */
-    private void handleBuiltinCommand(String cmdString, OutputStream out) throws IOException {
-      if (cmdString.equalsIgnoreCase("HELLO")) {
-        sendHelloResponse(out);
-      } else if (cmdString.contains("PING")) {
-        sendPongResponse(out);
-      } else if (cmdString.contains("CLIENT")) {
-        sendOkResponse(out);
-      } else {
-        throw new RuntimeException("Unknown command: " + cmdString);
+    private ProtocolCommand findProtocolCommand(String cmdString) {
+      try {
+        return Protocol.Command.valueOf(cmdString);
+      } catch (IllegalArgumentException e) {
+        // Not a standard command, return null
+        return null;
       }
+    }
+
+    /**
+     * Process a command by first checking if a custom command handler is available, otherwise
+     * falling back to predefined built-in responses.
+     * @param commandArgs the command arguments
+     * @throws IOException if writing the response fails
+     */
+    private void processCommand(CommandArguments commandArgs) throws IOException {
+      String response = null;
+
+      // First, try custom command handler if available
+      if (commandHandler != null) {
+        response = commandHandler.handleCommand(commandArgs, clientId);
+      }
+
+      // If no custom handler or it returned null, fall back to built-in responses
+      if (response == null) {
+        response = getBuiltinResponse(commandArgs);
+      }
+
+      // Write the response
+      if (response != null) {
+        writeResponse(response);
+      } else {
+        throw new RuntimeException("Unknown command: " + commandArgs.getCommand());
+      }
+    }
+
+    /**
+     * Synchronized method to write response to output stream. This ensures thread-safe access to
+     * the non-thread-safe RedisOutputStream.
+     */
+    private void writeResponse(String response) throws IOException {
+      synchronized (outputLock) {
+        if (outputStream != null && connected) {
+          outputStream.write(response.getBytes());
+          outputStream.flush();
+        }
+      }
+    }
+
+    /**
+     * Get the built-in response for a command from the response registry. Uses smart lookup: tries
+     * command + first argument first, then just command.
+     * @param commandArgs the command arguments
+     * @return the response string, or null if no built-in response exists
+     */
+    private String getBuiltinResponse(CommandArguments commandArgs) {
+      String cmdString = SafeEncoder.encode(commandArgs.getCommand().getRaw());
+      String subcommand = null;
+
+      // Extract subcommand if present (first argument)
+      if (commandArgs.size() > 1) {
+        subcommand = SafeEncoder.encode(commandArgs.get(1).getRaw());
+      }
+
+      // Try lookup with command + subcommand first (e.g., "CLIENT SETNAME")
+      if (subcommand != null) {
+        CommandKey key = new CommandKey(cmdString, subcommand);
+        String response = BUILTIN_RESPONSES.get(key);
+        if (response != null) {
+          return response;
+        }
+      }
+
+      // Fall back to command only (e.g., "CLIENT")
+      CommandKey key = new CommandKey(cmdString, null);
+      return BUILTIN_RESPONSES.get(key);
     }
 
     /**
@@ -287,7 +451,11 @@ public class TcpMockServer {
     private void cleanup() {
       connected = false;
       connectedClients.remove(clientId);
-      outputStream = null;
+
+      // Synchronize to ensure no push message is being sent while we clean up
+      synchronized (outputLock) {
+        outputStream = null;
+      }
 
       try {
         if (clientSocket != null && !clientSocket.isClosed()) {
@@ -299,7 +467,9 @@ public class TcpMockServer {
     }
 
     /**
-     * Generic method to send a push message to this client.
+     * Generic method to send a push message to this client. According to RESP3 spec, push messages
+     * may precede or follow command replies, but must not interleave with them. We use
+     * synchronization to ensure this.
      * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
      * @param args optional arguments for the push message
      */
@@ -320,8 +490,8 @@ public class TcpMockServer {
           pushMessage.append("$").append(arg.length()).append("\r\n").append(arg).append("\r\n");
         }
 
-        outputStream.write(pushMessage.toString().getBytes());
-        outputStream.flush();
+        // Use synchronized writeResponse method to prevent interleaving
+        writeResponse(pushMessage.toString());
 
       } catch (IOException e) {
         logger.error("Error sending " + pushType + " push to " + clientId

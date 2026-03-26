@@ -1,6 +1,6 @@
 package redis.clients.jedis.util.server;
 
-import java.util.List;
+import redis.clients.jedis.CommandArguments;
 
 /**
  * Interface for handling custom Redis commands in TcpMockServer. This can be easily mocked with
@@ -10,11 +10,10 @@ public interface CommandHandler {
 
   /**
    * Handle a Redis command and return a response.
-   * @param command The Redis command (case-insensitive)
-   * @param args The command arguments (excluding the command name)
+   * @param commandArgs The command arguments (first element is the command, rest are arguments)
    * @param clientId The client identifier
    * @return A RESP response string, or null to use default handling
    */
-  String handleCommand(String command, List<String> args, String clientId);
+  String handleCommand(CommandArguments commandArgs, String clientId);
 
 }

@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.PushConsumerChain.PROPAGATE_ALL_HANDLER;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;

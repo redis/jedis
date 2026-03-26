@@ -5,13 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.util.ReflectionTestUtil;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
 import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
@@ -25,9 +28,9 @@ import java.util.concurrent.CountDownLatch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 
 /**
@@ -237,7 +240,10 @@ public class ConnectionAdaptiveTimeoutTest {
     doAnswer(invocation -> {
       blpopLatch.countDown();
       return RespResponse.arrayOfBulkStrings("popped-item");
-    }).when(mockHandler).handleCommand(eq("BLPOP"), anyList(), anyString());
+    }).when(mockHandler).handleCommand(argThat(args -> {
+      String cmd = SafeEncoder.encode(args.getCommand().getRaw());
+      return "BLPOP".equalsIgnoreCase(cmd);
+    }), anyString());
 
     // Send MIGRATING push notification which should trigger relaxTimeouts()
     mockServer.sendMigratingPushToAll();
@@ -284,12 +290,9 @@ public class ConnectionAdaptiveTimeoutTest {
         .socketTimeoutMillis(originalTimeoutMs).timeoutOptions(disabledTimeoutOptions)
         .protocol(RedisProtocol.RESP3).build();
 
-    // Create connection to the mock server
+    // Create connection to the mock server (connection is established in constructor)
     HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-    Connection disabledConnection = new Connection(hostAndPort, clientConfig);
-    disabledConnection.connect();
-
-    return disabledConnection;
+    return new Connection(hostAndPort, clientConfig);
   }
 
   /**
@@ -301,12 +304,9 @@ public class ConnectionAdaptiveTimeoutTest {
         // Note: not setting timeoutOptions, so it will be null
         .protocol(RedisProtocol.RESP3).build();
 
-    // Create connection to the mock server
+    // Create connection to the mock server (connection is established in constructor)
     HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-    Connection nullTimeoutConnection = new Connection(hostAndPort, clientConfig);
-    nullTimeoutConnection.connect();
-
-    return nullTimeoutConnection;
+    return new Connection(hostAndPort, clientConfig);
   }
 
 }

@@ -87,4 +87,9 @@ public class PooledConnectionProvider implements ConnectionProvider {
   public Map<?, Pool<Connection>> getConnectionMap() {
     return Collections.singletonMap(connectionMapKey, pool);
   }
+
+  @Override
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return Collections.singletonMap(connectionMapKey, pool);
+  }
 }

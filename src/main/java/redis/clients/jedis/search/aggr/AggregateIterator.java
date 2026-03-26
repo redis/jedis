@@ -101,7 +101,7 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
 
   @Override
   public boolean hasNext() {
-    return aggrCommandResult != null || cursorId > 0;
+    return aggrCommandResult != null || cursorId != null && cursorId > 0;
   }
 
   @Override
@@ -155,10 +155,8 @@ public class AggregateIterator implements Iterator<AggregationResult>, Closeable
     // Mark cursor as closed to prevent further operations
     cursorId = -1L;
 
-    Object entryValue = connectionEntry.getValue();
-    if (entryValue instanceof Connection) {
-      ((Connection) entryValue).close();
-    }
+    // NOTE(imalinovskyi): If we use single connection to execute commands, we're not
+    // responsible for closing it here.
   }
 
   /**

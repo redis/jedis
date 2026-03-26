@@ -11,7 +11,6 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -22,10 +21,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.util.Pool;
 
 /**
- * Unit tests for {@link PooledConnectionProvider}.
+ * Tests for {@link PooledConnectionProvider}.
  */
-@Tag("integration")
-public class PooledConnectionProviderTest {
+public class PooledConnectionProviderIT {
 
   private static EndpointConfig endpoint;
   private PooledConnectionProvider provider;

@@ -134,8 +134,9 @@ public final class Protocol {
       case PLUS_BYTE:
         return is.readLineBytes();
       case DOLLAR_BYTE:
-      case EQUAL_BYTE:
         return processBulkReply(is);
+      case EQUAL_BYTE:
+        return processVerbatimStringReply(is);
       case ASTERISK_BYTE:
         return processMultiBulkReply(is);
       case UNDERSCORE_BYTE:
@@ -164,15 +165,37 @@ public final class Protocol {
   }
 
   private static byte[] processBulkReply(final RedisInputStream is) {
+    return processBulkReply(is, 0);
+  }
+
+  /**
+   * Process a bulk reply, optionally skipping a prefix.
+   * @param is the input stream
+   * @param skipBytes number of bytes to skip at the beginning (used for verbatim strings)
+   * @return the bulk reply data (excluding skipped bytes), or null if length is -1
+   */
+  private static byte[] processBulkReply(final RedisInputStream is, final int skipBytes) {
     final int len = is.readIntCrLf();
     if (len == -1) {
       return null;
     }
 
-    final byte[] read = new byte[len];
+    if (len < skipBytes) {
+      throw new JedisConnectionException(
+          "Bulk reply length " + len + " is less than expected " + skipBytes);
+    }
+
+    // Skip the prefix bytes
+    for (int i = 0; i < skipBytes; i++) {
+      is.readByte();
+    }
+
+    // Read the remaining data
+    final int dataLen = len - skipBytes;
+    final byte[] read = new byte[dataLen];
     int offset = 0;
-    while (offset < len) {
-      final int size = is.read(read, offset, (len - offset));
+    while (offset < dataLen) {
+      final int size = is.read(read, offset, (dataLen - offset));
       if (size == -1) {
         throw new JedisConnectionException("It seems like server has closed the connection.");
       }
@@ -184,6 +207,18 @@ public final class Protocol {
     is.readByte();
 
     return read;
+  }
+
+  /**
+   * Process a RESP3 verbatim string reply.
+   * Verbatim strings have format: =&lt;length&gt;\r\n&lt;format&gt;:&lt;data&gt;\r\n
+   * where &lt;format&gt; is a 3-character encoding hint (e.g., "txt" or "mkd").
+   * This method strips the 4-byte prefix (&lt;format&gt;:) and returns only the actual data.
+   */
+  private static byte[] processVerbatimStringReply(final RedisInputStream is) {
+    // Verbatim strings have a 4-byte prefix: 3 chars for format + 1 char for ':'
+    // e.g., "txt:" or "mkd:"
+    return processBulkReply(is, 4);
   }
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {

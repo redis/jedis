@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.json.JsonBuilderFactory;
 
 /**
- * Unit tests for JsonBuilderFactory, specifically for the JSON_NUMBER_LIST builder
- * that preserves numeric types (Long for integers, Double for decimals).
+ * Unit tests for JsonBuilderFactory, specifically for the JSON_NUMBER_LIST builder that preserves
+ * numeric types (Long for integers, Double for decimals).
  */
 public class JsonBuilderFactoryTest {
 
@@ -144,4 +144,3 @@ public class JsonBuilderFactoryTest {
     assertTrue(numberList.get(2) instanceof Long, "Third element should be Long");
   }
 }
-

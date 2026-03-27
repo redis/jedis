@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.SafeEncoder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -56,5 +57,16 @@ public class JedisPubSubBaseTest  {
         thread.start();
 
         assertTrue(countDownLatch.await(30, TimeUnit.MILLISECONDS));
+    }
+
+
+    // Integration test against Mocked Redis server
+    // validating processing of pub/sub messages continues
+    // in case of non-pub/sub push messages like (maintenance events ) are received by the underlying {@link Connection}
+    // TODO
+    @Test
+    public void testProceedWithInterleavedPushMessages() throws InterruptedException {
+
+
     }
 }

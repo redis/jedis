@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
@@ -24,10 +25,19 @@ import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.aggr.*;
+import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.EnvCondition;
 
 @Tag("integration")
 @Tag("search")
 public abstract class AggregateIteratorCommandsTestBase {
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> endpoint);
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   protected static final String INDEX = "aggiteratorindex";
 

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
@@ -29,10 +30,19 @@ import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
+import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.EnvCondition;
 
 @Tag("integration")
 @Tag("search")
 public abstract class SearchDefaultDialectCommandsTestBase {
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> endpoint);
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   protected static final String INDEX = "dialect-INDEX";
 

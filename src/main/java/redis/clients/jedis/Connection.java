@@ -23,10 +23,7 @@ import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisValidationException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -596,7 +593,14 @@ public class Connection implements Closeable {
       }
     } else {
       authenticate(credentials);
-      helloResult = protocol == null ? null : hello(encode(protocol.version()));
+      if (protocol != null) {
+        try {
+          helloResult = hello(encode(protocol.version()));
+        } catch (JedisUnknownCommandException e) {
+          throw new JedisProtocolNotSupportedException("HELLO is not supported by the server. "
+              + "Please check the server version or disable protocol version specification with serverDefaultProtocol().");
+        }
+      }
     }
     if (helloResult != null) {
       server = (String) helloResult.get("server");

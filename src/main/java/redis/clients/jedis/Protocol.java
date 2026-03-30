@@ -63,6 +63,7 @@ public final class Protocol {
   private static final String NOAUTH_PREFIX = "NOAUTH";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
+  private static final String NOPROTO_PREFIX = "NOPROTO";
 
   private static final byte[] INVALIDATE_BYTES = SafeEncoder.encode("invalidate");
 
@@ -106,6 +107,10 @@ public final class Protocol {
         || message.startsWith(WRONGPASS_PREFIX)
         || message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
+    } else if (message.startsWith(NOPROTO_PREFIX)) {
+      throw new JedisProtocolNotSupportedException(message);
+    } else if (message.startsWith("ERR") && message.contains("unknown command")) {
+      throw new JedisUnknownCommandException(message);
     }
     throw new JedisDataException(message);
   }

@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.cluster.bloom;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -11,6 +12,7 @@ import redis.clients.jedis.commands.unified.bloom.TDigestCommandsTestBase;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@SinceRedisVersion(value = "8.0.0", message = "Cluster bloom tests require Redis 8.0 or higher")
 public class TDigestClusterCommandsIT extends TDigestCommandsTestBase {
 
   @BeforeAll

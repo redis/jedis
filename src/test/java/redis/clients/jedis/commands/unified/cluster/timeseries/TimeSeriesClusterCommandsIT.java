@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.cluster.timeseries;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -12,6 +13,7 @@ import redis.clients.jedis.commands.unified.timeseries.TimeSeriesCommandsTestBas
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@SinceRedisVersion(value = "8.0.0", message = "Cluster timeseries tests require Redis 8.0 or higher")
 public class TimeSeriesClusterCommandsIT extends TimeSeriesCommandsTestBase {
 
   @BeforeAll

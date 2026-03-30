@@ -41,7 +41,8 @@ public class AggregationClusterCommandsIT extends AggregationCommandsTestBase {
 
   @Override
   public void cursor() {
-    // skip the test because ftAggregateIterator should be used instead of raw ftCursor in cluster env
+    // skip the test because ftAggregateIterator should be used instead of raw ftCursor in cluster
+    // env
   }
 
 }

@@ -82,8 +82,8 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     this.closeable = this.provider;
   }
 
-  public ClusterPipeline(ClusterConnectionProvider provider) {
-    this(provider, new ClusterCommandObjects());
+  public ClusterPipeline(ClusterConnectionProvider provider, RedisProtocol protocol) {
+    this(provider, createClusterCommandObjects(protocol));
   }
 
   public ClusterPipeline(ClusterConnectionProvider provider, ClusterCommandObjects commandObjects) {

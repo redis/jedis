@@ -588,6 +588,9 @@ public class Connection implements Closeable {
       try {
         helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(),
           encode(credentials.getUser()), rawPass);
+
+        // NOTE(imalinovskyi): We assume that when username is provided, client is connecting Redis 6.0+,
+        // so we don't need to catch JedisUnknownCommandException here.
       } finally {
         Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }
@@ -598,7 +601,7 @@ public class Connection implements Closeable {
           helloResult = hello(encode(protocol.version()));
         } catch (JedisUnknownCommandException e) {
           throw new JedisProtocolNotSupportedException("HELLO is not supported by the server. "
-              + "Please check the server version or disable protocol version specification with serverDefaultProtocol().");
+              + "Please check the server version or disable protocol version specification with serverDefaultProtocol().", e);
         }
       }
     }

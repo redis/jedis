@@ -26,7 +26,7 @@ public class JedisIT extends JedisTlsTestBase {
   @Test
   public void connectWithConfig() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder().ssl(true).build())) {
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().ssl(true).build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }

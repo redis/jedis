@@ -14,7 +14,6 @@ import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-@SinceRedisVersion(value = "8.0.0", message = "Cluster search tests require Redis 8.0 or higher")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
 public class FTHybridCommandsClusterIT extends FTHybridCommandsTestBase {
 

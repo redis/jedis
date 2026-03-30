@@ -266,7 +266,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
      * {@code null} (server default).
      * @return this
      */
-    public Builder serverDefaultProtocolVersion() {
+    public Builder serverDefaultProtocol() {
       return protocol(null);
     }
 

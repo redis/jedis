@@ -34,7 +34,7 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
     if (hostPort == null && endpointSupplier != null) {
       EndpointConfig endpoint = endpointSupplier.get();
       this.hostPort = endpoint.getHostAndPort();
-      this.config = endpoint.getClientConfigBuilder().serverDefaultProtocolVersion().build();
+      this.config = endpoint.getClientConfigBuilder().serverDefaultProtocol().build();
     }
   }
 

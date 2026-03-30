@@ -59,7 +59,7 @@ public abstract class SearchDefaultDialectCommandsTestBase {
   protected abstract UnifiedJedis createTestClient();
 
   public static void prepareEndpoint() {
-    endpoint = Endpoints.getRedisEndpoint("standalone0");
+    endpoint = Endpoints.getRedisEndpoint("modules-docker");
   }
 
   @BeforeEach

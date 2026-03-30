@@ -283,8 +283,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .ssl(JedisURIHelper.isRedisSSLScheme(uri))
             .sslSocketFactory(config.getSslSocketFactory()).sslParameters(config.getSslParameters())
             .hostnameVerifier(config.getHostnameVerifier()).build());
-    RedisProtocol proto = config.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+
+    // NOTE(imalinovskyi): JedisClientConfig uses RESP3 by default, but Jedis uses RESP2.
+    // So we use the value from URI to avoid a mismatch.
+    commandObjects.setProtocol(JedisURIHelper.getRedisProtocol(uri));
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {

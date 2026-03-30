@@ -250,6 +250,26 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return protocol(RedisProtocol.RESP3);
     }
 
+    /**
+     * Shortcut to
+     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * {@link RedisProtocol#RESP2}.
+     * @return this
+     */
+    public Builder resp2() {
+      return protocol(RedisProtocol.RESP2);
+    }
+
+    /**
+     * Shortcut to
+     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * {@code null} (server default).
+     * @return this
+     */
+    public Builder serverDefaultProtocolVersion() {
+      return protocol(null);
+    }
+
     public Builder protocol(RedisProtocol protocol) {
       this.redisProtocol = protocol;
       return this;

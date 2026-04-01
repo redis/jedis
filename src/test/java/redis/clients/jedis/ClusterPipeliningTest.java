@@ -1262,7 +1262,7 @@ public class ClusterPipeliningTest {
 
 
   @Test
-  public void pipelineDoesNotShutdownSharedExecutor() {
+  public void sharedExecutorPipelineDoesNotShutdownSharedExecutor() {
     ExecutorService executorService = Executors.newFixedThreadPool(3);
     try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()){
       try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
@@ -1272,6 +1272,44 @@ public class ClusterPipeliningTest {
     } finally {
       assertFalse(executorService.isShutdown());
       executorService.shutdown();
+    }
+  }
+  @Test
+  public void sharedExecutorPipelineKeysAtSameNode() {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+      ExecutorService executorService = Executors.newFixedThreadPool(3);
+      // test simple key
+      cluster.set("foo", "bar");
+
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        Response<String> foo = pipeline.get("foo");
+        pipeline.sync();
+
+        assertEquals("bar", foo.get());
+      }
+
+      // test multi key but at same node
+      int cnt = 3;
+      String prefix = "{foo}:";
+      for (int i = 0; i < cnt; i++) {
+        String key = prefix + i;
+        cluster.set(key, String.valueOf(i));
+      }
+
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        List<Response<String>> results = new ArrayList<>();
+        for (int i = 0; i < cnt; i++) {
+          String key = prefix + i;
+          results.add(pipeline.get(key));
+        }
+
+        pipeline.sync();
+        int idx = 0;
+        for (Response<String> res : results) {
+          assertEquals(String.valueOf(idx), res.get());
+          idx++;
+        }
+      }
     }
   }
 

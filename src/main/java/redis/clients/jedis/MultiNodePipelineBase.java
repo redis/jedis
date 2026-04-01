@@ -11,6 +11,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +40,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
    * External executor service to use for {@code sync()}. If not set, a new executor service will be
    * created for each {@code sync()} call.
    */
-  private final ExecutorService executorService;
-  private final boolean sharedExecutor;
+  private final ExecutorService sharedExecutorService;
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     this(commandObjects, StaticCommandFlagsRegistry.registry());
@@ -54,14 +55,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     this.commandFlagsRegistry = commandFlagsRegistry;
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
-
-    if (executorService != null) {
-      this.executorService = executorService;
-      sharedExecutor = true;
-    } else {
-      this.executorService = null;
-      sharedExecutor = false;
-    }
+    this.sharedExecutorService = executorService;
   }
 
 
@@ -118,8 +112,10 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
     boolean multiNode = pipelinedResponses.size() > 1;
     Executor executor;
+    ExecutorService executorService = null;
     if (multiNode) {
-      executor = acquireExecutorService();
+      executorService = getPipelineExecutor();
+      executor = executorService;
     } else {
       executor = Runnable::run;
     }
@@ -162,24 +158,51 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         log.error("Thread is interrupted during sync.", e);
       }
 
-      releaseExecutorService(executorService);
+      releasePipelineExecutor(executorService);
     }
 
     syncing = false;
   }
 
-  private ExecutorService acquireExecutorService() {
-    if (sharedExecutor) {
-      return this.executorService;
-    } else {
-      return Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
+  /**
+   * Acquires the executor service to run multi-node pipeline commands.
+   * <p>
+   * If a shared executor is provided by the user, it is returned.
+   * Otherwise, a new dedicated executor is created for this pipeline.
+   * </p>
+   */
+  private ExecutorService getPipelineExecutor() {
+    return isUsingSharedExecutor()
+            ? this.sharedExecutorService
+            : createDedicatedPipelineExecutor();
+  }
+
+  /**
+   * Releases the executor service used by the pipeline.
+   * <p>
+   * Dedicated executors are shut down after use.
+   * Shared executors are managed externally and not shut down.
+   * </p>
+   */
+  private void releasePipelineExecutor(ExecutorService executorService) {
+    if (!isUsingSharedExecutor()) {
+      executorService.shutdownNow();
     }
   }
 
-  private void releaseExecutorService(ExecutorService executorService) {
-    if (!sharedExecutor) {
-      executorService.shutdownNow();
-    }
+  /**
+   * Returns true if this pipeline is using a shared executor service
+   * provided externally.
+   */
+  private boolean isUsingSharedExecutor() {
+    return this.sharedExecutorService != null;
+  }
+
+  /**
+   * Creates a new dedicated executor for multi-node pipeline execution.
+   */
+  private ExecutorService createDedicatedPipelineExecutor() {
+    return Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
   }
 
   /**

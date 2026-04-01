@@ -1266,7 +1266,10 @@ public class ClusterPipeliningTest {
     ExecutorService executorService = Executors.newFixedThreadPool(3);
     try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()){
       try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
-        pipeline.set("key", "value");
+        // multiple keys at different slots, to ensure multi-node pipeline
+        pipeline.set("key1", "value1");
+        pipeline.set("key2", "value2");
+        pipeline.set("key3", "value3");
         pipeline.sync();
       }
     } finally {

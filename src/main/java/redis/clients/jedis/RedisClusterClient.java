@@ -200,7 +200,7 @@ public class RedisClusterClient extends UnifiedJedis {
    *
    * <p>If the pipeline spans multiple nodes, a dedicated {@link ExecutorService} is
    * created internally to execute requests in parallel and shutdown when the pipeline
-   * is closed.</p>
+   * is synced.</p>
    *
    * @return a new {@link ClusterPipeline} instance
    * @see #pipelined(ExecutorService)

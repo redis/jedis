@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -13,6 +14,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -1254,4 +1259,103 @@ public class ClusterPipeliningTest {
           "Error message should mention MULTI_SHARD policy or multiple slots");
     }
   }
+
+
+  @Test
+  public void pipelineDoesNotShutdownSharedExecutor() {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()){
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        pipeline.set("key", "value");
+        pipeline.sync();
+      }
+    } finally {
+      assertFalse(executorService.isShutdown());
+      executorService.shutdown();
+    }
+  }
+
+  @Test
+  @Timeout(10)
+  public void sharedExecutorConcurrentPipelinesNoDeadlock() throws Exception {
+    // This test verifies that multiple pipelines using the same shared executor
+    // concurrently do not deadlock, even when the executor has fewer threads
+    // than concurrent pipelines
+    final int EXECUTOR_THREADS = 3;
+    final int CONCURRENT_PIPELINES = 10; // More pipelines than executor threads
+    final int OPERATIONS_PER_PIPELINE = 20;
+
+    ExecutorService sharedExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
+    ExecutorService testExecutor = Executors.newFixedThreadPool(CONCURRENT_PIPELINES);
+
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+
+      CountDownLatch startLatch = new CountDownLatch(1);
+      CountDownLatch completionLatch = new CountDownLatch(CONCURRENT_PIPELINES);
+      List<Future<Integer>> futures = new ArrayList<>();
+
+      // Launch multiple pipelines concurrently
+      for (int pipelineId = 0; pipelineId < CONCURRENT_PIPELINES; pipelineId++) {
+        final int id = pipelineId;
+        Future<Integer> future = testExecutor.submit(() -> {
+          try {
+            // Wait for all threads to be ready before starting
+            startLatch.await();
+
+            int successCount = 0;
+            try (ClusterPipeline pipeline = cluster.pipelined(sharedExecutor)) {
+              List<Response<String>> responses = new ArrayList<>();
+
+              // Perform operations on different keys to ensure multi-node pipeline
+              for (int i = 0; i < OPERATIONS_PER_PIPELINE; i++) {
+                String key = "pipeline" + id + "_key" + i;
+                String value = "value" + i;
+                pipeline.set(key, value);
+                responses.add(pipeline.get(key));
+              }
+
+              // This sync() will use the shared executor
+              pipeline.sync();
+
+              // Verify all responses
+              for (int i = 0; i < OPERATIONS_PER_PIPELINE; i++) {
+                String expected = "value" + i;
+                String actual = responses.get(i).get();
+                if (expected.equals(actual)) {
+                  successCount++;
+                }
+              }
+            }
+            return successCount;
+          } finally {
+            completionLatch.countDown();
+          }
+        });
+        futures.add(future);
+      }
+
+      // Release all threads to start concurrently
+      startLatch.countDown();
+
+      boolean completed = completionLatch.await(5, SECONDS);
+      assertTrue(completed, "All concurrent pipelines should complete without deadlock");
+
+      // Verify all operations succeeded
+      for (int i = 0; i < CONCURRENT_PIPELINES; i++) {
+        Integer successCount = futures.get(i).get();
+        assertEquals(OPERATIONS_PER_PIPELINE, successCount.intValue(),
+            "Pipeline " + i + " should have all operations succeed");
+      }
+
+      // Verify shared executor is still active
+      assertFalse(sharedExecutor.isShutdown(), "Shared executor should not be shut down");
+
+    } finally {
+      testExecutor.shutdown();
+      testExecutor.awaitTermination(5, SECONDS);
+      sharedExecutor.shutdown();
+      sharedExecutor.awaitTermination(5, SECONDS);
+    }
+  }
+
 }

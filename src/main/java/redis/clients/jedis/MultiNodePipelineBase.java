@@ -34,16 +34,36 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
   private volatile boolean syncing = false;
   protected final CommandFlagsRegistry commandFlagsRegistry;
 
+  /**
+   * External executor service to use for {@code sync()}. If not set, a new executor service will be
+   * created for each {@code sync()} call.
+   */
+  private final ExecutorService executorService;
+  private final boolean sharedExecutor;
+
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     this(commandObjects, StaticCommandFlagsRegistry.registry());
   }
 
   protected MultiNodePipelineBase(CommandObjects commandObjects, CommandFlagsRegistry commandFlagsRegistry) {
+    this(commandObjects, commandFlagsRegistry, null);
+  }
+
+  MultiNodePipelineBase(CommandObjects commandObjects, CommandFlagsRegistry commandFlagsRegistry, ExecutorService executorService) {
     super(commandObjects);
     this.commandFlagsRegistry = commandFlagsRegistry;
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
+
+    if (executorService != null) {
+      this.executorService = executorService;
+      sharedExecutor = true;
+    } else {
+      this.executorService = null;
+      sharedExecutor = false;
+    }
   }
+
 
   protected abstract HostAndPort getNodeKey(CommandArguments args);
 
@@ -98,10 +118,8 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
     boolean multiNode = pipelinedResponses.size() > 1;
     Executor executor;
-    ExecutorService executorService = null;
     if (multiNode) {
-      executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
-      executor = executorService;
+      executor = acquireExecutorService();
     } else {
       executor = Runnable::run;
     }
@@ -144,10 +162,24 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         log.error("Thread is interrupted during sync.", e);
       }
 
-      executorService.shutdownNow();
+      releaseExecutorService(executorService);
     }
 
     syncing = false;
+  }
+
+  private ExecutorService acquireExecutorService() {
+    if (this.executorService != null) {
+      return this.executorService;
+    } else {
+      return Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
+    }
+  }
+
+  private void releaseExecutorService(ExecutorService executorService) {
+    if (!sharedExecutor) {
+      executorService.shutdownNow();
+    }
   }
 
   /**

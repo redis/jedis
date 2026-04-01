@@ -85,9 +85,10 @@ abstract class TcpMockServer {
    * Process a command and return the RESP-formatted response.
    * @param args command arguments
    * @param clientState client state
+   * @param clientHandler client handler (for pub/sub push messages)
    * @return RESP-formatted response
    */
-  abstract String processCommand(CommandArguments args, ClientState clientState);
+  abstract String processCommand(CommandArguments args, ClientState clientState, ClientHandler clientHandler);
 
   /**
    * Get the port the server is running on

@@ -24,4 +24,12 @@ public interface CommandContext {
    */
   RedisServerStub getServer();
 
+  /**
+   * Get the subscriber for the current connection.
+   * Used by pub/sub commands to send push messages.
+   *
+   * @return subscriber interface
+   */
+  Subscriber getSubscriber();
+
 }

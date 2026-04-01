@@ -8,10 +8,14 @@ class CommandContextImpl implements CommandContext {
 
   private final RedisServerStub server;
 
-  CommandContextImpl(ClientState client, RedisDataStore dataStore, RedisServerStub server) {
+  private final Subscriber subscriber;
+
+  CommandContextImpl(ClientState client, RedisDataStore dataStore, RedisServerStub server,
+      Subscriber subscriber) {
     this.client = client;
     this.dataStore = dataStore;
     this.server = server;
+    this.subscriber = subscriber;
   }
 
   @Override
@@ -27,6 +31,11 @@ class CommandContextImpl implements CommandContext {
   @Override
   public RedisServerStub getServer() {
     return server;
+  }
+
+  @Override
+  public Subscriber getSubscriber() {
+    return subscriber;
   }
 
 }

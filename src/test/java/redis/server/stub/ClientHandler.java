@@ -16,8 +16,11 @@ import java.util.List;
 /**
  * Handles a single client connection to TcpMockServer. Responsible for reading commands from the
  * client socket, processing them via the CommandProcessor, and writing responses back.
+ * <p>
+ * Implements {@link Subscriber} to enable pub/sub message delivery. This decouples the pub/sub
+ * logic from client connection handling.
  */
-class ClientHandler implements Runnable {
+public class ClientHandler implements Runnable, Subscriber {
   private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
   private final Socket clientSocket;
@@ -144,7 +147,7 @@ class ClientHandler implements Runnable {
    */
   private void processCommand(CommandArguments commandArgs) throws IOException {
     // Use the command processor (customizable by subclasses)
-    String response = server.processCommand(commandArgs, clientState);
+    String response = server.processCommand(commandArgs, clientState, this);
 
     if (response != null) {
       writeResponse(response);
@@ -170,11 +173,12 @@ class ClientHandler implements Runnable {
   private void cleanup() {
     connected = false;
 
-    // Synchronize to ensure no push message is being sent while we clean up
-    synchronized (outputLock) {
-      outputStream = null;
+    // Unsubscribe from all pub/sub subscriptions (if server is RedisServerStub)
+    if (server instanceof RedisServerStub) {
+      ((RedisServerStub) server).getPubSubManager().unsubscribeAll(this);
     }
 
+    // Close socket first
     try {
       if (clientSocket != null && !clientSocket.isClosed()) {
         clientSocket.close();
@@ -182,13 +186,23 @@ class ClientHandler implements Runnable {
     } catch (IOException e) {
       logger.error("Error closing client socket during cleanup: " + e.getMessage());
     }
+
+    // Then null outputStream
+    synchronized (outputLock) {
+      outputStream = null;
+    }
   }
 
+  // ===== Subscriber Interface Implementation =====
+
   /**
-   * Generic method to send a push message to this client. According to RESP3 spec, push messages
-   * may precede or follow command replies, but must not interleave with them.
+   * Send a push message to this client. According to RESP3 spec, push messages may precede or
+   * follow command replies, but must not interleave with them.
+   * <p>
+   * Implementation of {@link Subscriber#sendPushMessage(String...)}.
    * @param args push message elements (first is message type)
    */
+  @Override
   public void sendPushMessage(String... args) {
     try {
       // Use RespResponse.push() to build proper RESP3 push message

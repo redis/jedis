@@ -2,6 +2,11 @@ package redis.server.stub;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.server.stub.command.pubsub.PsubscribeCommand;
+import redis.server.stub.command.pubsub.PublishCommand;
+import redis.server.stub.command.pubsub.PunsubscribeCommand;
+import redis.server.stub.command.pubsub.SubscribeCommand;
+import redis.server.stub.command.pubsub.UnsubscribeCommand;
 import redis.server.stub.command.server.AuthCommand;
 import redis.server.stub.command.server.ClientCommand;
 import redis.server.stub.command.server.HelloCommand;
@@ -40,6 +45,9 @@ public class RedisServerStub extends TcpMockServer {
   // Data store (accessed only from commandExecutor thread)
   private final RedisDataStore dataStore = new RedisDataStore();
 
+  // Pub/sub manager (accessed only from commandExecutor thread)
+  private final PubSubManager pubSubManager = new PubSubManager();
+
   // Command registry
   private final CommandRegistry commandRegistry;
 
@@ -69,16 +77,23 @@ public class RedisServerStub extends TcpMockServer {
     commandRegistry.register(new HelloCommand());
     commandRegistry.register(new AuthCommand());
     commandRegistry.register(new ClientCommand());
+
+    // Pub/Sub commands
+    commandRegistry.register(new SubscribeCommand());
+    commandRegistry.register(new UnsubscribeCommand());
+    commandRegistry.register(new PsubscribeCommand());
+    commandRegistry.register(new PunsubscribeCommand());
+    commandRegistry.register(new PublishCommand());
   }
 
   @Override
-  protected String processCommand(CommandArguments args, ClientState clientState) {
+  protected String processCommand(CommandArguments args, ClientState clientState, ClientHandler clientHandler) {
 
     try {
       return commandExecutor.submit(() -> {
-        executeInterceptors(args, clientState);
+        executeInterceptors(args, clientState, clientHandler);
 
-        return commandRegistry.execute(args, clientState);
+        return commandRegistry.execute(args, clientState, clientHandler);
       }).get();
     } catch (Exception e) {
       return "-ERR " + e.getMessage() + "\r\n";
@@ -90,6 +105,13 @@ public class RedisServerStub extends TcpMockServer {
    */
   public RedisDataStore getDataStore() {
     return dataStore;
+  }
+
+  /**
+   * Get the pub/sub manager (used by pub/sub commands).
+   */
+  public PubSubManager getPubSubManager() {
+    return pubSubManager;
   }
 
   @Override
@@ -142,14 +164,15 @@ public class RedisServerStub extends TcpMockServer {
    * (single-threaded, thread-safe).
    * @param args command arguments
    * @param clientState client executing the command
+   * @param clientHandler client handler for this connection
    * @throws Exception any exception from interceptor propagates (fails test)
    */
-  private void executeInterceptors(CommandArguments args, ClientState clientState)
+  private void executeInterceptors(CommandArguments args, ClientState clientState, ClientHandler clientHandler)
       throws Exception {
     String commandName = SafeEncoder.encode(args.getCommand().getRaw()).toUpperCase();
 
     // Create context for interceptors
-    CommandContext ctx = new CommandContextImpl(clientState, dataStore, this);
+    CommandContext ctx = new CommandContextImpl(clientState, dataStore, this, clientHandler);
 
     // Execute command-specific interceptors
     List<CommandInterceptor> commandInterceptors = interceptors.get(commandName);

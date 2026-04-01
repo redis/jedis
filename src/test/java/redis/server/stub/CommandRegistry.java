@@ -51,9 +51,10 @@ public class CommandRegistry {
    * subcommands, resolve subcommand (like C# cmd.Resolve) 3. Delegate to command.execute()
    * @param args command arguments
    * @param client client state
+   * @param clientHandler client handler for this connection
    * @return RESP-formatted response
    */
-  public String execute(CommandArguments args, ClientState client) {
+  public String execute(CommandArguments args, ClientState client, ClientHandler clientHandler) {
     // Step 1: Resolve top-level command
     // Command is at index 0, getRaw() returns the command name bytes
     String commandName = new String(args.getCommand().getRaw(), StandardCharsets.UTF_8);
@@ -72,7 +73,7 @@ public class CommandRegistry {
     }
 
     // Step 3: Create context and delegate to command
-    CommandContext ctx = new CommandContextImpl(client, dataStore, server);
+    CommandContext ctx = new CommandContextImpl(client, dataStore, server, clientHandler);
 
     try {
       return command.execute(args, ctx);

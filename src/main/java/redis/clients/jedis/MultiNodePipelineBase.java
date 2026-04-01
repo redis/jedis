@@ -169,7 +169,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
   }
 
   private ExecutorService acquireExecutorService() {
-    if (this.executorService != null) {
+    if (sharedExecutor) {
       return this.executorService;
     } else {
       return Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);

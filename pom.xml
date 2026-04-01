@@ -570,6 +570,7 @@
 						<include>**/*TestUtil.java</include>
 						<include>**/executors/aggregators/*.java</include>
 						<include>**/*MapMatcher.java</include>
+						<include>**/JsonSetParamsTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

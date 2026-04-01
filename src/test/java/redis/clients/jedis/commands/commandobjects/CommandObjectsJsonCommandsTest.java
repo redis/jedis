@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -16,19 +15,32 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import io.redis.test.annotations.SinceRedisVersion;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.json.JsonSetParams;
+import redis.clients.jedis.json.JsonSetParams.FphaType;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.util.RedisVersionCondition;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=json">JSON</a> commands.
  */
 public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBase {
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(
+      () -> endpoint);
 
   public CommandObjectsJsonCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -176,6 +188,100 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     Map<String, Object> readResultMap = (Map<String, Object>) getRoot;
     assertThat(readResultMap, hasEntry("username", "johndoe"));
     assertThat(readResultMap, hasEntry("accountType", "premium"));
+  }
+
+  /**
+   * Provides test parameters for all combinations of NX/XX and fpha types.
+   * Format: testName, existenceKeyword (null, NX, or XX), fphaType (FP16, BF16, FP32, FP64)
+   */
+  private static Stream<Arguments> fphaParamsCombinations() {
+    return Stream.of(
+        // No existence param, all fpha types
+        Arguments.of("FP16", null, FphaType.FP16),
+        Arguments.of("BF16", null, FphaType.BF16),
+        Arguments.of("FP32", null, FphaType.FP32),
+        Arguments.of("FP64", null, FphaType.FP64),
+
+        // NX with all fpha types
+        Arguments.of("NX+FP16", Keyword.NX, FphaType.FP16),
+        Arguments.of("NX+BF16", Keyword.NX, FphaType.BF16),
+        Arguments.of("NX+FP32", Keyword.NX, FphaType.FP32),
+        Arguments.of("NX+FP64", Keyword.NX, FphaType.FP64),
+
+        // XX with all fpha types
+        Arguments.of("XX+FP16", Keyword.XX, FphaType.FP16),
+        Arguments.of("XX+BF16", Keyword.XX, FphaType.BF16),
+        Arguments.of("XX+FP32", Keyword.XX, FphaType.FP32),
+        Arguments.of("XX+FP64", Keyword.XX, FphaType.FP64)
+    );
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("fphaParamsCombinations")
+  @SinceRedisVersion(value = "8.8.0", message = "FPHA parameter for JSON.SET is only supported in Redis 8.8 or later")
+  public void testJsonSetWithFphaParams(String testName, Keyword existenceKeyword, FphaType fphaType) {
+    String key = "jsonKey:" + testName;
+
+    // Simple array data
+    JSONArray data = new JSONArray().put(1).put(2).put(3);
+
+    // Build params using switch statements
+    JsonSetParams params = new JsonSetParams();
+
+    if (existenceKeyword != null) {
+      switch (existenceKeyword) {
+        case NX:
+          params.nx();
+          break;
+        case XX:
+          params.xx();
+          break;
+        default:
+          throw new IllegalArgumentException("Unexpected existence keyword: " + existenceKeyword);
+      }
+    }
+
+    switch (fphaType) {
+      case FP16:
+        params.fp16();
+        break;
+      case BF16:
+        params.bf16();
+        break;
+      case FP32:
+        params.fp32();
+        break;
+      case FP64:
+        params.fp64();
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected fpha type: " + fphaType);
+    }
+
+    // For XX tests, pre-populate the key
+    if (Keyword.XX.equals(existenceKeyword)) {
+      exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, new JSONArray().put(0)));
+    }
+
+    // Execute SET
+    String setResult = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data, params));
+    assertThat(setResult, equalTo("OK"));
+
+    // Verify retrieved data
+    Object getResult = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+    JSONArray expected = new JSONArray().put(data);
+    assertThat(getResult, jsonEquals(expected));
+
+    // If NX was used, verify it prevents overwrites
+    if (Keyword.NX.equals(existenceKeyword)) {
+      JSONArray newData = new JSONArray().put(9).put(9).put(9);
+      String setAgain = exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, newData, params));
+      assertThat(setAgain, nullValue());
+
+      // Original data should still be there
+      Object getAgain = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+      assertThat(getAgain, jsonEquals(expected));
+    }
   }
 
   @Test

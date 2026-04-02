@@ -123,13 +123,11 @@ public class Connection implements Closeable {
     this.socketFactory = socketFactory;
     this.clientConfig = clientConfig;
     initializeFromClientConfig(clientConfig);
-    initPushConsumers(clientConfig);
   }
 
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
-    initPushConsumers(clientConfig);
   }
 
   protected void initPushConsumers(JedisClientConfig config) {
@@ -139,7 +137,7 @@ public class Connection implements Closeable {
        * Pub/sub messages are propagated to the client.
        */
       this.pushConsumer = PushConsumerChain.of(
-              PushConsumerChain.PUBSUB_ONLY_HANDLER
+              PushConsumerChain.PUBSUB_ONLY_CONSUMER
       );
 
       if (config != null) {
@@ -564,6 +562,8 @@ public class Connection implements Closeable {
       this.relaxedTimeoutEnabled =  TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ||
               TimeoutOptions.isRelaxedTimeoutEnabled(relaxedBlockingTimeout);
 
+      initPushConsumers(clientConfig);
+
       connect();
 
       protocol = config.getRedisProtocol();
@@ -722,7 +722,6 @@ public class Connection implements Closeable {
     return authXManager;
   }
 
-  @Experimental
   @VisibleForTesting
   PushConsumerChain getPushConsumer() {
     return this.pushConsumer;
@@ -794,7 +793,7 @@ public class Connection implements Closeable {
    * Notifies the owning {@link ConnectionPool} via {@code memberOf} for pool-level concerns.
    * </p>
    */
-  private class MaintenanceEventConsumer implements PushConsumer {
+  class MaintenanceEventConsumer implements PushConsumer {
     private final boolean proactiveRebindEnabled;
 
     public MaintenanceEventConsumer(boolean proactiveRebindEnabled) {

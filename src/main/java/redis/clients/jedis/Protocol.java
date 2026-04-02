@@ -19,7 +19,7 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
-import static redis.clients.jedis.PushConsumerChain.PROPAGATE_ALL_HANDLER;
+import static redis.clients.jedis.PushConsumerChain.PROPAGATE_ALL_CONSUMER;
 
 public final class Protocol {
 
@@ -222,7 +222,7 @@ public final class Protocol {
 
   public static Object read(final RedisInputStream is) {
     // for backward compatibility propagate all push events to application
-    return read(is, PROPAGATE_ALL_HANDLER);
+    return read(is, PROPAGATE_ALL_CONSUMER);
   }
 
   @Experimental

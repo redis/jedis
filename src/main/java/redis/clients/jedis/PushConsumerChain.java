@@ -4,14 +4,15 @@ import redis.clients.jedis.annots.Internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * A chain of PushHandlers that processes events in order.
+ * A chain of PushConsumers that processes events in order.
  * <p>
- * Uses a context object for tracking the processed state.
+ * Uses a {@link PushConsumerContext} object for tracking the processed state.
  * </p>
  */
 @Internal
@@ -19,7 +20,7 @@ public final class PushConsumerChain implements PushConsumer {
   /**
    * PushConsumer that marks all push events to be propagated to the caller.
    */
-  public static final PushConsumer PROPAGATE_ALL_HANDLER = (context) -> {
+  public static final PushConsumer PROPAGATE_ALL_CONSUMER = (context) -> {
     // mark as not-processed, always propagate
     context.setReturnToCaller(true);
   };
@@ -29,7 +30,7 @@ public final class PushConsumerChain implements PushConsumer {
    * Marks non-pub/sub events as returnToCaller=false, preventing their propagation.
    * </p>
    */
-  public static final PushConsumer PUBSUB_ONLY_HANDLER = new PushConsumer() {
+  public static final PushConsumer PUBSUB_ONLY_CONSUMER = new PushConsumer() {
     final Set<String> pubSubCommands = new HashSet<>();
 
     {
@@ -56,64 +57,77 @@ public final class PushConsumerChain implements PushConsumer {
   private final List<PushConsumer> consumers;
 
   /**
-   * Create a new empty handler chain.
+   * Create a new empty consumer chain.
    */
   public PushConsumerChain() {
     this.consumers = new ArrayList<>();
   }
 
   /**
-   * Create a chain with the specified handlers.
-   * @param consumers The handlers to add to the chain
+   * Create a chain with the specified consumers.
+   * @param consumers The consumers to add to the chain
    */
   public PushConsumerChain(PushConsumer... consumers) {
     this.consumers = new ArrayList<>(Arrays.asList(consumers));
   }
 
   /**
-   * Create a chain with the specified handlers.
-   * @param handlers The handlers to add to the chain
-   * @return A new handler chain with the specified handlers
+   * Create a chain with the specified consumers.
+   * @param consumers The consumers to add to the chain
+   * @return A new consumer chain with the specified consumers
    */
-  public static PushConsumerChain of(PushConsumer... handlers) {
-    return new PushConsumerChain(handlers);
+  public static PushConsumerChain of(PushConsumer... consumers) {
+    return new PushConsumerChain(consumers);
   }
 
   /**
-   * Add a handler to the end of the chain.
-   * @param handler The handler to add
+   * Add a consumer to the end of the chain.
+   * @param consumer The consumer to add
    * @return this chain for method chaining
    */
-  public PushConsumerChain add(PushConsumer handler) {
-    if (handler != null) {
-      consumers.add(handler);
+  public PushConsumerChain add(PushConsumer consumer) {
+    if (consumer != null) {
+      consumers.add(consumer);
     }
     return this;
   }
 
   /**
-   * Get the number of handlers in the chain.
-   * @return The number of handlers
+   * Get the number of consumers in the chain.
+   * @return The number of consumers
    */
   public int size() {
     return consumers.size();
   }
 
   /**
-   * Clear all handlers from the chain.
+   * Clear all consumers from the chain.
    */
   public void clear() {
     consumers.clear();
   }
 
+  /**
+   * Return an unmodifiable list of consumers in the chain.
+   *
+   * @return
+   */
+  public List<PushConsumer> getConsumers() {
+    return Collections.unmodifiableList(consumers);
+  }
+
+  /**
+   * Process a push message by passing it to all consumers in the chain.
+   * @param context The context of the push message
+   */
   @Override
   public void accept(PushConsumerContext context) {
     if (consumers.isEmpty()) {
       return;
     }
 
-    for (PushConsumer handler : consumers) {
-      handler.accept(context);
+    for (PushConsumer consumer : consumers) {
+      consumer.accept(context);
     }
   }
 

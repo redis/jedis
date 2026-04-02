@@ -8,9 +8,9 @@ import redis.clients.jedis.annots.Internal;
  * Used by {@link PushConsumer} to inspect and control message processing.
  * <p>
  * The {@link PushConsumerContext} object is created for each push message and passed to all
- * registered {@link PushConsumer} handlers. Handlers can inspect the message and decide whether to
- * let push message be returned to the client or process it themselves and prevent it from being
- * returned to the client.
+ * registered {@link PushConsumer}. Consumers can inspect the message and decide whether to let push
+ * message be returned to the caller as result or process it themselves and prevent it from being
+ * returned.
  * </p>
  */
 @Internal
@@ -40,7 +40,7 @@ public class PushConsumerContext {
   }
 
   /**
-   * Set whether the message should be returned to the caller. By default, if no handler sets this
+   * Set whether the message should be returned to the caller. By default, if no consumer sets this
    * flag, the message will not be returned to the caller and will be silently consumed.
    * @param returnToCaller
    */

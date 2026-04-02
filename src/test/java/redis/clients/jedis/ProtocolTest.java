@@ -142,7 +142,7 @@ public class ProtocolTest {
   }
 
   @Test
-  public void readPushEventsAreNotPropagatedAsReadOutputIfProcessed() {
+  public void readPushConsumer_PushNotPropagated() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
     PushConsumer handler = pushContext -> {
@@ -175,7 +175,7 @@ public class ProtocolTest {
   }
 
   @Test
-  public void readMultiplePushEventsAreNotPropagatedAsReadOutputIfProcessed() {
+  public void readPushConsumer_MultiplePushEventsAreNotPropagated() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
     PushConsumer handler = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setReturnToCaller(false); };
@@ -218,7 +218,7 @@ public class ProtocolTest {
   }
 
   @Test
-  public void readPushEventsArePropagateAsReadOutputIfNotProcessed() {
+  public void readPushConsumer_PushPropagatedAsList() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
     PushConsumer handler = pushContext -> {
@@ -252,5 +252,17 @@ public class ProtocolTest {
 
     // Verify the response
     assertArrayEquals(SafeEncoder.encode("OK"), (byte[]) commandResponse);
+  }
+
+  @Test
+  public void read_PushPropagatesAsList() {
+    // RESP3 push: >2\r\n$12\r\ntest-message\r\n$7\r\ntest-data\r\n
+    byte[] pushData = ">2\r\n$12\r\ntest-message\r\n$7\r\ntest-data\r\n".getBytes();
+    RedisInputStream is = new RedisInputStream(new ByteArrayInputStream(pushData));
+
+    Object result = Protocol.read(is);
+
+    // Should be List, NOT PushConsumerContext
+    assertInstanceOf(List.class, result);
   }
 }

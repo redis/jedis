@@ -222,7 +222,7 @@ public final class Protocol {
 
   public static Object read(final RedisInputStream is) {
     // for backward compatibility propagate all push events to application
-    return process(is, PROPAGATE_ALL_HANDLER);
+    return read(is, PROPAGATE_ALL_HANDLER);
   }
 
   @Experimental

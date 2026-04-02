@@ -185,9 +185,9 @@ public class TcpMockServer {
   static {
     java.util.Map<CommandKey, String> responses = new java.util.HashMap<>();
 
-    // RESP3 HELLO response
+    // RESP3 HELLO response - version 7.4.0 to support client-side caching
     responses.put(new CommandKey(Protocol.Command.HELLO),
-      "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n" + "$7\r\nversion\r\n$5\r\n7.0.0\r\n"
+      "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n" + "$7\r\nversion\r\n$5\r\n7.4.0\r\n"
           + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n" + "$4\r\nmode\r\n$10\r\nstandalone\r\n"
           + "$4\r\nrole\r\n$6\r\nmaster\r\n" + "$7\r\nmodules\r\n*0\r\n");
 
@@ -196,6 +196,7 @@ public class TcpMockServer {
     // CLIENT subcommands
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME), "+OK\r\n");
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETINFO), "+OK\r\n");
+    responses.put(new CommandKey("CLIENT", "TRACKING"), "+OK\r\n");
 
     BUILTIN_RESPONSES = java.util.Collections.unmodifiableMap(responses);
   }

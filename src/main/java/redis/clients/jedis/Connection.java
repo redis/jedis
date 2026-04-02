@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -95,7 +96,7 @@ public class Connection implements Closeable {
   private JedisClientConfig clientConfig;
   private boolean rebindRequested = false;
 
-  protected PushConsumerChain pushConsumer;
+  private PushConsumerChain pushConsumers;
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -136,7 +137,7 @@ public class Connection implements Closeable {
        * Marks all @{link PushMessages as processed, except for pub/sub.
        * Pub/sub messages are propagated to the client.
        */
-      this.pushConsumer = PushConsumerChain.of(
+      this.pushConsumers = PushConsumerChain.of(
               PushConsumerChain.PUBSUB_ONLY_CONSUMER
       );
 
@@ -148,10 +149,8 @@ public class Connection implements Closeable {
            * Pool-level concerns (factory rebind, pool clear) are notified via memberOf.
            */
           if (config.isProactiveRebindEnabled() || relaxedTimeoutEnabled) {
-              this.pushConsumer.add(new MaintenanceEventConsumer(
-                  config.isProactiveRebindEnabled()));
+              addPushConsumer(new MaintenanceEventConsumer(config.isProactiveRebindEnabled()));
           }
-
       }
   }
 
@@ -493,7 +492,7 @@ public class Connection implements Closeable {
     }
 
     try {
-      return protocolRead(inputStream, pushConsumer);
+      return protocolRead(inputStream, pushConsumers);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -562,7 +561,7 @@ public class Connection implements Closeable {
       this.relaxedTimeoutEnabled =  TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ||
               TimeoutOptions.isRelaxedTimeoutEnabled(relaxedBlockingTimeout);
 
-      initPushConsumers(clientConfig);
+      initPushConsumers(config);
 
       connect();
 
@@ -722,9 +721,18 @@ public class Connection implements Closeable {
     return authXManager;
   }
 
-  @VisibleForTesting
-  PushConsumerChain getPushConsumer() {
-    return this.pushConsumer;
+  /**
+   * Returns an unmodifiable view of the registered push consumers.
+   *
+   * @return
+   */
+  List<PushConsumer> getPushConsumers() {
+    return pushConsumers.getConsumers();
+  }
+
+  @Experimental
+  protected void addPushConsumer(PushConsumer consumer) {
+    this.pushConsumers.add(consumer);
   }
 
   @Experimental
@@ -850,10 +858,10 @@ public class Connection implements Closeable {
 
       Object addressObject = content.get(2); // Get the 3rd element (index 2)
       if (!(addressObject instanceof byte[])) {
-        logger.warn("Invalid re-bind message format, expected 3rd element to be a byte[], got {}",
-            addressObject.getClass());
+        logger.warn("Invalid re-bind message format, expected 3rd element to be a byte[], got {}", addressObject);
         return null;
       }
+
 
       try {
         String addressAndPort = SafeEncoder.encode((byte[]) addressObject);

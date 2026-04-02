@@ -48,9 +48,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      List<PushConsumer> consumers = conn.getPushConsumer().getConsumers();
-      assertThat(consumers, contains(
-              is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
     }
 
     /**
@@ -69,8 +67,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      List<PushConsumer> consumers = conn.getPushConsumer().getConsumers();
-      assertThat(consumers, contains(
+      assertThat(conn.getPushConsumers(), contains(
           is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
           instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
@@ -93,8 +90,7 @@ public class ConnectionMockTest {
           .clientConfig(config)
           .build();
 
-      List<PushConsumer> consumers = conn.getPushConsumer().getConsumers();
-      assertThat(consumers, contains(
+      assertThat(conn.getPushConsumers(), contains(
           is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
           instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
@@ -105,8 +101,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      List<PushConsumer> consumers = conn.getPushConsumer().getConsumers();
-      assertThat(consumers, contains(
+      assertThat(conn.getPushConsumers(), contains(
           is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
     }
   }

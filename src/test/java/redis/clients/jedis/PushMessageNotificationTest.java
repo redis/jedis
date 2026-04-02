@@ -154,7 +154,7 @@ public class PushMessageNotificationTest {
     connection.connect();
 
     // Set the push listener
-    connection.getPushConsumer().add(listener);
+    connection.getPushConsumers().add(listener);
 
     // Enable client tracking
     enableClientTracking(connection);

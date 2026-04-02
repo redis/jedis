@@ -109,7 +109,6 @@ public final class PushConsumerChain implements PushConsumer {
 
   /**
    * Return an unmodifiable list of consumers in the chain.
-   *
    * @return
    */
   public List<PushConsumer> getConsumers() {

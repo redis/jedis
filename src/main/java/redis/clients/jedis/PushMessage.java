@@ -10,7 +10,7 @@ public class PushMessage {
 
   public PushMessage(List<Object> content) {
     this.content = content;
-    if (content.size() > 0) {
+    if (content != null && !content.isEmpty()) {
       type = SafeEncoder.encode((byte[]) content.get(0));
     }
   }

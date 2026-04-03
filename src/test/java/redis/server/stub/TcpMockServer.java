@@ -119,6 +119,21 @@ abstract class TcpMockServer {
     onEachClient(client -> client.sendPushMessage(args));
   }
 
+  /**
+   * Send a push message to a specific client by ID.
+   * @param clientId the client ID
+   * @param args optional arguments for the push message
+   * @return true if the client was found and message sent, false otherwise
+   */
+  public boolean sendPushMessageToClient(long clientId, String... args) {
+    ClientHandler client = clients.get(clientId);
+    if (client != null) {
+      client.sendPushMessage(args);
+      return true;
+    }
+    return false;
+  }
+
   protected void onEachClient(Consumer<ClientHandler> action) {
     clients.values().forEach(action);
   }

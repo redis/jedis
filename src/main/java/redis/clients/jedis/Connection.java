@@ -865,16 +865,7 @@ public class Connection implements Closeable {
 
       try {
         String addressAndPort = SafeEncoder.encode((byte[]) addressObject);
-        String[] parts = addressAndPort.split(":");
-        if (parts.length != 2) {
-          logger.warn("Invalid re-bind message format, expected 'host:port', got {}",
-              addressAndPort);
-          return null;
-        }
-
-        String address = parts[0];
-        int port = Integer.parseInt(parts[1]);
-        return new HostAndPort(address, port);
+        return HostAndPort.from(addressAndPort);
       } catch (Exception e) {
         logger.warn("Error parsing re-bind target from message: {}", message, e);
         return null;

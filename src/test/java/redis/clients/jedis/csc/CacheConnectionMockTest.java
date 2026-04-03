@@ -21,8 +21,8 @@ import redis.clients.jedis.PushConsumerChain;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
- * Unit tests for CacheConnection that don't require a real Redis server.
- * Uses TcpMockServer to simulate Redis protocol.
+ * Unit tests for CacheConnection that don't require a real Redis server. Uses TcpMockServer to
+ * simulate Redis protocol.
  * <p>
  * These tests verify CacheConnection-specific behavior (PushInvalidateConsumer registration).
  * MaintenanceEventConsumer registration is tested in ConnectionMockTest.
@@ -52,9 +52,7 @@ public class CacheConnectionMockTest {
 
     @Test
     public void pushInvalidateConsumerRegisteredWithConfigConstructor() {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .resp3()
-          .build();
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
 
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
       DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
@@ -64,33 +62,26 @@ public class CacheConnectionMockTest {
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
       // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(
-          is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
-          instanceOf(CacheConnection.PushInvalidateConsumer.class)));
+      assertThat(consumers, contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+        instanceOf(CacheConnection.PushInvalidateConsumer.class)));
     }
 
     @Test
     public void pushInvalidateConsumerRegisteredWithBuilder() {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .resp3()
-          .build();
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
 
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
       DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
 
       CacheConnection conn = (CacheConnection) CacheConnection.builder(cache)
-          .socketFactory(socketFactory)
-          .clientConfig(config)
-          .build();
+          .socketFactory(socketFactory).clientConfig(config).build();
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
       // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(
-          is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
-          instanceOf(CacheConnection.PushInvalidateConsumer.class)));
+      assertThat(consumers, contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+        instanceOf(CacheConnection.PushInvalidateConsumer.class)));
     }
 
   }
 }
-

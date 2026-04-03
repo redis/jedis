@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
- * Unit tests for Connection that don't require a real Redis server.
- * Uses TcpMockServer to simulate Redis protocol.
+ * Unit tests for Connection that don't require a real Redis server. Uses TcpMockServer to simulate
+ * Redis protocol.
  */
 public class ConnectionMockTest {
 
@@ -39,8 +39,8 @@ public class ConnectionMockTest {
   class MaintenanceEvents {
 
     /**
-     * Tests that the MaintenanceEventConsumer is not registered when using the constructors
-     * not providing a JedisClientConfig.
+     * Tests that the MaintenanceEventConsumer is not registered when using the constructors not
+     * providing a JedisClientConfig.
      */
     @Test
     public void maintenanceConsumerNotRegisteredConstructorWithoutConfig() {
@@ -52,47 +52,39 @@ public class ConnectionMockTest {
     }
 
     /**
-     * Tests that the MaintenanceEventConsumer is registered when using the constructors
-     * not providing a JedisClientConfig.
+     * Tests that the MaintenanceEventConsumer is registered when using the constructors not
+     * providing a JedisClientConfig.
      */
     @Test
     public void maintenanceConsumerRegisteredConstructorWithConfig() {
       TimeoutOptions timeoutOpts = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10))
-          .build();
+          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
 
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .timeoutOptions(timeoutOpts)
-          .build();
+          .timeoutOptions(timeoutOpts).build();
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      assertThat(conn.getPushConsumers(), contains(
-          is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
-          instanceOf(Connection.MaintenanceEventConsumer.class)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+        instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
 
     @Test
     public void maintenanceConsumerRegisteredWithConnectionBuilder() {
       TimeoutOptions timeoutOpts = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10))
-          .build();
+          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
 
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .timeoutOptions(timeoutOpts)
-          .build();
+          .timeoutOptions(timeoutOpts).build();
 
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
       DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
 
-      Connection conn = Connection.builder()
-          .socketFactory(socketFactory)
-          .clientConfig(config)
+      Connection conn = Connection.builder().socketFactory(socketFactory).clientConfig(config)
           .build();
 
-      assertThat(conn.getPushConsumers(), contains(
-          is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
-          instanceOf(Connection.MaintenanceEventConsumer.class)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+        instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
 
     @Test
@@ -101,9 +93,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      assertThat(conn.getPushConsumers(), contains(
-          is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
     }
   }
 }
-

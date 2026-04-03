@@ -2,7 +2,9 @@ package redis.clients.jedis.json;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class JsonSetParams implements IParams {
 
@@ -14,8 +16,19 @@ public class JsonSetParams implements IParams {
    * Floating-point high accuracy types for JSON numeric values.
    * @since 7.5
    */
-  public enum FphaType {
-    FP16, BF16, FP32, FP64
+  public enum FphaType implements Rawable {
+    FP16, BF16, FP32, FP64;
+
+    private final byte[] raw;
+
+    private FphaType() {
+      raw = SafeEncoder.encode(name());
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
   }
 
   public JsonSetParams() {
@@ -86,7 +99,7 @@ public class JsonSetParams implements IParams {
       args.add(Keyword.XX);
     }
     if (fpha != null) {
-      args.add("FPHA");
+      args.add(Keyword.FPHA);
       args.add(fpha);
     }
   }

@@ -3,10 +3,11 @@ package redis.clients.jedis.json;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.Protocol.Keyword;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static redis.clients.jedis.util.CommandArgumentsMatchers.*;
+import static org.hamcrest.Matchers.not;
 
 public class JsonSetParamsTest {
 
@@ -16,23 +17,24 @@ public class JsonSetParamsTest {
     JsonSetParams params1 = new JsonSetParams().nx().xx();
     CommandArguments args1 = new CommandArguments(Protocol.Command.SET);
     params1.addParams(args1);
-    assertTrue(containsArgument(args1, "XX"));
-    assertFalse(containsArgument(args1, "NX"));
+    assertThat(args1, containsArguments(Keyword.XX));
+    assertThat(args1, not(containsArguments(Keyword.NX)));
 
     JsonSetParams params2 = new JsonSetParams().xx().nx();
     CommandArguments args2 = new CommandArguments(Protocol.Command.SET);
     params2.addParams(args2);
-    assertTrue(containsArgument(args2, "NX"));
-    assertFalse(containsArgument(args2, "XX"));
+
+    assertThat(args2, containsArguments(Keyword.NX));
+    assertThat(args2, not(containsArguments(Keyword.XX)));
   }
 
   @Test
   public void testFphaTypes() {
     // Test that each fpha type is correctly added
-    assertFphaType(new JsonSetParams().fp16(), "FP16");
-    assertFphaType(new JsonSetParams().bf16(), "BF16");
-    assertFphaType(new JsonSetParams().fp32(), "FP32");
-    assertFphaType(new JsonSetParams().fp64(), "FP64");
+    assertFphaType(new JsonSetParams().fp16(), JsonSetParams.FphaType.FP16);
+    assertFphaType(new JsonSetParams().bf16(), JsonSetParams.FphaType.BF16);
+    assertFphaType(new JsonSetParams().fp32(), JsonSetParams.FphaType.FP32);
+    assertFphaType(new JsonSetParams().fp64(), JsonSetParams.FphaType.FP64);
   }
 
   @Test
@@ -42,8 +44,8 @@ public class JsonSetParamsTest {
     CommandArguments args = new CommandArguments(Protocol.Command.SET);
     params.addParams(args);
 
-    assertTrue(containsArgument(args, "FP32"));
-    assertFalse(containsArgument(args, "FP16"));
+    assertThat(args, containsArguments(JsonSetParams.FphaType.FP32));
+    assertThat(args, not(containsArguments(JsonSetParams.FphaType.FP16)));
   }
 
   @Test
@@ -53,8 +55,8 @@ public class JsonSetParamsTest {
     CommandArguments args = new CommandArguments(Protocol.Command.SET);
     params.addParams(args);
 
-    assertTrue(containsArgument(args, "NX"));
-    assertTrue(containsArgument(args, "FP16"));
+    assertThat(args, containsArguments(Keyword.NX));
+    assertThat(args, containsArguments(JsonSetParams.FphaType.FP16));
   }
 
   @Test
@@ -64,33 +66,22 @@ public class JsonSetParamsTest {
     params.addParams(args);
 
     // Should not contain any optional parameters
-    assertFalse(containsArgument(args, "NX"));
-    assertFalse(containsArgument(args, "XX"));
-    assertFalse(containsArgument(args, "FP16"));
-    assertFalse(containsArgument(args, "BF16"));
-    assertFalse(containsArgument(args, "FP32"));
-    assertFalse(containsArgument(args, "FP64"));
+    assertThat(args, not(containsArguments(Keyword.NX)));
+    assertThat(args, not(containsArguments(Keyword.XX)));
+    assertThat(args, not(containsArguments(JsonSetParams.FphaType.FP16)));
+    assertThat(args, not(containsArguments(JsonSetParams.FphaType.BF16)));
+    assertThat(args, not(containsArguments(JsonSetParams.FphaType.FP32)));
+    assertThat(args, not(containsArguments(JsonSetParams.FphaType.FP64)));
   }
 
   /**
    * Helper method to assert a specific fpha type
    */
-  private void assertFphaType(JsonSetParams params, String expectedType) {
+  private void assertFphaType(JsonSetParams params, JsonSetParams.FphaType expectedType) {
     CommandArguments args = new CommandArguments(Protocol.Command.SET);
     params.addParams(args);
-    assertTrue(containsArgument(args, expectedType));
+    assertThat(args, hasArgumentCount(3));
+    assertThat(args, containsArguments(Protocol.Command.SET, Keyword.FPHA, expectedType));
   }
 
-  /**
-   * Helper method to check if CommandArguments contains a specific string argument
-   */
-  private boolean containsArgument(CommandArguments args, String expected) {
-    for (Rawable arg : args) {
-      String argString = SafeEncoder.encode(arg.getRaw());
-      if (expected.equals(argString)) {
-        return true;
-      }
-    }
-    return false;
-  }
 }

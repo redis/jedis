@@ -6,6 +6,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.mockito.ArgumentMatcher;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
 
 import java.util.ArrayList;
@@ -29,11 +30,8 @@ import java.util.stream.Collectors;
  * assertThat(args, hasCommand(Protocol.Command.ZRANGE));
  * assertThat(args, hasArgumentCount(3));
  * assertThat(args, hasArgument(1, RawableFactory.from(100L)));
- * assertThat(args, hasArguments(
- *     Protocol.Command.ZRANGE,
- *     RawableFactory.from(0L),
- *     RawableFactory.from(100L)
- * ));
+ * assertThat(args,
+ *   hasArguments(Protocol.Command.ZRANGE, RawableFactory.from(0L), RawableFactory.from(100L)));
  * }
  * </pre>
  * <p>
@@ -230,4 +228,63 @@ public final class CommandArgumentsMatchers {
       }
     };
   }
+
+  /**
+   * Matches CommandArguments that contain all of the specified arguments in any order.
+   * @param expectedArgs the expected arguments
+   * @return a matcher that checks if the CommandArguments contains all of the specified arguments
+   */
+  public static Matcher<CommandArguments> containsArguments(String... expectedArgs) {
+    Rawable[] rawableArgs = Arrays.stream(expectedArgs).map(RawableFactory::from)
+        .toArray(Rawable[]::new);
+    return containsArguments(rawableArgs);
+  }
+
+  /**
+   * Matches CommandArguments that contain all of the specified arguments in any order.
+   * @param expectedArgs the expected arguments
+   * @return a matcher that checks if the CommandArguments contains all of the specified arguments
+   */
+  public static Matcher<CommandArguments> containsArguments(Rawable... expectedArgs) {
+    return new TypeSafeMatcher<CommandArguments>() {
+      @Override
+      protected boolean matchesSafely(CommandArguments args) {
+        for (Rawable expected : expectedArgs) {
+          if (!containsArgument(args, expected)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      private boolean containsArgument(CommandArguments args, Rawable expected) {
+        for (Rawable arg : args) {
+          if (expected.equals(arg)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      @Override
+      public void describeTo(Description description) {
+        List<String> decodedExpectedArgs = Arrays.stream(expectedArgs).map(Rawable::getRaw)
+            .map(SafeEncoder::encode).collect(Collectors.toList());
+        description.appendText("CommandArguments containing arguments ")
+            .appendValue(decodedExpectedArgs);
+      }
+
+      @Override
+      protected void describeMismatchSafely(CommandArguments args,
+          Description mismatchDescription) {
+        List<Rawable> actualArgs = new ArrayList<>();
+        args.forEach(actualArgs::add);
+        List<String> decodedActualArgs = actualArgs.stream().map(Rawable::getRaw)
+            .map(SafeEncoder::encode).collect(Collectors.toList());
+        mismatchDescription.appendText("was CommandArguments with arguments ")
+            .appendValue(decodedActualArgs);
+      }
+    };
+  }
+
 }

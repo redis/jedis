@@ -25,7 +25,7 @@ import redis.clients.jedis.pubsub.util.PubSubTestHelper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class RedisClientPubSubTestBase {
 
-  private static final long THREAD_JOIN_TIMEOUT_MS = 5000;
+  protected static final long THREAD_JOIN_TIMEOUT_MS = 5000;
 
   protected RedisProtocol protocol;
   protected RedisClient client;

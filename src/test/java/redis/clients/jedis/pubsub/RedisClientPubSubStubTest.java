@@ -1,12 +1,19 @@
 package redis.clients.jedis.pubsub;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.pubsub.util.PubSubTestHelper;
+import redis.server.stub.MaintenanceEvent;
 import redis.server.stub.RedisServerStub;
 
 /**
@@ -57,6 +64,37 @@ public class RedisClientPubSubStubTest {
     @Override
     protected RedisProtocol getProtocol() {
       return RedisProtocol.RESP3;
+    }
+
+    /**
+     * Test that maintenance notifications during subscription don't cause errors.
+     */
+    @Test
+    public void maintenanceNotificationDuringSubscription() throws Exception {
+      PubSubTestHelper.MessageCapture subscriber = new PubSubTestHelper.MessageCapture(1, 1);
+
+      Thread subscriberThread = new Thread(() -> {
+        client.subscribe(subscriber, "test-channel");
+      });
+      subscriberThread.start();
+
+      assertTrue(subscriber.awaitSubscription(), "Should subscribe successfully");
+
+      // Send server maintenance notification (migrating event for shards)
+      serverStub.sendPushMessageToAll(MaintenanceEvent.migrating(1, 30, "shard-001", "shard-002"));
+
+      // Verify subscription still works after maintenance notification
+      long numReceivers = publisherClient.publish("test-channel", "test-message");
+      assertTrue(numReceivers >= 1, "Should have at least 1 receiver");
+
+      assertTrue(subscriber.awaitMessages(), "Should receive pub/sub message");
+
+      List<String> messages = subscriber.getMessages();
+      assertEquals(1, messages.size(), "Should receive 1 message");
+      assertEquals("test-message", messages.get(0), "Should receive correct message");
+
+      subscriber.unsubscribe();
+      subscriberThread.join(THREAD_JOIN_TIMEOUT_MS);
     }
   }
 }

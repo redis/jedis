@@ -43,7 +43,7 @@ public interface HealthCheckStrategy extends Closeable {
   ProbingPolicy getPolicy();
 
   /**
-   * Get the delay (in milliseconds) between retries for failed health checks.
+   * Get the delay (in milliseconds) between each probe of health checks.
    * @return the delay in milliseconds
    */
   int getDelayInBetweenProbes();
@@ -170,7 +170,7 @@ public interface HealthCheckStrategy extends Closeable {
       }
 
       /**
-       * Set the delay between retries for failed health checks in milliseconds.
+       * Set the delay between each probe of health checks in milliseconds.
        * @param delayInBetweenProbes the delay in milliseconds (default: 100)
        * @return this builder
        */

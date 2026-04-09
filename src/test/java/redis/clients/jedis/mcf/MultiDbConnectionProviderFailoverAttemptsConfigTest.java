@@ -106,12 +106,11 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
       assertEquals(1, getProviderAttemptCount());
     }
 
-    await().atMost(Duration.ofSeconds(2)).pollInterval(Duration.ofMillis(50))
-        .until(() -> {
-          Exception e = assertThrows(JedisFailoverException.class, () -> provider
-              .switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
-          return e instanceof JedisPermanentlyNotAvailableException;
-        });
+    await().atMost(Duration.ofSeconds(2)).pollInterval(Duration.ofMillis(50)).until(() -> {
+      Exception e = assertThrows(JedisFailoverException.class,
+        () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+      return e instanceof JedisPermanentlyNotAvailableException;
+    });
   }
 
   @Test

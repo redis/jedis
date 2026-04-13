@@ -151,8 +151,8 @@ public final class JedisURIHelper {
     if (isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1) {
       return false;
     }
-
-    return true;
+    String scheme = uri.getScheme();
+    return REDIS.equals(scheme) || REDISS.equals(scheme);
   }
 
   private static boolean isEmpty(String value) {

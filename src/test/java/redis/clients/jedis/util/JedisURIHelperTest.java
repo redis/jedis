@@ -72,6 +72,15 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void shouldRejectNonRedisSchemes() throws URISyntaxException {
+    assertFalse(JedisURIHelper.isValid(new URI("http://host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("https://user:password@host:6380/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("ftp://host:9000")));
+    assertTrue(JedisURIHelper.isValid(new URI("redis://host:9000/0")));
+    assertTrue(JedisURIHelper.isValid(new URI("rediss://host:9000/0")));
+  }
+
+  @Test
   public void shouldGetDefaultProtocolWhenNotDefined() {
     assertNull(getRedisProtocol(URI.create("redis://host:1234")));
     assertNull(getRedisProtocol(URI.create("redis://host:1234/1")));

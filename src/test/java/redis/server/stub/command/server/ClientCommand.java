@@ -12,24 +12,26 @@ import redis.server.stub.command.RedisCommand;
 
 /**
  * CLIENT command with subcommands.
- * 
+ *
  * Subcommands:
  * - SETNAME - Set client name
  * - GETNAME - Get client name
  * - ID - Get client ID
  * - SETINFO - Set client info (LIB-NAME, LIB-VER)
+ * - TRACKING - Enable/disable client tracking
  */
 public class ClientCommand implements RedisCommand {
-    
+
     // Internal subcommand registry
     private final Map<String, RedisCommand> subcommands = new HashMap<>();
-    
+
     public ClientCommand() {
         // Register subcommands internally
         subcommands.put("SETNAME", new ClientSetnameSubCommand());
         subcommands.put("GETNAME", new ClientGetnameSubCommand());
         subcommands.put("ID", new ClientIdSubCommand());
         subcommands.put("SETINFO", new ClientSetinfoSubCommand());
+        subcommands.put("TRACKING", new ClientTrackingSubCommand());
     }
     
     @Override
@@ -155,6 +157,51 @@ public class ClientCommand implements RedisCommand {
         @Override
         public String getName() {
             return "SETINFO";
+        }
+    }
+
+    /**
+     * CLIENT TRACKING ON|OFF [REDIRECT client-id] [PREFIX prefix] [BCAST] [OPTIN] [OPTOUT] [NOLOOP]
+     *
+     * For testing purposes, we only handle ON/OFF and ignore optional parameters.
+     * This is sufficient for CacheConnection.initializeClientSideCache().
+     */
+    private static class ClientTrackingSubCommand implements RedisCommand {
+        @Override
+        public String execute(CommandArguments args, CommandContext ctx) {
+            int argCount = args.size() - 1;
+            if (argCount < 2) {
+                return RespResponse.error("ERR wrong number of arguments for 'client|tracking' command");
+            }
+
+            // args.get(1) = "TRACKING"
+            // args.get(2) = ON or OFF
+            String onOff = new String(args.get(2).getRaw(), StandardCharsets.UTF_8).toUpperCase();
+
+            boolean enable;
+            switch (onOff) {
+                case "ON":
+                    enable = true;
+                    break;
+                case "OFF":
+                    enable = false;
+                    break;
+                default:
+                    return RespResponse.error("ERR CLIENT TRACKING requires ON or OFF");
+            }
+
+            // Set tracking state on client
+            ctx.getClient().setTrackingEnabled(enable);
+
+            // Optional parameters (REDIRECT, PREFIX, BCAST, etc.) are ignored for now
+            // This is sufficient for testing CacheConnection initialization
+
+            return RespResponse.ok();
+        }
+
+        @Override
+        public String getName() {
+            return "TRACKING";
         }
     }
 }

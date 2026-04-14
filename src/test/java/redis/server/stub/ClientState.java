@@ -36,6 +36,9 @@ public class ClientState {
   // Protocol version (RESP3 only - fixed at 3 for initial implementation)
   private final int protocolVersion = 3;
 
+  // Client tracking (for CLIENT TRACKING ON/OFF)
+  private boolean trackingEnabled = false;
+
   // Push messages for RESP3
   private final BlockingQueue<String> pushMessages = new LinkedBlockingQueue<>();
 
@@ -124,10 +127,19 @@ public class ClientState {
     return info;
   }
 
+  public boolean isTrackingEnabled() {
+    return trackingEnabled;
+  }
+
+  public void setTrackingEnabled(boolean trackingEnabled) {
+    this.trackingEnabled = trackingEnabled;
+  }
+
   @Override
   public String toString() {
     return "ClientState{" + "id=" + id + ", name='" + name + '\'' + ", database=" + database
         + ", authenticated=" + authenticated + ", libName='" + libName + '\'' + ", libVersion='"
-        + libVersion + '\'' + ", protocolVersion=" + protocolVersion + '}';
+        + libVersion + '\'' + ", protocolVersion=" + protocolVersion + ", trackingEnabled="
+        + trackingEnabled + '}';
   }
 }

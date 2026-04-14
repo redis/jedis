@@ -18,7 +18,8 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.Pool;
-import redis.clients.jedis.util.server.TcpMockServer;
+import redis.server.stub.RedisServerStub;
+import redis.server.stub.RedisServerStubConfig;
 
 /**
  * Test that UnifiedJedis proactively rebinds to new target when receiving MOVING notifications.
@@ -27,8 +28,8 @@ import redis.clients.jedis.util.server.TcpMockServer;
 @Tag("sch")
 public class UnifiedJedisProactiveRebindTest {
 
-  private TcpMockServer mockServer1;
-  private TcpMockServer mockServer2;
+  private RedisServerStub mockServer1;
+  private RedisServerStub mockServer2;
 
   private final int socketTimeoutMs = 5000;
 
@@ -44,12 +45,12 @@ public class UnifiedJedisProactiveRebindTest {
 
   @BeforeEach
   public void setUp() throws IOException {
-    // Start tcpmockedserver1
-    mockServer1 = new TcpMockServer();
+    // Start InMemoryRedisServer 1
+    mockServer1 = new RedisServerStub(RedisServerStubConfig.builder().build());
     mockServer1.start();
 
-    // Start tcpmockedserver2
-    mockServer2 = new TcpMockServer();
+    // Start InMemoryRedisServer 2
+    mockServer2 = new RedisServerStub(RedisServerStubConfig.builder().build());
     mockServer2.start();
 
     server1Address = new HostAndPort("localhost", mockServer1.getPort());

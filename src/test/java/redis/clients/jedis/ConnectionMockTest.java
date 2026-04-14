@@ -7,12 +7,12 @@ import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.util.server.TcpMockServer;
+import redis.server.stub.RedisServerStub;
+import redis.server.stub.RedisServerStubConfig;
 
 /**
  * Unit tests for Connection that don't require a real Redis server. Uses TcpMockServer to simulate
@@ -20,11 +20,11 @@ import redis.clients.jedis.util.server.TcpMockServer;
  */
 public class ConnectionMockTest {
 
-  private TcpMockServer mockServer;
+  private RedisServerStub mockServer;
 
   @BeforeEach
   public void setUp() throws IOException {
-    mockServer = new TcpMockServer();
+    mockServer = new RedisServerStub(RedisServerStubConfig.builder().build());
     mockServer.start();
   }
 

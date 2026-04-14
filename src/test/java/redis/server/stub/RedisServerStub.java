@@ -126,16 +126,6 @@ public class RedisServerStub extends TcpMockServer {
     return pubSubManager;
   }
 
-  /**
-   * Send a push message to a specific client by ID.
-   * @param clientId the client ID
-   * @param args optional arguments for the push message
-   * @return true if the client was found and message sent, false otherwise
-   */
-  public boolean sendPushMessageToClient(long clientId, String... args) {
-    return super.sendPushMessageToClient(clientId, args);
-  }
-
   @Override
   public void stop() throws IOException {
     // Shutdown command executor

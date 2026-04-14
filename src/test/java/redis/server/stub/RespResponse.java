@@ -158,9 +158,8 @@ public class RespResponse {
    * RESP3 null.
    * @return A RESP3 null response (delegates to nullValue())
    * @deprecated Use {@link #nullValue()} for RESP3. This RESP2 null bulk string format is
-   *     deprecated.
+   *             deprecated.
    */
-  @Deprecated
   public static String nullBulkString() {
     return nullValue();
   }
@@ -244,8 +243,7 @@ public class RespResponse {
     }
 
     if (keyValuePairs.length % 2 != 0) {
-      throw new IllegalArgumentException(
-          "Must provide key-value pairs (even number of arguments)");
+      throw new IllegalArgumentException("Must provide key-value pairs (even number of arguments)");
     }
 
     String[] entries = new String[keyValuePairs.length];

@@ -5,7 +5,6 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.server.stub.RespResponse;
 import redis.server.stub.command.RedisCommand;
 import redis.server.stub.command.CommandContext;
-import redis.server.stub.ClientState;
 
 /**
  * HELLO [protover] [AUTH username password] [SETNAME clientname]

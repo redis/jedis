@@ -9,16 +9,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import redis.clients.jedis.JedisPubSub;
 
 /**
- * Utility class for pub/sub testing.
- * Provides helpers for message synchronization, assertions, and common test patterns.
+ * Utility class for pub/sub testing. Provides helpers for message synchronization, assertions, and
+ * common test patterns.
  */
 public class PubSubTestHelper {
 
   private static final int DEFAULT_TIMEOUT_SECONDS = 5;
 
   /**
-   * Creates a subscriber that captures messages and subscription channels.
-   * Uses thread-safe collections to avoid synchronization overhead.
+   * Creates a subscriber that captures messages and subscription channels. Uses thread-safe
+   * collections to avoid synchronization overhead.
    */
   public static class MessageCapture extends JedisPubSub {
     private final List<String> messages = new CopyOnWriteArrayList<>();
@@ -35,7 +35,8 @@ public class PubSubTestHelper {
       this(expectedSubscriptions, 0, expectedMessages);
     }
 
-    public MessageCapture(int expectedSubscriptions, int expectedPSubscriptions, int expectedMessages) {
+    public MessageCapture(int expectedSubscriptions, int expectedPSubscriptions,
+        int expectedMessages) {
       this.subscribeLatch = new CountDownLatch(expectedSubscriptions);
       this.psubscribeLatch = new CountDownLatch(expectedPSubscriptions);
       this.messageLatch = new CountDownLatch(expectedMessages);
@@ -84,7 +85,8 @@ public class PubSubTestHelper {
     }
 
     public boolean awaitUnsubscribe() throws InterruptedException {
-      return unsubscribeLatch != null && unsubscribeLatch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      return unsubscribeLatch != null
+          && unsubscribeLatch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     public boolean awaitPSubscription() throws InterruptedException {
@@ -182,4 +184,3 @@ public class PubSubTestHelper {
     // Utility class - prevent instantiation
   }
 }
-

@@ -88,7 +88,8 @@ abstract class TcpMockServer {
    * @param clientHandler client handler (for pub/sub push messages)
    * @return RESP-formatted response
    */
-  abstract String processCommand(CommandArguments args, ClientState clientState, ClientHandler clientHandler);
+  abstract String processCommand(CommandArguments args, ClientState clientState,
+      ClientHandler clientHandler);
 
   /**
    * Get the port the server is running on

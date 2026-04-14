@@ -7,44 +7,40 @@ import redis.server.stub.RedisServerStub;
 import redis.server.stub.Subscriber;
 
 /**
- * Implementation of CommandContext.
- * Simple immutable value holder.
+ * Implementation of CommandContext. Simple immutable value holder.
  */
 public class CommandContextImpl implements CommandContext {
 
-    private final ClientState client;
-    private final RedisDataStore dataStore;
-    private final RedisServerStub server;
-    private final Subscriber subscriber;
+  private final ClientState client;
+  private final RedisDataStore dataStore;
+  private final RedisServerStub server;
+  private final Subscriber subscriber;
 
-    public CommandContextImpl(ClientState client,
-                             RedisDataStore dataStore,
-                             RedisServerStub server,
-                             Subscriber subscriber) {
-        this.client = client;
-        this.dataStore = dataStore;
-        this.server = server;
-        this.subscriber = subscriber;
-    }
+  public CommandContextImpl(ClientState client, RedisDataStore dataStore, RedisServerStub server,
+      Subscriber subscriber) {
+    this.client = client;
+    this.dataStore = dataStore;
+    this.server = server;
+    this.subscriber = subscriber;
+  }
 
-    @Override
-    public ClientState getClient() {
-        return client;
-    }
+  @Override
+  public ClientState getClient() {
+    return client;
+  }
 
-    @Override
-    public RedisDataStore getDataStore() {
-        return dataStore;
-    }
+  @Override
+  public RedisDataStore getDataStore() {
+    return dataStore;
+  }
 
-    @Override
-    public RedisServerStub getServer() {
-        return server;
-    }
+  @Override
+  public RedisServerStub getServer() {
+    return server;
+  }
 
-    @Override
-    public Subscriber getSubscriber() {
-        return subscriber;
-    }
+  @Override
+  public Subscriber getSubscriber() {
+    return subscriber;
+  }
 }
-

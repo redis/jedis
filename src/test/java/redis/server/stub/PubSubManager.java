@@ -8,25 +8,25 @@ import redis.server.stub.util.GlobPatternMatcher;
 
 /**
  * Manages pub/sub subscriptions for the Redis server stub.
- *
- * <p>This is the SINGLE SOURCE OF TRUTH for all subscription state. Subscription state is NOT
- * tracked in ClientState.
- *
- * <p><b>Decoupled Design</b>: Works with {@link Subscriber} interface instead of
- * {@link ClientHandler} directly. This enables:
+ * <p>
+ * This is the SINGLE SOURCE OF TRUTH for all subscription state. Subscription state is NOT tracked
+ * in ClientState.
+ * <p>
+ * <b>Decoupled Design</b>: Works with {@link Subscriber} interface instead of {@link ClientHandler}
+ * directly. This enables:
  * <ul>
- *   <li>Testing with mock subscribers</li>
- *   <li>Clean separation of concerns</li>
- *   <li>Future subscriber types (e.g., internal server subscribers)</li>
+ * <li>Testing with mock subscribers</li>
+ * <li>Clean separation of concerns</li>
+ * <li>Future subscriber types (e.g., internal server subscribers)</li>
  * </ul>
- *
- * <p><b>Thread Safety</b>: This class is NOT thread-safe by design. It is accessed ONLY from the
+ * <p>
+ * <b>Thread Safety</b>: This class is NOT thread-safe by design. It is accessed ONLY from the
  * single-threaded commandExecutor in RedisServerStub, so no synchronization is needed.
- *
- * <p><b>Bidirectional Tracking</b>: Uses bidirectional mappings for O(1) lookups:
+ * <p>
+ * <b>Bidirectional Tracking</b>: Uses bidirectional mappings for O(1) lookups:
  * <ul>
- *   <li>Publishing: "Which subscribers are on channel X?" → O(1)</li>
- *   <li>Protocol: "How many subscriptions does this subscriber have?" → O(1)</li>
+ * <li>Publishing: "Which subscribers are on channel X?" → O(1)</li>
+ * <li>Protocol: "How many subscriptions does this subscriber have?" → O(1)</li>
  * </ul>
  */
 public class PubSubManager {
@@ -46,7 +46,6 @@ public class PubSubManager {
   /**
    * Subscribe a subscriber to a channel. Updates both channelSubscribers and subscriberChannels
    * maps.
-   *
    * @param subscriber the subscriber
    * @param channel the channel name
    */
@@ -59,9 +58,8 @@ public class PubSubManager {
   }
 
   /**
-   * Unsubscribe a subscriber from a channel. Updates both channelSubscribers and
-   * subscriberChannels maps.
-   *
+   * Unsubscribe a subscriber from a channel. Updates both channelSubscribers and subscriberChannels
+   * maps.
    * @param subscriber the subscriber
    * @param channel the channel name
    */
@@ -88,7 +86,6 @@ public class PubSubManager {
   /**
    * Subscribe a subscriber to a pattern. Updates both patternSubscribers and subscriberPatterns
    * maps.
-   *
    * @param subscriber the subscriber
    * @param pattern the pattern (e.g., "news.*")
    */
@@ -103,7 +100,6 @@ public class PubSubManager {
   /**
    * Unsubscribe a subscriber from a pattern. Updates both patternSubscribers and subscriberPatterns
    * maps.
-   *
    * @param subscriber the subscriber
    * @param pattern the pattern
    */
@@ -129,7 +125,6 @@ public class PubSubManager {
 
   /**
    * Unsubscribe a subscriber from all channels and patterns. Called when subscriber disconnects.
-   *
    * @param subscriber the subscriber
    */
   public void unsubscribeAll(Subscriber subscriber) {
@@ -155,7 +150,6 @@ public class PubSubManager {
   /**
    * Get total subscription count for subscriber (channels + patterns). This is needed for
    * SUBSCRIBE/UNSUBSCRIBE protocol responses.
-   *
    * @param subscriber the subscriber
    * @return number of active subscriptions (channels + patterns)
    */
@@ -178,7 +172,6 @@ public class PubSubManager {
   /**
    * Check if subscriber is in pub/sub mode (has any subscriptions). Subscriber is in pub/sub mode
    * if subscriptionCount &gt; 0.
-   *
    * @param subscriber the subscriber
    * @return true if subscriber has any subscriptions (channels or patterns)
    */
@@ -188,7 +181,6 @@ public class PubSubManager {
 
   /**
    * Get all channels a subscriber is subscribed to.
-   *
    * @param subscriber the subscriber
    * @return set of channel names (empty if none)
    */
@@ -199,7 +191,6 @@ public class PubSubManager {
 
   /**
    * Get all patterns a subscriber is subscribed to.
-   *
    * @param subscriber the subscriber
    * @return set of pattern strings (empty if none)
    */
@@ -210,7 +201,6 @@ public class PubSubManager {
 
   /**
    * Get all subscribers for a channel (for testing).
-   *
    * @param channel the channel name
    * @return set of subscribers (empty if none)
    */
@@ -221,7 +211,6 @@ public class PubSubManager {
 
   /**
    * Get all subscribers for a pattern (for testing).
-   *
    * @param pattern the pattern string
    * @return set of subscribers (empty if none)
    */
@@ -232,10 +221,9 @@ public class PubSubManager {
 
   /**
    * Publish message to channel. Sends to exact subscribers and pattern matches.
-   *
-   * <p>Assumes all subscribers in the maps are valid and active. Inactive subscribers are removed
-   * via UNSUBSCRIBE commands or {@link #unsubscribeAll(Subscriber)} on disconnect.
-   *
+   * <p>
+   * Assumes all subscribers in the maps are valid and active. Inactive subscribers are removed via
+   * UNSUBSCRIBE commands or {@link #unsubscribeAll(Subscriber)} on disconnect.
    * @param channel the channel name
    * @param message the message to publish
    * @return set of subscribers that received the message

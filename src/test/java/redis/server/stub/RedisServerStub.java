@@ -91,7 +91,8 @@ public class RedisServerStub extends TcpMockServer {
   }
 
   @Override
-  protected String processCommand(CommandArguments args, ClientState clientState, ClientHandler clientHandler) {
+  protected String processCommand(CommandArguments args, ClientState clientState,
+      ClientHandler clientHandler) {
 
     try {
       return commandExecutor.submit(() -> {
@@ -188,8 +189,8 @@ public class RedisServerStub extends TcpMockServer {
    * @param clientHandler client handler for this connection
    * @throws Exception any exception from interceptor propagates (fails test)
    */
-  private void executeInterceptors(CommandArguments args, ClientState clientState, ClientHandler clientHandler)
-      throws Exception {
+  private void executeInterceptors(CommandArguments args, ClientState clientState,
+      ClientHandler clientHandler) throws Exception {
     String commandName = SafeEncoder.encode(args.getCommand().getRaw()).toUpperCase();
 
     // Create context for interceptors

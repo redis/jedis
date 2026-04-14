@@ -2,20 +2,21 @@ package redis.server.stub.util;
 
 /**
  * Binary-safe glob pattern matcher for Redis PSUBSCRIBE patterns.
- * 
- * <p>Supports standard glob patterns:
+ * <p>
+ * Supports standard glob patterns:
  * <ul>
- *   <li>{@code *} - matches zero or more characters</li>
- *   <li>{@code ?} - matches exactly one character</li>
- *   <li>{@code [abc]} - matches one character from the set</li>
- *   <li>{@code [a-z]} - matches one character from the range</li>
- *   <li>{@code [^abc]} or {@code [!abc]} - matches one character NOT in the set</li>
+ * <li>{@code *} - matches zero or more characters</li>
+ * <li>{@code ?} - matches exactly one character</li>
+ * <li>{@code [abc]} - matches one character from the set</li>
+ * <li>{@code [a-z]} - matches one character from the range</li>
+ * <li>{@code [^abc]} or {@code [!abc]} - matches one character NOT in the set</li>
  * </ul>
+ * <p>
+ * This implementation is binary-safe and works on byte arrays, not strings. This matches Redis
+ * behavior where channel names can contain any byte sequence.
+ * <p>
+ * Examples:
  * 
- * <p>This implementation is binary-safe and works on byte arrays, not strings.
- * This matches Redis behavior where channel names can contain any byte sequence.
- * 
- * <p>Examples:
  * <pre>
  * matches("news.*", "news.sports")      -> true
  * matches("news.*", "news.weather")     -> true
@@ -28,7 +29,6 @@ public class GlobPatternMatcher {
 
   /**
    * Check if channel matches glob pattern (binary-safe).
-   * 
    * @param pattern the glob pattern (e.g., "news.*")
    * @param channel the channel name to match
    * @return true if channel matches pattern
@@ -39,7 +39,6 @@ public class GlobPatternMatcher {
 
   /**
    * Internal recursive matching logic.
-   * 
    * @param pattern the pattern bytes
    * @param pIndex current position in pattern
    * @param text the text bytes
@@ -132,7 +131,6 @@ public class GlobPatternMatcher {
 
   /**
    * Find the closing bracket for a character class.
-   * 
    * @param pattern the pattern
    * @param start start index (after '[')
    * @return index of ']', or -1 if not found
@@ -148,7 +146,6 @@ public class GlobPatternMatcher {
 
   /**
    * Check if character matches a character class like [abc] or [a-z].
-   * 
    * @param pattern the pattern
    * @param start start of class content (after '[' and optional '^')
    * @param end end of class content (before ']')
@@ -175,4 +172,3 @@ public class GlobPatternMatcher {
     return false;
   }
 }
-

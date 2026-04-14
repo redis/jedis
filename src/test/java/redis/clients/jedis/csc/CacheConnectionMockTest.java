@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,7 @@ import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChain;
-import redis.clients.jedis.util.server.TcpMockServer;
+import redis.server.stub.RedisServerStub;
 
 /**
  * Unit tests for CacheConnection that don't require a real Redis server. Uses TcpMockServer to
@@ -30,12 +29,12 @@ import redis.clients.jedis.util.server.TcpMockServer;
  */
 public class CacheConnectionMockTest {
 
-  private TcpMockServer mockServer;
+  private RedisServerStub mockServer;
   private Cache cache;
 
   @BeforeEach
   public void setUp() throws IOException {
-    mockServer = new TcpMockServer();
+    mockServer = new RedisServerStub();
     mockServer.start();
     cache = CacheFactory.getCache(CacheConfig.builder().maxSize(1000).build());
   }

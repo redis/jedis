@@ -15,6 +15,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.server.stub.RedisServerStub;
+import redis.server.stub.RedisServerStubConfig;
 import redis.server.stub.MaintenanceEvent;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class ConnectionAdaptiveTimeoutTest {
   @BeforeEach
   public void setUp() throws IOException {
     // Start the mock TCP server
-    mockServer = new RedisServerStub();
+    mockServer = new RedisServerStub(RedisServerStubConfig.builder().build());
     mockServer.start();
 
     // Create client configuration with relaxed timeout and maintenance event handler

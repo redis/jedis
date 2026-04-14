@@ -39,6 +39,9 @@ import java.util.concurrent.Executors;
  */
 public class RedisServerStub extends TcpMockServer {
 
+  // Configuration
+  private final RedisServerStubConfig config;
+
   // Single-threaded executor for command processing
   private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
 
@@ -56,7 +59,8 @@ public class RedisServerStub extends TcpMockServer {
   // thread)
   private final Map<String, List<CommandInterceptor>> interceptors = new ConcurrentHashMap<>();
 
-  public RedisServerStub() {
+  public RedisServerStub(RedisServerStubConfig config) {
+    this.config = config;
     // Initialize command registry
     this.commandRegistry = new CommandRegistry(dataStore, this);
 
@@ -105,6 +109,13 @@ public class RedisServerStub extends TcpMockServer {
    */
   public RedisDataStore getDataStore() {
     return dataStore;
+  }
+
+  /**
+   * Get the configuration.
+   */
+  public RedisServerStubConfig getConfig() {
+    return config;
   }
 
   /**

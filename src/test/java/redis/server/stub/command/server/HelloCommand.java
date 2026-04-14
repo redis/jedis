@@ -60,7 +60,7 @@ public class HelloCommand implements RedisCommand {
     }
 
     // Protocol version is already 3 (fixed in ClientState)
-    return buildHelloResponse(3, ctx.getClient());
+    return buildHelloResponse(3, ctx);
   }
 
   @Override
@@ -72,15 +72,18 @@ public class HelloCommand implements RedisCommand {
    * Build HELLO response as RESP3 map using RespResponse primitives. Format:
    * %<count>\r\n<key1><value1><key2><value2>...
    * @param protocol protocol version (always 3 for this implementation)
-   * @param client client state
+   * @param ctx command context (to get server config)
    * @return RESP3 map response
    */
-  private String buildHelloResponse(int protocol, ClientState client) {
+  private String buildHelloResponse(int protocol, CommandContext ctx) {
+    // Get Redis version from server config
+    String version = ctx.getServer().getConfig().getRedisVersion();
+
     // Build map entries: key-value pairs
     return RespResponse.map(RespResponse.bulkString("server"), RespResponse.bulkString("redis"),
-        RespResponse.bulkString("version"), RespResponse.bulkString("7.0.0"),
+        RespResponse.bulkString("version"), RespResponse.bulkString(version),
         RespResponse.bulkString("proto"), RespResponse.integer(protocol),
-        RespResponse.bulkString("id"), RespResponse.integer(client.getId()),
+        RespResponse.bulkString("id"), RespResponse.integer(ctx.getClient().getId()),
         RespResponse.bulkString("mode"), RespResponse.bulkString("standalone"),
         RespResponse.bulkString("role"), RespResponse.bulkString("master"),
         RespResponse.bulkString("modules"), RespResponse.emptyArray());

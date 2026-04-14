@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import redis.server.stub.RedisServerStub;
+import redis.server.stub.RedisServerStubConfig;
 
 /**
  * Unit tests for Connection that don't require a real Redis server. Uses TcpMockServer to simulate
@@ -23,7 +24,7 @@ public class ConnectionMockTest {
 
   @BeforeEach
   public void setUp() throws IOException {
-    mockServer = new RedisServerStub();
+    mockServer = new RedisServerStub(RedisServerStubConfig.builder().build());
     mockServer.start();
   }
 

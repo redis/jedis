@@ -18,6 +18,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChain;
 import redis.server.stub.RedisServerStub;
+import redis.server.stub.RedisServerStubConfig;
 
 /**
  * Unit tests for CacheConnection that don't require a real Redis server. Uses TcpMockServer to
@@ -34,7 +35,7 @@ public class CacheConnectionMockTest {
 
   @BeforeEach
   public void setUp() throws IOException {
-    mockServer = new RedisServerStub();
+    mockServer = new RedisServerStub(RedisServerStubConfig.builder().redisVersion("7.4.0").build());
     mockServer.start();
     cache = CacheFactory.getCache(CacheConfig.builder().maxSize(1000).build());
   }

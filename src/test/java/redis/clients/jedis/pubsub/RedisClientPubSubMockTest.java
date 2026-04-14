@@ -15,26 +15,27 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.pubsub.util.PubSubTestHelper;
 import redis.server.stub.MaintenanceEvent;
 import redis.server.stub.RedisServerStub;
+import redis.server.stub.RedisServerStubConfig;
 
 /**
  * Mock tests for RedisClient pub/sub functionality using RedisServerStub.
  * <p>
- * These tests run against RedisServerStub (mock Redis) **ONLY with RESP3** since
- * RedisServerStub only supports RESP3 protocol.
+ * These tests run against RedisServerStub (mock Redis) **ONLY with RESP3** since RedisServerStub
+ * only supports RESP3 protocol.
  * </p>
  * <p>
  * RedisServerStub allows testing scenarios that are difficult to simulate with a real Redis server,
- * such as arbitrary push notifications sent during subscribed connections, connection failures,
- * and timing-sensitive behaviors.
+ * such as arbitrary push notifications sent during subscribed connections, connection failures, and
+ * timing-sensitive behaviors.
  * </p>
  */
-public class RedisClientPubSubStubTest {
+public class RedisClientPubSubMockTest {
 
   private static RedisServerStub serverStub;
 
   @BeforeAll
   public static void setUpAll() throws Exception {
-    serverStub = new RedisServerStub();
+    serverStub = new RedisServerStub(RedisServerStubConfig.builder().build());
     serverStub.start();
   }
 
@@ -53,12 +54,8 @@ public class RedisClientPubSubStubTest {
 
     @Override
     protected RedisClient createClient(RedisProtocol protocol) {
-      return RedisClient.builder()
-          .hostAndPort(new HostAndPort("localhost", serverStub.getPort()))
-          .clientConfig(DefaultJedisClientConfig.builder()
-              .protocol(protocol)
-              .build())
-          .build();
+      return RedisClient.builder().hostAndPort(new HostAndPort("localhost", serverStub.getPort()))
+          .clientConfig(DefaultJedisClientConfig.builder().protocol(protocol).build()).build();
     }
 
     @Override
@@ -98,4 +95,3 @@ public class RedisClientPubSubStubTest {
     }
   }
 }
-

@@ -12,11 +12,11 @@ import redis.server.stub.command.RedisCommand;
 
 /**
  * PUNSUBSCRIBE [pattern [pattern ...]]
+ * <p>
+ * Unsubscribe from one or more patterns. If no patterns specified, unsubscribes from ALL patterns.
+ * <p>
+ * For each pattern, sends an unsubscribe confirmation:
  * 
- * <p>Unsubscribe from one or more patterns. If no patterns specified, unsubscribes from ALL
- * patterns.
- * 
- * <p>For each pattern, sends an unsubscribe confirmation:
  * <pre>
  * *3
  * $12
@@ -42,7 +42,7 @@ public class PunsubscribeCommand implements RedisCommand {
       if (patterns.isEmpty()) {
         // No patterns to unsubscribe from
         response.append(RespResponse.array(RespResponse.bulkString("punsubscribe"),
-            RespResponse.nullBulkString(), RespResponse.integer(0)));
+          RespResponse.nullBulkString(), RespResponse.integer(0)));
       } else {
         // Unsubscribe from all patterns
         // Copy to avoid concurrent modification
@@ -51,7 +51,7 @@ public class PunsubscribeCommand implements RedisCommand {
           int count = pubSubManager.getSubscriptionCount(subscriber);
 
           response.append(RespResponse.array(RespResponse.bulkString("punsubscribe"),
-              RespResponse.bulkString(pattern), RespResponse.integer(count)));
+            RespResponse.bulkString(pattern), RespResponse.integer(count)));
         }
       }
     } else {
@@ -62,7 +62,7 @@ public class PunsubscribeCommand implements RedisCommand {
         int count = pubSubManager.getSubscriptionCount(subscriber);
 
         response.append(RespResponse.array(RespResponse.bulkString("punsubscribe"),
-            RespResponse.bulkString(pattern), RespResponse.integer(count)));
+          RespResponse.bulkString(pattern), RespResponse.integer(count)));
       }
     }
 
@@ -74,4 +74,3 @@ public class PunsubscribeCommand implements RedisCommand {
     return "PUNSUBSCRIBE";
   }
 }
-

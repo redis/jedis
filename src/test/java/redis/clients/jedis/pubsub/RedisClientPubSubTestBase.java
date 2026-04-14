@@ -13,13 +13,11 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.pubsub.util.PubSubTestHelper;
 
 /**
- * Abstract base class for RedisClient pub/sub tests.
- * Contains all test scenarios that will be executed against both:
- * - Real Redis server (Integration tests)
- * - RedisServerStub (Mock tests)
+ * Abstract base class for RedisClient pub/sub tests. Contains all test scenarios that will be
+ * executed against both: - Real Redis server (Integration tests) - RedisServerStub (Mock tests)
  * <p>
- * Each test class instance runs with a single RESP protocol (either RESP2 or RESP3).
- * Clients are created once per test class and reused across all tests.
+ * Each test class instance runs with a single RESP protocol (either RESP2 or RESP3). Clients are
+ * created once per test class and reused across all tests.
  * </p>
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -215,7 +213,7 @@ public abstract class RedisClientPubSubTestBase {
 
     assertTrue(subscriber.awaitMessage(), "Should receive message");
     assertEquals("Auto-unsubscribe test", subscriber.getReceivedMessage(),
-        "Should receive correct message");
+      "Should receive correct message");
 
     // Thread should exit cleanly because subscriber auto-unsubscribed
     subscriberThread.join(THREAD_JOIN_TIMEOUT_MS);
@@ -244,4 +242,3 @@ public abstract class RedisClientPubSubTestBase {
   // NOTE: Binary subscriptions not tested as RedisClient.subscribe() only accepts String channels
   // Binary pub/sub would need to be tested with Connection or Jedis directly
 }
-

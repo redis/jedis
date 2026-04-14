@@ -10,15 +10,16 @@ import redis.server.stub.command.RedisCommand;
 
 /**
  * PSUBSCRIBE pattern [pattern ...]
- * 
- * <p>Subscribe to one or more patterns. Supports glob-style patterns:
+ * <p>
+ * Subscribe to one or more patterns. Supports glob-style patterns:
  * <ul>
- *   <li>{@code *} - matches zero or more characters</li>
- *   <li>{@code ?} - matches exactly one character</li>
- *   <li>{@code [abc]} - matches one character from the set</li>
+ * <li>{@code *} - matches zero or more characters</li>
+ * <li>{@code ?} - matches exactly one character</li>
+ * <li>{@code [abc]} - matches one character from the set</li>
  * </ul>
+ * <p>
+ * For each pattern, sends a subscription confirmation:
  * 
- * <p>For each pattern, sends a subscription confirmation:
  * <pre>
  * *3
  * $10
@@ -27,9 +28,9 @@ import redis.server.stub.command.RedisCommand;
  * news.*
  * :1     &lt;- Total subscription count for this client (channels + patterns)
  * </pre>
- * 
- * <p>When a message is published to a channel matching the pattern, the client receives
- * a "pmessage" push with the pattern, channel, and message.
+ * <p>
+ * When a message is published to a channel matching the pattern, the client receives a "pmessage"
+ * push with the pattern, channel, and message.
  */
 public class PsubscribeCommand implements RedisCommand {
 
@@ -57,7 +58,7 @@ public class PsubscribeCommand implements RedisCommand {
 
       // Build RESP3 array response: *3 $10 psubscribe $... pattern :count
       response.append(RespResponse.array(RespResponse.bulkString("psubscribe"),
-          RespResponse.bulkString(pattern), RespResponse.integer(count)));
+        RespResponse.bulkString(pattern), RespResponse.integer(count)));
     }
 
     return response.toString();
@@ -68,4 +69,3 @@ public class PsubscribeCommand implements RedisCommand {
     return "PSUBSCRIBE";
   }
 }
-

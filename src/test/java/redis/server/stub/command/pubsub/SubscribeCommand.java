@@ -10,8 +10,9 @@ import redis.server.stub.command.RedisCommand;
 
 /**
  * SUBSCRIBE channel [channel ...]
- *
- * <p>Subscribe to one or more channels. For each channel, sends a subscription confirmation:
+ * <p>
+ * Subscribe to one or more channels. For each channel, sends a subscription confirmation:
+ * 
  * <pre>
  * *3
  * $9
@@ -20,8 +21,8 @@ import redis.server.stub.command.RedisCommand;
  * channel
  * :1     &lt;- Total subscription count for this subscriber
  * </pre>
- *
- * <p>After subscribing, the subscriber enters pub/sub mode and will receive push messages when
+ * <p>
+ * After subscribing, the subscriber enters pub/sub mode and will receive push messages when
  * messages are published to subscribed channels.
  */
 public class SubscribeCommand implements RedisCommand {
@@ -38,20 +39,20 @@ public class SubscribeCommand implements RedisCommand {
 
     StringBuilder response = new StringBuilder();
 
-      // Subscribe to each channel
-      for (int i = 1; i < args.size(); i++) {
-        String channel = SafeEncoder.encode(args.get(i).getRaw());
+    // Subscribe to each channel
+    for (int i = 1; i < args.size(); i++) {
+      String channel = SafeEncoder.encode(args.get(i).getRaw());
 
-        // Update subscription state (both maps in PubSubManager)
-        pubSubManager.subscribe(subscriber, channel);
+      // Update subscription state (both maps in PubSubManager)
+      pubSubManager.subscribe(subscriber, channel);
 
-        // Get current total subscription count
-        int count = pubSubManager.getSubscriptionCount(subscriber);
+      // Get current total subscription count
+      int count = pubSubManager.getSubscriptionCount(subscriber);
 
-        // Build RESP3 array response: *3 $9 subscribe $... channel :count
-        response.append(RespResponse.array(RespResponse.bulkString("subscribe"),
-            RespResponse.bulkString(channel), RespResponse.integer(count)));
-      }
+      // Build RESP3 array response: *3 $9 subscribe $... channel :count
+      response.append(RespResponse.array(RespResponse.bulkString("subscribe"),
+        RespResponse.bulkString(channel), RespResponse.integer(count)));
+    }
 
     return response.toString();
   }
@@ -61,4 +62,3 @@ public class SubscribeCommand implements RedisCommand {
     return "SUBSCRIBE";
   }
 }
-

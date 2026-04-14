@@ -9,15 +9,13 @@ import redis.server.stub.ClientState;
 
 /**
  * HELLO [protover] [AUTH username password] [SETNAME clientname]
- *
  * <p>
  * RESP3 protocol handshake command. Returns server information including: - server: redis -
  * version: 7.0.0 - proto: protocol version (always 3) - id: client ID - mode: standalone - role:
  * master - modules: loaded modules
- *
  * <p>
- * <b>Protocol Support</b>: This implementation only supports RESP3 (protocol version 3). Any attempt
- * to negotiate RESP2 or other protocols will be rejected with NOPROTO error.
+ * <b>Protocol Support</b>: This implementation only supports RESP3 (protocol version 3). Any
+ * attempt to negotiate RESP2 or other protocols will be rejected with NOPROTO error.
  */
 public class HelloCommand implements RedisCommand {
 
@@ -34,15 +32,14 @@ public class HelloCommand implements RedisCommand {
         String protoStr = SafeEncoder.encode(args.get(1).getRaw());
         requestedProtocol = Integer.parseInt(protoStr);
       } catch (NumberFormatException e) {
-        return RespResponse
-            .error("ERR Protocol version is not an integer or out of range");
+        return RespResponse.error("ERR Protocol version is not an integer or out of range");
       }
     }
 
     // Validate RESP3 only
     if (requestedProtocol != 3) {
       return RespResponse.error(
-          "NOPROTO unsupported protocol version. This server only supports RESP3 (protocol version 3)");
+        "NOPROTO unsupported protocol version. This server only supports RESP3 (protocol version 3)");
     }
 
     // Process optional AUTH and SETNAME
@@ -81,12 +78,11 @@ public class HelloCommand implements RedisCommand {
 
     // Build map entries: key-value pairs
     return RespResponse.map(RespResponse.bulkString("server"), RespResponse.bulkString("redis"),
-        RespResponse.bulkString("version"), RespResponse.bulkString(version),
-        RespResponse.bulkString("proto"), RespResponse.integer(protocol),
-        RespResponse.bulkString("id"), RespResponse.integer(ctx.getClient().getId()),
-        RespResponse.bulkString("mode"), RespResponse.bulkString("standalone"),
-        RespResponse.bulkString("role"), RespResponse.bulkString("master"),
-        RespResponse.bulkString("modules"), RespResponse.emptyArray());
+      RespResponse.bulkString("version"), RespResponse.bulkString(version),
+      RespResponse.bulkString("proto"), RespResponse.integer(protocol),
+      RespResponse.bulkString("id"), RespResponse.integer(ctx.getClient().getId()),
+      RespResponse.bulkString("mode"), RespResponse.bulkString("standalone"),
+      RespResponse.bulkString("role"), RespResponse.bulkString("master"),
+      RespResponse.bulkString("modules"), RespResponse.emptyArray());
   }
 }
-

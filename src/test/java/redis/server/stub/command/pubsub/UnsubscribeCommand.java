@@ -12,11 +12,11 @@ import redis.server.stub.command.RedisCommand;
 
 /**
  * UNSUBSCRIBE [channel [channel ...]]
+ * <p>
+ * Unsubscribe from one or more channels. If no channels specified, unsubscribes from ALL channels.
+ * <p>
+ * For each channel, sends an unsubscribe confirmation:
  * 
- * <p>Unsubscribe from one or more channels. If no channels specified, unsubscribes from ALL
- * channels.
- * 
- * <p>For each channel, sends an unsubscribe confirmation:
  * <pre>
  * *3
  * $11
@@ -42,7 +42,7 @@ public class UnsubscribeCommand implements RedisCommand {
       if (channels.isEmpty()) {
         // No channels to unsubscribe from
         response.append(RespResponse.array(RespResponse.bulkString("unsubscribe"),
-            RespResponse.nullBulkString(), RespResponse.integer(0)));
+          RespResponse.nullBulkString(), RespResponse.integer(0)));
       } else {
         // Unsubscribe from all channels
         // Copy to avoid concurrent modification
@@ -51,7 +51,7 @@ public class UnsubscribeCommand implements RedisCommand {
           int count = pubSubManager.getSubscriptionCount(subscriber);
 
           response.append(RespResponse.array(RespResponse.bulkString("unsubscribe"),
-              RespResponse.bulkString(channel), RespResponse.integer(count)));
+            RespResponse.bulkString(channel), RespResponse.integer(count)));
         }
       }
     } else {
@@ -62,7 +62,7 @@ public class UnsubscribeCommand implements RedisCommand {
         int count = pubSubManager.getSubscriptionCount(subscriber);
 
         response.append(RespResponse.array(RespResponse.bulkString("unsubscribe"),
-            RespResponse.bulkString(channel), RespResponse.integer(count)));
+          RespResponse.bulkString(channel), RespResponse.integer(count)));
       }
     }
 
@@ -74,4 +74,3 @@ public class UnsubscribeCommand implements RedisCommand {
     return "UNSUBSCRIBE";
   }
 }
-

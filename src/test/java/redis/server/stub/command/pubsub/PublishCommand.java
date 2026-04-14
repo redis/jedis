@@ -11,23 +11,24 @@ import redis.server.stub.command.RedisCommand;
 
 /**
  * PUBLISH channel message
- * 
- * <p>Publish a message to a channel. All clients subscribed to the channel (exact or via matching
+ * <p>
+ * Publish a message to a channel. All clients subscribed to the channel (exact or via matching
  * patterns) receive the message as a push notification.
+ * <p>
+ * Response: Integer indicating number of clients that received the message:
  * 
- * <p>Response: Integer indicating number of clients that received the message:
  * <pre>
  * :2     &lt;- Number of subscribers
  * </pre>
- * 
- * <p>Subscribers receive messages as RESP3 push:
+ * <p>
+ * Subscribers receive messages as RESP3 push:
  * <ul>
- *   <li>Exact subscribers: {@code >3 $7 message $... channel $... message}</li>
- *   <li>Pattern subscribers: {@code >4 $8 pmessage $... pattern $... channel $... message}</li>
+ * <li>Exact subscribers: {@code >3 $7 message $... channel $... message}</li>
+ * <li>Pattern subscribers: {@code >4 $8 pmessage $... pattern $... channel $... message}</li>
  * </ul>
- * 
- * <p>Note: If a client is subscribed both exactly and via pattern, it receives only ONE message
- * (the exact subscription takes priority to avoid duplicates).
+ * <p>
+ * Note: If a client is subscribed both exactly and via pattern, it receives only ONE message (the
+ * exact subscription takes priority to avoid duplicates).
  */
 public class PublishCommand implements RedisCommand {
 
@@ -56,4 +57,3 @@ public class PublishCommand implements RedisCommand {
     return "PUBLISH";
   }
 }
-

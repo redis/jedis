@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stub Redis server implementation for testing. Provides a minimal in-memory Redis implementation
@@ -130,6 +131,17 @@ public class RedisServerStub extends TcpMockServer {
   public void stop() throws IOException {
     // Shutdown command executor
     commandExecutor.shutdown();
+    try {
+      if (!commandExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+        commandExecutor.shutdownNow();
+        if (!commandExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+          throw new IllegalStateException("CommandExecutor did not terminate");
+        }
+      }
+    } catch (InterruptedException e) {
+      commandExecutor.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
 
     // Stop TCP server
     super.stop();

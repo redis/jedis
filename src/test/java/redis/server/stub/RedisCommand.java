@@ -1,4 +1,4 @@
-package redis.server.stub.command;
+package redis.server.stub;
 
 import redis.clients.jedis.CommandArguments;
 

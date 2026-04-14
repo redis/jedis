@@ -2,8 +2,8 @@ package redis.server.stub.command.server;
 
 import redis.clients.jedis.CommandArguments;
 import redis.server.stub.RespResponse;
-import redis.server.stub.command.RedisCommand;
-import redis.server.stub.command.CommandContext;
+import redis.server.stub.CommandContext;
+import redis.server.stub.RedisCommand;
 
 /**
  * AUTH [username] password Authenticates the current connection. Redis 6+ supports ACL with

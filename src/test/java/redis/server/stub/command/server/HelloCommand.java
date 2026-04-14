@@ -3,8 +3,8 @@ package redis.server.stub.command.server;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.server.stub.RespResponse;
-import redis.server.stub.command.RedisCommand;
-import redis.server.stub.command.CommandContext;
+import redis.server.stub.RedisCommand;
+import redis.server.stub.CommandContext;
 
 /**
  * HELLO [protover] [AUTH username password] [SETNAME clientname]

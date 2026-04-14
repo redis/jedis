@@ -2,8 +2,8 @@ package redis.server.stub.command.server;
 
 import redis.clients.jedis.CommandArguments;
 import redis.server.stub.RespResponse;
-import redis.server.stub.command.RedisCommand;
-import redis.server.stub.command.CommandContext;
+import redis.server.stub.RedisCommand;
+import redis.server.stub.CommandContext;
 
 /**
  * PING [message] Returns PONG if no message is provided. Returns the message if provided (echo).

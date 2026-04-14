@@ -2,8 +2,8 @@ package redis.server.stub.command.string;
 
 import redis.clients.jedis.CommandArguments;
 import redis.server.stub.RespResponse;
-import redis.server.stub.command.RedisCommand;
-import redis.server.stub.command.CommandContext;
+import redis.server.stub.RedisCommand;
+import redis.server.stub.CommandContext;
 import redis.server.stub.RedisKey;
 import redis.server.stub.StoredValue;
 

@@ -5,8 +5,8 @@ import redis.server.stub.RedisDataStore;
 import redis.server.stub.RedisKey;
 import redis.server.stub.RespResponse;
 import redis.server.stub.StoredValue;
-import redis.server.stub.command.CommandContext;
-import redis.server.stub.command.RedisCommand;
+import redis.server.stub.CommandContext;
+import redis.server.stub.RedisCommand;
 
 /**
  * SET key value Set key to hold the string value. If key already holds a value, it is overwritten.

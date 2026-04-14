@@ -7,8 +7,8 @@ import java.util.Map;
 import redis.clients.jedis.CommandArguments;
 import redis.server.stub.ClientState;
 import redis.server.stub.RespResponse;
-import redis.server.stub.command.CommandContext;
-import redis.server.stub.command.RedisCommand;
+import redis.server.stub.CommandContext;
+import redis.server.stub.RedisCommand;
 
 /**
  * CLIENT command with subcommands. Subcommands: - SETNAME - Set client name - GETNAME - Get client

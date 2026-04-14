@@ -7,8 +7,8 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.server.stub.PubSubManager;
 import redis.server.stub.RespResponse;
 import redis.server.stub.Subscriber;
-import redis.server.stub.command.CommandContext;
-import redis.server.stub.command.RedisCommand;
+import redis.server.stub.CommandContext;
+import redis.server.stub.RedisCommand;
 
 /**
  * PUNSUBSCRIBE [pattern [pattern ...]]

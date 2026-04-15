@@ -288,7 +288,6 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
 
     assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setNoStopwords(), sc));
     Map<String, Object> fields = new HashMap<>();
-    fields.put("title", "hello world foo bar");
     fields.put("title", "hello world foo bar to be or not to be");
     addDocument("doc1", fields);
 

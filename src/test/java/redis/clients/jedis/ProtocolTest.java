@@ -145,17 +145,22 @@ public class ProtocolTest {
   public void readPushConsumer_PushNotPropagated() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
-    PushConsumer handler = pushContext -> {
-        receivedMessages.add(pushContext.getMessage());
-        pushContext.setReturnToCaller(false);
+    PushConsumer consumer = new PushConsumer() {
+
+      @Override
+      public PushConsumerContext handle(PushConsumerContext context) {
+        receivedMessages.add(context.getMessage());
+        return  context;
+      }
     };
+    PushConsumerChainImpl chain = PushConsumerChainImpl.of(consumer);
 
     // Create a stream with a push message followed by a regular response
     byte[] data = (">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nfoo\r\n+OK\r\n").getBytes();
     RedisInputStream is = new RedisInputStream(new ByteArrayInputStream(data));
 
     // Read the response, which should process the push message first
-    Object response = Protocol.read(is, handler);
+    Object response = Protocol.read(is, chain);
 
     // Verify the response
     assertArrayEquals(SafeEncoder.encode("OK"), (byte[]) response);
@@ -178,8 +183,16 @@ public class ProtocolTest {
   public void readPushConsumer_MultiplePushEventsAreNotPropagated() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
-    PushConsumer handler = pushContext -> { receivedMessages.add(pushContext.getMessage()); pushContext.setReturnToCaller(false); };
+    PushConsumer consumer =  new PushConsumer() {
+      @Override
+      public PushConsumerContext handle(PushConsumerContext context) {
+        receivedMessages.add(context.getMessage());
 
+        return context;
+      }
+    };
+
+    PushConsumerChainImpl chain = PushConsumerChainImpl.of(consumer);
 
     // Create a stream with multiple push messages followed by a regular response
     byte[] data = (
@@ -191,7 +204,7 @@ public class ProtocolTest {
     RedisInputStream is = new RedisInputStream(new ByteArrayInputStream(data));
 
     // Read the response, which should process all push messages first
-    Object response = Protocol.read(is, handler);
+    Object response = Protocol.read(is, chain);
 
     // Verify the response
     assertEquals(123L, response);
@@ -221,10 +234,18 @@ public class ProtocolTest {
   public void readPushConsumer_PushPropagatedAsList() {
     // Create a mock push listener
     final List<PushMessage> receivedMessages = new ArrayList<>();
-    PushConsumer handler = pushContext -> {
-      receivedMessages.add(pushContext.getMessage());
-      pushContext.setReturnToCaller(true);
+    PushConsumer consumer = new PushConsumer() {
+
+      @Override
+      public PushConsumerContext handle(PushConsumerContext context) {
+        receivedMessages.add(context.getMessage());
+        context.propagate();
+
+        return context;
+      }
     };
+
+    PushConsumerChain chain = PushConsumerChainImpl.of(consumer);
 
     // Create a stream with a push message followed by a regular response
     byte[] data = (">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nfoo\r\n+OK\r\n").getBytes();
@@ -233,7 +254,7 @@ public class ProtocolTest {
     // Read the response, which should return
     //    - invoke the push handler with the push message
     //    - propagate the push message as the read output since it was not processed
-    Object pushMessage = Protocol.read(is, handler);
+    Object pushMessage = Protocol.read(is, chain);
 
     // Verify the push message is propagated as the read output
     assertInstanceOf(ArrayList.class, pushMessage);
@@ -248,7 +269,7 @@ public class ProtocolTest {
 
 
     // Second read should return the command response itself
-    Object commandResponse = Protocol.read(is, handler);
+    Object commandResponse = Protocol.read(is, chain);
 
     // Verify the response
     assertArrayEquals(SafeEncoder.encode("OK"), (byte[]) commandResponse);

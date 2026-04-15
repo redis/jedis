@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +16,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.PushConsumer;
-import redis.clients.jedis.PushConsumerChain;
+import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -62,7 +61,7 @@ public class CacheConnectionMockTest {
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
       // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
         instanceOf(CacheConnection.PushInvalidateConsumer.class)));
     }
 
@@ -79,7 +78,7 @@ public class CacheConnectionMockTest {
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
       // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
         instanceOf(CacheConnection.PushInvalidateConsumer.class)));
     }
 

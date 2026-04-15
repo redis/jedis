@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -48,7 +48,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
     }
 
     /**
@@ -65,7 +65,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
         instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
 
@@ -83,7 +83,7 @@ public class ConnectionMockTest {
       Connection conn = Connection.builder().socketFactory(socketFactory).clientConfig(config)
           .build();
 
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER),
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
         instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
 
@@ -93,7 +93,7 @@ public class ConnectionMockTest {
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChain.PUBSUB_ONLY_CONSUMER)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
     }
   }
 }

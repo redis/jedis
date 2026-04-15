@@ -144,8 +144,13 @@ public class PushMessageNotificationTest {
     List<PushMessage> receivedMessages = new ArrayList<>();
 
     // Create a custom push listener
-    PushConsumer listener = pushContext -> {
-      receivedMessages.add(pushContext.getMessage());
+    PushConsumer listener = new PushConsumer() {
+      @Override
+      public PushConsumerContext handle(PushConsumerContext context) {
+        receivedMessages.add(context.getMessage());
+
+        return context;
+      }
     };
 
     // Create connection with RESP3 protocol

@@ -10,9 +10,9 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
+import redis.clients.jedis.PushConsumerChain;
 import redis.clients.jedis.PushConsumerContext;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
@@ -74,11 +74,13 @@ public class CacheConnection extends Connection {
     }
 
     @Override
-    public void accept(PushConsumerContext event) {
-      if (event.getMessage().getType().equals("invalidate")) {
-        cache.deleteByRedisKeys((List) event.getMessage().getContent().get(1));
-        event.setReturnToCaller(false);
+    public PushConsumerContext handle(PushConsumerContext context) {
+      if (context.getMessage().getType().equals("invalidate")) {
+        cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
+        context.drop();
       }
+
+      return context;
     }
   }
 
@@ -105,7 +107,7 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected Object protocolRead(RedisInputStream inputStream, PushConsumer consumer) {
+  protected Object protocolRead(RedisInputStream inputStream, PushConsumerChain consumer) {
     lock.lock();
     try {
       // return Protocol.read(inputStream, cache);

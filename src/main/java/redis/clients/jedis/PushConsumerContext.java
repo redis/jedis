@@ -1,23 +1,30 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 
 /**
  * Context object for push message processing.
  * <p>
- * Used by {@link PushConsumer} to inspect and control message processing.
- * <p>
- * The {@link PushConsumerContext} object is created for each push message and passed to all
- * registered {@link PushConsumer}. Consumers can inspect the message and decide whether to let push
- * message be returned to the caller as result or process it themselves and prevent it from being
- * returned.
+ * Used by {@link PushConsumerChainImpl} to inspect and control message processing. The
+ * {@link PushConsumerContext} object is created for each push message and passed to all registered
+ * {@link PushConsumer}'s.
  * </p>
+ * Consumers can inspect the message and decide weather to :
+ * <ul>
+ * <li>return to the caller and skip the rest of consumers by calling
+ * {@link PushConsumerContext#propagate()}</li>
+ * <li>drop message without processing it further by calling {@link PushConsumerContext#drop()}
+ * to</li>
+ * <li>inspect and let it be processed by following consumers</li>
+ * </ul>
  */
-@Internal
+@Experimental
 public class PushConsumerContext {
   private final PushMessage message;
 
-  private boolean returnToCaller = false;
+  private boolean propagate = false;
+  private boolean drop = false;
 
   public PushConsumerContext(PushMessage message) {
     this.message = message;
@@ -35,17 +42,31 @@ public class PushConsumerContext {
    * Check if the message should be returned to the caller.
    * @return true if the message should be returned to the caller
    */
-  public boolean isReturnToCaller() {
-    return returnToCaller;
+  public boolean shouldPropagate() {
+    return propagate;
   }
 
   /**
    * Set whether the message should be returned to the caller. By default, if no consumer sets this
    * flag, the message will not be returned to the caller and will be silently consumed.
-   * @param returnToCaller
    */
-  public void setReturnToCaller(boolean returnToCaller) {
-    this.returnToCaller = returnToCaller;
+  public void propagate() {
+    this.propagate = true;
   }
 
+  /**
+   * Set whether the message should be dropped, it is not returned to caller or passed to following
+   * consumers.
+   */
+  public void drop() {
+    this.drop = true;
+  }
+
+  /**
+   * Check if the message should be dropped and not processed further.
+   * @return true if the message should be dropped
+   */
+  public boolean shouldDrop() {
+    return drop;
+  }
 }

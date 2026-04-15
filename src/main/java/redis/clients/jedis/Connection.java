@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -22,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.VisibleForTesting;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.authentication.AuthXManager;
@@ -96,7 +95,7 @@ public class Connection implements Closeable {
   private JedisClientConfig clientConfig;
   private boolean rebindRequested = false;
 
-  private PushConsumerChain pushConsumers;
+  private PushConsumerChainImpl pushConsumers;
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -137,8 +136,8 @@ public class Connection implements Closeable {
        * Marks all @{link PushMessages as processed, except for pub/sub.
        * Pub/sub messages are propagated to the client.
        */
-      this.pushConsumers = PushConsumerChain.of(
-              PushConsumerChain.PUBSUB_ONLY_CONSUMER
+      this.pushConsumers = PushConsumerChainImpl.of(
+              PushConsumerChainImpl.PUBSUB_CONSUMER
       );
 
       if (config != null) {
@@ -478,8 +477,8 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  protected Object protocolRead(RedisInputStream is, PushConsumer handler) {
-    return Protocol.read(is, handler);
+  protected Object protocolRead(RedisInputStream is, PushConsumerChain consumer) {
+    return Protocol.read(is, consumer);
   }
 
   @Experimental
@@ -730,7 +729,7 @@ public class Connection implements Closeable {
     return pushConsumers.getConsumers();
   }
 
-  @Experimental
+  @Internal
   protected void addPushConsumer(PushConsumer consumer) {
     this.pushConsumers.add(consumer);
   }
@@ -808,27 +807,35 @@ public class Connection implements Closeable {
       this.proactiveRebindEnabled = proactiveRebindEnabled;
     }
 
+
     @Override
-    public void accept(PushConsumerContext context) {
+    public PushConsumerContext handle(PushConsumerContext context) {
       PushMessage message = context.getMessage();
 
       switch (message.getType()) {
       case "MOVING":
         onMoving(message);
+        context.drop();
         break;
       case "MIGRATING":
         relaxTimeouts();
+        context.drop();
         break;
       case "MIGRATED":
         disableRelaxedTimeout();
+        context.drop();
         break;
       case "FAILING_OVER":
         relaxTimeouts();
+        context.drop();
         break;
       case "FAILED_OVER":
         disableRelaxedTimeout();
+        context.drop();
         break;
       }
+
+      return context;
     }
 
     private void onMoving(PushMessage message) {
@@ -871,5 +878,6 @@ public class Connection implements Closeable {
         return null;
       }
     }
+
   }
 }

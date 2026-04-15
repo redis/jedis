@@ -6,7 +6,7 @@ import java.util.List;
 
 public class PushMessage {
   private String type;
-  private List<Object> content;
+  private final List<Object> content;
 
   public PushMessage(List<Object> content) {
     this.content = content;

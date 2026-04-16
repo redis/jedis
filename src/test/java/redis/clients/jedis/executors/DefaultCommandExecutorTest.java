@@ -33,7 +33,7 @@ public class DefaultCommandExecutorTest {
   @Test
   public void constructorRejectsNullProvider() {
     assertThrows(IllegalArgumentException.class,
-        () -> new DefaultCommandExecutor(null, 3, Duration.ofSeconds(1)));
+      () -> new DefaultCommandExecutor(null, 3, Duration.ofSeconds(1)));
   }
 
   @Test
@@ -58,13 +58,11 @@ public class DefaultCommandExecutorTest {
 
   @Test
   public void fastPathPropagatesConnectionException() {
-    when(mockProvider.getConnection(any()))
-        .thenThrow(new JedisConnectionException("down"));
+    when(mockProvider.getConnection(any())).thenThrow(new JedisConnectionException("down"));
 
     DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider);
 
-    assertThrows(JedisConnectionException.class,
-        () -> executor.executeCommand(mockCommandObject));
+    assertThrows(JedisConnectionException.class, () -> executor.executeCommand(mockCommandObject));
     verify(mockProvider, times(1)).getConnection(any());
   }
 
@@ -74,11 +72,10 @@ public class DefaultCommandExecutorTest {
   public void retriesOnConnectionFailureThenSucceeds() {
     when(mockProvider.getConnection(any())).thenReturn(mockConnection);
     when(mockConnection.executeCommand(mockCommandObject))
-        .thenThrow(new JedisConnectionException("fail"))
-        .thenReturn("recovered");
+        .thenThrow(new JedisConnectionException("fail")).thenReturn("recovered");
 
-    DefaultCommandExecutor executor = new DefaultCommandExecutor(
-        mockProvider, 3, Duration.ofSeconds(10));
+    DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider, 3,
+        Duration.ofSeconds(10));
 
     assertEquals("recovered", executor.executeCommand(mockCommandObject));
     verify(mockProvider, times(2)).getConnection(any());
@@ -92,11 +89,11 @@ public class DefaultCommandExecutorTest {
     when(mockConnection.executeCommand(any(CommandObject.class)))
         .thenThrow(new JedisConnectionException("fail"));
 
-    DefaultCommandExecutor executor = new DefaultCommandExecutor(
-        mockProvider, 3, Duration.ofSeconds(10));
+    DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider, 3,
+        Duration.ofSeconds(10));
 
     JedisException ex = assertThrows(JedisException.class,
-        () -> executor.executeCommand(mockCommandObject));
+      () -> executor.executeCommand(mockCommandObject));
 
     assertEquals("No more attempts left.", ex.getMessage());
     assertEquals(1, ex.getSuppressed().length);
@@ -113,11 +110,11 @@ public class DefaultCommandExecutorTest {
     when(mockConnection.executeCommand(any(CommandObject.class)))
         .thenThrow(new JedisConnectionException("fail"));
 
-    DefaultCommandExecutor executor = new DefaultCommandExecutor(
-        mockProvider, 100, Duration.ofMillis(1));
+    DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider, 100,
+        Duration.ofMillis(1));
 
     JedisException ex = assertThrows(JedisException.class,
-        () -> executor.executeCommand(mockCommandObject));
+      () -> executor.executeCommand(mockCommandObject));
 
     // Should have stopped before 100 attempts due to deadline
     assertTrue(verify(mockProvider, atMost(100)).getConnection(any()) != null || true);
@@ -132,11 +129,10 @@ public class DefaultCommandExecutorTest {
     when(mockConnection.executeCommand(any(CommandObject.class)))
         .thenThrow(new JedisConnectionException("fail"));
 
-    DefaultCommandExecutor executor = new DefaultCommandExecutor(
-        mockProvider, 2, Duration.ofSeconds(5));
+    DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider, 2,
+        Duration.ofSeconds(5));
 
-    assertThrows(JedisException.class,
-        () -> executor.executeCommand(mockCommandObject));
+    assertThrows(JedisException.class, () -> executor.executeCommand(mockCommandObject));
 
     // try-with-resources closes connection on each attempt
     verify(mockConnection, times(2)).close();
@@ -147,8 +143,8 @@ public class DefaultCommandExecutorTest {
     when(mockProvider.getConnection(any())).thenReturn(mockConnection);
     when(mockConnection.executeCommand(mockCommandObject)).thenReturn("ok");
 
-    DefaultCommandExecutor executor = new DefaultCommandExecutor(
-        mockProvider, 3, Duration.ofSeconds(5));
+    DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider, 3,
+        Duration.ofSeconds(5));
     executor.executeCommand(mockCommandObject);
 
     verify(mockConnection, times(1)).close();
@@ -161,11 +157,10 @@ public class DefaultCommandExecutorTest {
     when(mockProvider.getConnection(any()))
         .thenThrow(new JedisConnectionException("cannot connect"));
 
-    DefaultCommandExecutor executor = new DefaultCommandExecutor(
-        mockProvider, 3, Duration.ofSeconds(5));
+    DefaultCommandExecutor executor = new DefaultCommandExecutor(mockProvider, 3,
+        Duration.ofSeconds(5));
 
-    assertThrows(JedisException.class,
-        () -> executor.executeCommand(mockCommandObject));
+    assertThrows(JedisException.class, () -> executor.executeCommand(mockCommandObject));
 
     verify(mockProvider, times(3)).getConnection(any());
     // Connection was never obtained, so close is never called

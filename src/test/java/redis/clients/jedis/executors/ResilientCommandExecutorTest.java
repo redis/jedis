@@ -16,21 +16,20 @@ public class ResilientCommandExecutorTest {
   @Test
   public void constructorRejectsZeroMaxAttempts() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-        () -> new TestableExecutor(0, Duration.ofSeconds(1)));
+      () -> new TestableExecutor(0, Duration.ofSeconds(1)));
     assertTrue(ex.getMessage().contains("maxAttempts"));
   }
 
   @Test
   public void constructorRejectsNegativeMaxAttempts() {
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-        () -> new TestableExecutor(-1, Duration.ofSeconds(1)));
+      () -> new TestableExecutor(-1, Duration.ofSeconds(1)));
     assertTrue(ex.getMessage().contains("maxAttempts"));
   }
 
   @Test
   public void constructorRejectsNullDuration() {
-    assertThrows(IllegalArgumentException.class,
-        () -> new TestableExecutor(3, null));
+    assertThrows(IllegalArgumentException.class, () -> new TestableExecutor(3, null));
   }
 
   @Test
@@ -102,7 +101,7 @@ public class ResilientCommandExecutorTest {
     Instant deadline = Instant.now().plusMillis(10_000);
     // With more attempts left, max backoff is smaller (time is spread out)
     // maxBackoff for 10 attempts = 10000 / 100 = 100
-    // maxBackoff for 2 attempts  = 10000 / 4   = 2500
+    // maxBackoff for 2 attempts = 10000 / 4 = 2500
     // Run many iterations to verify trend holds on average
     long sumMany = 0, sumFew = 0;
     int iterations = 1000;
@@ -111,7 +110,7 @@ public class ResilientCommandExecutorTest {
       sumFew += ResilientCommandExecutor.computeBackoffMillis(2, deadline);
     }
     assertTrue(sumFew / iterations > sumMany / iterations,
-        "Fewer attempts left should produce larger average backoff");
+      "Fewer attempts left should produce larger average backoff");
   }
 
   // --- sleep ---
@@ -150,10 +149,13 @@ public class ResilientCommandExecutorTest {
       super(maxAttempts, maxTotalRetriesDuration);
     }
 
-    @Override public <T> T executeCommand(redis.clients.jedis.CommandObject<T> commandObject) {
+    @Override
+    public <T> T executeCommand(redis.clients.jedis.CommandObject<T> commandObject) {
       throw new UnsupportedOperationException("stub");
     }
 
-    @Override public void close() { }
+    @Override
+    public void close() {
+    }
   }
 }

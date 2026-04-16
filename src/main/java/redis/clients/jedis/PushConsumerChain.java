@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import jdk.jfr.Experimental;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.RedisInputStream;
 
 import java.util.List;

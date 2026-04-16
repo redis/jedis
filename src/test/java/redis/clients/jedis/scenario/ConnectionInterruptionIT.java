@@ -45,10 +45,11 @@ public class ConnectionInterruptionIT {
         endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build(),
         RecommendedSettings.poolConfig);
 
-    // RedisClient includes retry logic by default (5 attempts, 10s)
     RedisClient client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
         .clientConfig(endpoint.getClientConfigBuilder().build())
-        .connectionProvider(connectionProvider).poolConfig(RecommendedSettings.poolConfig).build();
+        .connectionProvider(connectionProvider).poolConfig(RecommendedSettings.poolConfig)
+        .maxAttempts(RecommendedSettings.MAX_RETRIES)
+        .maxTotalRetriesDuration(RecommendedSettings.MAX_TOTAL_RETRIES_DURATION).build();
     String keyName = "counter";
     client.set(keyName, "0");
     assertEquals("0", client.get(keyName));
@@ -101,10 +102,11 @@ public class ConnectionInterruptionIT {
         endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build(),
         RecommendedSettings.poolConfig);
 
-    // RedisClient includes retry logic by default (5 attempts, 10s)
     RedisClient client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
         .clientConfig(endpoint.getClientConfigBuilder().build())
-        .connectionProvider(connectionProvider).poolConfig(RecommendedSettings.poolConfig).build();
+        .connectionProvider(connectionProvider).poolConfig(RecommendedSettings.poolConfig)
+        .maxAttempts(RecommendedSettings.MAX_RETRIES)
+        .maxTotalRetriesDuration(RecommendedSettings.MAX_TOTAL_RETRIES_DURATION).build();
 
     AtomicLong messagesSent = new AtomicLong();
     AtomicLong messagesReceived = new AtomicLong();

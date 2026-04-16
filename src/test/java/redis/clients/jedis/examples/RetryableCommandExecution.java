@@ -9,10 +9,8 @@ import redis.clients.jedis.RedisClient;
 
 /**
  * RedisClient includes retry logic by default (5 attempts, 10 seconds total).
- *
  * The retry parameters can be customized via the builder's {@code maxAttempts} and
  * {@code maxTotalRetriesDuration} methods.
- *
  * Note: For Redis Cluster mode, use {@link redis.clients.jedis.RedisClusterClient} which handles
  * cluster-specific concerns (MOVED/ASK redirections, slot cache renewal) in addition to retries.
  */

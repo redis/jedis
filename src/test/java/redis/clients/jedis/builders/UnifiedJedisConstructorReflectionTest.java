@@ -62,7 +62,7 @@ public class UnifiedJedisConstructorReflectionTest {
 
         if (t == HostAndPort.class) {
           paramCovered[i] = true;
-          paramCoverageBy[i] = "JedisPooled.builder().hostAndPort(HostAndPort)";
+          paramCoverageBy[i] = "RedisClient.builder().hostAndPort(HostAndPort)";
         } else if (t == URI.class) {
           paramCovered[i] = true;
           paramCoverageBy[i] = "builder().fromURI(URI)";
@@ -98,7 +98,7 @@ public class UnifiedJedisConstructorReflectionTest {
           String lname = name.toLowerCase();
           if (lname.contains("url") || lname.contains("uri")) {
             paramCovered[i] = true;
-            paramCoverageBy[i] = "JedisPooled.builder().fromURI(String)";
+            paramCoverageBy[i] = "RedisClient.builder().fromURI(String)";
           } else {
             paramCovered[i] = false;
             paramWhyMissing[i] = "No known builder mapping for type: " + t.getSimpleName();

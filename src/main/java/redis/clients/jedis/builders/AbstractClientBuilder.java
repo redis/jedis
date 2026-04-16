@@ -57,9 +57,9 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   @Deprecated
   protected int searchDialect = SearchProtocol.DEFAULT_DIALECT;
 
-  // Default retry settings based on RecommendedSettings
-  protected int maxAttempts = 5;
-  protected Duration maxTotalRetriesDuration = Duration.ofSeconds(10);
+  // Retry settings — maxTotalRetriesDuration is null until explicitly set or computed at build time
+  protected int maxAttempts = UnifiedJedis.DEFAULT_MAX_ATTEMPTS;
+  protected Duration maxTotalRetriesDuration = null;
 
   protected JedisClientConfig clientConfig = null;
 
@@ -67,7 +67,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * Sets the maximum number of retry attempts for command execution.
    * <p>
    * When a command fails due to a connection error, the executor will retry up to this many times
-   * before giving up. Default is 5.
+   * before giving up. Default is {@link UnifiedJedis#DEFAULT_MAX_ATTEMPTS}.
    * @param maxAttempts the maximum number of attempts (must be positive)
    * @return this builder
    */
@@ -79,8 +79,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   /**
    * Sets the maximum total duration for all retry attempts.
    * <p>
-   * This provides a time-based limit on retries in addition to the attempt-based limit. Default is
-   * 10 seconds.
+   * This provides a time-based limit on retries in addition to the attempt-based limit. If not
+   * explicitly set, it is computed at build time as {@code socketTimeoutMillis * maxAttempts}.
    * @param maxTotalRetriesDuration the maximum total retry duration
    * @return this builder
    */
@@ -209,6 +209,12 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
       // setters on top so the explicit builder call wins over whatever the supplied config carried.
       this.clientConfig = applyDeprecatedCommandObjectFields(
         DefaultJedisClientConfig.builder().from(this.clientConfig)).build();
+    }
+
+    // Compute effective maxTotalRetriesDuration if not explicitly set
+    if (this.maxTotalRetriesDuration == null) {
+      this.maxTotalRetriesDuration = Duration
+          .ofMillis((long) this.clientConfig.getSocketTimeoutMillis() * this.maxAttempts);
     }
 
     // Create default connection provider if not set
@@ -384,6 +390,14 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
       if (clientConfig != null && !canNegotiateResp3(clientConfig)) {
         throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
       }
+    }
+
+    if (maxAttempts <= 0) {
+      throw new IllegalArgumentException("Max attempts must be positive");
+    }
+
+    if (maxTotalRetriesDuration != null && maxTotalRetriesDuration.isNegative()) {
+      throw new IllegalArgumentException("Max total retries duration cannot be negative");
     }
   }
 

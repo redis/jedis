@@ -20,7 +20,7 @@ public abstract class ClusterClientBuilder<C>
 
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
-  private int maxAttempts = RedisClusterClient.DEFAULT_MAX_ATTEMPTS;
+  private int maxAttempts = UnifiedJedis.DEFAULT_MAX_ATTEMPTS;
   private Duration maxTotalRetriesDuration;
   private Duration topologyRefreshPeriod = null;
   private CommandFlagsRegistry commandFlags = null;

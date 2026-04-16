@@ -15,6 +15,7 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.JedisAsserts;
 
+@Deprecated
 public class RetryableCommandExecutor implements CommandExecutor {
 
   private final Logger log = LoggerFactory.getLogger(getClass());

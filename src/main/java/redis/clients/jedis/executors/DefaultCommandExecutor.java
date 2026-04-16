@@ -54,7 +54,10 @@ public class DefaultCommandExecutor extends ResilientCommandExecutor {
         lastException = jce;
         log.debug("Failed connecting to Redis (attempt {}/{})", attempt, maxAttempts, jce);
 
-        if (attempt < maxAttempts && Instant.now().isBefore(deadline)) {
+        if (attempt < maxAttempts) {
+          if (Instant.now().isAfter(deadline)) {
+            break;
+          }
           sleep(computeBackoffMillis(maxAttempts - attempt, deadline));
         }
       }

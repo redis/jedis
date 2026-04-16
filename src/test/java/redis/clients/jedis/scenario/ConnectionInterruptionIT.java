@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -42,11 +41,14 @@ public class ConnectionInterruptionIT {
   @ParameterizedTest
   @ValueSource(strings = { "dmc_restart", "network_failure" })
   public void testWithPool(String triggerAction) {
-    ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build(), RecommendedSettings.poolConfig);
+    PooledConnectionProvider connectionProvider = new PooledConnectionProvider(
+        endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build(),
+        RecommendedSettings.poolConfig);
 
-    UnifiedJedis client = new UnifiedJedis(connectionProvider, RecommendedSettings.MAX_RETRIES,
-        RecommendedSettings.MAX_TOTAL_RETRIES_DURATION);
+    // RedisClient includes retry logic by default (5 attempts, 10s)
+    RedisClient client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(endpoint.getClientConfigBuilder().build())
+        .connectionProvider(connectionProvider).poolConfig(RecommendedSettings.poolConfig).build();
     String keyName = "counter";
     client.set(keyName, "0");
     assertEquals("0", client.get(keyName));
@@ -95,11 +97,14 @@ public class ConnectionInterruptionIT {
   @ParameterizedTest
   @ValueSource(strings = { "dmc_restart", "network_failure" })
   public void testWithPubSub(String triggerAction) {
-    ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build(), RecommendedSettings.poolConfig);
+    PooledConnectionProvider connectionProvider = new PooledConnectionProvider(
+        endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build(),
+        RecommendedSettings.poolConfig);
 
-    UnifiedJedis client = new UnifiedJedis(connectionProvider, RecommendedSettings.MAX_RETRIES,
-        RecommendedSettings.MAX_TOTAL_RETRIES_DURATION);
+    // RedisClient includes retry logic by default (5 attempts, 10s)
+    RedisClient client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+        .clientConfig(endpoint.getClientConfigBuilder().build())
+        .connectionProvider(connectionProvider).poolConfig(RecommendedSettings.poolConfig).build();
 
     AtomicLong messagesSent = new AtomicLong();
     AtomicLong messagesReceived = new AtomicLong();
@@ -146,7 +151,7 @@ public class ConnectionInterruptionIT {
   }
 
   private static Thread getSubscriberThread(AtomicLong messagesReceived,
-      ConnectionProvider connectionProvider) {
+      PooledConnectionProvider connectionProvider) {
     final JedisPubSubBase<String> pubSub = new JedisPubSubBase<String>() {
 
       @Override

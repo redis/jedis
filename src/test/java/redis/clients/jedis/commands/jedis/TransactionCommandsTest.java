@@ -31,11 +31,13 @@ import org.mockito.Mockito;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushConsumerChain;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -179,7 +181,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     trans.set("b", "b");
 
     try (MockedStatic<Protocol> protocol = Mockito.mockStatic(Protocol.class)) {
-      protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+      protocol.when(() -> Protocol.read(any(RedisInputStream.class), any(PushConsumerChain.class))).thenThrow(JedisConnectionException.class);
 
       trans.discard();
       fail("Should get mocked JedisConnectionException.");
@@ -199,7 +201,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     trans.set("b", "b");
 
     try (MockedStatic<Protocol> protocol = Mockito.mockStatic(Protocol.class)) {
-      protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+      protocol.when(() -> Protocol.read(any(RedisInputStream.class), any(PushConsumerChain.class))).thenThrow(JedisConnectionException.class);
 
       trans.exec();
       fail("Should get mocked JedisConnectionException.");

@@ -29,10 +29,11 @@ public abstract class ResilientCommandExecutor implements CommandExecutor {
 
   /**
    * Constructs a resilient command executor with the specified retry parameters.
-   *
    * @param maxAttempts the maximum number of attempts (must be &gt; 0)
-   * @param maxTotalRetriesDuration the maximum total duration for all retry attempts (must not be null)
-   * @throws IllegalArgumentException if maxAttempts is not positive or maxTotalRetriesDuration is null
+   * @param maxTotalRetriesDuration the maximum total duration for all retry attempts (must not be
+   *          null)
+   * @throws IllegalArgumentException if maxAttempts is not positive or maxTotalRetriesDuration is
+   *           null
    */
   protected ResilientCommandExecutor(int maxAttempts, Duration maxTotalRetriesDuration) {
     JedisAsserts.isTrue(maxAttempts > 0, "maxAttempts must be greater than 0");
@@ -60,7 +61,6 @@ public abstract class ResilientCommandExecutor implements CommandExecutor {
 
   /**
    * Computes the remaining time in milliseconds until the given deadline.
-   *
    * @param deadline the retry deadline
    * @return remaining milliseconds, or 0 if the deadline has already passed
    */
@@ -75,7 +75,6 @@ public abstract class ResilientCommandExecutor implements CommandExecutor {
    * The maximum backoff is {@code millisLeft / (attemptsLeft²)}, which distributes the remaining
    * time budget across outstanding attempts. A random value in {@code [0, maxBackoff]} is returned
    * to add jitter, preventing retry storms when multiple clients fail simultaneously.
-   *
    * @param attemptsLeft the number of attempts remaining (must be &gt; 0)
    * @param deadline the retry deadline
    * @return backoff duration in milliseconds ({@code 0} when no time is left or no attempts remain)
@@ -96,7 +95,6 @@ public abstract class ResilientCommandExecutor implements CommandExecutor {
 
   /**
    * Sleeps for the specified duration, preserving the thread's interrupt status.
-   *
    * @param sleepMillis milliseconds to sleep; values &le; 0 are no-ops
    * @throws JedisException wrapping {@link InterruptedException} if the thread is interrupted
    */

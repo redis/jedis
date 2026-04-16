@@ -38,15 +38,15 @@ public class UdsTest {
 
   @Test
   public void unifiedJedisConnectsToUds() {
-    try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory())) {
+    try (UnifiedJedis jedis = new UnifiedJedis(new Connection(new UdsJedisSocketFactory()))) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void unifiedJedisConnectsToUdsResp3() {
-    try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory(),
-        DefaultJedisClientConfig.builder().resp3().build())) {
+    try (UnifiedJedis jedis = new UnifiedJedis(new Connection(new UdsJedisSocketFactory(),
+        DefaultJedisClientConfig.builder().resp3().build()))) {
       assertEquals("PONG", jedis.ping());
     }
   }

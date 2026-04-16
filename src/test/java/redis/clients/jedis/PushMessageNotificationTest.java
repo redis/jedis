@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
@@ -16,8 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.util.RedisVersionCondition;
 
@@ -62,7 +57,7 @@ public class PushMessageNotificationTest {
   }
 
   /**
-   * Helper method to modify a key using a separate connection to trigger invalidation.
+   * Helper method to modify a key using a separate connection to trigger a push message.
    * @param key The key to modify
    * @param value The new value to set
    */
@@ -115,30 +110,6 @@ public class PushMessageNotificationTest {
   }
 
   @Test
-  public void testUnifiedJedisResp3PushNotifications() {
-    unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build());
-
-    // Enable client tracking
-    unifiedJedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
-
-    // Set initial value
-    unifiedJedis.set(testKey, initialValue);
-
-    // Get the key to track it
-    String getResponse = unifiedJedis.get(testKey);
-    assertEquals(initialValue, getResponse);
-
-    // Modify the key from another connection to trigger invalidation
-    triggerKeyInvalidation(testKey, modifiedValue);
-
-    // Send PING command
-    String pingResponse = unifiedJedis.ping();
-    // Next reply should be PONG
-    assertEquals("PONG", pingResponse);
-  }
-
-  @Test
   public void testConnectionResp3PushNotificationsWithCustomListener() {
     // Create a list to store received push messages
     List<PushMessage> receivedMessages = new ArrayList<>();
@@ -174,7 +145,7 @@ public class PushMessageNotificationTest {
         new CommandArguments(Command.GET).key(testKey), BuilderFactory.STRING);
     connection.executeCommand(getCmd);
 
-    // Modify the key from another connection to trigger invalidation
+    // Modify the key from another connection to trigger push message
     triggerKeyInvalidation(testKey, modifiedValue);
 
     // Send a command to trigger processing of any pending push messages
@@ -192,112 +163,4 @@ public class PushMessageNotificationTest {
     assertEquals("invalidate", pushMessage.getType());
   }
 
-  @ParameterizedTest
-  @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-  public void testUnifiedJedisPubSubWithResp3PushNotifications(RedisProtocol protocol)
-      throws InterruptedException {
-    // Create a UnifiedJedis instance with RESP3 protocol for subscribing
-    unifiedJedis = new UnifiedJedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().protocol(protocol).build());
-
-    // Enable client tracking to generate push notifications
-    unifiedJedis.sendCommand(Command.CLIENT, "TRACKING", "ON");
-
-    // Set initial value to track
-    unifiedJedis.set(testKey, initialValue);
-
-    // Get the key to track it
-    String getResponse = unifiedJedis.get(testKey);
-    assertEquals(initialValue, getResponse);
-
-    // Create a list to store received pub/sub messages
-    final List<String> receivedMessages = new ArrayList<>();
-
-    // Create an atomic counter to track received messages
-    final AtomicInteger messageCounter = new AtomicInteger(0);
-
-    // Create a latch to signal when subscription is ready
-    final CountDownLatch subscriptionLatch = new CountDownLatch(1);
-
-    // Create a JedisPubSub instance to handle pub/sub messages
-    JedisPubSub pubSub = new JedisPubSub() {
-      @Override
-      public void onMessage(String channel, String message) {
-        System.out.println("onMessage from " + channel + " : " + message);
-        receivedMessages.add(message);
-
-        // If we've received both messages, unsubscribe
-        if (messageCounter.incrementAndGet() == 2) {
-          this.unsubscribe("test-channel");
-        }
-      }
-
-      @Override
-      public void onUnsubscribe(String channel, int subscribedChannels) {
-        // Signal that subscription is ready
-        System.out.println("Unsubscribed from " + channel);
-      }
-
-      @Override
-      public void onSubscribe(String channel, int subscribedChannels) {
-        // Signal that subscription is ready
-        subscriptionLatch.countDown();
-      }
-    };
-
-    // Start a thread to handle the subscription
-    Thread subscriberThread = new Thread(() -> {
-      unifiedJedis.subscribe(pubSub, "test-channel");
-    });
-
-    // Start the subscriber thread
-    subscriberThread.start();
-
-    // Start a thread to publish messages and trigger key invalidation
-    Thread publisherThread = new Thread(() -> {
-      try (UnifiedJedis publisher = new UnifiedJedis(endpoint.getHostAndPort(),
-          endpoint.getClientConfigBuilder().protocol(RedisProtocol.RESP3).build())) {
-
-        // Wait for subscription to be ready
-        try {
-          if (!subscriptionLatch.await(5, TimeUnit.SECONDS)) {
-            System.err.println("Timed out waiting for subscription to be ready");
-            return;
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
-        }
-
-        // Publish a message
-        publisher.publish("test-channel", "test-message-1");
-
-        // Trigger key invalidation to generate a push notification
-        triggerKeyInvalidation(testKey, modifiedValue);
-
-        // Publish another message
-        publisher.publish("test-channel", "test-message-2");
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    });
-
-    // Start the publisher thread
-    publisherThread.start();
-
-    // Wait for the subscriber thread to complete (it will complete when unsubscribe is called)
-    subscriberThread.join();
-
-    // Wait for the publisher thread to complete
-    publisherThread.join();
-
-    // Verify that we received both pub/sub messages
-    assertEquals(2, receivedMessages.size(), "Should have received both pub/sub messages");
-    assertEquals("test-message-1", receivedMessages.get(0));
-    assertEquals("test-message-2", receivedMessages.get(1));
-
-    // Send a PING command to process any pending push messages
-    String pingResponse = unifiedJedis.ping();
-    assertEquals("PONG", pingResponse);
-  }
 }

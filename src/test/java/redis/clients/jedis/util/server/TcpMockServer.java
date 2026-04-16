@@ -109,38 +109,6 @@ public class TcpMockServer {
   }
 
   /**
-   * Send a MIGRATING push message to all connected clients
-   */
-  public void sendMigratingPushToAll() {
-    sendPushMessageToAll("MIGRATING", "30"); // Default slot 30
-  }
-
-  /**
-   * Send a MIGRATED push message to all connected clients
-   */
-  public void sendMigratedPushToAll() {
-    sendPushMessageToAll("MIGRATED");
-  }
-
-  /**
-   * Send a FAILING_OVER push message to all connected clients
-   */
-  public void sendFailingOverPushToAll() {
-    sendPushMessageToAll("FAILING_OVER", "30"); // Default slot 30
-  }
-
-  /**
-   * Send a FAILED_OVER push message to all connected clients
-   */
-  public void sendFailedOverPushToAll() {
-    sendPushMessageToAll("FAILED_OVER");
-  }
-
-  public void sendMovingPushToAll(String targetHost) {
-    sendPushMessageToAll("MOVING", "30", targetHost);
-  }
-
-  /**
    * Get the current command handler.
    * @return The current command handler, or null if none is set
    */

@@ -28,6 +28,7 @@ public abstract class RedisClientSideCacheTestBase extends UnifiedJedisClientSid
         .hostAndPort(endpoint.getHostAndPort())
         .clientConfig(endpoint.getClientConfigBuilder().resp3().build())
         .cacheConfig(cacheConfig)
+        .maxAttempts(1)
         .build();
   }
 

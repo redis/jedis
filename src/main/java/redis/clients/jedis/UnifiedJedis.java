@@ -210,29 +210,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link RedisClusterClient#builder()} to configure the cluster client.
-   */
-  @Deprecated
-  public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
-        new ClusterCommandObjects());
-  }
-
-  @Deprecated
-  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
-        new ClusterCommandObjects(), protocol);
-  }
-
-  @Deprecated
-  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, Cache cache) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
-        new ClusterCommandObjects(), protocol, cache);
-  }
-
-  /**
    * @deprecated Use {@link RedisClient#builder()} to configure the client with retry settings.
    */
   @Deprecated

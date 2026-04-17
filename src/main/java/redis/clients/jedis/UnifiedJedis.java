@@ -295,13 +295,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects = commandObjects;
     // Resolve RESP3_PREFERRED to actual negotiated protocol by probing a connection
     RedisProtocol resolvedProtocol = null;
-    if (protocol == RedisProtocol.RESP3_PREFERRED && provider != null) {
+    if (protocol == RedisProtocol.RESP3_PREFERRED) {
+      if (provider == null) {
+        throw new IllegalArgumentException("Connection provider is required to resolve RESP protocol");
+      }
       try (Connection conn = provider.getConnection()) {
         if (conn != null) {
           resolvedProtocol = conn.getRedisProtocol();
         }
       } catch (JedisException ignored) {
       }
+    } else if (protocol != null) {
+      resolvedProtocol = protocol;
     }
     if (resolvedProtocol != null) {
       this.commandObjects.setProtocol(resolvedProtocol);

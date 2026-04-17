@@ -453,7 +453,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrBy() {
-    assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(RedisProtocol.isResp3(protocol));
     jedis.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), jedis.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertJsonArrayEquals(jsonArray(null, 4, 7, null),
@@ -486,7 +486,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     List<?> resultList = (List<?>) result;
     assertEquals(1, resultList.size());
     assertInstanceOf(Long.class, resultList.get(0),
-        "Result should be Long but was " + resultList.get(0).getClass().getName());
+      "Result should be Long but was " + resultList.get(0).getClass().getName());
     assertEquals(15L, resultList.get(0));
   }
 
@@ -502,7 +502,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     List<?> resultList = (List<?>) result;
     assertEquals(1, resultList.size());
     assertInstanceOf(Double.class, resultList.get(0),
-        "Result should be Double but was " + resultList.get(0).getClass().getName());
+      "Result should be Double but was " + resultList.get(0).getClass().getName());
     assertEquals(12.5, resultList.get(0));
   }
 
@@ -521,7 +521,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     // All results should be Long since we incremented integers by integers
     for (Object item : resultList) {
       assertInstanceOf(Long.class, item,
-          "Result items should be Long but was " + item.getClass().getName());
+        "Result items should be Long but was " + item.getClass().getName());
     }
     assertTrue(resultList.contains(110L));
     assertTrue(resultList.contains(210L));

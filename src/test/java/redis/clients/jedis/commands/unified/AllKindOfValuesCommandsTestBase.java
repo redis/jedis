@@ -840,7 +840,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(RedisProtocol.isResp3(protocol));
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -875,7 +875,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(RedisProtocol.isResp3(protocol));
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");

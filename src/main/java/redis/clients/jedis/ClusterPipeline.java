@@ -114,7 +114,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
           commandObjects.setProtocol(resolved);
         }
       } catch (JedisException je) {
-        // keep RESP3_PREFERRED — isResp3() will treat it as RESP3
+        // Protocol negotiation failed, keep protocol=null on the command objects.
       }
     }
   }

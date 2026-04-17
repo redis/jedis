@@ -469,10 +469,4 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertNotNull(res);
     assertFalse(res.isEmpty());
   }
-
-  protected void assertSyntaxError(Query query, UnifiedJedis client) {
-    JedisDataException error = assertThrows(JedisDataException.class,
-      () -> client.ftExplain(INDEX, query));
-    assertThat(error.getMessage(), containsString("Syntax error"));
-  }
 }

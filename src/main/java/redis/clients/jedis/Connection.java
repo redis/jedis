@@ -83,8 +83,8 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
+  private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
 
-  private PushConsumerChainImpl pushConsumers;
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -125,9 +125,7 @@ public class Connection implements Closeable {
        * Marks all @{link PushMessages as processed, except for pub/sub.
        * Pub/sub messages are propagated to the client.
        */
-      this.pushConsumers = PushConsumerChainImpl.of(
-              PushConsumerChainImpl.PUBSUB_CONSUMER
-      );
+      addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
   }
 
   @Override

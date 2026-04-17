@@ -7,9 +7,16 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+import java.util.Arrays;
+import java.util.List;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.IOException;
-import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -106,6 +113,38 @@ public class CacheConnectionMockTest {
         // Verify connection is still healthy
         assertFalse(conn.isBroken(), "Connection should not be broken");
         assertTrue(conn.isConnected(), "Connection should still be connected");
+      }
+    }
+
+    @Test
+    public void invalidatePushMessageInvalidatesCacheForRedisKeys() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+
+      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
+
+      // Create a spy of the cache to verify method invocations
+      Cache cacheSpy = spy(cache);
+
+      try (CacheConnection conn = new CacheConnection(socketFactory, config, cacheSpy)) {
+
+        // Send invalidate push notification with a single key
+        // RESP3 format: >2\r\n$10\r\ninvalidate\r\n*1\r\n$8\r\ntestkey1\r\n
+        // This represents: ["invalidate", ["testkey1"]]
+        String invalidateMessage = ">2\r\n"
+            + "$10\r\ninvalidate\r\n"
+            + "*1\r\n"
+            + "$8\r\ntestkey1\r\n";
+
+        mockServer.sendRawPushMessageToAll(invalidateMessage);
+
+        // Execute a command to trigger processing of the invalidate push message
+        assertDoesNotThrow(() -> conn.ping(),
+          "PING after invalidate push should not throw exception");
+
+        // Verify that cache.deleteByRedisKeys was invoked with the correct key
+        verify(cacheSpy).deleteByRedisKeys(argThat(keys -> keys != null && keys.size() == 1
+            && Arrays.equals(SafeEncoder.encode("testkey1"), (byte[]) keys.get(0))));
       }
     }
 

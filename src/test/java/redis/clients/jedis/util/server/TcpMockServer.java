@@ -109,6 +109,15 @@ public class TcpMockServer {
   }
 
   /**
+   * Send a raw RESP3 message to all connected clients. This allows sending properly formatted push
+   * messages.
+   * @param rawMessage the raw RESP3 protocol message to send
+   */
+  public void sendRawPushMessageToAll(String rawMessage) {
+    connectedClients.values().forEach(client -> client.sendRawPushMessage(rawMessage));
+  }
+
+  /**
    * Get the current command handler.
    * @return The current command handler, or null if none is set
    */
@@ -465,6 +474,22 @@ public class TcpMockServer {
       } catch (IOException e) {
         logger.error("Error sending " + pushType + " push to " + clientId
             + " (client disconnected): " + e.getMessage());
+        cleanup();
+      }
+    }
+
+    /**
+     * Send a raw RESP3 message to this client. This allows sending properly formatted push
+     * messages..
+     * @param rawMessage the raw RESP3 protocol message to send
+     */
+    public void sendRawPushMessage(String rawMessage) {
+      try {
+        // Use synchronized writeResponse method to prevent interleaving
+        writeResponse(rawMessage);
+      } catch (IOException e) {
+        logger.error(
+          "Error sending raw message to " + clientId + " (client disconnected): " + e.getMessage());
         cleanup();
       }
     }

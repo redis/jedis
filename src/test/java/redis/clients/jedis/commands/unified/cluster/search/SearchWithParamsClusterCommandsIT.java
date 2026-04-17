@@ -31,4 +31,20 @@ public class SearchWithParamsClusterCommandsIT extends SearchWithParamsCommandsT
   protected UnifiedJedis createTestClient() {
     return ClusterCommandsTestHelper.getCleanCluster(protocol, endpoint);
   }
+
+  @Override
+  public void searchIteration() {
+    // Cluster search iteration is not supported
+  }
+
+  @Override
+  public void searchIterationCollect() {
+    // Cluster search iteration is not supported
+  }
+
+  @Override
+  public void inOrder() {
+    // Cluster search inOrder is not supported
+  }
+
 }

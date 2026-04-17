@@ -202,7 +202,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   public static class Builder {
 
-    private RedisProtocol redisProtocol = RedisProtocol.RESP3_PREFERRED;
+    private RedisProtocol redisProtocol = null;
 
     private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
     private int socketTimeoutMillis = Protocol.DEFAULT_TIMEOUT;

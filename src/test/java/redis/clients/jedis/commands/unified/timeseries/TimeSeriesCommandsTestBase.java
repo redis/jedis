@@ -27,7 +27,6 @@ import redis.clients.jedis.util.TestEnvUtil;
 /**
  * Base test class for Time Series commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("timeseries")
 public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
@@ -978,5 +977,322 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
       jedis
           .tsRange("{align}ts3", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10))
           .size());
+  }
+
+  @Test
+  public void mrangeFilterBy() {
+    Map<String, String> labels = Collections.singletonMap("label", "multi");
+    jedis.tsCreate("ts1", TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate("ts2", TSCreateParams.createParams().labels(labels));
+    String filter = "label=multi";
+
+    TSElement[] rawValues = new TSElement[] {
+      new TSElement(1000L, 1.0),
+      new TSElement(2000L, 0.9),
+      new TSElement(3200L, 1.1),
+      new TSElement(4500L, -1.1)
+    };
+
+    jedis.tsAdd("ts1", rawValues[0].getTimestamp(), rawValues[0].getValue());
+    jedis.tsAdd("ts2", rawValues[1].getTimestamp(), rawValues[1].getValue());
+    jedis.tsAdd("ts2", rawValues[2].getTimestamp(), rawValues[2].getValue());
+    jedis.tsAdd("ts1", rawValues[3].getTimestamp(), rawValues[3].getValue());
+
+    // MRANGE
+    Map<String, TSMRangeElements> range = jedis.tsMRange(0L, 5000L, filter);
+    ArrayList<TSMRangeElements> rangeList = new ArrayList<>(range.values());
+    assertEquals("ts1", rangeList.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0], rawValues[3]), rangeList.get(0).getValue());
+    assertEquals("ts2", rangeList.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[1], rawValues[2]), rangeList.get(1).getValue());
+
+    range = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 5000L).filterByTS(1000L, 2000L).filter(filter));
+    rangeList = new ArrayList<>(range.values());
+    assertEquals("ts1", rangeList.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), rangeList.get(0).getValue());
+    assertEquals("ts2", rangeList.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[1]), rangeList.get(1).getValue());
+
+    range = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 5000L).filterByValues(1.0, 1.2).filter(filter));
+    rangeList = new ArrayList<>(range.values());
+    assertEquals("ts1", rangeList.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), rangeList.get(0).getValue());
+    assertEquals("ts2", rangeList.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[2]), rangeList.get(1).getValue());
+
+    range = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 5000L)
+        .filterByTS(1000L, 2000L).filterByValues(1.0, 1.2).filter(filter));
+    rangeList = new ArrayList<>(range.values());
+    assertEquals(Arrays.asList(rawValues[0]), rangeList.get(0).getValue());
+
+    // MREVRANGE
+    range = jedis.tsMRevRange(0L, 5000L, filter);
+    rangeList = new ArrayList<>(range.values());
+    assertEquals("ts1", rangeList.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[3], rawValues[0]), rangeList.get(0).getValue());
+    assertEquals("ts2", rangeList.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[2], rawValues[1]), rangeList.get(1).getValue());
+
+    range = jedis.tsMRevRange(TSMRangeParams.multiRangeParams(0L, 5000L).filterByTS(1000L, 2000L).filter(filter));
+    rangeList = new ArrayList<>(range.values());
+    assertEquals("ts1", rangeList.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), rangeList.get(0).getValue());
+    assertEquals("ts2", rangeList.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[1]), rangeList.get(1).getValue());
+
+    range = jedis.tsMRevRange(TSMRangeParams.multiRangeParams(0L, 5000L).filterByValues(1.0, 1.2).filter(filter));
+    rangeList = new ArrayList<>(range.values());
+    assertEquals("ts1", rangeList.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), rangeList.get(0).getValue());
+    assertEquals("ts2", rangeList.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[2]), rangeList.get(1).getValue());
+
+    range = jedis.tsMRevRange(TSMRangeParams.multiRangeParams(0L, 5000L)
+        .filterByTS(1000L, 2000L).filterByValues(1.0, 1.2).filter(filter));
+    rangeList = new ArrayList<>(range.values());
+    assertEquals(Arrays.asList(rawValues[0]), rangeList.get(0).getValue());
+  }
+
+  @Test
+  public void groupByReduce() {
+    jedis.tsCreate("ts1", TSCreateParams.createParams().labels(convertMap("metric", "cpu", "metric_name", "system")));
+    jedis.tsCreate("ts2", TSCreateParams.createParams().labels(convertMap("metric", "cpu", "metric_name", "user")));
+
+    jedis.tsAdd("ts1", 1L, 90.0);
+    jedis.tsAdd("ts1", 2L, 45.0);
+    jedis.tsAdd("ts2", 2L, 99.0);
+
+    Map<String, TSMRangeElements> range = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 100L).withLabels()
+        .filter("metric=cpu").groupBy("metric_name", "max"));
+    assertEquals(2, range.size());
+    ArrayList<TSMRangeElements> rangeList = new ArrayList<>(range.values());
+
+    assertEquals("metric_name=system", rangeList.get(0).getKey());
+    assertEquals("system", rangeList.get(0).getLabels().get("metric_name"));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("max", rangeList.get(0).getLabels().get("__reducer__"));
+      assertEquals("ts1", rangeList.get(0).getLabels().get("__source__"));
+    } else {
+      assertEquals(Arrays.asList("max"), rangeList.get(0).getReducers());
+      assertEquals(Arrays.asList("ts1"), rangeList.get(0).getSources());
+    }
+    assertEquals(Arrays.asList(new TSElement(1, 90), new TSElement(2, 45)), rangeList.get(0).getValue());
+
+    assertEquals("metric_name=user", rangeList.get(1).getKey());
+    assertEquals("user", rangeList.get(1).getLabels().get("metric_name"));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("max", rangeList.get(1).getLabels().get("__reducer__"));
+      assertEquals("ts2", rangeList.get(1).getLabels().get("__source__"));
+    } else {
+      assertEquals(Arrays.asList("max"), rangeList.get(1).getReducers());
+      assertEquals(Arrays.asList("ts2"), rangeList.get(1).getSources());
+    }
+    assertEquals(Arrays.asList(new TSElement(2, 99)), rangeList.get(1).getValue());
+  }
+
+  private Map<String, String> convertMap(String... array) {
+    Map<String, String> map = new HashMap<>(array.length / 2);
+    for (int i = 0; i < array.length; i += 2) {
+      map.put(array[i], array[i + 1]);
+    }
+    return map;
+  }
+
+  @Test
+  public void testMRevRange() {
+    assertEquals(Collections.emptyMap(), jedis.tsMRevRange(TSMRangeParams.multiRangeParams().filter("l=v")));
+
+    Map<String, String> labels1 = new HashMap<>();
+    labels1.put("l3", "v3");
+    labels1.put("l4", "v4");
+    assertEquals(1000L, jedis.tsAdd("seriesMRevRange1", 1000L, 1.1,
+        TSCreateParams.createParams().retention(10000).labels(labels1)));
+    assertEquals(2222L, jedis.tsAdd("seriesMRevRange1", 2222L, 3.1,
+        TSCreateParams.createParams().retention(10000).labels(labels1)));
+    Map<String, TSMRangeElements> ranges1 = jedis.tsMRevRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+        .aggregation(AggregationType.COUNT, 1).withLabels().filter("l4=v4"));
+    assertEquals(1, ranges1.size());
+    ArrayList<TSMRangeElements> ranges1List = new ArrayList<>(ranges1.values());
+    assertEquals(labels1, ranges1List.get(0).getLabels());
+    assertEquals(Arrays.asList(new TSElement(2222L, 1.0), new TSElement(1000L, 1.0)), ranges1List.get(0).getValue());
+
+    Map<String, String> labels2 = new HashMap<>();
+    labels2.put("l3", "v3");
+    labels2.put("l4", "v44");
+    assertEquals(1000L, jedis.tsAdd("seriesMRevRange2", 1000L, 8.88,
+        TSCreateParams.createParams().retention(10000).labels(labels2)));
+    assertEquals(1111L, jedis.tsAdd("seriesMRevRange2", 1111L, 99.99,
+        TSCreateParams.createParams().retention(10000).labels(labels2)));
+    Map<String, TSMRangeElements> ranges2 = jedis.tsMRevRange(500L, 4600L, "l3=v3");
+    assertEquals(2, ranges2.size());
+    ArrayList<TSMRangeElements> ranges2List = new ArrayList<>(ranges2.values());
+    assertEquals(Collections.emptyMap(), ranges2List.get(0).getLabels());
+    assertEquals(Arrays.asList(new TSElement(2222L, 3.1), new TSElement(1000L, 1.1)), ranges2List.get(0).getValue());
+    assertEquals(Collections.emptyMap(), ranges2List.get(0).getLabels());
+    assertEquals(Arrays.asList(new TSElement(1111L, 99.99), new TSElement(1000L, 8.88)), ranges2List.get(1).getValue());
+
+    Map<String, String> labels3 = new HashMap<>();
+    labels3.put("l3", "v33");
+    labels3.put("l4", "v4");
+    assertEquals(2200L, jedis.tsAdd("seriesMRevRange3", 2200L, -1.1, TSCreateParams.createParams().labels(labels3)));
+    assertEquals(2400L, jedis.tsAdd("seriesMRevRange3", 2400L, 1.1, TSCreateParams.createParams().labels(labels3)));
+    assertEquals(3300L, jedis.tsAdd("seriesMRevRange3", 3300L, -33, TSCreateParams.createParams().labels(labels3)));
+    Map<String, TSMRangeElements> ranges3 = jedis.tsMRevRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+        .aggregation(AggregationType.AVG, 500).withLabels().count(5).filter("l4=v4"));
+    assertEquals(2, ranges3.size());
+    ArrayList<TSMRangeElements> ranges3List = new ArrayList<>(ranges3.values());
+    assertEquals(labels1, ranges3List.get(0).getLabels());
+    assertEquals(Arrays.asList(new TSElement(2000L, 3.1), new TSElement(1000L, 1.1)), ranges3List.get(0).getValue());
+    assertEquals(labels3, ranges3List.get(1).getLabels());
+    assertEquals(Arrays.asList(new TSElement(3000L, -33.0), new TSElement(2000L, 0.0)), ranges3List.get(1).getValue());
+  }
+
+  /**
+   * Test for COUNTNAN and COUNTALL aggregation types introduced in RedisTimeSeries 8.6.0.
+   * COUNTNAN counts the number of NaN values in a bucket.
+   * COUNTALL counts all values in a bucket, including NaN values.
+   */
+  @Test
+  @SinceRedisVersion("8.5.0")
+  public void countNanAndCountAll() {
+    // Create a time series with some regular values
+    jedis.tsCreate("ts-countnan", TSCreateParams.createParams().label("type", "test"));
+    jedis.tsAdd("ts-countnan", 1, 1.0);
+    jedis.tsAdd("ts-countnan", 2, 2.0);
+    jedis.tsAdd("ts-countnan", 3, Double.NaN);
+    jedis.tsAdd("ts-countnan", 4, 4.0);
+    jedis.tsAdd("ts-countnan", 5, Double.NaN);
+    jedis.tsAdd("ts-countnan", 11, 11.0);
+    jedis.tsAdd("ts-countnan", 12, Double.NaN);
+
+    // Test COUNTNAN aggregation - counts NaN values in each bucket
+    List<TSElement> countNanValues = jedis.tsRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTNAN, 10));
+    assertEquals(2, countNanValues.size());
+    assertEquals(0L, countNanValues.get(0).getTimestamp());
+    assertEquals(2.0, countNanValues.get(0).getValue(), 0.001);
+    assertEquals(10L, countNanValues.get(1).getTimestamp());
+    assertEquals(1.0, countNanValues.get(1).getValue(), 0.001);
+
+    // Test COUNTALL aggregation - counts all values including NaN
+    List<TSElement> countAllValues = jedis.tsRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTALL, 10));
+    assertEquals(2, countAllValues.size());
+    assertEquals(0L, countAllValues.get(0).getTimestamp());
+    assertEquals(5.0, countAllValues.get(0).getValue(), 0.001);
+    assertEquals(10L, countAllValues.get(1).getTimestamp());
+    assertEquals(2.0, countAllValues.get(1).getValue(), 0.001);
+
+    // Compare with regular COUNT which excludes NaN values
+    List<TSElement> countValues = jedis.tsRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNT, 10));
+    assertEquals(2, countValues.size());
+    assertEquals(0L, countValues.get(0).getTimestamp());
+    assertEquals(3.0, countValues.get(0).getValue(), 0.001);
+    assertEquals(10L, countValues.get(1).getTimestamp());
+    assertEquals(1.0, countValues.get(1).getValue(), 0.001);
+
+    // Test with MRANGE
+    Map<String, TSMRangeElements> mrangeCountNan = jedis.tsMRange(
+        TSMRangeParams.multiRangeParams(0L, 20L)
+            .aggregation(AggregationType.COUNTNAN, 10)
+            .filter("type=test"));
+    assertEquals(1, mrangeCountNan.size());
+    TSMRangeElements elements = mrangeCountNan.get("ts-countnan");
+    assertNotNull(elements);
+    assertEquals(2, elements.getValue().size());
+    assertEquals(2.0, elements.getValue().get(0).getValue(), 0.001);
+
+    Map<String, TSMRangeElements> mrangeCountAll = jedis.tsMRange(
+        TSMRangeParams.multiRangeParams(0L, 20L)
+            .aggregation(AggregationType.COUNTALL, 10)
+            .filter("type=test"));
+    assertEquals(1, mrangeCountAll.size());
+    elements = mrangeCountAll.get("ts-countnan");
+    assertNotNull(elements);
+    assertEquals(2, elements.getValue().size());
+    assertEquals(5.0, elements.getValue().get(0).getValue(), 0.001);
+
+    // Test with REVRANGE
+    List<TSElement> revRangeCountNan = jedis.tsRevRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTNAN, 10));
+    assertEquals(2, revRangeCountNan.size());
+    assertEquals(10L, revRangeCountNan.get(0).getTimestamp());
+    assertEquals(1.0, revRangeCountNan.get(0).getValue(), 0.001);
+    assertEquals(0L, revRangeCountNan.get(1).getTimestamp());
+    assertEquals(2.0, revRangeCountNan.get(1).getValue(), 0.001);
+
+    List<TSElement> revRangeCountAll = jedis.tsRevRange("ts-countnan",
+        TSRangeParams.rangeParams(0L, 20L).aggregation(AggregationType.COUNTALL, 10));
+    assertEquals(2, revRangeCountAll.size());
+    assertEquals(10L, revRangeCountAll.get(0).getTimestamp());
+    assertEquals(2.0, revRangeCountAll.get(0).getValue(), 0.001);
+    assertEquals(0L, revRangeCountAll.get(1).getTimestamp());
+    assertEquals(5.0, revRangeCountAll.get(1).getValue(), 0.001);
+
+    // Test with MREVRANGE
+    Map<String, TSMRangeElements> mrevrangeCountNan = jedis.tsMRevRange(
+        TSMRangeParams.multiRangeParams(0L, 20L)
+            .aggregation(AggregationType.COUNTNAN, 10)
+            .filter("type=test"));
+    assertEquals(1, mrevrangeCountNan.size());
+    elements = mrevrangeCountNan.get("ts-countnan");
+    assertNotNull(elements);
+    assertEquals(2, elements.getValue().size());
+    assertEquals(1.0, elements.getValue().get(0).getValue(), 0.001);
+    assertEquals(2.0, elements.getValue().get(1).getValue(), 0.001);
+  }
+
+  /**
+   * Test COUNTNAN and COUNTALL with bucket timestamp options.
+   */
+  @Test
+  @SinceRedisVersion("8.5.0")
+  public void countNanAndCountAllWithBucketTimestamp() {
+    jedis.tsCreate("ts-countnan-bucket", TSCreateParams.createParams().label("l", "v"));
+    jedis.tsAdd("ts-countnan-bucket", 1, 1.0);
+    jedis.tsAdd("ts-countnan-bucket", 2, Double.NaN);
+    jedis.tsAdd("ts-countnan-bucket", 3, 3.0);
+
+    // Test COUNTNAN with different bucket timestamp options
+    assertEquals(0, jedis.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampLow()).get(0).getTimestamp());
+    assertEquals(10, jedis.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampHigh()).get(0).getTimestamp());
+    assertEquals(5, jedis.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampMid()).get(0).getTimestamp());
+
+    // Test COUNTALL with different bucket timestamp options
+    assertEquals(0, jedis.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampLow()).get(0).getTimestamp());
+    assertEquals(10, jedis.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampHigh()).get(0).getTimestamp());
+    assertEquals(5, jedis.tsRange("ts-countnan-bucket", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampMid()).get(0).getTimestamp());
+
+    // Test with MRANGE
+    assertEquals(0, jedis.tsMRange(TSMRangeParams.multiRangeParams()
+        .aggregation(AggregationType.COUNTNAN, 10).bucketTimestampLow().filter("l=v"))
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
+    assertEquals(10, jedis.tsMRange(TSMRangeParams.multiRangeParams()
+        .aggregation(AggregationType.COUNTALL, 10).bucketTimestampHigh().filter("l=v"))
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
+  }
+
+  /**
+   * Test that AggregationType.safeValueOf correctly parses COUNTNAN and COUNTALL.
+   */
+  @Test
+  @SinceRedisVersion("8.5.0")
+  public void aggregationTypeSafeValueOf() {
+    assertEquals(AggregationType.COUNTNAN, AggregationType.safeValueOf("COUNTNAN"));
+    assertEquals(AggregationType.COUNTNAN, AggregationType.safeValueOf("countnan"));
+    assertEquals(AggregationType.COUNTALL, AggregationType.safeValueOf("COUNTALL"));
+    assertEquals(AggregationType.COUNTALL, AggregationType.safeValueOf("countall"));
+    // Verify existing types still work
+    assertEquals(AggregationType.COUNT, AggregationType.safeValueOf("COUNT"));
+    assertEquals(AggregationType.AVG, AggregationType.safeValueOf("avg"));
+    assertEquals(AggregationType.STD_P, AggregationType.safeValueOf("STD.P"));
+    assertEquals(AggregationType.VAR_S, AggregationType.safeValueOf("var.s"));
   }
 }

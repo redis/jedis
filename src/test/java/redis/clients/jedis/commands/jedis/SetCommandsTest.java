@@ -33,7 +33,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class SetCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

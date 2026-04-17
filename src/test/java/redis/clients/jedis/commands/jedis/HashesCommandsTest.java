@@ -53,7 +53,7 @@ import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class HashesCommandsTest extends JedisCommandsTestBase {
 

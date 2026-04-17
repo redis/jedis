@@ -67,8 +67,8 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void testReservationCapacityAndBucketSizeAndMaxIterations() {
-    jedis.cfReserve("cuckoo3", 200, CFReserveParams.reserveParams()
-        .bucketSize(10).maxIterations(20));
+    jedis.cfReserve("cuckoo3", 200,
+      CFReserveParams.reserveParams().bucketSize(10).maxIterations(20));
     Map<String, Object> info = jedis.cfInfo("cuckoo3");
     assertEquals(32L, info.get("Number of buckets"));
     assertEquals(0L, info.get("Number of items inserted"));
@@ -82,8 +82,8 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void testReservationAllParams() {
-    jedis.cfReserve("cuckoo4", 200, CFReserveParams.reserveParams()
-        .bucketSize(10).expansion(4).maxIterations(20));
+    jedis.cfReserve("cuckoo4", 200,
+      CFReserveParams.reserveParams().bucketSize(10).expansion(4).maxIterations(20));
     Map<String, Object> info = jedis.cfInfo("cuckoo4");
     assertEquals(32L, info.get("Number of buckets"));
     assertEquals(0L, info.get("Number of items inserted"));
@@ -123,8 +123,8 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void testInsertWithCapacity() {
-    assertEquals(Arrays.asList(true), jedis.cfInsert("cuckoo9",
-        CFInsertParams.insertParams().capacity(1000), "foo"));
+    assertEquals(Arrays.asList(true),
+      jedis.cfInsert("cuckoo9", CFInsertParams.insertParams().capacity(1000), "foo"));
   }
 
   @Test
@@ -140,8 +140,8 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
   @Test
   public void testInsertNoCreateFilterExists() {
     jedis.cfInsert("cuckoo11", "bar");
-    assertEquals(Arrays.asList(true, true), jedis.cfInsert("cuckoo11",
-        CFInsertParams.insertParams().noCreate(), "foo", "bar"));
+    assertEquals(Arrays.asList(true, true),
+      jedis.cfInsert("cuckoo11", CFInsertParams.insertParams().noCreate(), "foo", "bar"));
   }
 
   @Test
@@ -152,8 +152,8 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
   @Test
   public void testInsertNxWithCapacity() {
     jedis.cfInsertNx("cuckoo13", "bar");
-    assertEquals(Arrays.asList(false), jedis.cfInsertNx("cuckoo13",
-        CFInsertParams.insertParams().capacity(1000), "bar"));
+    assertEquals(Arrays.asList(false),
+      jedis.cfInsertNx("cuckoo13", CFInsertParams.insertParams().capacity(1000), "bar"));
   }
 
   @Test
@@ -161,7 +161,7 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.cfInsertNx("cuckoo14", "foo");
     jedis.cfInsertNx("cuckoo14", "bar");
     assertEquals(Arrays.asList(false, false, true),
-        jedis.cfInsertNx("cuckoo14", "foo", "bar", "baz"));
+      jedis.cfInsertNx("cuckoo14", "foo", "bar", "baz"));
   }
 
   @Test
@@ -257,4 +257,3 @@ public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertTrue(jedis.cfExists("cuckoo24-load", "a"));
   }
 }
-

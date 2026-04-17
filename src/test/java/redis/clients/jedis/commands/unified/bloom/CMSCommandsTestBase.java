@@ -150,4 +150,3 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(Arrays.asList(16L, 15L, 21L), q5);
   }
 }
-

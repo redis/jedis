@@ -15,6 +15,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
+@SinceRedisVersion("8.4.0")
 public class FTHybridCommandsClusterIT extends FTHybridCommandsTestBase {
 
   @BeforeAll

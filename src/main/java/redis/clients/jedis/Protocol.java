@@ -260,22 +260,20 @@ public final class Protocol {
   }
 
   @Experimental
-  public static Object readPushes(final RedisInputStream is, final Cache cache,
-      boolean onlyPendingBuffer) {
+  public static Object readPushes(final RedisInputStream is, final PushConsumerChain pushConsumer) {
     Object unhandledPush = null;
-    if (onlyPendingBuffer) {
       try {
         while (unhandledPush == null && is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
-          unhandledPush = processPush(is, cache);
+          is.readByte();
+          PushMessage message = processPush(is, pushConsumer);
+          if (message != null) {
+            unhandledPush = message.getContent();
+          }
+
         }
       } catch (IOException e) {
         throw new JedisConnectionException("Failed to read pending buffer for push messages!", e);
       }
-    } else {
-      while (unhandledPush == null && is.peek(GREATER_THAN_BYTE)) {
-        unhandledPush = processPush(is, cache);
-      }
-    }
     return unhandledPush;
   }
 
@@ -286,18 +284,6 @@ public final class Protocol {
       return consumer.process(message);
     }
     return message;
-  }
-
-  private static Object processPush(final RedisInputStream is, Cache cache) {
-    is.readByte();
-    List<Object> list = processMultiBulkReply(is);
-    if (list.size() == 2 && list.get(0) instanceof byte[]
-        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.deleteByRedisKeys((List) list.get(1));
-      return null;
-    } else {
-      return list;
-    }
   }
 
   public static final byte[] toByteArray(final boolean value) {

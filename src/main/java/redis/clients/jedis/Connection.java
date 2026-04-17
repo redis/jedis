@@ -450,7 +450,7 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  protected void protocolReadPushes(RedisInputStream is) {
+  protected void protocolReadPushes(RedisInputStream is, PushConsumerChain consumer) {
   }
 
   protected Object readProtocolWithCheckingBroken() {
@@ -473,7 +473,7 @@ public class Connection implements Closeable {
 
     try {
       if (inputStream.available() > 0) {
-        protocolReadPushes(inputStream);
+        protocolReadPushes(inputStream, pushConsumers);
       }
     } catch (IOException e) {
       broken = true;

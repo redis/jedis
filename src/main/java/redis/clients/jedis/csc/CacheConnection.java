@@ -118,10 +118,10 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected void protocolReadPushes(RedisInputStream inputStream) {
+  protected void protocolReadPushes(RedisInputStream inputStream, PushConsumerChain consumer) {
     if (lock.tryLock()) {
       try {
-        Protocol.readPushes(inputStream, cache, true);
+        Protocol.readPushes(inputStream, consumer);
       } finally {
         lock.unlock();
       }

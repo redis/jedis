@@ -38,8 +38,7 @@ import redis.clients.jedis.util.EnvCondition;
 public abstract class SearchDefaultDialectCommandsTestBase {
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> endpoint);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() -> endpoint);
 
   @RegisterExtension
   public static EnvCondition envCondition = new EnvCondition();
@@ -111,13 +110,15 @@ public abstract class SearchDefaultDialectCommandsTestBase {
     jedis.hset("3", "numval", "3");
 
     assertEquals(2, jedis.ftSearch(INDEX, "@numval:[$min $max]",
-        FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)).getTotalResults());
+      FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)).getTotalResults());
 
     Map<String, Object> paramValues = new HashMap<>();
     paramValues.put("min", 1);
     paramValues.put("max", 2);
-    assertEquals(2, jedis.ftSearch(INDEX, "@numval:[$min $max]",
-        FTSearchParams.searchParams().params(paramValues)).getTotalResults());
+    assertEquals(2,
+      jedis
+          .ftSearch(INDEX, "@numval:[$min $max]", FTSearchParams.searchParams().params(paramValues))
+          .getTotalResults());
   }
 
   @Test
@@ -127,12 +128,8 @@ public abstract class SearchDefaultDialectCommandsTestBase {
     attr.put("DIM", 2);
     attr.put("DISTANCE_METRIC", "L2");
 
-    Schema sc = new Schema()
-        .addFlatVectorField("v", attr)
-        .addTagField("title")
-        .addTextField("t1", 1.0)
-        .addTextField("t2", 1.0)
-        .addNumericField("num");
+    Schema sc = new Schema().addFlatVectorField("v", attr).addTagField("title")
+        .addTextField("t1", 1.0).addTextField("t2", 1.0).addNumericField("num");
     assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
 
     jedis.hset("1", "t1", "hello");
@@ -146,7 +143,8 @@ public abstract class SearchDefaultDialectCommandsTestBase {
     q = "$hello";
     query = new Query(q).dialect(1);
     assertSyntaxError(query, jedis); // dialect=1 throws syntax error
-    query = new Query(q).addParam("hello", "hello"); // dialect=default=2 should return execution plan
+    query = new Query(q).addParam("hello", "hello"); // dialect=default=2 should return execution
+                                                     // plan
     assertThat(jedis.ftExplain(INDEX, query), not(emptyOrNullString()));
 
     q = "@title:(@num:[0 10])";
@@ -182,8 +180,7 @@ public abstract class SearchDefaultDialectCommandsTestBase {
     params.put("name", "abc");
 
     AggregationBuilder r = new AggregationBuilder("$name")
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
-            .params(params);
+        .groupBy("@name", Reducers.sum("@count").as("sum")).params(params);
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
     assertEquals(1, res.getTotalResults());
@@ -198,15 +195,14 @@ public abstract class SearchDefaultDialectCommandsTestBase {
   public void dialectBoundSpellCheck() {
     jedis.ftCreate(INDEX, TextField.of("t"));
     JedisDataException error = assertThrows(JedisDataException.class,
-        () -> jedis.ftSpellCheck(INDEX, "Tooni toque kerfuffle",
-            FTSpellCheckParams.spellCheckParams().dialect(0)));
+      () -> jedis.ftSpellCheck(INDEX, "Tooni toque kerfuffle",
+        FTSpellCheckParams.spellCheckParams().dialect(0)));
     assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
   }
 
   private void assertSyntaxError(Query query, UnifiedJedis client) {
     JedisDataException error = assertThrows(JedisDataException.class,
-        () -> client.ftExplain(INDEX, query));
+      () -> client.ftExplain(INDEX, query));
     assertThat(error.getMessage(), containsString("Syntax error"));
   }
 }
-

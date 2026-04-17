@@ -59,9 +59,10 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
     Schema schema = new Schema().addTextField("$.first", 1.0).addTextField("$.last", 1.0)
         .addNumericField("$.age");
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON)
-        .setPrefixes(new String[]{"student:", "pupil:"});
+        .setPrefixes(new String[] { "student:", "pupil:" });
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     setJson("profesor:5555", toJson("first", "Albert", "last", "Blue", "age", 55));
     setJson("student:1111", toJson("first", "Joe", "last", "Dod", "age", 18));
@@ -83,14 +84,14 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
 
   @Test
   public void createWithFieldNames() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON)
-        .setPrefixes(new String[]{"student:", "pupil:"});
+        .setPrefixes(new String[] { "student:", "pupil:" });
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     setJson("profesor:5555", toJson("first", "Albert", "last", "Blue", "age", 55));
     setJson("student:1111", toJson("first", "Joe", "last", "Dod", "age", 18));
@@ -112,13 +113,13 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
 
   @Test
   public void parseJson() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1111";
     JSONObject json = toJson("first", "Joe", "last", "Dod", "age", 18);
@@ -146,13 +147,13 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
 
   @Test
   public void parseJsonPartial() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1111";
     JSONObject json = toJson("first", "Joe", "last", "Dod", "age", 18);
@@ -169,19 +170,20 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
 
   @Test
   public void parseJsonPartialWithFieldNames() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1111";
     JSONObject json = toJson("first", "Joe", "last", "Dod", "age", 18);
     setJson(id, json);
 
-    SearchResult sr = jedis.ftSearch(INDEX, new Query().returnFields(FieldName.of("$.first").as("first"),
+    SearchResult sr = jedis.ftSearch(INDEX,
+      new Query().returnFields(FieldName.of("$.first").as("first"),
         FieldName.of("$.last").as("last"), FieldName.of("$.age")));
     assertEquals(1, sr.getTotalResults());
 
@@ -196,19 +198,20 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
 
   @Test
   public void dialect() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1111";
     JSONObject json = toJson("first", "Joe", "last", "Dod", "age", 18);
     setJson(id, json);
 
-    SearchResult sr = jedis.ftSearch(INDEX, new Query().returnFields(FieldName.of("$.first").as("first"),
+    SearchResult sr = jedis.ftSearch(INDEX,
+      new Query().returnFields(FieldName.of("$.first").as("first"),
         FieldName.of("$.last").as("last"), FieldName.of("$.age")).dialect(1));
     assertEquals(1, sr.getTotalResults());
     assertEquals("Joe", sr.getDocuments().get(0).get("first"));
@@ -217,58 +220,64 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
 
   @Test
   public void slop() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1111";
-    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
+    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age",
+      18);
     setJson(id, json);
 
-    SearchResult sr = jedis.ftSearch(INDEX, new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
+    SearchResult sr = jedis.ftSearch(INDEX,
+      new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
         FieldName.of("$.last").as("last"), FieldName.of("$.age")).slop(0));
     assertEquals(0, sr.getTotalResults());
 
-    sr = jedis.ftSearch(INDEX, new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
+    sr = jedis.ftSearch(INDEX,
+      new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
         FieldName.of("$.last").as("last"), FieldName.of("$.age")).slop(1));
     assertEquals(1, sr.getTotalResults());
   }
 
   @Test
   public void timeout() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1111";
-    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
+    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age",
+      18);
     setJson(id, json);
 
-    SearchResult sr = jedis.ftSearch(INDEX, new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
+    SearchResult sr = jedis.ftSearch(INDEX,
+      new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
         FieldName.of("$.last").as("last"), FieldName.of("$.age")).timeout(2000));
     assertEquals(1, sr.getTotalResults());
   }
 
   @Test
   public void inOrder() {
-    Schema schema = new Schema()
-        .addField(new TextField(FieldName.of("$.first").as("first")))
+    Schema schema = new Schema().addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
         .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
-    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
+    assertEquals("OK",
+      jedis.ftCreate(INDEX, IndexOptions.defaultOptions().setDefinition(rule), schema));
 
     String id = "student:1112";
-    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
+    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age",
+      18);
     setJson(id, json);
     id = "student:1113";
     json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
@@ -282,4 +291,3 @@ public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals("student:1112", sr.getDocuments().get(0).getId());
   }
 }
-

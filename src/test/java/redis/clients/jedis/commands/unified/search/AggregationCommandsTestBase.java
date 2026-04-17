@@ -33,8 +33,8 @@ import redis.clients.jedis.util.RedisConditions;
 import redis.clients.jedis.util.RedisVersionUtil;
 
 /**
- * Base test class for Aggregation commands using the UnifiedJedis pattern.
- * Tests FT.AGGREGATE, FT.CURSOR, etc.
+ * Base test class for Aggregation commands using the UnifiedJedis pattern. Tests FT.AGGREGATE,
+ * FT.CURSOR, etc.
  */
 @Tag("integration")
 @Tag("search")
@@ -60,7 +60,8 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
 
   protected void addDocument(String key, Map<String, Object> objMap) {
     Map<String, String> strMap = new HashMap<>();
-    objMap.entrySet().forEach(entry -> strMap.put(entry.getKey(), String.valueOf(entry.getValue())));
+    objMap.entrySet()
+        .forEach(entry -> strMap.put(entry.getKey(), String.valueOf(entry.getValue())));
     jedis.hset(key, strMap);
   }
 
@@ -76,8 +77,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"));
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"));
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
     assertEquals(2, res.getTotalResults());
@@ -110,8 +110,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"));
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"));
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
     assertEquals(2, res.getTotalResults());
@@ -177,8 +176,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
-            .timeout(5000);
+        .groupBy("@name", Reducers.sum("@count").as("sum")).timeout(5000);
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
     assertEquals(2, res.getTotalResults());
@@ -198,9 +196,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     params.put("name", "abc");
 
     AggregationBuilder r = new AggregationBuilder("$name")
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
-            .params(params)
-            .dialect(2);
+        .groupBy("@name", Reducers.sum("@count").as("sum")).params(params).dialect(2);
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
     assertEquals(1, res.getTotalResults());
@@ -227,8 +223,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data6").set("name", "ghi").set("subj1", 70).set("subj2", 70));
 
     AggregationBuilder r = new AggregationBuilder().apply("(@subj1+@subj2)/2", "attemptavg")
-        .groupBy("@name", Reducers.avg("@attemptavg").as("avgscore"))
-        .filter("@avgscore>=50")
+        .groupBy("@name", Reducers.avg("@attemptavg").as("avgscore")).filter("@avgscore>=50")
         .sortBy(10, SortedField.asc("@name"));
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
@@ -278,8 +273,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
     addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
 
-    AggregationBuilder builder = new AggregationBuilder()
-        .loadAll()
+    AggregationBuilder builder = new AggregationBuilder().loadAll()
         .apply("(@subj1+@subj2)/2", "avg").sortByDesc("@avg");
 
     AggregationResult result = jedis.ftAggregate(INDEX, builder);
@@ -299,8 +293,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"))
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"))
         .cursor(1, 3000);
 
     AggregationResult res = jedis.ftAggregate(INDEX, r);
@@ -343,8 +336,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data5").set("name", "jkl").set("count", 20));
 
     AggregationBuilder agg = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"))
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
     FtAggregateIteration rr = jedis.ftAggregateIteration(INDEX, agg);
@@ -369,8 +361,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data5").set("name", "jkl").set("count", 20));
 
     AggregationBuilder agg = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"))
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
     assertEquals(4, jedis.ftAggregateIteration(INDEX, agg).collect(new ArrayList<>()).size());
@@ -378,11 +369,8 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void testWrongAggregation() throws InterruptedException {
-    Schema sc = new Schema()
-        .addTextField("title", 5.0)
-        .addTextField("body", 1.0)
-        .addTextField("state", 1.0)
-        .addNumericField("price");
+    Schema sc = new Schema().addTextField("title", 5.0).addTextField("body", 1.0)
+        .addTextField("state", 1.0).addNumericField("price");
 
     jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc);
 
@@ -393,10 +381,8 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     fields.put("price", "1337");
     addDocument("doc1", fields);
 
-    AggregationBuilder builder = new AggregationBuilder("hello")
-        .apply("@price/1000", "k")
-        .groupBy("@state", Reducers.avg("@k").as("avgprice"))
-        .filter("@avgprice>=2")
+    AggregationBuilder builder = new AggregationBuilder("hello").apply("@price/1000", "k")
+        .groupBy("@state", Reducers.avg("@k").as("avgprice")).filter("@avgprice>=2")
         .sortBy(10, SortedField.asc("@state"));
 
     try {
@@ -419,11 +405,10 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder aggr = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
-        .sortBy(10, SortedField.desc("@sum"));
+        .groupBy("@name", Reducers.sum("@count").as("sum")).sortBy(10, SortedField.desc("@sum"));
 
-    Map.Entry<AggregationResult, ProfilingInfo> reply
-        = jedis.ftProfileAggregate(INDEX, FTProfileParams.profileParams(), aggr);
+    Map.Entry<AggregationResult, ProfilingInfo> reply = jedis.ftProfileAggregate(INDEX,
+      FTProfileParams.profileParams(), aggr);
 
     AggregationResult result = reply.getKey();
     assertEquals(2, result.getTotalResults());
@@ -445,9 +430,9 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     } else {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
-        assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
+        assertThat(((Map<String, Object>) profileObject).keySet(),
+          Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }
 }
-

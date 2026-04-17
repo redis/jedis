@@ -33,8 +33,7 @@ import redis.clients.jedis.util.EnvCondition;
 public abstract class AggregateIteratorCommandsTestBase {
 
   @RegisterExtension
-  public RedisVersionCondition versionCondition = new RedisVersionCondition(
-      () -> endpoint);
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() -> endpoint);
 
   @RegisterExtension
   public static EnvCondition envCondition = new EnvCondition();

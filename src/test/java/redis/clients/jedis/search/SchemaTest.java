@@ -21,19 +21,17 @@ public class SchemaTest {
 
   @Test
   public void printSchemaTest() throws Exception {
-    Schema sc = new Schema()
-        .addTextField(TITLE, 5.0)
-        .addSortableTextField(PLOT, 1.0)
-        .addSortableTagField(GENRE, ",")
-        .addSortableNumericField(RELEASE_YEAR)
-        .addSortableNumericField(RATING)
-        .addSortableNumericField(VOTES)
+    Schema sc = new Schema().addTextField(TITLE, 5.0).addSortableTextField(PLOT, 1.0)
+        .addSortableTagField(GENRE, ",").addSortableNumericField(RELEASE_YEAR)
+        .addSortableNumericField(RATING).addSortableNumericField(VOTES)
         .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, Collections.emptyMap());
 
     String schemaPrint = sc.toString();
     assertThat(schemaPrint, Matchers.startsWith("Schema{fields=[TextField{name='title'"));
-    assertThat(schemaPrint, Matchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
-    assertThat(schemaPrint, Matchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
+    assertThat(schemaPrint,
+      Matchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
+    assertThat(schemaPrint,
+      Matchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
   }
 
   @Test
@@ -44,12 +42,12 @@ public class SchemaTest {
     vamanaAttributes.put("DISTANCE_METRIC", "COSINE");
     vamanaAttributes.put("COMPRESSION", "LVQ8");
 
-    Schema sc = new Schema()
-        .addTextField(TITLE, 5.0)
-        .addVectorField("embedding", Schema.VectorField.VectorAlgo.SVS_VAMANA, vamanaAttributes);
+    Schema sc = new Schema().addTextField(TITLE, 5.0).addVectorField("embedding",
+      Schema.VectorField.VectorAlgo.SVS_VAMANA, vamanaAttributes);
 
     String schemaPrint = sc.toString();
-    assertThat(schemaPrint, Matchers.containsString("VectorField{name='embedding', type=VECTOR, algorithm=SVS_VAMANA"));
+    assertThat(schemaPrint,
+      Matchers.containsString("VectorField{name='embedding', type=VECTOR, algorithm=SVS_VAMANA"));
     assertThat(schemaPrint, Matchers.containsString("TYPE=FLOAT32"));
     assertThat(schemaPrint, Matchers.containsString("COMPRESSION=LVQ8"));
   }
@@ -61,8 +59,10 @@ public class SchemaTest {
 
   @Test
   public void fieldAttributeMultiple() {
-    assertThrows(IllegalStateException.class, () -> FieldName.of("identifier").as("attribute").as("attribute"));
-    assertThrows(IllegalStateException.class, () -> new FieldName("identifier", "attribute").as("attribute"));
+    assertThrows(IllegalStateException.class,
+      () -> FieldName.of("identifier").as("attribute").as("attribute"));
+    assertThrows(IllegalStateException.class,
+      () -> new FieldName("identifier", "attribute").as("attribute"));
   }
 
   @Test
@@ -72,16 +72,16 @@ public class SchemaTest {
     attributes.put("DIM", 256);
     attributes.put("DISTANCE_METRIC", "L2");
 
-    Schema schema = new Schema()
-        .addTextField(TITLE, 1.0)
-        .addSvsVamanaVectorField("embedding", attributes);
+    Schema schema = new Schema().addTextField(TITLE, 1.0).addSvsVamanaVectorField("embedding",
+      attributes);
 
     // Verify the schema contains the correct number of fields
     assertThat(schema.fields.size(), Matchers.equalTo(2));
 
     // Verify the vector field is correctly configured
     Schema.VectorField vectorField = (Schema.VectorField) schema.fields.get(1);
-    assertThat(vectorField.toString(), Matchers.containsString("VectorField{name='embedding', type=VECTOR, algorithm=SVS_VAMANA"));
+    assertThat(vectorField.toString(),
+      Matchers.containsString("VectorField{name='embedding', type=VECTOR, algorithm=SVS_VAMANA"));
 
     // Verify the schema string representation
     String schemaString = schema.toString();
@@ -91,4 +91,3 @@ public class SchemaTest {
     assertThat(schemaString, Matchers.containsString("DISTANCE_METRIC=L2"));
   }
 }
-

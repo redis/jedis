@@ -63,39 +63,35 @@ public abstract class JsonSearchWithGsonCommandsTestBase extends UnifiedJedisCom
     Gson nullGson = new GsonBuilder().serializeNulls().create();
 
     assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.JSON),
-        redis.clients.jedis.search.schemafields.TextField.of(FieldName.of("$.name").as("name")),
-        redis.clients.jedis.search.schemafields.TextField.of(FieldName.of("$.phone").as("phone")),
-        redis.clients.jedis.search.schemafields.NumericField.of(FieldName.of("$.age").as("age"))));
+      redis.clients.jedis.search.schemafields.TextField.of(FieldName.of("$.name").as("name")),
+      redis.clients.jedis.search.schemafields.TextField.of(FieldName.of("$.phone").as("phone")),
+      redis.clients.jedis.search.schemafields.NumericField.of(FieldName.of("$.age").as("age"))));
 
     Account object = new Account("Jane", null, null);
     String jsonString = nullGson.toJson(object);
     jedis.jsonSet("account:2", jsonString);
 
     SearchResult sr = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams().returnFields("name", "phone", "age"));
+      FTSearchParams.searchParams().returnFields("name", "phone", "age"));
     assertEquals(1, sr.getTotalResults());
     Document doc = sr.getDocuments().get(0);
     assertEquals("Jane", doc.get("name"));
     assertNull(doc.get("phone"));
     assertNull(doc.get("age"));
 
-    sr = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams().returnFields("name"));
+    sr = jedis.ftSearch(INDEX, "*", FTSearchParams.searchParams().returnFields("name"));
     assertEquals(1, sr.getTotalResults());
     doc = sr.getDocuments().get(0);
     assertEquals("Jane", doc.get("name"));
 
-    sr = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams().returnFields("phone"));
+    sr = jedis.ftSearch(INDEX, "*", FTSearchParams.searchParams().returnFields("phone"));
     assertEquals(1, sr.getTotalResults());
     doc = sr.getDocuments().get(0);
     assertNull(doc.get("phone"));
 
-    sr = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams().returnFields("age"));
+    sr = jedis.ftSearch(INDEX, "*", FTSearchParams.searchParams().returnFields("age"));
     assertEquals(1, sr.getTotalResults());
     doc = sr.getDocuments().get(0);
     assertNull(doc.get("age"));
   }
 }
-

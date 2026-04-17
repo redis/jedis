@@ -68,8 +68,7 @@ public class QueryBuilderTest {
     assertEquals("s", value("s").toString());
 
     // Geo value
-    assertEquals("[1.0 2.0 3.0 km]",
-        geo(new GeoCoordinate(1.0, 2.0), 3.0, GeoUnit.KM).toString());
+    assertEquals("[1.0 2.0 3.0 km]", geo(new GeoCoordinate(1.0, 2.0), 3.0, GeoUnit.KM).toString());
   }
 
   @Test
@@ -92,10 +91,8 @@ public class QueryBuilderTest {
 
   @Test
   public void testIntersectionNested() {
-    Node n = intersect()
-        .add(union("name", value("mark"), value("dvir")))
-        .add("time", between(100, 200))
-        .add(disjunct("created", lt(1000)));
+    Node n = intersect().add(union("name", value("mark"), value("dvir")))
+        .add("time", between(100, 200)).add(disjunct("created", lt(1000)));
     assertEquals("(@name:(mark|dvir) @time:[100 200] -@created:[-inf (1000])", n.toString());
   }
 
@@ -108,4 +105,3 @@ public class QueryBuilderTest {
     assertEquals("~(~@name:{foo | bar} ~@name:{foo | bar})", n.toString());
   }
 }
-

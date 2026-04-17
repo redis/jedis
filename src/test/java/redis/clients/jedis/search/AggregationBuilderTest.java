@@ -25,4 +25,3 @@ public class AggregationBuilderTest {
     assertNull(count.getAlias());
   }
 }
-

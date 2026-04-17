@@ -416,20 +416,18 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
   @Test
   public void textFieldParams() {
-    assertOK(jedis.ftCreate("testindex", TextField.of("title")
-        .weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortable()));
+    assertOK(jedis.ftCreate("testindex",
+      TextField.of("title").weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortable()));
 
-    assertOK(jedis.ftCreate("testunfindex", TextField.of("title")
-        .weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortableUNF()));
+    assertOK(jedis.ftCreate("testunfindex",
+      TextField.of("title").weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortableUNF()));
 
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
-      assertOK(jedis.ftCreate("testindex-missing",
-          TextField.of("title").indexMissing().indexEmpty().weight(2.5).noStem().phonetic("dm:en")
-              .withSuffixTrie().sortable()));
+      assertOK(jedis.ftCreate("testindex-missing", TextField.of("title").indexMissing().indexEmpty()
+          .weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortable()));
 
-      assertOK(jedis.ftCreate("testunfindex-missing",
-          TextField.of("title").indexMissing().indexEmpty().weight(2.5).noStem().phonetic("dm:en")
-              .withSuffixTrie().sortableUNF()));
+      assertOK(jedis.ftCreate("testunfindex-missing", TextField.of("title").indexMissing()
+          .indexEmpty().weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortableUNF()));
     }
 
     assertOK(jedis.ftCreate("testnoindex", TextField.of("title").sortable().noIndex()));
@@ -441,7 +439,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @SinceRedisVersion(value = "7.4.0", message = "optional params since 7.4.0 are being tested")
   public void searchTextFieldsCondition() {
     assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("title"),
-        TextField.of("body").indexMissing().indexEmpty()));
+      TextField.of("body").indexMissing().indexEmpty()));
 
     Map<String, String> regular = new HashMap<>();
     regular.put("title", "hello world");
@@ -479,22 +477,21 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @Test
   public void numericFieldParams() {
     assertOK(jedis.ftCreate("testindex", TextField.of("title"),
-        NumericField.of("price").as("px").sortable()));
+      NumericField.of("price").as("px").sortable()));
 
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
       assertOK(jedis.ftCreate("testindex-missing", TextField.of("title"),
-          NumericField.of("price").as("px").indexMissing().sortable()));
+        NumericField.of("price").as("px").indexMissing().sortable()));
     }
 
     assertOK(jedis.ftCreate("testnoindex", TextField.of("title"),
-        NumericField.of("price").as("px").sortable().noIndex()));
+      NumericField.of("price").as("px").sortable().noIndex()));
   }
 
   @Test
   public void stopwords() {
-    assertOK(jedis.ftCreate(INDEX,
-        FTCreateParams.createParams().stopwords("foo", "bar", "baz"),
-        TextField.of("title")));
+    assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams().stopwords("foo", "bar", "baz"),
+      TextField.of("title")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world foo bar");
@@ -517,29 +514,27 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     fields.put("loc", new GeoCoordinate(-0.1, 51.2));
     addDocument("doc2", fields);
 
-    SearchResult res = jedis.ftSearch(INDEX, "hello world",
-        FTSearchParams.searchParams()
-            .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM)));
+    SearchResult res = jedis.ftSearch(INDEX, "hello world", FTSearchParams.searchParams()
+        .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM)));
     assertEquals(1, res.getTotalResults());
 
-    res = jedis.ftSearch(INDEX, "hello world",
-        FTSearchParams.searchParams()
-            .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
+    res = jedis.ftSearch(INDEX, "hello world", FTSearchParams.searchParams()
+        .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
     assertEquals(2, res.getTotalResults());
   }
 
   @Test
   public void geoFieldParams() {
     assertOK(jedis.ftCreate("testindex", TextField.of("title"),
-        GeoField.of("location").as("loc").sortable()));
+      GeoField.of("location").as("loc").sortable()));
 
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
       assertOK(jedis.ftCreate("testindex-missing", TextField.of("title"),
-          GeoField.of("location").as("loc").indexMissing().sortable()));
+        GeoField.of("location").as("loc").indexMissing().sortable()));
     }
 
     assertOK(jedis.ftCreate("testnoindex", TextField.of("title"),
-        GeoField.of("location").as("loc").sortable().noIndex()));
+      GeoField.of("location").as("loc").sortable().noIndex()));
   }
 
   @Test
@@ -550,34 +545,36 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertOK(jedis.ftCreate(INDEX, GeoShapeField.of("geom", CoordinateSystem.SPHERICAL)));
 
     // polygon type
-    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
+    final Polygon small = factory.createPolygon(new Coordinate[] { new Coordinate(34.9001, 29.7001),
         new Coordinate(34.9001, 29.7100), new Coordinate(34.9100, 29.7100),
-        new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)});
+        new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001) });
     jedis.hsetObject("small", "geom", small);
 
-    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
+    final Polygon large = factory.createPolygon(new Coordinate[] { new Coordinate(34.9001, 29.7001),
         new Coordinate(34.9001, 29.7200), new Coordinate(34.9200, 29.7200),
-        new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)});
+        new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001) });
     jedis.hsetObject("large", "geom", large);
 
     // within condition
-    final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(34.9000, 29.7000),
-        new Coordinate(34.9000, 29.7150), new Coordinate(34.9150, 29.7150),
-        new Coordinate(34.9150, 29.7000), new Coordinate(34.9000, 29.7000)});
+    final Polygon within = factory
+        .createPolygon(new Coordinate[] { new Coordinate(34.9000, 29.7000),
+            new Coordinate(34.9000, 29.7150), new Coordinate(34.9150, 29.7150),
+            new Coordinate(34.9150, 29.7000), new Coordinate(34.9000, 29.7000) });
 
     SearchResult result = jedis.ftSearch(INDEX, "@geom:[within $poly]",
-        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+      FTSearchParams.searchParams().addParam("poly", within).dialect(3));
     assertEquals(1, result.getTotalResults());
     assertEquals(1, result.getDocuments().size());
     assertEquals(small, reader.read(result.getDocuments().get(0).getString("geom")));
 
     // contains condition
-    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(34.9002, 29.7002),
-        new Coordinate(34.9002, 29.7050), new Coordinate(34.9050, 29.7050),
-        new Coordinate(34.9050, 29.7002), new Coordinate(34.9002, 29.7002)});
+    final Polygon contains = factory
+        .createPolygon(new Coordinate[] { new Coordinate(34.9002, 29.7002),
+            new Coordinate(34.9002, 29.7050), new Coordinate(34.9050, 29.7050),
+            new Coordinate(34.9050, 29.7002), new Coordinate(34.9002, 29.7002) });
 
     result = jedis.ftSearch(INDEX, "@geom:[contains $poly]",
-        FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
+      FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
     assertEquals(2, result.getTotalResults());
     assertEquals(2, result.getDocuments().size());
 
@@ -586,7 +583,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("point", "geom", point.toString());
 
     result = jedis.ftSearch(INDEX, "@geom:[within $poly]",
-        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+      FTSearchParams.searchParams().addParam("poly", within).dialect(3));
     assertEquals(2, result.getTotalResults());
     assertEquals(2, result.getDocuments().size());
   }
@@ -599,46 +596,51 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertOK(jedis.ftCreate(INDEX, GeoShapeField.of("geom", CoordinateSystem.FLAT)));
 
     // polygon type
-    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(20, 20),
-        new Coordinate(20, 100), new Coordinate(100, 100), new Coordinate(100, 20), new Coordinate(20, 20)});
+    final Polygon small = factory
+        .createPolygon(new Coordinate[] { new Coordinate(20, 20), new Coordinate(20, 100),
+            new Coordinate(100, 100), new Coordinate(100, 20), new Coordinate(20, 20) });
     jedis.hsetObject("small", "geom", small);
 
-    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(10, 10),
-        new Coordinate(10, 200), new Coordinate(200, 200), new Coordinate(200, 10), new Coordinate(10, 10)});
+    final Polygon large = factory
+        .createPolygon(new Coordinate[] { new Coordinate(10, 10), new Coordinate(10, 200),
+            new Coordinate(200, 200), new Coordinate(200, 10), new Coordinate(10, 10) });
     jedis.hsetObject("large", "geom", large);
 
     // within condition
-    final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(0, 0),
-        new Coordinate(0, 150), new Coordinate(150, 150), new Coordinate(150, 0), new Coordinate(0, 0)});
+    final Polygon within = factory
+        .createPolygon(new Coordinate[] { new Coordinate(0, 0), new Coordinate(0, 150),
+            new Coordinate(150, 150), new Coordinate(150, 0), new Coordinate(0, 0) });
 
     SearchResult result = jedis.ftSearch(INDEX, "@geom:[within $poly]",
-        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+      FTSearchParams.searchParams().addParam("poly", within).dialect(3));
     assertEquals(1, result.getTotalResults());
     assertEquals(1, result.getDocuments().size());
     assertEquals(small, reader.read(result.getDocuments().get(0).getString("geom")));
 
     // contains condition
-    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(25, 25),
-        new Coordinate(25, 50), new Coordinate(50, 50), new Coordinate(50, 25), new Coordinate(25, 25)});
+    final Polygon contains = factory
+        .createPolygon(new Coordinate[] { new Coordinate(25, 25), new Coordinate(25, 50),
+            new Coordinate(50, 50), new Coordinate(50, 25), new Coordinate(25, 25) });
 
     result = jedis.ftSearch(INDEX, "@geom:[contains $poly]",
-        FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
+      FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
     assertEquals(2, result.getTotalResults());
     assertEquals(2, result.getDocuments().size());
 
     // intersects and disjoint
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
-      final Polygon disjointersect = factory.createPolygon(new Coordinate[]{new Coordinate(150, 150),
-          new Coordinate(150, 250), new Coordinate(250, 250), new Coordinate(250, 150), new Coordinate(150, 150)});
+      final Polygon disjointersect = factory
+          .createPolygon(new Coordinate[] { new Coordinate(150, 150), new Coordinate(150, 250),
+              new Coordinate(250, 250), new Coordinate(250, 150), new Coordinate(150, 150) });
 
       result = jedis.ftSearch(INDEX, "@geom:[intersects $poly]",
-          FTSearchParams.searchParams().addParam("poly", disjointersect).dialect(3));
+        FTSearchParams.searchParams().addParam("poly", disjointersect).dialect(3));
       assertEquals(1, result.getTotalResults());
       assertEquals(1, result.getDocuments().size());
       assertEquals(large, reader.read(result.getDocuments().get(0).getString("geom")));
 
       result = jedis.ftSearch(INDEX, "@geom:[disjoint $poly]",
-          FTSearchParams.searchParams().addParam("poly", disjointersect).dialect(3));
+        FTSearchParams.searchParams().addParam("poly", disjointersect).dialect(3));
       assertEquals(1, result.getTotalResults());
       assertEquals(1, result.getDocuments().size());
       assertEquals(small, reader.read(result.getDocuments().get(0).getString("geom")));
@@ -649,7 +651,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hsetObject("point", "geom", point);
 
     result = jedis.ftSearch(INDEX, "@geom:[within $poly]",
-        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+      FTSearchParams.searchParams().addParam("poly", within).dialect(3));
     assertEquals(2, result.getTotalResults());
     assertEquals(2, result.getDocuments().size());
   }
@@ -658,13 +660,12 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   public void geoShapeFieldParams() {
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
       assertOK(jedis.ftCreate("testindex-missing",
-          GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").indexMissing()));
+        GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").indexMissing()));
     }
 
     assertOK(jedis.ftCreate("testnoindex",
-        GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").noIndex()));
+      GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").noIndex()));
   }
-
 
   @Test
   public void testQueryFlags() {
@@ -676,8 +677,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = jedis.ftSearch(INDEX, "hello",
-        FTSearchParams.searchParams().withScores());
+    SearchResult res = jedis.ftSearch(INDEX, "hello", FTSearchParams.searchParams().withScores());
     assertEquals(100, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
 
@@ -686,8 +686,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
       assertTrue(((String) d.get("title")).startsWith("hello world"));
     }
 
-    res = jedis.ftSearch(INDEX, "hello",
-        FTSearchParams.searchParams().noContent());
+    res = jedis.ftSearch(INDEX, "hello", FTSearchParams.searchParams().noContent());
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
       if (protocol != RedisProtocol.RESP3) {
@@ -708,7 +707,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(50, res.getTotalResults());
     res = jedis.ftSearch(INDEX, "hello a worlds", FTSearchParams.searchParams().verbatim());
     assertEquals(50, res.getTotalResults());
-    res = jedis.ftSearch(INDEX, "hello a world", FTSearchParams.searchParams().verbatim().noStopwords());
+    res = jedis.ftSearch(INDEX, "hello a world",
+      FTSearchParams.searchParams().verbatim().noStopwords());
     assertEquals(0, res.getTotalResults());
   }
 
@@ -720,20 +720,21 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("2", "numval", "2");
     jedis.hset("3", "numval", "3");
 
-    assertEquals(2, jedis.ftSearch(INDEX, "@numval:[$min $max]",
-        FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)
-            .dialect(2)).getTotalResults());
+    assertEquals(2,
+      jedis
+          .ftSearch(INDEX, "@numval:[$min $max]",
+            FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2).dialect(2))
+          .getTotalResults());
 
     Map<String, Object> paramValues = new HashMap<>();
     paramValues.put("min", 1);
     paramValues.put("max", 2);
     assertEquals(2, jedis.ftSearch(INDEX, "@numval:[$min $max]",
-        FTSearchParams.searchParams().params(paramValues)
-            .dialect(2)).getTotalResults());
+      FTSearchParams.searchParams().params(paramValues).dialect(2)).getTotalResults());
 
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
       assertEquals(1, jedis.ftSearch(INDEX, "@numval:[$eq]",
-          FTSearchParams.searchParams().addParam("eq", 2).dialect(4)).getTotalResults());
+        FTSearchParams.searchParams().addParam("eq", 2).dialect(4)).getTotalResults());
     }
   }
 
@@ -753,7 +754,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     addDocument("doc3", fields);
 
     SearchResult res = jedis.ftSearch(INDEX, "title",
-        FTSearchParams.searchParams().sortBy("title", SortingOrder.ASC));
+      FTSearchParams.searchParams().sortBy("title", SortingOrder.ASC));
 
     assertEquals(3, res.getTotalResults());
     Document doc1 = res.getDocuments().get(0);
@@ -768,12 +769,9 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
   @Test
   public void testJsonWithAlias() {
-    assertOK(jedis.ftCreate(INDEX,
-        FTCreateParams.createParams()
-            .on(IndexDataType.JSON)
-            .prefix("king:"),
-        TextField.of("$.name").as("name"),
-        NumericField.of("$.num").as("num")));
+    assertOK(
+      jedis.ftCreate(INDEX, FTCreateParams.createParams().on(IndexDataType.JSON).prefix("king:"),
+        TextField.of("$.name").as("name"), NumericField.of("$.num").as("num")));
 
     Map<String, Object> king1 = new HashMap<>();
     king1.put("name", "henry");
@@ -807,7 +805,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @Test
   public void noStem() {
     assertOK(jedis.ftCreate(INDEX, new TextField("stemmed").weight(1.0),
-        new TextField("notStemmed").weight(1.0).noStem()));
+      new TextField("notStemmed").weight(1.0).noStem()));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("stemmed", "located");
@@ -825,7 +823,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @Test
   public void phoneticMatch() {
     assertOK(jedis.ftCreate(INDEX, new TextField("noPhonetic").weight(1.0),
-        new TextField("withPhonetic").weight(1.0).phonetic("dm:en")));
+      new TextField("withPhonetic").weight(1.0).phonetic("dm:en")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("noPhonetic", "morfix");
@@ -839,7 +837,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     try {
       jedis.ftSearch(INDEX, "@noPhonetic:morphix=>{$phonetic:true}");
       fail();
-    } catch (JedisDataException e) {/*field does not support phonetics*/
+    } catch (JedisDataException e) {/* field does not support phonetics */
     }
 
     SearchResult res3 = jedis.ftSearch(INDEX, "@withPhonetic:morphix=>{$phonetic:false}");
@@ -891,13 +889,13 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(2, res.getTotalResults());
 
     res = jedis.ftSearch(INDEX, "@f2:Mark*",
-        FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
+      FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
     assertEquals(2, res.getTotalResults());
 
     assertEquals("doc1", res.getDocuments().get(0).getId());
 
     res = jedis.ftSearch(INDEX, "@f2:Mark*",
-        FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
+      FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
     assertEquals("doc2", res.getDocuments().get(0).getId());
   }
 
@@ -913,21 +911,21 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     // Add a document
     addDocument("foo", doc);
 
-    SearchResult res = jedis.ftSearch(INDEX, "data", FTSearchParams.searchParams().highlight().summarize());
+    SearchResult res = jedis.ftSearch(INDEX, "data",
+      FTSearchParams.searchParams().highlight().summarize());
     assertEquals("is often referred as a <b>data</b> structures server. What this means is that "
         + "Redis provides... What this means is that Redis provides access to mutable <b>data</b> "
         + "structures via a set of commands, which are sent using a... So different processes can "
         + "query and modify the same <b>data</b> structures in a shared... ",
-        res.getDocuments().get(0).get("text"));
+      res.getDocuments().get(0).get("text"));
 
     res = jedis.ftSearch(INDEX, "data", FTSearchParams.searchParams()
-        .highlight(FTSearchParams.highlightParams().tags("<u>", "</u>"))
-        .summarize());
+        .highlight(FTSearchParams.highlightParams().tags("<u>", "</u>")).summarize());
     assertEquals("is often referred as a <u>data</u> structures server. What this means is that "
         + "Redis provides... What this means is that Redis provides access to mutable <u>data</u> "
         + "structures via a set of commands, which are sent using a... So different processes can "
         + "query and modify the same <u>data</u> structures in a shared... ",
-        res.getDocuments().get(0).get("text"));
+      res.getDocuments().get(0).get("text"));
   }
 
   @Test
@@ -964,14 +962,12 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(4, jedis.ftSearch(INDEX, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
-        jedis.ftTagVals(INDEX, "category"));
+      jedis.ftTagVals(INDEX, "category"));
   }
 
   @Test
   public void testGetTagFieldWithNonDefaultSeparator() {
-    assertOK(jedis.ftCreate(INDEX,
-        TextField.of("title"),
-        TagField.of("category").separator(';')));
+    assertOK(jedis.ftCreate(INDEX, TextField.of("title"), TagField.of("category").separator(';')));
 
     Map<String, Object> fields1 = new HashMap<>();
     fields1.put("title", "hello world");
@@ -1003,14 +999,12 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(4, jedis.ftSearch(INDEX, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),
-        jedis.ftTagVals(INDEX, "category"));
+      jedis.ftTagVals(INDEX, "category"));
   }
 
   @Test
   public void caseSensitiveTagField() {
-    assertOK(jedis.ftCreate(INDEX,
-        TextField.of("title"),
-        TagField.of("category").caseSensitive()));
+    assertOK(jedis.ftCreate(INDEX, TextField.of("title"), TagField.of("category").caseSensitive()));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -1026,29 +1020,27 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
   @Test
   public void tagFieldParams() {
-    assertOK(jedis.ftCreate("testindex", TextField.of("title"),
-        TagField.of("category").as("cat").separator(',')
-            .caseSensitive().withSuffixTrie().sortable()));
+    assertOK(jedis.ftCreate("testindex", TextField.of("title"), TagField.of("category").as("cat")
+        .separator(',').caseSensitive().withSuffixTrie().sortable()));
 
-    assertOK(jedis.ftCreate("testunfindex", TextField.of("title"),
-        TagField.of("category").as("cat").separator(',')
-            .caseSensitive().withSuffixTrie().sortableUNF()));
+    assertOK(jedis.ftCreate("testunfindex", TextField.of("title"), TagField.of("category").as("cat")
+        .separator(',').caseSensitive().withSuffixTrie().sortableUNF()));
 
     if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4)) {
       assertOK(jedis.ftCreate("testindex-missing", TextField.of("title"),
-          TagField.of("category").as("cat").indexMissing().indexEmpty().separator(',')
-              .caseSensitive().withSuffixTrie().sortable()));
+        TagField.of("category").as("cat").indexMissing().indexEmpty().separator(',').caseSensitive()
+            .withSuffixTrie().sortable()));
 
       assertOK(jedis.ftCreate("testunfindex-missing", TextField.of("title"),
-          TagField.of("category").as("cat").indexMissing().indexEmpty().separator(',')
-              .caseSensitive().withSuffixTrie().sortableUNF()));
+        TagField.of("category").as("cat").indexMissing().indexEmpty().separator(',').caseSensitive()
+            .withSuffixTrie().sortableUNF()));
     }
 
     assertOK(jedis.ftCreate("testnoindex", TextField.of("title"),
-        TagField.of("category").as("cat").sortable().noIndex()));
+      TagField.of("category").as("cat").sortable().noIndex()));
 
     assertOK(jedis.ftCreate("testunfnoindex", TextField.of("title"),
-        TagField.of("category").as("cat").sortableUNF().noIndex()));
+      TagField.of("category").as("cat").sortableUNF().noIndex()));
   }
 
   @Test
@@ -1062,7 +1054,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // Query
     SearchResult res = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams().returnFields("field1"));
+      FTSearchParams.searchParams().returnFields("field1"));
     assertEquals(1, res.getTotalResults());
     Document ret = res.getDocuments().get(0);
     assertEquals("value1", ret.get("field1"));
@@ -1087,9 +1079,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // Query
     SearchResult res = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams()
-            .returnFields(FieldName.of("a"),
-                FieldName.of("b").as("d")));
+      FTSearchParams.searchParams().returnFields(FieldName.of("a"), FieldName.of("b").as("d")));
     assertEquals(1, res.getTotalResults());
     Document doc = res.getDocuments().get(0);
     assertEquals("value1", doc.get("a"));
@@ -1097,26 +1087,20 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals("value2", doc.get("d"));
     assertNull(doc.get("c"));
 
-    res = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams()
-            .returnField(FieldName.of("a"))
-            .returnField(FieldName.of("b").as("d")));
+    res = jedis.ftSearch(INDEX, "*", FTSearchParams.searchParams().returnField(FieldName.of("a"))
+        .returnField(FieldName.of("b").as("d")));
     assertEquals(1, res.getTotalResults());
     assertEquals("value1", res.getDocuments().get(0).get("a"));
     assertEquals("value2", res.getDocuments().get(0).get("d"));
 
-    res = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams()
-            .returnField(FieldName.of("a"), true)
-            .returnField(FieldName.of("b").as("d"), true));
+    res = jedis.ftSearch(INDEX, "*", FTSearchParams.searchParams()
+        .returnField(FieldName.of("a"), true).returnField(FieldName.of("b").as("d"), true));
     assertEquals(1, res.getTotalResults());
     assertEquals("value1", res.getDocuments().get(0).get("a"));
     assertEquals("value2", res.getDocuments().get(0).get("d"));
 
-    res = jedis.ftSearch(INDEX, "*",
-        FTSearchParams.searchParams()
-            .returnField(FieldName.of("a"), false)
-            .returnField(FieldName.of("b").as("d"), false));
+    res = jedis.ftSearch(INDEX, "*", FTSearchParams.searchParams()
+        .returnField(FieldName.of("a"), false).returnField(FieldName.of("b").as("d"), false));
     assertEquals(1, res.getTotalResults());
     assertArrayEquals("value1".getBytes(), (byte[]) res.getDocuments().get(0).get("a"));
     assertArrayEquals("value2".getBytes(), (byte[]) res.getDocuments().get(0).get("d"));
@@ -1134,8 +1118,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     addDocument("doc2", doc);
 
     // Query
-    SearchResult res = jedis.ftSearch(INDEX, "value",
-        FTSearchParams.searchParams().inKeys("doc1"));
+    SearchResult res = jedis.ftSearch(INDEX, "value", FTSearchParams.searchParams().inKeys("doc1"));
     assertEquals(1, res.getTotalResults());
     assertEquals("doc1", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
@@ -1206,11 +1189,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("b", "v", "aaaabaaa");
     jedis.hset("c", "v", "aaaaabaa");
 
-    FTSearchParams searchParams = FTSearchParams.searchParams()
-        .addParam("vec", "aaaaaaaa")
-        .sortBy("__v_score", SortingOrder.ASC)
-        .returnFields("__v_score")
-        .dialect(2);
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
+        .sortBy("__v_score", SortingOrder.ASC).returnFields("__v_score").dialect(2);
     Document doc1 = jedis.ftSearch(INDEX, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
@@ -1219,23 +1199,16 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @Test
   public void testFlatVectorSimilarity() {
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.FLAT)
-            .addAttribute("TYPE", "FLOAT32")
-            .addAttribute("DIM", 2)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .build()
-    ));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.FLAT)
+          .addAttribute("TYPE", "FLOAT32").addAttribute("DIM", 2)
+          .addAttribute("DISTANCE_METRIC", "L2").build()));
 
     jedis.hset("a", "v", "aaaaaaaa");
     jedis.hset("b", "v", "aaaabaaa");
     jedis.hset("c", "v", "aaaaabaa");
 
-    FTSearchParams searchParams = FTSearchParams.searchParams()
-        .addParam("vec", "aaaaaaaa")
-        .sortBy("__v_score", SortingOrder.ASC)
-        .returnFields("__v_score")
-        .dialect(2);
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
+        .sortBy("__v_score", SortingOrder.ASC).returnFields("__v_score").dialect(2);
 
     Document doc1 = jedis.ftSearch(INDEX, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
@@ -1245,11 +1218,11 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @Test
   public void testFlatVectorSimilarityInt8() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3),
-        "INT8");
+      "INT8");
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.FLAT)
-            .addAttribute("TYPE", "INT8").addAttribute("DIM", 2)
-            .addAttribute("DISTANCE_METRIC", "L2").build()));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.FLAT)
+          .addAttribute("TYPE", "INT8").addAttribute("DIM", 2).addAttribute("DISTANCE_METRIC", "L2")
+          .build()));
 
     byte[] a = { 127, 1 };
     byte[] b = { 127, 10 };
@@ -1262,8 +1235,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", a)
         .sortBy("__v_score", SortingOrder.ASC).returnFields("__v_score");
 
-    Document doc1 = jedis.ftSearch(INDEX, "*=>[KNN 2 @v $vec]", searchParams).getDocuments()
-        .get(0);
+    Document doc1 = jedis.ftSearch(INDEX, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
   }
@@ -1276,51 +1248,46 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     attr.put("DIM", 2);
     attr.put("DISTANCE_METRIC", "L2");
 
-    assertOK(jedis.ftCreate("testindex-missing", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").indexMissing()));
+    assertOK(jedis.ftCreate("testindex-missing",
+      new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").indexMissing()));
   }
 
   @Test
   @SinceRedisVersion(value = "7.4.0", message = "FLOAT16")
   public void float16StorageType() {
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.HNSW)
-            .addAttribute("TYPE", "FLOAT16")
-            .addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .build()));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+          .addAttribute("TYPE", "FLOAT16").addAttribute("DIM", 4)
+          .addAttribute("DISTANCE_METRIC", "L2").build()));
   }
 
   @Test
   @SinceRedisVersion(value = "7.4.0", message = "BFLOAT16")
   public void bfloat16StorageType() {
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.HNSW)
-            .addAttribute("TYPE", "BFLOAT16")
-            .addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .build()));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+          .addAttribute("TYPE", "BFLOAT16").addAttribute("DIM", 4)
+          .addAttribute("DISTANCE_METRIC", "L2").build()));
   }
 
   @Test
   public void int8StorageType() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3),
-        "INT8");
+      "INT8");
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
-            .addAttribute("TYPE", "INT8").addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2").build()));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+          .addAttribute("TYPE", "INT8").addAttribute("DIM", 4).addAttribute("DISTANCE_METRIC", "L2")
+          .build()));
   }
 
   @Test
   public void uint8StorageType() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_80M3),
-        "UINT8");
+      "UINT8");
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
-            .addAttribute("TYPE", "UINT8").addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2").build()));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.HNSW)
+          .addAttribute("TYPE", "UINT8").addAttribute("DIM", 4)
+          .addAttribute("DISTANCE_METRIC", "L2").build()));
   }
 
   @Test
@@ -1335,9 +1302,9 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
         .algorithm(VectorAlgorithm.SVS_VAMANA).attributes(attr).build()));
 
     // Create proper float vectors
-    float[] vectorA = {1.0f, 2.0f};
-    float[] vectorB = {1.1f, 2.1f};
-    float[] vectorC = {2.0f, 3.0f};
+    float[] vectorA = { 1.0f, 2.0f };
+    float[] vectorB = { 1.1f, 2.1f };
+    float[] vectorC = { 2.0f, 3.0f };
 
     // Convert to byte arrays using RediSearchUtil
     byte[] bytesA = RediSearchUtil.toByteArray(vectorA);
@@ -1348,11 +1315,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("b".getBytes(), "v".getBytes(), bytesB);
     jedis.hset("c".getBytes(), "v".getBytes(), bytesC);
 
-    FTSearchParams searchParams = FTSearchParams.searchParams()
-        .addParam("vec", bytesA)
-        .sortBy("__v_score", SortingOrder.ASC)
-        .returnFields("__v_score")
-        .dialect(2);
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", bytesA)
+        .sortBy("__v_score", SortingOrder.ASC).returnFields("__v_score").dialect(2);
     Document doc1 = jedis.ftSearch(INDEX, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
@@ -1362,17 +1326,11 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   @SinceRedisVersion("8.1.240")
   public void testSvsVamanaVectorWithAdvancedParameters() {
     assertOK(jedis.ftCreate(INDEX,
-        VectorField.builder().fieldName("v")
-            .algorithm(VectorAlgorithm.SVS_VAMANA)
-            .addAttribute("TYPE", "FLOAT32")
-            .addAttribute("DIM", 4)
-            .addAttribute("DISTANCE_METRIC", "L2")
-            .addAttribute("CONSTRUCTION_WINDOW_SIZE", 200)
-            .addAttribute("GRAPH_MAX_DEGREE", 64)
-            .addAttribute("SEARCH_WINDOW_SIZE", 100)
-            .addAttribute("EPSILON", 0.01)
-            .build()
-    ));
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.SVS_VAMANA)
+          .addAttribute("TYPE", "FLOAT32").addAttribute("DIM", 4)
+          .addAttribute("DISTANCE_METRIC", "L2").addAttribute("CONSTRUCTION_WINDOW_SIZE", 200)
+          .addAttribute("GRAPH_MAX_DEGREE", 64).addAttribute("SEARCH_WINDOW_SIZE", 100)
+          .addAttribute("EPSILON", 0.01).build()));
   }
 
   @Test
@@ -1385,11 +1343,12 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("doc1", hash);
 
     Map.Entry<SearchResult, ProfilingInfo> reply = jedis.ftProfileSearch(INDEX,
-        FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
+      FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
 
     SearchResult result = reply.getKey();
     assertEquals(1, result.getTotalResults());
-    assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
+    assertEquals(Collections.singletonList("doc1"),
+      result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
@@ -1401,17 +1360,19 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     } else {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
-        assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
+        assertThat(((Map<String, Object>) profileObject).keySet(),
+          Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }
 
   @Test
   public void vectorSearchProfile() {
-    assertOK(jedis.ftCreate(INDEX, VectorField.builder().fieldName("v")
-        .algorithm(VectorAlgorithm.FLAT).addAttribute("TYPE", "FLOAT32")
-        .addAttribute("DIM", 2).addAttribute("DISTANCE_METRIC", "L2").build(),
-        TextField.of("t")));
+    assertOK(jedis.ftCreate(INDEX,
+      VectorField.builder().fieldName("v").algorithm(VectorAlgorithm.FLAT)
+          .addAttribute("TYPE", "FLOAT32").addAttribute("DIM", 2)
+          .addAttribute("DISTANCE_METRIC", "L2").build(),
+      TextField.of("t")));
 
     jedis.hset("1", toStringMap("v", "bababaca", "t", "hello"));
     jedis.hset("2", toStringMap("v", "babababa", "t", "hello"));
@@ -1422,11 +1383,11 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
         .sortBy("__v_score", SortingOrder.ASC).noContent().dialect(2);
     Map.Entry<SearchResult, ProfilingInfo> reply = jedis.ftProfileSearch(INDEX,
-        FTProfileParams.profileParams(), "*=>[KNN 3 @v $vec]", searchParams);
+      FTProfileParams.profileParams(), "*=>[KNN 3 @v $vec]", searchParams);
     assertEquals(3, reply.getKey().getTotalResults());
 
-    assertEquals(Arrays.asList(4, 2, 1).toString(), reply.getKey().getDocuments()
-        .stream().map(Document::getId).collect(Collectors.toList()).toString());
+    assertEquals(Arrays.asList(4, 2, 1).toString(), reply.getKey().getDocuments().stream()
+        .map(Document::getId).collect(Collectors.toList()).toString());
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
@@ -1438,7 +1399,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     } else {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
-        assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
+        assertThat(((Map<String, Object>) profileObject).keySet(),
+          Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }
@@ -1452,7 +1414,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("4", "t", "helowa");
 
     Map.Entry<SearchResult, ProfilingInfo> reply = jedis.ftProfileSearch(INDEX,
-        FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());
+      FTProfileParams.profileParams().limited(), "%hell% hel*",
+      FTSearchParams.searchParams().noContent());
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
@@ -1464,7 +1427,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     } else {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
-        assertThat(((Map<String, Object>) profileObject).keySet(), Matchers.hasItems("Shards", "Coordinator"));
+        assertThat(((Map<String, Object>) profileObject).keySet(),
+          Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }
@@ -1491,8 +1455,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
   @Test
   public void searchIteration() {
-    assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(),
-        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+    assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("first"),
+      TextField.of("last"), NumericField.of("age")));
 
     jedis.hset("profesor:5555", toStringMap("first", "Albert", "last", "Blue", "age", "55"));
     jedis.hset("student:1111", toStringMap("first", "Joe", "last", "Dod", "age", "18"));
@@ -1502,7 +1466,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     jedis.hset("student:5555", toStringMap("first", "Joen", "last", "Ko", "age", "20"));
     jedis.hset("teacher:6666", toStringMap("first", "Pat", "last", "Rod", "age", "20"));
 
-    FtSearchIteration search = jedis.ftSearchIteration(3, INDEX, "*", FTSearchParams.searchParams());
+    FtSearchIteration search = jedis.ftSearchIteration(3, INDEX, "*",
+      FTSearchParams.searchParams());
     int total = 0;
     while (!search.isIterationCompleted()) {
       SearchResult result = search.nextBatch();
@@ -1515,8 +1480,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
   @Test
   public void searchIterationCollect() {
-    assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(),
-        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+    assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("first"),
+      TextField.of("last"), NumericField.of("age")));
 
     jedis.hset("profesor:5555", toStringMap("first", "Albert", "last", "Blue", "age", "55"));
     jedis.hset("student:1111", toStringMap("first", "Joe", "last", "Dod", "age", "18"));
@@ -1529,9 +1494,10 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     ArrayList<Document> collect = new ArrayList<>();
     jedis.ftSearchIteration(3, INDEX, "*", FTSearchParams.searchParams()).collect(collect);
     assertEquals(7, collect.size());
-    assertEquals(Arrays.asList("profesor:5555", "student:1111", "pupil:2222", "student:3333",
-        "pupil:4444", "student:5555", "teacher:6666").stream().collect(Collectors.toSet()),
-        collect.stream().map(Document::getId).collect(Collectors.toSet()));
+    assertEquals(
+      Arrays.asList("profesor:5555", "student:1111", "pupil:2222", "student:3333", "pupil:4444",
+        "student:5555", "teacher:6666").stream().collect(Collectors.toSet()),
+      collect.stream().map(Document::getId).collect(Collectors.toSet()));
   }
 
   @Test
@@ -1551,17 +1517,18 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
   @Test
   public void escapeMapUtil() {
-    jedis.hset("doc2", RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
+    jedis.hset("doc2",
+      RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
     assertNotEquals("hello-world", jedis.hget("doc2", "txt"));
     assertEquals("hello-world", RediSearchUtil.unescape(jedis.hget("doc2", "txt")));
   }
 
   @Test
   public void hsetObject() {
-    float[] floats = new float[]{0.2f};
+    float[] floats = new float[] { 0.2f };
     assertEquals(1L, jedis.hsetObject("obj", "floats", floats));
     assertArrayEquals(RediSearchUtil.toByteArray(floats),
-        jedis.hget("obj".getBytes(), "floats".getBytes()));
+      jedis.hget("obj".getBytes(), "floats".getBytes()));
 
     GeoCoordinate geo = new GeoCoordinate(-0.441, 51.458);
     Map<String, Object> fields = new HashMap<>();

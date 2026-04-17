@@ -1286,7 +1286,7 @@ public class ClusterPipeliningTest {
   @Test
   public void sharedExecutorPipelineDoesNotShutdownSharedExecutor() {
     ExecutorService executorService = Executors.newFixedThreadPool(3);
-    try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()){
+    try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(clientConfig).build()){
       try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
         // multiple keys at different slots, to ensure multi-node pipeline
         pipeline.set("key1", "value1");
@@ -1301,7 +1301,7 @@ public class ClusterPipeliningTest {
   }
   @Test
   public void sharedExecutorPipelineKeysAtSameNode() {
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(clientConfig).build()) {
       ExecutorService executorService = Executors.newFixedThreadPool(3);
       // test simple key
       cluster.set("foo", "bar");
@@ -1351,7 +1351,7 @@ public class ClusterPipeliningTest {
     ExecutorService sharedExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
     ExecutorService testExecutor = Executors.newFixedThreadPool(CONCURRENT_PIPELINES);
 
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(clientConfig).build()) {
 
       CountDownLatch startLatch = new CountDownLatch(1);
       CountDownLatch completionLatch = new CountDownLatch(CONCURRENT_PIPELINES);

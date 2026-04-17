@@ -305,7 +305,7 @@ class ClientBuilderTest {
         .fromURI("redis://localhost:6379");
 
     JedisClientConfig resultConfig = getClientConfig(builder);
-    assertThat(resultConfig.getRedisProtocol(), equalTo(RedisProtocol.RESP3_PREFERRED));
+    assertNull(resultConfig.getRedisProtocol());
   }
 
   /**

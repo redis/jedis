@@ -49,7 +49,6 @@ import redis.clients.jedis.util.RedisVersionUtil;
 /**
  * Base test class for Search commands with params using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

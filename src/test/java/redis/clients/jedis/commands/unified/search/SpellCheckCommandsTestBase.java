@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +20,6 @@ import redis.clients.jedis.search.*;
  * Base test class for Spell Check commands using the UnifiedJedis pattern. Tests FT.SPELLCHECK,
  * FT.DICTADD, FT.DICTDEL, FT.DICTDUMP.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class SpellCheckCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

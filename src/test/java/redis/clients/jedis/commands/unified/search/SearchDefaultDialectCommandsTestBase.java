@@ -11,7 +11,6 @@ import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 
-import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -33,7 +32,6 @@ import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.util.EnvCondition;
 
-@Tag("integration")
 @Tag("search")
 public abstract class SearchDefaultDialectCommandsTestBase {
 

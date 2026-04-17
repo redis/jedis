@@ -18,7 +18,6 @@ import redis.clients.jedis.search.*;
 /**
  * Base test class for JSON Search with Gson serialization using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class JsonSearchWithGsonCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

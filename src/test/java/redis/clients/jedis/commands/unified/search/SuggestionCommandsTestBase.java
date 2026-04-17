@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
@@ -13,14 +12,11 @@ import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.resps.Tuple;
-import redis.clients.jedis.search.FTSearchParams;
-import redis.clients.jedis.search.SearchResult;
 
 /**
  * Base test class for Suggestion (auto-complete) commands using the UnifiedJedis pattern. Tests
  * FT.SUGADD, FT.SUGGET, FT.SUGDEL, FT.SUGLEN.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class SuggestionCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

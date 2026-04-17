@@ -39,7 +39,6 @@ import redis.clients.jedis.util.SafeEncoder;
  * Base test class for Search commands using the UnifiedJedis pattern. Tests FT.CREATE, FT.SEARCH,
  * FT.DROP, etc.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

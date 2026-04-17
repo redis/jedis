@@ -36,7 +36,6 @@ import redis.clients.jedis.util.RedisVersionUtil;
  * Base test class for Aggregation commands using the UnifiedJedis pattern. Tests FT.AGGREGATE,
  * FT.CURSOR, etc.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

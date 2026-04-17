@@ -22,7 +22,6 @@ import redis.clients.jedis.search.Schema.*;
 /**
  * Base test class for JSON Search commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("search")
 public abstract class JsonSearchCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

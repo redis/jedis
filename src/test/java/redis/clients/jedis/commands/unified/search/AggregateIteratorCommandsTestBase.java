@@ -28,7 +28,6 @@ import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.util.EnvCondition;
 
-@Tag("integration")
 @Tag("search")
 public abstract class AggregateIteratorCommandsTestBase {
 

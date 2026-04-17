@@ -131,10 +131,7 @@ public class CacheConnectionMockTest {
         // Send invalidate push notification with a single key
         // RESP3 format: >2\r\n$10\r\ninvalidate\r\n*1\r\n$8\r\ntestkey1\r\n
         // This represents: ["invalidate", ["testkey1"]]
-        String invalidateMessage = ">2\r\n"
-            + "$10\r\ninvalidate\r\n"
-            + "*1\r\n"
-            + "$8\r\ntestkey1\r\n";
+        String invalidateMessage = ">2\r\n$10\r\ninvalidate\r\n*1\r\n$8\r\ntestkey1\r\n";
 
         mockServer.sendRawPushMessageToAll(invalidateMessage);
 

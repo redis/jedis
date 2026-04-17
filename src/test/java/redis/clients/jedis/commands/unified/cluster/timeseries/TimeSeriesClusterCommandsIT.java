@@ -63,4 +63,30 @@ public class TimeSeriesClusterCommandsIT extends TimeSeriesCommandsTestBase {
   @Override
   public void latestMulti() {
   }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void groupByReduce() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void countNanAndCountAllWithBucketTimestamp() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void mrangeFilterBy() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void testMRevRange() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void countNanAndCountAll() {
+  }
+
 }

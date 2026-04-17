@@ -1,10 +1,9 @@
-package redis.clients.jedis.modules.search;
+package redis.clients.jedis.search;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.search.RediSearchUtil;
 
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.SchemaField;

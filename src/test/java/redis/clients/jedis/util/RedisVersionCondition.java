@@ -50,8 +50,8 @@ public class RedisVersionCondition implements ExecutionCondition {
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
     ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
-      SinceRedisVersion versionAnnotation = getAnnotation(context);
-      if (versionAnnotation != null) {
+      RedisVersion minRequiredVersion = getMaxRequiredVersion(context);
+      if (minRequiredVersion != null) {
         RedisVersion currentVersion;
 
         if (forcedVersion != null) {
@@ -62,7 +62,6 @@ public class RedisVersionCondition implements ExecutionCondition {
           currentVersion = RedisVersion.of(info.getRedisVersion());
         }
 
-        RedisVersion minRequiredVersion = RedisVersion.of(versionAnnotation.value());
         if (currentVersion.isLessThan(minRequiredVersion)) {
           return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion);
         }
@@ -73,13 +72,20 @@ public class RedisVersionCondition implements ExecutionCondition {
     return ConditionEvaluationResult.enabled("Redis version is sufficient");
   }
 
-  private SinceRedisVersion getAnnotation(ExtensionContext context) {
+  /**
+   * Returns the highest required Redis version from both class-level and method-level
+   * {@link SinceRedisVersion} annotations. This ensures that when a class requires e.g. 8.0.0
+   * and a method requires 7.4.0, the class-level constraint is not bypassed.
+   */
+  private RedisVersion getMaxRequiredVersion(ExtensionContext context) {
     Optional<SinceRedisVersion> methodAnnotation = AnnotationUtils.findAnnotation(context.getTestMethod(), SinceRedisVersion.class);
-    if (methodAnnotation.isPresent()) {
-      return methodAnnotation.get();
-    }
-
     Optional<SinceRedisVersion> classAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestClass(), SinceRedisVersion.class);
-    return classAnnotation.orElse(null);
+
+    RedisVersion methodVersion = methodAnnotation.map(a -> RedisVersion.of(a.value())).orElse(null);
+    RedisVersion classVersion = classAnnotation.map(a -> RedisVersion.of(a.value())).orElse(null);
+
+    if (methodVersion == null) return classVersion;
+    if (classVersion == null) return methodVersion;
+    return classVersion.isGreaterThan(methodVersion) ? classVersion : methodVersion;
   }
 }

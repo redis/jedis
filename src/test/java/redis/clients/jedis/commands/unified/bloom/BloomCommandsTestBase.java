@@ -24,7 +24,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 /**
  * Base test class for Bloom Filter commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("bloom")
 public abstract class BloomCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

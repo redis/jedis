@@ -25,7 +25,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 /**
  * Base test class for Cuckoo Filter commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("bloom")
 public abstract class CuckooCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

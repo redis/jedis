@@ -38,7 +38,6 @@ import redis.clients.jedis.util.JsonObjectMapperTestUtil;
  * Base test class for RedisJSON V1 commands using the UnifiedJedis pattern. V1 of the RedisJSON is
  * only supported with RESP2.
  */
-@Tag("integration")
 @Tag("json")
 public abstract class RedisJsonV1CommandsTestBase extends UnifiedJedisCommandsTestBase {
 

@@ -19,7 +19,6 @@ import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 /**
  * Base test class for T-Digest commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("bloom")
 public abstract class TDigestCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

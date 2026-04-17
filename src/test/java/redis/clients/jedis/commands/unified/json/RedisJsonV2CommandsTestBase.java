@@ -32,7 +32,6 @@ import redis.clients.jedis.json.Path2;
 /**
  * Base test class for RedisJSON V2 commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("json")
 public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTestBase {
 

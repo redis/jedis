@@ -19,7 +19,6 @@ import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 /**
  * Base test class for TopK commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("bloom")
 public abstract class TopKCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

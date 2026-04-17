@@ -21,7 +21,6 @@ import redis.clients.jedis.exceptions.JedisException;
 /**
  * Base test class for Count-Min-Sketch commands using the UnifiedJedis pattern.
  */
-@Tag("integration")
 @Tag("bloom")
 public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
 

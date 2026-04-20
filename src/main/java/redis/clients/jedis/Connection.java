@@ -93,9 +93,9 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private boolean isRelaxed = false;
   private JedisClientConfig clientConfig;
+  private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
   private boolean rebindRequested = false;
 
-  private PushConsumerChainImpl pushConsumers;
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -136,21 +136,19 @@ public class Connection implements Closeable {
        * Marks all @{link PushMessages as processed, except for pub/sub.
        * Pub/sub messages are propagated to the client.
        */
-      this.pushConsumers = PushConsumerChainImpl.of(
-              PushConsumerChainImpl.PUBSUB_CONSUMER
-      );
+      addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
-      if (config != null) {
+    if (config != null) {
 
-          /*
-           * Add consumer to handle server maintenance events.
-           * Per-connection concerns (timeout relaxation, rebind flag) are handled inline.
-           * Pool-level concerns (factory rebind, pool clear) are notified via memberOf.
-           */
-          if (config.isProactiveRebindEnabled() || relaxedTimeoutEnabled) {
-              addPushConsumer(new MaintenanceEventConsumer(config.isProactiveRebindEnabled()));
-          }
+      /*
+       * Add consumer to handle server maintenance events.
+       * Per-connection concerns (timeout relaxation, rebind flag) are handled inline.
+       * Pool-level concerns (factory rebind, pool clear) are notified via memberOf.
+       */
+      if (config.isProactiveRebindEnabled() || relaxedTimeoutEnabled) {
+        addPushConsumer(new MaintenanceEventConsumer(config.isProactiveRebindEnabled()));
       }
+    }
   }
 
   @Override
@@ -482,7 +480,7 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  protected void protocolReadPushes(RedisInputStream is) {
+  protected void protocolReadPushes(RedisInputStream is, PushConsumerChain consumer) {
   }
 
   protected Object readProtocolWithCheckingBroken() {
@@ -505,7 +503,7 @@ public class Connection implements Closeable {
 
     try {
       if (inputStream.available() > 0) {
-        protocolReadPushes(inputStream);
+        protocolReadPushes(inputStream, pushConsumers);
       }
     } catch (IOException e) {
       broken = true;

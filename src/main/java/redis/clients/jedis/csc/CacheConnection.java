@@ -75,7 +75,8 @@ public class CacheConnection extends Connection {
 
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
-      if (context.getMessage().getType().equals("invalidate")) {
+      if (context.getMessage() != null &&
+              "invalidate".equals(context.getMessage().getType())) {
         cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
         context.drop();
       }
@@ -110,7 +111,6 @@ public class CacheConnection extends Connection {
   protected Object protocolRead(RedisInputStream inputStream, PushConsumerChain consumer) {
     lock.lock();
     try {
-      // return Protocol.read(inputStream, cache);
       return Protocol.read(inputStream, consumer);
     } finally {
       lock.unlock();
@@ -118,10 +118,10 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected void protocolReadPushes(RedisInputStream inputStream) {
+  protected void protocolReadPushes(RedisInputStream inputStream, PushConsumerChain consumer) {
     if (lock.tryLock()) {
       try {
-        Protocol.readPushes(inputStream, cache, true);
+        Protocol.readPushes(inputStream, consumer);
       } finally {
         lock.unlock();
       }

@@ -7,6 +7,10 @@ public final class NumberUtils {
       return Integer.MAX_VALUE;
     }
 
+    if (millis < Integer.MIN_VALUE) {
+      return Integer.MIN_VALUE;
+    }
+
     return (int) millis;
   }
 

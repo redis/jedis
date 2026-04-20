@@ -80,6 +80,7 @@ public class ConnectionMockTest {
       // Verify only PUBSUB_CONSUMER is registered by default
       assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
     }
+
     /**
      * Tests that the MaintenanceEventConsumer is registered when using the constructors not
      * providing a JedisClientConfig.
@@ -87,33 +88,33 @@ public class ConnectionMockTest {
     @Test
     public void maintenanceConsumerRegisteredConstructorWithConfig() {
       TimeoutOptions timeoutOpts = TimeoutOptions.builder()
-              .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
+          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
 
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-              .timeoutOptions(timeoutOpts).build();
+          .timeoutOptions(timeoutOpts).build();
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
       assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-              instanceOf(Connection.MaintenanceEventConsumer.class)));
+        instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
 
     @Test
     public void maintenanceConsumerRegisteredWithConnectionBuilder() {
       TimeoutOptions timeoutOpts = TimeoutOptions.builder()
-              .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
+          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
 
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-              .timeoutOptions(timeoutOpts).build();
+          .timeoutOptions(timeoutOpts).build();
 
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
       DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
 
       Connection conn = Connection.builder().socketFactory(socketFactory).clientConfig(config)
-              .build();
+          .build();
 
       assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-              instanceOf(Connection.MaintenanceEventConsumer.class)));
+        instanceOf(Connection.MaintenanceEventConsumer.class)));
     }
 
     @Test

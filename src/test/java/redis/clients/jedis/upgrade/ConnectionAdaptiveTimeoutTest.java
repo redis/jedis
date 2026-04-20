@@ -14,10 +14,13 @@ import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
+import redis.clients.jedis.util.server.MaintenanceEvent;
 import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.net.Socket;
 import java.net.SocketException;
 import java.time.Duration;
@@ -85,12 +88,12 @@ public class ConnectionAdaptiveTimeoutTest {
     assertEquals(originalTimeoutMs, socket.getSoTimeout());
 
     // First send MIGRATING to activate relaxed timeout
-    mockServer.sendMigratingPushToAll();
+    mockServer.sendPushMessageToAll(MaintenanceEvent.migrating(1, 10, Collections.singletonList("1")));
     assertTrue(connection.ping());
     assertTrue(connection.isRelaxedTimeoutActive());
     assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout());
 
-    mockServer.sendMigratedPushToAll();
+    mockServer.sendPushMessageToAll(MaintenanceEvent.migrated(1, Collections.singletonList("1")));
     assertTrue(connection.ping());
     assertFalse(connection.isRelaxedTimeoutActive());
     assertEquals(originalTimeoutMs, socket.getSoTimeout());
@@ -105,12 +108,12 @@ public class ConnectionAdaptiveTimeoutTest {
     assertEquals(originalTimeoutMs, socket.getSoTimeout());
 
     // First send MIGRATING to activate relaxed timeout
-    mockServer.sendFailingOverPushToAll();
+    mockServer.sendPushMessageToAll(MaintenanceEvent.failingOver(1, 10, Collections.singletonList("1")));
     assertTrue(connection.ping());
     assertTrue(connection.isRelaxedTimeoutActive());
     assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout());
 
-    mockServer.sendFailedOverPushToAll();
+    mockServer.sendPushMessageToAll(MaintenanceEvent.failedOver(1, Collections.singletonList("1")));
     assertTrue(connection.ping());
     assertFalse(connection.isRelaxedTimeoutActive());
     assertEquals(originalTimeoutMs, socket.getSoTimeout());
@@ -131,7 +134,7 @@ public class ConnectionAdaptiveTimeoutTest {
       assertFalse(disabledConnection.isRelaxedTimeoutActive());
 
       // Send MIGRATING push message - should NOT activate relaxed timeout
-      mockServer.sendMigratingPushToAll();
+      mockServer.sendPushMessageToAll(MaintenanceEvent.migrating(1, 10, Collections.singletonList("1")));
 
       assertTrue(disabledConnection.ping());
 
@@ -140,7 +143,8 @@ public class ConnectionAdaptiveTimeoutTest {
       assertEquals(originalTimeoutMs, disabledSocket.getSoTimeout());
 
       // Send FAILING_OVER push message - should also NOT activate relaxed timeout
-      mockServer.sendFailingOverPushToAll();
+      mockServer
+          .sendPushMessageToAll(MaintenanceEvent.failingOver(1, 10, Collections.singletonList("1")));
 
       assertTrue(disabledConnection.ping());
 
@@ -149,8 +153,8 @@ public class ConnectionAdaptiveTimeoutTest {
       assertEquals(originalTimeoutMs, disabledSocket.getSoTimeout());
 
       // Send MIGRATED and FAILED_OVER messages - timeout should remain unchanged
-      mockServer.sendMigratedPushToAll();
-      mockServer.sendFailedOverPushToAll();
+      mockServer.sendPushMessageToAll(MaintenanceEvent.migrated(1, Collections.singletonList("1")));
+      mockServer.sendPushMessageToAll(MaintenanceEvent.failedOver(1, Collections.singletonList("1")));
 
       assertTrue(disabledConnection.ping());
       assertFalse(disabledConnection.isRelaxedTimeoutActive());
@@ -204,7 +208,8 @@ public class ConnectionAdaptiveTimeoutTest {
       assertFalse(defaultTimeoutConnection.isRelaxedTimeoutActive());
 
       // Send maintenance push messages - should NOT activate relaxed timeout
-      mockServer.sendMigratingPushToAll();
+      mockServer
+          .sendPushMessageToAll(MaintenanceEvent.migrating(1, 10, Collections.singletonList("1")));
 
       assertTrue(defaultTimeoutConnection.ping());
 
@@ -243,7 +248,7 @@ public class ConnectionAdaptiveTimeoutTest {
     }), anyString());
 
     // Send MIGRATING push notification which should trigger relaxTimeouts()
-    mockServer.sendMigratingPushToAll();
+    mockServer.sendPushMessageToAll(MaintenanceEvent.migrating(1, 10, Collections.singletonList("1")));
 
     Thread t1 = new Thread(() -> {
       connection.executeCommand(commandObjects.blpop(5, "test:blpop:key"));
@@ -265,7 +270,7 @@ public class ConnectionAdaptiveTimeoutTest {
       "Socket timeout should be restored to relaxed timeout for non blocking command");
 
     // Send MIGRATED push notification to disable relaxed timeout
-    mockServer.sendMigratedPushToAll();
+    mockServer.sendPushMessageToAll(MaintenanceEvent.migrated(1, Collections.singletonList("1")));
     connection.executeCommand(commandObjects.ping());
 
     assertFalse(connection.isRelaxedTimeoutActive(),

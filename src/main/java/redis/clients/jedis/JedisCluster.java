@@ -292,14 +292,18 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    super(provider, maxAttempts, maxTotalRetriesDuration);
+  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
+        StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects());
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
-  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol) {
-    super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
+  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, RedisProtocol protocol) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
+            StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects(), protocol,
+        null);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
@@ -345,9 +349,11 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
-  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, Cache clientSideCache) {
-    super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
+  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, RedisProtocol protocol, Cache clientSideCache) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
+            StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects(), protocol,
+        clientSideCache);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 

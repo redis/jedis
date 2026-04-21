@@ -129,7 +129,7 @@ class ClientBuilderTest {
 
   @Test
   void setWithValueCondition() {
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).build()) {
 
       client.set("key", "value",
@@ -142,7 +142,7 @@ class ClientBuilderTest {
 
   @Test
   void setWithDigestCondition() {
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).build()) {
 
       client.set("key", "value", SetParams.setParams().nx().ex(100)
@@ -157,7 +157,7 @@ class ClientBuilderTest {
   void delexWithValueCondition() {
     when(exec.executeCommand(any())).thenReturn(1L);
 
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).build()) {
 
       client.delex("key", CompareCondition.valueNe("value"));
@@ -170,7 +170,7 @@ class ClientBuilderTest {
   void delexWithDigestCondition() {
     when(exec.executeCommand(any())).thenReturn(1L);
 
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).build()) {
 
       client.delex("key", CompareCondition.digestNe("fedcba9876543210"));
@@ -182,7 +182,7 @@ class ClientBuilderTest {
 
   @Test
   void digestKey() {
-    try (JedisPooled client = JedisPooled.builder().commandExecutor(exec)
+    try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider).build()) {
 
       client.digestKey("key");

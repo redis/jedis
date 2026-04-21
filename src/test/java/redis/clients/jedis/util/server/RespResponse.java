@@ -1,5 +1,6 @@
 package redis.clients.jedis.util.server;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -61,23 +62,69 @@ public class RespResponse {
   }
 
   /**
-   * Create an array response (*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n).
-   * @param elements The array elements as RESP strings
-   * @return A RESP array response
+   * Create an array response. Supports mixed data types. Not all RESP data types are supported.
+   * Only the following are supported: Each element is automatically encoded based on its type:
+   * <ul>
+   * <li>Integer → RESP integer (:123\r\n)</li>
+   * <li>Long → RESP integer (:123\r\n)</li>
+   * <li>String → RESP bulk string ($3\r\nabc\r\n)</li>
+   * <li>Other → RESP bulk string via toString()</li>
+   * </ul>
+   * Example: array(Arrays.asList("MIGRATING", 6, 2, "[\"2\", \"4\"]"))
+   * @param elements List of array elements (can be Integer, Long, String, etc.)
+   * @return A RESP array response (*4\r\n...)
    */
-  public static String array(String... elements) {
+  public static String array(List<Object> elements) {
     if (elements == null) {
-      return "*-1\r\n";
+      return nullArray();
     }
 
     StringBuilder sb = new StringBuilder();
-    sb.append("*").append(elements.length).append("\r\n");
+    sb.append("*").append(elements.size()).append("\r\n");
 
-    for (String element : elements) {
-      sb.append(element);
+    for (Object element : elements) {
+      sb.append(encodeElement(element));
     }
 
     return sb.toString();
+  }
+
+  /**
+   * Create a RESP3 push message. Push messages are identical to arrays but use '>' instead of '*'
+   * as the first byte. Example: push(Arrays.asList("MIGRATING", 6, 2, "[\"2\", \"4\"]"))
+   * @see #array(List) for element encoding details
+   * @param elements List of push message elements (can be Integer, Long, String, etc.)
+   * @return A RESP3 push message (>4\r\n...)
+   */
+  public static String push(List<Object> elements) {
+
+    if (elements == null || elements.isEmpty()) {
+      throw new IllegalArgumentException("Push message elements cannot be null or empty");
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(">").append(elements.size()).append("\r\n");
+
+    for (Object element : elements) {
+      sb.append(encodeElement(element));
+    }
+
+    return sb.toString();
+  }
+
+  /**
+   * Encode a single element based on its Java type.
+   * @param element The element to encode
+   * @return RESP-encoded string
+   */
+  private static String encodeElement(Object element) {
+    if (element instanceof Integer) {
+      return integer((Integer) element);
+    } else if (element instanceof Long) {
+      return integer((Long) element);
+    } else {
+      return bulkString(element.toString());
+    }
   }
 
   /**
@@ -90,12 +137,14 @@ public class RespResponse {
       return "*-1\r\n";
     }
 
-    String[] elements = new String[strings.size()];
-    for (int i = 0; i < strings.size(); i++) {
-      elements[i] = bulkString(strings.get(i));
+    StringBuilder sb = new StringBuilder();
+    sb.append("*").append(strings.size()).append("\r\n");
+
+    for (String str : strings) {
+      sb.append(bulkString(str));
     }
 
-    return array(elements);
+    return sb.toString();
   }
 
   /**
@@ -107,13 +156,7 @@ public class RespResponse {
     if (values == null) {
       return "*-1\r\n";
     }
-
-    String[] elements = new String[values.length];
-    for (int i = 0; i < values.length; i++) {
-      elements[i] = bulkString(values[i]);
-    }
-
-    return array(elements);
+    return arrayOfBulkStrings(Arrays.asList(values));
   }
 
   /**

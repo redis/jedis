@@ -3,12 +3,16 @@ package redis.clients.jedis;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ConnectionPool extends Pool<Connection> {
 
@@ -87,6 +91,32 @@ public class ConnectionPool extends Pool<Connection> {
       evict();
     } catch (Exception e) {
       throw new JedisException("Failed to evict connections from pool", e);
+    }
+  }
+
+  private final AtomicReference<HostAndPort> rebindTarget = new AtomicReference<>();
+
+  /**
+   * Called by a connection when it receives a MOVING maintenance event.
+   * Rebinds the pool's factory to the new target and clears idle connections.
+   *
+   * @param target the new host and port to rebind to
+   */
+  void onMoving(HostAndPort target) {
+    if (target == null) {
+      return;
+    }
+
+
+    HostAndPort previous = rebindTarget.getAndSet(target);
+    if (!target.equals(previous)) {
+      PooledObjectFactory<Connection> factory = getFactory();
+      if (!(factory instanceof RebindAware)) {
+        return;
+      }
+
+      ((RebindAware) factory).rebind(target);
+      clear();
     }
   }
 }

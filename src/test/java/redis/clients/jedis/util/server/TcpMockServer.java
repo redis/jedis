@@ -100,12 +100,59 @@ public class TcpMockServer {
   }
 
   /**
-   * Generic method to send a push message to all connected clients.
+   * Generic method to send a push message to all connected clients. Can handle mixed types
+   * (Integer, Long, String, etc.).
+   * <p>
+   * For structured maintenance events, use {@link MaintenanceEvent} utility to create the message
+   * elements, then pass them to this method.
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * {
+   *   &#64;code
+   *   // Using MaintenanceEvent utility
+   *   Object[] migrating = MaintenanceEvent.migrating(6, 2, "2", "4");
+   *   server.sendPushMessageToAll(migrating);
+   *
+   *   // Or directly
+   *   server.sendPushMessageToAll("MIGRATING", 6, 2, "[\"2\", \"4\"]");
+   * }
+   * </pre>
+   *
    * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
-   * @param args optional arguments for the push message
+   * @param args optional arguments for the push message (can be Integer, Long, String, etc.)
    */
-  public void sendPushMessageToAll(String pushType, String... args) {
+  public void sendPushMessageToAll(String pushType, Object... args) {
     connectedClients.values().forEach(client -> client.sendPushMessage(pushType, args));
+  }
+
+  /**
+   * Generic method to send a push message to all connected clients using a pre-built message array.
+   * The first element must be the push type (String), followed by message arguments.
+   * <p>
+   * This is designed to work with {@link MaintenanceEvent} utility methods.
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * {
+   *   &#64;code
+   *   // Using MaintenanceEvent utility
+   *   server.sendPushMessageToAll(MaintenanceEvent.migrating(6, 2, "2", "4"));
+   * }
+   * </pre>
+   * 
+   * @param messageElements array where first element is the push type, rest are arguments
+   */
+  public void sendPushMessageToAll(Object[] messageElements) {
+    if (messageElements == null || messageElements.length == 0) {
+      throw new IllegalArgumentException("Message elements cannot be null or empty");
+    }
+    String pushType = messageElements[0].toString();
+    Object[] args = new Object[messageElements.length - 1];
+    System.arraycopy(messageElements, 1, args, 0, args.length);
+    sendPushMessageToAll(pushType, args);
   }
 
   /**
@@ -174,6 +221,7 @@ public class TcpMockServer {
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME), "+OK\r\n");
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETINFO), "+OK\r\n");
     responses.put(new CommandKey("CLIENT", "TRACKING"), "+OK\r\n");
+    responses.put(new CommandKey("CLIENT", "MAINT_NOTIFICATIONS"), "+OK\r\n");
 
     BUILTIN_RESPONSES = java.util.Collections.unmodifiableMap(responses);
   }
@@ -445,31 +493,21 @@ public class TcpMockServer {
     }
 
     /**
-     * Generic method to send a push message to this client. According to RESP3 spec, push messages
-     * may precede or follow command replies, but must not interleave with them. We use
-     * synchronization to ensure this.
+     * Generic method to send a push message with mixed types to this client. According to RESP3
+     * spec, push messages may precede or follow command replies, but must not interleave with them.
+     * We use synchronization to ensure this.
      * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
-     * @param args optional arguments for the push message
+     * @param args optional arguments for the push message (can be Integer or String)
      */
-    public void sendPushMessage(String pushType, String... args) {
+    public void sendPushMessage(String pushType, Object... args) {
       try {
-        StringBuilder pushMessage = new StringBuilder();
-
-        // Calculate total number of elements (push type + arguments)
-        int elementCount = 1 + args.length;
-        pushMessage.append(">").append(elementCount).append("\r\n");
-
-        // Add push type
-        pushMessage.append("$").append(pushType.length()).append("\r\n").append(pushType)
-            .append("\r\n");
-
-        // Add arguments
-        for (String arg : args) {
-          pushMessage.append("$").append(arg.length()).append("\r\n").append(arg).append("\r\n");
-        }
+        // Build push message with mixed types using RespResponse utility
+        List<Object> elements = new java.util.ArrayList<>(1 + args.length);
+        elements.add(pushType); // First element is the push type
+        elements.addAll(Arrays.asList(args));
 
         // Use synchronized writeResponse method to prevent interleaving
-        writeResponse(pushMessage.toString());
+        writeResponse(RespResponse.push(elements));
 
       } catch (IOException e) {
         logger.error("Error sending " + pushType + " push to " + clientId

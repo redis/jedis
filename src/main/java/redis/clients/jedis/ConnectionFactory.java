@@ -19,7 +19,7 @@ import redis.clients.jedis.exceptions.JedisException;
 /**
  * PoolableObjectFactory custom impl.
  */
-public class ConnectionFactory implements PooledObjectFactory<Connection> {
+public class ConnectionFactory implements PooledObjectFactory<Connection> , RebindAware {
 
   public static class Builder {
     private JedisClientConfig clientConfig;
@@ -221,4 +221,22 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       throw e;
     }
   }
+
+
+  @Override
+  public void rebind(HostAndPort newHostAndPort) {
+    JedisSocketFactory jedisSocketFactory = connectionBuilder.getSocketFactory();
+    if ((connectionBuilder.getSocketFactory() instanceof RebindAware)) {
+      RebindAware factory = (RebindAware) jedisSocketFactory;
+      logger.debug("Rebinding to {}", newHostAndPort);
+      factory.rebind(newHostAndPort);
+    } else {
+      if ( logger.isDebugEnabled()) {
+        logger.debug("Rebind not supported: {}", jedisSocketFactory.getClass().getName());
+      }
+    }
+
+
+  }
+
 }

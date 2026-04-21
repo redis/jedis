@@ -579,6 +579,9 @@
                         <include>src/test/java/redis/clients/jedis/util/server/*.java</include>
                         <include>**/ConnectionTestHelper.java</include>
 						<include>**/*MockTest.java</include>
+						<include>**/Rebind*.java</include>
+						<include>**/TimeoutOptions.java</include>
+						<include>**/*Handler.java</include>
 					</includes>
 				</configuration>
 				<executions>

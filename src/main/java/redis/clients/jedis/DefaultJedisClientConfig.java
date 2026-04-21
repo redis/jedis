@@ -36,9 +36,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
-  private final TimeoutOptions timeoutOptions;
-
-  private final boolean proactiveRebindEnabled;
+  private final MaintenanceNotificationsConfig maintNotificationsConfig;
 
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
@@ -57,8 +55,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
-    this.timeoutOptions = builder.timeoutOptions;
-    this.proactiveRebindEnabled = builder.proactiveRebindEnabled;
+    this.maintNotificationsConfig = builder.maintNotificationsConfig;
   }
 
   @Override
@@ -153,13 +150,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public TimeoutOptions getTimeoutOptions() {
-    return timeoutOptions;
-  }
-
-  @Override
-  public boolean isProactiveRebindEnabled() {
-    return proactiveRebindEnabled;
+  public MaintenanceNotificationsConfig maintNotificationsConfig() {
+    return maintNotificationsConfig;
   }
 
   public static Builder builder() {
@@ -244,9 +236,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private AuthXManager authXManager = null;
 
-    private TimeoutOptions timeoutOptions = TimeoutOptions.create();
-
-    private boolean proactiveRebindEnabled = false;
+    private MaintenanceNotificationsConfig maintNotificationsConfig = MaintenanceNotificationsConfig.DEFAULT;
 
     private Builder() {
     }
@@ -371,13 +361,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder timeoutOptions(TimeoutOptions timeoutOptions) {
-      this.timeoutOptions = timeoutOptions;
-      return this;
-    }
-
-    public Builder proactiveRebindEnabled(boolean proactiveRebindEnabled) {
-      this.proactiveRebindEnabled = proactiveRebindEnabled;
+    public Builder maintNotificationsConfig(
+        MaintenanceNotificationsConfig maintNotificationsConfig) {
+      this.maintNotificationsConfig = maintNotificationsConfig;
       return this;
     }
 
@@ -398,8 +384,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
-      this.timeoutOptions = instance.getTimeoutOptions();
-      this.proactiveRebindEnabled = instance.isProactiveRebindEnabled();
+      this.maintNotificationsConfig = instance.maintNotificationsConfig();
       return this;
     }
   }
@@ -463,10 +448,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
-    builder.timeoutOptions(copy.getTimeoutOptions());
-    if (copy.isProactiveRebindEnabled()) {
-      builder.proactiveRebindEnabled(true);
-    }
+    builder.maintNotificationsConfig(copy.maintNotificationsConfig());
 
     return builder.build();
   }

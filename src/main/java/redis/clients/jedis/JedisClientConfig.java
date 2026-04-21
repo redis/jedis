@@ -116,18 +116,14 @@ public interface JedisClientConfig {
     return ClientSetInfoConfig.DEFAULT;
   }
 
-  default TimeoutOptions getTimeoutOptions() {
-    return TimeoutOptions.create();
-  }
-
   /**
-   * Configure whether the driver should listen for server events that indicate the current endpoint
-   * is being re-bound. When enabled, the proactive re-bind will help with the connection handover
-   * and reduce the number of failed commands. This feature requires the server to support proactive
-   * re-binds. Defaults to {@code false}.
+   * Configure maintenance event notifications. When enabled, the client listens for server events
+   * indicating maintenance operations (migrations, failovers) and automatically applies timeout
+   * relaxation and proactive rebind to minimize failed commands during maintenance windows.
+   * @return maintenance notifications configuration
    */
-  default boolean isProactiveRebindEnabled() {
-    return false;
+  default MaintenanceNotificationsConfig maintNotificationsConfig() {
+    return MaintenanceNotificationsConfig.DEFAULT;
   }
 
 }

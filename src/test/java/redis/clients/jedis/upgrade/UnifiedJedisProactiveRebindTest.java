@@ -16,6 +16,7 @@ import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.server.TcpMockServer;
@@ -34,7 +35,9 @@ public class UnifiedJedisProactiveRebindTest {
 
   DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
       .socketTimeoutMillis(socketTimeoutMs).protocol(RedisProtocol.RESP3)
-      .proactiveRebindEnabled(true) // Enable proactive rebinding
+      .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
+          .mode(MaintenanceNotificationsConfig.Mode.AUTO) // Enable maintenance notifications (includes proactive rebind)
+          .build())
       .build();
 
   HostAndPort server1Address;
@@ -229,9 +232,13 @@ public class UnifiedJedisProactiveRebindTest {
 
   @Test
   public void testPoolConnectionsWithProactiveRebindDisabled() {
-    // Verify that with proactive rebind disabled, connections stay on original server
+    // Verify that with maintenance notifications disabled, connections stay on original server
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .from(this.clientConfig).proactiveRebindEnabled(false).build();
+        .from(this.clientConfig)
+        .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
+            .mode(MaintenanceNotificationsConfig.Mode.DISABLED) // Disable maintenance notifications
+            .build())
+        .build();
     try (JedisPooled unifiedJedis = new JedisPooled(connectionPoolConfig, server1Address,
         clientConfig)) {
       Pool<Connection> pool = unifiedJedis.getPool();

@@ -221,6 +221,7 @@ public class TcpMockServer {
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME), "+OK\r\n");
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETINFO), "+OK\r\n");
     responses.put(new CommandKey("CLIENT", "TRACKING"), "+OK\r\n");
+    responses.put(new CommandKey("CLIENT", "MAINT_NOTIFICATIONS"), "+OK\r\n");
 
     BUILTIN_RESPONSES = java.util.Collections.unmodifiableMap(responses);
   }

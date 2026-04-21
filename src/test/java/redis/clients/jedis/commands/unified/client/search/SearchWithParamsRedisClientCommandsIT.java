@@ -5,13 +5,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.client.RedisClientCommandsTestHelper;
-import redis.clients.jedis.commands.unified.search.FTHybridCommandsTestBase;
+import redis.clients.jedis.commands.unified.search.SearchWithParamsCommandsTestBase;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
-public class FTHybridRedisClientCommandsTest extends FTHybridCommandsTestBase {
+public class SearchWithParamsRedisClientCommandsIT extends SearchWithParamsCommandsTestBase {
 
-  public FTHybridRedisClientCommandsTest(RedisProtocol protocol) {
+  public SearchWithParamsRedisClientCommandsIT(RedisProtocol protocol) {
     super(protocol);
   }
 

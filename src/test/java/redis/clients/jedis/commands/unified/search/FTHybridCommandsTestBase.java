@@ -58,7 +58,6 @@ import redis.clients.jedis.search.schemafields.VectorField;
  * Base test class for FT.HYBRID command using the UnifiedJedis pattern. Tests hybrid search
  * functionality combining text search and vector similarity.
  */
-@Tag("integration")
 @Tag("search")
 @SinceRedisVersion("8.4.0")
 public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestBase {

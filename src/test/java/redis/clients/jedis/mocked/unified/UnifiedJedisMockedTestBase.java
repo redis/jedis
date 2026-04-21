@@ -12,6 +12,7 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.mocked.MockedCommandObjectsTestBase;
 import redis.clients.jedis.providers.ConnectionProvider;
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
  * Base class for {@link UnifiedJedis} mocked unit tests. Exposes a {@link UnifiedJedis} instance that
@@ -50,7 +51,8 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
   @BeforeEach
   public void setUp() {
     jedis = RedisClient.builder().commandExecutor(commandExecutor).connectionProvider(connectionProvider)
-        .commandObjects(commandObjects).build();
+        .build();
+    ReflectionTestUtil.setField(jedis, "commandObjects", commandObjects);
   }
 
   @AfterEach

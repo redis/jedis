@@ -230,19 +230,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   }
 
   /**
-   * Sets a custom {@link CommandObjects} instance.
-   * <p>
-   * This is primarily intended for testing purposes where a mock or custom CommandObjects
-   * implementation is needed. If not set, the builder will create a default instance.
-   * @param commandObjects the command objects instance
-   * @return this builder
-   */
-  public T commandObjects(CommandObjects commandObjects) {
-    this.commandObjects = commandObjects;
-    return self();
-  }
-
-  /**
    * Sets a key preprocessor for transforming Redis keys before sending commands.
    * <p>
    * The key preprocessor allows you to modify keys before they are sent to Redis, for example to

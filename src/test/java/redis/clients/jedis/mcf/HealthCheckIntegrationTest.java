@@ -20,6 +20,7 @@ import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -71,7 +72,8 @@ public class HealthCheckIntegrationTest {
       return new TestHealthCheckStrategy(HealthCheckStrategy.Config.builder().interval(500)
           .timeout(500).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build(), (endpoint) -> {
             // Create connection per health check to avoid resource leak
-            try (UnifiedJedis pinger = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+            try (UnifiedJedis pinger = RedisClient.builder().hostAndPort(hostAndPort)
+                .clientConfig(jedisClientConfig).build()) {
               String result = pinger.ping();
               return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
             } catch (Exception e) {
@@ -123,7 +125,8 @@ public class HealthCheckIntegrationTest {
           throw new RuntimeException("Simulated failure on attempt " + attempt);
         }
         // Third attempt succeeds - do actual health check
-        try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+        try (UnifiedJedis jedis = RedisClient.builder().hostAndPort(hostAndPort)
+            .clientConfig(jedisClientConfig).build()) {
           String result = jedis.ping();
           return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
         } catch (Exception e) {

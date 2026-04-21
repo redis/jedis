@@ -137,12 +137,19 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       _sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
     }
 
+    // Enable hostname verification by default if no SSLParameters are provided.
+    // This prevents man-in-the-middle attacks by verifying that the server's certificate
+    // matches the hostname we're connecting to.
+    // See: https://docs.oracle.com/en/java/javase/17/security/java-secure-socket-extension-jsse-reference-guide.html
+    if (_sslParameters == null) {
+      _sslParameters = new SSLParameters();
+      _sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+    }
+
     SSLSocket sslSocket = (SSLSocket) _sslSocketFactory.createSocket(socket,
         _hostAndPort.getHost(), _hostAndPort.getPort(), true);
 
-    if (_sslParameters != null) {
-      sslSocket.setSSLParameters(_sslParameters);
-    }
+    sslSocket.setSSLParameters(_sslParameters);
 
     // allowing HostnameVerifier for both SslOptions and legacy ssl config
     if (hostnameVerifier != null && !hostnameVerifier.verify(_hostAndPort.getHost(), sslSocket.getSession())) {

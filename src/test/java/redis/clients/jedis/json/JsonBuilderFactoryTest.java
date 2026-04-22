@@ -1,4 +1,4 @@
-package redis.clients.jedis.modules.json;
+package redis.clients.jedis.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.json.JsonBuilderFactory;
 
 /**
  * Unit tests for JsonBuilderFactory, specifically for the JSON_NUMBER_LIST builder that preserves

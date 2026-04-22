@@ -20,6 +20,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.Protocol.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
@@ -92,6 +95,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
     SentinelCommands, CommandCommands, Closeable {
 
+  private static final Logger logger = LoggerFactory.getLogger(Jedis.class);
+
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
   private int db = 0;
@@ -112,6 +117,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    */
   private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
     return DefaultJedisClientConfig.builder().protocol(null);
+  }
+
+  /**
+   * Returns a config safe to use with the legacy {@link Jedis} class. Jedis does not support
+   * protocol negotiation the way {@link UnifiedJedis} does, so
+   * {@link RedisProtocol#RESP3_PREFERRED} is replaced with {@code null} to prevent the
+   * {@link Connection} from sending a {@code HELLO 3} command that would switch to RESP3 mode
+   * while Jedis still uses RESP2 parsers.
+   * <p>
+   * If the protocol is already compatible (RESP2, RESP3, or null), the original config is
+   * returned unchanged.
+   */
+  private static JedisClientConfig sanitize(JedisClientConfig config) {
+    if (config.getRedisProtocol() != RedisProtocol.RESP3_PREFERRED) {
+      return config;
+    }
+    logger.warn("Jedis does not support RESP3_PREFERRED protocol negotiation. "
+        + "The protocol will be set to null (RESP2). "
+        + "Use .serverDefaultProtocol() in your config builder or upgrade to RedisClient.");
+    return DefaultJedisClientConfig.builder().from(config).protocol(null).build();
   }
 
   public Jedis() {
@@ -140,8 +165,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
-    connection = new Connection(hostPort, config);
-    setCompatibleProtocol(config.getRedisProtocol());
+    JedisClientConfig effective = sanitize(config);
+    connection = new Connection(hostPort, effective);
+    setCompatibleProtocol(effective.getRedisProtocol());
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
@@ -291,8 +317,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    connection = new Connection(jedisSocketFactory, clientConfig);
-    setCompatibleProtocol(clientConfig.getRedisProtocol());
+    JedisClientConfig effective = sanitize(clientConfig);
+    connection = new Connection(jedisSocketFactory, effective);
+    setCompatibleProtocol(effective.getRedisProtocol());
   }
 
   public Jedis(final Connection connection) {

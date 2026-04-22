@@ -81,6 +81,26 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void shouldAcceptMixedCaseSchemes() throws URISyntaxException {
+    // URI schemes are case-insensitive per RFC 3986
+    assertTrue(JedisURIHelper.isValid(new URI("Redis://host:9000/0")));
+    assertTrue(JedisURIHelper.isValid(new URI("REDIS://host:9000/0")));
+    assertTrue(JedisURIHelper.isValid(new URI("ReDiS://host:9000/0")));
+    assertTrue(JedisURIHelper.isValid(new URI("Rediss://host:9000/0")));
+    assertTrue(JedisURIHelper.isValid(new URI("REDISS://host:9000/0")));
+    assertTrue(JedisURIHelper.isValid(new URI("ReDiSs://host:9000/0")));
+  }
+
+  @Test
+  public void shouldRejectTyposInScheme() throws URISyntaxException {
+    assertFalse(JedisURIHelper.isValid(new URI("redi://host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("rediss-cluster://host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("redis-sentinel://host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("redisss://host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("redis-ssl://host:9000/0")));
+  }
+
+  @Test
   public void shouldGetDefaultProtocolWhenNotDefined() {
     assertNull(getRedisProtocol(URI.create("redis://host:1234")));
     assertNull(getRedisProtocol(URI.create("redis://host:1234/1")));
@@ -115,5 +135,27 @@ public class JedisURIHelperTest {
     IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
       () -> getPassword(uri));
     assertEquals("Password not provided in uri.", illegalArgumentException.getMessage());
+  }
+
+  @Test
+  public void isRedisScheme_shouldBeCaseInsensitive() throws URISyntaxException {
+    assertTrue(JedisURIHelper.isRedisScheme(new URI("redis://host:9000")));
+    assertTrue(JedisURIHelper.isRedisScheme(new URI("Redis://host:9000")));
+    assertTrue(JedisURIHelper.isRedisScheme(new URI("REDIS://host:9000")));
+    assertTrue(JedisURIHelper.isRedisScheme(new URI("ReDiS://host:9000")));
+
+    assertFalse(JedisURIHelper.isRedisScheme(new URI("rediss://host:9000")));
+    assertFalse(JedisURIHelper.isRedisScheme(new URI("http://host:9000")));
+  }
+
+  @Test
+  public void isRedisSSLScheme_shouldBeCaseInsensitive() throws URISyntaxException {
+    assertTrue(JedisURIHelper.isRedisSSLScheme(new URI("rediss://host:9000")));
+    assertTrue(JedisURIHelper.isRedisSSLScheme(new URI("Rediss://host:9000")));
+    assertTrue(JedisURIHelper.isRedisSSLScheme(new URI("REDISS://host:9000")));
+    assertTrue(JedisURIHelper.isRedisSSLScheme(new URI("ReDiSs://host:9000")));
+
+    assertFalse(JedisURIHelper.isRedisSSLScheme(new URI("redis://host:9000")));
+    assertFalse(JedisURIHelper.isRedisSSLScheme(new URI("https://host:9000")));
   }
 }

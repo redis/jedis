@@ -613,13 +613,20 @@ public class Connection implements Closeable {
 
     try {
       helloResult = hello(encode(helloVersion));
-    } catch (JedisDataException e) {
+    } catch (JedisProtocolNotSupportedException e) {
       if (protocol == RedisProtocol.RESP3_PREFERRED) {
         // RESP3 not supported, fall back to RESP2
         return RedisProtocol.RESP2;
       }
+      throw e;
+    } catch (JedisDataException e) {
       boolean isUnknownCommand = e.getMessage().startsWith("ERR") && e.getMessage().contains("unknown command");
       if (isUnknownCommand) {
+        if (protocol == RedisProtocol.RESP3_PREFERRED) {
+          // RESP3 not supported, fall back to RESP2
+          return RedisProtocol.RESP2;
+        }
+
         throw new JedisProtocolNotSupportedException("HELLO is not supported by the server. "
             + "Please check the server version or disable protocol version specification with serverDefaultProtocol().",
             e);

@@ -109,8 +109,6 @@ public final class Protocol {
       throw new JedisAccessControlException(message);
     } else if (message.startsWith(NOPROTO_PREFIX)) {
       throw new JedisProtocolNotSupportedException(message);
-    } else if (message.startsWith("ERR") && message.contains("unknown command")) {
-      throw new JedisUnknownCommandException(message);
     }
     throw new JedisDataException(message);
   }

@@ -582,7 +582,7 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Performs HELLO and/or AUTH handshake and returns the resolved protocol version.
+   * Performs HELLO and AUTH handshake and returns the resolved protocol version.
    * <p>
    * For {@link RedisProtocol#RESP3_PREFERRED}, attempts HELLO 3 and falls back to RESP2 on failure.
    *
@@ -591,59 +591,43 @@ public class Connection implements Closeable {
    * @return the actual negotiated protocol version
    */
   private RedisProtocol helloAndAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
-    final String helloVersion = protocol == RedisProtocol.RESP3_PREFERRED
-        ? RedisProtocol.RESP3.version() : protocol != null ? protocol.version() : null;
+    // We do AUTH to keeep the compatibility with Redis <6.0 for legacy Jedis class.
+    // Redis 6.0.x (before 6.2.2) has a bug where HELLO with AUTH fails if the default user
+    // requires authentication — the server demands AUTH before allowing HELLO.
+    // See: https://github.com/redis/redis/issues/8558
+    // See: https://github.com/redis/lettuce/issues/2592
+    authenticate(credentials);
+
+    boolean doNotPerformProtocolNegotiation = protocol == null;
+
+    // This is needed to keep the compatibility with legacy Jedis class and
+    // avoid sending hello command when user haven't provided any protocol version and credentials.
+    if (doNotPerformProtocolNegotiation) {
+      return RedisProtocol.RESP2;
+    }
 
     Map<String, Object> helloResult = null;
-    if (protocol != null && credentials != null && credentials.getUser() != null) {
-      byte[] rawPass = encodeToBytes(credentials.getPassword());
-      try {
-        helloResult = hello(encode(helloVersion), Keyword.AUTH.getRaw(),
-          encode(credentials.getUser()), rawPass);
 
-        // NOTE(imalinovskyi): We assume that when username is provided, client is connecting Redis 6.0+,
-        // so we don't need to catch JedisUnknownCommandException here.
-      } catch (JedisAccessControlException e) {
-        // Redis 6.0.x (before 6.2.2) has a bug where HELLO with AUTH fails if the default user
-        // requires authentication — the server demands AUTH before allowing HELLO.
-        // See: https://github.com/redis/redis/issues/8558
-        // See: https://github.com/redis/lettuce/issues/2592
-        if (protocol == RedisProtocol.RESP3_PREFERRED) {
-          // Fall back: AUTH first, then try HELLO without auth
-          authenticate(credentials);
-          try {
-            helloResult = hello(encode(helloVersion));
-          } catch (JedisDataException e2) {
-            // HELLO still fails (e.g., RESP3 not supported), fall back to RESP2
-            return RedisProtocol.RESP2;
-          }
-        } else {
-          throw e;
-        }
-      } finally {
-        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+    final String helloVersion = protocol == RedisProtocol.RESP3_PREFERRED
+        ? RedisProtocol.RESP3.version() : protocol.version();
+
+    try {
+      helloResult = hello(encode(helloVersion));
+    } catch (JedisDataException e) {
+      if (protocol == RedisProtocol.RESP3_PREFERRED) {
+        // RESP3 not supported, fall back to RESP2
+        return RedisProtocol.RESP2;
       }
-    } else {
-      authenticate(credentials);
-      if (protocol != null) {
-        try {
-          helloResult = hello(encode(helloVersion));
-        } catch (JedisUnknownCommandException e) {
-          if (protocol == RedisProtocol.RESP3_PREFERRED) {
-            // HELLO not supported, fall back to RESP2
-            return RedisProtocol.RESP2;
-          }
-          throw new JedisProtocolNotSupportedException("HELLO is not supported by the server. "
-              + "Please check the server version or disable protocol version specification with serverDefaultProtocol().", e);
-        } catch (JedisDataException e) {
-          if (protocol == RedisProtocol.RESP3_PREFERRED) {
-            // RESP3 not supported, fall back to RESP2
-            return RedisProtocol.RESP2;
-          }
-          throw e;
-        }
+      boolean isUnknownCommand = e.getMessage().startsWith("ERR") && e.getMessage().contains("unknown command");
+      if (isUnknownCommand) {
+        throw new JedisProtocolNotSupportedException("HELLO is not supported by the server. "
+            + "Please check the server version or disable protocol version specification with serverDefaultProtocol().",
+            e);
+      } else {
+        throw e;
       }
     }
+
     if (helloResult != null) {
       server = (String) helloResult.get("server");
       version = (String) helloResult.get("version");

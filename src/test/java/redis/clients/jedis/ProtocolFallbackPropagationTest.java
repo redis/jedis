@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisUnknownCommandException;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
@@ -54,8 +53,8 @@ class ProtocolFallbackPropagationTest {
   void connectionFallsBackToResp2WhenHelloNotSupported() throws Exception {
     Connection connection = createSpyConnection();
 
-    // hello() throws JedisUnknownCommandException – server < 6.0
-    doThrow(new JedisUnknownCommandException("ERR unknown command 'HELLO'")).when(connection)
+    // hello() throws JedisDataException – server < 6.0 does not support HELLO
+    doThrow(new JedisDataException("ERR unknown command 'HELLO'")).when(connection)
         .hello(any(byte[][].class));
 
     JedisClientConfig config = DefaultJedisClientConfig.builder()
@@ -108,19 +107,15 @@ class ProtocolFallbackPropagationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // ACL scenario: HELLO with AUTH fails because default user needs AUTH first
-  // (Redis 6.0.x bug, fixed in 6.2.2)
-  // See: https://github.com/redis/redis/issues/8558
-  // See: https://github.com/redis/lettuce/issues/2592
+  // Scenarios with username+password: AUTH is always done first, then HELLO
   // ---------------------------------------------------------------------------
 
   /**
-   * When RESP3_PREFERRED is configured with username+password and the server rejects HELLO with
-   * AUTH due to ACL restrictions (NOPERM), Connection should fall back to AUTH first, then retry
-   * HELLO without auth. If HELLO succeeds, protocol should be RESP3.
+   * When RESP3_PREFERRED is configured with username+password and the server supports HELLO,
+   * Connection should AUTH first, then HELLO succeeds, and protocol should be RESP3.
    */
   @Test
-  void connectionFallsBackToAuthFirstWhenHelloWithAuthDeniedByAcl() throws Exception {
+  void connectionNegotiatesResp3WhenAuthAndHelloSucceed() throws Exception {
     Socket mockSocket = mock(Socket.class);
     lenient().when(mockSocket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
     lenient().when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -129,20 +124,10 @@ class ProtocolFallbackPropagationTest {
     JedisSocketFactory socketFactory = mock(JedisSocketFactory.class);
     when(socketFactory.createSocket()).thenReturn(mockSocket);
 
-    // Track hello() call count to differentiate between calls
-    final java.util.concurrent.atomic.AtomicInteger helloCallCount = new java.util.concurrent.atomic.AtomicInteger(
-        0);
-
     Connection connection = new Connection(socketFactory) {
       @Override
       protected Map<String, Object> hello(byte[]... args) {
-        int call = helloCallCount.incrementAndGet();
-        if (call == 1) {
-          // First call: HELLO 3 AUTH user pass — rejected by ACL
-          throw new JedisAccessControlException(
-              "NOPERM this user has no permissions to run the 'hello' command or its subcommand");
-        }
-        // Second call: HELLO 3 (after AUTH) — succeeds
+        // HELLO 3 — succeeds (AUTH was already done before HELLO)
         java.util.Map<String, Object> result = new java.util.HashMap<>();
         result.put("server", "redis");
         result.put("version", "6.0.20");
@@ -164,16 +149,15 @@ class ProtocolFallbackPropagationTest {
     connection.initializeFromClientConfig(config);
 
     assertEquals(RedisProtocol.RESP3, connection.getRedisProtocol(),
-      "Connection should negotiate RESP3 after falling back to AUTH-first then HELLO");
+      "Connection should negotiate RESP3 when AUTH and HELLO both succeed");
   }
 
   /**
-   * When RESP3_PREFERRED is configured with username+password, HELLO with AUTH is denied by ACL
-   * (NOPERM), and subsequent HELLO without auth also fails (e.g., RESP3 not supported), Connection
-   * should fall back to RESP2.
+   * When RESP3_PREFERRED is configured with username+password and HELLO fails (e.g., RESP3 not
+   * supported), Connection should fall back to RESP2. AUTH is done before HELLO.
    */
   @Test
-  void connectionFallsBackToResp2WhenHelloWithAuthDeniedAndRetryAlsoFails() throws Exception {
+  void connectionFallsBackToResp2WhenHelloFailsAfterAuth() throws Exception {
     Socket mockSocket = mock(Socket.class);
     lenient().when(mockSocket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
     lenient().when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -185,12 +169,7 @@ class ProtocolFallbackPropagationTest {
     Connection connection = new Connection(socketFactory) {
       @Override
       protected Map<String, Object> hello(byte[]... args) {
-        if (args.length > 1) {
-          // HELLO 3 AUTH user pass — rejected by ACL
-          throw new JedisAccessControlException(
-              "NOPERM this user has no permissions to run the 'hello' command or its subcommand");
-        }
-        // HELLO 3 (after AUTH) — also fails (RESP3 not supported by this server)
+        // HELLO 3 — fails (RESP3 not supported by this server)
         throw new JedisDataException("NOPROTO unsupported protocol version");
       }
 
@@ -207,16 +186,16 @@ class ProtocolFallbackPropagationTest {
     connection.initializeFromClientConfig(config);
 
     assertEquals(RedisProtocol.RESP2, connection.getRedisProtocol(),
-      "Connection should fall back to RESP2 when both HELLO attempts fail");
+      "Connection should fall back to RESP2 when HELLO fails after AUTH");
   }
 
   /**
    * When non-RESP3_PREFERRED protocol (e.g., RESP3) is configured with username+password, and HELLO
-   * with AUTH is denied by ACL, the exception should NOT be caught — it should propagate to the
-   * caller since there's no fallback for explicit protocol requests.
+   * fails with an access control error, the exception should propagate to the caller since there's
+   * no fallback for explicit protocol requests.
    */
   @Test
-  void connectionThrowsWhenHelloWithAuthDeniedAndProtocolIsNotPreferred() throws Exception {
+  void connectionThrowsWhenHelloFailsAndProtocolIsNotPreferred() throws Exception {
     Socket mockSocket = mock(Socket.class);
     lenient().when(mockSocket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
     lenient().when(mockSocket.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));

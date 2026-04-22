@@ -1,5 +1,21 @@
 package redis.clients.jedis;
 
+/**
+ * Enum representing the Redis protocol version to use when connecting to a Redis server.
+ *
+ * <p>Four modes are supported:
+ * <ul>
+ *   <li>{@code null} – used by the legacy {@link Jedis} class to avoid sending the
+ *       {@code HELLO} command altogether.</li>
+ *   <li>{@link #RESP2} – sends a {@code HELLO 2} command requesting RESP2; the connection
+ *       fails if the server rejects the request.</li>
+ *   <li>{@link #RESP3} – sends a {@code HELLO 3} command requesting RESP3; the connection
+ *       fails if the server rejects the request.</li>
+ *   <li>{@link #RESP3_PREFERRED} – sends a {@code HELLO 3} command to request the latest
+ *       protocol version and gracefully falls back to RESP2 if the server does not support
+ *       RESP3 or rejects the request. This mode is not supported by legacy Jedis class and silently ignored</li>
+ * </ul>
+ */
 public enum RedisProtocol {
 
   RESP2("2"),

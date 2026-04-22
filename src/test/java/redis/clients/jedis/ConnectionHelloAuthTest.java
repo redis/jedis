@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
 
 /**
@@ -38,9 +39,17 @@ public class ConnectionHelloAuthTest {
   /** RESP error for NOPROTO (Redis Enterprise / Cloud when protocol is disabled). */
   private static final byte[] NOPROTO_ERR = "-NOPROTO unsupported protocol version\r\n".getBytes();
 
-  /** Minimal RESP3 map: %2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n */
+  /** Minimal RESP3 map without proto field: %2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n */
   private static final byte[] HELLO_OK_MAP = "%2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n"
       .getBytes();
+
+  /** RESP3 map with proto=3: %3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n */
+  private static final byte[] HELLO_OK_MAP_PROTO3 =
+      "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n".getBytes();
+
+  /** RESP3 map with proto=2: %3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:2\r\n */
+  private static final byte[] HELLO_OK_MAP_PROTO2 =
+      "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:2\r\n".getBytes();
 
   // ---- helpers ----
 
@@ -196,6 +205,85 @@ public class ConnectionHelloAuthTest {
       assertFalse(conn.isBroken());
       conn.close();
     }
+
+    @Test
+    @DisplayName("HELLO with proto=3 in response — RESP3 confirmed via protocol negotiation")
+    void helloWithProto3InResponse() {
+      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          noAuthConfig(RedisProtocol.RESP3));
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("HELLO with proto=2 in response — RESP2 confirmed via protocol negotiation")
+    void helloWithProto2InResponse() {
+      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
+          noAuthConfig(RedisProtocol.RESP2));
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("HELLO proto mismatch — requested RESP3 but server returned proto=2 — throws JedisException")
+    void helloProtoMismatchResp3RequestedResp2Received() {
+      assertThrows(JedisException.class,
+        () -> new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2), noAuthConfig(RedisProtocol.RESP3)),
+        "Protocol mismatch should throw JedisException");
+    }
+
+    @Test
+    @DisplayName("HELLO proto mismatch — requested RESP2 but server returned proto=3 — throws JedisException")
+    void helloProtoMismatchResp2RequestedResp3Received() {
+      assertThrows(JedisException.class,
+        () -> new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3), noAuthConfig(RedisProtocol.RESP2)),
+        "Protocol mismatch should throw JedisException");
+    }
+
+    @Test
+    @DisplayName("RESP3_PREFERRED with proto=3 in response — returns RESP3 from proto field")
+    void resp3PreferredWithProto3InResponse() {
+      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("RESP3_PREFERRED with proto=2 in response — returns RESP2 from proto field")
+    void resp3PreferredWithProto2InResponse() {
+      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("RESP3_PREFERRED without proto field in response — defaults to RESP3")
+    void resp3PreferredWithoutProtoField() {
+      // When HELLO succeeds but the response doesn't contain proto, RESP3_PREFERRED
+      // resolves to RESP3 (assumes HELLO success means RESP3 is supported).
+      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("HELLO without proto field — explicit RESP3 still resolves normally")
+    void helloWithoutProtoFieldExplicitResp3() {
+      // When proto field is absent, no mismatch check is done — protocol resolves as requested.
+      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP),
+          noAuthConfig(RedisProtocol.RESP3));
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
   }
 
   // ---- Tests: HELLO with AUTH (credentials with user) ----
@@ -223,6 +311,47 @@ public class ConnectionHelloAuthTest {
       // then the HELLO map response.
       Connection conn = new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP)),
           authConfig(RedisProtocol.RESP2));
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("HELLO AUTH with proto=3 in response — RESP3 confirmed")
+    void helloAuthWithProto3InResponse() {
+      Connection conn = new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO3)),
+          authConfig(RedisProtocol.RESP3));
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("HELLO AUTH proto mismatch — requested RESP3 but got proto=2 — throws JedisException")
+    void helloAuthProtoMismatch() {
+      assertThrows(JedisException.class,
+        () -> new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO2)),
+            authConfig(RedisProtocol.RESP3)),
+        "Protocol mismatch after AUTH should throw JedisException");
+    }
+
+    @Test
+    @DisplayName("RESP3_PREFERRED with AUTH and proto=3 in response — returns RESP3")
+    void resp3PreferredAuthWithProto3() {
+      Connection conn = new Connection(
+          fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO3)),
+          authConfig(RedisProtocol.RESP3_PREFERRED));
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("RESP3_PREFERRED with AUTH and proto=2 in response — returns RESP2")
+    void resp3PreferredAuthWithProto2() {
+      Connection conn = new Connection(
+          fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO2)),
+          authConfig(RedisProtocol.RESP3_PREFERRED));
       assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();

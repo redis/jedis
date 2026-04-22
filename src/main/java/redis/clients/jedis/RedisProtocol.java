@@ -50,4 +50,17 @@ public enum RedisProtocol {
   public static boolean isResp3(RedisProtocol protocol) {
     return protocol != null && protocol.isResp3();
   }
+
+  /**
+   * Returns the RedisProtocol enum value corresponding to the given protocol version number.
+   * @param proto the protocol version number (2 or 3)
+   * @return the corresponding RedisProtocol enum value
+   * @throws IllegalArgumentException if the protocol version is not recognized
+   */
+  public static RedisProtocol from(Long proto) {
+    if (proto == null) return null;
+    if (proto == 2) return RESP2;
+    if (proto == 3) return RESP3;
+    throw new IllegalArgumentException("Unknown protocol version: " + proto);
+  }
 }

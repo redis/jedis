@@ -638,10 +638,23 @@ public class Connection implements Closeable {
     if (helloResult != null) {
       server = (String) helloResult.get("server");
       version = (String) helloResult.get("version");
-      // HELLO succeeded — resolve RESP3_PREFERRED to actual RESP3
-      if (protocol == RedisProtocol.RESP3_PREFERRED) {
-        return RedisProtocol.RESP3;
+
+      boolean helloResultContainsProto = helloResult.containsKey("proto") && helloResult.get("proto") instanceof Long;
+
+      if (helloResultContainsProto ) {
+        RedisProtocol receivedProtocol = RedisProtocol.from((Long) helloResult.get("proto"));
+
+        if (protocol == RedisProtocol.RESP3_PREFERRED) {
+          return receivedProtocol;
+        } else if (protocol != receivedProtocol) {
+          throw new JedisException("Protocol version mismatch. Expected " + protocol + " but got " + receivedProtocol);
+        }
       }
+    }
+
+    // HELLO succeeded on RESP-compatible server — resolve RESP3_PREFERRED to actual RESP3
+    if (protocol == RedisProtocol.RESP3_PREFERRED) {
+      return RedisProtocol.RESP3;
     }
 
     // clearing 'char[] credentials.getPassword()' should be

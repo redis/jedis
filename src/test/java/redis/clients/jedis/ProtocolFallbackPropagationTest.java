@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
@@ -86,7 +87,7 @@ class ProtocolFallbackPropagationTest {
     Connection connection = new Connection(socketFactory) {
       @Override
       protected Map<String, Object> hello(byte[]... args) {
-        throw new JedisDataException("NOPROTO unsupported protocol version");
+        throw new JedisDataException("ERR unknown command 'HELLO'");
       }
 
       @Override
@@ -170,7 +171,7 @@ class ProtocolFallbackPropagationTest {
       @Override
       protected Map<String, Object> hello(byte[]... args) {
         // HELLO 3 — fails (RESP3 not supported by this server)
-        throw new JedisDataException("NOPROTO unsupported protocol version");
+        throw new JedisProtocolNotSupportedException("NOPROTO unsupported protocol version");
       }
 
       @Override

@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -189,10 +188,11 @@ public class ConnectionHelloAuthTest {
     }
 
     @Test
-    @DisplayName("No HELLO sent when protocol is null")
+    @DisplayName("No HELLO sent when protocol is null — connection defaults to RESP2")
     void noHelloWhenProtocolNull() {
       Connection conn = new Connection(fakeSocketFactory(new byte[0]), noAuthConfig(null));
-      assertNull(conn.getRedisProtocol());
+      // When protocol is null, no HELLO is sent but the connection resolves to RESP2.
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -207,7 +207,9 @@ public class ConnectionHelloAuthTest {
     @Test
     @DisplayName("HELLO AUTH succeeds — protocol is negotiated normally")
     void helloAuthSucceeds() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP),
+      // AUTH is sent before HELLO, so the stream must contain OK for AUTH first,
+      // then the HELLO map response.
+      Connection conn = new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP)),
           authConfig(RedisProtocol.RESP3));
       assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
@@ -217,9 +219,9 @@ public class ConnectionHelloAuthTest {
     @Test
     @DisplayName("HELLO AUTH succeeds with RESP2 — protocol is negotiated normally")
     void helloAuthResp2Succeeds() {
-      // RESP2 HELLO returns a flat array, but for simplicity we use the map reply
-      // since the builder handles both; what matters is no exception.
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP),
+      // AUTH is sent before HELLO, so the stream must contain OK for AUTH first,
+      // then the HELLO map response.
+      Connection conn = new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP)),
           authConfig(RedisProtocol.RESP2));
       assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());

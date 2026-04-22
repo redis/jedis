@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -305,7 +304,9 @@ class ClientBuilderTest {
         .fromURI("redis://localhost:6379");
 
     JedisClientConfig resultConfig = getClientConfig(builder);
-    assertNull(resultConfig.getRedisProtocol());
+    // When no protocol is specified in the URI, the builder's default (RESP3_PREFERRED) is
+    // preserved.
+    assertThat(resultConfig.getRedisProtocol(), equalTo(RedisProtocol.RESP3_PREFERRED));
   }
 
   /**

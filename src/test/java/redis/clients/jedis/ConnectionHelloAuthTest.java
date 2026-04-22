@@ -44,12 +44,12 @@ public class ConnectionHelloAuthTest {
       .getBytes();
 
   /** RESP3 map with proto=3: %3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n */
-  private static final byte[] HELLO_OK_MAP_PROTO3 =
-      "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n".getBytes();
+  private static final byte[] HELLO_OK_MAP_PROTO3 = "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n"
+      .getBytes();
 
   /** RESP3 map with proto=2: %3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:2\r\n */
-  private static final byte[] HELLO_OK_MAP_PROTO2 =
-      "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:2\r\n".getBytes();
+  private static final byte[] HELLO_OK_MAP_PROTO2 = "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:2\r\n"
+      .getBytes();
 
   // ---- helpers ----
 
@@ -230,7 +230,8 @@ public class ConnectionHelloAuthTest {
     @DisplayName("HELLO proto mismatch — requested RESP3 but server returned proto=2 — throws JedisException")
     void helloProtoMismatchResp3RequestedResp2Received() {
       assertThrows(JedisException.class,
-        () -> new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2), noAuthConfig(RedisProtocol.RESP3)),
+        () -> new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
+            noAuthConfig(RedisProtocol.RESP3)),
         "Protocol mismatch should throw JedisException");
     }
 
@@ -238,7 +239,8 @@ public class ConnectionHelloAuthTest {
     @DisplayName("HELLO proto mismatch — requested RESP2 but server returned proto=3 — throws JedisException")
     void helloProtoMismatchResp2RequestedResp3Received() {
       assertThrows(JedisException.class,
-        () -> new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3), noAuthConfig(RedisProtocol.RESP2)),
+        () -> new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+            noAuthConfig(RedisProtocol.RESP2)),
         "Protocol mismatch should throw JedisException");
     }
 
@@ -338,8 +340,7 @@ public class ConnectionHelloAuthTest {
     @Test
     @DisplayName("RESP3_PREFERRED with AUTH and proto=3 in response — returns RESP3")
     void resp3PreferredAuthWithProto3() {
-      Connection conn = new Connection(
-          fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO3)),
+      Connection conn = new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO3)),
           authConfig(RedisProtocol.RESP3_PREFERRED));
       assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
@@ -349,8 +350,7 @@ public class ConnectionHelloAuthTest {
     @Test
     @DisplayName("RESP3_PREFERRED with AUTH and proto=2 in response — returns RESP2")
     void resp3PreferredAuthWithProto2() {
-      Connection conn = new Connection(
-          fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO2)),
+      Connection conn = new Connection(fakeSocketFactory(concat(OK_REPLY, HELLO_OK_MAP_PROTO2)),
           authConfig(RedisProtocol.RESP3_PREFERRED));
       assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());

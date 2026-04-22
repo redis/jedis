@@ -268,7 +268,7 @@ class ProtocolFallbackPropagationTest {
     try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider)
         .clientConfig(
-          DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3_PREFERRED).build())
+          DefaultJedisClientConfig.builder().build())
         .build()) {
 
       CommandObjects commandObjects = ReflectionTestUtil.getField(client, "commandObjects");

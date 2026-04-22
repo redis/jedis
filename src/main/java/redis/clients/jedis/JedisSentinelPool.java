@@ -37,7 +37,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
    * constructors that do not carry credentials can connect first and authenticate later via an
    * explicit {@code auth()} call.
    */
-  private static DefaultJedisClientConfig.Builder resp2ConfigBuilder() {
+  private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
     return DefaultJedisClientConfig.builder().protocol(null);
   }
 
@@ -183,10 +183,10 @@ public class JedisSentinelPool extends Pool<Jedis> {
       final int sentinelSoTimeout, final String sentinelUser, final String sentinelPassword,
       final String sentinelClientName) {
     this(masterName, parseHostAndPorts(sentinels), poolConfig,
-        resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
             .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
             .user(user).password(password).database(database).clientName(clientName).build(),
-        resp2ConfigBuilder().connectionTimeoutMillis(sentinelConnectionTimeout)
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(sentinelConnectionTimeout)
             .socketTimeoutMillis(sentinelSoTimeout).user(sentinelUser).password(sentinelPassword)
             .clientName(sentinelClientName).build());
   }
@@ -194,7 +194,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig<Jedis> poolConfig, final JedisFactory factory) {
     this(masterName, parseHostAndPorts(sentinels), poolConfig, factory,
-        resp2ConfigBuilder().build());
+        legacyConfigBuilderWithoutProtocolNegotiation().build());
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,

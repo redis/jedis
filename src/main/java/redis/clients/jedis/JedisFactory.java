@@ -46,7 +46,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
    * constructors that do not carry credentials can connect first and authenticate later via an
    * explicit {@code auth()} call.
    */
-  private static DefaultJedisClientConfig.Builder resp2ConfigBuilder() {
+  private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
     return DefaultJedisClientConfig.builder().protocol(null);
   }
 
@@ -104,7 +104,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       final int database, final String clientName, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this.clientConfig = resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this.clientConfig = legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).user(user)
         .password(password).database(database).clientName(clientName).ssl(ssl)
         .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
@@ -126,7 +126,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       final String user, final String password, final int database, final String clientName,
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this(legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).user(user)
         .password(password).database(database).clientName(clientName).ssl(ssl)
         .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
@@ -161,7 +161,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       throw new InvalidURIException(
           String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-    this.clientConfig = resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this.clientConfig = legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
         .database(JedisURIHelper.getDBIndex(uri)).clientName(clientName)

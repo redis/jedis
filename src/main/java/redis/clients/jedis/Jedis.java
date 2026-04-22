@@ -110,7 +110,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * constructors that do not carry credentials can connect first and authenticate later via an
    * explicit {@link #auth(String)} call.
    */
-  private static DefaultJedisClientConfig.Builder resp2ConfigBuilder() {
+  private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
     return DefaultJedisClientConfig.builder().protocol(null);
   }
 
@@ -141,18 +141,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
     connection = new Connection(hostPort, config);
-    RedisProtocol proto = config.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    setCompatibleProtocol(config.getRedisProtocol());
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
-    this(host, port, resp2ConfigBuilder().ssl(ssl).build());
+    this(host, port, legacyConfigBuilderWithoutProtocolNegotiation().ssl(ssl).build());
   }
 
   public Jedis(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(host, port, resp2ConfigBuilder().ssl(ssl).sslSocketFactory(sslSocketFactory)
+    this(host, port, legacyConfigBuilderWithoutProtocolNegotiation().ssl(ssl).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
@@ -172,19 +171,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout) {
-    this(host, port, resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this(host, port, legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).build());
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout) {
-    this(host, port, resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this(host, port, legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).build());
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final boolean ssl) {
-    this(host, port, resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this(host, port, legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).ssl(ssl).build());
   }
 
@@ -192,7 +191,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(host, port,
-        resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
             .socketTimeoutMillis(soTimeout).ssl(ssl).sslSocketFactory(sslSocketFactory)
             .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
@@ -201,7 +200,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final int infiniteSoTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(host, port,
-        resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
             .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).ssl(ssl)
             .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
             .hostnameVerifier(hostnameVerifier).build());
@@ -213,7 +212,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
           String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
-        resp2ConfigBuilder().user(JedisURIHelper.getUser(uri))
+        legacyConfigBuilderWithoutProtocolNegotiation().user(JedisURIHelper.getUser(uri))
             .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
             .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
@@ -221,7 +220,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(URI uri, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(uri, resp2ConfigBuilder().sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+    this(uri, legacyConfigBuilderWithoutProtocolNegotiation().sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
         .hostnameVerifier(hostnameVerifier).build());
   }
 
@@ -235,7 +234,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final URI uri, final int connectionTimeout, final int soTimeout) {
-    this(uri, resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+    this(uri, legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).build());
   }
 
@@ -243,7 +242,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(uri,
-        resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
             .socketTimeoutMillis(soTimeout).sslSocketFactory(sslSocketFactory)
             .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
@@ -252,7 +251,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(uri,
-        resp2ConfigBuilder().connectionTimeoutMillis(connectionTimeout)
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
             .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
             .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
             .hostnameVerifier(hostnameVerifier).build());
@@ -274,7 +273,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
           String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
-        resp2ConfigBuilder().connectionTimeoutMillis(config.getConnectionTimeoutMillis())
+        legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(config.getConnectionTimeoutMillis())
             .socketTimeoutMillis(config.getSocketTimeoutMillis())
             .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
             .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
@@ -284,9 +283,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .sslSocketFactory(config.getSslSocketFactory()).sslParameters(config.getSslParameters())
             .hostnameVerifier(config.getHostnameVerifier()).build());
 
-    // NOTE(imalinovskyi): JedisClientConfig uses RESP3 by default, but Jedis uses RESP2.
-    // So we use the value from URI to avoid a mismatch.
-    commandObjects.setProtocol(JedisURIHelper.getRedisProtocol(uri));
+    setCompatibleProtocol(JedisURIHelper.getRedisProtocol(uri));
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -295,8 +292,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     connection = new Connection(jedisSocketFactory, clientConfig);
-    RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    setCompatibleProtocol(clientConfig.getRedisProtocol());
   }
 
   public Jedis(final Connection connection) {
@@ -357,6 +353,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
     transaction = null;
     pipeline = null;
+  }
+
+  /**
+   * This method is used to set the compatible protocol version. Jedis doesn't support protocol
+   * negotiation. That's why we silently ignore it here.
+   * @param protocol - protocol version
+   */
+  protected void setCompatibleProtocol(RedisProtocol protocol) {
+    if (protocol == RedisProtocol.RESP3 || protocol == RedisProtocol.RESP2) {
+      commandObjects.setProtocol(protocol);
+    }
   }
 
   protected void setDataSource(Pool<Jedis> jedisPool) {

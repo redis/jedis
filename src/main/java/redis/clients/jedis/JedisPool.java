@@ -33,7 +33,7 @@ public class JedisPool extends Pool<Jedis> {
    * constructors that do not carry credentials can connect first and authenticate later via an
    * explicit {@code auth()} call.
    */
-  private static DefaultJedisClientConfig.Builder resp2ConfigBuilder() {
+  private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
     return DefaultJedisClientConfig.builder().protocol(null);
   }
 
@@ -73,23 +73,23 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   public JedisPool(final String host, final int port) {
-    this(new HostAndPort(host, port), resp2ConfigBuilder().build());
+    this(new HostAndPort(host, port), legacyConfigBuilderWithoutProtocolNegotiation().build());
   }
 
   public JedisPool(final String host, final int port, final boolean ssl) {
-    this(new HostAndPort(host, port), resp2ConfigBuilder().ssl(ssl).build());
+    this(new HostAndPort(host, port), legacyConfigBuilderWithoutProtocolNegotiation().ssl(ssl).build());
   }
 
   public JedisPool(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(new HostAndPort(host, port),
-        resp2ConfigBuilder().ssl(ssl).sslSocketFactory(sslSocketFactory)
+        legacyConfigBuilderWithoutProtocolNegotiation().ssl(ssl).sslSocketFactory(sslSocketFactory)
             .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public JedisPool(final String host, int port, String user, final String password) {
-    this(new HostAndPort(host, port), resp2ConfigBuilder().user(user).password(password).build());
+    this(new HostAndPort(host, port), legacyConfigBuilderWithoutProtocolNegotiation().user(user).password(password).build());
   }
 
   public JedisPool(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {

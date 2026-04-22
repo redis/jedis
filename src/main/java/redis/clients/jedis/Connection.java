@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -29,6 +30,8 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
 public class Connection implements Closeable {
+
+  private static final Logger logger = Logger.getLogger(Connection.class.getName());
 
   public static class Builder {
     private JedisSocketFactory socketFactory;
@@ -635,13 +638,19 @@ public class Connection implements Closeable {
       }
     }
 
-    if (helloResult != null) {
+    if (helloResult == null) {
+      // We assume here that HELLO succeeded on RESP-compatible server which does not return a map.
+      if (protocol == RedisProtocol.RESP3_PREFERRED) {
+        logger.warning("Could not check the protocol version from server response, assuming RESP3.");
+        return RedisProtocol.RESP3;
+      }
+    } else {
       server = (String) helloResult.get("server");
       version = (String) helloResult.get("version");
 
       boolean helloResultContainsProto = helloResult.containsKey("proto") && helloResult.get("proto") instanceof Long;
 
-      if (helloResultContainsProto ) {
+      if (helloResultContainsProto) {
         RedisProtocol receivedProtocol = RedisProtocol.from((Long) helloResult.get("proto"));
 
         if (protocol == RedisProtocol.RESP3_PREFERRED) {
@@ -649,12 +658,13 @@ public class Connection implements Closeable {
         } else if (protocol != receivedProtocol) {
           throw new JedisException("Protocol version mismatch. Expected " + protocol + " but got " + receivedProtocol);
         }
+      } else {
+        // HELLO succeeded on RESP-compatible server — resolve RESP3_PREFERRED to actual RESP3
+        if (protocol == RedisProtocol.RESP3_PREFERRED) {
+          logger.warning("Could not check the protocol version from server response, assuming RESP3.");
+          return RedisProtocol.RESP3;
+        }
       }
-    }
-
-    // HELLO succeeded on RESP-compatible server — resolve RESP3_PREFERRED to actual RESP3
-    if (protocol == RedisProtocol.RESP3_PREFERRED) {
-      return RedisProtocol.RESP3;
     }
 
     // clearing 'char[] credentials.getPassword()' should be

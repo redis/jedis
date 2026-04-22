@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
+
 /**
  * Enum representing the Redis protocol version to use when connecting to a Redis server.
  *
@@ -55,12 +57,12 @@ public enum RedisProtocol {
    * Returns the RedisProtocol enum value corresponding to the given protocol version number.
    * @param proto the protocol version number (2 or 3)
    * @return the corresponding RedisProtocol enum value
-   * @throws IllegalArgumentException if the protocol version is not recognized
+   * @throws JedisProtocolNotSupportedException if the protocol version is not recognized
    */
   public static RedisProtocol from(Long proto) {
     if (proto == null) return null;
     if (proto == 2) return RESP2;
     if (proto == 3) return RESP3;
-    throw new IllegalArgumentException("Unknown protocol version: " + proto);
+    throw new JedisProtocolNotSupportedException("Unknown protocol version: " + proto);
   }
 }

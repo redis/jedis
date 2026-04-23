@@ -6,8 +6,8 @@ import redis.clients.jedis.Protocol.Keyword;
 import java.util.Objects;
 
 /**
- * Parameters for the {@code XNACK} command.
- * Supports optional {@code RETRYCOUNT count} and {@code FORCE} arguments.
+ * Parameters for the {@code XNACK} command. Supports optional {@code RETRYCOUNT count} and
+ * {@code FORCE} arguments.
  */
 public class XNackParams implements IParams {
 
@@ -22,8 +22,8 @@ public class XNackParams implements IParams {
   }
 
   /**
-   * Overrides the mode's implicit delivery counter adjustment with an exact value.
-   * Useful for AOF rewrite and cases where explicit control is desired.
+   * Overrides the mode's implicit delivery counter adjustment with an exact value. Useful for AOF
+   * rewrite and cases where explicit control is desired.
    * @param count must be &gt;= 0
    * @return XNackParams
    */
@@ -33,8 +33,8 @@ public class XNackParams implements IParams {
   }
 
   /**
-   * Creates a new unowned PEL entry for any ID not already in the group's PEL,
-   * rather than silently skipping it. Intended primarily for AOF rewrite.
+   * Creates a new unowned PEL entry for any ID not already in the group's PEL, rather than silently
+   * skipping it. Intended primarily for AOF rewrite.
    * @return XNackParams
    */
   public XNackParams force() {

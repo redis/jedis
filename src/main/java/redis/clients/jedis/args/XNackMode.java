@@ -3,8 +3,8 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Nacking mode for the XNACK command. Determines how the delivery counter is adjusted
- * when negatively acknowledging messages in a consumer group.
+ * Nacking mode for the XNACK command. Determines how the delivery counter is adjusted when
+ * negatively acknowledging messages in a consumer group.
  */
 public enum XNackMode implements Rawable {
 

@@ -65,25 +65,54 @@ public interface JedisClientConfig {
   }
 
   /**
+   * Enable TLS/SSL for connections.
+   * <p>
+   * <b>Prefer {@link #getSslOptions()}</b> for simpler configuration with built-in hostname
+   * verification and certificate validation modes.
+   * <p>
+   * When {@code true} without custom {@link #getSslParameters()}, hostname verification is enabled
+   * by default. Custom {@link SSLParameters} can override this behavior.
    * @return {@code true} - to create TLS connection(s). {@code false} - otherwise.
+   * @see #getSslOptions()
    */
   default boolean isSsl() {
     return false;
   }
 
+  /**
+   * Custom {@link SSLSocketFactory} for TLS connections.
+   * <p>
+   * <b>Prefer {@link #getSslOptions()}</b> for simpler configuration.
+   * @return Custom SSL socket factory, or {@code null} to use default
+   * @see #getSslOptions()
+   */
   default SSLSocketFactory getSslSocketFactory() {
     return null;
   }
 
+  /**
+   * Custom {@link SSLParameters} for TLS connections.
+   * <p>
+   * <b>Prefer {@link #getSslOptions()}</b> for simpler configuration with built-in hostname
+   * verification modes.
+   * @return Custom SSL parameters, or {@code null} to use defaults with hostname verification
+   * @see #getSslOptions()
+   */
   default SSLParameters getSslParameters() {
     return null;
   }
 
   /**
-   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
-   * {@link JedisClientConfig#getSslParameters()} will be ignored if
-   * {@link JedisClientConfig#getSslOptions() this} is set.
-   * @return ssl options
+   * Recommended way to configure TLS/SSL connections.
+   * <p>
+   * Provides simple builder API with built-in support for certificate validation modes, hostname
+   * verification, and truststore/keystore configuration.
+   * <p>
+   * When set, {@link #isSsl()}, {@link #getSslSocketFactory()} and {@link #getSslParameters()} are
+   * ignored.
+   * @return SSL options, or {@code null} to use {@link #isSsl()} configuration
+   * @see SslOptions
+   * @see SslVerifyMode
    */
   default SslOptions getSslOptions() {
     return null;

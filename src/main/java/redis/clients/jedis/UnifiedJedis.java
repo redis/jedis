@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +20,7 @@ import redis.clients.jedis.search.hybrid.FTHybridParams;
 import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.csc.Cache;
-import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheConnection;
-import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.json.JsonSetParams;
@@ -47,7 +44,6 @@ import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
@@ -61,98 +57,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final CommandObjects commandObjects;
   private final Cache cache;
 
-  /**
-   * @deprecated Use {@link RedisClient#create()} instead.
-   */
-  @Deprecated
-  public UnifiedJedis() {
-    this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#create(HostAndPort)} instead.
-   */
-  @Deprecated
-  public UnifiedJedis(HostAndPort hostAndPort) {
-    this(new PooledConnectionProvider(hostAndPort), (RedisProtocol) null);
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#create(String)} instead.
-   */
-  @Deprecated
-  public UnifiedJedis(final String url) {
-    this(URI.create(url));
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#create(URI)} instead.
-   */
-  @Deprecated
-  public UnifiedJedis(final URI uri) {
-    this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
-        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-        .database(JedisURIHelper.getDBIndex(uri)).protocol(JedisURIHelper.getRedisProtocol(uri))
-        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
-  }
-
-  /**
-   * Create a new UnifiedJedis with the provided URI and JedisClientConfig object. Note that all fields
-   * that can be parsed from the URI will be used instead of the corresponding configuration values. This includes
-   * the following fields: user, password, database, protocol version, and whether to use SSL.
-   *
-   * For example, if the URI is "redis://user:password@localhost:6379/1", the user and password fields will be set
-   * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
-   * from the JedisClientConfig object.
-   *
-   * @param uri The URI to connect to
-   * @param config The JedisClientConfig object to use
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
-   */
-  @Deprecated
-  public UnifiedJedis(final URI uri, JedisClientConfig config) {
-    this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
-        .socketTimeoutMillis(config.getSocketTimeoutMillis())
-        .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
-        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
-        .protocol(JedisURIHelper.getRedisProtocol(uri))
-        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
-        .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier()).build());
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
-   */
-  @Deprecated
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with client-side caching.
-   */
-  @Experimental
-  @Deprecated
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
-    this(hostAndPort, clientConfig, CacheFactory.getCache(cacheConfig));
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with client-side caching.
-   */
-  @Experimental
-  @Deprecated
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache) {
-    this(new PooledConnectionProvider(hostAndPort, clientConfig, cache), clientConfig.getRedisProtocol(), cache);
-  }
-
-  @Deprecated
-  public UnifiedJedis(ConnectionProvider provider) {
-    this(new DefaultCommandExecutor(provider), provider);
-  }
-
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
   }
@@ -163,30 +67,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * The constructor to directly use a custom {@link JedisSocketFactory}.
-   * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
-   * {@link UnifiedJedis#provider} is accessed.
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
-   */
-  @Deprecated
-  public UnifiedJedis(JedisSocketFactory socketFactory) {
-    this(new Connection(socketFactory));
-  }
-
-  /**
-   * The constructor to directly use a custom {@link JedisSocketFactory}.
-   * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
-   * {@link UnifiedJedis#provider} is accessed.
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
-   */
-  @Deprecated
-  public UnifiedJedis(JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
-    this(new Connection(socketFactory, clientConfig));
-  }
-
-  /**
    * The constructor to directly use a {@link Connection}.
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
@@ -194,7 +74,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @deprecated
    */
   @Deprecated
-  public UnifiedJedis(Connection connection) {
+  protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new CommandObjects();
@@ -210,46 +90,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use {@link RedisClusterClient#builder()} to configure the cluster client.
-   */
-  @Deprecated
-  public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
-        new ClusterCommandObjects());
-  }
-
-  @Deprecated
-  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
-        new ClusterCommandObjects(), protocol);
-  }
-
-  @Deprecated
-  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, Cache cache) {
-    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration, StaticCommandFlagsRegistry.registry()), provider,
-        new ClusterCommandObjects(), protocol, cache);
-  }
-
-  /**
    * @deprecated Use {@link RedisClient#builder()} to configure the client with retry settings.
    */
   @Deprecated
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  /**
-   * The constructor to use a custom {@link CommandExecutor}.
-   * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
-   * {@link UnifiedJedis#provider} is accessed.
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with custom settings.
-   */
-  @Deprecated
-  public UnifiedJedis(CommandExecutor executor) {
-    this(executor, (ConnectionProvider) null);
   }
 
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
@@ -262,7 +107,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @VisibleForTesting
   @Deprecated
-  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {

@@ -18,6 +18,7 @@ import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
@@ -100,10 +101,10 @@ public class FailoverIntegrationTest {
       }
     });
 
-    jedis1 = new UnifiedJedis(endpoint1.getHostAndPort(),
-        DefaultJedisClientConfig.builder().build());
-    jedis2 = new UnifiedJedis(endpoint2.getHostAndPort(),
-        DefaultJedisClientConfig.builder().build());
+    jedis1 = RedisClient.builder().hostAndPort(endpoint1.getHostAndPort())
+        .clientConfig(DefaultJedisClientConfig.builder().build()).build();
+    jedis2 = RedisClient.builder().hostAndPort(endpoint2.getHostAndPort())
+        .clientConfig(DefaultJedisClientConfig.builder().build()).build();
 
     jedis1.flushAll();
     jedis2.flushAll();

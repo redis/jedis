@@ -192,9 +192,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     if (JedisURIHelper.isRedisSSLScheme(redisUri)) {
-      builder.ssl(true);
-    } else if (JedisURIHelper.isRedisScheme(redisUri)) {
-      builder.ssl(false);
+      builder.sslOptions(SslOptions.builder().build());
     }
 
     return builder;

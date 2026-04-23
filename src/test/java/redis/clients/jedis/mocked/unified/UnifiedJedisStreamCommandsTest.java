@@ -17,9 +17,11 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XNackParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
@@ -69,6 +71,80 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).xack(key, group, ids);
+  }
+
+  @Test
+  public void testXnack() {
+    String key = "mystream";
+    String group = "mygroup";
+    StreamEntryID[] ids = { new StreamEntryID("0-0"), new StreamEntryID("0-1") };
+    long expectedNacked = 2L;
+
+    when(commandObjects.xnack(key, group, XNackMode.FAIL, ids)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedNacked);
+
+    long result = jedis.xnack(key, group, XNackMode.FAIL, ids);
+
+    assertThat(result, equalTo(expectedNacked));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).xnack(key, group, XNackMode.FAIL, ids);
+  }
+
+  @Test
+  public void testXnackWithParams() {
+    String key = "mystream";
+    String group = "mygroup";
+    StreamEntryID[] ids = { new StreamEntryID("0-0") };
+    XNackParams params = XNackParams.xNackParams().retryCount(5).force();
+    long expectedNacked = 1L;
+
+    when(commandObjects.xnack(key, group, XNackMode.FATAL, params, ids)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedNacked);
+
+    long result = jedis.xnack(key, group, XNackMode.FATAL, params, ids);
+
+    assertThat(result, equalTo(expectedNacked));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).xnack(key, group, XNackMode.FATAL, params, ids);
+  }
+
+  @Test
+  public void testXnackBinary() {
+    byte[] key = "mystream".getBytes();
+    byte[] group = "mygroup".getBytes();
+    byte[][] ids = { "0-0".getBytes(), "0-1".getBytes() };
+    long expectedNacked = 2L;
+
+    when(commandObjects.xnack(key, group, XNackMode.SILENT, ids)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedNacked);
+
+    long result = jedis.xnack(key, group, XNackMode.SILENT, ids);
+
+    assertThat(result, equalTo(expectedNacked));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).xnack(key, group, XNackMode.SILENT, ids);
+  }
+
+  @Test
+  public void testXnackBinaryWithParams() {
+    byte[] key = "mystream".getBytes();
+    byte[] group = "mygroup".getBytes();
+    byte[][] ids = { "0-0".getBytes() };
+    XNackParams params = XNackParams.xNackParams().retryCount(3);
+    long expectedNacked = 1L;
+
+    when(commandObjects.xnack(key, group, XNackMode.FAIL, params, ids)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedNacked);
+
+    long result = jedis.xnack(key, group, XNackMode.FAIL, params, ids);
+
+    assertThat(result, equalTo(expectedNacked));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).xnack(key, group, XNackMode.FAIL, params, ids);
   }
 
   @Test

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
@@ -112,6 +113,19 @@ public interface StreamCommands {
    * in the given consumer group and attempts to delete corresponding stream entries.
    */
   List<StreamEntryDeletionResult> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...]
+   * Negatively acknowledges pending messages, making them immediately available
+   * for reconsumption by other consumers via XREADGROUP CLAIM.
+   */
+  long xnack(String key, String group, XNackMode mode, StreamEntryID... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...] [RETRYCOUNT count] [FORCE]
+   * Negatively acknowledges pending messages with optional parameters.
+   */
+  long xnack(String key, String group, XNackMode mode, XNackParams params, StreamEntryID... ids);
 
   /**
    * {@code XGROUP CREATE key groupName <id or $>}

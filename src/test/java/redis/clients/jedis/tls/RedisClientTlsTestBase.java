@@ -24,6 +24,7 @@ public abstract class RedisClientTlsTestBase {
 
   protected static EndpointConfig endpoint;
   protected static EndpointConfig aclEndpoint;
+  protected static EndpointConfig wrongHostEndpoint;
   protected static Path trustStorePath;
   protected static SslOptions sslOptions;
 
@@ -31,6 +32,7 @@ public abstract class RedisClientTlsTestBase {
   public static void setUpTrustStore() {
     endpoint = Endpoints.getRedisEndpoint("standalone0-tls");
     aclEndpoint = Endpoints.getRedisEndpoint("standalone0-acl-tls");
+    wrongHostEndpoint = Endpoints.getRedisEndpoint("standalone0-tls-wronghost");
 
     List<Path> trustedCertLocation = Arrays.asList(endpoint.getCertificatesLocation(),
       aclEndpoint.getCertificatesLocation());

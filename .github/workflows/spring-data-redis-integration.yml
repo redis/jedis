@@ -1,0 +1,97 @@
+---
+
+name: Spring Data Redis Integration Test
+
+on:
+  pull_request:
+    branches:
+      - master
+      - '[0-9].*'
+  workflow_dispatch:
+    inputs:
+      spring_data_redis_branch:
+        description: 'Spring Data Redis branch to test against'
+        required: false
+        default: 'main'
+      redis_version:
+        description: 'Redis version (6, 7, 8)'
+        required: false
+        default: '8'
+
+jobs:
+  integration-test:
+    name: SDR Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Jedis
+        uses: actions/checkout@v4
+        with:
+          path: jedis
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build Jedis (skip tests)
+        working-directory: jedis
+        run: |
+          mvn -B clean install -DskipTests -Dgpg.skip=true
+          JEDIS_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "JEDIS_VERSION=$JEDIS_VERSION" >> $GITHUB_ENV
+          echo "Built Jedis version: $JEDIS_VERSION"
+
+      - name: Checkout Spring Data Redis
+        uses: actions/checkout@v4
+        with:
+          repository: spring-projects/spring-data-redis
+          ref: ${{ github.event.inputs.spring_data_redis_branch || 'main' }}
+          path: spring-data-redis
+
+      - name: Patch Spring Data Redis to use local Jedis
+        working-directory: spring-data-redis
+        run: |
+          echo "Patching Spring Data Redis to use Jedis version: $JEDIS_VERSION"
+          mvn versions:set-property -Dproperty=jedis -DnewVersion=$JEDIS_VERSION -DgenerateBackupPoms=false
+
+      - name: Setup Redis using SDR infrastructure
+        working-directory: spring-data-redis
+        run: |
+          mkdir -p work
+          make start
+        env:
+          IMAGE: redis:${{ github.event.inputs.redis_version || '8' }}
+
+      - name: Run Spring Data Redis tests
+        working-directory: spring-data-redis
+        run: |
+          # Run only Jedis-related tests to keep the workflow focused
+          ./mvnw -B clean test \
+            -Dtest="**/jedis/**/*Test,**/jedis/**/*Tests" \
+            -DfailIfNoTests=false \
+            -Dmaven.javadoc.skip=true \
+            -Pci
+
+      - name: Cleanup Redis
+        if: always()
+        working-directory: spring-data-redis
+        run: make clean || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdr-test-results
+          path: |
+            spring-data-redis/target/surefire-reports/
+          retention-days: 7

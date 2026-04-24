@@ -65,25 +65,57 @@ public interface JedisClientConfig {
   }
 
   /**
-   * @return {@code true} - to create TLS connection(s). {@code false} - otherwise.
+   * Whether TLS/SSL should be used for connections.
+   * <p>
+   * A TLS connection is established when this returns {@code true} or when {@link #getSslOptions()}
+   * returns a non-{@code null} value. If both are provided, {@link #getSslOptions()} takes
+   * precedence.
+   * @return {@code true} if TLS/SSL is enabled, {@code false} otherwise
+   * @see #getSslOptions()
    */
   default boolean isSsl() {
     return false;
   }
 
+  /**
+   * Custom {@link SSLSocketFactory} to use for TLS connections.
+   * <p>
+   * Consulted only when {@link #getSslOptions()} returns {@code null}. Implementations should
+   * return {@code null} to use the JVM default.
+   * @return custom SSL socket factory, or {@code null} to use the default
+   * @see #getSslOptions()
+   * @deprecated since 7.4.2, use {@link #getSslOptions()} instead.
+   */
+  @Deprecated
   default SSLSocketFactory getSslSocketFactory() {
     return null;
   }
 
+  /**
+   * Custom {@link SSLParameters} to apply to TLS sockets.
+   * <p>
+   * Consulted only when {@link #getSslOptions()} returns {@code null}. Implementations should
+   * return {@code null} to let the client apply defaults (which enable HTTPS hostname
+   * verification).
+   * @return custom SSL parameters, or {@code null} for defaults
+   * @see #getSslOptions()
+   * @deprecated since 7.4.2, use {@link #getSslOptions()} instead.
+   */
+  @Deprecated
   default SSLParameters getSslParameters() {
     return null;
   }
 
   /**
-   * {@link JedisClientConfig#isSsl()}, {@link JedisClientConfig#getSslSocketFactory()} and
-   * {@link JedisClientConfig#getSslParameters()} will be ignored if
-   * {@link JedisClientConfig#getSslOptions() this} is set.
-   * @return ssl options
+   * TLS/SSL configuration. Recommended way to configure TLS connections.
+   * <p>
+   * When non-{@code null}, TLS is enabled and this takes precedence over
+   * {@link #getSslSocketFactory()} and {@link #getSslParameters()}. Implementations should return
+   * {@code null} to fall back to {@link #isSsl()} / {@link #getSslSocketFactory()} /
+   * {@link #getSslParameters()}.
+   * @return TLS configuration, or {@code null} if not configured
+   * @see SslOptions
+   * @see SslVerifyMode
    */
   default SslOptions getSslOptions() {
     return null;

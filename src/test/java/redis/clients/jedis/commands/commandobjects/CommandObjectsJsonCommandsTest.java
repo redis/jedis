@@ -223,7 +223,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     String key = "jsonKey:" + testName;
 
     // Simple array data
-    JSONArray data = new JSONArray().put(1).put(2).put(3);
+    JSONArray data = new JSONArray().put(1f).put(2f).put(3f);
 
     // Build params using switch statements
     JsonSetParams params = new JsonSetParams();

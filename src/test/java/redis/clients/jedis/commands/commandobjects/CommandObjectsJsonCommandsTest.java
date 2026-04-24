@@ -218,7 +218,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("fphaParamsCombinations")
-  @SinceRedisVersion(value = "8.8.0", message = "FPHA parameter for JSON.SET is only supported in Redis 8.8 or later")
+  @SinceRedisVersion(value = "8.7.225", message = "FPHA parameter for JSON.SET is only supported in Redis 8.8 or later")
   public void testJsonSetWithFphaParams(String testName, Keyword existenceKeyword, FphaType fphaType) {
     String key = "jsonKey:" + testName;
 

@@ -14,7 +14,7 @@ public class JsonSetParams implements IParams {
 
   /**
    * Floating-point high accuracy types for JSON numeric values.
-   * @since 7.5
+   * @since 8.0
    */
   public enum FphaType implements Rawable {
     FP16, BF16, FP32, FP64;

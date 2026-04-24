@@ -1,12 +1,16 @@
 package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+
+import javax.net.ssl.SSLParameters;
 
 /**
  * SSL/TLS tests for {@link Jedis} with basic authentication (password-only, no ACL).
@@ -65,6 +69,36 @@ public class JedisIT extends JedisTlsTestBase {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis(endpoint.getURI())) {
       jedis.auth(endpoint.getPassword());
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  /**
+   * Verifies that hostname verification fails when hostname doesn't match certificate CN/SAN.
+   */
+  @Test
+  public void connectWrongHost() {
+    // Connection with hostname mismatch should fail
+    assertThrows(JedisConnectionException.class,
+      () -> new Jedis(wrongHostEndpoint.getHost(), wrongHostEndpoint.getPort(), true));
+
+    // Same test using URI
+    assertThrows(JedisConnectionException.class, () -> new Jedis(wrongHostEndpoint.getURI()));
+  }
+
+  /**
+   * Verifies that hostname verification can be disabled by providing custom SSLParameters without
+   * endpoint identification algorithm set.
+   */
+  @Test
+  public void connectWrongHostWithSslParameters() {
+    // Custom SSLParameters without endpoint identification allows connection despite hostname
+    // mismatch
+    JedisClientConfig config = DefaultJedisClientConfig.builder().ssl(true)
+        .sslParameters(new SSLParameters()).user(wrongHostEndpoint.getUsername())
+        .password(wrongHostEndpoint.getPassword()).build();
+    try (
+        Jedis jedis = new Jedis(wrongHostEndpoint.getHost(), wrongHostEndpoint.getPort(), config)) {
       assertEquals("PONG", jedis.ping());
     }
   }

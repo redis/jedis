@@ -73,13 +73,10 @@ public class RedisClusterClientIT extends RedisClusterTestBase {
   @ParameterizedTest(name = "connectToNodesSucceedsWithSSLParametersAndHostMapping_{0}")
   @MethodSource("sslOptionsProvider")
   void connectToNodesSucceedsWithSSLParametersAndHostMapping(String testName, SslOptions ssl) {
-    final SSLParameters sslParameters = new SSLParameters();
-    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(ssl).sslParameters(sslParameters).build())
+            .sslOptions(ssl).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       assertEquals("PONG", jc.ping());
     }

@@ -65,14 +65,12 @@ public interface JedisClientConfig {
   }
 
   /**
-   * Enable TLS/SSL for connections.
+   * Whether TLS/SSL should be used for connections.
    * <p>
-   * <b>Prefer {@link #getSslOptions()}</b> for simpler configuration with built-in hostname
-   * verification and certificate validation modes.
-   * <p>
-   * When {@code true} without custom {@link #getSslParameters()}, hostname verification is enabled
-   * by default. Custom {@link SSLParameters} can override this behavior.
-   * @return {@code true} - to create TLS connection(s). {@code false} - otherwise.
+   * A TLS connection is established when this returns {@code true} or when {@link #getSslOptions()}
+   * returns a non-{@code null} value. If both are provided, {@link #getSslOptions()} takes
+   * precedence.
+   * @return {@code true} if TLS/SSL is enabled, {@code false} otherwise
    * @see #getSslOptions()
    */
   default boolean isSsl() {
@@ -80,37 +78,42 @@ public interface JedisClientConfig {
   }
 
   /**
-   * Custom {@link SSLSocketFactory} for TLS connections.
+   * Custom {@link SSLSocketFactory} to use for TLS connections.
    * <p>
-   * <b>Prefer {@link #getSslOptions()}</b> for simpler configuration.
-   * @return Custom SSL socket factory, or {@code null} to use default
+   * Consulted only when {@link #getSslOptions()} returns {@code null}. Implementations should
+   * return {@code null} to use the JVM default.
+   * @return custom SSL socket factory, or {@code null} to use the default
    * @see #getSslOptions()
+   * @deprecated since 7.4.2, use {@link #getSslOptions()} instead.
    */
+  @Deprecated
   default SSLSocketFactory getSslSocketFactory() {
     return null;
   }
 
   /**
-   * Custom {@link SSLParameters} for TLS connections.
+   * Custom {@link SSLParameters} to apply to TLS sockets.
    * <p>
-   * <b>Prefer {@link #getSslOptions()}</b> for simpler configuration with built-in hostname
-   * verification modes.
-   * @return Custom SSL parameters, or {@code null} to use defaults with hostname verification
+   * Consulted only when {@link #getSslOptions()} returns {@code null}. Implementations should
+   * return {@code null} to let the client apply defaults (which enable HTTPS hostname
+   * verification).
+   * @return custom SSL parameters, or {@code null} for defaults
    * @see #getSslOptions()
+   * @deprecated since 7.4.2, use {@link #getSslOptions()} instead.
    */
+  @Deprecated
   default SSLParameters getSslParameters() {
     return null;
   }
 
   /**
-   * Recommended way to configure TLS/SSL connections.
+   * TLS/SSL configuration. Recommended way to configure TLS connections.
    * <p>
-   * Provides simple builder API with built-in support for certificate validation modes, hostname
-   * verification, and truststore/keystore configuration.
-   * <p>
-   * When set, {@link #isSsl()}, {@link #getSslSocketFactory()} and {@link #getSslParameters()} are
-   * ignored.
-   * @return SSL options, or {@code null} to use {@link #isSsl()} configuration
+   * When non-{@code null}, TLS is enabled and this takes precedence over
+   * {@link #getSslSocketFactory()} and {@link #getSslParameters()}. Implementations should return
+   * {@code null} to fall back to {@link #isSsl()} / {@link #getSslSocketFactory()} /
+   * {@link #getSslParameters()}.
+   * @return TLS configuration, or {@code null} if not configured
    * @see SslOptions
    * @see SslVerifyMode
    */

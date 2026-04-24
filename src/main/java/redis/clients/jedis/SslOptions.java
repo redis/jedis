@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  *
  * Default (uses JVM truststore, full verification):
  * <pre>{@code
- * SslOptions sslOptions = SslOptions.builder().build();
+ * SslOptions sslOptions = SslOptions.defaults();
  * }</pre>
  *
  * Custom truststore:
@@ -133,6 +133,17 @@ public class SslOptions {
      */
     public static SslOptions.Builder builder() {
         return new SslOptions.Builder();
+    }
+
+    /**
+     * Returns {@link SslOptions} with default settings: JVM truststore, TLS protocol and full
+     * certificate and hostname verification ({@link SslVerifyMode#FULL}). Equivalent to
+     * {@code SslOptions.builder().build()}.
+     *
+     * @return a new {@link SslOptions} instance with default settings.
+     */
+    public static SslOptions defaults() {
+        return builder().build();
     }
 
     /**

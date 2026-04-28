@@ -140,9 +140,14 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     SSLSocket sslSocket = (SSLSocket) _sslSocketFactory.createSocket(socket,
         _hostAndPort.getHost(), _hostAndPort.getPort(), true);
 
-    if (_sslParameters != null) {
-      sslSocket.setSSLParameters(_sslParameters);
+    // Enable hostname verification by default (HTTPS algorithm).
+    // Users can override by providing custom SSLParameters via JedisClientConfig.
+    if (_sslParameters == null) {
+      _sslParameters = new SSLParameters();
+      _sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
     }
+
+    sslSocket.setSSLParameters(_sslParameters);
 
     // allowing HostnameVerifier for both SslOptions and legacy ssl config
     if (hostnameVerifier != null && !hostnameVerifier.verify(_hostAndPort.getHost(), sslSocket.getSession())) {

@@ -137,11 +137,9 @@ public class TSMRangeParams implements IParams {
 
   /**
    * Specifies multiple aggregators to be applied in a single {@code TS.MRANGE} /
-   * {@code TS.MREVRANGE} call. Aggregators are sent on the wire in the given order and
-   * the response values appear in the same order in {@link TSElement#getValues()}.
-   * Single-element arrays are accepted and behave like
-   * {@link #aggregation(AggregationType, long)}.
-   *
+   * {@code TS.MREVRANGE} call. Aggregators are sent on the wire in the given order and the response
+   * values appear in the same order in {@link TSElement#getValues()}. Single-element arrays are
+   * accepted and behave like {@link #aggregation(AggregationType, long)}.
    * @param aggregators ordered, non-empty list of aggregators
    * @param bucketDuration aggregation bucket duration in milliseconds
    * @return this
@@ -263,7 +261,8 @@ public class TSMRangeParams implements IParams {
         args.add(ALIGN).add(align);
       }
 
-      args.add(AGGREGATION).add(joinAggregators(aggregators)).add(toByteArray(bucketDuration));
+      args.add(AGGREGATION).add(AggregationType.joinRaw(aggregators))
+          .add(toByteArray(bucketDuration));
 
       if (bucketTimestamp != null) {
         args.add(BUCKETTIMESTAMP).add(bucketTimestamp);
@@ -282,20 +281,6 @@ public class TSMRangeParams implements IParams {
     if (groupByLabel != null && groupByReduce != null) {
       args.add(GROUPBY).add(groupByLabel).add(REDUCE).add(groupByReduce);
     }
-  }
-
-  private static byte[] joinAggregators(AggregationType[] aggregators) {
-    int total = aggregators.length - 1;
-    for (AggregationType a : aggregators) total += a.getRaw().length;
-    byte[] out = new byte[total];
-    int pos = 0;
-    for (int i = 0; i < aggregators.length; i++) {
-      if (i > 0) out[pos++] = ',';
-      byte[] raw = aggregators[i].getRaw();
-      System.arraycopy(raw, 0, out, pos, raw.length);
-      pos += raw.length;
-    }
-    return out;
   }
 
   @Override

@@ -56,4 +56,22 @@ public enum AggregationType implements Rawable {
   public static AggregationType[] of(AggregationType... types) {
     return types;
   }
+
+  /**
+   * Comma-joined raw bytes of {@code aggregators} for the AGGREGATION wire format.
+   */
+  static byte[] joinRaw(AggregationType[] aggregators) {
+    int total = aggregators.length - 1;
+    for (AggregationType a : aggregators)
+      total += a.getRaw().length;
+    byte[] out = new byte[total];
+    int pos = 0;
+    for (int i = 0; i < aggregators.length; i++) {
+      if (i > 0) out[pos++] = ',';
+      byte[] raw = aggregators[i].getRaw();
+      System.arraycopy(raw, 0, out, pos, raw.length);
+      pos += raw.length;
+    }
+    return out;
+  }
 }

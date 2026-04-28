@@ -46,7 +46,7 @@ jobs:
       - name: Build Jedis (skip tests)
         working-directory: jedis
         run: |
-          mvn -B clean install -DskipTests -Dgpg.skip=true
+          mvn -B clean install -DskipTests -DskipUnitTests=true -Dgpg.skip=true
           JEDIS_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "JEDIS_VERSION=$JEDIS_VERSION" >> $GITHUB_ENV
           echo "Built Jedis version: $JEDIS_VERSION"
@@ -64,6 +64,24 @@ jobs:
           echo "Patching Spring Data Redis to use Jedis version: $JEDIS_VERSION"
           mvn versions:set-property -Dproperty=jedis -DnewVersion=$JEDIS_VERSION -DgenerateBackupPoms=false
 
+      - name: Build Spring Data Redis
+        working-directory: spring-data-redis
+        run: |
+          # Verify Jedis changes do not cause compile-time issues in SDR
+          ./mvnw -B clean test-compile \
+            -Dmaven.javadoc.skip=true \
+            -Pci
+
+      - name: Run Spring Data Redis unit tests
+        working-directory: spring-data-redis
+        run: |
+          # Verify Jedis changes do not break SDR unit tests (no Redis required)
+          ./mvnw -B test \
+            -Dtest="**/jedis/**/*UnitTests,**/jedis/**/*UnitTest" \
+            -DfailIfNoTests=false \
+            -Dmaven.javadoc.skip=true \
+            -Pci
+
       - name: Setup Redis using SDR infrastructure
         working-directory: spring-data-redis
         run: |
@@ -72,12 +90,12 @@ jobs:
         env:
           IMAGE: redis:${{ github.event.inputs.redis_version || '8' }}
 
-      - name: Run Spring Data Redis tests
+      - name: Run Spring Data Redis integration tests
         working-directory: spring-data-redis
         run: |
-          # Run only Jedis-related tests to keep the workflow focused
-          ./mvnw -B clean test \
-            -Dtest="**/jedis/**/*Test,**/jedis/**/*Tests" \
+          # Verify Jedis changes do not break SDR integration tests (Redis required)
+          ./mvnw -B test \
+            -Dtest="**/jedis/**/*Tests,**/jedis/**/*Test,!**/jedis/**/*UnitTests,!**/jedis/**/*UnitTest" \
             -DfailIfNoTests=false \
             -Dmaven.javadoc.skip=true \
             -Pci

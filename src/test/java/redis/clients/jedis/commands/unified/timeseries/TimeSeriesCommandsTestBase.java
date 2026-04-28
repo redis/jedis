@@ -386,7 +386,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   public void testValue() {
     TSElement v = new TSElement(1234, 234.89634);
     TSElement same = new TSElement(1234, 234.89634);
-    TSElement differentTimestamp = new TSElement(1334, 234.8934);
+    TSElement differentTimestamp = new TSElement(1334, 234.89634);
     TSElement differentValue = new TSElement(1234, 234.8934);
 
     assertEquals(1234, v.getTimestamp());
@@ -1416,8 +1416,8 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     jedis.tsAdd("mseriesRangeMulti", 3500L, 7.0);
 
     Map<String, TSMRangeElements> ranges = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 4000L)
-        // .aggregation(
-        // AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
+        .aggregation(
+          AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
         .filter("kind=mrange-multi"));
     assertEquals(1, ranges.size());
     List<TSElement> elements = ranges.values().iterator().next().getValue();

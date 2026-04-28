@@ -108,27 +108,42 @@ public class TSRangeParams implements IParams {
   }
 
   public TSRangeParams aggregation(AggregationType aggregationType, long bucketDuration) {
-    this.aggregators = new AggregationType[] { aggregationType };
-    this.bucketDuration = bucketDuration;
+    if (aggregationType != null) {
+      this.aggregators = new AggregationType[] { aggregationType };
+      this.bucketDuration = bucketDuration;
+    } else {
+      this.aggregators = null;
+    }
+
     return this;
   }
 
   /**
-   * Specifies multiple aggregators to be applied in a single {@code TS.RANGE} / {@code TS.REVRANGE}
-   * call. Aggregators are sent on the wire in the given order and the response values appear in the
-   * same order in {@link TSElement#getValues()}. Single-element arrays are accepted and behave like
-   * {@link #aggregation(AggregationType, long)}.
+   * Specifies multiple aggregators to be applied in a single {@code TS.RANGE} / {@code TS.REVRANGE} call. Aggregators are
+   * sent on the wire in the given order and the response values appear in the same order in {@link TSElement#getValues()}.
+   * Single-element arrays are accepted and behave like {@link #aggregation(AggregationType, long)}.
+   *
    * @param aggregators ordered, non-empty list of aggregators
    * @param bucketDuration aggregation bucket duration in milliseconds
    * @return this
-   * @throws IllegalArgumentException if {@code aggregators} is {@code null} or empty
+   * @throws IllegalArgumentException if {@code aggregators} is empty
    */
   public TSRangeParams aggregation(AggregationType[] aggregators, long bucketDuration) {
-    if (aggregators == null || aggregators.length == 0) {
-      throw new IllegalArgumentException("aggregators must be non-null and non-empty");
+    if (aggregators != null) {
+      if (aggregators.length == 0) {
+        throw new IllegalArgumentException("At least one aggregator is required");
+      }
+      for (AggregationType a : aggregators) {
+        if (a == null) {
+          throw new IllegalArgumentException("Aggregators must not contain null elements");
+        }
+      }
+      this.aggregators = aggregators;
+      this.bucketDuration = bucketDuration;
+    } else {
+      this.aggregators = null;
     }
-    this.aggregators = aggregators;
-    this.bucketDuration = bucketDuration;
+
     return this;
   }
 

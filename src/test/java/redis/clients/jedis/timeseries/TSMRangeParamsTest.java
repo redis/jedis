@@ -25,15 +25,15 @@ public class TSMRangeParamsTest {
   class ValidationTests {
 
     @Test
-    public void aggregatorsNullThrowsException() {
-      assertThrows(IllegalArgumentException.class,
-        () -> TSMRangeParams.multiRangeParams().aggregation((AggregationType[]) null, 1000L));
-    }
-
-    @Test
     public void aggregatorsEmptyArrayThrowsException() {
       assertThrows(IllegalArgumentException.class,
         () -> TSMRangeParams.multiRangeParams().aggregation(new AggregationType[0], 1000L));
+    }
+
+    @Test
+    public void aggregatorsNullElementThrowsException() {
+      assertThrows(IllegalArgumentException.class,
+        () -> TSMRangeParams.multiRangeParams().aggregation(new AggregationType[] { null }, 1000L));
     }
   }
 

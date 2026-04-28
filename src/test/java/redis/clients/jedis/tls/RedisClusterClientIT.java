@@ -73,13 +73,10 @@ public class RedisClusterClientIT extends RedisClusterTestBase {
   @ParameterizedTest(name = "connectToNodesSucceedsWithSSLParametersAndHostMapping_{0}")
   @MethodSource("sslOptionsProvider")
   void connectToNodesSucceedsWithSSLParametersAndHostMapping(String testName, SslOptions ssl) {
-    final SSLParameters sslParameters = new SSLParameters();
-    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-
     try (RedisClusterClient jc = RedisClusterClient.builder()
         .nodes(Collections.singleton(tlsEndpoint.getHostAndPort()))
         .clientConfig(DefaultJedisClientConfig.builder().password(tlsEndpoint.getPassword())
-            .sslOptions(ssl).sslParameters(sslParameters).build())
+            .sslOptions(ssl).build())
         .maxAttempts(DEFAULT_REDIRECTIONS).poolConfig(DEFAULT_POOL_CONFIG).build()) {
       assertEquals("PONG", jc.ping());
     }
@@ -138,4 +135,35 @@ public class RedisClusterClientIT extends RedisClusterTestBase {
     }
   }
 
+  /**
+   * Verifies that hostname verification is enabled by default for cluster connections. Cluster
+   * initialization should fail when hostname doesn't match certificate CN/SAN.
+   */
+  @Test
+  public void connectWrongHost() {
+    // Cluster init with hostname mismatch should fail
+    RedisClusterClient.Builder builder = RedisClusterClient.builder();
+    builder.nodes(Collections.singleton(tlsEndpointWrongHost.getHostAndPort()))
+        .clientConfig(DefaultJedisClientConfig.builder()
+            .password(tlsEndpointWrongHost.getPassword()).ssl(true).build());
+    assertThrows(JedisClusterOperationException.class, builder::build);
+  }
+
+  /**
+   * Verifies that hostname verification can be disabled for cluster connections by providing custom
+   * SSLParameters without endpoint identification algorithm.
+   */
+  @Test
+  public void connectWrongHostWithSslParameters() {
+    // Custom SSLParameters without endpoint identification allows cluster connection despite
+    // hostname mismatch
+    JedisClientConfig config = DefaultJedisClientConfig.builder().ssl(true)
+        .sslParameters(new SSLParameters()).password(tlsEndpointWrongHost.getPassword()).build();
+    RedisClusterClient.Builder builder = RedisClusterClient.builder();
+    builder.nodes(Collections.singleton(tlsEndpointWrongHost.getHostAndPort()))
+        .clientConfig(config);
+    try (RedisClusterClient client = builder.build()) {
+      assertEquals("PONG", client.ping());
+    }
+  }
 }

@@ -99,8 +99,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * Creates the specific client instance with the provided components.
    * <p>
    * This method is called by the generic build() method to instantiate the concrete client type.
-   * Each builder implementation should create their specific client type (JedisPooled,
-   * JedisCluster, etc.) using the parameters provided to the builder.
+   * Each builder implementation should create their specific client type (RedisClient,
+   * RedisClusterClient, etc.) using the parameters provided to the builder.
    * @return the configured Redis client instance
    */
   protected abstract C createClient();

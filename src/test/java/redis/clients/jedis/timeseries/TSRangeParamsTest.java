@@ -60,10 +60,8 @@ public class TSRangeParamsTest {
 
       // Expected: TS.RANGE - +
       assertThat(args, hasArgumentCount(3));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.RANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS)));
+      assertThat(args, hasArguments(TimeSeriesCommand.RANGE, RawableFactory.from(MINUS),
+        RawableFactory.from(PLUS)));
     }
 
     @Test
@@ -74,10 +72,8 @@ public class TSRangeParamsTest {
 
       // Expected: TS.RANGE 100 200
       assertThat(args, hasArgumentCount(3));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.RANGE,
-          RawableFactory.from(100L),
-          RawableFactory.from(200L)));
+      assertThat(args, hasArguments(TimeSeriesCommand.RANGE, RawableFactory.from(100L),
+        RawableFactory.from(200L)));
     }
 
     @Test
@@ -88,12 +84,9 @@ public class TSRangeParamsTest {
 
       // Expected: TS.RANGE - + AGGREGATION MIN 1000
       assertThat(args, hasArgumentCount(6));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.RANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS),
-          AGGREGATION,
-          RawableFactory.from(AggregationType.MIN.getRaw()),
+      assertThat(args,
+        hasArguments(TimeSeriesCommand.RANGE, RawableFactory.from(MINUS), RawableFactory.from(PLUS),
+          AGGREGATION, RawableFactory.from(AggregationType.MIN.getRaw()),
           RawableFactory.from(1000L)));
     }
 
@@ -106,12 +99,9 @@ public class TSRangeParamsTest {
 
       // Expected: TS.RANGE - + AGGREGATION MIN,MAX,AVG 1000
       assertThat(args, hasArgumentCount(6));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.RANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS),
-          AGGREGATION,
-          RawableFactory.from(SafeEncoder.encode("MIN,MAX,AVG")),
+      assertThat(args,
+        hasArguments(TimeSeriesCommand.RANGE, RawableFactory.from(MINUS), RawableFactory.from(PLUS),
+          AGGREGATION, RawableFactory.from(SafeEncoder.encode("MIN,MAX,AVG")),
           RawableFactory.from(1000L)));
     }
 
@@ -123,10 +113,8 @@ public class TSRangeParamsTest {
 
       // Expected: TS.RANGE - + (no AGGREGATION)
       assertThat(args, hasArgumentCount(3));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.RANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS)));
+      assertThat(args, hasArguments(TimeSeriesCommand.RANGE, RawableFactory.from(MINUS),
+        RawableFactory.from(PLUS)));
       assertThat(args, not(hasArgument(3, AGGREGATION)));
     }
   }

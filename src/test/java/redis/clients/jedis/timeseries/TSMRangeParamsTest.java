@@ -26,8 +26,8 @@ public class TSMRangeParamsTest {
 
     @Test
     public void aggregatorsNullThrowsException() {
-      assertThrows(IllegalArgumentException.class, () -> TSMRangeParams.multiRangeParams()
-          .aggregation((AggregationType[]) null, 1000L));
+      assertThrows(IllegalArgumentException.class,
+        () -> TSMRangeParams.multiRangeParams().aggregation((AggregationType[]) null, 1000L));
     }
 
     @Test
@@ -63,36 +63,29 @@ public class TSMRangeParamsTest {
 
       // Expected: TS.MRANGE - + AGGREGATION MIN 1000 FILTER l=v
       assertThat(args, hasArgumentCount(8));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.MRANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS),
-          AGGREGATION,
-          RawableFactory.from(AggregationType.MIN.getRaw()),
-          RawableFactory.from(1000L),
-          FILTER,
-          RawableFactory.from("l=v")));
+      assertThat(args,
+        hasArguments(TimeSeriesCommand.MRANGE, RawableFactory.from(MINUS),
+          RawableFactory.from(PLUS), AGGREGATION, RawableFactory.from(AggregationType.MIN.getRaw()),
+          RawableFactory.from(1000L), FILTER, RawableFactory.from("l=v")));
     }
 
     @Test
     public void multipleAggregatorsAreCommaJoined() {
-      TSMRangeParams params = TSMRangeParams.multiRangeParams().aggregation(
-        AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 1000L)
+      TSMRangeParams params = TSMRangeParams.multiRangeParams()
+          .aggregation(
+            AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG),
+            1000L)
           .filter("l=v");
       CommandArguments args = new CommandArguments(TimeSeriesCommand.MRANGE);
       params.addParams(args);
 
       // Expected: TS.MRANGE - + AGGREGATION MIN,MAX,AVG 1000 FILTER l=v
       assertThat(args, hasArgumentCount(8));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.MRANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS),
-          AGGREGATION,
-          RawableFactory.from(SafeEncoder.encode("MIN,MAX,AVG")),
-          RawableFactory.from(1000L),
-          FILTER,
-          RawableFactory.from("l=v")));
+      assertThat(args,
+        hasArguments(TimeSeriesCommand.MRANGE, RawableFactory.from(MINUS),
+          RawableFactory.from(PLUS), AGGREGATION,
+          RawableFactory.from(SafeEncoder.encode("MIN,MAX,AVG")), RawableFactory.from(1000L),
+          FILTER, RawableFactory.from("l=v")));
     }
 
     @Test
@@ -103,12 +96,8 @@ public class TSMRangeParamsTest {
 
       // Expected: TS.MRANGE - + FILTER l=v (no AGGREGATION)
       assertThat(args, hasArgumentCount(5));
-      assertThat(args, hasArguments(
-          TimeSeriesCommand.MRANGE,
-          RawableFactory.from(MINUS),
-          RawableFactory.from(PLUS),
-          FILTER,
-          RawableFactory.from("l=v")));
+      assertThat(args, hasArguments(TimeSeriesCommand.MRANGE, RawableFactory.from(MINUS),
+        RawableFactory.from(PLUS), FILTER, RawableFactory.from("l=v")));
       assertThat(args, not(hasArgument(3, AGGREGATION)));
     }
   }

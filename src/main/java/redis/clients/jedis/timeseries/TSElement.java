@@ -66,6 +66,6 @@ public class TSElement {
 
   @Override
   public String toString() {
-    return "(" + timestamp + ":" + values + ")";
+    return "(" + timestamp + ":" + (values.size()== 1 ?values.get(0) : values) + ")";
   }
 }

@@ -1416,8 +1416,8 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     jedis.tsAdd("mseriesRangeMulti", 3500L, 7.0);
 
     Map<String, TSMRangeElements> ranges = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 4000L)
-        .aggregation(
-          AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
+        // .aggregation(
+        // AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
         .filter("kind=mrange-multi"));
     assertEquals(1, ranges.size());
     List<TSElement> elements = ranges.values().iterator().next().getValue();

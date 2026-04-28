@@ -1,5 +1,6 @@
 package redis.clients.jedis.timeseries;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,7 +22,8 @@ public class TSElement {
 
   public TSElement(long timestamp, double value) {
     this.timestamp = timestamp;
-    this.values = Collections.singletonList(value);
+    this.values = new ArrayList<>();
+    this.values.add(value);
   }
 
   TSElement(long timestamp, List<Double> values) {

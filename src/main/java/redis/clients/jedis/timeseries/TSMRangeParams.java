@@ -135,6 +135,7 @@ public class TSMRangeParams implements IParams {
       this.bucketDuration = bucketDuration;
     } else {
       this.aggregators = null;
+      this.bucketDuration = 0;
     }
     return this;
   }
@@ -163,6 +164,7 @@ public class TSMRangeParams implements IParams {
       this.bucketDuration = bucketDuration;
     } else {
       this.aggregators = null;
+      this.bucketDuration = 0;
     }
     return this;
   }

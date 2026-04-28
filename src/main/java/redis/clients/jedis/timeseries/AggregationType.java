@@ -44,4 +44,16 @@ public enum AggregationType implements Rawable {
       return null;
     }
   }
+
+  /**
+   * Convenience factory to build an aggregator array for
+   * {@link TSRangeParams#aggregation(AggregationType[], long)} and
+   * {@link TSMRangeParams#aggregation(AggregationType[], long)}.
+   *
+   * @param types one or more aggregation types, in the desired wire order
+   * @return {@code types} as an array
+   */
+  public static AggregationType[] of(AggregationType... types) {
+    return types;
+  }
 }

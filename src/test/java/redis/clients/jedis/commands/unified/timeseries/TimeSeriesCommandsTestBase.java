@@ -385,16 +385,20 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   public void testValue() {
     TSElement v = new TSElement(1234, 234.89634);
+    TSElement same = new TSElement(1234, 234.89634);
+    TSElement differentTimestamp = new TSElement(1334, 234.8934);
+    TSElement differentValue = new TSElement(1234, 234.8934);
+
     assertEquals(1234, v.getTimestamp());
     assertEquals(234.89634, v.getValue(), 0);
 
-    assertEquals(v, new TSElement(1234, 234.89634));
-    assertNotEquals(v, new TSElement(1334, 234.89634));
-    assertNotEquals(v, new TSElement(1234, 234.8934));
+    assertEquals(v, same);
+    assertNotEquals(v, differentTimestamp);
+    assertNotEquals(v, differentValue);
     assertNotEquals(1234, v.getValue());
 
     assertEquals("(1234:234.89634)", v.toString());
-    assertEquals(-1856719580, v.hashCode());
+    assertEquals(v.hashCode(), same.hashCode());
   }
 
   @Test
@@ -1324,5 +1328,194 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals(AggregationType.AVG, AggregationType.safeValueOf("avg"));
     assertEquals(AggregationType.STD_P, AggregationType.safeValueOf("STD.P"));
     assertEquals(AggregationType.VAR_S, AggregationType.safeValueOf("var.s"));
+  }
+
+  /**
+   * Multiple aggregators in a single TS.RANGE call.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void rangeMultipleAggregators() {
+    jedis.tsCreate("seriesRangeMulti");
+    jedis.tsAdd("seriesRangeMulti", 1000L, 1.0);
+    jedis.tsAdd("seriesRangeMulti", 1500L, 3.0);
+    jedis.tsAdd("seriesRangeMulti", 2500L, 5.0);
+    jedis.tsAdd("seriesRangeMulti", 3500L, 7.0);
+
+    // Buckets: [0,2000) -> MIN=1, MAX=3, AVG=2; [2000,4000) -> MIN=5, MAX=7, AVG=6.
+    List<TSElement> range = jedis.tsRange("seriesRangeMulti",
+      TSRangeParams.rangeParams(0L, 4000L).aggregation(
+        AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L));
+    assertEquals(2, range.size());
+    assertEquals(0L, range.get(0).getTimestamp());
+    assertEquals(Arrays.asList(1.0, 3.0, 2.0), range.get(0).getValues());
+    // getValue() returns the first aggregator's value (back-compat).
+    assertEquals(1.0, range.get(0).getValue());
+    assertEquals(2000L, range.get(1).getTimestamp());
+    assertEquals(Arrays.asList(5.0, 7.0, 6.0), range.get(1).getValues());
+    assertEquals(5.0, range.get(1).getValue());
+  }
+
+  /**
+   * A one-element {@code aggregation(AggregationType[], long)} call must produce the same result as
+   * the legacy single-aggregator {@code aggregation(AggregationType, long)} setter.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void rangeSingleAggregatorViaArraySetter() {
+    jedis.tsCreate("seriesSingleArr");
+    jedis.tsAdd("seriesSingleArr", 1000L, 1.0);
+    jedis.tsAdd("seriesSingleArr", 1500L, 3.0);
+    jedis.tsAdd("seriesSingleArr", 2500L, 5.0);
+    jedis.tsAdd("seriesSingleArr", 3500L, 7.0);
+
+    List<TSElement> array = jedis.tsRange("seriesSingleArr", TSRangeParams.rangeParams(0L, 4000L)
+        .aggregation(AggregationType.of(AggregationType.MIN), 2000L));
+    List<TSElement> scalar = jedis.tsRange("seriesSingleArr",
+      TSRangeParams.rangeParams(0L, 4000L).aggregation(AggregationType.MIN, 2000L));
+    assertEquals(scalar, array);
+    assertEquals(Collections.singletonList(1.0), array.get(0).getValues());
+    assertEquals(1.0, array.get(0).getValue());
+  }
+
+  /**
+   * Multiple aggregators in a single TS.REVRANGE call. Buckets are returned in reverse order.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void revRangeMultipleAggregators() {
+    jedis.tsCreate("seriesRevRangeMulti");
+    jedis.tsAdd("seriesRevRangeMulti", 1000L, 1.0);
+    jedis.tsAdd("seriesRevRangeMulti", 1500L, 3.0);
+    jedis.tsAdd("seriesRevRangeMulti", 2500L, 5.0);
+    jedis.tsAdd("seriesRevRangeMulti", 3500L, 7.0);
+
+    List<TSElement> revRange = jedis.tsRevRange("seriesRevRangeMulti",
+      TSRangeParams.rangeParams(0L, 4000L).aggregation(
+        AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L));
+    assertEquals(2, revRange.size());
+    assertEquals(2000L, revRange.get(0).getTimestamp());
+    assertEquals(Arrays.asList(5.0, 7.0, 6.0), revRange.get(0).getValues());
+    assertEquals(5.0, revRange.get(0).getValue());
+    assertEquals(0L, revRange.get(1).getTimestamp());
+    assertEquals(Arrays.asList(1.0, 3.0, 2.0), revRange.get(1).getValues());
+    assertEquals(1.0, revRange.get(1).getValue());
+  }
+
+  /**
+   * Multiple aggregators in a single TS.MRANGE call.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void mRangeMultipleAggregators() {
+    Map<String, String> labels = Collections.singletonMap("kind", "mrange-multi");
+    jedis.tsCreate("mseriesRangeMulti", TSCreateParams.createParams().labels(labels));
+    jedis.tsAdd("mseriesRangeMulti", 1000L, 1.0);
+    jedis.tsAdd("mseriesRangeMulti", 1500L, 3.0);
+    jedis.tsAdd("mseriesRangeMulti", 2500L, 5.0);
+    jedis.tsAdd("mseriesRangeMulti", 3500L, 7.0);
+
+    Map<String, TSMRangeElements> ranges = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 4000L)
+        .aggregation(
+          AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
+        .filter("kind=mrange-multi"));
+    assertEquals(1, ranges.size());
+    List<TSElement> elements = ranges.values().iterator().next().getValue();
+    assertEquals(2, elements.size());
+    assertEquals(0L, elements.get(0).getTimestamp());
+    assertEquals(Arrays.asList(1.0, 3.0, 2.0), elements.get(0).getValues());
+    assertEquals(1.0, elements.get(0).getValue());
+    assertEquals(2000L, elements.get(1).getTimestamp());
+    assertEquals(Arrays.asList(5.0, 7.0, 6.0), elements.get(1).getValues());
+  }
+
+  /**
+   * Multiple aggregators in a single TS.MREVRANGE call. Buckets are returned in reverse order.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void mRevRangeMultipleAggregators() {
+    Map<String, String> labels = Collections.singletonMap("kind", "mrevrange-multi");
+    jedis.tsCreate("mseriesRevRangeMulti", TSCreateParams.createParams().labels(labels));
+    jedis.tsAdd("mseriesRevRangeMulti", 1000L, 1.0);
+    jedis.tsAdd("mseriesRevRangeMulti", 1500L, 3.0);
+    jedis.tsAdd("mseriesRevRangeMulti", 2500L, 5.0);
+    jedis.tsAdd("mseriesRevRangeMulti", 3500L, 7.0);
+
+    Map<String, TSMRangeElements> revRanges = jedis.tsMRevRange(TSMRangeParams
+        .multiRangeParams(0L, 4000L)
+        .aggregation(
+          AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
+        .filter("kind=mrevrange-multi"));
+    assertEquals(1, revRanges.size());
+    List<TSElement> revElements = revRanges.values().iterator().next().getValue();
+    assertEquals(2, revElements.size());
+    assertEquals(2000L, revElements.get(0).getTimestamp());
+    assertEquals(Arrays.asList(5.0, 7.0, 6.0), revElements.get(0).getValues());
+    assertEquals(5.0, revElements.get(0).getValue());
+    assertEquals(0L, revElements.get(1).getTimestamp());
+    assertEquals(Arrays.asList(1.0, 3.0, 2.0), revElements.get(1).getValues());
+    assertEquals(1.0, revElements.get(1).getValue());
+  }
+
+  /**
+   * Multi-aggregator TS.RANGE on a window with no samples must return an empty list.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void rangeMultipleAggregatorsEmptyResult() {
+    jedis.tsCreate("seriesRangeMultiEmpty");
+    jedis.tsAdd("seriesRangeMultiEmpty", 1000L, 1.0);
+
+    List<TSElement> range = jedis.tsRange("seriesRangeMultiEmpty",
+      TSRangeParams.rangeParams(10_000L, 20_000L).aggregation(
+        AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L));
+    assertNotNull(range);
+    assertTrue(range.isEmpty());
+  }
+
+  /**
+   * Multi-aggregator TS.REVRANGE on a window with no samples must return an empty list.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void revRangeMultipleAggregatorsEmptyResult() {
+    jedis.tsCreate("seriesRevRangeMultiEmpty");
+    jedis.tsAdd("seriesRevRangeMultiEmpty", 1000L, 1.0);
+
+    List<TSElement> revRange = jedis.tsRevRange("seriesRevRangeMultiEmpty",
+      TSRangeParams.rangeParams(10_000L, 20_000L).aggregation(
+        AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L));
+    assertNotNull(revRange);
+    assertTrue(revRange.isEmpty());
+  }
+
+  /**
+   * Multi-aggregator TS.MRANGE with a filter matching no series must return an empty map.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void mRangeMultipleAggregatorsEmptyResult() {
+    Map<String, TSMRangeElements> ranges = jedis.tsMRange(TSMRangeParams.multiRangeParams(0L, 4000L)
+        .aggregation(
+          AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
+        .filter("kind=mrange-multi-no-match"));
+    assertNotNull(ranges);
+    assertTrue(ranges.isEmpty());
+  }
+
+  /**
+   * Multi-aggregator TS.MREVRANGE with a filter matching no series must return an empty map.
+   */
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void mRevRangeMultipleAggregatorsEmptyResult() {
+    Map<String, TSMRangeElements> revRanges = jedis.tsMRevRange(TSMRangeParams
+        .multiRangeParams(0L, 4000L)
+        .aggregation(
+          AggregationType.of(AggregationType.MIN, AggregationType.MAX, AggregationType.AVG), 2000L)
+        .filter("kind=mrevrange-multi-no-match"));
+    assertNotNull(revRanges);
+    assertTrue(revRanges.isEmpty());
   }
 }

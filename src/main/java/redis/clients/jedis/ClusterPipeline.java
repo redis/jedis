@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -90,8 +92,8 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   }
 
   ClusterPipeline(ClusterConnectionProvider provider, ClusterCommandObjects commandObjects,
-      CommandFlagsRegistry commandFlagsRegistry) {
-    super(commandObjects, commandFlagsRegistry);
+          CommandFlagsRegistry commandFlagsRegistry, ExecutorService executorService) {
+    super(commandObjects, commandFlagsRegistry, executorService);
     this.provider = provider;
   }
 

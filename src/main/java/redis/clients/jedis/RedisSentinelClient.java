@@ -1,11 +1,14 @@
 package redis.clients.jedis;
 
+import java.util.Map;
+
 import redis.clients.jedis.builders.SentinelClientBuilder;
 import redis.clients.jedis.csc.Cache;
 
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.Pool;
 
 // @formatter:off
 /**
@@ -67,6 +70,10 @@ public class RedisSentinelClient extends UnifiedJedis {
 
   public HostAndPort getCurrentMaster() {
     return ((SentineledConnectionProvider) provider).getCurrentMaster();
+  }
+
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return ((SentineledConnectionProvider) provider).getPrimaryNodesConnectionMap();
   }
 
   @Override

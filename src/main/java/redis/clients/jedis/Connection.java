@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.authentication.AuthXManager;
@@ -82,6 +83,7 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
+  private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -101,6 +103,9 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
+    this.authXManager = null;
+
+    initPushConsumers(null);
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
@@ -112,6 +117,15 @@ public class Connection implements Closeable {
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
+  }
+
+  protected void initPushConsumers(JedisClientConfig config) {
+      /*
+       * Default consumers to process push messages.
+       * Marks all @{link PushMessages as processed, except for pub/sub.
+       * Pub/sub messages are propagated to the client.
+       */
+      addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
   }
 
   @Override
@@ -431,12 +445,12 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  protected Object protocolRead(RedisInputStream is) {
-    return Protocol.read(is);
+  protected Object protocolRead(RedisInputStream is, PushConsumerChain consumer) {
+    return Protocol.read(is, consumer);
   }
 
   @Experimental
-  protected void protocolReadPushes(RedisInputStream is) {
+  protected void protocolReadPushes(RedisInputStream is, PushConsumerChain consumer) {
   }
 
   protected Object readProtocolWithCheckingBroken() {
@@ -445,7 +459,7 @@ public class Connection implements Closeable {
     }
 
     try {
-      return protocolRead(inputStream);
+      return protocolRead(inputStream, pushConsumers);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -459,7 +473,7 @@ public class Connection implements Closeable {
 
     try {
       if (inputStream.available() > 0) {
-        protocolReadPushes(inputStream);
+        protocolReadPushes(inputStream, pushConsumers);
       }
     } catch (IOException e) {
       broken = true;
@@ -508,6 +522,8 @@ public class Connection implements Closeable {
     try {
       this.soTimeout = config.getSocketTimeoutMillis();
       this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
+
+      initPushConsumers(config);
 
       connect();
 
@@ -665,5 +681,19 @@ public class Connection implements Closeable {
 
   protected AuthXManager getAuthXManager() {
     return authXManager;
+  }
+
+  /**
+   * Returns an unmodifiable view of the registered push consumers.
+   *
+   * @return
+   */
+  List<PushConsumer> getPushConsumers() {
+    return pushConsumers.getConsumers();
+  }
+
+  @Internal
+  protected void addPushConsumer(PushConsumer consumer) {
+    this.pushConsumers.add(consumer);
   }
 }

@@ -127,40 +127,50 @@ public final class Protocol {
     return response;
   }
 
-  private static Object process(final RedisInputStream is) {
-    final byte b = is.readByte();
-    // System.out.println("BYTE: " + (char) b);
-    switch (b) {
-      case PLUS_BYTE:
-        return is.readLineBytes();
-      case DOLLAR_BYTE:
-      case EQUAL_BYTE:
-        return processBulkReply(is);
-      case ASTERISK_BYTE:
-        return processMultiBulkReply(is);
-      case UNDERSCORE_BYTE:
-        return is.readNullCrLf();
-      case HASH_BYTE:
-        return is.readBooleanCrLf();
-      case COLON_BYTE:
-        return is.readLongCrLf();
-      case COMMA_BYTE:
-        return is.readDoubleCrLf();
-      case LEFT_BRACE_BYTE:
-        return is.readBigIntegerCrLf();
-      case PERCENT_BYTE: // TODO: currently just to start working with HELLO
-        return processMapKeyValueReply(is);
-      case TILDE_BYTE: // TODO:
-        return processMultiBulkReply(is);
-      case GREATER_THAN_BYTE:
-        return processMultiBulkReply(is);
-      case MINUS_BYTE:
-        processError(is);
-        return null;
-      // TODO: Blob error '!'
-      default:
-        throw new JedisConnectionException("Unknown reply: " + (char) b);
-    }
+  private static Object process(final RedisInputStream is, PushConsumerChain pushConsumer) {
+    do {
+      final byte b = is.readByte();
+      // System.out.println("BYTE: " + (char) b);
+      switch (b) {
+        case PLUS_BYTE:
+          return is.readLineBytes();
+        case DOLLAR_BYTE:
+        case EQUAL_BYTE:
+          return processBulkReply(is);
+        case ASTERISK_BYTE:
+          return processMultiBulkReply(is);
+        case UNDERSCORE_BYTE:
+          return is.readNullCrLf();
+        case HASH_BYTE:
+          return is.readBooleanCrLf();
+        case COLON_BYTE:
+          return is.readLongCrLf();
+        case COMMA_BYTE:
+          return is.readDoubleCrLf();
+        case LEFT_BRACE_BYTE:
+          return is.readBigIntegerCrLf();
+        case PERCENT_BYTE: // TODO: currently just to start working with HELLO
+          return processMapKeyValueReply(is);
+        case TILDE_BYTE: // TODO:
+          return processMultiBulkReply(is);
+        case GREATER_THAN_BYTE:
+          // return processMultiBulkReply(is)
+          PushMessage message = processPush(is, pushConsumer);
+          if( message != null ) {
+            return message.getContent();
+          } else {
+            // continue reading
+            break;
+          }
+        case MINUS_BYTE:
+          processError(is);
+          return null;
+        // TODO: Blob error '!'
+        default:
+          throw new JedisConnectionException("Unknown reply: " + (char) b);
+      }
+    } while (true);
+
   }
 
   private static byte[] processBulkReply(final RedisInputStream is) {
@@ -193,7 +203,7 @@ public final class Protocol {
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
-        ret.add(process(is));
+        ret.add(process(is, null));
       } catch (JedisDataException e) {
         ret.add(e);
       }
@@ -211,52 +221,69 @@ public final class Protocol {
       default:
         final List<KeyValue> ret = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-          ret.add(new KeyValue(process(is), process(is)));
+          ret.add(new KeyValue(process(is, null), process(is,null)));
         }
         return ret;
     }
   }
 
+  /**
+   * Read a reply from the server.
+   *<p>
+   *  This method blocks until a reply is received.
+   *  Received RESP3 push message are considered as regular replies and  propagated to the caller.
+   *  Deprecated in favor of {@link #read(RedisInputStream, PushConsumerChain)}
+   *</p>
+   *
+   * @deprecated Use {@link #read(RedisInputStream, PushConsumerChain)} instead.
+   * @param is The input stream to read from
+   * @return The reply read from the server
+   */
   public static Object read(final RedisInputStream is) {
-    return process(is);
+    // for backward compatibility propagate all push events to application
+    return read(is, PushConsumerChainImpl.PROPAGATE_ALL_CONSUMER_CHAIN);
   }
 
   @Experimental
-  public static Object read(final RedisInputStream is, final Cache cache) {
-    Object unhandledPush = readPushes(is, cache, false);
-    return unhandledPush == null ? process(is) : unhandledPush;
+  /**
+   * Read a reply from the server.
+   * <p>
+   * This method blocks until a reply is received. RESP3 Push messages are processed by the provided {@link PushConsumerChain}
+   * and either returned to the caller or consumed and reading continues with the next reply.
+   * </p>
+   * @param is The input stream to read from
+   * @param pushConsumer The chain of push consumers to process push messages
+   * @return The reply read from the server
+   */
+  public static Object read(final RedisInputStream is, PushConsumerChain pushConsumer) {
+    return process(is, pushConsumer);
   }
 
   @Experimental
-  public static Object readPushes(final RedisInputStream is, final Cache cache,
-      boolean onlyPendingBuffer) {
+  public static Object readPushes(final RedisInputStream is, final PushConsumerChain pushConsumer) {
     Object unhandledPush = null;
-    if (onlyPendingBuffer) {
       try {
         while (unhandledPush == null && is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
-          unhandledPush = processPush(is, cache);
+          is.readByte();
+          PushMessage message = processPush(is, pushConsumer);
+          if (message != null) {
+            unhandledPush = message.getContent();
+          }
+
         }
       } catch (IOException e) {
         throw new JedisConnectionException("Failed to read pending buffer for push messages!", e);
       }
-    } else {
-      while (unhandledPush == null && is.peek(GREATER_THAN_BYTE)) {
-        unhandledPush = processPush(is, cache);
-      }
-    }
     return unhandledPush;
   }
 
-  private static Object processPush(final RedisInputStream is, Cache cache) {
-    is.readByte();
+  private static PushMessage processPush(final RedisInputStream is, PushConsumerChain consumer) {
     List<Object> list = processMultiBulkReply(is);
-    if (list.size() == 2 && list.get(0) instanceof byte[]
-        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.deleteByRedisKeys((List) list.get(1));
-      return null;
-    } else {
-      return list;
+    PushMessage message = new PushMessage(list);
+    if (consumer != null)  {
+      return consumer.process(message);
     }
+    return message;
   }
 
   public static final byte[] toByteArray(final boolean value) {

@@ -3833,6 +3833,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public GCRAResponse gcra(final byte[] key, final GCRAParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.gcra(key, params));
+  }
+
+  @Override
   public long lpushx(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.lpushx(key, strings));
@@ -8189,6 +8195,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public LCSMatchResult lcs(final String keyA, final String keyB, final LCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
+  public GCRAResponse gcra(final String key, final GCRAParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.gcra(key, params));
   }
 
   @Override

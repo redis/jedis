@@ -1063,6 +1063,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params) {
     return executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
+
+  @Override
+  public GCRAResponse gcra(String key, GCRAParams params) {
+    return executeCommand(commandObjects.gcra(key, params));
+  }
+
+  @Override
+  public GCRAResponse gcra(byte[] key, GCRAParams params) {
+    return executeCommand(commandObjects.gcra(key, params));
+  }
   // String commands
 
   // List commands

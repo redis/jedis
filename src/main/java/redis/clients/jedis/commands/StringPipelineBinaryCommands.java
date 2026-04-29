@@ -7,7 +7,9 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.GCRAParams;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.resps.GCRAResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands {
@@ -87,4 +89,14 @@ public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands 
   Response<Long> strlen(byte[] key);
 
   Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params);
+
+  /**
+   * Rate limit a request using the Generic Cell Rate Algorithm (GCRA).
+   *
+   * @param key the key related to a specific rate limiting case.
+   * @param params the parameters for the GCRA command, must not be {@code null}.
+   * @return {@link Response} wrapping {@link GCRAResponse} containing the rate limiting result.
+   * @see <a href="https://redis.io/commands/gcra">GCRA command reference</a>
+   */
+  Response<GCRAResponse> gcra(byte[] key, GCRAParams params);
 }

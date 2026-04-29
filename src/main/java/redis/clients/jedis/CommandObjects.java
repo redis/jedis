@@ -765,6 +765,19 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.LCS).key(keyA).key(keyB)
         .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
+
+  // GCRA commands
+  public final CommandObject<GCRAResponse> gcra(String key, GCRAParams params) {
+    return new CommandObject<>(commandArguments(Command.GCRA).key(key).addParams(params),
+        GCRAResponse.GCRA_RESPONSE_BUILDER);
+  }
+
+  public final CommandObject<GCRAResponse> gcra(byte[] key, GCRAParams params) {
+    return new CommandObject<>(commandArguments(Command.GCRA).key(key).addParams(params),
+        GCRAResponse.GCRA_RESPONSE_BUILDER);
+  }
+  // End GCRA commands
+
   // String commands
 
   // List commands

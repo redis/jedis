@@ -5,6 +5,7 @@ import java.util.Map;
 
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.resps.StreamEntryDeletionResult;
@@ -38,6 +39,16 @@ public interface StreamBinaryCommands {
    * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
   List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...]
+   */
+  long xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...] [RETRYCOUNT count] [FORCE]
+   */
+  long xnack(byte[] key, byte[] group, XNackMode mode, XNackParams params, byte[]... ids);
 
   String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 

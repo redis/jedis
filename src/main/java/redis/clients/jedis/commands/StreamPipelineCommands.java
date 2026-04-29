@@ -6,6 +6,7 @@ import java.util.Map;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
@@ -101,6 +102,16 @@ public interface StreamPipelineCommands {
    * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
   Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...]
+   */
+  Response<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...] [RETRYCOUNT count] [FORCE]
+   */
+  Response<Long> xnack(String key, String group, XNackMode mode, XNackParams params, StreamEntryID... ids);
 
   /**
    * {@code XGROUP CREATE key groupName <id or $>}

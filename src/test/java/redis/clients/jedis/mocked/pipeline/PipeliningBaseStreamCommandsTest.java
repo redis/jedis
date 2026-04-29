@@ -13,9 +13,11 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XNackParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
@@ -53,6 +55,60 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     when(commandObjects.xack(key, group, id1, id2)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.xack(key, group, id1, id2);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testXnack() {
+    StreamEntryID[] ids = { new StreamEntryID("0-0") };
+
+    when(commandObjects.xnack("key", "group", XNackMode.FAIL, ids)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.xnack("key", "group", XNackMode.FAIL, ids);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testXnackWithParams() {
+    StreamEntryID[] ids = { new StreamEntryID("0-0") };
+    XNackParams params = XNackParams.xNackParams().retryCount(5);
+
+    when(commandObjects.xnack("key", "group", XNackMode.FATAL, params, ids)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.xnack("key", "group", XNackMode.FATAL, params, ids);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testXnackBinary() {
+    byte[] key = "stream".getBytes();
+    byte[] group = "group".getBytes();
+    byte[] id1 = "id1".getBytes();
+
+    when(commandObjects.xnack(key, group, XNackMode.SILENT, id1)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.xnack(key, group, XNackMode.SILENT, id1);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testXnackBinaryWithParams() {
+    byte[] key = "stream".getBytes();
+    byte[] group = "group".getBytes();
+    byte[] id1 = "id1".getBytes();
+    XNackParams params = XNackParams.xNackParams().force();
+
+    when(commandObjects.xnack(key, group, XNackMode.FAIL, params, id1)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.xnack(key, group, XNackMode.FAIL, params, id1);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));

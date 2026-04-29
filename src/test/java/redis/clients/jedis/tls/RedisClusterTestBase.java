@@ -31,6 +31,7 @@ import redis.clients.jedis.util.*;
 public abstract class RedisClusterTestBase {
 
   private static final String ENDPOINT_NAME = "cluster-stable-tls";
+  private static final String ENDPOINT_NAME_WRONG_HOST = "cluster-stable-tls-wronghost";
   /**
    * Non-TLS endpoint used for version and command checks. Extensions run before @BeforeAll, so we
    * can't use TLS endpoints for these checks since the truststore isn't configured yet.
@@ -46,6 +47,7 @@ public abstract class RedisClusterTestBase {
       () -> Endpoints.getRedisEndpoint(VERSION_CHECK_ENDPOINT_NAME));
 
   protected static EndpointConfig tlsEndpoint;
+  protected static EndpointConfig tlsEndpointWrongHost;
   protected static Path trustStorePath;
 
   protected RedisClusterClient cluster;
@@ -64,6 +66,7 @@ public abstract class RedisClusterTestBase {
   @BeforeAll
   public static void prepareEndpointAndTrustStore() {
     tlsEndpoint = Endpoints.getRedisEndpoint(ENDPOINT_NAME);
+    tlsEndpointWrongHost = Endpoints.getRedisEndpoint(ENDPOINT_NAME_WRONG_HOST);
     List<Path> trustedCertLocation = Collections
         .singletonList(tlsEndpoint.getCertificatesLocation());
     trustStorePath = TlsUtil.createAndSaveTestTruststore(RedisClusterTestBase.class.getSimpleName(),

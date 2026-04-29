@@ -1,38 +1,29 @@
 package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.emptyOrNullString;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import io.redis.test.annotations.SinceRedisVersion;
-import io.redis.test.utils.RedisVersion;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.Schema.*;
-import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -336,7 +327,10 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
       jedis.ftSearch(INDEX, new Query("hello world"));
       fail("Index should not exist.");
     } catch (JedisDataException de) {
-      assertTrue(de.getMessage().toLowerCase().contains("no such index"));
+      assertThat(de.getMessage(), anyOf(containsStringIgnoringCase("no such index"), // Redis Search
+                                                                                     // <v8.7.90
+        containsString("SEARCH_INDEX_NOT_FOUND") // Redis Search v8.7.90+
+      ));
     }
     assertEquals(100, jedis.dbSize());
   }

@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,9 +45,18 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
-public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
+public abstract class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
+
+  /**
+   * Default timeout in milliseconds.
+   */
+  public static final int DEFAULT_TIMEOUT = 2000;
+  /**
+   * Default amount of attempts for executing a command
+   */
+  public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
   @Deprecated
   protected RedisProtocol protocol = null;
@@ -87,18 +95,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else {
       this.cache = null;
     }
-  }
-
-  /**
-   * @deprecated Use {@link RedisClient#builder()} to configure the client with retry settings.
-   */
-  @Deprecated
-  public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
-    this(executor, provider, new CommandObjects());
   }
 
   /**

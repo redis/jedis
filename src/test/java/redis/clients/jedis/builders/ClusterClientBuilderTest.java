@@ -78,8 +78,7 @@ class ClusterClientBuilderTest {
       () -> RedisClusterClient.builder().nodes(someNodes())
           .maxTotalRetriesDuration(Duration.ofMillis(-1)).build());
 
-    assertThat(ex.getMessage(),
-      containsString("Max total retries duration cannot be negative for cluster mode"));
+    assertThat(ex.getMessage(), containsString("Max total retries duration cannot be negative"));
   }
 
   @Test

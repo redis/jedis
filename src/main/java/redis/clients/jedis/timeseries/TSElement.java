@@ -1,7 +1,6 @@
 package redis.clients.jedis.timeseries;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

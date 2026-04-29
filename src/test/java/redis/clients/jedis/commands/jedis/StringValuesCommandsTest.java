@@ -344,8 +344,8 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
 
     assertNotNull(response);
     assertFalse(response.isLimited());
-    assertEquals(6, response.getMaxRequests());
-    assertTrue(response.getAvailableRequests() >= 0);
+    assertEquals(6, response.getMaxTokens());
+    assertTrue(response.getAvailableTokens() >= 0);
     assertEquals(-1, response.getRetryAfter());
     assertTrue(response.getFullBurstAfter() >= 0);
   }
@@ -363,21 +363,21 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
 
     GCRAResponse response = jedis.gcra(key, params);
     assertTrue(response.isLimited());
-    assertEquals(3, response.getMaxRequests());
-    assertEquals(0, response.getAvailableRequests());
+    assertEquals(3, response.getMaxTokens());
+    assertEquals(0, response.getAvailableTokens());
     assertTrue(response.getRetryAfter() > 0);
   }
 
   @Test
   @EnabledOnCommand("GCRA")
-  public void gcraWithNumRequests() {
-    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0).numRequests(3);
+  public void gcraWithTokens() {
+    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0).tokens(3);
     String key = "rate:weighted:1";
 
     GCRAResponse response = jedis.gcra(key, params);
     assertFalse(response.isLimited());
-    assertEquals(3, response.getMaxRequests());
-    assertEquals(0, response.getAvailableRequests());
+    assertEquals(3, response.getMaxTokens());
+    assertEquals(0, response.getAvailableTokens());
 
     GCRAParams singleParams = GCRAParams.gcraParams(2, 1, 60.0);
     response = jedis.gcra(key, singleParams);
@@ -391,13 +391,13 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     GCRAResponse response = jedis.gcra("rate:fields:1", params);
 
     assertNotNull(response);
-    assertEquals(6, response.getMaxRequests());
-    assertEquals(5, response.getAvailableRequests());
+    assertEquals(6, response.getMaxTokens());
+    assertEquals(5, response.getAvailableTokens());
     assertEquals(-1, response.getRetryAfter());
     assertTrue(response.getFullBurstAfter() >= 0);
     String str = response.toString();
     assertTrue(str.contains("limited=false"));
-    assertTrue(str.contains("maxRequests=6"));
+    assertTrue(str.contains("maxTokens=6"));
   }
 
 }

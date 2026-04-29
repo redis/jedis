@@ -351,14 +351,14 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   @EnabledOnCommand("GCRA")
   public void gcraBasicNotLimited() {
-    // Allow 5 burst + 10 requests per 60 seconds
+    // Allow 5 burst + 10 tokens per 60 seconds
     GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0);
     GCRAResponse response = jedis.gcra("rate:user:1", params);
 
     assertNotNull(response);
     assertFalse(response.isLimited());
-    assertEquals(6, response.getMaxRequests()); // max_burst + 1
-    assertTrue(response.getAvailableRequests() >= 0);
+    assertEquals(6, response.getMaxTokens()); // max_burst + 1
+    assertTrue(response.getAvailableTokens() >= 0);
     assertEquals(-1, response.getRetryAfter()); // not limited
     assertTrue(response.getFullBurstAfter() >= 0);
   }
@@ -366,7 +366,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   @EnabledOnCommand("GCRA")
   public void gcraExhaustBurstCapacity() {
-    // Allow 2 burst + 1 request per 60 seconds = 3 total requests
+    // Allow 2 burst + 1 token per 60 seconds = 3 total tokens
     GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0);
     String key = "rate:exhaust:1";
 
@@ -379,23 +379,23 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     // 4th request should be limited
     GCRAResponse response = jedis.gcra(key, params);
     assertTrue(response.isLimited());
-    assertEquals(3, response.getMaxRequests());
-    assertEquals(0, response.getAvailableRequests());
+    assertEquals(3, response.getMaxTokens());
+    assertEquals(0, response.getAvailableTokens());
     assertTrue(response.getRetryAfter() > 0);
   }
 
   @Test
   @EnabledOnCommand("GCRA")
-  public void gcraWithNumRequests() {
-    // Allow 2 burst + 1 request per 60 seconds = 3 total
-    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0).numRequests(3);
+  public void gcraWithTokens() {
+    // Allow 2 burst + 1 token per 60 seconds = 3 total
+    GCRAParams params = GCRAParams.gcraParams(2, 1, 60.0).tokens(3);
     String key = "rate:weighted:1";
 
     // Single request consuming all 3 tokens
     GCRAResponse response = jedis.gcra(key, params);
     assertFalse(response.isLimited());
-    assertEquals(3, response.getMaxRequests());
-    assertEquals(0, response.getAvailableRequests());
+    assertEquals(3, response.getMaxTokens());
+    assertEquals(0, response.getAvailableTokens());
 
     // Next request should be limited
     GCRAParams singleParams = GCRAParams.gcraParams(2, 1, 60.0);
@@ -410,10 +410,10 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     GCRAResponse response = jedis.gcra("rate:fields:1", params);
 
     assertNotNull(response);
-    // maxRequests is always max_burst + 1
-    assertEquals(6, response.getMaxRequests());
+    // maxTokens is always max_burst + 1
+    assertEquals(6, response.getMaxTokens());
     // First request: should have 5 available (6 - 1)
-    assertEquals(5, response.getAvailableRequests());
+    assertEquals(5, response.getAvailableTokens());
     // Not limited, so retryAfter is -1
     assertEquals(-1, response.getRetryAfter());
     // fullBurstAfter should be >= 0
@@ -421,7 +421,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     // toString should contain all fields
     String str = response.toString();
     assertTrue(str.contains("limited=false"));
-    assertTrue(str.contains("maxRequests=6"));
+    assertTrue(str.contains("maxTokens=6"));
   }
 
 }

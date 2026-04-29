@@ -470,8 +470,8 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
 
     assertNotNull(response);
     assertFalse(response.isLimited());
-    assertEquals(6, response.getMaxRequests());
-    assertEquals(5, response.getAvailableRequests());
+    assertEquals(6, response.getMaxTokens());
+    assertEquals(5, response.getAvailableTokens());
     assertEquals(-1, response.getRetryAfter());
   }
 }

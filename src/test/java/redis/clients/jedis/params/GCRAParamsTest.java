@@ -45,16 +45,16 @@ public class GCRAParamsTest {
     }
 
     @Test
-    public void equalsWithNumRequests() {
-      GCRAParams first = GCRAParams.gcraParams(5, 10, 60.0).numRequests(3);
-      GCRAParams second = GCRAParams.gcraParams(5, 10, 60.0).numRequests(3);
+    public void equalsWithTokens() {
+      GCRAParams first = GCRAParams.gcraParams(5, 10, 60.0).tokens(3);
+      GCRAParams second = GCRAParams.gcraParams(5, 10, 60.0).tokens(3);
       assertEquals(first, second);
     }
 
     @Test
-    public void notEqualsWithDifferentNumRequests() {
-      GCRAParams first = GCRAParams.gcraParams(5, 10, 60.0).numRequests(3);
-      GCRAParams second = GCRAParams.gcraParams(5, 10, 60.0).numRequests(5);
+    public void notEqualsWithDifferentTokens() {
+      GCRAParams first = GCRAParams.gcraParams(5, 10, 60.0).tokens(3);
+      GCRAParams second = GCRAParams.gcraParams(5, 10, 60.0).tokens(5);
       assertNotEquals(first, second);
     }
 
@@ -93,14 +93,14 @@ public class GCRAParamsTest {
     }
 
     @Test
-    public void requestsPerPeriodZeroThrowsException() {
+    public void tokensPerPeriodZeroThrowsException() {
       IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> GCRAParams.gcraParams(5, 0, 60.0));
-      assertEquals("requestsPerPeriod must be >= 1", ex.getMessage());
+      assertEquals("tokensPerPeriod must be >= 1", ex.getMessage());
     }
 
     @Test
-    public void requestsPerPeriodOneValid() {
+    public void tokensPerPeriodOneValid() {
       assertDoesNotThrow(() -> GCRAParams.gcraParams(5, 1, 60.0));
     }
 
@@ -124,17 +124,17 @@ public class GCRAParamsTest {
     }
 
     @Test
-    public void numRequestsZeroThrowsException() {
+    public void tokensZeroThrowsException() {
       GCRAParams params = getDefaultValue();
       IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-        () -> params.numRequests(0));
-      assertEquals("numRequests must be >= 1", ex.getMessage());
+        () -> params.tokens(0));
+      assertEquals("tokens must be >= 1", ex.getMessage());
     }
 
     @Test
-    public void numRequestsOneValid() {
+    public void tokensOneValid() {
       GCRAParams params = getDefaultValue();
-      assertDoesNotThrow(() -> params.numRequests(1));
+      assertDoesNotThrow(() -> params.tokens(1));
     }
   }
 
@@ -150,7 +150,7 @@ public class GCRAParamsTest {
 
     @Test
     public void methodChainingWorks() {
-      GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0).numRequests(3);
+      GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0).tokens(3);
       assertNotNull(params);
     }
   }
@@ -164,17 +164,17 @@ public class GCRAParamsTest {
       CommandArguments args = new CommandArguments(Protocol.Command.GCRA);
       params.addParams(args);
 
-      // GCRA + maxBurst(5) + requestsPerPeriod(10) + period(60.0) = 4 args total
+      // GCRA + maxBurst(5) + tokensPerPeriod(10) + period(60.0) = 4 args total
       assertEquals(4, args.size());
     }
 
     @Test
-    public void addParamsWithNumRequests() {
-      GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0).numRequests(3);
+    public void addParamsWithTokens() {
+      GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0).tokens(3);
       CommandArguments args = new CommandArguments(Protocol.Command.GCRA);
       params.addParams(args);
 
-      // GCRA + maxBurst(5) + requestsPerPeriod(10) + period(60.0) + NUM_REQUESTS + 3 = 6 args total
+      // GCRA + maxBurst(5) + tokensPerPeriod(10) + period(60.0) + TOKENS + 3 = 6 args total
       assertEquals(6, args.size());
     }
   }

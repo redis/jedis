@@ -348,7 +348,7 @@ public final class Protocol {
     // Hotkeys keywords
     METRICS, SAMPLE, SLOTS, START, STOP, CPU, NET,
     // GCRA keywords
-    NUM_REQUESTS;
+    TOKENS;
 
     private final byte[] raw;
 

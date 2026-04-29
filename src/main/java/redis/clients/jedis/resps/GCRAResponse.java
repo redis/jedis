@@ -14,8 +14,8 @@ import java.util.List;
  * Response array:
  * <ol>
  * <li>{@code limited} - 0 or 1 indicating if the request was rate-limited</li>
- * <li>{@code maxRequests} - the maximum number of requests allowed (max_burst + 1)</li>
- * <li>{@code availableRequests} - the number of requests still available</li>
+ * <li>{@code maxTokens} - the maximum number of tokens allowed (max_burst + 1)</li>
+ * <li>{@code availableTokens} - the number of tokens still available</li>
  * <li>{@code retryAfter} - seconds until the request should be retried (-1 if not limited)</li>
  * <li>{@code fullBurstAfter} - seconds until full burst capacity is restored</li>
  * </ol>
@@ -27,16 +27,16 @@ public class GCRAResponse implements Serializable {
   private static final int EXPECTED_SIZE = 5;
 
   private final boolean limited;
-  private final long maxRequests;
-  private final long availableRequests;
+  private final long maxTokens;
+  private final long availableTokens;
   private final long retryAfter;
   private final long fullBurstAfter;
 
-  public GCRAResponse(boolean limited, long maxRequests, long availableRequests, long retryAfter,
+  public GCRAResponse(boolean limited, long maxTokens, long availableTokens, long retryAfter,
       long fullBurstAfter) {
     this.limited = limited;
-    this.maxRequests = maxRequests;
-    this.availableRequests = availableRequests;
+    this.maxTokens = maxTokens;
+    this.availableTokens = availableTokens;
     this.retryAfter = retryAfter;
     this.fullBurstAfter = fullBurstAfter;
   }
@@ -49,17 +49,17 @@ public class GCRAResponse implements Serializable {
   }
 
   /**
-   * @return the maximum number of requests allowed in the period (max_burst + 1).
+   * @return the maximum number of tokens allowed in the period (max_burst + 1).
    */
-  public long getMaxRequests() {
-    return maxRequests;
+  public long getMaxTokens() {
+    return maxTokens;
   }
 
   /**
-   * @return the number of requests still available in the current period.
+   * @return the number of tokens still available in the current period.
    */
-  public long getAvailableRequests() {
-    return availableRequests;
+  public long getAvailableTokens() {
+    return availableTokens;
   }
 
   /**
@@ -78,8 +78,8 @@ public class GCRAResponse implements Serializable {
 
   @Override
   public String toString() {
-    return "GCRAResponse{" + "limited=" + limited + ", maxRequests=" + maxRequests
-        + ", availableRequests=" + availableRequests + ", retryAfter=" + retryAfter
+    return "GCRAResponse{" + "limited=" + limited + ", maxTokens=" + maxTokens
+        + ", availableTokens=" + availableTokens + ", retryAfter=" + retryAfter
         + ", fullBurstAfter=" + fullBurstAfter + '}';
   }
 
@@ -98,12 +98,12 @@ public class GCRAResponse implements Serializable {
       }
 
       boolean limited = list.get(0) != 0;
-      long maxRequests = list.get(1);
-      long availableRequests = list.get(2);
+      long maxTokens = list.get(1);
+      long availableTokens = list.get(2);
       long retryAfter = list.get(3);
       long fullBurstAfter = list.get(4);
 
-      return new GCRAResponse(limited, maxRequests, availableRequests, retryAfter, fullBurstAfter);
+      return new GCRAResponse(limited, maxTokens, availableTokens, retryAfter, fullBurstAfter);
     }
 
     @Override

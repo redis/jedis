@@ -12,17 +12,17 @@ import java.util.Objects;
  * GCRA (Generic Cell Rate Algorithm) provides rate limiting. Use the static factory method
  * {@link #gcraParams(long, long, double)} to create an instance with the required parameters.
  * <p>
- * Command syntax: {@code GCRA key max_burst requests_per_period period [NUM_REQUESTS count]}
+ * Command syntax: {@code GCRA key max_burst tokens_per_period period [TOKENS count]}
  */
 public class GCRAParams implements IParams {
 
   private long maxBurst;
 
-  private long requestsPerPeriod;
+  private long tokensPerPeriod;
 
   private double period;
 
-  private Long numRequests;
+  private Long tokens;
 
   public GCRAParams() {
   }
@@ -30,12 +30,12 @@ public class GCRAParams implements IParams {
   /**
    * Creates new {@link GCRAParams} with the required parameters.
    * @param maxBurst maximum number of tokens allowed as a burst. Min: 0.
-   * @param requestsPerPeriod number of requests allowed per period. Min: 1.
+   * @param tokensPerPeriod number of tokens allowed per period. Min: 1.
    * @param period period in seconds. Min: 1.0, Max: 1e12.
    * @return new {@link GCRAParams} with required parameters set.
    */
-  public static GCRAParams gcraParams(long maxBurst, long requestsPerPeriod, double period) {
-    return new GCRAParams().maxBurst(maxBurst).requestsPerPeriod(requestsPerPeriod).period(period);
+  public static GCRAParams gcraParams(long maxBurst, long tokensPerPeriod, double period) {
+    return new GCRAParams().maxBurst(maxBurst).tokensPerPeriod(tokensPerPeriod).period(period);
   }
 
   /**
@@ -50,13 +50,13 @@ public class GCRAParams implements IParams {
   }
 
   /**
-   * Set the number of requests allowed per period.
-   * @param requestsPerPeriod requests per period. Min: 1.
+   * Set the number of tokens allowed per period.
+   * @param tokensPerPeriod tokens per period. Min: 1.
    * @return {@code this} {@link GCRAParams}.
    */
-  public GCRAParams requestsPerPeriod(long requestsPerPeriod) {
-    JedisAsserts.isTrue(requestsPerPeriod >= 1, "requestsPerPeriod must be >= 1");
-    this.requestsPerPeriod = requestsPerPeriod;
+  public GCRAParams tokensPerPeriod(long tokensPerPeriod) {
+    JedisAsserts.isTrue(tokensPerPeriod >= 1, "tokensPerPeriod must be >= 1");
+    this.tokensPerPeriod = tokensPerPeriod;
     return this;
   }
 
@@ -74,24 +74,24 @@ public class GCRAParams implements IParams {
 
   /**
    * Set the cost/weight of this request. Defaults to 1 if not specified.
-   * @param numRequests cost of the request. Min: 1.
+   * @param tokens cost of the request in tokens. Min: 1.
    * @return {@code this} {@link GCRAParams}.
    */
-  public GCRAParams numRequests(long numRequests) {
-    JedisAsserts.isTrue(numRequests >= 1, "numRequests must be >= 1");
-    this.numRequests = numRequests;
+  public GCRAParams tokens(long tokens) {
+    JedisAsserts.isTrue(tokens >= 1, "tokens must be >= 1");
+    this.tokens = tokens;
     return this;
   }
 
   @Override
   public void addParams(CommandArguments args) {
     args.add(maxBurst);
-    args.add(requestsPerPeriod);
+    args.add(tokensPerPeriod);
     args.add(period);
 
-    if (numRequests != null) {
-      args.add(Keyword.NUM_REQUESTS);
-      args.add(numRequests);
+    if (tokens != null) {
+      args.add(Keyword.TOKENS);
+      args.add(tokens);
     }
   }
 
@@ -100,13 +100,12 @@ public class GCRAParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     GCRAParams that = (GCRAParams) o;
-    return maxBurst == that.maxBurst && requestsPerPeriod == that.requestsPerPeriod
-        && Double.compare(that.period, period) == 0
-        && Objects.equals(numRequests, that.numRequests);
+    return maxBurst == that.maxBurst && tokensPerPeriod == that.tokensPerPeriod
+        && Double.compare(that.period, period) == 0 && Objects.equals(tokens, that.tokens);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(maxBurst, requestsPerPeriod, period, numRequests);
+    return Objects.hash(maxBurst, tokensPerPeriod, period, tokens);
   }
 }

@@ -111,11 +111,19 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return ssl;
   }
 
+  /**
+   * @deprecated since 7.4.2, use {@link #getSslOptions()} instead.
+   */
+  @Deprecated
   @Override
   public SSLSocketFactory getSslSocketFactory() {
     return sslSocketFactory;
   }
 
+  /**
+   * @deprecated since 7.4.2, use {@link #getSslOptions()} instead.
+   */
+  @Deprecated
   @Override
   public SSLParameters getSslParameters() {
     return sslParameters;
@@ -326,21 +334,50 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    /**
+     * Enable TLS/SSL for connections.
+     * <p>
+     * TLS is enabled when either {@code ssl(true)} or {@link #sslOptions(SslOptions)} is set.
+     * {@link #sslOptions(SslOptions)} takes precedence; otherwise TLS uses
+     * {@link #sslSocketFactory(SSLSocketFactory)} and {@link #sslParameters(SSLParameters)}.
+     * @param ssl {@code true} to enable TLS/SSL
+     * @return {@code this}
+     * @deprecated since 7.4.2, use {@link #sslOptions(SslOptions)} instead. For TLS with JVM
+     *             defaults use {@code sslOptions(SslOptions.defaults())}.
+     */
+    @Deprecated
     public Builder ssl(boolean ssl) {
       this.ssl = ssl;
       return this;
     }
 
+    /**
+     * @deprecated since 7.4.2, use {@link #sslOptions(SslOptions)} instead.
+     */
+    @Deprecated
     public Builder sslSocketFactory(SSLSocketFactory sslSocketFactory) {
       this.sslSocketFactory = sslSocketFactory;
       return this;
     }
 
+    /**
+     * @deprecated since 7.4.2, use {@link #sslOptions(SslOptions)} instead.
+     */
+    @Deprecated
     public Builder sslParameters(SSLParameters sslParameters) {
       this.sslParameters = sslParameters;
       return this;
     }
 
+    /**
+     * Recommended way to configure TLS/SSL connections.
+     * <p>
+     * When set, TLS is enabled and {@link #sslSocketFactory(SSLSocketFactory)} /
+     * {@link #sslParameters(SSLParameters)} are ignored.
+     * @param sslOptions TLS configuration
+     * @return {@code this}
+     * @see SslOptions
+     */
     public Builder sslOptions(SslOptions sslOptions) {
       this.sslOptions = sslOptions;
       return this;

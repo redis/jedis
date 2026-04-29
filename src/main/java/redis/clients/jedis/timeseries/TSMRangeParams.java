@@ -32,7 +32,7 @@ public class TSMRangeParams implements IParams {
 
   private byte[] align;
 
-  private AggregationType aggregationType;
+  private AggregationType[] aggregators;
   private long bucketDuration;
   private byte[] bucketTimestamp;
 
@@ -130,8 +130,42 @@ public class TSMRangeParams implements IParams {
   }
 
   public TSMRangeParams aggregation(AggregationType aggregationType, long bucketDuration) {
-    this.aggregationType = aggregationType;
-    this.bucketDuration = bucketDuration;
+    if (aggregationType != null) {
+      this.aggregators = new AggregationType[] { aggregationType };
+      this.bucketDuration = bucketDuration;
+    } else {
+      this.aggregators = null;
+      this.bucketDuration = 0;
+    }
+    return this;
+  }
+
+  /**
+   * Specifies multiple aggregators to be applied in a single {@code TS.MRANGE} / {@code TS.MREVRANGE} call. Aggregators are
+   * sent on the wire in the given order and the response values appear in the same order in {@link TSElement#getValues()}.
+   * Single-element arrays are accepted and behave like {@link #aggregation(AggregationType, long)}.
+   *
+   * @param aggregators ordered, non-empty list of aggregators
+   * @param bucketDuration aggregation bucket duration in milliseconds
+   * @return this
+   * @throws IllegalArgumentException if {@code aggregators} is empty
+   */
+  public TSMRangeParams aggregation(AggregationType[] aggregators, long bucketDuration) {
+    if (aggregators != null) {
+      if (aggregators.length == 0) {
+        throw new IllegalArgumentException("aggregators must be non-null and non-empty");
+      }
+      for (AggregationType a : aggregators) {
+        if (a == null) {
+          throw new IllegalArgumentException("aggregators must not contain null elements");
+        }
+      }
+      this.aggregators = aggregators;
+      this.bucketDuration = bucketDuration;
+    } else {
+      this.aggregators = null;
+      this.bucketDuration = 0;
+    }
     return this;
   }
 
@@ -236,13 +270,14 @@ public class TSMRangeParams implements IParams {
       args.add(COUNT).add(toByteArray(count));
     }
 
-    if (aggregationType != null) {
+    if (aggregators != null) {
 
       if (align != null) {
         args.add(ALIGN).add(align);
       }
 
-      args.add(AGGREGATION).add(aggregationType).add(toByteArray(bucketDuration));
+      args.add(AGGREGATION).add(AggregationType.joinRaw(aggregators))
+          .add(toByteArray(bucketDuration));
 
       if (bucketTimestamp != null) {
         args.add(BUCKETTIMESTAMP).add(bucketTimestamp);
@@ -281,7 +316,7 @@ public class TSMRangeParams implements IParams {
         Arrays.equals(filterByValues, that.filterByValues) &&
         Arrays.equals(selectedLabels, that.selectedLabels) &&
         Objects.equals(count, that.count) && Arrays.equals(align, that.align) &&
-        aggregationType == that.aggregationType &&
+        Arrays.equals(aggregators, that.aggregators) &&
         Arrays.equals(bucketTimestamp, that.bucketTimestamp) &&
         Arrays.equals(filters, that.filters) &&
         Objects.equals(groupByLabel, that.groupByLabel) &&
@@ -299,7 +334,7 @@ public class TSMRangeParams implements IParams {
     result = 31 * result + Arrays.hashCode(selectedLabels);
     result = 31 * result + Objects.hashCode(count);
     result = 31 * result + Arrays.hashCode(align);
-    result = 31 * result + Objects.hashCode(aggregationType);
+    result = 31 * result + Arrays.hashCode(aggregators);
     result = 31 * result + Long.hashCode(bucketDuration);
     result = 31 * result + Arrays.hashCode(bucketTimestamp);
     result = 31 * result + Boolean.hashCode(empty);

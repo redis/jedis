@@ -14,7 +14,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class HyperLogLogCommandsTest extends JedisCommandsTestBase {
 
   public HyperLogLogCommandsTest(RedisProtocol protocol) {

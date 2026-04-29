@@ -325,7 +325,7 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   protected void validateCommonConfiguration() {
     if (cache != null || cacheConfig != null) {
-      if (clientConfig != null && clientConfig.getRedisProtocol() != RedisProtocol.RESP3) {
+      if (clientConfig != null && !RedisProtocol.isResp3(clientConfig.getRedisProtocol())) {
         throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
       }
     }

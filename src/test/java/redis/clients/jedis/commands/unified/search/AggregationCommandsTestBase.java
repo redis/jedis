@@ -421,16 +421,16 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals("10", rows.get(1).get("sum"));
 
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (protocol != RedisProtocol.RESP3) {
-      assertThat(profileObject, Matchers.isA(List.class));
-      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
-        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
-      }
-    } else {
+    if (RedisProtocol.isResp3(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),
           Matchers.hasItems("Shards", "Coordinator"));
+      }
+    } else {
+      assertThat(profileObject, Matchers.isA(List.class));
+      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
+        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }

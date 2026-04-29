@@ -50,8 +50,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
-  @Deprecated
-  protected RedisProtocol protocol = null;
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
@@ -132,7 +130,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, Cache cache) {
 
-    if (cache != null && protocol != RedisProtocol.RESP3) {
+    if (cache != null && !RedisProtocol.isResp3(protocol)) {
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 
@@ -140,8 +138,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.executor = executor;
 
     this.commandObjects = commandObjects;
-    if (protocol != null) {
-      this.commandObjects.setProtocol(protocol);
+    // Resolve RESP3_PREFERRED to actual negotiated protocol by probing a connection
+    RedisProtocol resolvedProtocol = null;
+    if (protocol == RedisProtocol.RESP3_PREFERRED) {
+      if (provider == null) {
+        throw new IllegalArgumentException("Connection provider is required to resolve RESP protocol");
+      }
+      try (Connection conn = provider.getConnection()) {
+        if (conn != null) {
+          resolvedProtocol = conn.getRedisProtocol();
+        }
+      } catch (JedisException ignored) {
+      }
+    } else if (protocol != null) {
+      resolvedProtocol = protocol;
+    }
+    if (resolvedProtocol != null) {
+      this.commandObjects.setProtocol(resolvedProtocol);
     }
 
     this.cache = cache;
@@ -150,12 +163,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public void close() {
     IOUtils.closeQuietly(this.executor);
-  }
-
-  @Deprecated
-  protected final void setProtocol(RedisProtocol protocol) {
-    this.protocol = protocol;
-    this.commandObjects.setProtocol(this.protocol);
   }
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {
@@ -4767,7 +4774,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Object jsonNumIncrBy(String key, Path2 path, double value) {
+  public Object jsonNumIncrBy(String key, Path2 path, Number value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

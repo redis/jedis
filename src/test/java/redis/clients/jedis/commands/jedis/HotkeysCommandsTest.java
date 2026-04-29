@@ -33,7 +33,7 @@ import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 @EnabledOnCommand("HOTKEYS")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_DOCKER, enabled = true)

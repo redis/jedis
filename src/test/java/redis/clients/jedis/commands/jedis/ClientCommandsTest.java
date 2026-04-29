@@ -37,7 +37,7 @@ import redis.clients.jedis.resps.TrackingInfo;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class ClientCommandsTest extends JedisCommandsTestBase {
 

@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
@@ -66,6 +67,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig),
         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
+    resolveProtocolIfNeeded(clientConfig.getRedisProtocol());
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
@@ -73,6 +75,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig),
         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
+    resolveProtocolIfNeeded(clientConfig.getRedisProtocol());
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
@@ -80,10 +83,12 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
+    resolveProtocolIfNeeded(clientConfig.getRedisProtocol());
   }
 
-  public ClusterPipeline(ClusterConnectionProvider provider) {
-    this(provider, new ClusterCommandObjects());
+  public ClusterPipeline(ClusterConnectionProvider provider, RedisProtocol protocol) {
+    this(provider, createClusterCommandObjects(protocol));
+    resolveProtocolIfNeeded(protocol);
   }
 
   public ClusterPipeline(ClusterConnectionProvider provider, ClusterCommandObjects commandObjects) {
@@ -95,6 +100,23 @@ public class ClusterPipeline extends MultiNodePipelineBase {
           CommandFlagsRegistry commandFlagsRegistry, ExecutorService executorService) {
     super(commandObjects, commandFlagsRegistry, executorService);
     this.provider = provider;
+  }
+
+  /**
+   * If the requested protocol is {@link RedisProtocol#RESP3_PREFERRED}, probe an actual
+   * connection to resolve the command objects protocol to the negotiated value (RESP3 or RESP2).
+   */
+  private void resolveProtocolIfNeeded(RedisProtocol requestedProtocol) {
+    if (requestedProtocol == RedisProtocol.RESP3_PREFERRED) {
+      try (Connection conn = provider.getConnection()) {
+        RedisProtocol resolved = conn.getRedisProtocol();
+        if (resolved != null) {
+          commandObjects.setProtocol(resolved);
+        }
+      } catch (JedisException je) {
+        // Protocol negotiation failed, keep protocol=null on the command objects.
+      }
+    }
   }
 
   private static ClusterCommandObjects createClusterCommandObjects(RedisProtocol protocol) {

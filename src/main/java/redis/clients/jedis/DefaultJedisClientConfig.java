@@ -210,7 +210,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   public static class Builder {
 
-    private RedisProtocol redisProtocol = null;
+    private RedisProtocol redisProtocol = RedisProtocol.RESP3_PREFERRED;
 
     private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
     private int socketTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
@@ -256,6 +256,26 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
      */
     public Builder resp3() {
       return protocol(RedisProtocol.RESP3);
+    }
+
+    /**
+     * Shortcut to
+     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * {@link RedisProtocol#RESP2}.
+     * @return this
+     */
+    public Builder resp2() {
+      return protocol(RedisProtocol.RESP2);
+    }
+
+    /**
+     * Shortcut to
+     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
+     * {@code null} (server default).
+     * @return this
+     */
+    public Builder serverDefaultProtocol() {
+      return protocol(null);
     }
 
     public Builder protocol(RedisProtocol protocol) {

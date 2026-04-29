@@ -21,6 +21,7 @@ import java.util.List;
 
 
 import redis.clients.jedis.exceptions.JedisBusyException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -138,5 +139,91 @@ public class ProtocolTest {
       return;
     }
     fail("Expected a JedisBusyException to be thrown.");
+  }
+
+  // ==================== Verbatim String Tests (RESP3) ====================
+
+  @Test
+  public void verbatimStringReplyWithTxtFormat() {
+    // RESP3 verbatim string: =<length>\r\n<format>:<data>\r\n
+    // "txt:Hello World" has length 15 (4 bytes for "txt:" + 11 bytes for "Hello World")
+    InputStream is = new ByteArrayInputStream("=15\r\ntxt:Hello World\r\n".getBytes());
+    byte[] response = (byte[]) Protocol.read(new RedisInputStream(is));
+    // The "txt:" prefix should be stripped
+    assertArrayEquals(SafeEncoder.encode("Hello World"), response);
+  }
+
+  @Test
+  public void verbatimStringReplyWithMkdFormat() {
+    // RESP3 verbatim string with markdown format
+    // "mkd:# Header" has length 12 (4 bytes for "mkd:" + 8 bytes for "# Header")
+    InputStream is = new ByteArrayInputStream("=12\r\nmkd:# Header\r\n".getBytes());
+    byte[] response = (byte[]) Protocol.read(new RedisInputStream(is));
+    // The "mkd:" prefix should be stripped
+    assertArrayEquals(SafeEncoder.encode("# Header"), response);
+  }
+
+  @Test
+  public void verbatimStringReplyEmpty() {
+    // Empty verbatim string: just the format prefix "txt:" with no data
+    // Length is 4 (only the "txt:" prefix)
+    InputStream is = new ByteArrayInputStream("=4\r\ntxt:\r\n".getBytes());
+    byte[] response = (byte[]) Protocol.read(new RedisInputStream(is));
+    // The result should be empty after stripping "txt:"
+    assertArrayEquals(new byte[0], response);
+  }
+
+  @Test
+  public void verbatimStringReplyNull() {
+    // Null verbatim string (length -1)
+    InputStream is = new ByteArrayInputStream("=-1\r\n".getBytes());
+    Object response = Protocol.read(new RedisInputStream(is));
+    assertNull(response);
+  }
+
+  @Test
+  public void verbatimStringReplyWithSpecialCharacters() {
+    // Test verbatim string containing special characters like newlines
+    String data = "Line1\nLine2\r\nLine3";
+    String verbatimString = "txt:" + data;
+    int length = verbatimString.length();
+    String respString = "=" + length + "\r\n" + verbatimString + "\r\n";
+    InputStream is = new ByteArrayInputStream(respString.getBytes());
+    byte[] response = (byte[]) Protocol.read(new RedisInputStream(is));
+    assertArrayEquals(SafeEncoder.encode(data), response);
+  }
+
+  @Test
+  public void verbatimStringReplyMalformedTooShort() {
+    // Verbatim string with length less than 4 (the minimum for the format prefix)
+    // This should throw a JedisConnectionException
+    InputStream is = new ByteArrayInputStream("=3\r\nabc\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> {
+      Protocol.read(new RedisInputStream(is));
+    });
+  }
+
+  @Test
+  public void fragmentedVerbatimStringReply() {
+    // Test reading a verbatim string that arrives in fragments
+    FragmentedByteArrayInputStream fis = new FragmentedByteArrayInputStream(
+        "=34\r\ntxt:012345678901234567890123456789\r\n".getBytes());
+    byte[] response = (byte[]) Protocol.read(new RedisInputStream(fis));
+    // Should strip "txt:" and return the 30-character string
+    assertArrayEquals(SafeEncoder.encode("012345678901234567890123456789"), response);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void verbatimStringInMultiBulkReply() {
+    // Test verbatim string as part of a multi-bulk reply
+    // *2\r\n$3\r\nfoo\r\n=11\r\ntxt:bar baz\r\n
+    InputStream is = new ByteArrayInputStream(
+        "*2\r\n$3\r\nfoo\r\n=11\r\ntxt:bar baz\r\n".getBytes());
+    List<byte[]> response = (List<byte[]>) Protocol.read(new RedisInputStream(is));
+    List<byte[]> expected = new ArrayList<byte[]>();
+    expected.add(SafeEncoder.encode("foo"));
+    expected.add(SafeEncoder.encode("bar baz")); // "txt:" should be stripped
+    assertByteArrayListEquals(expected, response);
   }
 }

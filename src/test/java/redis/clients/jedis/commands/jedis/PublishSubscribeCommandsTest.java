@@ -39,7 +39,7 @@ import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @Timeout(value = 5, unit = TimeUnit.MINUTES)
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
   public PublishSubscribeCommandsTest(RedisProtocol protocol) {

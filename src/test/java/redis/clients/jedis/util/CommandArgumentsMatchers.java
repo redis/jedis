@@ -258,8 +258,9 @@ public final class CommandArgumentsMatchers {
       }
 
       private boolean containsArgument(CommandArguments args, Rawable expected) {
+        byte[] expectedRaw = expected.getRaw();
         for (Rawable arg : args) {
-          if (expected.equals(arg)) {
+          if (Arrays.equals(expectedRaw, arg.getRaw())) {
             return true;
           }
         }

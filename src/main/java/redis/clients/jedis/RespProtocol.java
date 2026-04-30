@@ -5,11 +5,11 @@ import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Enum representing supported versions of the RESP protocol.
- *
- * <p>Two modes are supported:
+ * <p>
+ * Two modes are supported:
  * <ul>
- *   <li>{@link #RESP2} – RESP2 protocol.</li>
- *   <li>{@link #RESP3} – RESP3 protocol.</li>
+ * <li>{@link #RESP2} – RESP2 protocol.</li>
+ * <li>{@link #RESP3} – RESP3 protocol.</li>
  * </ul>
  */
 public enum RespProtocol {

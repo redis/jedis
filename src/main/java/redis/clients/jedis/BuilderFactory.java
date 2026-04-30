@@ -36,6 +36,37 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * Builder for deprecated raw stream responses that preserves the legacy RESP2-shaped outer list
+   * even when RESP3 returns stream key/value pairs as {@link KeyValue}.
+   */
+  public static final Builder<List<Object>> STREAM_READ_RAW_OBJECT_LIST = new Builder<List<Object>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object> build(Object data) {
+      if (data == null) return null;
+
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty() || !(list.get(0) instanceof KeyValue)) {
+        return list;
+      }
+
+      List<Object> result = new ArrayList<>(list.size());
+      for (KeyValue<byte[], Object> kv : (List<KeyValue<byte[], Object>>) (List<?>) list) {
+        List<Object> stream = new ArrayList<>(2);
+        stream.add(BINARY.build(kv.getKey()));
+        stream.add(kv.getValue());
+        result.add(stream);
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Object>";
+    }
+  };
+
   public static final Builder<Object> ENCODED_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {

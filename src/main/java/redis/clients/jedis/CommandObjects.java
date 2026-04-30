@@ -2962,7 +2962,7 @@ public class CommandObjects {
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.add(entry.getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(
@@ -3005,7 +3005,7 @@ public class CommandObjects {
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.add(entry.getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(

@@ -8,7 +8,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.RespProtocol;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.RedisInputStream;
@@ -145,7 +145,7 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
-    if (protocol != RedisProtocol.RESP3) {
+    if (getEstablishedProtocol() != RespProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
     Objects.requireNonNull(cache);

@@ -109,9 +109,9 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   private void resolveProtocolIfNeeded(RedisProtocol requestedProtocol) {
     if (requestedProtocol == RedisProtocol.RESP3_PREFERRED) {
       try (Connection conn = provider.getConnection()) {
-        RedisProtocol resolved = conn.getRedisProtocol();
+        RespProtocol resolved = conn.getEstablishedProtocol();
         if (resolved != null) {
-          commandObjects.setProtocol(resolved);
+          commandObjects.setProtocol(RedisProtocol.of(resolved));
         }
       } catch (JedisException je) {
         // Protocol negotiation failed, keep protocol=null on the command objects.

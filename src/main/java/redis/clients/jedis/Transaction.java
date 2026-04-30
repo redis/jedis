@@ -85,8 +85,8 @@ public class Transaction extends AbstractTransaction {
 
   private static CommandObjects createCommandObjects(Connection connection) {
     CommandObjects commandObjects = new CommandObjects();
-    RedisProtocol proto = connection.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    RespProtocol resolved = connection.getEstablishedProtocol();
+    if (resolved != null) commandObjects.setProtocol(RedisProtocol.of(resolved));
     return commandObjects;
   }
 

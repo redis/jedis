@@ -298,10 +298,10 @@ public class ConnectionHelloAuthTest {
     @DisplayName("HELLO not supported with RESP2 — propagates error")
     void helloNotSupportedResp2PropagatesError() {
       assertThrows(JedisProtocolNotSupportedException.class, () -> {
-        Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR)), authConfig(RedisProtocol.RESP2));
+        Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR)),
+            authConfig(RedisProtocol.RESP2));
       });
     }
-
 
     @Test
     @DisplayName("HELLO AUTH with proto=3 in response — RESP3 confirmed")
@@ -329,9 +329,10 @@ public class ConnectionHelloAuthTest {
     void resp3PreferredWithAuthHelloNotSupportedResolvesToProto2() {
       // -> hello(3,user,pass) -> unknown command
       // -> (fallback to establishLegacyResp2)
-      //      -> auth -> ok ->
-      //      -> not require (hello(2)) -> unknown command
-      Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR, AUTH_OK_REPLY, UNKNOWN_CMD_ERR)),
+      // -> auth -> ok ->
+      // -> not require (hello(2)) -> unknown command
+      Connection conn = new Connection(
+          fakeSocketFactory(concat(UNKNOWN_CMD_ERR, AUTH_OK_REPLY, UNKNOWN_CMD_ERR)),
           authConfig(RedisProtocol.RESP3_PREFERRED));
       assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
       assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());

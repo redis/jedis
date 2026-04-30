@@ -577,6 +577,8 @@
                         <include>src/test/java/redis/clients/jedis/commands/unified/**json/*.java</include>
                         <include>src/test/java/redis/clients/jedis/commands/unified/**timeseries/*.java</include>
                         <include>src/test/java/redis/clients/jedis/**/search/*.java</include>
+
+						<include>**/RespProtocol.java</include>
 					</includes>
 				</configuration>
 				<executions>

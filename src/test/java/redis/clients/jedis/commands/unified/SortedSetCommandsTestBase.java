@@ -1477,6 +1477,11 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     assertEquals(1, jedis.zinterstore("dst", paramsW, "s1", "s2", "s3"));
     assertEquals(singletonList(new Tuple("foo", 18d)), jedis.zrangeWithScores("dst", 0, -1));
+
+    // Non-store variants with WITHSCORES + WEIGHTS.
+    assertEquals(expectedUnionW, jedis.zunionWithScores(paramsW, "s1", "s2", "s3"));
+    assertEquals(singletonList(new Tuple("foo", 18d)),
+        jedis.zinterWithScores(paramsW, "s1", "s2", "s3"));
   }
 
   @Test

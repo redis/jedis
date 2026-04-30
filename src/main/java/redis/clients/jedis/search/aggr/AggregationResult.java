@@ -29,7 +29,7 @@ public class AggregationResult {
 
   private AggregationResult(long totalResults, List<Map<String, Object>> results, List<String> warnings) {
     this.totalResults = totalResults;
-    this.results = results != null ? results : Collections.emptyList();
+    this.results = results;
     this.warnings = warnings != null ? warnings : Collections.emptyList();
   }
 

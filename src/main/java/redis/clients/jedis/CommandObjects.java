@@ -4021,7 +4021,7 @@ public class CommandObjects {
 
   public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, Number value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
-        JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST);
+        JsonBuilderFactory.JSON_ARRAY_OR_NUMBER_LIST);
   }
 
   @Deprecated

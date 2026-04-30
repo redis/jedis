@@ -131,7 +131,7 @@ public class JsonBuilderFactoryTest {
   public void jsonArrayOrDoubleListReturnsNumberListForListInput() {
     // Test that JSON_ARRAY_OR_DOUBLE_LIST uses JSON_NUMBER_LIST for List input
     List<Object> input = Arrays.asList(1L, 2.5, 3L);
-    Object result = JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST.build(input);
+    Object result = JsonBuilderFactory.JSON_ARRAY_OR_NUMBER_LIST.build(input);
 
     assertTrue(result instanceof List, "Result should be a List");
     @SuppressWarnings("unchecked")

@@ -45,7 +45,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     super.setUp();
 
     lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(),
-        lfuEndpoint.getClientConfigBuilder().build());
+        lfuEndpoint.getClientConfigBuilder().serverDefaultProtocol().build());
     lfuJedis.connect();
     lfuJedis.flushAll();
   }

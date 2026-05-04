@@ -255,7 +255,7 @@ public class ActiveActiveLocalFailoverTest {
 
     log.info("Triggering issue on endpoint1");
     try (Jedis jedis = new Jedis(endpoint1.getHostAndPort(),
-        endpoint1.getClientConfigBuilder().build())) {
+        endpoint1.getClientConfigBuilder().serverDefaultProtocol().build())) {
       jedis.clientPause(ENDPOINT_PAUSE_TIME_MS);
     }
 
@@ -316,7 +316,8 @@ public class ActiveActiveLocalFailoverTest {
 
   private static void ensureEndpointAvailability(HostAndPort endpoint, JedisClientConfig config) {
     await().atMost(Duration.ofSeconds(ENDPOINT_PAUSE_TIME_MS)).until(() -> {
-      try (Jedis jedis = new Jedis(endpoint, config)) {
+      try (RedisClient jedis = RedisClient.builder().hostAndPort(endpoint).clientConfig(
+          config).build()) {
         return "PONG".equals(jedis.ping());
       } catch (Exception e) {
         log.info("Waiting for endpoint {} to become available...", endpoint);

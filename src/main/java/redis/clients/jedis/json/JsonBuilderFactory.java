@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
-import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public final class JsonBuilderFactory {
@@ -156,7 +155,7 @@ public final class JsonBuilderFactory {
     }
   };
 
-  public static final Builder<Object> JSON_ARRAY_OR_DOUBLE_LIST = new Builder<Object>() {
+  public static final Builder<Object> JSON_ARRAY_OR_NUMBER_LIST = new Builder<Object>() {
     @Override
     public Object build(Object data) {
       if (data == null) return null;

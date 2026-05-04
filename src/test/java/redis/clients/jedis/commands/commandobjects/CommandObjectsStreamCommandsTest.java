@@ -11,11 +11,13 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
@@ -412,6 +414,74 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
 
     pendingList = exec(commandObjects.xpending(key, group, xPendingParams));
     assertThat(pendingList, empty());
+  }
+
+  @Test
+  public void testDeprecatedRawXreadBinaryKeepsLegacyResponseShape() {
+    String keyStr = "testDeprecatedRawXreadBinaryKeepsLegacyResponseShape";
+    byte[] key = keyStr.getBytes();
+    Map<String, String> entryData = new HashMap<>();
+    entryData.put("field1", "value1");
+
+    StreamEntryID entryID = exec(commandObjects.xadd(keyStr, StreamEntryID.NEW_ENTRY, entryData));
+
+    Map.Entry<byte[], byte[]> stream = new AbstractMap.SimpleEntry<>(key, "0-0".getBytes());
+    List<Object> messages = exec(commandObjects.xread(new XReadParams().count(1), stream));
+
+    assertThat(messages, hasSize(1));
+    assertThat(messages.get(0), instanceOf(List.class));
+
+    List<?> streamResponse = (List<?>) messages.get(0);
+    assertThat(streamResponse, hasSize(2));
+    assertThat(new String((byte[]) streamResponse.get(0)), equalTo(keyStr));
+    assertThat(streamResponse.get(1), instanceOf(List.class));
+
+    List<?> entries = (List<?>) streamResponse.get(1);
+    assertThat(entries, hasSize(1));
+    assertThat(entries.get(0), instanceOf(List.class));
+
+    List<?> entry = (List<?>) entries.get(0);
+    assertThat(new String((byte[]) entry.get(0)), equalTo(entryID.toString()));
+    assertThat(entry.get(1), instanceOf(List.class));
+    assertThat(
+        ((List<?>) entry.get(1)).stream().map(it -> new String((byte[]) it)).collect(Collectors.toList()),
+        equalTo(Arrays.asList("field1", "value1")));
+  }
+
+  @Test
+  public void testDeprecatedRawXreadGroupBinaryKeepsLegacyResponseShape() {
+    String keyStr = "testDeprecatedRawXreadGroupBinaryKeepsLegacyResponseShape";
+    byte[] key = keyStr.getBytes();
+    byte[] group = "testGroup".getBytes();
+    byte[] consumer = "testConsumer".getBytes();
+    Map<String, String> entryData = new HashMap<>();
+    entryData.put("field1", "value1");
+
+    exec(commandObjects.xgroupCreate(key, group, new StreamEntryID().toString().getBytes(), true));
+    StreamEntryID entryID = exec(commandObjects.xadd(keyStr, StreamEntryID.NEW_ENTRY, entryData));
+
+    Map.Entry<byte[], byte[]> stream = new AbstractMap.SimpleEntry<>(key,
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY.toString().getBytes());
+    List<Object> messages = exec(commandObjects.xreadGroup(group, consumer, new XReadGroupParams(), stream));
+
+    assertThat(messages, hasSize(1));
+    assertThat(messages.get(0), instanceOf(List.class));
+
+    List<?> streamResponse = (List<?>) messages.get(0);
+    assertThat(streamResponse, hasSize(2));
+    assertThat(new String((byte[]) streamResponse.get(0)), equalTo(keyStr));
+    assertThat(streamResponse.get(1), instanceOf(List.class));
+
+    List<?> entries = (List<?>) streamResponse.get(1);
+    assertThat(entries, hasSize(1));
+    assertThat(entries.get(0), instanceOf(List.class));
+
+    List<?> entry = (List<?>) entries.get(0);
+    assertThat(new String((byte[]) entry.get(0)), equalTo(entryID.toString()));
+    assertThat(entry.get(1), instanceOf(List.class));
+    assertThat(
+        ((List<?>) entry.get(1)).stream().map(it -> new String((byte[]) it)).collect(Collectors.toList()),
+        equalTo(Arrays.asList("field1", "value1")));
   }
 
   @Test

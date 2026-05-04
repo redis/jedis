@@ -29,7 +29,7 @@ public class SearchResult {
 
   private SearchResult(long totalResults, List<Document> documents, List<String> warnings) {
     this.totalResults = totalResults;
-    this.documents = documents != null ? documents : Collections.emptyList();
+    this.documents = documents;
     this.warnings = warnings != null ? warnings : Collections.emptyList();
   }
 

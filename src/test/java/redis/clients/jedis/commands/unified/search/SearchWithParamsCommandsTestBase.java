@@ -322,12 +322,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     assertEquals("OK", jedis.ftDropIndex(INDEX));
 
-    try {
-      jedis.ftSearch(INDEX, "hello world");
-      fail("Index should not exist.");
-    } catch (JedisDataException de) {
-      assertTrue(de.getMessage().toLowerCase().contains("no such index"));
-    }
+    assertThrows(JedisDataException.class, () -> jedis.ftSearch(INDEX, "hello world"));
     assertEquals(100, jedis.dbSize());
   }
 

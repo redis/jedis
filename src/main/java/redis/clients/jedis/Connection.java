@@ -722,28 +722,25 @@ public class Connection implements Closeable {
       throw new IllegalArgumentException("protocol must not be null");
     }
 
-    CommandArguments helloCmd = new CommandArguments(Command.HELLO).add(protocol.versionRaw());
-    if (credentials != null) {
-      if (credentials.getPassword() != null) {
-
+    byte[] rawPass = null;
+    try {
+      byte[][] args;
+      if (credentials != null && credentials.getPassword() != null) {
         String user = credentials.getUser();
         if (user == null) {
           user = "default";
         }
-
-        byte[] rawPass = encodeToBytes(credentials.getPassword());
-
-        try {
-          helloCmd.add(Keyword.AUTH).add(encode(user)).add(rawPass);
-        } finally {
-          Arrays.fill(rawPass, (byte) 0); // clear sensitive data
-        }
+        rawPass = encodeToBytes(credentials.getPassword());
+        args = new byte[][] { protocol.versionRaw(), Keyword.AUTH.getRaw(), encode(user), rawPass };
+      } else {
+        args = new byte[][] { protocol.versionRaw() };
+      }
+      return new HelloResult(hello(args));
+    } finally {
+      if (rawPass != null) {
+        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
       }
     }
-
-    sendCommand(helloCmd);
-    Map<String, Object> response = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
-    return new HelloResult(response);
   }
 
   protected byte[] encodeToBytes(char[] chars) {

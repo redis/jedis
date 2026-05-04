@@ -41,6 +41,10 @@ public class ConnectionHelloAuthTest {
   /** RESP error for NOPROTO (Redis Enterprise / Cloud when protocol is disabled). */
   private static final byte[] NOPROTO_ERR = "-NOPROTO unsupported protocol version\r\n".getBytes();
 
+  /** RESP error for NOPERM (ACL: user not allowed to run the command). */
+  private static final byte[] NOPERM_ERR = "-NOPERM this user has no permissions to run the 'hello' command or its subcommand\r\n"
+      .getBytes();
+
   /** Minimal RESP3 map without proto field: %2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n */
   private static final byte[] HELLO_OK_MAP = "%2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n"
       .getBytes();
@@ -265,6 +269,19 @@ public class ConnectionHelloAuthTest {
       assertFalse(conn.isBroken());
       conn.close();
     }
+
+    @Test
+    @DisplayName("RESP3_PREFERRED with HELLO unknown command and no creds — falls back to RESP2")
+    void resp3PreferredUnknownCommandResolvesToResp2() {
+      // Pre-6.0 server: HELLO 3 -> unknown -> establishLegacyResp2 -> authenticate(null) (no-op)
+      // -> HELLO 2 -> unknown -> infer RESP2.
+      Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR, UNKNOWN_CMD_ERR)),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
+      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
+      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
   }
 
   // ---- Tests: HELLO with AUTH (credentials with user) ----
@@ -340,68 +357,29 @@ public class ConnectionHelloAuthTest {
       conn.close();
     }
 
+    @Test
+    @DisplayName("RESP3_PREFERRED with AUTH and NOPROTO on HELLO 3 — falls back to RESP2 via HELLO 2")
+    void resp3PreferredAuthHelloNoProtoFallsBackToResp2() {
+      // -> hello(3,user,pass) -> NOPROTO
+      // -> (fallback to establishLegacyResp2)
+      // -> auth -> ok
+      // -> hello(2) -> ok with proto=2
+      Connection conn = new Connection(
+          fakeSocketFactory(concat(NOPROTO_ERR, AUTH_OK_REPLY, HELLO_OK_MAP_PROTO2)),
+          authConfig(RedisProtocol.RESP3_PREFERRED));
+      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
+      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
+      assertFalse(conn.isBroken());
+      conn.close();
+    }
+
+    @Test
+    @DisplayName("Explicit RESP3 with AUTH and NOPERM on HELLO — propagates JedisAccessControlException")
+    void explicitResp3HelloNoPermPropagates() {
+      // No fallback for explicit RESP3 — NOPERM (not NOAUTH) must propagate.
+      assertThrows(JedisAccessControlException.class,
+        () -> new Connection(fakeSocketFactory(NOPERM_ERR), authConfig(RedisProtocol.RESP3)),
+        "NOPERM from HELLO with explicit RESP3 should propagate");
+    }
   }
-
-  @Nested
-  @DisplayName("Connection handshake - protocol negotiation")
-  class ConnectionHandshakeProtocolNegotiation {
-
-    // Jedis ? ->
-    // connect -> without authentication
-    // ReqProtocol null -> no negotiation
-
-    // Requested Protocol ->
-    // Strict -> throws on error
-    // RESP2 -> strict must throw if not supported (with / without auth)
-    // RESP3 -> strict must throw if not supported (with / without auth)
-    // Preferred ->
-    // RESP3_Preferred
-    // -> RESP3 if supported (with /without auth)
-    // -> fallback to RESP2 if RESP3 is not supported (with / without auth)
-    // Redis supports RESP3 ->
-    // HELLO
-    // supported
-    // unsupported
-    // requires auth before hello
-    // Protocol
-    // supported
-    // unsupported,
-    // Auth ->
-    // user only -> no pass -> no auth
-    // password only -> if no user provided -> default user
-    // user and password -> valid credentials (OK)/wrong credentials (throws)
-    // no credentials -> no auth
-
-    // RESP2 strict, OK
-    // RESP3 strict, OK
-    // RESP3 strict, HELLO not supported
-    // ? RESP3 strict, HELLO NOPROTO
-    // RESP3 strict, HELLO NOAUTH
-    // RESP3 preferred, HELLO supported, HELLO proto=3
-    // RESP3 preferred, HELLO not supported, HELLO proto=2
-    // ? RESP3 preferred, NOPROTO supported, HELLO proto=2
-
-    // RESP2 strict, with user and password -> OK
-    // RESP2 strict, with user and password (wrong credential ) -> throws
-    // RESP2 strict, with password only, OK // default user
-    // RESP2 strict, with password only, wrong credential -> throws
-
-    // RESP3 strict, with user and password, OK
-    // RESP3 strict, with user and password, wrong credential -> throws
-    // RESP3 strict, with user and password, HELLO (6.0> <6.2 requires auth beforee HELLO) -> OK
-    // RESP3 strict, with user and password, HELLO (6.0> <6.2 requires auth beforee HELLO), wrong
-    // credential -> throws
-
-    // RESP3 strict, with password only, OK // default user
-    // RESP3 strict, with user and password, HELLO not supported -> throws
-    // RESP3 strict, with user and password, HELLO NOPROTO -> throws
-
-    // ?RESP3 strict, HELLO NOPROTO
-    // RESP3 strict, HELLO NOAUTH
-    // RESP3 preferred, HELLO supported, HELLO proto=3
-    // RESP3 preferred, HELLO not supported, HELLO proto=2
-    // ? RESP3 preferred, NOPROTO supported, HELLO proto=2
-
-  }
-
 }

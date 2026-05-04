@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -40,183 +42,276 @@ class ProtocolHandshakeTest {
   }
 
   // ---------------------------------------------------------------------------
-  // establish() dispatch
+  // requested = null  (legacy mode: no HELLO sent, server default assumed RESP2)
   // ---------------------------------------------------------------------------
 
-  @Test
-  void establish_nullProtocol_authenticatesAndInfersResp2() {
-    RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
+  @Nested
+  @DisplayName("requested = null")
+  class NullProtocolRequested {
 
-    HelloResult result = handshake.establish(null, creds);
+    @Test
+    void authenticatesAndInfersResp2() {
+      RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
 
-    assertEquals(RespProtocol.RESP2, result.getProtocol());
-    verify(connection).authenticate(creds);
-    verify(connection, never()).hello(any(RespProtocol.class), any());
-  }
+      HelloResult result = handshake.establish(null, creds);
 
-  @Test
-  void establish_nullProtocolNullCreds_authenticatesAndInfersResp2() {
-    HelloResult result = handshake.establish(null, null);
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
+      verify(connection).authenticate(creds);
+      verify(connection, never()).hello(any(RespProtocol.class), any());
+    }
 
-    assertEquals(RespProtocol.RESP2, result.getProtocol());
-    verify(connection).authenticate(null);
-    verify(connection, never()).hello(any(RespProtocol.class), any());
-  }
+    @Test
+    void nullCreds_authenticatesAndInfersResp2() {
+      HelloResult result = handshake.establish(null, null);
 
-  @Test
-  void establish_resp2_callsHello2() {
-    when(connection.hello(RespProtocol.RESP2, null)).thenReturn(helloResult(RespProtocol.RESP2));
-
-    HelloResult result = handshake.establish(RedisProtocol.RESP2, null);
-
-    assertEquals(RespProtocol.RESP2, result.getProtocol());
-    verify(connection).hello(RespProtocol.RESP2, null);
-    verify(connection, never()).authenticate(any());
-  }
-
-  @Test
-  void establish_resp3_callsHello3() {
-    when(connection.hello(RespProtocol.RESP3, null)).thenReturn(helloResult(RespProtocol.RESP3));
-
-    HelloResult result = handshake.establish(RedisProtocol.RESP3, null);
-
-    assertEquals(RespProtocol.RESP3, result.getProtocol());
-    verify(connection).hello(RespProtocol.RESP3, null);
-  }
-
-  @Test
-  void establish_resp3Preferred_callsHello3OnHappyPath() {
-    when(connection.hello(RespProtocol.RESP3, null)).thenReturn(helloResult(RespProtocol.RESP3));
-
-    HelloResult result = handshake.establish(RedisProtocol.RESP3_PREFERRED, null);
-
-    assertEquals(RespProtocol.RESP3, result.getProtocol());
-    verify(connection).hello(RespProtocol.RESP3, null);
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
+      verify(connection).authenticate(null);
+      verify(connection, never()).hello(any(RespProtocol.class), any());
+    }
   }
 
   // ---------------------------------------------------------------------------
-  // establish() — strict RESP3 path (delegates to enforceProtocolWithAuth)
+  // requested = RESP2 (strict)
   // ---------------------------------------------------------------------------
 
-  @Test
-  void establish_resp3UnknownCommand_throwsProtocolNotSupported() {
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
+  @Nested
+  @DisplayName("requested = RESP2 (strict)")
+  class Resp2StrictRequested {
 
-    JedisProtocolNotSupportedException ex = assertThrows(JedisProtocolNotSupportedException.class,
-      () -> handshake.establish(RedisProtocol.RESP3, null));
-    assertTrue(ex.getMessage().contains("Server does not support HELLO"));
-  }
+    @Test
+    void callsHello2() {
+      when(connection.hello(RespProtocol.RESP2, null)).thenReturn(helloResult(RespProtocol.RESP2));
 
-  @Test
-  void establish_resp3GenericDataException_propagates() {
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisDataException("ERR something else"));
+      HelloResult result = handshake.establish(RedisProtocol.RESP2, null);
 
-    JedisDataException ex = assertThrows(JedisDataException.class,
-      () -> handshake.establish(RedisProtocol.RESP3, null));
-    assertFalse(ex instanceof JedisProtocolNotSupportedException);
-  }
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
+      verify(connection).hello(RespProtocol.RESP2, null);
+      verify(connection, never()).authenticate(any());
+    }
 
-  @Test
-  void establish_resp3NoAuthRecovery_authThenRetryHello() {
-    RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
-    when(connection.hello(RespProtocol.RESP3, creds)).thenReturn(helloResult(RespProtocol.RESP3));
+    @Test
+    void unknownCommand_throwsProtocolNotSupported() {
+      when(connection.hello(RespProtocol.RESP2, null))
+          .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
 
-    HelloResult result = handshake.establish(RedisProtocol.RESP3, creds);
+      JedisProtocolNotSupportedException ex = assertThrows(JedisProtocolNotSupportedException.class,
+        () -> handshake.establish(RedisProtocol.RESP2, null));
+      assertTrue(ex.getMessage().contains("Server does not support HELLO"));
+    }
 
-    assertEquals(RespProtocol.RESP3, result.getProtocol());
-    InOrder inOrder = inOrder(connection);
-    inOrder.verify(connection).hello(RespProtocol.RESP3, null);
-    inOrder.verify(connection).authenticate(creds);
-    inOrder.verify(connection).hello(RespProtocol.RESP3, creds);
-  }
+    @Test
+    void genericDataException_propagates() {
+      when(connection.hello(RespProtocol.RESP2, null))
+          .thenThrow(new JedisDataException("ERR something else"));
 
-  @Test
-  void establish_resp3NonNoAuthAccessControl_propagatesWithoutRetry() {
-    RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
-    when(connection.hello(RespProtocol.RESP3, null)).thenThrow(new JedisAccessControlException(
-        "NOPERM this user has no permissions to run the 'hello' command"));
+      JedisDataException ex = assertThrows(JedisDataException.class,
+        () -> handshake.establish(RedisProtocol.RESP2, null));
+      assertFalse(ex instanceof JedisProtocolNotSupportedException);
+    }
 
-    assertThrows(JedisAccessControlException.class,
-      () -> handshake.establish(RedisProtocol.RESP3, creds));
-    verify(connection, never()).authenticate(any());
-    verify(connection, times(1)).hello(any(RespProtocol.class), any());
-  }
+    @Test
+    void noAuthRecovery_authThenRetryHello() {
+      RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
+      when(connection.hello(RespProtocol.RESP2, null))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
+      when(connection.hello(RespProtocol.RESP2, creds)).thenReturn(helloResult(RespProtocol.RESP2));
 
-  @Test
-  void establish_resp3NoAuthThenWrongPass_propagatesAfterAuthAttempt() {
-    RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
-    when(connection.hello(RespProtocol.RESP3, creds))
-        .thenThrow(new JedisAccessControlException("WRONGPASS invalid username-password pair"));
+      HelloResult result = handshake.establish(RedisProtocol.RESP2, creds);
 
-    JedisAccessControlException ex = assertThrows(JedisAccessControlException.class,
-      () -> handshake.establish(RedisProtocol.RESP3, creds));
-    assertTrue(ex.getMessage().startsWith("WRONGPASS"));
-    verify(connection).authenticate(creds);
-    verify(connection).hello(RespProtocol.RESP3, null);
-    verify(connection).hello(RespProtocol.RESP3, creds);
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
+      InOrder inOrder = inOrder(connection);
+      inOrder.verify(connection).hello(RespProtocol.RESP2, null);
+      inOrder.verify(connection).authenticate(creds);
+      inOrder.verify(connection).hello(RespProtocol.RESP2, creds);
+    }
+
+    @Test
+    void nonNoAuthAccessControl_propagatesWithoutRetry() {
+      RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
+      when(connection.hello(RespProtocol.RESP2, null)).thenThrow(new JedisAccessControlException(
+          "NOPERM this user has no permissions to run the 'hello' command"));
+
+      assertThrows(JedisAccessControlException.class,
+        () -> handshake.establish(RedisProtocol.RESP2, creds));
+      verify(connection, never()).authenticate(any());
+      verify(connection, times(1)).hello(any(RespProtocol.class), any());
+    }
+
+    @Test
+    void noAuthThenWrongPass_propagatesAfterAuthAttempt() {
+      RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
+      when(connection.hello(RespProtocol.RESP2, null))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
+      when(connection.hello(RespProtocol.RESP2, creds))
+          .thenThrow(new JedisAccessControlException("WRONGPASS invalid username-password pair"));
+
+      JedisAccessControlException ex = assertThrows(JedisAccessControlException.class,
+        () -> handshake.establish(RedisProtocol.RESP2, creds));
+      assertTrue(ex.getMessage().startsWith("WRONGPASS"));
+      verify(connection).authenticate(creds);
+      verify(connection).hello(RespProtocol.RESP2, null);
+      verify(connection).hello(RespProtocol.RESP2, creds);
+    }
   }
 
   // ---------------------------------------------------------------------------
-  // establish() — RESP3_PREFERRED path (delegates to negotiateResp3WithFallback)
+  // requested = RESP3 (strict)  — no fallback on negotiation failures
   // ---------------------------------------------------------------------------
 
-  @Test
-  void establish_resp3PreferredUnknownCommand_fallsBackToResp2Inferred() {
-    // First HELLO 3 -> unknown -> fallback path: AUTH then HELLO 2 -> unknown -> infer RESP2
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
-    when(connection.hello(RespProtocol.RESP2, null))
-        .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
+  @Nested
+  @DisplayName("requested = RESP3 (strict)")
+  class Resp3StrictRequested {
 
-    HelloResult result = handshake.establish(RedisProtocol.RESP3_PREFERRED, null);
+    @Test
+    void callsHello3() {
+      when(connection.hello(RespProtocol.RESP3, null)).thenReturn(helloResult(RespProtocol.RESP3));
 
-    assertEquals(RespProtocol.RESP2, result.getProtocol());
-    assertNull(result.getServer());
-    verify(connection).authenticate(null);
+      HelloResult result = handshake.establish(RedisProtocol.RESP3, null);
+
+      assertEquals(RespProtocol.RESP3, result.getProtocol());
+      verify(connection).hello(RespProtocol.RESP3, null);
+    }
+
+    @Test
+    void unknownCommand_throwsProtocolNotSupported() {
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
+
+      JedisProtocolNotSupportedException ex = assertThrows(JedisProtocolNotSupportedException.class,
+        () -> handshake.establish(RedisProtocol.RESP3, null));
+      assertTrue(ex.getMessage().contains("Server does not support HELLO"));
+    }
+
+    @Test
+    void genericDataException_propagates() {
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisDataException("ERR something else"));
+
+      JedisDataException ex = assertThrows(JedisDataException.class,
+        () -> handshake.establish(RedisProtocol.RESP3, null));
+      assertFalse(ex instanceof JedisProtocolNotSupportedException);
+    }
+
+    @Test
+    void noAuthRecovery_authThenRetryHello() {
+      RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
+      when(connection.hello(RespProtocol.RESP3, creds)).thenReturn(helloResult(RespProtocol.RESP3));
+
+      HelloResult result = handshake.establish(RedisProtocol.RESP3, creds);
+
+      assertEquals(RespProtocol.RESP3, result.getProtocol());
+      InOrder inOrder = inOrder(connection);
+      inOrder.verify(connection).hello(RespProtocol.RESP3, null);
+      inOrder.verify(connection).authenticate(creds);
+      inOrder.verify(connection).hello(RespProtocol.RESP3, creds);
+    }
+
+    @Test
+    void nonNoAuthAccessControl_propagatesWithoutRetry() {
+      RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
+      when(connection.hello(RespProtocol.RESP3, null)).thenThrow(new JedisAccessControlException(
+          "NOPERM this user has no permissions to run the 'hello' command"));
+
+      assertThrows(JedisAccessControlException.class,
+        () -> handshake.establish(RedisProtocol.RESP3, creds));
+      verify(connection, never()).authenticate(any());
+      verify(connection, times(1)).hello(any(RespProtocol.class), any());
+    }
+
+    @Test
+    void noAuthThenWrongPass_propagatesAfterAuthAttempt() {
+      RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
+      when(connection.hello(RespProtocol.RESP3, creds))
+          .thenThrow(new JedisAccessControlException("WRONGPASS invalid username-password pair"));
+
+      JedisAccessControlException ex = assertThrows(JedisAccessControlException.class,
+        () -> handshake.establish(RedisProtocol.RESP3, creds));
+      assertTrue(ex.getMessage().startsWith("WRONGPASS"));
+      verify(connection).authenticate(creds);
+      verify(connection).hello(RespProtocol.RESP3, null);
+      verify(connection).hello(RespProtocol.RESP3, creds);
+    }
   }
 
-  @Test
-  void establish_resp3PreferredProtocolNotSupported_fallsBackToResp2() {
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
-    when(connection.hello(RespProtocol.RESP2, null)).thenReturn(helloResult(RespProtocol.RESP2));
+  // ---------------------------------------------------------------------------
+  // requested = RESP3_PREFERRED  — fall back to RESP2 when RESP3/HELLO unsupported
+  // ---------------------------------------------------------------------------
 
-    HelloResult result = handshake.establish(RedisProtocol.RESP3_PREFERRED, null);
+  @Nested
+  @DisplayName("requested = RESP3_PREFERRED")
+  class Resp3PreferredRequested {
 
-    assertEquals(RespProtocol.RESP2, result.getProtocol());
-  }
+    @Test
+    void callsHello3OnHappyPath() {
+      when(connection.hello(RespProtocol.RESP3, null)).thenReturn(helloResult(RespProtocol.RESP3));
 
-  @Test
-  void establish_resp3PreferredOtherDataException_propagates() {
-    when(connection.hello(RespProtocol.RESP3, null))
-        .thenThrow(new JedisDataException("ERR something else"));
+      HelloResult result = handshake.establish(RedisProtocol.RESP3_PREFERRED, null);
 
-    assertThrows(JedisDataException.class,
-      () -> handshake.establish(RedisProtocol.RESP3_PREFERRED, null));
+      assertEquals(RespProtocol.RESP3, result.getProtocol());
+      verify(connection).hello(RespProtocol.RESP3, null);
+    }
+
+    @Test
+    void unknownCommand_fallsBackToResp2Inferred() {
+      // First HELLO 3 -> unknown -> fallback path: AUTH then HELLO 2 -> unknown -> infer RESP2
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
+      when(connection.hello(RespProtocol.RESP2, null))
+          .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
+
+      HelloResult result = handshake.establish(RedisProtocol.RESP3_PREFERRED, null);
+
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
+      assertNull(result.getServer());
+      verify(connection).authenticate(null);
+    }
+
+    @Test
+    void protocolNotSupported_fallsBackToResp2() {
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisDataException("ERR unknown command 'HELLO'"));
+      when(connection.hello(RespProtocol.RESP2, null)).thenReturn(helloResult(RespProtocol.RESP2));
+
+      HelloResult result = handshake.establish(RedisProtocol.RESP3_PREFERRED, null);
+
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
+    }
+
+    @Test
+    void otherDataException_propagates() {
+      when(connection.hello(RespProtocol.RESP3, null))
+          .thenThrow(new JedisDataException("ERR something else"));
+
+      assertThrows(JedisDataException.class,
+        () -> handshake.establish(RedisProtocol.RESP3_PREFERRED, null));
+    }
   }
 
   // ---------------------------------------------------------------------------
   // Error-message classifiers
   // ---------------------------------------------------------------------------
 
-  @Test
-  void isUnknownCommandError_recognizesUnknownCommandMessages() {
-    assertTrue(ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR unknown command 'HELLO'")));
-    assertFalse(ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR something else")));
-    assertFalse(ProtocolHandshake.isUnknownCommandError(new JedisDataException("NOAUTH Authentication required.")));
-  }
+  @Nested
+  @DisplayName("error-message classifiers")
+  class ErrorClassifierTests {
 
-  @Test
-  void isNoAuthError_recognizesNoAuthMessages() {
-    assertTrue(ProtocolHandshake.isNoAuthError(new JedisDataException("NOAUTH Authentication required.")));
-    assertFalse(ProtocolHandshake.isNoAuthError(new JedisDataException("WRONGPASS invalid username-password pair")));
-    assertFalse(ProtocolHandshake.isNoAuthError(new JedisDataException("ERR something else")));
+    @Test
+    void isUnknownCommandError_recognizesUnknownCommandMessages() {
+      assertTrue(ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR unknown command 'HELLO'")));
+      assertFalse(ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR something else")));
+      assertFalse(ProtocolHandshake.isUnknownCommandError(new JedisDataException("NOAUTH Authentication required.")));
+    }
+
+    @Test
+    void isNoAuthError_recognizesNoAuthMessages() {
+      assertTrue(ProtocolHandshake.isNoAuthError(new JedisDataException("NOAUTH Authentication required.")));
+      assertFalse(ProtocolHandshake.isNoAuthError(new JedisDataException("WRONGPASS invalid username-password pair")));
+      assertFalse(ProtocolHandshake.isNoAuthError(new JedisDataException("ERR something else")));
+    }
   }
 
   // ---------------------------------------------------------------------------

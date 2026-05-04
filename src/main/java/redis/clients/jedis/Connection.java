@@ -67,7 +67,21 @@ public class Connection implements Closeable {
   }
 
   private ConnectionPool memberOf;
+  /**
+   * The RESP protocol established for this connection.
+   *
+   * <p>Set after the handshake completes. Holds the protocol the connection is actually
+   * speaking with the server.</p>
+   *
+   * <ul>
+   *   <li>{@code null} – No protocol established yet (handshake has not run).</li>
+   *   <li>{@code RESP2} – RESP2 established (either explicitly requested, fallback from
+   *       {@code RESP3_PREFERRED}, or assumed default when no protocol was requested).</li>
+   *   <li>{@code RESP3} – RESP3 established.</li>
+   * </ul>
+   */
   protected RedisProtocol protocol;
+
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -82,6 +96,7 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
+  private final ProtocolHandshake handshake = new ProtocolHandshake(this);
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -147,6 +162,13 @@ public class Connection implements Closeable {
     return strVal;
   }
 
+  /**
+   * Returns the RESP protocol established for this connection.
+   *
+   * @return {@code null} if no protocol has been established yet (handshake has not run);
+   *         {@link RedisProtocol#RESP2} or {@link RedisProtocol#RESP3} once the handshake
+   *         has completed.
+   */
   public final RedisProtocol getRedisProtocol() {
     return protocol;
   }
@@ -524,12 +546,12 @@ public class Connection implements Closeable {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
           redisCredentialsProvider.prepare();
-          protocol = helloAndAuth(requestedProtocol, redisCredentialsProvider.get());
+          establishProtocol(requestedProtocol, redisCredentialsProvider.get());
         } finally {
           redisCredentialsProvider.cleanUp();
         }
       } else {
-        protocol = helloAndAuth(requestedProtocol, credentialsProvider != null ? credentialsProvider.get()
+        establishProtocol(requestedProtocol, credentialsProvider != null ? credentialsProvider.get()
             : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
@@ -585,98 +607,58 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Performs HELLO and AUTH handshake and returns the resolved protocol version.
-   * <p>
-   * For {@link RedisProtocol#RESP3_PREFERRED}, attempts HELLO 3 and falls back to RESP2 on failure.
+   * Establish the RESP protocol version and authenticate if needed.
    *
-   * @param protocol the requested protocol (may be {@code null} or {@code RESP3_PREFERRED})
-   * @param credentials the credentials for authentication
-   * @return the actual negotiated protocol version
+   * Performs protocol negotiation using the {@code HELLO} command and optional authentication,
+   * and resolves the effective RESP protocol used for the connection.
+   *
+   * <p>This method supports both explicit protocol selection and legacy compatibility mode.</p>
+   *
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>If {@code requestedProtocol} is {@code null}, no {@code HELLO} is sent.
+   *       The connection assumes RESP2 as the default protocol and only {@code AUTH}
+   *       is performed if credentials are provided.</li>
+   *
+   *   <li>If {@code RESP2} is requested, a strict {@code HELLO 2} handshake is performed.</li>
+   *
+   *   <li>If {@code RESP3} is requested, a strict {@code HELLO 3} handshake is performed.</li>
+   *
+   *   <li>If {@code RESP3_PREFERRED} is requested, the client first attempts
+   *       {@code HELLO 3} and falls back to RESP2 if RESP3 is not supported.</li>
+   * </ul>
+   *
+   * <p>Legacy behavior:</p>
+   * <ul>
+   *   <li>When no protocol is explicitly configured, the client assumes RESP2 without
+   *       performing protocol negotiation.</li>
+   * </ul>
+   *
+   * <p>Side effects:</p>
+   * <ul>
+   *   <li>Performs authentication if credentials are provided.</li>
+   *   <li>Populates internal server metadata (version, server info).</li>
+   *   <li>Stores the resolved protocol version for the connection.</li>
+   * </ul>
+   *
+   * @param requestedProtocol the requested RESP protocol (may be {@code null} for legacy mode)
+   * @param credentials credentials used for authentication (may be {@code null})
+   * @throws IllegalArgumentException if the requested protocol is not supported
+   * @throws JedisProtocolNotSupportedException if protocol negotiation fails
+   * @throws JedisDataException if the server returns an error during handshake
    */
-  private RedisProtocol helloAndAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
-    // We do AUTH to keeep the compatibility with Redis <6.0 for legacy Jedis class.
-    // Redis 6.0.x (before 6.2.2) has a bug where HELLO with AUTH fails if the default user
-    // requires authentication — the server demands AUTH before allowing HELLO.
-    // See: https://github.com/redis/redis/issues/8558
-    // See: https://github.com/redis/lettuce/issues/2592
-    authenticate(credentials);
-
-    boolean doNotPerformProtocolNegotiation = protocol == null;
-
-    // This is needed to keep the compatibility with legacy Jedis class and
-    // avoid sending hello command when user haven't provided any protocol version and credentials.
-    if (doNotPerformProtocolNegotiation) {
-      return RedisProtocol.RESP2;
-    }
-
-    Map<String, Object> helloResult = null;
-
-    final String helloVersion = protocol == RedisProtocol.RESP3_PREFERRED
-        ? RedisProtocol.RESP3.version() : protocol.version();
-
-    try {
-      helloResult = hello(encode(helloVersion));
-    } catch (JedisProtocolNotSupportedException e) {
-      if (protocol == RedisProtocol.RESP3_PREFERRED) {
-        // RESP3 not supported, fall back to RESP2
-        return RedisProtocol.RESP2;
-      }
-      throw e;
-    } catch (JedisDataException e) {
-      boolean isUnknownCommand = e.getMessage().startsWith("ERR") && e.getMessage().contains("unknown command");
-      if (isUnknownCommand) {
-        if (protocol == RedisProtocol.RESP3_PREFERRED) {
-          // RESP3 not supported, fall back to RESP2
-          return RedisProtocol.RESP2;
-        }
-
-        throw new JedisProtocolNotSupportedException("HELLO is not supported by the server. "
-            + "Please check the server version or disable protocol version specification with serverDefaultProtocol().",
-            e);
-      } else {
-        throw e;
-      }
-    }
-
-    if (helloResult == null) {
-      // We assume here that HELLO succeeded on RESP-compatible server which does not return a map.
-      if (protocol == RedisProtocol.RESP3_PREFERRED) {
-        logger.warning("Could not check the protocol version from server response, assuming RESP3.");
-        return RedisProtocol.RESP3;
-      }
-    } else {
-      server = (String) helloResult.get("server");
-      version = (String) helloResult.get("version");
-
-      boolean helloResultContainsProto = helloResult.containsKey("proto") && helloResult.get("proto") instanceof Long;
-
-      if (helloResultContainsProto) {
-        RedisProtocol receivedProtocol = RedisProtocol.from((Long) helloResult.get("proto"));
-
-        if (protocol == RedisProtocol.RESP3_PREFERRED) {
-          return receivedProtocol;
-        } else if (protocol != receivedProtocol) {
-          throw new JedisException("Protocol version mismatch. Expected " + protocol + " but got " + receivedProtocol);
-        }
-      } else {
-        // HELLO succeeded on RESP-compatible server — resolve RESP3_PREFERRED to actual RESP3
-        if (protocol == RedisProtocol.RESP3_PREFERRED) {
-          logger.warning("Could not check the protocol version from server response, assuming RESP3.");
-          return RedisProtocol.RESP3;
-        }
-      }
-    }
-
-    // clearing 'char[] credentials.getPassword()' should be
-    // handled in RedisCredentialsProvider.cleanUp()
-    return protocol;
+  private void establishProtocol(final RedisProtocol requestedProtocol, final RedisCredentials credentials) {
+    HelloResult helloResult = handshake.establish(requestedProtocol, credentials);
+    version = helloResult.getVersion();
+    server = helloResult.getServer();
+    this.protocol = RedisProtocol.of(helloResult.getProtocol());
   }
 
   public void setCredentials(RedisCredentials credentials) {
     currentCredentials.set(credentials);
   }
 
-  private String authenticate(RedisCredentials credentials) {
+  String authenticate(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
       return null;
     }
@@ -700,6 +682,61 @@ public class Connection implements Closeable {
   protected Map<String, Object> hello(byte[]... args) {
     sendCommand(Command.HELLO, args);
     return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+  }
+
+  /**
+   * Sends the {@code HELLO} command to negotiate the RESP protocol version and optionally perform authentication.
+   *
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>If {@code credentials} is {@code null}, only protocol negotiation is performed
+   *       (no {@code AUTH} is sent).</li>
+   *
+   *   <li>If {@code credentials} is provided and contains a password, authentication is
+   *
+   *       performed via {@code HELLO ... AUTH <user> <password>}.</li>
+   *
+   *   <li>If {@code credentials#getUser()} is {@code null}, the {@code default} user is used.</li>
+   *   <li>If {@code credentials} is provided but the password is {@code null}, no authentication
+   *       is performed.</li>
+   * </ul>
+   *
+   * <p>Note:</p>
+   * <ul>
+   *   <li>{@code HELLO} is available only in Redis 6.0 and newer.</li>
+   *   <li>The command both negotiates the protocol version (RESP2/RESP3) and returns
+   *       server metadata.</li>
+   * </ul>
+   *
+   * @param protocol the requested RESP protocol version (must not be {@code null})
+   * @param credentials optional credentials used for authentication (may be {@code null})
+   * @return the parsed {@code HELLO} response containing server metadata
+   * @throws IllegalArgumentException if {@code protocol} is {@code null}
+   */
+  HelloResult hello(RespProtocol protocol, RedisCredentials credentials) {
+    if (protocol == null) {
+      throw new IllegalArgumentException("protocol must not be null");
+    }
+
+    byte[] rawPass = null;
+    try {
+      byte[][] args;
+      if (credentials != null && credentials.getPassword() != null) {
+        String user = credentials.getUser();
+        if (user == null) {
+          user = "default";
+        }
+        rawPass = encodeToBytes(credentials.getPassword());
+        args = new byte[][] { protocol.versionRaw(), Keyword.AUTH.getRaw(), encode(user), rawPass };
+      } else {
+        args = new byte[][] { protocol.versionRaw() };
+      }
+      return new HelloResult(hello(args));
+    } finally {
+      if (rawPass != null) {
+        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+      }
+    }
   }
 
   protected byte[] encodeToBytes(char[] chars) {

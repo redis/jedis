@@ -4,27 +4,24 @@ import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Enum representing supported versions of the RESP protocol.
- * <p>
- * Two modes are supported:
- * <ul>
- * <li>{@link #RESP2} – RESP2 protocol.</li>
- * <li>{@link #RESP3} – RESP3 protocol.</li>
- * </ul>
+ * Internal enum representing the two concrete RESP protocol versions negotiated with the server
+ * during the handshake. Used only by {@link ProtocolHandshake} and {@link Connection} to model the
+ * resolved (post-handshake) protocol; external callers should rely on
+ * {@link Connection#getRedisProtocol()} which returns the corresponding {@link RedisProtocol}.
  */
-public enum RespProtocol {
+enum RespProtocol {
 
   RESP2("2", SafeEncoder.encode("2")), RESP3("3", SafeEncoder.encode("3"));
 
   private final String version;
   private final byte[] versionRaw;
 
-  private RespProtocol(String ver, byte[] verRaw) {
+  RespProtocol(String ver, byte[] verRaw) {
     this.version = ver;
     this.versionRaw = verRaw;
   }
 
-  public static RespProtocol of(Long proto) {
+  static RespProtocol of(Long proto) {
     if (proto == null) {
       return null;
     }
@@ -37,27 +34,11 @@ public enum RespProtocol {
     throw new JedisProtocolNotSupportedException("Unknown protocol version: " + proto);
   }
 
-  public String version() {
+  String version() {
     return version;
   }
 
-  public byte[] versionRaw() {
+  byte[] versionRaw() {
     return versionRaw;
-  }
-
-  /**
-   * Returns {@code true} if this protocol targets RESP3.
-   * @return true if this protocol targets RESP3
-   */
-  public boolean isResp3() {
-    return this == RESP3;
-  }
-
-  /**
-   * Returns {@code true} if this protocol targets RESP2.
-   * @return true if this protocol targets RESP2
-   */
-  public boolean isResp2() {
-    return this == RESP2;
   }
 }

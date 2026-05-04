@@ -24,9 +24,9 @@ import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
  * Verifies that the RESP protocol established by a {@link Connection} (returned by
- * {@link Connection#getEstablishedProtocol()}) is correctly propagated to the
- * {@link CommandObjects} used by {@link RedisClient}, {@link RedisClusterClient},
- * {@link UnifiedJedis}, {@link Pipeline}, {@link ClusterPipeline}, and to {@link JedisPubSubBase}.
+ * {@link Connection#getRedisProtocol()}) is correctly propagated to the {@link CommandObjects} used
+ * by {@link RedisClient}, {@link RedisClusterClient}, {@link UnifiedJedis}, {@link Pipeline},
+ * {@link ClusterPipeline}, and to {@link JedisPubSubBase}.
  * <p>
  * Tests in this class do <em>not</em> exercise the handshake itself — that is covered by
  * {@link ConnectionHelloAuthTest} (wire-level) and {@link ProtocolHandshakeTest} (state-machine).
@@ -44,7 +44,7 @@ class ProtocolFallbackPropagationTest {
   // ---------------------------------------------------------------------------
   // RedisClient
   // ---------------------------------------------------------------------------
-  
+
   /**
    * When RedisClient is built with RESP3_PREFERRED, the constructor probes a Connection from the
    * provider to resolve the actual protocol. If the Connection fell back to RESP2 (server does not
@@ -53,7 +53,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void redisClientResolvesResp3PreferredToResp2WhenConnectionFellBack() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP2);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP2);
     when(provider.getConnection()).thenReturn(mockConnection);
 
     try (RedisClient client = RedisClient.builder().commandExecutor(exec)
@@ -77,7 +77,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void redisClientResolvesResp3PreferredToResp3WhenConnectionSucceeded() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
     when(provider.getConnection()).thenReturn(mockConnection);
 
     try (RedisClient client = RedisClient.builder().commandExecutor(exec)
@@ -103,7 +103,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void redisClusterClientResolvesResp3PreferredToResp2WhenConnectionFellBack() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP2);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP2);
     when(provider.getConnection()).thenReturn(mockConnection);
 
     try (RedisClusterClient client = RedisClusterClient.builder()
@@ -126,7 +126,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void redisClusterClientResolvesResp3PreferredToResp3WhenConnectionSucceeded() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
     when(provider.getConnection()).thenReturn(mockConnection);
 
     try (RedisClusterClient client = RedisClusterClient.builder()
@@ -153,7 +153,7 @@ class ProtocolFallbackPropagationTest {
   @SuppressWarnings("deprecation")
   void unifiedJedisFromConnectionPropagatesFallenBackProtocol() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP2);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP2);
 
     try (UnifiedJedis jedis = new UnifiedJedis(mockConnection)) {
       CommandObjects commandObjects = ReflectionTestUtil.getField(jedis, "commandObjects");
@@ -168,7 +168,7 @@ class ProtocolFallbackPropagationTest {
   @SuppressWarnings("deprecation")
   void unifiedJedisFromConnectionPropagatesResp3Protocol() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
 
     try (UnifiedJedis jedis = new UnifiedJedis(mockConnection)) {
       CommandObjects commandObjects = ReflectionTestUtil.getField(jedis, "commandObjects");
@@ -186,7 +186,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void pipelineFromResp3ConnectionHasResp3Protocol() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
 
     Pipeline pipeline = new Pipeline(mockConnection);
     CommandObjects commandObjects = ReflectionTestUtil.getField(pipeline, "commandObjects");
@@ -199,7 +199,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void redisClientPipelinedInheritsResp3Protocol() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
     when(provider.getConnection()).thenReturn(mockConnection);
 
     try (RedisClient client = RedisClient.builder().commandExecutor(exec)
@@ -231,7 +231,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void clusterPipelineResolvesResp3PreferredToResp3() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
 
     ClusterConnectionProvider clusterProvider = mock(ClusterConnectionProvider.class);
     when(clusterProvider.getConnection()).thenReturn(mockConnection);
@@ -250,7 +250,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void redisClusterClientPipelinedInheritsResp3Protocol() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
 
     ClusterConnectionProvider clusterProvider = mock(ClusterConnectionProvider.class);
     when(clusterProvider.getConnection()).thenReturn(mockConnection);
@@ -286,7 +286,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void pubSubAllowsSubscribeWhenConnectionHasResp3WithTokenAuth() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP3);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
 
     JedisPubSubBase<String> pubSub = new JedisPubSub() {
     };
@@ -300,7 +300,7 @@ class ProtocolFallbackPropagationTest {
   @Test
   void pubSubRejectsSubscribeWhenConnectionHasResp2WithTokenAuth() {
     Connection mockConnection = mock(Connection.class);
-    when(mockConnection.getEstablishedProtocol()).thenReturn(RespProtocol.RESP2);
+    when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP2);
     when(mockConnection.isTokenBasedAuthenticationEnabled()).thenReturn(true);
 
     JedisPubSubBase<String> pubSub = new JedisPubSub() {

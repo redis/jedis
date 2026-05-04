@@ -52,8 +52,8 @@ public class MultiDbTransaction extends AbstractTransaction {
     this.failoverProvider = new MultiDbConnectionSupplier(provider);
 
     try (Connection connection = failoverProvider.getConnection()) {
-      RespProtocol proto = connection.getEstablishedProtocol();
-      if (proto != null) this.commandObjects.setProtocol(RedisProtocol.of(proto));
+      RedisProtocol proto = connection.getRedisProtocol();
+      if (proto != null) this.commandObjects.setProtocol(proto);
     }
 
     if (doMulti) multi();

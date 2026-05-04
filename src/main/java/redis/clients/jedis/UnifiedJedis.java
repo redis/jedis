@@ -76,9 +76,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new CommandObjects();
-    RespProtocol resolved = connection.getEstablishedProtocol();
+    RedisProtocol resolved = connection.getRedisProtocol();
     if (resolved != null) {
-      this.commandObjects.setProtocol(RedisProtocol.of(resolved));
+      this.commandObjects.setProtocol(resolved);
     }
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -110,9 +110,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
         if (conn != null) {
-          RespProtocol resolved = conn.getEstablishedProtocol();
+          RedisProtocol resolved = conn.getRedisProtocol();
           if (resolved != null) {
-            this.commandObjects.setProtocol(RedisProtocol.of(resolved));
+            this.commandObjects.setProtocol(resolved);
           }
         }
       } catch (JedisException je) {
@@ -146,7 +146,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       }
       try (Connection conn = provider.getConnection()) {
         if (conn != null) {
-          resolvedProtocol = RedisProtocol.of(conn.getEstablishedProtocol());
+          resolvedProtocol = conn.getRedisProtocol();
         }
       } catch (JedisException ignored) {
       }

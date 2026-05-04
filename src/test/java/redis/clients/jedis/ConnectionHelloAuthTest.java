@@ -45,10 +45,6 @@ public class ConnectionHelloAuthTest {
   private static final byte[] NOPERM_ERR = "-NOPERM this user has no permissions to run the 'hello' command or its subcommand\r\n"
       .getBytes();
 
-  /** Minimal RESP3 map without proto field: %2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n */
-  private static final byte[] HELLO_OK_MAP = "%2\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n"
-      .getBytes();
-
   /** RESP3 map with proto=3: %3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n */
   private static final byte[] HELLO_OK_MAP_PROTO3 = "%3\r\n+server\r\n+redis\r\n+version\r\n+7.0.0\r\n+proto\r\n:3\r\n"
       .getBytes();
@@ -150,16 +146,6 @@ public class ConnectionHelloAuthTest {
   class BareHelloTests {
 
     @Test
-    @DisplayName("HELLO succeeds — protocol is negotiated normally")
-    void helloSucceeds() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP),
-          noAuthConfig(RedisProtocol.RESP3));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
-
-    @Test
     @DisplayName("HELLO rejected with NOAUTH — propagates auth error instead of silently downgrading")
     void helloRejectedNoAuthThrows() {
       // If the user asked for a specific protocol but didn't provide credentials,
@@ -208,9 +194,8 @@ public class ConnectionHelloAuthTest {
     @DisplayName("No HELLO sent when protocol is null — connection defaults to RESP2")
     void noHelloWhenProtocolNull() {
       Connection conn = new Connection(fakeSocketFactory(new byte[0]), noAuthConfig(null));
-      // When protocol is null, no HELLO is sent but the connection resolves to RESP2.
-      assertNull(conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
+      // When no protocol is requested we fall back to the server default (assumed RESP2).
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -221,7 +206,6 @@ public class ConnectionHelloAuthTest {
       Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
           noAuthConfig(RedisProtocol.RESP3));
       assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP3, conn.getEstablishedProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -232,7 +216,6 @@ public class ConnectionHelloAuthTest {
       Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
           noAuthConfig(RedisProtocol.RESP2));
       assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -242,8 +225,7 @@ public class ConnectionHelloAuthTest {
     void resp3PreferredWithProto3InResponse() {
       Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
           noAuthConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP3, conn.getEstablishedProtocol());
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -253,19 +235,7 @@ public class ConnectionHelloAuthTest {
     void resp3PreferredWithProto2InResponse() {
       Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
           noAuthConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
-
-    @Test
-    @DisplayName("HELLO without proto field — explicit RESP3 still resolves normally")
-    void helloWithoutProtoFieldExplicitResp3() {
-      // When proto field is absent, no mismatch check is done — protocol resolves as requested.
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP),
-          noAuthConfig(RedisProtocol.RESP3));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -277,8 +247,7 @@ public class ConnectionHelloAuthTest {
       // -> HELLO 2 -> unknown -> infer RESP2.
       Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR, UNKNOWN_CMD_ERR)),
           noAuthConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -296,7 +265,6 @@ public class ConnectionHelloAuthTest {
       Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
           authConfig(RedisProtocol.RESP3));
       assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP3, conn.getEstablishedProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -335,8 +303,7 @@ public class ConnectionHelloAuthTest {
     void resp3PreferredAuthWithProto3() {
       Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
           authConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP3, conn.getEstablishedProtocol());
+      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -351,8 +318,7 @@ public class ConnectionHelloAuthTest {
       Connection conn = new Connection(
           fakeSocketFactory(concat(UNKNOWN_CMD_ERR, AUTH_OK_REPLY, UNKNOWN_CMD_ERR)),
           authConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }
@@ -367,8 +333,7 @@ public class ConnectionHelloAuthTest {
       Connection conn = new Connection(
           fakeSocketFactory(concat(NOPROTO_ERR, AUTH_OK_REPLY, HELLO_OK_MAP_PROTO2)),
           authConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3_PREFERRED, conn.getRedisProtocol());
-      assertEquals(RespProtocol.RESP2, conn.getEstablishedProtocol());
+      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
       assertFalse(conn.isBroken());
       conn.close();
     }

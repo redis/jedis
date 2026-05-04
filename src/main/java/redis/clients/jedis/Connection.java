@@ -68,29 +68,20 @@ public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
   /**
-   * Stores the requested protocol configuration for this connection.
+   * The RESP protocol established for this connection.
    *
-   * <p>Defines the desired RESP protocol behavior for the client.</p>
+   * <p>Set after the handshake completes. Holds the protocol the connection is actually
+   * speaking with the server, never the client-requested mode.</p>
    *
    * <ul>
-   *   <li>{@code null} – No explicit protocol requested. The connection will not perform
-   *       protocol negotiation and will assume RESP2 as the default server protocol.</li>
-   *   <li>{@code RESP2} – Enforce RESP2 via HELLO negotiation (no fallback).</li>
-   *   <li>{@code RESP3} – Enforce RESP3 via HELLO negotiation (no fallback).</li>
-   *   <li>{@code RESP3_PREFERRED} – Attempt RESP3, fallback to RESP2 if not supported.</li>
+   *   <li>{@code null} – No protocol established yet (handshake has not run).</li>
+   *   <li>{@code RESP2} – RESP2 established (either explicitly requested, fallback from
+   *       {@code RESP3_PREFERRED}, or assumed default when no protocol was requested).</li>
+   *   <li>{@code RESP3} – RESP3 established.</li>
    * </ul>
    */
   protected RedisProtocol protocol;
 
-  /**
-   * The protocol version established with the server.
-   *
-   * <p>This value is set after a successful handshake and reflects the actual RESP protocol
-   * used for communication with the server.</p>
-   *
-   * <p>May be {@code null} if the handshake has not yet been performed.</p>
-   */
-  private RespProtocol establishedProtocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -171,6 +162,13 @@ public class Connection implements Closeable {
     return strVal;
   }
 
+  /**
+   * Returns the RESP protocol established for this connection.
+   *
+   * @return {@code null} if no protocol has been established yet (handshake has not run);
+   *         {@link RedisProtocol#RESP2} or {@link RedisProtocol#RESP3} once the handshake
+   *         has completed.
+   */
   public final RedisProtocol getRedisProtocol() {
     return protocol;
   }
@@ -548,12 +546,12 @@ public class Connection implements Closeable {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
           redisCredentialsProvider.prepare();
-          establishedProtocol = establishProtocol(requestedProtocol, redisCredentialsProvider.get());
+          establishProtocol(requestedProtocol, redisCredentialsProvider.get());
         } finally {
           redisCredentialsProvider.cleanUp();
         }
       } else {
-        establishedProtocol = establishProtocol(requestedProtocol, credentialsProvider != null ? credentialsProvider.get()
+        establishProtocol(requestedProtocol, credentialsProvider != null ? credentialsProvider.get()
             : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
@@ -645,17 +643,15 @@ public class Connection implements Closeable {
    *
    * @param requestedProtocol the requested RESP protocol (may be {@code null} for legacy mode)
    * @param credentials credentials used for authentication (may be {@code null})
-   * @return the resolved {@link RespProtocol} negotiated for this connection
    * @throws IllegalArgumentException if the requested protocol is not supported
    * @throws JedisProtocolNotSupportedException if protocol negotiation fails
    * @throws JedisDataException if the server returns an error during handshake
    */
-  private RespProtocol establishProtocol(final RedisProtocol requestedProtocol, final RedisCredentials credentials) {
-    this.protocol = requestedProtocol;
+  private void establishProtocol(final RedisProtocol requestedProtocol, final RedisCredentials credentials) {
     HelloResult helloResult = handshake.establish(requestedProtocol, credentials);
     version = helloResult.getVersion();
     server = helloResult.getServer();
-    return helloResult.getProtocol();
+    this.protocol = RedisProtocol.of(helloResult.getProtocol());
   }
 
   public void setCredentials(RedisCredentials credentials) {
@@ -771,10 +767,5 @@ public class Connection implements Closeable {
 
   protected AuthXManager getAuthXManager() {
     return authXManager;
-  }
-
-  @Experimental
-  public RespProtocol getEstablishedProtocol() {
-    return establishedProtocol;
   }
 }

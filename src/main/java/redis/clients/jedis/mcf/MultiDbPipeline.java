@@ -26,8 +26,8 @@ public class MultiDbPipeline extends AbstractPipeline implements Closeable {
     this.failoverProvider = new MultiDbConnectionSupplier(pooledProvider);
 
     try (Connection connection = failoverProvider.getConnection()) {
-      RespProtocol proto = connection.getEstablishedProtocol();
-      if (proto != null) this.commandObjects.setProtocol(RedisProtocol.of(proto));
+      RedisProtocol proto = connection.getRedisProtocol();
+      if (proto != null) this.commandObjects.setProtocol(proto);
     }
   }
 

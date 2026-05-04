@@ -86,7 +86,7 @@ final class ProtocolHandshake {
    * @param credentials credentials for authentication
    * @return {@link HelloResult} the actual negotiated protocol version
    */
-  HelloResult negotiateResp3WithFallback(final RedisCredentials credentials) {
+  private HelloResult negotiateResp3WithFallback(final RedisCredentials credentials) {
     try {
       return enforceProtocolWithAuth(RespProtocol.RESP3, credentials);
     } catch (JedisProtocolNotSupportedException e) {
@@ -132,7 +132,7 @@ final class ProtocolHandshake {
    * @throws JedisProtocolNotSupportedException if the server does not support the requested protocol
    * @throws JedisAccessControlException if authentication fails and cannot be recovered
    */
-  HelloResult enforceProtocolWithAuth(RespProtocol protocol, RedisCredentials credentials) {
+  private HelloResult enforceProtocolWithAuth(RespProtocol protocol, RedisCredentials credentials) {
     if (protocol == null) {
       throw new IllegalArgumentException("protocol must not be null");
     }
@@ -192,7 +192,7 @@ final class ProtocolHandshake {
    * @return {@link HelloResult} containing protocol and server metadata (may be inferred for legacy servers)
    * @throws JedisDataException if a non-recoverable server error occurs
    */
-  HelloResult establishLegacyResp2(final RedisCredentials credentials) {
+  private HelloResult establishLegacyResp2(final RedisCredentials credentials) {
     // authenticate first to support legacy behavior on server not supporting HELLO
     connection.authenticate(credentials);
 

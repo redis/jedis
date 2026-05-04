@@ -42,7 +42,7 @@ class ProtocolHandshakeTest {
   }
 
   // ---------------------------------------------------------------------------
-  // requested = null  (legacy mode: no HELLO sent, server default assumed RESP2)
+  // requested = null (legacy mode: no HELLO sent, server default assumed RESP2)
   // ---------------------------------------------------------------------------
 
   @Nested
@@ -155,7 +155,7 @@ class ProtocolHandshakeTest {
   }
 
   // ---------------------------------------------------------------------------
-  // requested = RESP3 (strict)  — no fallback on negotiation failures
+  // requested = RESP3 (strict) — no fallback on negotiation failures
   // ---------------------------------------------------------------------------
 
   @Nested
@@ -238,7 +238,7 @@ class ProtocolHandshakeTest {
   }
 
   // ---------------------------------------------------------------------------
-  // requested = RESP3_PREFERRED  — fall back to RESP2 when RESP3/HELLO unsupported
+  // requested = RESP3_PREFERRED — fall back to RESP2 when RESP3/HELLO unsupported
   // ---------------------------------------------------------------------------
 
   @Nested
@@ -301,15 +301,20 @@ class ProtocolHandshakeTest {
 
     @Test
     void isUnknownCommandError_recognizesUnknownCommandMessages() {
-      assertTrue(ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR unknown command 'HELLO'")));
-      assertFalse(ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR something else")));
-      assertFalse(ProtocolHandshake.isUnknownCommandError(new JedisDataException("NOAUTH Authentication required.")));
+      assertTrue(ProtocolHandshake
+          .isUnknownCommandError(new JedisDataException("ERR unknown command 'HELLO'")));
+      assertFalse(
+        ProtocolHandshake.isUnknownCommandError(new JedisDataException("ERR something else")));
+      assertFalse(ProtocolHandshake
+          .isUnknownCommandError(new JedisDataException("NOAUTH Authentication required.")));
     }
 
     @Test
     void isNoAuthError_recognizesNoAuthMessages() {
-      assertTrue(ProtocolHandshake.isNoAuthError(new JedisDataException("NOAUTH Authentication required.")));
-      assertFalse(ProtocolHandshake.isNoAuthError(new JedisDataException("WRONGPASS invalid username-password pair")));
+      assertTrue(
+        ProtocolHandshake.isNoAuthError(new JedisDataException("NOAUTH Authentication required.")));
+      assertFalse(ProtocolHandshake
+          .isNoAuthError(new JedisDataException("WRONGPASS invalid username-password pair")));
       assertFalse(ProtocolHandshake.isNoAuthError(new JedisDataException("ERR something else")));
     }
   }

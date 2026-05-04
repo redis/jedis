@@ -71,7 +71,7 @@ public class Connection implements Closeable {
    * The RESP protocol established for this connection.
    *
    * <p>Set after the handshake completes. Holds the protocol the connection is actually
-   * speaking with the server, never the client-requested mode.</p>
+   * speaking with the server.</p>
    *
    * <ul>
    *   <li>{@code null} – No protocol established yet (handshake has not run).</li>

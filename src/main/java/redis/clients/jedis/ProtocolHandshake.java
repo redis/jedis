@@ -8,10 +8,11 @@ import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
 
 /**
  * Encapsulates the RESP protocol handshake logic for {@link Connection}.
- *
- * <p>Owns HELLO-based protocol negotiation, RESP3 fallback handling, and the recovery path for the
- * Redis 6.0.x NOAUTH bug. Authentication itself remains on {@link Connection}; this class
- * delegates to {@link Connection#authenticate(RedisCredentials)} where required.</p>
+ * <p>
+ * Owns HELLO-based protocol negotiation, RESP3 fallback handling, and the recovery path for the
+ * Redis 6.0.x NOAUTH bug. Authentication itself remains on {@link Connection}; this class delegates
+ * to {@link Connection#authenticate(RedisCredentials)} where required.
+ * </p>
  */
 final class ProtocolHandshake {
 
@@ -22,33 +23,31 @@ final class ProtocolHandshake {
   }
 
   /**
-   * Establish the RESP protocol version and authenticate if needed.
-   *
-   * Performs protocol negotiation using the {@code HELLO} command and optional authentication,
-   * and resolves the effective RESP protocol used for the connection.
-   *
-   * <p>This method supports both explicit protocol selection and legacy compatibility mode.</p>
-   *
-   * <p>Behavior:</p>
+   * Establish the RESP protocol version and authenticate if needed. Performs protocol negotiation
+   * using the {@code HELLO} command and optional authentication, and resolves the effective RESP
+   * protocol used for the connection.
+   * <p>
+   * This method supports both explicit protocol selection and legacy compatibility mode.
+   * </p>
+   * <p>
+   * Behavior:
+   * </p>
    * <ul>
-   *   <li>If {@code requestedProtocol} is {@code null}, no {@code HELLO} is sent.
-   *       The connection assumes RESP2 as the default protocol and only {@code AUTH}
-   *       is performed if credentials are provided.</li>
-   *
-   *   <li>If {@code RESP2} is requested, a strict {@code HELLO 2} handshake is performed.</li>
-   *
-   *   <li>If {@code RESP3} is requested, a strict {@code HELLO 3} handshake is performed.</li>
-   *
-   *   <li>If {@code RESP3_PREFERRED} is requested, the client first attempts
-   *       {@code HELLO 3} and falls back to RESP2 if RESP3 is not supported.</li>
+   * <li>If {@code requestedProtocol} is {@code null}, no {@code HELLO} is sent. The connection
+   * assumes RESP2 as the default protocol and only {@code AUTH} is performed if credentials are
+   * provided.</li>
+   * <li>If {@code RESP2} is requested, a strict {@code HELLO 2} handshake is performed.</li>
+   * <li>If {@code RESP3} is requested, a strict {@code HELLO 3} handshake is performed.</li>
+   * <li>If {@code RESP3_PREFERRED} is requested, the client first attempts {@code HELLO 3} and
+   * falls back to RESP2 if RESP3 is not supported.</li>
    * </ul>
-   *
-   * <p>Legacy behavior:</p>
+   * <p>
+   * Legacy behavior:
+   * </p>
    * <ul>
-   *   <li>When no protocol is explicitly configured, the client assumes RESP2 without
-   *       performing protocol negotiation.</li>
+   * <li>When no protocol is explicitly configured, the client assumes RESP2 without performing
+   * protocol negotiation.</li>
    * </ul>
-   *
    * @param requestedProtocol the requested RESP protocol (may be {@code null} for legacy mode)
    * @param credentials credentials used for authentication (may be {@code null})
    * @return the {@link HelloResult} carrying negotiated protocol and server metadata
@@ -103,33 +102,34 @@ final class ProtocolHandshake {
 
   /**
    * Performs strict protocol negotiation using the {@code HELLO} command.
-   *
-   * <p>This method enforces the provided {@code protocol} version and expects the server
-   * to support the {@code HELLO} command. It does not perform protocol fallback
-   * (e.g., RESP3 → RESP2).</p>
-   *
-   * <p>Behavior:</p>
+   * <p>
+   * This method enforces the provided {@code protocol} version and expects the server to support
+   * the {@code HELLO} command. It does not perform protocol fallback (e.g., RESP3 → RESP2).
+   * </p>
+   * <p>
+   * Behavior:
+   * </p>
    * <ul>
-   *   <li>Attempts negotiation via {@code HELLO <protocol>} without authentication.</li>
-   *   <li>If the server rejects the request with a NOAUTH error (observed in Redis 6.0.x
-   *       prior to 6.2.2), performs an {@code AUTH} using the provided credentials and
-   *       retries the handshake.</li>
-   *   <li>Any non-authentication-related errors are propagated to the caller.</li>
+   * <li>Attempts negotiation via {@code HELLO <protocol>} without authentication.</li>
+   * <li>If the server rejects the request with a NOAUTH error (observed in Redis 6.0.x prior to
+   * 6.2.2), performs an {@code AUTH} using the provided credentials and retries the handshake.</li>
+   * <li>Any non-authentication-related errors are propagated to the caller.</li>
    * </ul>
-   *
-   * <p>Notes:</p>
+   * <p>
+   * Notes:
+   * </p>
    * <ul>
-   *   <li>Some Redis 6.0.x versions require authentication before allowing {@code HELLO},
-   *       even though {@code HELLO AUTH} is supported in later versions.</li>
-   *   <li>This method assumes the server supports the requested protocol; unsupported
-   *       protocol errors are not handled and will be propagated.</li>
+   * <li>Some Redis 6.0.x versions require authentication before allowing {@code HELLO}, even though
+   * {@code HELLO AUTH} is supported in later versions.</li>
+   * <li>This method assumes the server supports the requested protocol; unsupported protocol errors
+   * are not handled and will be propagated.</li>
    * </ul>
-   *
    * @param protocol the RESP protocol version to negotiate (must not be {@code null})
    * @param credentials credentials used for authentication if required (may be {@code null})
    * @return the {@code HELLO} response containing negotiated protocol and server metadata
    * @throws IllegalArgumentException if {@code protocol} is {@code null}
-   * @throws JedisProtocolNotSupportedException if the server does not support the requested protocol
+   * @throws JedisProtocolNotSupportedException if the server does not support the requested
+   *           protocol
    * @throws JedisAccessControlException if authentication fails and cannot be recovered
    */
   private HelloResult enforceProtocolWithAuth(RespProtocol protocol, RedisCredentials credentials) {
@@ -164,32 +164,36 @@ final class ProtocolHandshake {
 
   /**
    * Fallback handshake used when RESP3 or {@code HELLO} is not supported by the server.
-   *
-   * <p>This method provides compatibility with legacy Redis servers that do not support
-   * the {@code HELLO} command.</p>
-   *
-   * <p>Behavior:</p>
+   * <p>
+   * This method provides compatibility with legacy Redis servers that do not support the
+   * {@code HELLO} command.
+   * </p>
+   * <p>
+   * Behavior:
+   * </p>
    * <ul>
-   *   <li>Performs {@code AUTH} if credentials are provided.</li>
-   *   <li>Attempts a {@code HELLO 2} command to retrieve server metadata.</li>
-   *   <li>If the server does not support {@code HELLO}, assumes RESP2 as the default protocol.</li>
+   * <li>Performs {@code AUTH} if credentials are provided.</li>
+   * <li>Attempts a {@code HELLO 2} command to retrieve server metadata.</li>
+   * <li>If the server does not support {@code HELLO}, assumes RESP2 as the default protocol.</li>
    * </ul>
-   *
-   * <p>Fallback logic:</p>
+   * <p>
+   * Fallback logic:
+   * </p>
    * <ul>
-   *   <li>If {@code HELLO} succeeds → uses returned protocol and metadata.</li>
-   *   <li>If {@code HELLO} fails with unknown command → assumes RESP2 and continues.</li>
-   *   <li>Any other errors are propagated to the caller.</li>
+   * <li>If {@code HELLO} succeeds → uses returned protocol and metadata.</li>
+   * <li>If {@code HELLO} fails with unknown command → assumes RESP2 and continues.</li>
+   * <li>Any other errors are propagated to the caller.</li>
    * </ul>
-   *
-   * <p>Note:</p>
+   * <p>
+   * Note:
+   * </p>
    * <ul>
-   *   <li>This method exists solely for backward compatibility with Redis versions prior to 6.0.</li>
-   *   <li>Server version and protocol information may be incomplete when fallback is used.</li>
+   * <li>This method exists solely for backward compatibility with Redis versions prior to 6.0.</li>
+   * <li>Server version and protocol information may be incomplete when fallback is used.</li>
    * </ul>
-   *
    * @param credentials credentials used for authentication (may be {@code null})
-   * @return {@link HelloResult} containing protocol and server metadata (may be inferred for legacy servers)
+   * @return {@link HelloResult} containing protocol and server metadata (may be inferred for legacy
+   *         servers)
    * @throws JedisDataException if a non-recoverable server error occurs
    */
   private HelloResult establishLegacyResp2(final RedisCredentials credentials) {

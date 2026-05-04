@@ -579,6 +579,7 @@
                         <include>src/test/java/redis/clients/jedis/**/search/*.java</include>
 
 						<include>**/RespProtocol.java</include>
+						<include>**/ProtocolHandshake.java</include>
 					</includes>
 				</configuration>
 				<executions>

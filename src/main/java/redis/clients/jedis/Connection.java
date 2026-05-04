@@ -644,6 +644,7 @@ public class Connection implements Closeable {
    * @param requestedProtocol the requested RESP protocol (may be {@code null} for legacy mode)
    * @param credentials credentials used for authentication (may be {@code null})
    * @throws IllegalArgumentException if the requested protocol is not supported
+   * @throws IllegalStateException if the server's HELLO response is missing the protocol field
    * @throws JedisProtocolNotSupportedException if protocol negotiation fails
    * @throws JedisDataException if the server returns an error during handshake
    */
@@ -651,6 +652,11 @@ public class Connection implements Closeable {
     HelloResult helloResult = handshake.establish(requestedProtocol, credentials);
     version = helloResult.getVersion();
     server = helloResult.getServer();
+
+    if (helloResult.getProtocol() == null) {
+      throw new IllegalStateException("HELLO response is missing the protocol version field");
+    }
+
     this.protocol = RedisProtocol.of(helloResult.getProtocol());
   }
 

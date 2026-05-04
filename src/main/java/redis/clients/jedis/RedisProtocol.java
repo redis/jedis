@@ -67,12 +67,16 @@ public enum RedisProtocol {
   }
 
   static RedisProtocol of(RespProtocol resolved) {
+    if (resolved == null) {
+      return null;
+    }
+
     if (resolved == RespProtocol.RESP2) {
       return RESP2;
     } else if (resolved == RespProtocol.RESP3) {
       return RESP3;
     } else {
-      throw new JedisProtocolNotSupportedException("Unknown protocol version: " + resolved);
+      throw new IllegalArgumentException("Unknown protocol version: " + resolved);
     }
   }
 }

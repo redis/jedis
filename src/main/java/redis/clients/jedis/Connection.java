@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
-import java.util.Collections;
 import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.Socket;
@@ -106,6 +105,7 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
+  private final ProtocolHandshake handshake = new ProtocolHandshake(this);
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -608,170 +608,6 @@ public class Connection implements Closeable {
     }
   }
 
-  // TODO: Move to Top level class and Builder
-  static class HelloResult {
-    final Map<String, Object> helloResponse;
-
-    HelloResult(Map<String, Object> helloResponse) {
-      this.helloResponse = helloResponse;
-    }
-
-    /**
-     * @return the protocol version the server actually accepted
-     */
-    public RespProtocol getProtocol() {
-      Long proto = (Long) helloResponse.get("proto");
-      return RespProtocol.of(proto);
-    }
-
-    public String getServer() {
-      return (String) helloResponse.get("server");
-    }
-
-    public String getVersion() {
-      return (String) helloResponse.get("version");
-    }
-  }
-
-  /**
-   * Send HELLO command to the server to negotiate the protocol version and authenticate if needed.
-   * <p>
-   * Attempts RESP3 handshake, falls back to RESP2 if not supported.
-   * </p>
-   * @param credentials credentials for authentication
-   * @return {@link RespProtocol} the actual negotiated protocol version
-   */
-  private HelloResult negotiateResp3WithFallback(final RedisCredentials credentials){
-    try {
-      return enforceProtocolWithAuth(RespProtocol.RESP3, credentials);
-    } catch (JedisProtocolNotSupportedException e) {
-      // fall back to resp2
-      return establishLegacyResp2(credentials);
-    } catch (JedisDataException e) {
-      // fall back to resp2
-      if (isUnknownCommandError(e)) {
-        return establishLegacyResp2(credentials);
-      }
-      throw e;
-    }
-  }
-
-  /**
-   * Performs strict protocol negotiation using the {@code HELLO} command.
-   *
-   * <p>This method enforces the provided {@code protocol} version and expects the server
-   * to support the {@code HELLO} command. It does not perform protocol fallback
-   * (e.g., RESP3 → RESP2).</p>
-   *
-   * <p>Behavior:</p>
-   * <ul>
-   *   <li>Attempts negotiation via {@code HELLO <protocol>} without authentication.</li>
-   *   <li>If the server rejects the request with a NOAUTH error (observed in Redis 6.0.x
-   *       prior to 6.2.2), performs an {@code AUTH} using the provided credentials and
-   *       retries the handshake.</li>
-   *   <li>Any non-authentication-related errors are propagated to the caller.</li>
-   * </ul>
-   *
-   * <p>Notes:</p>
-   * <ul>
-   *   <li>Some Redis 6.0.x versions require authentication before allowing {@code HELLO},
-   *       even though {@code HELLO AUTH} is supported in later versions.</li>
-   *   <li>This method assumes the server supports the requested protocol; unsupported
-   *       protocol errors are not handled and will be propagated.</li>
-   * </ul>
-   *
-   * @param protocol the RESP protocol version to negotiate (must not be {@code null})
-   * @param credentials credentials used for authentication if required (may be {@code null})
-   * @return the {@code HELLO} response containing negotiated protocol and server metadata
-   * @throws IllegalArgumentException if {@code protocol} is {@code null}
-   * @throws JedisProtocolNotSupportedException if the server does not support the requested protocol
-   * @throws JedisAccessControlException if authentication fails and cannot be recovered
-   */
-  private HelloResult enforceProtocolWithAuth(RespProtocol protocol, RedisCredentials credentials) {
-    if (protocol == null) {
-      throw new IllegalArgumentException("protocol must not be null");
-    }
-
-    try {
-      try {
-        return helloCommand(protocol, null);
-      } catch (JedisDataException e) {
-        if (isUnknownCommandError(e)) {
-          throw new JedisProtocolNotSupportedException("Server does not support HELLO", e);
-        } else {
-          throw e;
-        }
-      }
-    } catch (JedisAccessControlException e) {
-      // Redis 6.0.x (before 6.2.2) has a bug where HELLO with AUTH fails if the default user
-      // requires authentication — the server demands AUTH before allowing HELLO.
-      // See: https://github.com/redis/redis/issues/8558
-      // See: https://github.com/redis/lettuce/issues/2592
-      if (isNoAuthError(e)) {
-        authenticate(credentials);
-        return helloCommand(protocol, credentials);
-      } else {
-        throw e;
-      }
-    }
-
-  }
-
-  /**
-   * Fallback handshake used when RESP3 or {@code HELLO} is not supported by the server.
-   *
-   * <p>This method provides compatibility with legacy Redis servers that do not support
-   * the {@code HELLO} command.</p>
-   *
-   * <p>Behavior:</p>
-   * <ul>
-   *   <li>Performs {@code AUTH} if credentials are provided.</li>
-   *   <li>Attempts a {@code HELLO 2} command to retrieve server metadata.</li>
-   *   <li>If the server does not support {@code HELLO}, assumes RESP2 as the default protocol.</li>
-   * </ul>
-   *
-   * <p>Fallback logic:</p>
-   * <ul>
-   *   <li>If {@code HELLO} succeeds → uses returned protocol and metadata.</li>
-   *   <li>If {@code HELLO} fails with unknown command → assumes RESP2 and continues.</li>
-   *   <li>Any other errors are propagated to the caller.</li>
-   * </ul>
-   *
-   * <p>Note:</p>
-   * <ul>
-   *   <li>This method exists solely for backward compatibility with Redis versions prior to 6.0.</li>
-   *   <li>Server version and protocol information may be incomplete when fallback is used.</li>
-   * </ul>
-   *
-   * @param credentials credentials used for authentication (may be {@code null})
-   * @return {@link HelloResult} containing protocol and server metadata (may be inferred for legacy servers)
-   * @throws JedisDataException if a non-recoverable server error occurs
-   */
-  private HelloResult establishLegacyResp2(final RedisCredentials credentials) {
-    // authenticate first to support legacy behavior on server not supporting HELLO
-    authenticate(credentials);
-
-    try {
-      return helloCommand(RespProtocol.RESP2, null);
-    } catch (JedisDataException e) {
-      // if server does not support hello, we assume RESP2
-      if (isUnknownCommandError(e)) {
-        return new HelloResult(Collections.singletonMap("proto", Long.valueOf(RespProtocol.RESP2.version())));
-      }
-
-      throw e;
-    }
-  }
-
-
-  boolean isNoAuthError(JedisDataException e){
-    return e.getMessage().startsWith("NOAUTH");
-  }
-
-  boolean isUnknownCommandError(JedisDataException e){
-    return e.getMessage().startsWith("ERR") && e.getMessage().contains("unknown command");
-  }
-
   /**
    * Establish the RESP protocol version and authenticate if needed.
    *
@@ -815,31 +651,10 @@ public class Connection implements Closeable {
    * @throws JedisDataException if the server returns an error during handshake
    */
   private RespProtocol establishProtocol(final RedisProtocol requestedProtocol, final RedisCredentials credentials) {
-
     this.protocol = requestedProtocol;
-    boolean noProtocolRequested = this.protocol == null;
-
-    HelloResult helloResult;
-    // This is needed to keep the compatibility with legacy Jedis class and
-    // avoid sending hello command when user haven't provided any protocol version and credentials.
-    // if no protocol requested we assume server default is RESP2,
-    // and configure connection to expect RESP2
-    if (noProtocolRequested) {
-      authenticate(credentials);
-      helloResult = new HelloResult(Collections.singletonMap("proto", Long.valueOf(RespProtocol.RESP2.version())));
-    } else if (requestedProtocol == RedisProtocol.RESP2) {
-      helloResult = enforceProtocolWithAuth(RespProtocol.RESP2, credentials);
-    } else if (requestedProtocol == RedisProtocol.RESP3) {
-      helloResult = enforceProtocolWithAuth(RespProtocol.RESP3, credentials);
-    } else if (requestedProtocol == RedisProtocol.RESP3_PREFERRED) {
-      helloResult = negotiateResp3WithFallback(credentials);
-    } else {
-      throw new IllegalArgumentException("Unsupported protocol: " + requestedProtocol);
-    }
-
+    HelloResult helloResult = handshake.establish(requestedProtocol, credentials);
     version = helloResult.getVersion();
     server = helloResult.getServer();
-
     return helloResult.getProtocol();
   }
 
@@ -847,7 +662,7 @@ public class Connection implements Closeable {
     currentCredentials.set(credentials);
   }
 
-  private String authenticate(RedisCredentials credentials) {
+  String authenticate(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
       return null;
     }
@@ -866,6 +681,11 @@ public class Connection implements Closeable {
 
   public String reAuthenticate() {
     return authenticate(currentCredentials.getAndSet(null));
+  }
+
+  protected Map<String, Object> hello(byte[]... args) {
+    sendCommand(Command.HELLO, args);
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
   }
 
   /**
@@ -897,7 +717,7 @@ public class Connection implements Closeable {
    * @return the parsed {@code HELLO} response containing server metadata
    * @throws IllegalArgumentException if {@code protocol} is {@code null}
    */
-  private HelloResult helloCommand(RespProtocol protocol, RedisCredentials credentials) {
+  HelloResult hello(RespProtocol protocol, RedisCredentials credentials) {
     if (protocol == null) {
       throw new IllegalArgumentException("protocol must not be null");
     }
@@ -924,11 +744,6 @@ public class Connection implements Closeable {
     sendCommand(helloCmd);
     Map<String, Object> response = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
     return new HelloResult(response);
-  }
-
-  protected Map<String, Object> hello(byte[]... args) {
-    sendCommand(Command.HELLO, args);
-    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
   }
 
   protected byte[] encodeToBytes(char[] chars) {

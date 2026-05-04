@@ -316,8 +316,8 @@ public class ActiveActiveLocalFailoverTest {
 
   private static void ensureEndpointAvailability(HostAndPort endpoint, JedisClientConfig config) {
     await().atMost(Duration.ofSeconds(ENDPOINT_PAUSE_TIME_MS)).until(() -> {
-      try (RedisClient jedis = RedisClient.builder().hostAndPort(endpoint).clientConfig(
-          config).build()) {
+      try (RedisClient jedis = RedisClient.builder().hostAndPort(endpoint).clientConfig(config)
+          .build()) {
         return "PONG".equals(jedis.ping());
       } catch (Exception e) {
         log.info("Waiting for endpoint {} to become available...", endpoint);

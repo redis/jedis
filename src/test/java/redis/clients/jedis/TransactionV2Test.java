@@ -61,7 +61,7 @@ public class TransactionV2Test {
         endpoint.getClientConfigBuilder().timeoutMillis(500).build());
 
     nj = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().timeoutMillis(500).build());
 
     nj.flushAll();
   }

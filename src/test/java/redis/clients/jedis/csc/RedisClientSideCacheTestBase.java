@@ -47,7 +47,8 @@ public abstract class RedisClientSideCacheTestBase extends UnifiedJedisClientSid
       }
       assertEquals(100, cache.getSize());
 
-      try (Jedis killer = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
+      try (Jedis killer = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().
+          serverDefaultProtocol().build())) {
         killer.clientKill(ClientKillParams.clientKillParams().type(ClientType.NORMAL).skipMe(ClientKillParams.SkipMe.YES));
       }
 

@@ -44,7 +44,9 @@ public class Document implements Serializable {
   private Document(String id, Double score, Map<String, Object> fields) {
     this.id = id;
     this.score = score != null ? score : 0.0d;
-    this.fields = fields;
+    // On RESP2 we use different constructor Document(java.lang.String, double) which
+    // initializes fields as an empty map. On RESP3 we can get here with fields=null.
+    this.fields = fields != null ? fields : new HashMap<>();
   }
 
   public Iterable<Map.Entry<String, Object>> getProperties() {

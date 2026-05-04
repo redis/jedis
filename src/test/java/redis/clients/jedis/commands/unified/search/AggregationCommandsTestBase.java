@@ -421,7 +421,7 @@ public abstract class AggregationCommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals("10", rows.get(1).get("sum"));
 
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0_PRE)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),

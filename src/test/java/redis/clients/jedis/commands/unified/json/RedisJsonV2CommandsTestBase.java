@@ -453,7 +453,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrBy() {
-    assumeFalse(RedisProtocol.isResp3(protocol));
+    assumeFalse(RedisProtocol.canResolveToResp3(protocol));
     jedis.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), jedis.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertJsonArrayEquals(jsonArray(null, 4, 7, null),

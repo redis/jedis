@@ -19,7 +19,7 @@ public class AssertUtil {
   }
 
   public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2, Object expectedResp3, Object actual) {
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertEquals(expectedResp3, actual);
     } else {
       assertEquals(expectedResp2, actual);

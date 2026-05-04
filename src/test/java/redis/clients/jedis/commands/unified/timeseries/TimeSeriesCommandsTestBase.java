@@ -1071,7 +1071,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     assertEquals("metric_name=system", rangeList.get(0).getKey());
     assertEquals("system", rangeList.get(0).getLabels().get("metric_name"));
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertEquals(Arrays.asList("max"), rangeList.get(0).getReducers());
       assertEquals(Arrays.asList("ts1"), rangeList.get(0).getSources());
     } else {
@@ -1083,7 +1083,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     assertEquals("metric_name=user", rangeList.get(1).getKey());
     assertEquals("user", rangeList.get(1).getLabels().get("metric_name"));
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertEquals(Arrays.asList("max"), rangeList.get(1).getReducers());
       assertEquals(Arrays.asList("ts2"), rangeList.get(1).getSources());
     } else {

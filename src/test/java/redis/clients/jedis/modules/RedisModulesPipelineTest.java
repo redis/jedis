@@ -100,7 +100,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
-    assumeFalse(RedisProtocol.isResp3(protocol));
+    assumeFalse(RedisProtocol.canResolveToResp3(protocol));
 
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");

@@ -688,13 +688,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     res = jedis.ftSearch(INDEX, "hello", FTSearchParams.searchParams().noContent());
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
-      if (RedisProtocol.isResp3(protocol)) {
-        assertEquals(0.0, d.getScore(), 0);
-        assertNull(d.get("title"));
-      } else {
-        assertEquals(0.0, d.getScore(), 0);
-        assertNull(d.get("title"));
-      }
+      assertEquals(0.0, d.getScore(), 0);
+      assertNull(d.get("title"));
     }
 
     // test verbatim vs. stemming
@@ -858,7 +853,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     Map<String, Object> info = jedis.ftInfo(INDEX);
     assertEquals(INDEX, info.get("index_name"));
     assertEquals(6, ((List) info.get("attributes")).size());
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
     } else {
       assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
@@ -1351,7 +1346,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),
@@ -1390,7 +1385,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),
@@ -1418,7 +1413,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),

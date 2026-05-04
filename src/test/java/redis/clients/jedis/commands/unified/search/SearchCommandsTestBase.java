@@ -423,7 +423,7 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
     Map<String, Object> info = jedis.ftInfo(INDEX);
     assertEquals(INDEX, info.get("index_name"));
     assertEquals(6, ((List) info.get("attributes")).size());
-    if (RedisProtocol.isResp3(protocol)) {
+    if (RedisProtocol.canResolveToResp3(protocol)) {
       assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
     } else {
       assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
@@ -514,7 +514,7 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void blobField() {
-    assumeFalse(RedisProtocol.isResp3(protocol)); // not supporting
+    assumeFalse(RedisProtocol.canResolveToResp3(protocol)); // not supporting
 
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));

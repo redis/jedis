@@ -41,7 +41,7 @@ public enum RedisProtocol {
   /**
    * Returns {@code true} if this protocol targets RESP3 (either strict or preferred).
    */
-  public boolean isResp3() {
+  public boolean canResolveToResp3() {
     return this == RESP3 || this == RESP3_PREFERRED;
   }
 
@@ -49,8 +49,8 @@ public enum RedisProtocol {
    * Returns {@code true} if the given protocol targets RESP3 (either strict or preferred).
    * A {@code null} protocol returns {@code false}.
    */
-  public static boolean isResp3(RedisProtocol protocol) {
-    return protocol != null && protocol.isResp3();
+  public static boolean canResolveToResp3(RedisProtocol protocol) {
+    return protocol != null && protocol.canResolveToResp3();
   }
 
   /**

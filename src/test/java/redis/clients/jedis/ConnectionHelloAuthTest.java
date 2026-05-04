@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -139,11 +138,99 @@ public class ConnectionHelloAuthTest {
         .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
   }
 
-  // ---- Tests: bare HELLO (no credentials) ----
+  // ---------------------------------------------------------------------------
+  // requested = null (legacy mode: no HELLO sent, server default assumed RESP2)
+  // ---------------------------------------------------------------------------
 
   @Nested
-  @DisplayName("Bare HELLO (no credentials)")
-  class BareHelloTests {
+  @DisplayName("requested = null")
+  class NullProtocolRequested {
+
+    @Test
+    @DisplayName("No HELLO sent when protocol is null — connection defaults to RESP2")
+    void noHelloWhenProtocolNull() {
+      try (Connection conn = new Connection(fakeSocketFactory(new byte[0]), noAuthConfig(null))) {
+        // When no protocol is requested we fall back to the server default (assumed RESP2).
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // requested = RESP2 (strict)
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  @DisplayName("requested = RESP2 (strict)")
+  class Resp2StrictRequested {
+
+    @Test
+    @DisplayName("HELLO with proto=2 in response — RESP2 confirmed via protocol negotiation")
+    void helloWithProto2InResponse() {
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
+          noAuthConfig(RedisProtocol.RESP2))) {
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
+    }
+
+    @Test
+    @DisplayName("HELLO AUTH succeeds with RESP2 — protocol is negotiated normally")
+    void helloWithAuthResp2Succeeds() {
+      try (Connection conn = new Connection(fakeSocketFactory(concat(HELLO_OK_MAP_PROTO2)),
+          authConfig(RedisProtocol.RESP2))) {
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
+    }
+
+    @Test
+    @DisplayName("HELLO not supported with RESP2 — propagates error")
+    void helloNotSupportedResp2PropagatesError() {
+      assertThrows(JedisProtocolNotSupportedException.class,
+        () -> new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR)),
+            authConfig(RedisProtocol.RESP2)));
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // requested = RESP3 (strict) — no fallback on negotiation failures
+  // ---------------------------------------------------------------------------
+
+  @Nested
+  @DisplayName("requested = RESP3 (strict)")
+  class Resp3StrictRequested {
+
+    @Test
+    @DisplayName("HELLO with proto=3 in response — RESP3 confirmed via protocol negotiation")
+    void helloWithProto3InResponse() {
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          noAuthConfig(RedisProtocol.RESP3))) {
+        assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
+    }
+
+    @Test
+    @DisplayName("HELLO with AUTH succeeds with RESP3 — protocol is negotiated normally")
+    void helloWithAuthResp3Succeeds() {
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          authConfig(RedisProtocol.RESP3))) {
+        assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
+    }
+
+    @Test
+    @DisplayName("HELLO AUTH with proto=3 in response — RESP3 confirmed")
+    void helloAuthWithProto3InResponse() {
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          authConfig(RedisProtocol.RESP3))) {
+        assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
+    }
 
     @Test
     @DisplayName("HELLO rejected with NOAUTH — propagates auth error instead of silently downgrading")
@@ -191,53 +278,41 @@ public class ConnectionHelloAuthTest {
     }
 
     @Test
-    @DisplayName("No HELLO sent when protocol is null — connection defaults to RESP2")
-    void noHelloWhenProtocolNull() {
-      Connection conn = new Connection(fakeSocketFactory(new byte[0]), noAuthConfig(null));
-      // When no protocol is requested we fall back to the server default (assumed RESP2).
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
+    @DisplayName("Explicit RESP3 with AUTH and NOPERM on HELLO — propagates JedisAccessControlException")
+    void explicitResp3HelloNoPermPropagates() {
+      // No fallback for explicit RESP3 — NOPERM (not NOAUTH) must propagate.
+      assertThrows(JedisAccessControlException.class,
+        () -> new Connection(fakeSocketFactory(NOPERM_ERR), authConfig(RedisProtocol.RESP3)),
+        "NOPERM from HELLO with explicit RESP3 should propagate");
     }
+  }
 
-    @Test
-    @DisplayName("HELLO with proto=3 in response — RESP3 confirmed via protocol negotiation")
-    void helloWithProto3InResponse() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          noAuthConfig(RedisProtocol.RESP3));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
+  // ---------------------------------------------------------------------------
+  // requested = RESP3_PREFERRED — fall back to RESP2 when RESP3/HELLO unsupported
+  // ---------------------------------------------------------------------------
 
-    @Test
-    @DisplayName("HELLO with proto=2 in response — RESP2 confirmed via protocol negotiation")
-    void helloWithProto2InResponse() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
-          noAuthConfig(RedisProtocol.RESP2));
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
+  @Nested
+  @DisplayName("requested = RESP3_PREFERRED")
+  class Resp3PreferredRequested {
 
     @Test
     @DisplayName("RESP3_PREFERRED with proto=3 in response — returns RESP3 from proto field")
     void resp3PreferredWithProto3InResponse() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED))) {
+        assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
     }
 
     @Test
     @DisplayName("RESP3_PREFERRED with proto=2 in response — returns RESP2 from proto field")
     void resp3PreferredWithProto2InResponse() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
-          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED))) {
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
     }
 
     @Test
@@ -245,67 +320,22 @@ public class ConnectionHelloAuthTest {
     void resp3PreferredUnknownCommandResolvesToResp2() {
       // Pre-6.0 server: HELLO 3 -> unknown -> establishLegacyResp2 -> authenticate(null) (no-op)
       // -> HELLO 2 -> unknown -> infer RESP2.
-      Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR, UNKNOWN_CMD_ERR)),
-          noAuthConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
-  }
-
-  // ---- Tests: HELLO with AUTH (credentials with user) ----
-
-  @Nested
-  @DisplayName("HELLO with AUTH (credentials with user)")
-  class HelloWithAuthTests {
-
-    @Test
-    @DisplayName("HELLO with AUTH succeeds with RESP3 — protocol is negotiated normally")
-    void helloWithAuthResp3Succeeds() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          authConfig(RedisProtocol.RESP3));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
-
-    @Test
-    @DisplayName("HELLO AUTH succeeds with RESP2 — protocol is negotiated normally")
-    void helloWithAuthResp2Succeeds() {
-      Connection conn = new Connection(fakeSocketFactory(concat(HELLO_OK_MAP_PROTO2)),
-          authConfig(RedisProtocol.RESP2));
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
-
-    @Test
-    @DisplayName("HELLO not supported with RESP2 — propagates error")
-    void helloNotSupportedResp2PropagatesError() {
-      assertThrows(JedisProtocolNotSupportedException.class, () -> {
-        Connection conn = new Connection(fakeSocketFactory(concat(UNKNOWN_CMD_ERR)),
-            authConfig(RedisProtocol.RESP2));
-      });
-    }
-
-    @Test
-    @DisplayName("HELLO AUTH with proto=3 in response — RESP3 confirmed")
-    void helloAuthWithProto3InResponse() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          authConfig(RedisProtocol.RESP3));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
+      try (Connection conn = new Connection(
+          fakeSocketFactory(concat(UNKNOWN_CMD_ERR, UNKNOWN_CMD_ERR)),
+          noAuthConfig(RedisProtocol.RESP3_PREFERRED))) {
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
     }
 
     @Test
     @DisplayName("RESP3_PREFERRED with AUTH and proto=3 in response — returns RESP3")
     void resp3PreferredAuthWithProto3() {
-      Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          authConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
+      try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
+          authConfig(RedisProtocol.RESP3_PREFERRED))) {
+        assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
     }
 
     @Test
@@ -315,12 +345,12 @@ public class ConnectionHelloAuthTest {
       // -> (fallback to establishLegacyResp2)
       // -> auth -> ok ->
       // -> not require (hello(2)) -> unknown command
-      Connection conn = new Connection(
+      try (Connection conn = new Connection(
           fakeSocketFactory(concat(UNKNOWN_CMD_ERR, AUTH_OK_REPLY, UNKNOWN_CMD_ERR)),
-          authConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
+          authConfig(RedisProtocol.RESP3_PREFERRED))) {
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
     }
 
     @Test
@@ -330,21 +360,12 @@ public class ConnectionHelloAuthTest {
       // -> (fallback to establishLegacyResp2)
       // -> auth -> ok
       // -> hello(2) -> ok with proto=2
-      Connection conn = new Connection(
+      try (Connection conn = new Connection(
           fakeSocketFactory(concat(NOPROTO_ERR, AUTH_OK_REPLY, HELLO_OK_MAP_PROTO2)),
-          authConfig(RedisProtocol.RESP3_PREFERRED));
-      assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
-      assertFalse(conn.isBroken());
-      conn.close();
-    }
-
-    @Test
-    @DisplayName("Explicit RESP3 with AUTH and NOPERM on HELLO — propagates JedisAccessControlException")
-    void explicitResp3HelloNoPermPropagates() {
-      // No fallback for explicit RESP3 — NOPERM (not NOAUTH) must propagate.
-      assertThrows(JedisAccessControlException.class,
-        () -> new Connection(fakeSocketFactory(NOPERM_ERR), authConfig(RedisProtocol.RESP3)),
-        "NOPERM from HELLO with explicit RESP3 should propagate");
+          authConfig(RedisProtocol.RESP3_PREFERRED))) {
+        assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
+        assertFalse(conn.isBroken());
+      }
     }
   }
 }

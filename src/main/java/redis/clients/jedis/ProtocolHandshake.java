@@ -110,9 +110,11 @@ final class ProtocolHandshake {
    * Behavior:
    * </p>
    * <ul>
-   * <li>Attempts negotiation via {@code HELLO <protocol>} without authentication.</li>
+   * <li>Attempts negotiation via {@code HELLO <protocol> AUTH <user> <pass>} in a single command,
+   * sending credentials inline to avoid an extra round-trip on Redis 6.2.2+.</li>
    * <li>If the server rejects the request with a NOAUTH error (observed in Redis 6.0.x prior to
-   * 6.2.2), performs an {@code AUTH} using the provided credentials and retries the handshake.</li>
+   * 6.2.2, where {@code HELLO AUTH} is not honored), falls back to a standalone {@code AUTH}
+   * followed by a retry of {@code HELLO} with the same credentials.</li>
    * <li>Any non-authentication-related errors are propagated to the caller.</li>
    * </ul>
    * <p>
@@ -139,7 +141,7 @@ final class ProtocolHandshake {
 
     try {
       try {
-        return connection.hello(protocol, null);
+        return connection.hello(protocol, credentials);
       } catch (JedisDataException e) {
         if (isUnknownCommandError(e)) {
           throw new JedisProtocolNotSupportedException("Server does not support HELLO", e);

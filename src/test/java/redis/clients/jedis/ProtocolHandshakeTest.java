@@ -110,17 +110,29 @@ class ProtocolHandshakeTest {
     }
 
     @Test
-    void noAuthRecovery_authThenRetryHello() {
+    void withCreds_succeedsInSingleHello() {
       RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
-      when(connection.hello(RespProtocol.RESP2, null))
-          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
       when(connection.hello(RespProtocol.RESP2, creds)).thenReturn(helloResult(RespProtocol.RESP2));
 
       HelloResult result = handshake.establish(RedisProtocol.RESP2, creds);
 
       assertEquals(RespProtocol.RESP2, result.getProtocol());
+      verify(connection).hello(RespProtocol.RESP2, creds);
+      verify(connection, never()).authenticate(any());
+    }
+
+    @Test
+    void noAuthRecovery_authThenRetryHello() {
+      RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
+      when(connection.hello(RespProtocol.RESP2, creds))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."))
+          .thenReturn(helloResult(RespProtocol.RESP2));
+
+      HelloResult result = handshake.establish(RedisProtocol.RESP2, creds);
+
+      assertEquals(RespProtocol.RESP2, result.getProtocol());
       InOrder inOrder = inOrder(connection);
-      inOrder.verify(connection).hello(RespProtocol.RESP2, null);
+      inOrder.verify(connection).hello(RespProtocol.RESP2, creds);
       inOrder.verify(connection).authenticate(creds);
       inOrder.verify(connection).hello(RespProtocol.RESP2, creds);
     }
@@ -128,7 +140,7 @@ class ProtocolHandshakeTest {
     @Test
     void nonNoAuthAccessControl_propagatesWithoutRetry() {
       RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
-      when(connection.hello(RespProtocol.RESP2, null)).thenThrow(new JedisAccessControlException(
+      when(connection.hello(RespProtocol.RESP2, creds)).thenThrow(new JedisAccessControlException(
           "NOPERM this user has no permissions to run the 'hello' command"));
 
       assertThrows(JedisAccessControlException.class,
@@ -140,17 +152,16 @@ class ProtocolHandshakeTest {
     @Test
     void noAuthThenWrongPass_propagatesAfterAuthAttempt() {
       RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
-      when(connection.hello(RespProtocol.RESP2, null))
-          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
       when(connection.hello(RespProtocol.RESP2, creds))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."))
           .thenThrow(new JedisAccessControlException("WRONGPASS invalid username-password pair"));
 
       JedisAccessControlException ex = assertThrows(JedisAccessControlException.class,
         () -> handshake.establish(RedisProtocol.RESP2, creds));
       assertTrue(ex.getMessage().startsWith("WRONGPASS"));
-      verify(connection).authenticate(creds);
-      verify(connection).hello(RespProtocol.RESP2, null);
-      verify(connection).hello(RespProtocol.RESP2, creds);
+      InOrder inOrder = inOrder(connection);
+      inOrder.verify(connection).hello(RespProtocol.RESP2, creds);
+      inOrder.verify(connection).authenticate(creds);
     }
   }
 
@@ -193,17 +204,29 @@ class ProtocolHandshakeTest {
     }
 
     @Test
-    void noAuthRecovery_authThenRetryHello() {
+    void withCreds_succeedsInSingleHello() {
       RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
-      when(connection.hello(RespProtocol.RESP3, null))
-          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
       when(connection.hello(RespProtocol.RESP3, creds)).thenReturn(helloResult(RespProtocol.RESP3));
 
       HelloResult result = handshake.establish(RedisProtocol.RESP3, creds);
 
       assertEquals(RespProtocol.RESP3, result.getProtocol());
+      verify(connection).hello(RespProtocol.RESP3, creds);
+      verify(connection, never()).authenticate(any());
+    }
+
+    @Test
+    void noAuthRecovery_authThenRetryHello() {
+      RedisCredentials creds = new DefaultRedisCredentials("user", "pwd".toCharArray());
+      when(connection.hello(RespProtocol.RESP3, creds))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."))
+          .thenReturn(helloResult(RespProtocol.RESP3));
+
+      HelloResult result = handshake.establish(RedisProtocol.RESP3, creds);
+
+      assertEquals(RespProtocol.RESP3, result.getProtocol());
       InOrder inOrder = inOrder(connection);
-      inOrder.verify(connection).hello(RespProtocol.RESP3, null);
+      inOrder.verify(connection).hello(RespProtocol.RESP3, creds);
       inOrder.verify(connection).authenticate(creds);
       inOrder.verify(connection).hello(RespProtocol.RESP3, creds);
     }
@@ -211,7 +234,7 @@ class ProtocolHandshakeTest {
     @Test
     void nonNoAuthAccessControl_propagatesWithoutRetry() {
       RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
-      when(connection.hello(RespProtocol.RESP3, null)).thenThrow(new JedisAccessControlException(
+      when(connection.hello(RespProtocol.RESP3, creds)).thenThrow(new JedisAccessControlException(
           "NOPERM this user has no permissions to run the 'hello' command"));
 
       assertThrows(JedisAccessControlException.class,
@@ -223,17 +246,16 @@ class ProtocolHandshakeTest {
     @Test
     void noAuthThenWrongPass_propagatesAfterAuthAttempt() {
       RedisCredentials creds = new DefaultRedisCredentials("u", "p".toCharArray());
-      when(connection.hello(RespProtocol.RESP3, null))
-          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."));
       when(connection.hello(RespProtocol.RESP3, creds))
+          .thenThrow(new JedisAccessControlException("NOAUTH Authentication required."))
           .thenThrow(new JedisAccessControlException("WRONGPASS invalid username-password pair"));
 
       JedisAccessControlException ex = assertThrows(JedisAccessControlException.class,
         () -> handshake.establish(RedisProtocol.RESP3, creds));
       assertTrue(ex.getMessage().startsWith("WRONGPASS"));
-      verify(connection).authenticate(creds);
-      verify(connection).hello(RespProtocol.RESP3, null);
-      verify(connection).hello(RespProtocol.RESP3, creds);
+      InOrder inOrder = inOrder(connection);
+      inOrder.verify(connection).hello(RespProtocol.RESP3, creds);
+      inOrder.verify(connection).authenticate(creds);
     }
   }
 

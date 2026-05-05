@@ -2682,6 +2682,28 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
   }
 
+  public final CommandObject<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xnack(String key, String group, XNackMode mode,
+      XNackParams params, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xnack(byte[] key, byte[] group, XNackMode mode,
+      XNackParams params, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids).addParams(params), BuilderFactory.LONG);
+  }
+
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
         .add(groupName).add(id == null ? "0-0" : id);

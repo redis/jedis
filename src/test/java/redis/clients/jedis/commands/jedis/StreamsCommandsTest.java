@@ -42,6 +42,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -952,6 +953,43 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1L,
       jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnack() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-stream", "xnack-group", XNackMode.FAIL, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackWithParams() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-stream2", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-stream2", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-stream2", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    XNackParams params = XNackParams.xNackParams().retryCount(5).force();
+    assertEquals(1L,
+      jedis.xnack("xnack-stream2", "xnack-group", XNackMode.FATAL, params, range.get(0).getValue().get(0).getID()));
   }
 
   @Test

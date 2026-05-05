@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
@@ -651,6 +652,111 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
     // Verify two messages are deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+  }
+
+  // ========== XNACK Command Tests ==========
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicSilent() {
+    setUpTestStream();
+
+    // Add and read a message
+    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
+    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
+      XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    // XNACK with SILENT mode
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, messageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicFail() {
+    setUpTestStream();
+
+    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
+    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
+      XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, messageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicFatal() {
+    setUpTestStream();
+
+    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
+    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
+      XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FATAL, messageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackMultipleMessages() {
+    setUpTestStream();
+
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
+    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
+      XReadGroupParams.xReadGroupParams().count(2), streams);
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, id1, id2);
+    assertEquals(2L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackNonExistentMessage() {
+    setUpTestStream();
+
+    StreamEntryID nonExistentId = new StreamEntryID("999-0");
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, nonExistentId);
+    assertEquals(0L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackWithRetryCount() {
+    setUpTestStream();
+
+    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
+    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
+      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
+      XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    XNackParams params = XNackParams.xNackParams().retryCount(10);
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, params, messageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackWithForce() {
+    setUpTestStream();
+
+    // Add a message but don't read it (not in PEL)
+    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
+
+    // With FORCE, XNACK should create PEL entry even if it doesn't exist
+    XNackParams params = XNackParams.xNackParams().force();
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, params, messageId);
+    assertEquals(1L, nacked);
   }
 
   // ========== XDELEX Command Tests ==========

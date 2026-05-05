@@ -2,6 +2,8 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.Protocol.Command.BLPOP;
@@ -29,8 +31,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.GCRAParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MSetExParams;
+import redis.clients.jedis.resps.GCRAResponse;
 
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -428,5 +432,20 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
     } else {
       assertTrue(ttl > 0L);
     }
+  }
+
+  @Test
+  @EnabledOnCommand("GCRA")
+  public void gcraWithBinaryKey() {
+    GCRAParams params = GCRAParams.gcraParams(5, 10, 60.0);
+    byte[] key = "rate:binary:1".getBytes();
+
+    GCRAResponse response = jedis.gcra(key, params);
+
+    assertNotNull(response);
+    assertFalse(response.isLimited());
+    assertEquals(6, response.getMaxTokens());
+    assertEquals(5, response.getAvailableTokens());
+    assertEquals(-1, response.getRetryAfter());
   }
 }

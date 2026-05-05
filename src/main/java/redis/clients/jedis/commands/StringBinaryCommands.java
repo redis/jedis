@@ -6,7 +6,9 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.GCRAParams;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.resps.GCRAResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringBinaryCommands extends BitBinaryCommands {
@@ -113,4 +115,17 @@ public interface StringBinaryCommands extends BitBinaryCommands {
    * @return According to LCSParams to decide to return content to fill LCSMatchResult.
    */
   LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params);
+
+  /**
+   * Rate limit a request using the Generic Cell Rate Algorithm (GCRA).
+   * <p>
+   * The GCRA command provides a rate limiting mechanism that returns information about whether
+   * the request was limited and the current state of the rate limiter.
+   *
+   * @param key the key related to a specific rate limiting case.
+   * @param params the parameters for the GCRA command, must not be {@code null}.
+   * @return {@link GCRAResponse} containing the rate limiting result.
+   * @see <a href="https://redis.io/commands/gcra">GCRA command reference</a>
+   */
+  GCRAResponse gcra(byte[] key, GCRAParams params);
 }

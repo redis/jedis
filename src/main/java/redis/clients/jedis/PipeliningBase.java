@@ -464,6 +464,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<GCRAResponse> gcra(String key, GCRAParams params) {
+    return appendCommand(commandObjects.gcra(key, params));
+  }
+
+  @Override
   public Response<String> set(String key, String value) {
     return appendCommand(commandObjects.set(key, value));
   }
@@ -3958,6 +3963,11 @@ public abstract class PipeliningBase
   @Override
   public Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
     return appendCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
+  public Response<GCRAResponse> gcra(byte[] key, GCRAParams params) {
+    return appendCommand(commandObjects.gcra(key, params));
   }
 
   @Override

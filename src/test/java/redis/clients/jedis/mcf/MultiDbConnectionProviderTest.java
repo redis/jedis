@@ -316,4 +316,141 @@ public class MultiDbConnectionProviderTest {
       assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get("foo"));
     }
   }
+
+  @Test
+  public void recoveryAfterPermanentException_withFailbackEnabled() {
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    // Note: db0 has higher weight (0.5) than db1 (0.3)
+    // Periodic failback only switches to higher-weight databases
+    databaseConfigs[0] = DatabaseConfig
+        .builder(endpointStandalone0.getHostAndPort(),
+          endpointStandalone0.getClientConfigBuilder().build())
+        .weight(0.5f).healthCheckEnabled(false).build();
+    databaseConfigs[1] = DatabaseConfig
+        .builder(endpointStandalone1.getHostAndPort(),
+          endpointStandalone1.getClientConfigBuilder().build())
+        .weight(0.3f).healthCheckEnabled(false).build();
+
+    // Configure with failback enabled and short intervals for faster test execution
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
+            .maxNumFailoverAttempts(2)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+            .failbackSupported(true) // Enable automatic failback
+            .failbackCheckInterval(500) // Check every 500ms for faster recovery
+            .gracePeriod(100) // Short grace period for faster test
+            .build());
+
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
+      // Verify initial connection works (should be on db0 with weight 0.5)
+      jedis.set("test-key", "initial-value");
+      assertEquals("initial-value", jedis.get("test-key"));
+
+      // Manually switch to db1 (lower weight) to set up the scenario
+      testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
+      testProvider.setActiveDatabase(endpointStandalone1.getHostAndPort());
+
+      // Verify we're now on db1
+      jedis.set("test-key", "on-db1");
+      assertEquals("on-db1", jedis.get("test-key"));
+
+      // Now disable the other database to trigger permanent exception
+      testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
+
+      // Trigger temporary exceptions first
+      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("test-key"));
+
+      // Wait for permanent exception
+      await().atMost(Durations.ONE_SECOND).pollInterval(Duration.ofMillis(50))
+          .until(() -> (assertThrows(JedisFailoverException.class,
+            () -> jedis.get("test-key")) instanceof JedisPermanentlyNotAvailableException));
+
+      // Verify we're in permanent failure state
+      assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get("test-key"));
+
+      // Re-enable the HIGHER-weight database (db0) to simulate recovery
+      MultiDbConnectionProvider.Database db0 = testProvider
+          .getDatabase(endpointStandalone0.getHostAndPort());
+      db0.setDisabled(false);
+
+      // Wait for automatic failback to recover
+      await().atMost(Durations.ONE_SECOND).pollInterval(Duration.ofMillis(50)).ignoreExceptions()
+          .untilAsserted(() -> {
+            assertEquals(endpointStandalone0.getHostAndPort(), jedis.getActiveDatabaseEndpoint());
+            assertTrue(testProvider.getDatabase().isHealthy());
+          });
+    }
+  }
+
+  @Test
+  public void recoveryAfterPermanentException_withFailbackDisabled() {
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig
+        .builder(endpointStandalone0.getHostAndPort(),
+          endpointStandalone0.getClientConfigBuilder().build())
+        .weight(0.5f).healthCheckEnabled(false).build();
+    databaseConfigs[1] = DatabaseConfig
+        .builder(endpointStandalone1.getHostAndPort(),
+          endpointStandalone1.getClientConfigBuilder().build())
+        .weight(0.3f).healthCheckEnabled(false).build();
+
+    // Configure with failback disabled - requires manual intervention
+    MultiDbConnectionProvider testProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).delayInBetweenFailoverAttempts(100)
+            .maxNumFailoverAttempts(2)
+            .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build())
+            .failbackSupported(false) // Disable automatic failback
+            .build());
+
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
+      // Verify initial connection works
+      jedis.set("test-key", "initial-value");
+      assertEquals("initial-value", jedis.get("test-key"));
+
+      // Disable both databases to trigger permanent exception
+      testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
+      testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
+
+      // Trigger temporary exceptions first
+      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("test-key"));
+
+      // Wait for permanent exception
+      await().atMost(Durations.ONE_SECOND).pollInterval(Duration.ofMillis(50))
+          .until(() -> (assertThrows(JedisFailoverException.class,
+            () -> jedis.get("test-key")) instanceof JedisPermanentlyNotAvailableException));
+
+      // Verify we're in permanent failure state
+      assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get("test-key"));
+
+      // Re-enable one database
+      // Need to clear grace period and reset circuit breaker to make it healthy immediately
+      MultiDbConnectionProvider.Database db1 = testProvider
+          .getDatabase(endpointStandalone1.getHostAndPort());
+      db1.setDisabled(false);
+      db1.clearGracePeriod();
+      // Reset circuit breaker to allow connections
+      db1.getCircuitBreaker().transitionToClosedState();
+
+      // Verify that automatic recovery does NOT happen
+      // The system knows there's a healthy database available (db1), but the active database
+      // is still the disabled one (db0), so commands will fail with JedisConnectionException
+      // (not JedisPermanentlyNotAvailableException, because canIterateFrom returns true now)
+      assertThrows(JedisConnectionException.class, () -> jedis.get("test-key"));
+
+      // Manually trigger recovery by setting active database
+      // This simulates application code checking isHealthy and calling setActiveDatabase
+      Endpoint healthyEndpoint = endpointStandalone1.getHostAndPort();
+      assertTrue(testProvider.isHealthy(healthyEndpoint),
+        "Database should be healthy after re-enabling");
+      testProvider.setActiveDatabase(healthyEndpoint);
+
+      // After manual intervention, commands should succeed
+      jedis.set("test-key", "recovered-value");
+      assertEquals("recovered-value", jedis.get("test-key"));
+
+      // Verify continued operation
+      jedis.set("test-key", "final-value");
+      assertEquals("final-value", jedis.get("test-key"));
+    }
+  }
 }

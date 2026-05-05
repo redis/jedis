@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -30,7 +29,11 @@ public class ManagedConnectionProviderTest {
   @Test
   public void test() {
     ManagedConnectionProvider managed = new ManagedConnectionProvider();
-    try (UnifiedJedis jedis = new UnifiedJedis(managed, RedisProtocol.RESP2)) {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort("localhost", 6379)
+        .connectionProvider(managed)
+        .clientConfig(DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2).build())
+        .build()) {
       try {
         jedis.get("any");
         fail("Should get NPE.");

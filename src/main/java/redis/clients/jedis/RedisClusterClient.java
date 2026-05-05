@@ -48,16 +48,6 @@ public class RedisClusterClient extends UnifiedJedis {
 
   public static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";
 
-  /**
-   * Default timeout in milliseconds.
-   */
-  public static final int DEFAULT_TIMEOUT = 2000;
-
-  /**
-   * Default amount of attempts for executing a command
-   */
-  public static final int DEFAULT_MAX_ATTEMPTS = 5;
-
   private final CommandFlagsRegistry commandFlagsRegistry;
 
   private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
@@ -71,8 +61,8 @@ public class RedisClusterClient extends UnifiedJedis {
    * Creates a RedisClusterClient instance. The provided node is used to make the first contact with
    * the cluster.
    * <p>
-   * Here, the default timeout of {@value redis.clients.jedis.RedisClusterClient#DEFAULT_TIMEOUT} ms
-   * is being used with {@value redis.clients.jedis.RedisClusterClient#DEFAULT_MAX_ATTEMPTS} maximum
+   * Here, the default timeout of {@value UnifiedJedis#DEFAULT_TIMEOUT} ms
+   * is being used with {@value UnifiedJedis#DEFAULT_MAX_ATTEMPTS} maximum
    * attempts.
    * <p>
    * This is a convenience factory method that uses the builder pattern internally.
@@ -90,8 +80,8 @@ public class RedisClusterClient extends UnifiedJedis {
   /**
    * Creates a RedisClusterClient with multiple entry points.
    * <p>
-   * Here, the default timeout of {@value redis.clients.jedis.RedisClusterClient#DEFAULT_TIMEOUT} ms
-   * is being used with {@value redis.clients.jedis.RedisClusterClient#DEFAULT_MAX_ATTEMPTS} maximum
+   * Here, the default timeout of {@value UnifiedJedis#DEFAULT_TIMEOUT} ms
+   * is being used with {@value UnifiedJedis#DEFAULT_MAX_ATTEMPTS} maximum
    * attempts.
    * <p>
    * This is a convenience factory method that uses the builder pattern internally.
@@ -110,7 +100,7 @@ public class RedisClusterClient extends UnifiedJedis {
    * Creates a RedisClusterClient with multiple entry points and authentication.
    * <p>
    * Here, the default timeout of {@value redis.clients.jedis.Protocol#DEFAULT_TIMEOUT} ms is being
-   * used with {@value redis.clients.jedis.RedisClusterClient#DEFAULT_MAX_ATTEMPTS} maximum
+   * used with {@value UnifiedJedis#DEFAULT_MAX_ATTEMPTS} maximum
    * attempts.
    * <p>
    * This is a convenience factory method that uses the builder pattern internally.

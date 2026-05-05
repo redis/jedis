@@ -278,11 +278,7 @@ public final class Protocol {
 
   private static PushMessage processPush(final RedisInputStream is, PushConsumerChain consumer) {
     List<Object> list = processMultiBulkReply(is);
-    PushMessage message = new PushMessage(list);
-    if (consumer != null)  {
-      return consumer.process(message);
-    }
-    return message;
+    return consumer.process(new PushMessage(list));
   }
 
   public static final byte[] toByteArray(final boolean value) {

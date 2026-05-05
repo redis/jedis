@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -13,7 +12,6 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -154,11 +152,15 @@ public final class Protocol {
         case TILDE_BYTE: // TODO:
           return processMultiBulkReply(is);
         case GREATER_THAN_BYTE:
+          // Process push message through the consumer chain
           PushMessage message = processPush(is, pushConsumer);
-          if( message != null ) {
+          if (message != null) {
+            // Message not consumed by PushConsumers - propagate to application
+            // This preserves backward compatibility by allowing applications to handle
+            // push messages that aren't consumed by internal consumers
             return message.getContent();
           } else {
-            // continue reading
+            // Message was consumed by PushConsumers - continue reading next
             break;
           }
         case MINUS_BYTE:

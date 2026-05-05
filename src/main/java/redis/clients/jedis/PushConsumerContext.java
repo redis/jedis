@@ -26,6 +26,9 @@ public class PushConsumerContext {
   private boolean drop = false;
 
   public PushConsumerContext(PushMessage message) {
+    if (message == null) {
+      throw new IllegalArgumentException("Message cannot be null");
+    }
     this.message = message;
   }
 

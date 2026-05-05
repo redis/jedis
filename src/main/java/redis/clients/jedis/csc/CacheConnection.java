@@ -76,8 +76,7 @@ public class CacheConnection extends Connection {
 
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
-      if (context.getMessage() != null &&
-              PushMessageTypes.INVALIDATE.equals(context.getMessage().getType())) {
+      if (PushMessageTypes.INVALIDATE.equals(context.getMessage().getType())) {
         cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
         context.drop();
       }

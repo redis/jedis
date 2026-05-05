@@ -154,7 +154,6 @@ public final class Protocol {
         case TILDE_BYTE: // TODO:
           return processMultiBulkReply(is);
         case GREATER_THAN_BYTE:
-          // return processMultiBulkReply(is)
           PushMessage message = processPush(is, pushConsumer);
           if( message != null ) {
             return message.getContent();

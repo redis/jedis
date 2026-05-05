@@ -182,8 +182,10 @@ public class PushConsumerChainImplTest {
     PushConsumerChainImpl chain = PushConsumerChainImpl.of(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
     // Test pub/sub message types that should be propagated
-    String[] pubSubTypes = { "message", "pmessage", "smessage", "subscribe", "psubscribe",
-        "ssubscribe", "unsubscribe", "punsubscribe", "sunsubscribe" };
+    String[] pubSubTypes = { PushMessageTypes.MESSAGE, PushMessageTypes.PMESSAGE,
+        PushMessageTypes.SMESSAGE, PushMessageTypes.SUBSCRIBE, PushMessageTypes.PSUBSCRIBE,
+        PushMessageTypes.SSUBSCRIBE, PushMessageTypes.UNSUBSCRIBE, PushMessageTypes.PUNSUBSCRIBE,
+        PushMessageTypes.SUNSUBSCRIBE };
 
     for (String type : pubSubTypes) {
       List<Object> content = new ArrayList<>();
@@ -207,7 +209,7 @@ public class PushConsumerChainImplTest {
     PushConsumerChainImpl chain = PushConsumerChainImpl.of(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
     // Test non-pub/sub message types that should NOT be propagated
-    String[] nonPubSubTypes = { "invalidate", "arbitrary", "some-other-type" };
+    String[] nonPubSubTypes = { PushMessageTypes.INVALIDATE, "arbitrary", "some-other-type" };
 
     for (String type : nonPubSubTypes) {
       List<Object> content = new ArrayList<>();
@@ -230,7 +232,8 @@ public class PushConsumerChainImplTest {
     PushConsumerChain chain = PushConsumerChainImpl.PROPAGATE_ALL_CONSUMER_CHAIN;
 
     // Test various message types - all should be propagated
-    String[] types = { "invalidate", "message", "arbitrary", "custom-type" };
+    String[] types = { PushMessageTypes.INVALIDATE, PushMessageTypes.MESSAGE, "arbitrary",
+        "custom-type" };
 
     for (String type : types) {
       List<Object> content = new ArrayList<>();

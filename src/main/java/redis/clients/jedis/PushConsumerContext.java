@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.Internal;
 
 /**
  * Context object for push message processing.

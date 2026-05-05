@@ -160,7 +160,7 @@ public class PushMessageNotificationTest {
     // Verify the message is an invalidation message
     PushMessage pushMessage = receivedMessages.get(0);
     assertNotNull(pushMessage);
-    assertEquals("invalidate", pushMessage.getType());
+    assertEquals(PushMessageTypes.INVALIDATE, pushMessage.getType());
   }
 
 }

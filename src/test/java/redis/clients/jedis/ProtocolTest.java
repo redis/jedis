@@ -169,8 +169,9 @@ public class ProtocolTest {
     assertEquals(1, receivedMessages.size());
     PushMessage pushMessage = receivedMessages.get(0);
     assertEquals(2, pushMessage.getContent().size());
-    assertEquals("invalidate", pushMessage.getType());
-    assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) pushMessage.getContent().get(0));
+    assertEquals(PushMessageTypes.INVALIDATE, pushMessage.getType());
+    assertArrayEquals(SafeEncoder.encode(PushMessageTypes.INVALIDATE),
+        (byte[]) pushMessage.getContent().get(0));
     
     // The second element should be a list with one element "foo"
     assertInstanceOf(List.class, pushMessage.getContent().get(1));

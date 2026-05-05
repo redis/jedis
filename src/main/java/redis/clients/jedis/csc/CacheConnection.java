@@ -12,6 +12,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChain;
 import redis.clients.jedis.PushConsumerContext;
+import redis.clients.jedis.PushMessageTypes;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
@@ -76,7 +77,7 @@ public class CacheConnection extends Connection {
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
       if (context.getMessage() != null &&
-              "invalidate".equals(context.getMessage().getType())) {
+              PushMessageTypes.INVALIDATE.equals(context.getMessage().getType())) {
         cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
         context.drop();
       }

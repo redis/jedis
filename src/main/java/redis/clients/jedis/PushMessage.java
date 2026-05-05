@@ -4,7 +4,14 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.List;
 
+/**
+ * Represents a push message received from Redis server.
+ * <p>
+ * Push messages are asynchronous notifications sent by the server. See {@link PushMessageTypes} for
+ * known message types.
+ */
 public class PushMessage {
+
   private String type;
   private final List<Object> content;
 

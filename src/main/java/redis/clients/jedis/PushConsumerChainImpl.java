@@ -38,15 +38,20 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
     final Set<String> pubSubCommands = new HashSet<>();
 
     {
-      pubSubCommands.add("message");
-      pubSubCommands.add("pmessage");
-      pubSubCommands.add("smessage");
-      pubSubCommands.add("subscribe");
-      pubSubCommands.add("ssubscribe");
-      pubSubCommands.add("psubscribe");
-      pubSubCommands.add("unsubscribe");
-      pubSubCommands.add("sunsubscribe");
-      pubSubCommands.add("punsubscribe");
+      // Pub/Sub message types
+      pubSubCommands.add(PushMessageTypes.MESSAGE);
+      pubSubCommands.add(PushMessageTypes.PMESSAGE);
+      pubSubCommands.add(PushMessageTypes.SMESSAGE);
+
+      // Pub/Sub subscription confirmations
+      pubSubCommands.add(PushMessageTypes.SUBSCRIBE);
+      pubSubCommands.add(PushMessageTypes.PSUBSCRIBE);
+      pubSubCommands.add(PushMessageTypes.SSUBSCRIBE);
+
+      // Pub/Sub unsubscription confirmations
+      pubSubCommands.add(PushMessageTypes.UNSUBSCRIBE);
+      pubSubCommands.add(PushMessageTypes.PUNSUBSCRIBE);
+      pubSubCommands.add(PushMessageTypes.SUNSUBSCRIBE);
     }
 
     @Override

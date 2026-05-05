@@ -151,7 +151,7 @@ public interface RedisTimeSeriesCommands {
    * [LATEST]
    * [FILTER_BY_TS ts...]
    * [FILTER_BY_VALUE min max]
-   * [COUNT count] 
+   * [COUNT count]
    * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]}
    *
    * @param key

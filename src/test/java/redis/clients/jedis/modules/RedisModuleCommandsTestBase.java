@@ -60,8 +60,15 @@ public abstract class RedisModuleCommandsTestBase {
     if (endpoint == null) {
       return;
     }
+    DefaultJedisClientConfig.Builder configBuilder = endpoint.getClientConfigBuilder().timeoutMillis(500);
+    if (protocol == RedisProtocol.RESP3_PREFERRED) {
+      // Jedis doesn't support RESP3_PREFERRED, so we force RESP3.
+      configBuilder.protocol(RedisProtocol.RESP3);
+    } else {
+      configBuilder.protocol(protocol);
+    }
     jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().protocol(protocol).timeoutMillis(500).build());
+        configBuilder.build());
     jedis.flushAll();
     client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
         .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build();

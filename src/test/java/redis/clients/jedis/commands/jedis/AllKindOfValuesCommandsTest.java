@@ -1023,7 +1023,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    Assumptions.assumeFalse(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeFalse(RedisProtocol.canResolveToResp3(protocol));
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -1041,7 +1041,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    Assumptions.assumeTrue(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeTrue(RedisProtocol.canResolveToResp3(protocol));
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -1058,7 +1058,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    Assumptions.assumeFalse(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeFalse(RedisProtocol.canResolveToResp3(protocol));
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -1085,7 +1085,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    Assumptions.assumeTrue(protocol == RedisProtocol.RESP3);
+    Assumptions.assumeTrue(RedisProtocol.canResolveToResp3(protocol));
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");

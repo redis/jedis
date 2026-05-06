@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
-import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -30,8 +29,6 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
 public class Connection implements Closeable {
-
-  private static final Logger logger = Logger.getLogger(Connection.class.getName());
 
   public static class Builder {
     private JedisSocketFactory socketFactory;
@@ -82,7 +79,6 @@ public class Connection implements Closeable {
    * </ul>
    */
   protected RedisProtocol protocol;
-
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;

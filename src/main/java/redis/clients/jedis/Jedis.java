@@ -169,7 +169,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
     JedisClientConfig effective = sanitize(config);
     connection = new Connection(hostPort, effective);
-    setCompatibleProtocol(effective.getRedisProtocol());
+    commandObjects.setProtocol(effective.getRedisProtocol());
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
@@ -311,7 +311,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .sslSocketFactory(config.getSslSocketFactory()).sslParameters(config.getSslParameters())
             .hostnameVerifier(config.getHostnameVerifier()).build());
 
-    setCompatibleProtocol(JedisURIHelper.getRedisProtocol(uri));
+    commandObjects.setProtocol(JedisURIHelper.getRedisProtocol(uri));
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -321,7 +321,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     JedisClientConfig effective = sanitize(clientConfig);
     connection = new Connection(jedisSocketFactory, effective);
-    setCompatibleProtocol(effective.getRedisProtocol());
+    commandObjects.setProtocol(effective.getRedisProtocol());
   }
 
   public Jedis(final Connection connection) {
@@ -382,17 +382,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
     transaction = null;
     pipeline = null;
-  }
-
-  /**
-   * This method is used to set the compatible protocol version. Jedis doesn't support protocol
-   * negotiation. That's why we silently ignore it here.
-   * @param protocol - protocol version
-   */
-  protected void setCompatibleProtocol(RedisProtocol protocol) {
-    if (protocol == RedisProtocol.RESP3 || protocol == RedisProtocol.RESP2) {
-      commandObjects.setProtocol(protocol);
-    }
   }
 
   protected void setDataSource(Pool<Jedis> jedisPool) {

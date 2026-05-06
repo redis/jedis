@@ -40,14 +40,14 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   private final JedisClientConfig clientConfig;
 
   /**
-   * Returns a {@link DefaultJedisClientConfig.Builder} with {@code protocol(null)} so that the
-   * connection uses the server's default protocol (RESP2) without sending a {@code HELLO} command
-   * during initialization. This preserves the original legacy behaviour where convenience
-   * constructors that do not carry credentials can connect first and authenticate later via an
-   * explicit {@code auth()} call.
+   * Returns a {@link DefaultJedisClientConfig.Builder} pre-configured for the legacy "no HELLO"
+   * mode: {@code protocol(null)} with auto-negotiation disabled, so the connection skips the
+   * {@code HELLO} handshake entirely and assumes RESP2 on the wire. This preserves the original
+   * legacy behaviour where convenience constructors that do not carry credentials can connect
+   * first and authenticate later via an explicit {@code auth()} call.
    */
   private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
-    return DefaultJedisClientConfig.builder().protocol(null);
+    return DefaultJedisClientConfig.builder().serverDefaultProtocol();
   }
 
   protected JedisFactory(final String host, final int port, final int connectionTimeout,

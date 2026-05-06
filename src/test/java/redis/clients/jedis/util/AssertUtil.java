@@ -32,8 +32,8 @@ public class AssertUtil {
    * alias for "auto-negotiate" which resolves to RESP3 on the test environment.
    * <p>
    * Do not use this helper in legacy {@link redis.clients.jedis.Jedis} tests — there, {@code null}
-   * means "no HELLO sent / assumes RESP2". Those tests should keep using
-   * {@link RedisProtocol#canResolveToResp3(RedisProtocol)}.
+   * means "no HELLO sent / assumes RESP2", so a direct {@code protocol == RedisProtocol.RESP3}
+   * comparison is the right check.
    */
   public static boolean expectsResp3OnWire(RedisProtocol protocol) {
     return protocol == null || protocol == RedisProtocol.RESP3;

@@ -34,21 +34,6 @@ public enum RedisProtocol {
   }
 
   /**
-   * Returns {@code true} if this protocol targets RESP3.
-   */
-  public boolean canResolveToResp3() {
-    return this == RESP3;
-  }
-
-  /**
-   * Returns {@code true} if the given protocol targets RESP3. A {@code null} protocol returns
-   * {@code false}.
-   */
-  public static boolean canResolveToResp3(RedisProtocol protocol) {
-    return protocol != null && protocol.canResolveToResp3();
-  }
-
-  /**
    * Returns the RedisProtocol enum value corresponding to the given protocol version number.
    * @param proto the protocol version number (2 or 3)
    * @return the corresponding RedisProtocol enum value

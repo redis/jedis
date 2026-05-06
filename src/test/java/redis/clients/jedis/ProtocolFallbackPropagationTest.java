@@ -51,7 +51,7 @@ class ProtocolFallbackPropagationTest {
    * does not support HELLO), CommandObjects should get RESP2.
    */
   @Test
-  void redisClientResolvesResp3PreferredToResp2WhenConnectionFellBack() {
+  void redisClientResolvesAutoNegotiatedToResp2WhenConnectionFellBack() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP2);
     when(provider.getConnection()).thenReturn(mockConnection);
@@ -73,7 +73,7 @@ class ProtocolFallbackPropagationTest {
    * CommandObjects should get RESP3.
    */
   @Test
-  void redisClientResolvesResp3PreferredToResp3WhenConnectionSucceeded() {
+  void redisClientResolvesAutoNegotiatedToResp3WhenConnectionSucceeded() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
     when(provider.getConnection()).thenReturn(mockConnection);
@@ -99,7 +99,7 @@ class ProtocolFallbackPropagationTest {
    * RESP2, ClusterCommandObjects should get RESP2.
    */
   @Test
-  void redisClusterClientResolvesResp3PreferredToResp2WhenConnectionFellBack() {
+  void redisClusterClientResolvesAutoNegotiatedToResp2WhenConnectionFellBack() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP2);
     when(provider.getConnection()).thenReturn(mockConnection);
@@ -120,7 +120,7 @@ class ProtocolFallbackPropagationTest {
   }
 
   @Test
-  void redisClusterClientResolvesResp3PreferredToResp3WhenConnectionSucceeded() {
+  void redisClusterClientResolvesAutoNegotiatedToResp3WhenConnectionSucceeded() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
     when(provider.getConnection()).thenReturn(mockConnection);
@@ -221,7 +221,7 @@ class ProtocolFallbackPropagationTest {
   // ---------------------------------------------------------------------------
 
   @Test
-  void clusterPipelineResolvesResp3PreferredToResp3() {
+  void clusterPipelineResolvesAutoNegotiatedToResp3() {
     Connection mockConnection = mock(Connection.class);
     when(mockConnection.getRedisProtocol()).thenReturn(RedisProtocol.RESP3);
 

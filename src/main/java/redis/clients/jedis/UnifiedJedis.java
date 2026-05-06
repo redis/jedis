@@ -147,7 +147,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       }
     }
 
-    if (cache != null && !RedisProtocol.canResolveToResp3(resolvedProtocol)) {
+    if (cache != null && resolvedProtocol != RedisProtocol.RESP3) {
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 

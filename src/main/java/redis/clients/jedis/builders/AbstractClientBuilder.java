@@ -325,13 +325,17 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   protected void validateCommonConfiguration() {
     if (cache != null || cacheConfig != null) {
-      if (clientConfig != null && !canResolveToResp3(clientConfig)) {
+      if (clientConfig != null && !canNegotiateResp3(clientConfig)) {
         throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
       }
     }
   }
 
-  private static boolean canResolveToResp3(JedisClientConfig config) {
+  /**
+   * Whether the supplied config can result in a RESP3 connection: either the user explicitly
+   * requested RESP3, or the protocol is unspecified and auto-negotiation is enabled.
+   */
+  private static boolean canNegotiateResp3(JedisClientConfig config) {
     RedisProtocol protocol = config.getRedisProtocol();
     if (protocol == RedisProtocol.RESP3) return true;
     return protocol == null && config.isAutoNegotiateProtocol();

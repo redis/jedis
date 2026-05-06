@@ -1,6 +1,9 @@
 package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -215,11 +218,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(99, result.getTotalResults());
 
     assertEquals("OK", jedis.ftDropIndex(INDEX));
-    try {
-      jedis.ftSearch(INDEX, "hello world");
-      fail();
-    } catch (JedisDataException e) {
-    }
+    assertThrows(JedisDataException.class, () -> jedis.ftSearch(INDEX, "hello world"));
   }
 
   @Test
@@ -324,10 +323,13 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals("OK", jedis.ftDropIndex(INDEX));
 
     try {
-      jedis.ftSearch(INDEX, "hello world");
+      jedis.ftSearch(INDEX, new Query("hello world"));
       fail("Index should not exist.");
     } catch (JedisDataException de) {
-      assertTrue(de.getMessage().toLowerCase().contains("no such index"));
+      assertThat(de.getMessage(), anyOf(containsStringIgnoringCase("no such index"), // Redis Search
+        // <v8.7.90
+        containsString("SEARCH_INDEX_NOT_FOUND") // Redis Search v8.7.90+
+      ));
     }
     assertEquals(100, jedis.dbSize());
   }

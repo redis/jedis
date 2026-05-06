@@ -22,7 +22,11 @@ on:
 jobs:
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,11 +54,11 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          mvn -B -Dwith-param-names=true clean test jacoco:report -Djacoco.dataFile=target/jacoco-ut.exec
+           mvn -B "-Dwith-param-names=true" clean test jacoco:report "-Djacoco.dataFile=target/jacoco-ut.exec"
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always() && github.actor != 'dependabot[bot]'
+        if: always() && github.actor != 'dependabot[bot]' && runner.os == 'Linux'
         with:
           files: |
             target/surefire-reports/**/*.xml

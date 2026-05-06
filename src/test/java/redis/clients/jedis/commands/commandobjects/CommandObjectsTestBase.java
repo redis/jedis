@@ -68,6 +68,7 @@ public abstract class CommandObjectsTestBase {
   public void setUp() {
     // Configure a default command executor.
     DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder().protocol(protocol)
+        .autoNegotiateProtocol(false)
         .build();
 
     ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),

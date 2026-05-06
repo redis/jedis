@@ -304,9 +304,10 @@ class ClientBuilderTest {
         .fromURI("redis://localhost:6379");
 
     JedisClientConfig resultConfig = getClientConfig(builder);
-    // When no protocol is specified in the URI, the builder's default (RESP3_PREFERRED) is
-    // preserved.
-    assertThat(resultConfig.getRedisProtocol(), equalTo(RedisProtocol.RESP3_PREFERRED));
+    // When no protocol is specified in the URI, the builder's default (null protocol with
+    // auto-negotiation enabled) is preserved.
+    assertThat(resultConfig.getRedisProtocol(), equalTo(null));
+    assertThat(resultConfig.isAutoNegotiateProtocol(), equalTo(true));
   }
 
   /**

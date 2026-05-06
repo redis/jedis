@@ -129,13 +129,15 @@ public class ConnectionHelloAuthTest {
   }
 
   private static JedisClientConfig noAuthConfig(RedisProtocol proto) {
-    return DefaultJedisClientConfig.builder().protocol(proto)
+    // Disable auto-negotiation so the legacy "no HELLO" path is exercised when proto is null.
+    return DefaultJedisClientConfig.builder().protocol(proto).autoNegotiateProtocol(false)
         .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
   }
 
   private static JedisClientConfig authConfig(RedisProtocol proto) {
-    return DefaultJedisClientConfig.builder().protocol(proto).user("default").password("secret")
-        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
+    return DefaultJedisClientConfig.builder().protocol(proto).autoNegotiateProtocol(false)
+        .user("default").password("secret").clientSetInfoConfig(ClientSetInfoConfig.DISABLED)
+        .build();
   }
 
   // ---------------------------------------------------------------------------
@@ -288,84 +290,95 @@ public class ConnectionHelloAuthTest {
   }
 
   // ---------------------------------------------------------------------------
-  // requested = RESP3_PREFERRED — fall back to RESP2 when RESP3/HELLO unsupported
+  // requested = null + autoNegotiateProtocol=true — try HELLO 3 with RESP2 fallback
   // ---------------------------------------------------------------------------
 
   @Nested
-  @DisplayName("requested = RESP3_PREFERRED")
-  class Resp3PreferredRequested {
+  @DisplayName("requested = null + autoNegotiateProtocol=true")
+  class AutoNegotiateRequested {
 
     @Test
-    @DisplayName("RESP3_PREFERRED with proto=3 in response — returns RESP3 from proto field")
-    void resp3PreferredWithProto3InResponse() {
+    @DisplayName("Auto-negotiate with proto=3 in response — returns RESP3 from proto field")
+    void autoNegotiateWithProto3InResponse() {
       try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          noAuthConfig(RedisProtocol.RESP3_PREFERRED))) {
+          autoNegotiateNoAuthConfig())) {
         assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
         assertFalse(conn.isBroken());
       }
     }
 
     @Test
-    @DisplayName("RESP3_PREFERRED with proto=2 in response — returns RESP2 from proto field")
-    void resp3PreferredWithProto2InResponse() {
+    @DisplayName("Auto-negotiate with proto=2 in response — returns RESP2 from proto field")
+    void autoNegotiateWithProto2InResponse() {
       try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO2),
-          noAuthConfig(RedisProtocol.RESP3_PREFERRED))) {
+          autoNegotiateNoAuthConfig())) {
         assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
         assertFalse(conn.isBroken());
       }
     }
 
     @Test
-    @DisplayName("RESP3_PREFERRED with HELLO unknown command and no creds — falls back to RESP2")
-    void resp3PreferredUnknownCommandResolvesToResp2() {
+    @DisplayName("Auto-negotiate with HELLO unknown command and no creds — falls back to RESP2")
+    void autoNegotiateUnknownCommandResolvesToResp2() {
       // Pre-6.0 server: HELLO 3 -> unknown -> establishLegacyResp2 -> authenticate(null) (no-op)
       // -> HELLO 2 -> unknown -> infer RESP2.
       try (Connection conn = new Connection(
           fakeSocketFactory(concat(UNKNOWN_CMD_ERR, UNKNOWN_CMD_ERR)),
-          noAuthConfig(RedisProtocol.RESP3_PREFERRED))) {
+          autoNegotiateNoAuthConfig())) {
         assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
         assertFalse(conn.isBroken());
       }
     }
 
     @Test
-    @DisplayName("RESP3_PREFERRED with AUTH and proto=3 in response — returns RESP3")
-    void resp3PreferredAuthWithProto3() {
+    @DisplayName("Auto-negotiate with AUTH and proto=3 in response — returns RESP3")
+    void autoNegotiateAuthWithProto3() {
       try (Connection conn = new Connection(fakeSocketFactory(HELLO_OK_MAP_PROTO3),
-          authConfig(RedisProtocol.RESP3_PREFERRED))) {
+          autoNegotiateAuthConfig())) {
         assertEquals(RedisProtocol.RESP3, conn.getRedisProtocol());
         assertFalse(conn.isBroken());
       }
     }
 
     @Test
-    @DisplayName("RESP3_PREFERRED with AUTH HELLO not supported — resolves to RESP2")
-    void resp3PreferredWithAuthHelloNotSupportedResolvesToProto2() {
+    @DisplayName("Auto-negotiate with AUTH HELLO not supported — resolves to RESP2")
+    void autoNegotiateWithAuthHelloNotSupportedResolvesToProto2() {
       // -> hello(3,user,pass) -> unknown command
       // -> (fallback to establishLegacyResp2)
       // -> auth -> ok ->
       // -> not require (hello(2)) -> unknown command
       try (Connection conn = new Connection(
           fakeSocketFactory(concat(UNKNOWN_CMD_ERR, AUTH_OK_REPLY, UNKNOWN_CMD_ERR)),
-          authConfig(RedisProtocol.RESP3_PREFERRED))) {
+          autoNegotiateAuthConfig())) {
         assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
         assertFalse(conn.isBroken());
       }
     }
 
     @Test
-    @DisplayName("RESP3_PREFERRED with AUTH and NOPROTO on HELLO 3 — falls back to RESP2 via HELLO 2")
-    void resp3PreferredAuthHelloNoProtoFallsBackToResp2() {
+    @DisplayName("Auto-negotiate with AUTH and NOPROTO on HELLO 3 — falls back to RESP2 via HELLO 2")
+    void autoNegotiateAuthHelloNoProtoFallsBackToResp2() {
       // -> hello(3,user,pass) -> NOPROTO
       // -> (fallback to establishLegacyResp2)
       // -> auth -> ok
       // -> hello(2) -> ok with proto=2
       try (Connection conn = new Connection(
           fakeSocketFactory(concat(NOPROTO_ERR, AUTH_OK_REPLY, HELLO_OK_MAP_PROTO2)),
-          authConfig(RedisProtocol.RESP3_PREFERRED))) {
+          autoNegotiateAuthConfig())) {
         assertEquals(RedisProtocol.RESP2, conn.getRedisProtocol());
         assertFalse(conn.isBroken());
       }
     }
+  }
+
+  private static JedisClientConfig autoNegotiateNoAuthConfig() {
+    return DefaultJedisClientConfig.builder().protocol(null).autoNegotiateProtocol(true)
+        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
+  }
+
+  private static JedisClientConfig autoNegotiateAuthConfig() {
+    return DefaultJedisClientConfig.builder().protocol(null).autoNegotiateProtocol(true)
+        .user("default").password("secret").clientSetInfoConfig(ClientSetInfoConfig.DISABLED)
+        .build();
   }
 }

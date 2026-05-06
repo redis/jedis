@@ -76,7 +76,8 @@ public class Connection implements Closeable {
    * <ul>
    *   <li>{@code null} – No protocol established yet (handshake has not run).</li>
    *   <li>{@code RESP2} – RESP2 established (either explicitly requested, fallback from
-   *       {@code RESP3_PREFERRED}, or assumed default when no protocol was requested).</li>
+   *       auto-negotiation, or assumed default when no protocol was requested and
+   *       auto-negotiation was disabled).</li>
    *   <li>{@code RESP3} – RESP3 established.</li>
    * </ul>
    */
@@ -534,6 +535,7 @@ public class Connection implements Closeable {
       connect();
 
       RedisProtocol requestedProtocol = config.getRedisProtocol();
+      boolean autoNegotiateProtocol = config.isAutoNegotiateProtocol();
 
       Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
 
@@ -546,13 +548,15 @@ public class Connection implements Closeable {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
           redisCredentialsProvider.prepare();
-          establishProtocol(requestedProtocol, redisCredentialsProvider.get());
+          establishProtocol(requestedProtocol, autoNegotiateProtocol,
+            redisCredentialsProvider.get());
         } finally {
           redisCredentialsProvider.cleanUp();
         }
       } else {
-        establishProtocol(requestedProtocol, credentialsProvider != null ? credentialsProvider.get()
-            : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
+        establishProtocol(requestedProtocol, autoNegotiateProtocol,
+          credentialsProvider != null ? credentialsProvider.get()
+              : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
       List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
@@ -616,22 +620,18 @@ public class Connection implements Closeable {
    *
    * <p>Behavior:</p>
    * <ul>
-   *   <li>If {@code requestedProtocol} is {@code null}, no {@code HELLO} is sent.
-   *       The connection assumes RESP2 as the default protocol and only {@code AUTH}
-   *       is performed if credentials are provided.</li>
+   *   <li>If {@code requestedProtocol} is {@code null} and {@code autoNegotiateProtocol} is
+   *       {@code true}, the client first attempts {@code HELLO 3} and falls back to RESP2 if
+   *       RESP3 is not supported.</li>
+   *
+   *   <li>If {@code requestedProtocol} is {@code null} and {@code autoNegotiateProtocol} is
+   *       {@code false}, no {@code HELLO} is sent. The connection assumes RESP2 as the default
+   *       protocol and only {@code AUTH} is performed if credentials are provided. This is the
+   *       legacy {@link Jedis} behaviour.</li>
    *
    *   <li>If {@code RESP2} is requested, a strict {@code HELLO 2} handshake is performed.</li>
    *
    *   <li>If {@code RESP3} is requested, a strict {@code HELLO 3} handshake is performed.</li>
-   *
-   *   <li>If {@code RESP3_PREFERRED} is requested, the client first attempts
-   *       {@code HELLO 3} and falls back to RESP2 if RESP3 is not supported.</li>
-   * </ul>
-   *
-   * <p>Legacy behavior:</p>
-   * <ul>
-   *   <li>When no protocol is explicitly configured, the client assumes RESP2 without
-   *       performing protocol negotiation.</li>
    * </ul>
    *
    * <p>Side effects:</p>
@@ -641,15 +641,21 @@ public class Connection implements Closeable {
    *   <li>Stores the resolved protocol version for the connection.</li>
    * </ul>
    *
-   * @param requestedProtocol the requested RESP protocol (may be {@code null} for legacy mode)
+   * @param requestedProtocol the requested RESP protocol, or {@code null} to defer to
+   *          {@code autoNegotiateProtocol}
+   * @param autoNegotiateProtocol whether to attempt {@code HELLO 3} with RESP2 fallback when no
+   *          protocol is explicitly requested; ignored when {@code requestedProtocol} is
+   *          non-{@code null}
    * @param credentials credentials used for authentication (may be {@code null})
    * @throws IllegalArgumentException if the requested protocol is not supported
    * @throws IllegalStateException if the server's HELLO response is missing the protocol field
    * @throws JedisProtocolNotSupportedException if protocol negotiation fails
    * @throws JedisDataException if the server returns an error during handshake
    */
-  private void establishProtocol(final RedisProtocol requestedProtocol, final RedisCredentials credentials) {
-    HelloResult helloResult = handshake.establish(requestedProtocol, credentials);
+  private void establishProtocol(final RedisProtocol requestedProtocol,
+      final boolean autoNegotiateProtocol, final RedisCredentials credentials) {
+    HelloResult helloResult = handshake.establish(requestedProtocol, autoNegotiateProtocol,
+      credentials);
     version = helloResult.getVersion();
     server = helloResult.getServer();
 
@@ -657,7 +663,7 @@ public class Connection implements Closeable {
       throw new IllegalStateException("HELLO response is missing the protocol version field");
     }
 
-    this.protocol = RedisProtocol.of(helloResult.getProtocol());
+    this.protocol = helloResult.getProtocol();
   }
 
   public void setCredentials(RedisCredentials credentials) {
@@ -719,7 +725,7 @@ public class Connection implements Closeable {
    * @return the parsed {@code HELLO} response containing server metadata
    * @throws IllegalArgumentException if {@code protocol} is {@code null}
    */
-  HelloResult hello(RespProtocol protocol, RedisCredentials credentials) {
+  HelloResult hello(RedisProtocol protocol, RedisCredentials credentials) {
     if (protocol == null) {
       throw new IllegalArgumentException("protocol must not be null");
     }
@@ -727,15 +733,16 @@ public class Connection implements Closeable {
     byte[] rawPass = null;
     try {
       byte[][] args;
+      byte[] versionRaw = encode(protocol.version());
       if (credentials != null && credentials.getPassword() != null) {
         String user = credentials.getUser();
         if (user == null) {
           user = "default";
         }
         rawPass = encodeToBytes(credentials.getPassword());
-        args = new byte[][] { protocol.versionRaw(), Keyword.AUTH.getRaw(), encode(user), rawPass };
+        args = new byte[][] { versionRaw, Keyword.AUTH.getRaw(), encode(user), rawPass };
       } else {
-        args = new byte[][] { protocol.versionRaw() };
+        args = new byte[][] { versionRaw };
       }
       return new HelloResult(hello(args));
     } finally {

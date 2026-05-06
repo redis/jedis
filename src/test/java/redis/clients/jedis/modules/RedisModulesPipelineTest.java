@@ -28,6 +28,7 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
+import redis.clients.jedis.util.AssertUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -100,7 +101,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
-    assumeFalse(RedisProtocol.canResolveToResp3(protocol));
+    assumeFalse(AssertUtil.expectsResp3OnWire(protocol));
 
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");

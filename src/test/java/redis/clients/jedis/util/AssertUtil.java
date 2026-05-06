@@ -19,11 +19,24 @@ public class AssertUtil {
   }
 
   public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2, Object expectedResp3, Object actual) {
-    if (RedisProtocol.canResolveToResp3(protocol)) {
+    if (expectsResp3OnWire(protocol)) {
       assertEquals(expectedResp3, actual);
     } else {
       assertEquals(expectedResp2, actual);
     }
+  }
+
+  /**
+   * Returns {@code true} when the parametrized {@link RedisProtocol} value corresponds to RESP3
+   * on the wire for {@link redis.clients.jedis.UnifiedJedis}-based tests. {@code null} is the
+   * alias for "auto-negotiate" which resolves to RESP3 on the test environment.
+   * <p>
+   * Do not use this helper in legacy {@link redis.clients.jedis.Jedis} tests — there, {@code null}
+   * means "no HELLO sent / assumes RESP2". Those tests should keep using
+   * {@link RedisProtocol#canResolveToResp3(RedisProtocol)}.
+   */
+  public static boolean expectsResp3OnWire(RedisProtocol protocol) {
+    return protocol == null || protocol == RedisProtocol.RESP3;
   }
 
   public static <T> boolean assertCollectionContains(Collection<T> array, T expected) {

@@ -58,8 +58,8 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
 
   @AfterEach
   public void tearDown() {
-    // The default protocol (RESP3_PREFERRED) causes the UnifiedJedis constructor
-    // to probe the connection provider to resolve the actual protocol version.
+    // The default config (protocol=null + autoNegotiateProtocol=true) causes the UnifiedJedis
+    // constructor to probe the connection provider to resolve the actual protocol version.
     verify(connectionProvider).getConnection();
     // We want to be accurate about our mocks, hence we verify no more interactions here.
     // This might mean that some methods need to verify their interactions in a more verbose way,

@@ -33,45 +33,42 @@ final class ProtocolHandshake {
    * Behavior:
    * </p>
    * <ul>
-   * <li>If {@code requestedProtocol} is {@code null}, no {@code HELLO} is sent. The connection
-   * assumes RESP2 as the default protocol and only {@code AUTH} is performed if credentials are
-   * provided.</li>
+   * <li>If {@code requestedProtocol} is {@code null} and {@code autoNegotiateProtocol} is
+   * {@code true}, the client first attempts {@code HELLO 3} and gracefully falls back to RESP2 if
+   * RESP3 is not supported.</li>
+   * <li>If {@code requestedProtocol} is {@code null} and {@code autoNegotiateProtocol} is
+   * {@code false}, no {@code HELLO} is sent. The connection assumes RESP2 as the default protocol
+   * and only {@code AUTH} is performed if credentials are provided. This preserves the legacy
+   * {@link Jedis} behaviour.</li>
    * <li>If {@code RESP2} is requested, a strict {@code HELLO 2} handshake is performed.</li>
    * <li>If {@code RESP3} is requested, a strict {@code HELLO 3} handshake is performed.</li>
-   * <li>If {@code RESP3_PREFERRED} is requested, the client first attempts {@code HELLO 3} and
-   * falls back to RESP2 if RESP3 is not supported.</li>
    * </ul>
-   * <p>
-   * Legacy behavior:
-   * </p>
-   * <ul>
-   * <li>When no protocol is explicitly configured, the client assumes RESP2 without performing
-   * protocol negotiation.</li>
-   * </ul>
-   * @param requestedProtocol the requested RESP protocol (may be {@code null} for legacy mode)
+   * @param requestedProtocol the requested RESP protocol, or {@code null} to defer to
+   *          {@code autoNegotiateProtocol}
+   * @param autoNegotiateProtocol whether to attempt {@code HELLO 3} with RESP2 fallback when no
+   *          protocol is explicitly requested; ignored when {@code requestedProtocol} is
+   *          non-{@code null}
    * @param credentials credentials used for authentication (may be {@code null})
    * @return the {@link HelloResult} carrying negotiated protocol and server metadata
    * @throws IllegalArgumentException if the requested protocol is not supported
    * @throws JedisProtocolNotSupportedException if protocol negotiation fails
    * @throws JedisDataException if the server returns an error during handshake
    */
-  HelloResult establish(final RedisProtocol requestedProtocol, final RedisCredentials credentials) {
-    boolean noProtocolRequested = requestedProtocol == null;
-
-    // This is needed to keep the compatibility with legacy Jedis class and
-    // avoid sending hello command when user haven't provided any protocol version and credentials.
-    // if no protocol requested we assume server default is RESP2,
-    // and configure connection to expect RESP2
-    if (noProtocolRequested) {
+  HelloResult establish(final RedisProtocol requestedProtocol, final boolean autoNegotiateProtocol,
+      final RedisCredentials credentials) {
+    if (requestedProtocol == null) {
+      if (autoNegotiateProtocol) {
+        return negotiateResp3WithFallback(credentials);
+      }
+      // Legacy compatibility: skip HELLO entirely, only authenticate if credentials are provided.
+      // Connection assumes RESP2 on the wire.
       connection.authenticate(credentials);
       return new HelloResult(
-          Collections.singletonMap("proto", Long.valueOf(RespProtocol.RESP2.version())));
+          Collections.singletonMap("proto", Long.valueOf(RedisProtocol.RESP2.version())));
     } else if (requestedProtocol == RedisProtocol.RESP2) {
-      return enforceProtocolWithAuth(RespProtocol.RESP2, credentials);
+      return enforceProtocolWithAuth(RedisProtocol.RESP2, credentials);
     } else if (requestedProtocol == RedisProtocol.RESP3) {
-      return enforceProtocolWithAuth(RespProtocol.RESP3, credentials);
-    } else if (requestedProtocol == RedisProtocol.RESP3_PREFERRED) {
-      return negotiateResp3WithFallback(credentials);
+      return enforceProtocolWithAuth(RedisProtocol.RESP3, credentials);
     } else {
       throw new IllegalArgumentException("Unsupported protocol: " + requestedProtocol);
     }
@@ -87,7 +84,7 @@ final class ProtocolHandshake {
    */
   private HelloResult negotiateResp3WithFallback(final RedisCredentials credentials) {
     try {
-      return enforceProtocolWithAuth(RespProtocol.RESP3, credentials);
+      return enforceProtocolWithAuth(RedisProtocol.RESP3, credentials);
     } catch (JedisProtocolNotSupportedException e) {
       // fall back to resp2
       return establishLegacyResp2(credentials);
@@ -134,7 +131,8 @@ final class ProtocolHandshake {
    *           protocol
    * @throws JedisAccessControlException if authentication fails and cannot be recovered
    */
-  private HelloResult enforceProtocolWithAuth(RespProtocol protocol, RedisCredentials credentials) {
+  private HelloResult enforceProtocolWithAuth(RedisProtocol protocol,
+      RedisCredentials credentials) {
     if (protocol == null) {
       throw new IllegalArgumentException("protocol must not be null");
     }
@@ -203,12 +201,12 @@ final class ProtocolHandshake {
     connection.authenticate(credentials);
 
     try {
-      return connection.hello(RespProtocol.RESP2, null);
+      return connection.hello(RedisProtocol.RESP2, null);
     } catch (JedisDataException e) {
       // if server does not support hello, we assume RESP2
       if (isUnknownCommandError(e)) {
         return new HelloResult(
-            Collections.singletonMap("proto", Long.valueOf(RespProtocol.RESP2.version())));
+            Collections.singletonMap("proto", Long.valueOf(RedisProtocol.RESP2.version())));
       }
 
       throw e;

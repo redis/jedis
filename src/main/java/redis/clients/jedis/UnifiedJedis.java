@@ -130,30 +130,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, Cache cache) {
 
-    if (cache != null && !RedisProtocol.canResolveToResp3(protocol)) {
-      throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
-    }
-
     this.provider = provider;
     this.executor = executor;
-
     this.commandObjects = commandObjects;
-    // Resolve RESP3_PREFERRED to actual negotiated protocol by probing a connection
-    RedisProtocol resolvedProtocol = null;
-    if (protocol == RedisProtocol.RESP3_PREFERRED) {
-      if (provider == null) {
-        throw new IllegalArgumentException("Connection provider is required to resolve RESP protocol");
-      }
+
+    // When the protocol is left unspecified, auto-negotiation may have resolved it to either
+    // RESP2 or RESP3 on the wire. Probe a connection to learn the actual value so the command
+    // objects parse replies with the correct decoder.
+    RedisProtocol resolvedProtocol = protocol;
+    if (resolvedProtocol == null && provider != null) {
       try (Connection conn = provider.getConnection()) {
         if (conn != null) {
           resolvedProtocol = conn.getRedisProtocol();
         }
       } catch (JedisException ignored) {
       }
-    } else if (protocol != null) {
-
-      resolvedProtocol = protocol;
     }
+
+    if (cache != null && !RedisProtocol.canResolveToResp3(resolvedProtocol)) {
+      throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
+    }
+
     if (resolvedProtocol != null) {
       this.commandObjects.setProtocol(resolvedProtocol);
     }

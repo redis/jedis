@@ -61,8 +61,10 @@ public abstract class RedisModuleCommandsTestBase {
       return;
     }
     DefaultJedisClientConfig.Builder configBuilder = endpoint.getClientConfigBuilder().timeoutMillis(500);
-    if (protocol == RedisProtocol.RESP3_PREFERRED) {
-      // Jedis doesn't support RESP3_PREFERRED, so we force RESP3.
+    if (protocol == null) {
+      // The UnifiedJedis-style param `null` means "auto-negotiate, resolves to RESP3 on the
+      // test environment". Legacy Jedis cannot speak RESP3, so we force RESP3 explicitly here
+      // so its parsers are configured for the same wire format the UnifiedJedis client will see.
       configBuilder.protocol(RedisProtocol.RESP3);
     } else {
       configBuilder.protocol(protocol);

@@ -109,34 +109,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   private Pool<Jedis> dataSource = null;
 
   /**
-   * Returns a {@link DefaultJedisClientConfig.Builder} with {@code protocol(null)} so that the
-   * connection uses the server's default protocol (RESP2) without sending a {@code HELLO} command
-   * during initialization. This preserves the original legacy behaviour where convenience
-   * constructors that do not carry credentials can connect first and authenticate later via an
-   * explicit {@link #auth(String)} call.
+   * Returns a {@link DefaultJedisClientConfig.Builder} pre-configured for the legacy "no HELLO"
+   * mode: {@code protocol(null)} with auto-negotiation disabled, so the connection skips the
+   * {@code HELLO} handshake entirely and assumes RESP2 on the wire. This preserves the original
+   * legacy behaviour where convenience constructors that do not carry credentials can connect
+   * first and authenticate later via an explicit {@link #auth(String)} call.
    */
   private static DefaultJedisClientConfig.Builder legacyConfigBuilderWithoutProtocolNegotiation() {
-    return DefaultJedisClientConfig.builder().protocol(null);
+    return DefaultJedisClientConfig.builder().serverDefaultProtocol();
   }
 
   /**
    * Returns a config safe to use with the legacy {@link Jedis} class. Jedis does not support
-   * protocol negotiation the way {@link UnifiedJedis} does, so
-   * {@link RedisProtocol#RESP3_PREFERRED} is replaced with {@code null} to prevent the
-   * {@link Connection} from sending a {@code HELLO 3} command that would switch to RESP3 mode
-   * while Jedis still uses RESP2 parsers.
+   * RESP3 auto-negotiation the way {@link UnifiedJedis} does — if it lets the connection send
+   * {@code HELLO 3}, it will receive RESP3-encoded replies that the legacy parsers cannot
+   * decode. When the supplied config has auto-negotiation enabled and no explicit protocol, the
+   * flag is cleared so the connection stays in legacy {@code HELLO}-less mode and a warning is
+   * emitted.
    * <p>
-   * If the protocol is already compatible (RESP2, RESP3, or null), the original config is
-   * returned unchanged.
+   * If the protocol is explicitly set (RESP2 or RESP3), the auto-negotiation flag is irrelevant
+   * and the original config is returned unchanged.
    */
   private static JedisClientConfig sanitize(JedisClientConfig config) {
-    if (config.getRedisProtocol() != RedisProtocol.RESP3_PREFERRED) {
+    if (config.getRedisProtocol() != null || !config.isAutoNegotiateProtocol()) {
       return config;
     }
-    logger.warn("Jedis does not support RESP3_PREFERRED protocol negotiation. "
-        + "The protocol will be set to null (RESP2). "
-        + "Use .serverDefaultProtocol() in your config builder or upgrade to RedisClient.");
-    return DefaultJedisClientConfig.builder().from(config).protocol(null).build();
+    logger.warn("Jedis does not support RESP3 protocol auto-negotiation. "
+        + "Auto-negotiation will be disabled and the connection will assume RESP2. "
+        + "Set .autoNegotiateProtocol(false) (or use .serverDefaultProtocol()) in your config "
+        + "builder to silence this warning, or upgrade to RedisClient for RESP3 support.");
+    return DefaultJedisClientConfig.builder().from(config).autoNegotiateProtocol(false).build();
   }
 
   public Jedis() {

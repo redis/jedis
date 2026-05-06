@@ -46,9 +46,9 @@ class ProtocolFallbackPropagationTest {
   // ---------------------------------------------------------------------------
 
   /**
-   * When RedisClient is built with RESP3_PREFERRED, the constructor probes a Connection from the
-   * provider to resolve the actual protocol. If the Connection fell back to RESP2 (server does not
-   * support HELLO), CommandObjects should get RESP2.
+   * When RedisClient is built with auto-negotiated protocol, the constructor probes a Connection
+   * from the provider to resolve the actual protocol. If the Connection fell back to RESP2 (server
+   * does not support HELLO), CommandObjects should get RESP2.
    */
   @Test
   void redisClientResolvesResp3PreferredToResp2WhenConnectionFellBack() {
@@ -58,9 +58,7 @@ class ProtocolFallbackPropagationTest {
 
     try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider)
-        .clientConfig(
-          DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3_PREFERRED).build())
-        .build()) {
+        .clientConfig(DefaultJedisClientConfig.builder().protocol(null).build()).build()) {
 
       CommandObjects commandObjects = ReflectionTestUtil.getField(client, "commandObjects");
       RedisProtocol protocol = ReflectionTestUtil.getField(commandObjects, "protocol");
@@ -71,7 +69,7 @@ class ProtocolFallbackPropagationTest {
   }
 
   /**
-   * When RedisClient is built with RESP3_PREFERRED and the Connection negotiated RESP3,
+   * When RedisClient is built with auto-negotiated protocol and the Connection negotiated RESP3,
    * CommandObjects should get RESP3.
    */
   @Test
@@ -97,8 +95,8 @@ class ProtocolFallbackPropagationTest {
   // ---------------------------------------------------------------------------
 
   /**
-   * When RedisClusterClient is built with RESP3_PREFERRED and the Connection fell back to RESP2,
-   * ClusterCommandObjects should get RESP2.
+   * When RedisClusterClient is built with auto-negotiated protocol and the Connection fell back to
+   * RESP2, ClusterCommandObjects should get RESP2.
    */
   @Test
   void redisClusterClientResolvesResp3PreferredToResp2WhenConnectionFellBack() {
@@ -109,9 +107,7 @@ class ProtocolFallbackPropagationTest {
     try (RedisClusterClient client = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("localhost", 6379))).commandExecutor(exec)
         .connectionProvider(provider)
-        .clientConfig(
-          DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3_PREFERRED).build())
-        .build()) {
+        .clientConfig(DefaultJedisClientConfig.builder().protocol(null).build()).build()) {
 
       CommandObjects commandObjects = ReflectionTestUtil.getField(client, "commandObjects");
       assertInstanceOf(ClusterCommandObjects.class, commandObjects,
@@ -132,9 +128,7 @@ class ProtocolFallbackPropagationTest {
     try (RedisClusterClient client = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("localhost", 6379))).commandExecutor(exec)
         .connectionProvider(provider)
-        .clientConfig(
-          DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3_PREFERRED).build())
-        .build()) {
+        .clientConfig(DefaultJedisClientConfig.builder().protocol(null).build()).build()) {
 
       CommandObjects commandObjects = ReflectionTestUtil.getField(client, "commandObjects");
       assertInstanceOf(ClusterCommandObjects.class, commandObjects);
@@ -204,9 +198,7 @@ class ProtocolFallbackPropagationTest {
 
     try (RedisClient client = RedisClient.builder().commandExecutor(exec)
         .connectionProvider(provider)
-        .clientConfig(
-          DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3_PREFERRED).build())
-        .build()) {
+        .clientConfig(DefaultJedisClientConfig.builder().protocol(null).build()).build()) {
 
       CommandObjects clientCommandObjects = ReflectionTestUtil.getField(client, "commandObjects");
       assertEquals(RedisProtocol.RESP3,
@@ -236,7 +228,7 @@ class ProtocolFallbackPropagationTest {
     ClusterConnectionProvider clusterProvider = mock(ClusterConnectionProvider.class);
     when(clusterProvider.getConnection()).thenReturn(mockConnection);
 
-    ClusterPipeline pipeline = new ClusterPipeline(clusterProvider, RedisProtocol.RESP3_PREFERRED);
+    ClusterPipeline pipeline = new ClusterPipeline(clusterProvider, (RedisProtocol) null);
 
     CommandObjects commandObjects = ReflectionTestUtil.getField(pipeline, "commandObjects");
     assertInstanceOf(ClusterCommandObjects.class, commandObjects,
@@ -258,9 +250,7 @@ class ProtocolFallbackPropagationTest {
     try (RedisClusterClient client = RedisClusterClient.builder()
         .nodes(Collections.singleton(new HostAndPort("localhost", 6379))).commandExecutor(exec)
         .connectionProvider(clusterProvider)
-        .clientConfig(
-          DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3_PREFERRED).build())
-        .build()) {
+        .clientConfig(DefaultJedisClientConfig.builder().protocol(null).build()).build()) {
 
       CommandObjects clientCommandObjects = ReflectionTestUtil.getField(client, "commandObjects");
       assertInstanceOf(ClusterCommandObjects.class, clientCommandObjects);

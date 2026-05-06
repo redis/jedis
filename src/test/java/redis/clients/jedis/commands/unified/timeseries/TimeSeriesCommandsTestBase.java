@@ -21,6 +21,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -1071,7 +1072,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     assertEquals("metric_name=system", rangeList.get(0).getKey());
     assertEquals("system", rangeList.get(0).getLabels().get("metric_name"));
-    if (RedisProtocol.canResolveToResp3(protocol)) {
+    if (AssertUtil.expectsResp3OnWire(protocol)) {
       assertEquals(Arrays.asList("max"), rangeList.get(0).getReducers());
       assertEquals(Arrays.asList("ts1"), rangeList.get(0).getSources());
     } else {
@@ -1083,7 +1084,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     assertEquals("metric_name=user", rangeList.get(1).getKey());
     assertEquals("user", rangeList.get(1).getLabels().get("metric_name"));
-    if (RedisProtocol.canResolveToResp3(protocol)) {
+    if (AssertUtil.expectsResp3OnWire(protocol)) {
       assertEquals(Arrays.asList("max"), rangeList.get(1).getReducers());
       assertEquals(Arrays.asList("ts2"), rangeList.get(1).getSources());
     } else {

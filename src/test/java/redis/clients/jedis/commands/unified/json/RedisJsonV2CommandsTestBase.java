@@ -23,6 +23,7 @@ import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.util.AssertUtil;
 
 /**
  * Base test class for RedisJSON V2 commands using the UnifiedJedis pattern.
@@ -453,7 +454,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrBy() {
-    assumeFalse(RedisProtocol.canResolveToResp3(protocol));
+    assumeFalse(AssertUtil.expectsResp3OnWire(protocol));
     jedis.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), jedis.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertJsonArrayEquals(jsonArray(null, 4, 7, null),
@@ -465,7 +466,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrByResp3() {
-    assumeTrue(RedisProtocol.canResolveToResp3(protocol));
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
     jedis.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertEquals(singletonList((Object) null), jedis.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertEquals(Arrays.asList(null, 4d, 7d, null),
@@ -476,7 +477,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrByWithIntegerIncrementReturnsLong() {
-    assumeTrue(RedisProtocol.canResolveToResp3(protocol));
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
     // Set an integer value
     jedis.jsonSet("numtest", ROOT_PATH, 10);
 
@@ -492,7 +493,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrByWithDoubleIncrementReturnsDouble() {
-    assumeTrue(RedisProtocol.canResolveToResp3(protocol));
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
     // Set an integer value
     jedis.jsonSet("numtest", ROOT_PATH, 10);
 
@@ -508,7 +509,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrByPreservesLongForIntegerOperations() {
-    assumeTrue(RedisProtocol.canResolveToResp3(protocol));
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
     // Set multiple integer values
     jedis.jsonSet("prices", ROOT_PATH, "{\"price1\":100,\"price2\":200,\"price3\":300}");
 
@@ -530,7 +531,7 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
 
   @Test
   public void numIncrByConvertsToDoubleWhenNeeded() {
-    assumeTrue(RedisProtocol.canResolveToResp3(protocol));
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
     // Set an integer value
     jedis.jsonSet("numtest", ROOT_PATH, 100);
 

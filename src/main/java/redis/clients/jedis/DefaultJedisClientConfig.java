@@ -13,6 +13,7 @@ import redis.clients.jedis.util.JedisURIHelper;
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final RedisProtocol redisProtocol;
+  private final boolean autoNegotiateProtocol;
 
   private final int connectionTimeoutMillis;
   private final int socketTimeoutMillis;
@@ -38,6 +39,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
+    this.autoNegotiateProtocol = builder.autoNegotiateProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
     this.socketTimeoutMillis = builder.socketTimeoutMillis;
     this.blockingSocketTimeoutMillis = builder.blockingSocketTimeoutMillis;
@@ -58,6 +60,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public RedisProtocol getRedisProtocol() {
     return redisProtocol;
+  }
+
+  @Override
+  public boolean isAutoNegotiateProtocol() {
+    return autoNegotiateProtocol;
   }
 
   @Override
@@ -210,7 +217,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   public static class Builder {
 
-    private RedisProtocol redisProtocol = RedisProtocol.RESP3_PREFERRED;
+    private RedisProtocol redisProtocol = null;
+    private boolean autoNegotiateProtocol = true;
 
     private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
     private int socketTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
@@ -269,17 +277,30 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     /**
-     * Shortcut to
-     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
-     * {@code null} (server default).
+     * Shortcut for the legacy "no HELLO" mode: sets {@code protocol(null)} and disables
+     * auto-negotiation so the connection skips the {@code HELLO} handshake entirely and assumes
+     * RESP2 on the wire.
      * @return this
      */
     public Builder serverDefaultProtocol() {
-      return protocol(null);
+      return protocol(null).autoNegotiateProtocol(false);
     }
 
     public Builder protocol(RedisProtocol protocol) {
       this.redisProtocol = protocol;
+      return this;
+    }
+
+    /**
+     * When the {@linkplain #protocol(RedisProtocol) protocol} is left as {@code null}, controls
+     * whether the connection attempts {@code HELLO 3} with graceful RESP2 fallback (when
+     * {@code true}, the default) or skips {@code HELLO} altogether (when {@code false}, the legacy
+     * behaviour).
+     * @param autoNegotiateProtocol whether to auto-negotiate the protocol on connect
+     * @return this
+     */
+    public Builder autoNegotiateProtocol(boolean autoNegotiateProtocol) {
+      this.autoNegotiateProtocol = autoNegotiateProtocol;
       return this;
     }
 
@@ -410,6 +431,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
+      this.autoNegotiateProtocol = instance.isAutoNegotiateProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
       this.socketTimeoutMillis = instance.getSocketTimeoutMillis();
       this.blockingSocketTimeoutMillis = instance.getBlockingSocketTimeoutMillis();
@@ -460,6 +482,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
     Builder builder = builder();
     builder.protocol(copy.getRedisProtocol());
+    builder.autoNegotiateProtocol(copy.isAutoNegotiateProtocol());
     builder.connectionTimeoutMillis(copy.getConnectionTimeoutMillis());
     builder.socketTimeoutMillis(copy.getSocketTimeoutMillis());
     builder.blockingSocketTimeoutMillis(copy.getBlockingSocketTimeoutMillis());

@@ -12,9 +12,9 @@ class HelloResult {
   /**
    * @return the protocol version the server actually accepted
    */
-  public RespProtocol getProtocol() {
+  public RedisProtocol getProtocol() {
     Long proto = (Long) helloResponse.get("proto");
-    return RespProtocol.of(proto);
+    return RedisProtocol.from(proto);
   }
 
   public String getServer() {

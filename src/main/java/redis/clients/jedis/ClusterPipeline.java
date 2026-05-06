@@ -103,11 +103,12 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   }
 
   /**
-   * If the requested protocol is {@link RedisProtocol#RESP3_PREFERRED}, probe an actual
-   * connection to resolve the command objects protocol to the negotiated value (RESP3 or RESP2).
+   * When the protocol is left unspecified (auto-negotiation may have resolved it to either RESP2
+   * or RESP3 on the wire), probe an actual connection to learn the negotiated value and set it
+   * on the command objects.
    */
   private void resolveProtocolIfNeeded(RedisProtocol requestedProtocol) {
-    if (requestedProtocol == RedisProtocol.RESP3_PREFERRED) {
+    if (requestedProtocol == null) {
       try (Connection conn = provider.getConnection()) {
         RedisProtocol resolved = conn.getRedisProtocol();
         if (resolved != null) {

@@ -28,8 +28,8 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * <p>
  * In principle all subclasses of this class should be parameterized tests,
  * to run with several versions of RESP. {@link CommandsTestsParameters#jedisRespVersions}
- * We should avoid using RESP3_PREFERRED, given that CommandObjects receive a specific protocol,
- * after auto-negotiation has already happened.
+ * The strict (non-{@code null}) RESP versions are the right fit here: CommandObjects receive a
+ * specific protocol after auto-negotiation has already happened.
  */
 @Tag("integration")
 @ParameterizedClass

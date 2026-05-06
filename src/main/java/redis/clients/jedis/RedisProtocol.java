@@ -5,28 +5,23 @@ import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
 /**
  * Enum representing the Redis protocol version to use when connecting to a Redis server.
  *
- * <p>Four modes are supported:
+ * <p>Three modes are supported:
  * <ul>
- *   <li>{@code null} – used by the legacy {@link Jedis} class to avoid sending the
- *       {@code HELLO} command altogether.</li>
+ *   <li>{@code null} – combined with {@link JedisClientConfig#isAutoNegotiateProtocol()} the
+ *       client either skips the {@code HELLO} command altogether (auto-negotiation disabled,
+ *       legacy {@link Jedis} behaviour) or attempts {@code HELLO 3} with a graceful RESP2
+ *       fallback (auto-negotiation enabled, the default for {@link UnifiedJedis}-based
+ *       clients).</li>
  *   <li>{@link #RESP2} – sends a {@code HELLO 2} command requesting RESP2; the connection
  *       fails if the server rejects the request.</li>
  *   <li>{@link #RESP3} – sends a {@code HELLO 3} command requesting RESP3; the connection
  *       fails if the server rejects the request.</li>
- *   <li>{@link #RESP3_PREFERRED} – sends a {@code HELLO 3} command to request the latest
- *       protocol version and gracefully falls back to RESP2 if the server does not support
- *       RESP3 or rejects the request. This mode is not supported by legacy Jedis class and silently ignored</li>
  * </ul>
  */
 public enum RedisProtocol {
 
   RESP2("2"),
-  RESP3("3"),
-
-  /**
-   * Try to use RESP3 by default and fall back to RESP2 if the server does not support it.
-   */
-  RESP3_PREFERRED("AUTO");
+  RESP3("3");
 
   private final String version;
 
@@ -39,15 +34,15 @@ public enum RedisProtocol {
   }
 
   /**
-   * Returns {@code true} if this protocol targets RESP3 (either strict or preferred).
+   * Returns {@code true} if this protocol targets RESP3.
    */
   public boolean canResolveToResp3() {
-    return this == RESP3 || this == RESP3_PREFERRED;
+    return this == RESP3;
   }
 
   /**
-   * Returns {@code true} if the given protocol targets RESP3 (either strict or preferred).
-   * A {@code null} protocol returns {@code false}.
+   * Returns {@code true} if the given protocol targets RESP3. A {@code null} protocol returns
+   * {@code false}.
    */
   public static boolean canResolveToResp3(RedisProtocol protocol) {
     return protocol != null && protocol.canResolveToResp3();
@@ -64,19 +59,5 @@ public enum RedisProtocol {
     if (proto == 2) return RESP2;
     if (proto == 3) return RESP3;
     throw new JedisProtocolNotSupportedException("Unknown protocol version: " + proto);
-  }
-
-  static RedisProtocol of(RespProtocol resolved) {
-    if (resolved == null) {
-      return null;
-    }
-
-    if (resolved == RespProtocol.RESP2) {
-      return RESP2;
-    } else if (resolved == RespProtocol.RESP3) {
-      return RESP3;
-    } else {
-      throw new IllegalArgumentException("Unknown protocol version: " + resolved);
-    }
   }
 }

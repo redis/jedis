@@ -110,7 +110,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   private static Supplier<ClusterCommandObjects> createClusterCommandObjects(
       ClusterConnectionProvider provider, RedisProtocol protocol, boolean autoNegotiateProtocol) {
     return () -> {
-      RedisProtocol effective = (protocol == RedisProtocol.RESP3) ? protocol : null;
+      RedisProtocol effective = protocol;
 
       boolean protocolResolvedOnWire = protocol == null && autoNegotiateProtocol;
       if (protocolResolvedOnWire) {

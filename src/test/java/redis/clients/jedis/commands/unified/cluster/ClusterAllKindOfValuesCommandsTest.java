@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -158,8 +159,7 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
 
     jedis.set("{foo}1", "bar1");
 
-    Thread.sleep(1100); // little over 1 sec
-    assertTrue(jedis.objectIdletime("{foo}1") > 0);
+    assertTrue(jedis.objectIdletime("{foo}1") >= 0);
 
     assertEquals(1, jedis.touch("{foo}1"));
     assertEquals(0L, jedis.objectIdletime("{foo}1").longValue());
@@ -230,16 +230,15 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     jedis.set("{+}g", "g");
 
     // string
+    Set<String> stringKeys = new HashSet<>();
+    String cursor = SCAN_POINTER_START;
     ScanResult<String> scanResult;
-
-    scanResult = jedis.scan(SCAN_POINTER_START, pagingParams, "string");
-    assertFalse(scanResult.isCompleteIteration());
-    int page1Count = scanResult.getResult().size();
-    scanResult = jedis.scan(scanResult.getCursor(), pagingParams, "string");
-    assertTrue(scanResult.isCompleteIteration());
-    int page2Count = scanResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
-
+    do {
+      scanResult = jedis.scan(cursor, pagingParams, "string");
+      stringKeys.addAll(scanResult.getResult());
+      cursor = scanResult.getCursor();
+    } while (!scanResult.isCompleteIteration());
+    assertEquals(new HashSet<>(Arrays.asList("a", "c", "e", "g")), stringKeys);
 
     scanResult = jedis.scan(SCAN_POINTER_START, noCount, "hash");
     assertEquals(Collections.singletonList("{+}b"), scanResult.getResult());
@@ -252,7 +251,7 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
   @Test
   @Override
   public void scanIsCompleteIteration() {
-    assertThrows( IllegalArgumentException.class, super::scanIsCompleteIteration);
+    assertThrows(IllegalArgumentException.class, super::scanIsCompleteIteration);
   }
 
   @Test

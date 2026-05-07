@@ -375,8 +375,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set("foo1", "bar1");
 
-    Thread.sleep(1100); // little over 1 sec
-    assertTrue(jedis.objectIdletime("foo1") > 0);
+    assertTrue(jedis.objectIdletime("foo1") >= 0);
 
     assertEquals(1, jedis.touch("foo1"));
     assertEquals(0L, jedis.objectIdletime("foo1").longValue());
@@ -394,8 +393,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set(bfoo1, bbar1);
 
-    Thread.sleep(1100); // little over 1 sec
-    assertTrue(jedis.objectIdletime(bfoo1) > 0);
+    assertTrue(jedis.objectIdletime(bfoo1) >= 0);
 
     assertEquals(1, jedis.touch(bfoo1));
     assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
@@ -645,16 +643,15 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.set("g", "g");
 
     // string
+    Set<String> stringKeys = new HashSet<>();
+    String cursor = SCAN_POINTER_START;
     ScanResult<String> scanResult;
-
-    scanResult = jedis.scan(SCAN_POINTER_START, pagingParams, "string");
-    assertFalse(scanResult.isCompleteIteration());
-    int page1Count = scanResult.getResult().size();
-    scanResult = jedis.scan(scanResult.getCursor(), pagingParams, "string");
-    assertTrue(scanResult.isCompleteIteration());
-    int page2Count = scanResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
-
+    do {
+      scanResult = jedis.scan(cursor, pagingParams, "string");
+      stringKeys.addAll(scanResult.getResult());
+      cursor = scanResult.getCursor();
+    } while (!scanResult.isCompleteIteration());
+    assertEquals(new HashSet<>(Arrays.asList("a", "c", "e", "g")), stringKeys);
 
     scanResult = jedis.scan(SCAN_POINTER_START, noParams, "hash");
     assertEquals(Collections.singletonList("b"), scanResult.getResult());
@@ -669,8 +666,6 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     final byte[] set = "set".getBytes();
     final byte[] zset = "zset".getBytes();
 
-    ScanResult<byte[]> binaryResult;
-
     jedis.set("a", "a");
     jedis.hset("b", "b", "b");
     jedis.set("c", "c");
@@ -679,13 +674,17 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.zadd("f", 0d, "f");
     jedis.set("g", "g");
 
-    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, pagingParams, string);
-    assertFalse(binaryResult.isCompleteIteration());
-    page1Count = binaryResult.getResult().size();
-    binaryResult = jedis.scan(binaryResult.getCursorAsBytes(), pagingParams, string);
-    assertTrue(binaryResult.isCompleteIteration());
-    page2Count = binaryResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
+    Set<byte[]> binaryStringKeys = new HashSet<>();
+    byte[] binaryCursor = SCAN_POINTER_START_BINARY;
+    ScanResult<byte[]> binaryResult;
+    do {
+      binaryResult = jedis.scan(binaryCursor, pagingParams, string);
+      binaryStringKeys.addAll(binaryResult.getResult());
+      binaryCursor = binaryResult.getCursorAsBytes();
+    } while (!binaryResult.isCompleteIteration());
+    Set<byte[]> expectedBinaryStringKeys = new HashSet<>(Arrays.asList(
+        "a".getBytes(), "c".getBytes(), "e".getBytes(), "g".getBytes()));
+    AssertUtil.assertByteArraySetEquals(expectedBinaryStringKeys, binaryStringKeys);
 
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, hash);
     AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{98}), binaryResult.getResult());

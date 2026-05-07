@@ -75,11 +75,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = new CommandObjects();
-    RedisProtocol resolved = connection.getRedisProtocol();
-    if (resolved != null) {
-      this.commandObjects.setProtocol(resolved);
-    }
+    this.commandObjects = new CommandObjects(connection.getRedisProtocol());
+
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
     } else {

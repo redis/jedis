@@ -40,6 +40,14 @@ public class CommandObjects {
 
   private RedisProtocol protocol;
 
+  // TODO: Remove together with setProtocol
+  public CommandObjects() {
+  }
+
+  public CommandObjects(RedisProtocol protocol) {
+    this.protocol = protocol;
+  }
+
   // TODO: restrict?
   public final void setProtocol(RedisProtocol proto) {
     this.protocol = proto;

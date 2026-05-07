@@ -60,8 +60,7 @@ public abstract class CommandObjectsTestBase {
   public CommandObjectsTestBase(RedisProtocol protocol, EndpointConfig endpoint) {
     this.protocol = protocol;
     this.endpoint = endpoint;
-    commandObjects = new CommandObjects();
-    commandObjects.setProtocol(protocol);
+    commandObjects = new CommandObjects(protocol);
   }
 
   @BeforeEach

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -13,6 +14,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -1171,4 +1176,227 @@ public class ClusterPipeliningTest {
         .count();
     MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
   }
+
+  @Test
+  public void testAllShardsCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // KEYS has ALL_SHARDS policy with pattern argument (not a key), should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.keys("*"));
+
+      assertTrue(ex.getMessage().contains("ALL_SHARDS"),
+          "Error message should mention ALL_SHARDS policy");
+      assertTrue(ex.getMessage().contains("KEYS"),
+          "Error message should mention the command name");
+      assertTrue(ex.getMessage().contains("no keys"),
+          "Error message should mention that command has no keys");
+    }
+  }
+
+  @Test
+  public void testAllShardsPolicyWithSampleKeyAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // SCRIPT EXISTS has ALL_SHARDS policy but with sampleKey it routes to single slot, should work
+      String dummySha1 = "0000000000000000000000000000000000000000";
+      Response<List<Boolean>> existsResponse = pipeline.scriptExists("samplekey", dummySha1);
+      pipeline.sync();
+
+      // The response should be valid (list with one boolean indicating if script exists)
+      assertNotNull(existsResponse.get(), "SCRIPT EXISTS with sampleKey should be allowed in pipeline");
+      assertEquals(1, existsResponse.get().size(), "SCRIPT EXISTS should return list with one element");
+      assertFalse(existsResponse.get().get(0), "Dummy script should not exist");
+    }
+  }
+
+  @Test
+  public void testMultiShardCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // MGET with keys in different slots should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.mget("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD"),
+          "Error message should mention MULTI_SHARD policy");
+    }
+  }
+
+  @Test
+  public void testDefaultPolicyCommandAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // SET with single key - DEFAULT policy, should work
+      Response<String> setResponse = pipeline.set("testkey", "testvalue");
+      Response<String> getResponse = pipeline.get("testkey");
+      pipeline.sync();
+
+      assertEquals("OK", setResponse.get());
+      assertEquals("testvalue", getResponse.get());
+    }
+  }
+
+  @Test
+  public void testMultiShardPolicyWithSingleKeyAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // EXISTS with single key has MULTI_SHARD policy but routes to single slot, should work
+      pipeline.set("existskey", "value");
+      Response<Boolean> existsResponse = pipeline.exists("existskey");
+      pipeline.sync();
+
+      assertTrue(existsResponse.get(), "EXISTS with single key should be allowed in pipeline");
+    }
+  }
+
+  @Test
+  public void testMultiShardPolicyWithMultipleKeysRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+      // EXISTS with multiple keys in different slots has MULTI_SHARD policy, should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.exists("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD") || ex.getMessage().contains("multiple slots"),
+          "Error message should mention MULTI_SHARD policy or multiple slots");
+    }
+  }
+
+
+  @Test
+  public void sharedExecutorPipelineDoesNotShutdownSharedExecutor() {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()){
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        // multiple keys at different slots, to ensure multi-node pipeline
+        pipeline.set("key1", "value1");
+        pipeline.set("key2", "value2");
+        pipeline.set("key3", "value3");
+        pipeline.sync();
+      }
+    } finally {
+      assertFalse(executorService.isShutdown());
+      executorService.shutdown();
+    }
+  }
+  @Test
+  public void sharedExecutorPipelineKeysAtSameNode() {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+      ExecutorService executorService = Executors.newFixedThreadPool(3);
+      // test simple key
+      cluster.set("foo", "bar");
+
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        Response<String> foo = pipeline.get("foo");
+        pipeline.sync();
+
+        assertEquals("bar", foo.get());
+      }
+
+      // test multi key but at same node
+      int cnt = 3;
+      String prefix = "{foo}:";
+      for (int i = 0; i < cnt; i++) {
+        String key = prefix + i;
+        cluster.set(key, String.valueOf(i));
+      }
+
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        List<Response<String>> results = new ArrayList<>();
+        for (int i = 0; i < cnt; i++) {
+          String key = prefix + i;
+          results.add(pipeline.get(key));
+        }
+
+        pipeline.sync();
+        int idx = 0;
+        for (Response<String> res : results) {
+          assertEquals(String.valueOf(idx), res.get());
+          idx++;
+        }
+      }
+    }
+  }
+
+  @Test
+  @Timeout(10)
+  public void sharedExecutorConcurrentPipelinesNoDeadlock() throws Exception {
+    // This test verifies that multiple pipelines using the same shared executor
+    // concurrently do not deadlock, even when the executor has fewer threads
+    // than concurrent pipelines
+    final int EXECUTOR_THREADS = 3;
+    final int CONCURRENT_PIPELINES = 10; // More pipelines than executor threads
+    final int OPERATIONS_PER_PIPELINE = 20;
+
+    ExecutorService sharedExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
+    ExecutorService testExecutor = Executors.newFixedThreadPool(CONCURRENT_PIPELINES);
+
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+
+      CountDownLatch startLatch = new CountDownLatch(1);
+      CountDownLatch completionLatch = new CountDownLatch(CONCURRENT_PIPELINES);
+      List<Future<Integer>> futures = new ArrayList<>();
+
+      // Launch multiple pipelines concurrently
+      for (int pipelineId = 0; pipelineId < CONCURRENT_PIPELINES; pipelineId++) {
+        final int id = pipelineId;
+        Future<Integer> future = testExecutor.submit(() -> {
+          try {
+            // Wait for all threads to be ready before starting
+            startLatch.await();
+
+            int successCount = 0;
+            try (ClusterPipeline pipeline = cluster.pipelined(sharedExecutor)) {
+              List<Response<String>> responses = new ArrayList<>();
+
+              // Perform operations on different keys to ensure multi-node pipeline
+              for (int i = 0; i < OPERATIONS_PER_PIPELINE; i++) {
+                String key = "pipeline" + id + "_key" + i;
+                String value = "value" + i;
+                pipeline.set(key, value);
+                responses.add(pipeline.get(key));
+              }
+
+              // This sync() will use the shared executor
+              pipeline.sync();
+
+              // Verify all responses
+              for (int i = 0; i < OPERATIONS_PER_PIPELINE; i++) {
+                String expected = "value" + i;
+                String actual = responses.get(i).get();
+                if (expected.equals(actual)) {
+                  successCount++;
+                }
+              }
+            }
+            return successCount;
+          } finally {
+            completionLatch.countDown();
+          }
+        });
+        futures.add(future);
+      }
+
+      // Release all threads to start concurrently
+      startLatch.countDown();
+
+      boolean completed = completionLatch.await(5, SECONDS);
+      assertTrue(completed, "All concurrent pipelines should complete without deadlock");
+
+      // Verify all operations succeeded
+      for (int i = 0; i < CONCURRENT_PIPELINES; i++) {
+        Integer successCount = futures.get(i).get();
+        assertEquals(OPERATIONS_PER_PIPELINE, successCount.intValue(),
+            "Pipeline " + i + " should have all operations succeed");
+      }
+
+      // Verify shared executor is still active
+      assertFalse(sharedExecutor.isShutdown(), "Shared executor should not be shut down");
+
+    } finally {
+      testExecutor.shutdown();
+      testExecutor.awaitTermination(5, SECONDS);
+      sharedExecutor.shutdown();
+      sharedExecutor.awaitTermination(5, SECONDS);
+    }
+  }
+
 }

@@ -17,12 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -30,6 +32,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -236,6 +239,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void msetnx() {
     assertEquals(1, jedis.msetnx(bfoo, binaryValue, bbar, bfoo));
     assertArrayEquals(binaryValue, jedis.get(bfoo));
@@ -315,6 +319,7 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void substr() {
     jedis.set(bfoo, binaryValue);
 
@@ -364,20 +369,31 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue, setParams().xx()));
   }
 
+  /**
+   * Tests the executeCommand method with CommandArguments for proper cluster routing. This test
+   * uses explicit key marking through CommandArguments.key() for cluster compatibility.
+   */
   @Test
-  public void sendCommandTest() {
-    Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
+  public void executeCommandTest() {
+    // Test SET command with proper key marking
+    Object obj = jedis
+        .executeCommand(new CommandArguments(SET).key("x".getBytes()).add("1".getBytes()));
     String returnValue = SafeEncoder.encode((byte[]) obj);
     assertEquals("OK", returnValue);
-    obj = jedis.sendCommand(GET, "x".getBytes());
+
+    // Test GET command with proper key marking
+    obj = jedis.executeCommand(new CommandArguments(GET).key("x".getBytes()));
     returnValue = SafeEncoder.encode((byte[]) obj);
     assertEquals("1", returnValue);
 
-    jedis.sendCommand(RPUSH, "foo".getBytes(), "a".getBytes());
-    jedis.sendCommand(RPUSH, "foo".getBytes(), "b".getBytes());
-    jedis.sendCommand(RPUSH, "foo".getBytes(), "c".getBytes());
+    // Test RPUSH commands with proper key marking
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo".getBytes()).add("a".getBytes()));
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo".getBytes()).add("b".getBytes()));
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo".getBytes()).add("c".getBytes()));
 
-    obj = jedis.sendCommand(LRANGE, "foo".getBytes(), "0".getBytes(), "2".getBytes());
+    // Test LRANGE command with proper key marking
+    obj = jedis.executeCommand(
+      new CommandArguments(LRANGE).key("foo".getBytes()).add("0".getBytes()).add("2".getBytes()));
     List<byte[]> list = (List<byte[]>) obj;
     List<byte[]> expected = new ArrayList<>(3);
     expected.add("a".getBytes());
@@ -387,18 +403,30 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
       assertArrayEquals(expected.get(i), list.get(i));
   }
 
+  /**
+   * Tests the executeCommand method with blocking CommandArguments for proper cluster routing. This
+   * test uses explicit key marking through CommandArguments.key() and .blocking() for cluster
+   * compatibility with blocking operations.
+   */
   @Test
-  public void sendBlockingCommandTest() {
-    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+  public void executeBlockingCommandTest() {
+    // Test BLPOP on empty list - should return null after timeout
+    assertNull(jedis.executeCommand(
+      new CommandArguments(BLPOP).key(bfoo).add(Protocol.toByteArray(1L)).blocking()));
 
-    jedis.sendCommand(RPUSH, bfoo, bbar);
-    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo,
-      Protocol.toByteArray(1L));
+    // Setup: push an element to the list using executeCommand with proper key marking
+    jedis.executeCommand(new CommandArguments(RPUSH).key(bfoo).add(bbar));
+
+    // Test BLPOP with data - should return the key and value
+    List<byte[]> blpop = (List<byte[]>) jedis.executeCommand(
+      new CommandArguments(BLPOP).key(bfoo).add(Protocol.toByteArray(1L)).blocking());
     assertEquals(2, blpop.size());
     assertArrayEquals(bfoo, blpop.get(0));
     assertArrayEquals(bbar, blpop.get(1));
 
-    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+    // Test BLPOP on now-empty list - should return null after timeout
+    assertNull(jedis.executeCommand(
+      new CommandArguments(BLPOP).key(bfoo).add(Protocol.toByteArray(1L)).blocking()));
   }
 
   // MSETEX NX + expiration matrix (binary)

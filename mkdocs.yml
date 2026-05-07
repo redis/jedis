@@ -31,6 +31,8 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Jedis Maven: jedis-maven.md
+  - User Guide:
+    - Transactions/Multi: transactions-multi.md
   - Migrating to newer versions:
       - Jedis 7: migration-guides/v6-to-v7.md
       - Jedis 6: migration-guides/v5-to-v6.md

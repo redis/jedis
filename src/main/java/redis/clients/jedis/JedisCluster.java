@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -39,6 +40,8 @@ public class JedisCluster extends UnifiedJedis {
    * Default amount of attempts for executing a command
    */
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
+
+  private final CommandFlagsRegistry commandFlagsRegistry;
 
   /**
    * Creates a JedisCluster instance. The provided node is used to make the first contact with the cluster.
@@ -289,13 +292,19 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    super(provider, maxAttempts, maxTotalRetriesDuration);
+  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
+        StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects());
+    this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
-  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol) {
-    super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
+  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, RedisProtocol protocol) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
+            StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects(), protocol,
+        null);
+    this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   @Experimental
@@ -340,13 +349,19 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
-  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, Cache clientSideCache) {
-    super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
+  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, RedisProtocol protocol, Cache clientSideCache) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
+            StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects(), protocol,
+        clientSideCache);
+    this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
-  private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
+  private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
+      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache,
+      CommandFlagsRegistry commandFlagsRegistry) {
     super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    this.commandFlagsRegistry = commandFlagsRegistry;
   }
 
   /**
@@ -359,8 +374,8 @@ public class JedisCluster extends UnifiedJedis {
 
     @Override
     protected JedisCluster createClient() {
-      return new JedisCluster(commandExecutor, connectionProvider, commandObjects, clientConfig.getRedisProtocol(),
-          cache);
+      return new JedisCluster(commandExecutor, connectionProvider, commandObjects,
+          clientConfig.getRedisProtocol(), cache, getCommandFlags());
     }
   }
 
@@ -412,9 +427,49 @@ public class JedisCluster extends UnifiedJedis {
   }
   // commands
 
+  /**
+   * Creates a new pipeline for executing commands in a Redis Cluster.
+   *
+   * <p>Pipelining allows batching multiple commands for more efficient execution
+   * by reducing network round-trips. In a cluster environment, commands are routed
+   * to the appropriate nodes based on key hash slots.</p>
+   *
+   * <p>If the pipeline spans multiple nodes, a dedicated {@link ExecutorService} is
+   * created internally to execute requests in parallel and shutdown when the pipeline
+   * is synced.</p>
+   *
+   * @return a new {@link ClusterPipeline} instance
+   * @see #pipelined(ExecutorService)
+   */
   @Override
   public ClusterPipeline pipelined() {
-    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
+    return pipelined(null);
+  }
+
+  /**
+   * Creates a new pipeline for executing commands in a Redis Cluster using the provided executor.
+   *
+   * <p>Pipelining allows batching multiple commands for more efficient execution
+   * by reducing network round-trips. In a cluster environment, commands are routed
+   * to the appropriate nodes based on key hash slots.</p>
+   *
+   * <p>If the pipeline spans multiple nodes, the provided {@link ExecutorService} is
+   * used to execute requests in parallel. The caller is responsible for managing
+   * the lifecycle of this executor (creation, shutdown, etc.).</p>
+   *
+   * <p>If {@code null} is provided, a dedicated executor is created and managed
+   * internally, similar to {@link #pipelined()}.</p>
+   *
+   * @param executorService the executor to use for multi-node execution, or {@code null}
+   * @return a new {@link ClusterPipeline} instance
+   */
+  public ClusterPipeline pipelined(ExecutorService executorService) {
+    return new ClusterPipeline(
+            (ClusterConnectionProvider) provider,
+            (ClusterCommandObjects) commandObjects,
+            commandFlagsRegistry,
+            executorService
+    );
   }
 
   /**

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UdsTest {
 
   @RegisterExtension
-  public EnvCondition envCondition = new EnvCondition();
+  public static EnvCondition envCondition = new EnvCondition();
 
   @Test
   public void jedisConnectsToUds() {
@@ -37,17 +38,27 @@ public class UdsTest {
   }
 
   @Test
-  public void unifiedJedisConnectsToUds() {
-    try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory())) {
-      assertEquals("PONG", jedis.ping());
+  public void redisClientConnectsToUds() {
+    JedisSocketFactory socketFactory = new UdsJedisSocketFactory();
+    ConnectionFactory connFactory = new ConnectionFactory(socketFactory,
+        DefaultJedisClientConfig.builder().build());
+    PooledConnectionProvider provider = new PooledConnectionProvider(connFactory);
+
+    try (RedisClient client = RedisClient.builder().connectionProvider(provider).build()) {
+      assertEquals("PONG", client.ping());
     }
   }
 
   @Test
-  public void unifiedJedisConnectsToUdsResp3() {
-    try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory(),
-        DefaultJedisClientConfig.builder().resp3().build())) {
-      assertEquals("PONG", jedis.ping());
+  public void redisClientConnectsToUdsResp3() {
+    JedisSocketFactory socketFactory = new UdsJedisSocketFactory();
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().resp3().build();
+    ConnectionFactory connFactory = new ConnectionFactory(socketFactory, clientConfig);
+    PooledConnectionProvider provider = new PooledConnectionProvider(connFactory);
+
+    try (RedisClient client = RedisClient.builder().connectionProvider(provider)
+        .clientConfig(clientConfig).build()) {
+      assertEquals("PONG", client.ping());
     }
   }
 

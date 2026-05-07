@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -103,6 +105,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void watch() throws UnknownHostException, IOException {
     jedis.watch("mykey", "somekey");
     Transaction t = jedis.multi();
@@ -210,6 +213,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void transactionResponse() {
     jedis.set("string", "foo");
     jedis.lpush("list", "foo");
@@ -233,6 +237,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void transactionResponseBinary() {
     jedis.set("string", "foo");
     jedis.lpush("list", "foo");
@@ -337,6 +342,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
 //  }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testResetStateWhenInWatch() {
     jedis.watch("mykey", "somekey");
 
@@ -392,6 +398,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testTransactionWithGeneralCommand() {
     Transaction t = jedis.multi();
     t.set("string", "foo");
@@ -418,6 +425,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void transactionResponseWithErrorWithGeneralCommand() {
     Transaction t = jedis.multi();
     t.set("foo", "bar");

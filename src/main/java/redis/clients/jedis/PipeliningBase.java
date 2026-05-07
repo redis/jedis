@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
@@ -20,6 +21,8 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.CompareCondition;
@@ -322,7 +325,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -332,7 +335,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -342,7 +345,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -402,7 +405,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#getrange(String, long, long)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   @Override
@@ -604,7 +607,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#lmove(String, String, ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -615,7 +618,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#blmove(String, String, ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -741,7 +744,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#hset(String, Map)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   @Override
@@ -2183,7 +2186,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#hset(byte[], Map)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   @Override
@@ -2714,7 +2717,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#lmove(byte[], byte[], ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2725,7 +2728,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -3605,7 +3608,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -3615,7 +3618,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -3625,7 +3628,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -3685,7 +3688,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#getrange(byte[], long, long)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   @Override
@@ -3818,6 +3821,12 @@ public abstract class PipeliningBase
   @Override
   public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  @Experimental
+  public Response<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 
   @Override
@@ -4923,6 +4932,24 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.vsetattr(key, element, attributes));
   }
   // Vector Set pipeline commands end
+
+  // Hotkeys pipeline commands
+  public Response<String> hotkeysStart(HotkeysParams params) {
+    return appendCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public Response<String> hotkeysStop() {
+    return appendCommand(commandObjects.hotkeysStop());
+  }
+
+  public Response<String> hotkeysReset() {
+    return appendCommand(commandObjects.hotkeysReset());
+  }
+
+  public Response<HotkeysInfo> hotkeysGet() {
+    return appendCommand(commandObjects.hotkeysGet());
+  }
+  // Hotkeys pipeline commands end
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

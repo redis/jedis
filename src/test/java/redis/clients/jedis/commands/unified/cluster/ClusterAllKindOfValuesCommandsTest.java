@@ -238,7 +238,7 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
       stringKeys.addAll(scanResult.getResult());
       cursor = scanResult.getCursor();
     } while (!scanResult.isCompleteIteration());
-    assertEquals(new HashSet<>(Arrays.asList("a", "c", "e", "g")), stringKeys);
+    assertEquals(new HashSet<>(Arrays.asList("{+}a", "c{+}", "e{+}", "{+}g")), stringKeys);
 
     scanResult = jedis.scan(SCAN_POINTER_START, noCount, "hash");
     assertEquals(Collections.singletonList("{+}b"), scanResult.getResult());

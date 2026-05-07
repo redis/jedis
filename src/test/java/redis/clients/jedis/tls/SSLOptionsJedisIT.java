@@ -30,7 +30,7 @@ public class SSLOptionsJedisIT extends JedisTlsTestBase {
   @MethodSource("sslOptionsProvider")
   void connectWithSsl(String testName, SslOptions ssl) {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder().sslOptions(ssl).build())) {
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().sslOptions(ssl).build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }

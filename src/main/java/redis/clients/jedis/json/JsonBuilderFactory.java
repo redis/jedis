@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
-import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public final class JsonBuilderFactory {
@@ -118,11 +117,49 @@ public final class JsonBuilderFactory {
     }
   };
 
-  public static final Builder<Object> JSON_ARRAY_OR_DOUBLE_LIST = new Builder<Object>() {
+  /**
+   * Builder that preserves numeric types (Long for integers, Double for decimals).
+   */
+  public static final Builder<List<Number>> JSON_NUMBER_LIST = new Builder<List<Number>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Number> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      List<Number> result = new ArrayList<>(list.size());
+      for (Object element : list) {
+        if (element == null) {
+          result.add(null);
+        } else if (element instanceof Long) {
+          result.add((Long) element);
+        } else if (element instanceof Double) {
+          result.add((Double) element);
+        } else if (element instanceof Number) {
+          result.add((Number) element);
+        } else {
+          // Parse from string (RESP2 fallback)
+          String str = STRING.build(element);
+          if (str.contains(".") || str.contains("e") || str.contains("E")) {
+            result.add(Double.parseDouble(str));
+          } else {
+            result.add(Long.parseLong(str));
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Number>";
+    }
+  };
+
+  public static final Builder<Object> JSON_ARRAY_OR_NUMBER_LIST = new Builder<Object>() {
     @Override
     public Object build(Object data) {
       if (data == null) return null;
-      if (data instanceof List) return BuilderFactory.DOUBLE_LIST.build(data);
+      if (data instanceof List) return JSON_NUMBER_LIST.build(data);
       return JSON_ARRAY.build(data);
     }
   };

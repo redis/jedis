@@ -161,10 +161,12 @@ public class JedisSentinelPool extends Pool<Jedis> {
       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
       final String sentinelPassword, final String sentinelClientName) {
     this(masterName, parseHostAndPorts(sentinels), poolConfig,
-        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        DefaultJedisClientConfig.builder().autoNegotiateProtocol(false)
+            .connectionTimeoutMillis(connectionTimeout)
             .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
             .user(user).password(password).database(database).clientName(clientName).build(),
-        DefaultJedisClientConfig.builder().connectionTimeoutMillis(sentinelConnectionTimeout)
+        DefaultJedisClientConfig.builder().autoNegotiateProtocol(false)
+            .connectionTimeoutMillis(sentinelConnectionTimeout)
             .socketTimeoutMillis(sentinelSoTimeout).user(sentinelUser).password(sentinelPassword)
             .clientName(sentinelClientName).build()
     );
@@ -173,7 +175,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig<Jedis> poolConfig, final JedisFactory factory) {
     this(masterName, parseHostAndPorts(sentinels), poolConfig, factory,
-        DefaultJedisClientConfig.builder().build());
+        DefaultJedisClientConfig.builder().autoNegotiateProtocol(false).build());
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,

@@ -32,7 +32,7 @@ import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class ListCommandsTest extends JedisCommandsTestBase {
 

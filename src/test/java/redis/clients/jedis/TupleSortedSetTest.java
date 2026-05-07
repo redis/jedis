@@ -14,7 +14,7 @@ import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class TupleSortedSetTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] ba = { 0x0A };

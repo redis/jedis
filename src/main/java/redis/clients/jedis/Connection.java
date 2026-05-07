@@ -23,10 +23,7 @@ import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisValidationException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -67,6 +64,20 @@ public class Connection implements Closeable {
   }
 
   private ConnectionPool memberOf;
+  /**
+   * The RESP protocol established for this connection.
+   *
+   * <p>Set after the handshake completes. Holds the protocol the connection is actually
+   * speaking with the server.</p>
+   *
+   * <ul>
+   *   <li>{@code null} – No protocol established yet (handshake has not run).</li>
+   *   <li>{@code RESP2} – RESP2 established (either explicitly requested, fallback from
+   *       auto-negotiation, or assumed default when no protocol was requested and
+   *       auto-negotiation was disabled).</li>
+   *   <li>{@code RESP3} – RESP3 established.</li>
+   * </ul>
+   */
   protected RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
@@ -82,6 +93,7 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private JedisClientConfig clientConfig;
+  private final ProtocolHandshake handshake = new ProtocolHandshake(this);
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -147,6 +159,13 @@ public class Connection implements Closeable {
     return strVal;
   }
 
+  /**
+   * Returns the RESP protocol established for this connection.
+   *
+   * @return {@code null} if no protocol has been established yet (handshake has not run);
+   *         {@link RedisProtocol#RESP2} or {@link RedisProtocol#RESP3} once the handshake
+   *         has completed.
+   */
   public final RedisProtocol getRedisProtocol() {
     return protocol;
   }
@@ -511,7 +530,8 @@ public class Connection implements Closeable {
 
       connect();
 
-      protocol = config.getRedisProtocol();
+      RedisProtocol requestedProtocol = config.getRedisProtocol();
+      boolean autoNegotiateProtocol = config.isAutoNegotiateProtocol();
 
       Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
 
@@ -524,13 +544,15 @@ public class Connection implements Closeable {
         final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
           redisCredentialsProvider.prepare();
-          helloAndAuth(protocol, redisCredentialsProvider.get());
+          establishProtocol(requestedProtocol, autoNegotiateProtocol,
+            redisCredentialsProvider.get());
         } finally {
           redisCredentialsProvider.cleanUp();
         }
       } else {
-        helloAndAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
-            : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
+        establishProtocol(requestedProtocol, autoNegotiateProtocol,
+          credentialsProvider != null ? credentialsProvider.get()
+              : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
       List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
@@ -584,34 +606,67 @@ public class Connection implements Closeable {
     }
   }
 
-  private void helloAndAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
-    Map<String, Object> helloResult = null;
-    if (protocol != null && credentials != null && credentials.getUser() != null) {
-      byte[] rawPass = encodeToBytes(credentials.getPassword());
-      try {
-        helloResult = hello(encode(protocol.version()), Keyword.AUTH.getRaw(),
-          encode(credentials.getUser()), rawPass);
-      } finally {
-        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
-      }
-    } else {
-      authenticate(credentials);
-      helloResult = protocol == null ? null : hello(encode(protocol.version()));
-    }
-    if (helloResult != null) {
-      server = (String) helloResult.get("server");
-      version = (String) helloResult.get("version");
+  /**
+   * Establish the RESP protocol version and authenticate if needed.
+   *
+   * Performs protocol negotiation using the {@code HELLO} command and optional authentication,
+   * and resolves the effective RESP protocol used for the connection.
+   *
+   * <p>This method supports both explicit protocol selection and legacy compatibility mode.</p>
+   *
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>If {@code requestedProtocol} is {@code null} and {@code autoNegotiateProtocol} is
+   *       {@code true}, the client first attempts {@code HELLO 3} and falls back to RESP2 if
+   *       RESP3 is not supported.</li>
+   *
+   *   <li>If {@code requestedProtocol} is {@code null} and {@code autoNegotiateProtocol} is
+   *       {@code false}, no {@code HELLO} is sent. The connection assumes RESP2 as the default
+   *       protocol and only {@code AUTH} is performed if credentials are provided. This is the
+   *       legacy {@link Jedis} behaviour.</li>
+   *
+   *   <li>If {@code RESP2} is requested, a strict {@code HELLO 2} handshake is performed.</li>
+   *
+   *   <li>If {@code RESP3} is requested, a strict {@code HELLO 3} handshake is performed.</li>
+   * </ul>
+   *
+   * <p>Side effects:</p>
+   * <ul>
+   *   <li>Performs authentication if credentials are provided.</li>
+   *   <li>Populates internal server metadata (version, server info).</li>
+   *   <li>Stores the resolved protocol version for the connection.</li>
+   * </ul>
+   *
+   * @param requestedProtocol the requested RESP protocol, or {@code null} to defer to
+   *          {@code autoNegotiateProtocol}
+   * @param autoNegotiateProtocol whether to attempt {@code HELLO 3} with RESP2 fallback when no
+   *          protocol is explicitly requested; ignored when {@code requestedProtocol} is
+   *          non-{@code null}
+   * @param credentials credentials used for authentication (may be {@code null})
+   * @throws IllegalArgumentException if the requested protocol is not supported
+   * @throws IllegalStateException if the server's HELLO response is missing the protocol field
+   * @throws JedisProtocolNotSupportedException if protocol negotiation fails
+   * @throws JedisDataException if the server returns an error during handshake
+   */
+  private void establishProtocol(final RedisProtocol requestedProtocol,
+      final boolean autoNegotiateProtocol, final RedisCredentials credentials) {
+    HelloResult helloResult = handshake.establish(requestedProtocol, autoNegotiateProtocol,
+      credentials);
+    version = helloResult.getVersion();
+    server = helloResult.getServer();
+
+    if (helloResult.getProtocol() == null) {
+      throw new IllegalStateException("HELLO response is missing the protocol version field");
     }
 
-    // clearing 'char[] credentials.getPassword()' should be
-    // handled in RedisCredentialsProvider.cleanUp()
+    this.protocol = helloResult.getProtocol();
   }
 
   public void setCredentials(RedisCredentials credentials) {
     currentCredentials.set(credentials);
   }
 
-  private String authenticate(RedisCredentials credentials) {
+  String authenticate(RedisCredentials credentials) {
     if (credentials == null || credentials.getPassword() == null) {
       return null;
     }
@@ -635,6 +690,62 @@ public class Connection implements Closeable {
   protected Map<String, Object> hello(byte[]... args) {
     sendCommand(Command.HELLO, args);
     return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+  }
+
+  /**
+   * Sends the {@code HELLO} command to negotiate the RESP protocol version and optionally perform authentication.
+   *
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>If {@code credentials} is {@code null}, only protocol negotiation is performed
+   *       (no {@code AUTH} is sent).</li>
+   *
+   *   <li>If {@code credentials} is provided and contains a password, authentication is
+   *
+   *       performed via {@code HELLO ... AUTH <user> <password>}.</li>
+   *
+   *   <li>If {@code credentials#getUser()} is {@code null}, the {@code default} user is used.</li>
+   *   <li>If {@code credentials} is provided but the password is {@code null}, no authentication
+   *       is performed.</li>
+   * </ul>
+   *
+   * <p>Note:</p>
+   * <ul>
+   *   <li>{@code HELLO} is available only in Redis 6.0 and newer.</li>
+   *   <li>The command both negotiates the protocol version (RESP2/RESP3) and returns
+   *       server metadata.</li>
+   * </ul>
+   *
+   * @param protocol the requested RESP protocol version (must not be {@code null})
+   * @param credentials optional credentials used for authentication (may be {@code null})
+   * @return the parsed {@code HELLO} response containing server metadata
+   * @throws IllegalArgumentException if {@code protocol} is {@code null}
+   */
+  HelloResult hello(RedisProtocol protocol, RedisCredentials credentials) {
+    if (protocol == null) {
+      throw new IllegalArgumentException("protocol must not be null");
+    }
+
+    byte[] rawPass = null;
+    try {
+      byte[][] args;
+      byte[] versionRaw = encode(protocol.version());
+      if (credentials != null && credentials.getPassword() != null) {
+        String user = credentials.getUser();
+        if (user == null) {
+          user = "default";
+        }
+        rawPass = encodeToBytes(credentials.getPassword());
+        args = new byte[][] { versionRaw, Keyword.AUTH.getRaw(), encode(user), rawPass };
+      } else {
+        args = new byte[][] { versionRaw };
+      }
+      return new HelloResult(hello(args));
+    } finally {
+      if (rawPass != null) {
+        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+      }
+    }
   }
 
   protected byte[] encodeToBytes(char[] chars) {

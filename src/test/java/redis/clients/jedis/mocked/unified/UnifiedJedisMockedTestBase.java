@@ -1,5 +1,6 @@
 package redis.clients.jedis.mocked.unified;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.jupiter.api.AfterEach;
@@ -57,6 +58,9 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
 
   @AfterEach
   public void tearDown() {
+    // The default config (protocol=null + autoNegotiateProtocol=true) causes the UnifiedJedis
+    // constructor to probe the connection provider to resolve the actual protocol version.
+    verify(connectionProvider).getConnection();
     // We want to be accurate about our mocks, hence we verify no more interactions here.
     // This might mean that some methods need to verify their interactions in a more verbose way,
     // but overall the benefit should be greater than the cost.

@@ -22,7 +22,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
@@ -45,7 +45,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     super.setUp();
 
     lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(),
-        lfuEndpoint.getClientConfigBuilder().build());
+        lfuEndpoint.getClientConfigBuilder().serverDefaultProtocol().build());
     lfuJedis.connect();
     lfuJedis.flushAll();
   }

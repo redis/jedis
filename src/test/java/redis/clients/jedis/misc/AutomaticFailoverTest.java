@@ -244,13 +244,28 @@ public class AutomaticFailoverTest {
   public void failoverFromAuthError() {
     int slidingWindowSize = 10;
 
+    // Use deliberately wrong credentials for the first database so that
+    // authentication fails with JedisAccessControlException at connection
+    // time, while the second database uses correct credentials and works.
+    // The auth error is wrapped in JedisConnectionException by the connection
+    // pool, so the fallback list must include both exception types.
+    JedisClientConfig wrongAuthConfig = DefaultJedisClientConfig.builder().build();
+    JedisClientConfig correctAuthConfig = workingEndpoint.getClientConfigBuilder().build();
+
+    DatabaseConfig failingDb = DatabaseConfig.builder(
+        endpointForAuthFailure.getHostAndPort(), wrongAuthConfig)
+        .healthCheckEnabled(false).build();
+    DatabaseConfig workingDb = DatabaseConfig.builder(
+        workingEndpoint.getHostAndPort(), correctAuthConfig)
+        .healthCheckEnabled(false).build();
+
     MultiDbConfig.Builder builder = new MultiDbConfig.Builder(
-        getDatabaseConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(),
-          workingEndpoint.getHostAndPort()))
-              .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
-                  .slidingWindowSize(slidingWindowSize)
-                  .build())
-              .fallbackExceptionList(Collections.singletonList(JedisAccessControlException.class));
+        new DatabaseConfig[]{ failingDb, workingDb })
+            .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
+                .slidingWindowSize(slidingWindowSize)
+                .build())
+            .fallbackExceptionList(Arrays.asList(
+                JedisAccessControlException.class, JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiDbConnectionProvider cacheProvider = new MultiDbConnectionProvider(

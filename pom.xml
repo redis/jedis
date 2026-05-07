@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>7.4.0-SNAPSHOT</version>
+	<version>8.0.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -57,9 +57,9 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.21.1</jackson.version>
+		<jackson.version>2.21.3</jackson.version>
 		<maven.surefire.version>3.5.5</maven.surefire.version>
-		<junit.version>5.14.3</junit.version>
+		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
@@ -100,7 +100,7 @@
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.13.2</version>
+			<version>2.14.0</version>
 		</dependency>
 
 		<dependency>
@@ -188,7 +188,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5-fluent</artifactId>
-			<version>5.6</version>
+			<version>5.6.1</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -568,6 +568,13 @@
 						<include>**/resps/LibraryInfoTest.java</include>
 						<include>**/*Matchers.java</include>
 						<include>**/*TestUtil.java</include>
+						<include>**/executors/aggregators/*.java</include>
+						<include>**/*MapMatcher.java</include>
+
+                        <include>src/test/java/redis/clients/jedis/commands/unified/**bloom/*.java</include>
+                        <include>src/test/java/redis/clients/jedis/commands/unified/**json/*.java</include>
+                        <include>src/test/java/redis/clients/jedis/commands/unified/**timeseries/*.java</include>
+                        <include>src/test/java/redis/clients/jedis/**/search/*.java</include>
 					</includes>
 				</configuration>
 				<executions>

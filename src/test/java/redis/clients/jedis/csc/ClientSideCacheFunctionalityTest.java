@@ -275,8 +275,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   public void testInvalidationWithUnifiedJedis() {
     Cache cache = new TestCache();
     Cache mock = Mockito.spy(cache);
-    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock);
-    UnifiedJedis controlClient = new UnifiedJedis(hnp, clientConfig.get());
+    UnifiedJedis client = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get()).cache(mock).build();
+    UnifiedJedis controlClient = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get()).build();
 
     try {
       // "foo" is cached

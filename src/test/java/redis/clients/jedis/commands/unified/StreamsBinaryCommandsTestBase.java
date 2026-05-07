@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY;
-import static redis.clients.jedis.util.ByteArrayMapMatcher.equalToByteArrayMap;
+import static redis.clients.jedis.util.ByteArrayMapMatcher.contentEquals;
 import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStreamEntries;
 
 @Tag("integration")
@@ -605,7 +605,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertTrue(second.isClaimed());
     assertTrue(first.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
     assertTrue(second.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
-    assertThat(first.getFields(), equalToByteArrayMap(HASH_1));
+    assertThat(first.getFields(), contentEquals(HASH_1));
 
     // Fresh entries
     assertFalse(third.isClaimed());
@@ -614,7 +614,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(Long.valueOf(0), fourth.getDeliveredCount());
     assertEquals(Long.valueOf(0), third.getMillisElapsedFromDelivery());
     assertEquals(Long.valueOf(0), fourth.getMillisElapsedFromDelivery());
-    assertThat(fourth.getFields(), equalToByteArrayMap(HASH_1));
+    assertThat(fourth.getFields(), contentEquals(HASH_1));
   }
 
   @Test

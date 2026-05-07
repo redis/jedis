@@ -4,10 +4,18 @@
     "username": "sentinel",
     "password": "foobared",
     "endpoints": [
-      "redis://127.0.0.1:26379"
+      "redis://localhost:26379"
     ]
   },
   "sentinel-standalone0-tls": {
+    "tls": true,
+    "username": "sentinel",
+    "password": "foobared",
+    "endpoints": [
+      "redis://localhost:36379"
+    ]
+  },
+  "sentinel-standalone0-tls-wronghost": {
     "tls": true,
     "username": "sentinel",
     "password": "foobared",
@@ -18,19 +26,19 @@
   "sentinel-standalone2-1": {
     "tls": false,
     "endpoints": [
-      "redis://127.0.0.1:26380"
+      "redis://localhost:26380"
     ]
   },
   "sentinel-failover": {
     "tls": false,
     "endpoints": [
-      "redis://127.0.0.1:26381"
+      "redis://localhost:26381"
     ]
   },
   "sentinel-standalone2-3": {
     "tls": false,
     "endpoints": [
-      "redis://127.0.0.1:26382"
+      "redis://localhost:26382"
     ]
   },
   "redis-failover-1": {
@@ -59,6 +67,15 @@
     "tls_cert_path": "redis1-2-5-8-sentinel/work/tls",
     "endpoints": [
       "rediss://localhost:6390"
+    ]
+  },
+  "standalone0-tls-wronghost": {
+    "username": "default",
+    "password": "foobared",
+    "tls": true,
+    "tls_cert_path": "redis1-2-5-8-sentinel/work/tls",
+    "endpoints": [
+      "rediss://127.0.0.1:6390"
     ]
   },
   "standalone0-acl": {
@@ -167,6 +184,16 @@
       "rediss://localhost:8481"
     ]
   },
+  "cluster-stable-tls-wronghost": {
+    "password": "cluster",
+    "tls": true,
+    "tls_cert_path": "cluster-stable/work/tls",
+    "endpoints": [
+      "rediss://127.0.0.1:8479",
+      "rediss://127.0.0.1:8480",
+      "rediss://127.0.0.1:8481"
+    ]
+  },
   "cluster-stack": {
     "password": "cluster",
     "tls": false,
@@ -174,6 +201,22 @@
       "redis://127.0.0.1:16479",
       "redis://127.0.0.1:16480",
       "redis://127.0.0.1:16481"
+    ]
+  },
+  "standalone-mtls": {
+    "tls": true,
+    "tls_cert_path": "standalone-mtls/work/tls",
+    "endpoints": [
+      "rediss://localhost:6790"
+    ]
+  },
+  "cluster-mtls": {
+    "tls": true,
+    "tls_cert_path": "cluster-mtls/work/tls",
+    "endpoints": [
+      "rediss://localhost:8579",
+      "rediss://localhost:8580",
+      "rediss://localhost:8581"
     ]
   }
 }

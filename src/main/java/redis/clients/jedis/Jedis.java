@@ -373,7 +373,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   // Legacy
   public Transaction multi() {
-    transaction = new Transaction(this);
+    transaction = new Transaction(getConnection()) {
+      @Override
+      protected void onAfterExec() {
+        resetState();
+      }
+
+      @Override
+      protected void onAfterDiscard() {
+        resetState();
+      }
+    };
     return transaction;
   }
 
@@ -4188,7 +4198,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String failover(FailoverParams failoverParams) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new ClusterCommandArguments(Command.FAILOVER).addParams(failoverParams);
+    CommandArguments args = new CommandArguments(Command.FAILOVER).addParams(failoverParams);
     connection.sendCommand(args);
     connection.setTimeoutInfinite();
     try {

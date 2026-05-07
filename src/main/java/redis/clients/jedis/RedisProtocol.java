@@ -43,6 +43,6 @@ public enum RedisProtocol {
     if (proto == null) return null;
     if (proto == 2) return RESP2;
     if (proto == 3) return RESP3;
-    throw new JedisProtocolNotSupportedException("Unknown protocol version: " + proto);
+    throw new IllegalArgumentException("Unknown protocol version: " + proto);
   }
 }

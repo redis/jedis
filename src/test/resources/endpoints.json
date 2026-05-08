@@ -218,5 +218,11 @@
       "rediss://localhost:8580",
       "rediss://localhost:8581"
     ]
+  },
+  "redis-unavailable": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:26400"
+    ]
   }
 }
